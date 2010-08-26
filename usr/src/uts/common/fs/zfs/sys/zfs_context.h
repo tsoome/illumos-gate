@@ -80,6 +80,7 @@ extern "C" {
 #define	_zfs_expect(expr, value)    (expr)
 #endif
 
+#define	noinline	__attribute__((noinline))
 #define	likely(x)	_zfs_expect((x) != 0, 1)
 #define	unlikely(x)	_zfs_expect((x) != 0, 0)
 
