@@ -54,6 +54,11 @@ SRCS += \
 	mdb_fdio.c \
 	mdb_fmt.c \
 	mdb_frame.c \
+	mdb_gdb.c \
+	mdb_gdb_amd64.c \
+	mdb_gdb_armv6.c \
+	mdb_gdb_ia32.c \
+	mdb_gdb_proto.c \
 	mdb_gelf.c \
 	mdb_help.c \
 	mdb_io.c \

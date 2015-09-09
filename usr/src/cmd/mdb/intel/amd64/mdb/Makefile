@@ -48,6 +48,6 @@ include ../../Makefile.amd64
 include ../../../Makefile.mdb
 
 CPPFLAGS += -I../../mdb
-LDLIBS += -lsaveargs
+LDLIBS += -lsaveargs -lsocket
 
 install: all $(ISAEXEC) $(ROOTPROG64) $(ROOTLINK64)

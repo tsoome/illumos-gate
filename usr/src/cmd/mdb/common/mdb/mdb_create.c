@@ -51,6 +51,9 @@ mdb_create_builtin_tgts(void)
 
 	if ((mp = mdb_module_load_builtin("mdb_raw")) != NULL)
 		mp->mod_tgt_ctor = mdb_rawfile_tgt_create;
+
+	if ((mp = mdb_module_load_builtin("mdb_gdb")) != NULL)
+		mp->mod_tgt_ctor = mdb_gdb_tgt_create;
 }
 
 void

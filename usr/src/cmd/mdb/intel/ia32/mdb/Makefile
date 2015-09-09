@@ -41,6 +41,7 @@ include ../../Makefile.ia32
 include ../../../Makefile.mdb
 
 CPPFLAGS += -I../../mdb
+LDFLAGS += -lsocket
 
 install: all $(ISAEXEC) $(ROOTPROG32) $(ROOTLINK32)
 	-$(RM) $(ROOTPROG)
