@@ -39,7 +39,17 @@ GNOTSUP(lookup_by_name)
 GNOTSUP(symbol_iter)
 GNOTSUP(mapping_iter)
 GNOTSUP(run)
-GNOTSUP(step)
+
+/*
+ * ::step [ over | out ] [SIG]
+ */
+static int
+gdb_step(mdb_tgt_t *target, mdb_tgt_status_t *tstatus)
+{
+mdb_printf("gdb_step\n");
+	return (DCMD_USAGE);
+}
+
 GNOTSUP(step_out)
 GNOTSUP(step_branch)
 GNOTSUP(next)
@@ -363,28 +373,70 @@ int
 mdb_gdb_tgt_create(mdb_tgt_t *t, int argc, const char *argv[])
 {
 	extern const struct mdb_gdb_tgt mdb_gdb_tgt_ia32;
-	struct addrinfo hints, *res;
+	struct addrinfo hints, *res, *r;
 	gdb_data_t *data;
-	int i;
+	char *target = NULL, *host, *port;
+	int rv, tlen = 0;
 
-	for (i = 0; i < argc; i++)
-		mdb_printf("arg[%d] = '%s'\n", i, argv[i]);
+	host = "localhost";
+	port = "1234";
 
-	data = mdb_zalloc(sizeof (gdb_data_t), UM_SLEEP);
+	if (argc == 1) {
+		target = strdup(argv[0]);
+		tlen = strlen(target);
+		if (target[tlen-1] != ']' && strrchr(target, ':') != NULL) {
+			port = strrchr(target, ':');
+			if (target != port)
+				host = target;
+			*port++ = '\0';
+		} else
+			host = target;
+	}
+	if (*host == '[') {
+		int len = strlen(host);
+		host[len-1] = '\0';
+		host++;
+	}
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	getaddrinfo(host, port, &hints, &res);
+	if ((rv = getaddrinfo(host, port, &hints, &res)) != 0) {
+		mdb_printf("failed to resolve '%s:%s': %s\n", host, port,
+		    gai_strerror(rv));
 
-	data->fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	connect(data->fd, res->ai_addr, res->ai_addrlen);
+		if (target != NULL)
+			mdb_free(target, tlen+1);
+		return (-1);
+	}
 
-	if (data->fd == -1) {
+	data = mdb_zalloc(sizeof (gdb_data_t), UM_SLEEP);
+
+	for (r = res; r != NULL; r = r->ai_next) {
+		data->fd = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
+		if (data->fd == -1)
+			continue;
+
+		rv = connect(data->fd, r->ai_addr, r->ai_addrlen);
+		if (rv == -1) {
+			close(data->fd);
+			continue;
+		}
+		break;
+	}
+	if (r == NULL) {
+		mdb_printf("failed to connect '%s:%s'\n", host, port);
+		if (data->fd != -1)
+			close(data->fd);
+		if (target != NULL)
+			mdb_free(target, tlen+1);
 		mdb_free(data, sizeof (gdb_data_t));
 		return (-1);
 	}
+
+	if (target != NULL)
+		mdb_free(target, tlen+1);
 
 	data->tgt = &mdb_gdb_tgt_ia32;
 	data->tid = 0;
