@@ -436,7 +436,7 @@ main(int argc, char *argv[], char *envp[])
 	char *p;
 
 	const char *Iflag = NULL, *Lflag = NULL, *Vflag = NULL, *pidarg = NULL;
-	const char *eflag = NULL;
+	const char *eflag = NULL, *fifoarg = NULL;
 	int fflag = 0, Kflag = 0, Rflag = 0, Sflag = 0, Oflag = 0, Uflag = 0;
 	int bflag = 0;
 
@@ -528,7 +528,7 @@ main(int argc, char *argv[], char *envp[])
 
 	while (optind < argc) {
 		while ((c = getopt(argc, argv,
-		    "be:fkmo:p:s:uwyACD:FI:KL:MOP:R:SUV:W")) != (int)EOF) {
+		    "be:fg:kmo:p:s:uwyACD:FI:KL:MOP:R:SUV:W")) != (int)EOF) {
 			switch (c) {
 			case 'b':
 				bflag++;
@@ -559,6 +559,10 @@ main(int argc, char *argv[], char *envp[])
 			case 'p':
 				tgt_ctor = mdb_proc_tgt_create;
 				pidarg = optarg;
+				break;
+			case 'g':
+				tgt_ctor = mdb_gdb_tgt_create;
+				fifoarg = optarg;
 				break;
 			case 's':
 				if (!strisnum(optarg)) {
@@ -796,6 +800,11 @@ main(int argc, char *argv[], char *envp[])
 			terminate(2);
 		}
 
+		if (fifoarg != NULL) {
+			warn("-g and -k options are mutually exclusive\n");
+			terminate(2);
+		}
+
 		if (tgt_argc == 0)
 			tgt_argv[tgt_argc++] = "/dev/ksyms";
 		if (tgt_argc == 1 && strisnum(tgt_argv[0]) == 0) {
@@ -804,6 +813,11 @@ main(int argc, char *argv[], char *envp[])
 			else
 				tgt_argv[tgt_argc++] = "/dev/kmem";
 		}
+	}
+
+	if ((pidarg != NULL) && (fifoarg != NULL)) {
+		warn("-p and -g options are mutually exclusive\n");
+		terminate(2);
 	}
 
 	if (pidarg != NULL) {
@@ -823,6 +837,16 @@ main(int argc, char *argv[], char *envp[])
 			    "/proc/%s/object/a.out", pidarg);
 		tgt_argv[tgt_argc++] = object;
 		tgt_argv[tgt_argc++] = pidarg;
+	}
+
+	if (fifoarg != NULL) {
+		if (tgt_argc != 0) {
+			warn("-g may not be used with other arguments\n");
+			terminate(2);
+		}
+
+		tgt_argv[tgt_argc++] = fifoarg;
+		goto tcreate;
 	}
 
 	/*
