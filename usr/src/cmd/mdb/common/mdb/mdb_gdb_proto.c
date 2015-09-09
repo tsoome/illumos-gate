@@ -25,8 +25,9 @@ decode_hex_digit(char a)
 		a = a - 'a' + 10;
 	else if (a >= 'A' && a <= 'F')
 		a = a - 'A' + 10;
-	else
+	else {
 		ASSERT(0);
+	}
 
 	return a;
 }
@@ -63,19 +64,15 @@ intify(uint8_t *buf, size_t len)
 static void
 xwrite(int fd, const void *buf, size_t len)
 {
-	ssize_t ret;
 
-	ret = write(fd, buf, len);
-	ASSERT(ret == len);
+	(void) write(fd, buf, len);
 }
 
 static void
 xread(int fd, void *buf, size_t len)
 {
-	ssize_t ret;
 
-	ret = read(fd, buf, len);
-	ASSERT(ret == len);
+	(void) read(fd, buf, len);
 }
 
 static unsigned char
@@ -135,7 +132,7 @@ static void comm_sendcmd(gdb_data_t *tgt, const char *cmd, size_t len)
 	char tmp[3];
 	size_t i;
 
-	snprintf(tmp, sizeof(tmp), "%02x", cksum(cmd, len));
+	(void) snprintf(tmp, sizeof(tmp), "%02x", cksum(cmd, len));
 
 	xwrite(tgt->fd, "$", 1);
 	xwrite(tgt->fd, cmd, len);
@@ -222,7 +219,7 @@ send_cmd(gdb_data_t *tgt, const char *cmdtosend)
 static void
 send_cmd_noreply(gdb_data_t *tgt, const char *cmdtosend)
 {
-	__send_cmd(tgt, cmdtosend, B_FALSE);
+	(void) __send_cmd(tgt, cmdtosend, B_FALSE);
 }
 
 /* like send_cmd, but it asserts that the response is "OK" */
@@ -299,7 +296,7 @@ gdb_comm_get_regs(gdb_data_t *tgt)
 			}
 		}
 
-		mdb_nv_insert(&tgt->regs, regs[i].name, NULL,
+		(void) mdb_nv_insert(&tgt->regs, regs[i].name, NULL,
 		    intify(buf, binlen), 0);
 	}
 
@@ -320,9 +317,9 @@ gdb_comm_select_thread(gdb_data_t *tgt, gdb_tid_t tid)
 	 */
 
 	if (tid == GDB_TID_ALL)
-		snprintf(cmd, sizeof(cmd), "Hg-1");
+		(void) snprintf(cmd, sizeof(cmd), "Hg-1");
 	else
-		snprintf(cmd, sizeof(cmd), "Hg%x", tid);
+		(void) snprintf(cmd, sizeof(cmd), "Hg%x", tid);
 
 	send_cmd_OK(tgt, cmd);
 }
@@ -340,15 +337,14 @@ gdb_comm_get_mem_byte(gdb_data_t *tgt, uint8_t *byte, uint64_t addr)
 	 * s: <many hex digits with memory bytes values>
 	 */
 
-	snprintf(cmd, sizeof(cmd), "m%llx,1", addr);
+	(void) snprintf(cmd, sizeof(cmd), "m%llx,1", addr);
 
 	reply = send_cmd(tgt, cmd);
 
 	len = unhexdump(reply->buf);
 
-	ASSERT(len == 1);
-
-	*byte = reply->buf[0];
+	if (len == 1)
+		*byte = reply->buf[0];
 
 	free_reply(reply);
 }
