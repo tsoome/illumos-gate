@@ -58,6 +58,9 @@ mdb_create_builtin_tgts(void)
 	if ((mp = mdb_module_load_builtin("mdb_bhyve")) != NULL)
 		mp->mod_tgt_ctor = mdb_bhyve_tgt_create;
 #endif
+
+	if ((mp = mdb_module_load_builtin("mdb_gdb")) != NULL)
+		mp->mod_tgt_ctor = mdb_gdb_tgt_create;
 }
 
 void

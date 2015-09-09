@@ -55,6 +55,6 @@ include $(SRC)/Makefile.psm
 
 CPPFLAGS += -I../../mdb
 
-LDLIBS += -lsaveargs -lvmm
+LDLIBS += -lsaveargs -lvmm -lsocket
 
 install: all $(ISAEXEC) $(ROOTPROG64) $(ROOTLINK64)
