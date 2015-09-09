@@ -39,13 +39,21 @@ GNOTSUP(lookup_by_name)
 GNOTSUP(symbol_iter)
 GNOTSUP(mapping_iter)
 GNOTSUP(run)
-GNOTSUP(step)
+
+/*
+ * ::step [ over | out ] [SIG]
+ */
+static int
+gdb_step(mdb_tgt_t *target, mdb_tgt_status_t *tstatus)
+{
+	mdb_printf("gdb_step\n");
+	return (DCMD_USAGE);
+}
+
 GNOTSUP(step_out)
-GNOTSUP(step_branch)
 GNOTSUP(next)
 GNOTSUP(signal)
 GNOTSUP(setareg)
-GNOTSUP(auxv)
 GNOTSUP(vwrite)
 
 GNULL(addr_to_map)
@@ -64,6 +72,12 @@ GNULL(add_fault)
 
 GNOP(deactivate)
 GNOP(stack_iter)
+
+static int
+gdb_auxv(mdb_tgt_t *t, const auxv_t **auxvp)
+{
+	return (0);
+}
 
 static int
 gdb_regs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
@@ -221,11 +235,11 @@ static int
 gdb_uname(mdb_tgt_t *t, struct utsname *utsp)
 {
 	TRACE("");
-	strcpy(utsp->sysname, "sysname");
-	strcpy(utsp->nodename, "nodename");
-	strcpy(utsp->release, "release");
-	strcpy(utsp->version, "version");
-	strcpy(utsp->machine, "machine");
+	(void) strcpy(utsp->sysname, "sysname");
+	(void) strcpy(utsp->nodename, "nodename");
+	(void) strcpy(utsp->release, "release");
+	(void) strcpy(utsp->version, "version");
+	(void) strcpy(utsp->machine, "machine");
 
 	return (0);
 }
@@ -260,13 +274,6 @@ gdb_lookup_by_addr(mdb_tgt_t *t, uintptr_t addr, uint_t flags,
 }
 
 static int
-gdb_object_iter(mdb_tgt_t *t, mdb_tgt_map_f *f, void *private)
-{
-	TRACE("");
-	return (0);
-}
-
-static int
 gdb_cont(mdb_tgt_t *t, mdb_tgt_status_t *tsp)
 {
 	/* XXX: this should block waiting for ^C or similar */
@@ -286,7 +293,7 @@ gdb_getareg(mdb_tgt_t *t, mdb_tgt_tid_t tid, const char *rname,
 	mdb_var_t *v;
 	int ret;
 
-	gdb_comm_get_regs(data);
+	(void) gdb_comm_get_regs(data);
 
 	if ((v = mdb_nv_lookup(&data->regs, rname))) {
 		*rp = mdb_nv_get_value(v);
@@ -301,58 +308,56 @@ gdb_getareg(mdb_tgt_t *t, mdb_tgt_tid_t tid, const char *rname,
 void mdb_gdb_tgt_destroy(mdb_tgt_t *t);
 
 static const mdb_tgt_ops_t gdb_ops = {
-	(int (*)()) gdb_setflags,		/* t_setflags */
-	gdb_setcontext,				/* t_setcontext */
-	gdb_activate,				/* t_activate */
-	(void (*)()) gdb_deactivate,		/* t_deactivate */
-	gdb_periodic,				/* t_periodic */
-	mdb_gdb_tgt_destroy,			/* t_destroy */
-	gdb_name,				/* t_name */
-	gdb_isa,				/* t_isa */
-	gdb_platform,				/* t_platform */
-	gdb_uname,				/* t_uname */
-	gdb_dmodel,				/* t_dmodel */
-	(ssize_t (*)()) gdb_aread,		/* t_aread */
-	(ssize_t (*)()) gdb_awrite,		/* t_awrite */
-	gdb_vread,				/* t_vread */
-	(ssize_t (*)()) gdb_vwrite,		/* t_vwrite */
-	(ssize_t (*)()) mdb_tgt_notsup,		/* t_pread */
-	(ssize_t (*)()) mdb_tgt_notsup,		/* t_pwrite */
-	(ssize_t (*)()) mdb_tgt_notsup,		/* t_fread */
-	(ssize_t (*)()) mdb_tgt_notsup,		/* t_fwrite */
-	(ssize_t (*)()) mdb_tgt_notsup,		/* t_ioread */
-	(ssize_t (*)()) mdb_tgt_notsup,		/* t_iowrite */
-	(int (*)()) mdb_tgt_notsup,		/* t_vtop */
-	(int (*)()) gdb_lookup_by_name,		/* t_lookup_by_name */
-	gdb_lookup_by_addr,			/* t_lookup_by_addr */
-	(int (*)()) gdb_symbol_iter,		/* t_symbol_iter */
-	(int (*)()) gdb_mapping_iter,		/* t_mapping_iter */
-	gdb_object_iter,			/* t_object_iter */
-	(const mdb_map_t *(*)()) gdb_addr_to_map,/* t_addr_to_map */
-	(const mdb_map_t *(*)()) gdb_name_to_map,/* t_name_to_map */
-	(struct ctf_file *(*)()) gdb_addr_to_ctf,/* t_addr_to_ctf */
-	(struct ctf_file *(*)()) gdb_name_to_ctf,/* t_name_to_ctf */
-	gdb_status,				/* t_status */
-	(int (*)()) gdb_run,			/* t_run */
-	(int (*)()) gdb_step,			/* t_step */
-	(int (*)()) gdb_step_out,		/* t_step_out */
-	(int (*)()) gdb_step_branch,		/* t_step_branch */
-	(int (*)()) gdb_next,			/* t_next */
-	gdb_cont,				/* t_cont */
-	(int (*)()) gdb_signal,			/* t_signal */
-	(int (*)()) gdb_add_vbrkpt,		/* t_add_vbrkpt */
-	(int (*)()) gdb_add_sbrkpt,		/* t_add_sbrkpt */
-	(int (*)()) gdb_add_pwapt,		/* t_add_pwapt */
-	(int (*)()) gdb_add_vwapt,		/* t_add_vwapt */
-	(int (*)()) gdb_add_iowapt,		/* t_add_iowapt */
-	(int (*)()) gdb_add_sysenter,		/* t_add_sysenter */
-	(int (*)()) gdb_add_sysexit,		/* t_add_sysexit */
-	(int (*)()) gdb_add_signal,		/* t_add_signal */
-	(int (*)()) gdb_add_fault,		/* t_add_fault */
-	gdb_getareg,				/* t_getareg */
-	(int (*)()) gdb_setareg,		/* t_putareg */
-	(int (*)()) gdb_stack_iter,		/* t_stack_iter */
-	(int (*)()) gdb_auxv,			/* t_auxv */
+	.t_setflags = (int (*)()) gdb_setflags,
+	.t_setcontext = gdb_setcontext,
+	.t_activate = gdb_activate,
+	.t_deactivate = (void (*)()) gdb_deactivate,
+	.t_periodic = gdb_periodic,
+	.t_destroy = mdb_gdb_tgt_destroy,
+	.t_name = gdb_name,
+	.t_isa = gdb_isa,
+	.t_platform = gdb_platform,
+	.t_uname = gdb_uname,
+	.t_dmodel = gdb_dmodel,
+	.t_aread = (ssize_t (*)()) gdb_aread,
+	.t_awrite = (ssize_t (*)()) gdb_awrite,
+	.t_vread = gdb_vread,
+	.t_vwrite = (ssize_t (*)()) gdb_vwrite,
+	.t_pread = (ssize_t (*)()) mdb_tgt_notsup,
+	.t_pwrite = (ssize_t (*)()) mdb_tgt_notsup,
+	.t_fread = (ssize_t (*)()) mdb_tgt_notsup,
+	.t_fwrite = (ssize_t (*)()) mdb_tgt_notsup,
+	.t_ioread = (ssize_t (*)()) mdb_tgt_notsup,
+	.t_iowrite = (ssize_t (*)()) mdb_tgt_notsup,
+	.t_vtop = (int (*)()) mdb_tgt_notsup,
+	.t_lookup_by_name = (int (*)()) gdb_lookup_by_name,
+	.t_lookup_by_addr = gdb_lookup_by_addr,
+	.t_symbol_iter = (int (*)()) gdb_symbol_iter,
+	.t_mapping_iter = (int (*)()) gdb_mapping_iter,
+	.t_addr_to_map = (const mdb_map_t *(*)()) gdb_addr_to_map,
+	.t_name_to_map = (const mdb_map_t *(*)()) gdb_name_to_map,
+	.t_addr_to_ctf = (struct ctf_file *(*)()) gdb_addr_to_ctf,
+	.t_name_to_ctf = (struct ctf_file *(*)()) gdb_name_to_ctf,
+	.t_status = gdb_status,
+	.t_run = (int (*)()) gdb_run,
+	.t_step = (int (*)()) gdb_step,
+	.t_step_out = (int (*)()) gdb_step_out,
+	.t_next = (int (*)()) gdb_next,
+	.t_cont = gdb_cont,
+	.t_signal = (int (*)()) gdb_signal,
+	.t_add_vbrkpt = (int (*)()) gdb_add_vbrkpt,
+	.t_add_sbrkpt = (int (*)()) gdb_add_sbrkpt,
+	.t_add_pwapt = (int (*)()) gdb_add_pwapt,
+	.t_add_vwapt = (int (*)()) gdb_add_vwapt,
+	.t_add_iowapt = (int (*)()) gdb_add_iowapt,
+	.t_add_sysenter = (int (*)()) gdb_add_sysenter,
+	.t_add_sysexit = (int (*)()) gdb_add_sysexit,
+	.t_add_signal = (int (*)()) gdb_add_signal,
+	.t_add_fault = (int (*)()) gdb_add_fault,
+	.t_getareg = gdb_getareg,
+	.t_putareg = (int (*)()) gdb_setareg,
+	.t_stack_iter = (int (*)()) gdb_stack_iter,
+	.t_auxv = gdb_auxv
 };
 
 #include <sys/types.h>
@@ -363,32 +368,74 @@ int
 mdb_gdb_tgt_create(mdb_tgt_t *t, int argc, const char *argv[])
 {
 	extern const struct mdb_gdb_tgt mdb_gdb_tgt_ia32;
-	struct addrinfo hints, *res;
+	struct addrinfo hints, *res, *r;
 	gdb_data_t *data;
-	int i;
+	char *target = NULL, *host, *port;
+	int rv, tlen = 0;
 
-	for (i = 0; i < argc; i++)
-		mdb_printf("arg[%d] = '%s'\n", i, argv[i]);
+	host = "localhost";
+	port = "1234";
 
-	data = mdb_zalloc(sizeof (gdb_data_t), UM_SLEEP);
+	if (argc == 1) {
+		target = strdup(argv[0]);
+		tlen = strlen(target);
+		if (target[tlen-1] != ']' && strrchr(target, ':') != NULL) {
+			port = strrchr(target, ':');
+			if (target != port)
+				host = target;
+			*port++ = '\0';
+		} else
+			host = target;
+	}
+	if (*host == '[') {
+		int len = strlen(host);
+		host[len-1] = '\0';
+		host++;
+	}
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	getaddrinfo(host, port, &hints, &res);
+	if ((rv = getaddrinfo(host, port, &hints, &res)) != 0) {
+		mdb_printf("failed to resolve '%s:%s': %s\n", host, port,
+		    gai_strerror(rv));
 
-	data->fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	connect(data->fd, res->ai_addr, res->ai_addrlen);
+		if (target != NULL)
+			mdb_free(target, tlen+1);
+		return (-1);
+	}
 
-	if (data->fd == -1) {
+	data = mdb_zalloc(sizeof (gdb_data_t), UM_SLEEP);
+
+	for (r = res; r != NULL; r = r->ai_next) {
+		data->fd = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
+		if (data->fd == -1)
+			continue;
+
+		rv = connect(data->fd, r->ai_addr, r->ai_addrlen);
+		if (rv == -1) {
+			(void) close(data->fd);
+			continue;
+		}
+		break;
+	}
+	if (r == NULL) {
+		mdb_printf("failed to connect '%s:%s'\n", host, port);
+		if (data->fd != -1)
+			(void) close(data->fd);
+		if (target != NULL)
+			mdb_free(target, tlen + 1);
 		mdb_free(data, sizeof (gdb_data_t));
 		return (-1);
 	}
 
+	if (target != NULL)
+		mdb_free(target, tlen+1);
+
 	data->tgt = &mdb_gdb_tgt_ia32;
 	data->tid = 0;
-	mdb_nv_create(&data->regs, UM_SLEEP);
+	(void) mdb_nv_create(&data->regs, UM_SLEEP);
 
 	t->t_ops = &gdb_ops;
 	t->t_data = data;
@@ -401,7 +448,7 @@ mdb_gdb_tgt_destroy(mdb_tgt_t *t)
 {
 	gdb_data_t *data = t->t_data;
 
-	close(data->fd);
+	(void) close(data->fd);
 	mdb_nv_destroy(&data->regs);
 
 	mdb_free(data, sizeof (gdb_data_t));
