@@ -120,6 +120,7 @@ extern "C" {
 #define	A_STATE_CSI			2
 #define	A_STATE_CSI_QMARK		3
 #define	A_STATE_CSI_EQUAL		4
+#define	A_STATE_OSC			5
 
 /*
  * Default number of rows and columns

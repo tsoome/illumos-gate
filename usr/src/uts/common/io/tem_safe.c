@@ -489,6 +489,19 @@ tem_safe_control(struct tem_vt_state *tem, tem_char_t ch, cred_t *credp,
 		}
 		break;
 
+	case A_OSC:
+		{
+			int i;
+			tem->tvs_curparam = 0;
+			tem->tvs_paramval = 0;
+			tem->tvs_gotparam = B_FALSE;
+			/* clear the parameters */
+			for (i = 0; i < TEM_MAXPARAMS; i++)
+				tem->tvs_params[i] = -1;
+			tem->tvs_state = A_STATE_OSC;
+		}
+		break;
+
 	case A_GS:
 		tem_safe_back_tab(tem, credp, called_from);
 		break;
@@ -1045,6 +1058,61 @@ tem_safe_getparams(struct tem_vt_state *tem, tem_char_t ch,
 }
 
 /*
+ * Gather the OSC string.
+ * OSC Ps ; Pt ST
+ * OSC Ps ; Pt BEL
+ * Ps is number sequence identifying the function. We only support
+ * Ps = 4 and Ps = 104.
+ * Quite obviously this is nowhere close to be done;)
+ */
+/* ARGSUSED */
+static void
+tem_safe_get_oscstring(struct tem_vt_state *tem, uchar_t ch,
+    cred_t *credp __unused, enum called_from called_from)
+{
+	ASSERT((called_from == CALLED_FROM_STANDALONE) ||
+	    MUTEX_HELD(&tem->tvs_lock));
+
+	/* Should we cancel? */
+	if (ch == A_CAN || ch == A_SUB || ch == A_ESC) {
+		tem->tvs_state = A_STATE_START;
+		return;
+	}
+
+	/* following two if statements will read in the numeric parameter */
+	if (ch >= '0' && ch <= '9') {
+		tem->tvs_paramval = ((tem->tvs_paramval * 10) + (ch - '0'));
+		tem->tvs_gotparam = B_TRUE;  /* Remember got parameter */
+		return; /* Return immediately */
+	}
+
+	if (tem->tvs_gotparam && ch == ';') {
+		/* get the parameter value */
+		tem->tvs_params[tem->tvs_curparam] = tem->tvs_paramval;
+		tem->tvs_curparam++;
+		tem->tvs_gotparam = B_FALSE;
+		tem->tvs_paramval = 0;
+	}
+
+	if (tem->tvs_curparam == 0) {
+		/* bad sequence */
+		tem->tvs_state = A_STATE_START;
+		return;
+	}
+	if (tem->tvs_gotparam == B_FALSE && tem->tvs_curparam > 0) {
+		if (tem->tvs_params[0] != 4 && tem->tvs_params[0] != 104) {
+			/* make sure tvs_params will not get filled up */
+			tem->tvs_curparam = 1;
+		}
+	}
+	if (ch == A_ST || ch == A_BEL) {
+		/* done */
+		tem->tvs_state = A_STATE_START;
+		return;
+	}
+}
+
+/*
  * Add character to internal buffer.
  * When its full, send it to the next layer.
  */
@@ -1199,7 +1267,7 @@ tem_safe_parse(struct tem_vt_state *tem, tem_char_t ch,
 	    MUTEX_HELD(&tem->tvs_lock));
 
 	if (tem->tvs_state == A_STATE_START) {	/* Normal state? */
-		if (ch == A_CSI || ch == A_ESC || ch < ' ') {
+		if (ch == A_CSI || ch == A_OSC || ch == A_ESC || ch < ' ') {
 			/* Control */
 			tem_safe_control(tem, ch, credp, called_from);
 		} else {
@@ -1211,6 +1279,11 @@ tem_safe_parse(struct tem_vt_state *tem, tem_char_t ch,
 
 	/* In <ESC> sequence */
 	if (tem->tvs_state != A_STATE_ESC) {	/* Need to get parameters? */
+		if (tem->tvs_state == A_STATE_OSC) {
+			tem_safe_get_oscstring(tem, ch, credp, called_from);
+			return;
+		}
+
 		if (tem->tvs_state != A_STATE_CSI) {
 			tem_safe_getparams(tem, ch, credp, called_from);
 			return;
@@ -1321,6 +1394,14 @@ tem_safe_parse(struct tem_vt_state *tem, tem_char_t ch,
 		for (i = 0; i < TEM_MAXPARAMS; i++)
 			tem->tvs_params[i] = -1;
 		tem->tvs_state = A_STATE_CSI;
+	} else if (ch == ']') {
+		tem->tvs_curparam = 0;
+		tem->tvs_paramval = 0;
+		tem->tvs_gotparam = B_FALSE;
+		/* clear the parameters */
+		for (i = 0; i < TEM_MAXPARAMS; i++)
+			tem->tvs_params[i] = -1;
+		tem->tvs_state = A_STATE_OSC;
 	} else if (ch == 'Q') {	/* <ESC>Q ? */
 		tem->tvs_state = A_STATE_START;
 	} else if (ch == 'C') {	/* <ESC>C ? */
