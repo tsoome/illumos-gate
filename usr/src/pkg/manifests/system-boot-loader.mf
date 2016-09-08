@@ -48,7 +48,10 @@ $(i386_ONLY)file path=boot/cdboot group=sys mode=0444
 $(i386_ONLY)file path=boot/defaults/loader.conf group=sys mode=0444
 $(i386_ONLY)file path=boot/forth/beadm.4th group=sys mode=0444
 $(i386_ONLY)file path=boot/forth/beastie.4th group=sys mode=0444
+$(i386_ONLY)file path=boot/forth/brand-dilos.4th group=sys mode=0444
+$(i386_ONLY)file path=boot/forth/brand-hipster.4th group=sys mode=0444
 $(i386_ONLY)file path=boot/forth/brand-illumos.4th group=sys mode=0444
+$(i386_ONLY)file path=boot/forth/brand-omnios.4th group=sys mode=0444
 $(i386_ONLY)file path=boot/forth/brand.4th group=sys mode=0444
 $(i386_ONLY)file path=boot/forth/check-password.4th group=sys mode=0444
 $(i386_ONLY)file path=boot/forth/color.4th group=sys mode=0444
