@@ -201,7 +201,7 @@ int zfs_err_to_be_err(libzfs_handle_t *);
 int errno_to_be_err(int);
 
 /* be_activate.c */
-int _be_activate(char *);
+int _be_activate(char *, int);
 int be_activate_current_be(void);
 boolean_t be_is_active_on_boot(char *);
 

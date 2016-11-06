@@ -126,6 +126,7 @@ struct zpool_handle {
 	nvlist_t *zpool_old_config;
 	nvlist_t *zpool_props;
 	diskaddr_t zpool_start_block;
+	char *zpool_nextboot;
 };
 
 typedef enum {

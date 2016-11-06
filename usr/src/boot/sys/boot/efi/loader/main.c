@@ -294,6 +294,8 @@ static bool
 probe_zfs_currdev(uint64_t guid)
 {
 	struct zfs_devdesc currdev;
+	char *buf;
+	bool rv;
 
 	currdev.dd.d_dev = &zfs_dev;
 	currdev.dd.d_unit = 0;
@@ -301,7 +303,17 @@ probe_zfs_currdev(uint64_t guid)
 	currdev.root_guid = 0;
 	set_currdev_devdesc((struct devdesc *)&currdev);
 
-	return (sanity_check_currdev());
+	rv = sanity_check_currdev();
+	if (rv) {
+		buf = malloc(8 * 1024);
+		if (buf != NULL) {
+			if (zfs_nextboot(&currdev, buf, 8 * 1024) == 0) {
+				printf("zfs_nextboot: %s\n", buf);
+			}
+			free(buf);
+		}
+	}
+	return (rv);
 }
 
 static bool

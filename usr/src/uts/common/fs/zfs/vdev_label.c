@@ -1162,6 +1162,136 @@ retry:
 }
 
 /*
+ * Label pad2 read/write. We use pad2 for temporary bootfs property,
+ * if temporary bootfs is set, we store the value on all pad2 instances.
+ * On read, if there is unset value in pad2 instance, consider the
+ * temporary bootfs unset.
+ */
+static void
+vdev_label_read_pad2_done(zio_t *zio)
+{
+	vdev_t *vd = zio->io_vd;
+	spa_t *spa = zio->io_spa;
+	zio_t *rio = zio->io_private;
+	char *pad2 = abd_to_buf(zio->io_abd);
+	abd_t **cb_abd = rio->io_private;
+
+	ASSERT3U(zio->io_size, ==, VDEV_PAD_SIZE);
+
+	if (zio->io_error == 0) {
+		mutex_enter(&rio->io_lock);
+		if (*cb_abd == NULL) {
+			/* Will free this buffer in vdev_label_read_pad2. */
+			*cb_abd = zio->io_abd;
+			mutex_exit(&rio->io_lock);
+			return;
+		}
+		if (*pad2 == '\0') {
+			char *data;
+
+			data = abd_to_buf(*cb_abd);
+			*data = '\0';
+		}
+		mutex_exit(&rio->io_lock);
+	}
+
+	abd_free(zio->io_abd);
+}
+
+static void
+vdev_label_read_pad2_impl(zio_t *zio, vdev_t *vd, int flags)
+{
+	for (int c = 0; c < vd->vdev_children; c++)
+		vdev_label_read_pad2_impl(zio, vd->vdev_child[c], flags);
+
+	if (vd->vdev_ops->vdev_op_leaf && vdev_readable(vd)) {
+		for (int l = 0; l < VDEV_LABELS; l++) {
+			vdev_label_read(zio, vd, l,
+			abd_alloc_linear(VDEV_PAD_SIZE, B_TRUE),
+			offsetof(vdev_label_t, vl_pad2),
+			VDEV_PAD_SIZE,
+			vdev_label_read_pad2_done, zio, flags);
+		}
+	}
+}
+
+void
+vdev_label_read_pad2(vdev_t *rvd, nvlist_t *command)
+{
+	zio_t *zio;
+	spa_t *spa = rvd->vdev_spa;
+	abd_t *cb_abd = NULL;
+	char *cb;
+	int flags = ZIO_FLAG_CONFIG_WRITER | ZIO_FLAG_CANFAIL |
+	    ZIO_FLAG_SPECULATIVE | ZIO_FLAG_TRYHARD;
+
+	ASSERT(command);
+	ASSERT(spa_config_held(spa, SCL_ALL, RW_WRITER) == SCL_ALL);
+
+	zio = zio_root(spa, NULL, &cb_abd, flags);
+	vdev_label_read_pad2_impl(zio, rvd, flags);
+	(void) zio_wait(zio);
+
+	if (cb_abd != NULL) {
+		cb = abd_to_buf(cb_abd);
+		if (*cb != '\0')
+			fnvlist_add_string(command, "command", cb);
+		/* cb_abd was allocated in vdev_label_read_pad2_impl() */
+		abd_free(cb_abd);
+	}
+}
+
+int
+vdev_label_write_pad2(vdev_t *vd, const char *buf, size_t size)
+{
+	spa_t *spa = vd->vdev_spa;
+	zio_t *zio;
+	abd_t *pad2_abd;
+	char *pad2;
+	int flags = ZIO_FLAG_CONFIG_WRITER | ZIO_FLAG_CANFAIL;
+	int error = ENXIO, err;
+
+	if (size > VDEV_PAD_SIZE)
+		return (EINVAL);
+
+	ASSERT(spa_config_held(spa, SCL_ALL, RW_WRITER) == SCL_ALL);
+
+	for (int c = 0; c < vd->vdev_children; c++) {
+		err = vdev_label_write_pad2(vd->vdev_child[c], buf, size);
+		/* Return "best" error. */
+		if (err == 0)
+			error = err;
+	}
+
+	if (!vd->vdev_ops->vdev_op_leaf || !vdev_writeable(vd) ||
+	    vdev_is_dead(vd))
+		return (error);
+
+	pad2_abd = abd_alloc_linear(VDEV_PAD_SIZE, B_TRUE);
+	abd_zero(pad2_abd, VDEV_PAD_SIZE);
+	pad2 = abd_to_buf(pad2_abd);
+	if (buf != NULL)
+		memcpy(pad2, buf, size);
+
+retry:
+	zio = zio_root(spa, NULL, NULL, flags);
+	for (int l = 0; l < VDEV_LABELS; l++) {
+		vdev_label_write(zio, vd, l, pad2_abd,
+		offsetof(vdev_label_t, vl_pad2),
+		VDEV_PAD_SIZE, NULL, NULL, flags);
+	}
+
+	error = zio_wait(zio);
+	if (error != 0 && !(flags & ZIO_FLAG_TRYHARD)) {
+		flags |= ZIO_FLAG_TRYHARD;
+		goto retry;
+	}
+
+	abd_free(pad2_abd);
+	return (error);
+}
+
+/*
  * ==========================================================================
  * uberblock load/sync
  * ==========================================================================

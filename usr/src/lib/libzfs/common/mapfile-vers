@@ -208,6 +208,7 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	zpool_get_handle;
 	zpool_get_history;
 	zpool_get_name;
+	zpool_get_nextboot;
 	zpool_get_physpath;
 	zpool_get_prop;
 	zpool_get_prop_int;
@@ -241,6 +242,7 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	zpool_reguid;
 	zpool_reopen;
 	zpool_scan;
+	zpool_set_nextboot;
 	zpool_set_prop;
 	zpool_skip_pool;
 	zpool_state_to_name;

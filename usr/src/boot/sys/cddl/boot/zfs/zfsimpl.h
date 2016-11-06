@@ -516,6 +516,14 @@ typedef struct zio_gbh {
 	offsetof(vdev_label_t, vl_uberblock[(n) << VDEV_UBERBLOCK_SHIFT(vd)])
 #define	VDEV_UBERBLOCK_SIZE(vd)		(1ULL << VDEV_UBERBLOCK_SHIFT(vd))
 
+/*
+ * Data type for pad2 area.
+ */
+typedef struct vdev_label_pad2 {
+	char		vlp_nvlist[VDEV_PAD_SIZE - sizeof (zio_eck_t)];
+	zio_eck_t	vlp_zbt;
+} vdev_label_pad2_t;
+
 typedef struct vdev_phys {
 	char		vp_nvlist[VDEV_PHYS_SIZE - sizeof (zio_eck_t)];
 	zio_eck_t	vp_zbt;
@@ -523,7 +531,7 @@ typedef struct vdev_phys {
 
 typedef struct vdev_label {
 	char		vl_pad1[VDEV_PAD_SIZE];			/*  8K  */
-	char		vl_pad2[VDEV_PAD_SIZE];			/*  8K  */
+	vdev_label_pad2_t vl_pad2;				/*  8K  */
 	vdev_phys_t	vl_vdev_phys;				/* 112K	*/
 	char		vl_uberblock[VDEV_UBERBLOCK_RING];	/* 128K	*/
 } vdev_label_t;							/* 256K total */

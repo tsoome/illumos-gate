@@ -1121,6 +1121,7 @@ zpool_close(zpool_handle_t *zhp)
 	nvlist_free(zhp->zpool_config);
 	nvlist_free(zhp->zpool_old_config);
 	nvlist_free(zhp->zpool_props);
+	free(zhp->zpool_nextboot);
 	free(zhp);
 }
 
@@ -4789,4 +4790,94 @@ out:
 		zpool_close(zhp);
 	libzfs_fini(hdl);
 	return (ret);
+}
+
+int
+zpool_set_nextboot(zpool_handle_t *zhp, const char *rootds)
+{
+	zfs_cmd_t zc = { 0 };
+	nvlist_t *args;
+	char *command;
+	int error;
+
+	if (*rootds != '\0') {
+		command = zfs_asprintf(zhp->zpool_hdl, "zfs:%s:", rootds);
+	} else {
+		command = zfs_strdup(zhp->zpool_hdl, rootds);
+	}
+
+	(void) strlcpy(zc.zc_name, zhp->zpool_name, sizeof (zc.zc_name));
+
+	args = fnvlist_alloc();
+	fnvlist_add_string(args, "command", command);
+	error = zcmd_write_src_nvlist(zhp->zpool_hdl, &zc, args);
+	if (error == 0)
+		error = zfs_ioctl(zhp->zpool_hdl, ZFS_IOC_SET_NEXTBOOT, &zc);
+	zcmd_free_nvlists(&zc);
+	nvlist_free(args);
+	free(command);
+
+	/* Cache the nextboot. */
+	if (error == 0) {
+		free(zhp->zpool_nextboot);
+		zhp->zpool_nextboot = zfs_strdup(zhp->zpool_hdl, rootds);
+	}
+	return (error);
+}
+
+int
+zpool_get_nextboot(zpool_handle_t *zhp, char **command)
+{
+	zfs_cmd_t zc = { 0 };
+	nvlist_t *nv;
+	char *data;
+	int error;
+
+	if (zhp->zpool_nextboot != NULL) {
+		*command = zhp->zpool_nextboot;
+		return (0);
+	}
+
+	*command = NULL;
+	(void) strlcpy(zc.zc_name, zhp->zpool_name, sizeof (zc.zc_name));
+	if ((error = zcmd_alloc_dst_nvlist(zhp->zpool_hdl, &zc, 0)) != 0) {
+		zcmd_free_nvlists(&zc);
+		return (error);
+	}
+
+	while (zfs_ioctl(zhp->zpool_hdl, ZFS_IOC_GET_NEXTBOOT, &zc) != 0) {
+		if (errno == ENOMEM) {
+			if (zcmd_expand_dst_nvlist(zhp->zpool_hdl, &zc) != 0) {
+				zcmd_free_nvlists(&zc);
+				return (errno);
+			}
+		} else {
+			zcmd_free_nvlists(&zc);
+			return (errno);
+		}
+	}
+	error = zcmd_read_dst_nvlist(zhp->zpool_hdl, &zc, &nv);
+	zcmd_free_nvlists(&zc);
+	if (error == 0) {
+		if (nvlist_lookup_string(nv, "command", &data) == 0) {
+			char *p = data;
+			int len;
+
+			/* Extract dataset name from "zfs:dataset:" string. */
+			if (*data != '\0') {
+				p = strchr(data, ':');
+				if (p != NULL)
+					p++;
+			}
+			zhp->zpool_nextboot = zfs_strdup(zhp->zpool_hdl, p);
+			len = strlen(zhp->zpool_nextboot);
+			if (zhp->zpool_nextboot[len - 1] == ':')
+				zhp->zpool_nextboot[len - 1] = '\0';
+		} else {
+			zhp->zpool_nextboot = zfs_strdup(zhp->zpool_hdl, "");
+		}
+		nvlist_free(nv);
+		*command = zhp->zpool_nextboot;
+	}
+	return (error);
 }

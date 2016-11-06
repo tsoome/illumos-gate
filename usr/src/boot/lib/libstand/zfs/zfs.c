@@ -461,6 +461,111 @@ error:
 }
 
 static int
+vdev_write(vdev_t *vdev __unused, void *priv, off_t offset, void *buf,
+    size_t size)
+{
+	int fd;
+	ssize_t rv;
+
+	fd = (uintptr_t)priv;
+	lseek(fd, offset, SEEK_SET);
+	rv = write(fd, buf, size);
+	if (rv < 0 || (size_t)rv != size)
+		return (EIO);
+
+	return 0;
+}
+
+static void
+vdev_clear_pad2(vdev_t *vdev)
+{
+	vdev_t *kid;
+	vdev_label_pad2_t *pad;
+	off_t off = offsetof(vdev_label_t, vl_pad2);
+	zio_checksum_info_t *ci;
+	zio_cksum_t cksum;
+
+	STAILQ_FOREACH(kid, &vdev->v_children, v_childlink) {
+		if (kid->v_state != VDEV_STATE_HEALTHY)
+			continue;
+		vdev_clear_pad2(kid);
+	}
+
+	if (!STAILQ_EMPTY(&vdev->v_children))
+		return;
+
+	pad = calloc(1, sizeof (*pad));
+	if (pad == NULL) {
+		printf("failed to clear pad2 area: out of memory\n");
+		return;
+	}
+
+	ci = &zio_checksum_table[ZIO_CHECKSUM_LABEL];
+	pad->vlp_zbt.zec_magic = ZEC_MAGIC;
+	zio_checksum_label_verifier(&pad->vlp_zbt.zec_cksum, off);
+	ci->ci_func[0](pad, sizeof (*pad), NULL, &cksum);
+	pad->vlp_zbt.zec_cksum = cksum;
+
+	if (vdev_write(vdev, vdev->v_read_priv, off, pad, VDEV_PAD_SIZE)) {
+		printf("failed to clear pad2 area of primary vdev: %d\n",
+		    errno);
+	}
+	free(pad);
+}
+
+/*
+ * Read the next boot command from pad2.
+ * If any instance of pad2 is set to empty string, or the returned string
+ * values are not the same, we consider next boot not to be set.
+ */
+static char *
+vdev_read_pad2(vdev_t *vdev)
+{
+	vdev_t *kid;
+	char *tmp, *result = NULL;
+	vdev_label_pad2_t *pad;
+	off_t off = offsetof(vdev_label_t, vl_pad2);
+
+	STAILQ_FOREACH(kid, &vdev->v_children, v_childlink) {
+		if (kid->v_state != VDEV_STATE_HEALTHY)
+			continue;
+		tmp = vdev_read_pad2(kid);
+		if (tmp == NULL)
+			continue;
+
+		/* The next boot is not set, we are done. */
+		if (*tmp == '\0') {
+			free(result);
+			return (tmp);
+		}
+		if (result == NULL) {
+			result = tmp;
+			continue;
+		}
+		/* Are the next boot strings different? */
+		if (strcmp(result, tmp) != 0) {
+			free(tmp);
+			*result = '\0';
+			break;
+		}
+		free(tmp);
+	}
+	if (result != NULL)
+		return (result);
+
+	pad = malloc(sizeof (*pad));
+	if (pad == NULL)
+		return (NULL);
+
+	if (vdev_read(vdev, vdev->v_read_priv, off, pad, sizeof (*pad))) {
+		return (NULL);
+	}
+
+	result = strdup(pad->vlp_nvlist);
+	return (result);
+}
+
+static int
 zfs_dev_init(void)
 {
 	spa_t *spa;
@@ -540,7 +645,7 @@ zfs_probe_partition(void *arg, const char *partname,
 	strncpy(devname, ppa->devname, strlen(ppa->devname) - 1);
 	devname[strlen(ppa->devname) - 1] = '\0';
 	sprintf(devname, "%s%s:", devname, partname);
-	pa.fd = open(devname, O_RDONLY);
+	pa.fd = open(devname, O_RDWR);
 	if (pa.fd == -1)
 		return (ret);
 	ret = zfs_probe(pa.fd, ppa->pool_guid);
@@ -565,6 +670,57 @@ zfs_probe_partition(void *arg, const char *partname,
 }
 
 int
+zfs_nextboot(void *vdev, char *buf, size_t size)
+{
+	struct zfs_devdesc *dev = (struct zfs_devdesc *)vdev;
+	spa_t *spa;
+	vdev_t *vd;
+	char *result = NULL;
+
+	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
+		return (1);
+
+	if (dev->pool_guid == 0)
+		spa = STAILQ_FIRST(&zfs_pools);
+		else
+	spa = spa_find_by_guid(dev->pool_guid);
+
+	if (spa == NULL) {
+		printf("ZFS: can't find pool by guid\n");
+		return (1);
+	}
+
+	STAILQ_FOREACH(vd, &spa->spa_root_vdev->v_children, v_childlink) {
+		char *tmp = vdev_read_pad2(vd);
+
+		/* Continue on error. */
+		if (tmp == NULL)
+			continue;
+		/* Nextboot is not set. */
+		if (*tmp == '\0') {
+			free(result);
+			free(tmp);
+			return (1);
+		}
+		if (result == NULL) {
+			result = tmp;
+			continue;
+		}
+		free(tmp);
+	}
+	if (result == NULL)
+		return (1);
+
+	STAILQ_FOREACH(vd, &spa->spa_root_vdev->v_children, v_childlink) {
+		vdev_clear_pad2(vd);
+	}
+
+	strlcpy(buf, result, size);
+	free(result);
+	return (0);
+}
+
+int
 zfs_probe_dev(const char *devname, uint64_t *pool_guid)
 {
 	struct disk_devdesc *dev;
@@ -575,7 +731,7 @@ zfs_probe_dev(const char *devname, uint64_t *pool_guid)
 
 	if (pool_guid)
 		*pool_guid = 0;
-	pa.fd = open(devname, O_RDONLY);
+	pa.fd = open(devname, O_RDWR);
 	if (pa.fd == -1)
 		return (ENXIO);
 	/*

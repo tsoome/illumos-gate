@@ -3525,6 +3525,42 @@ zfs_ioc_log_history(const char *unused, nvlist_t *innvl, nvlist_t *outnvl)
 	return (error);
 }
 
+static int
+zfs_ioc_set_nextboot(const char *name, nvlist_t *innvl, nvlist_t *outnvl)
+{
+	spa_t *spa;
+	char *command;
+	int error;
+
+	if (nvlist_lookup_string(innvl, "command", &command) != 0)
+		return (EINVAL);
+
+	if ((error = spa_open(name, &spa, FTAG)) != 0)
+		return (error);
+	spa_vdev_state_enter(spa, SCL_ALL);
+	error = vdev_label_write_pad2(spa->spa_root_vdev, command,
+	    strlen(command));
+	(void) spa_vdev_state_exit(spa, NULL, 0);
+	txg_wait_synced(spa->spa_dsl_pool, 0);
+	spa_close(spa, FTAG);
+	return (error);
+}
+
+static int
+zfs_ioc_get_nextboot(const char *name, nvlist_t *innvl, nvlist_t *outnvl)
+{
+	spa_t *spa;
+	int error;
+
+	if ((error = spa_open(name, &spa, FTAG)) != 0)
+		return (error);
+	spa_vdev_state_enter(spa, SCL_ALL);
+	vdev_label_read_pad2(spa->spa_root_vdev, outnvl);
+	(void) spa_vdev_state_exit(spa, NULL, 0);
+	spa_close(spa, FTAG);
+	return (0);
+}
+
 /*
  * The dp_config_rwlock must not be held when calling this, because the
  * unmount may need to write out data.
@@ -6595,6 +6631,14 @@ zfs_ioctl_init(void)
 	    zfs_ioc_change_key, zfs_secpolicy_change_key,
 	    DATASET_NAME, POOL_CHECK_SUSPENDED | POOL_CHECK_READONLY,
 	    B_TRUE, B_TRUE);
+
+	zfs_ioctl_register("set_nextboot", ZFS_IOC_SET_NEXTBOOT,
+	    zfs_ioc_set_nextboot, zfs_secpolicy_config, POOL_NAME,
+	    POOL_CHECK_NONE, B_FALSE, B_FALSE);
+
+	zfs_ioctl_register("get_nextboot", ZFS_IOC_GET_NEXTBOOT,
+	    zfs_ioc_get_nextboot, zfs_secpolicy_config, POOL_NAME,
+	    POOL_CHECK_NONE, B_FALSE, B_FALSE);
 
 	/* IOCTLS that use the legacy function signature */
 

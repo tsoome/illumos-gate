@@ -131,6 +131,7 @@ int
 main(void)
 {
 	int auto_boot, i, fd;
+	int nextboot = 0;
 	struct disk_devdesc devdesc;
 
 	bios_getmem();
@@ -186,11 +187,22 @@ main(void)
 	if (bdev != NULL && bdev->dd.d_dev->dv_type == DEVT_ZFS) {
 		/* set up proper device name string for ZFS */
 		strncpy(boot_devname, zfs_fmtdev(bdev), sizeof (boot_devname));
+		if (zfs_nextboot(bdev, cmd, sizeof(cmd)) == 0) {
+			nextboot = 1;
+			memcpy(cmddup, cmd, sizeof(cmd));
+			if (parse_cmd()) {
+				printf("failed to parse pad2 area\n");
+				exit(0);
+			}
+			if (!OPT_CHECK(RBX_QUIET))
+				printf("zfs nextboot: %s\n", cmddup);
+			/* Do not process this command twice */
+			*cmd = 0;
+		}
 	}
 
 	/* now make sure we have bdev on all cases */
-	if (bdev != NULL)
-		free(bdev);
+	free(bdev);
 	i386_getdev((void **)&bdev, boot_devname, NULL);
 
 	env_setenv("currdev", EV_VOLATILE, boot_devname, i386_setcurrdev,
@@ -223,6 +235,10 @@ main(void)
 		/* Do not process this command twice */
 		*cmd = 0;
 	}
+
+	/* Do not risk waiting at the prompt forever. */
+	if (nextboot && !auto_boot)
+		exit(0);
 
 	/*
 	 * Try to exec stage 3 boot loader. If interrupted by a keypress,

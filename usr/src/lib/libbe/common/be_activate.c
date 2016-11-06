@@ -54,6 +54,7 @@ char	*mnttab = MNTTAB;
  * Private function prototypes
  */
 static int set_bootfs(char *boot_rpool, char *be_root_ds);
+static int set_nextboot(char *boot_rpool, char *be_root_ds);
 static int set_canmount(be_node_list_t *, char *);
 static boolean_t be_do_install_mbr(char *, nvlist_t *);
 static int be_do_installboot_helper(zpool_handle_t *, nvlist_t *, char *,
@@ -92,6 +93,8 @@ be_activate(nvlist_t *be_attrs)
 {
 	int	ret = BE_SUCCESS;
 	char	*be_name = NULL;
+	int	nextboot = -1;
+	boolean_t next_boot;
 
 	/* Initialize libzfs handle */
 	if (!be_zfs_init())
@@ -114,7 +117,12 @@ be_activate(nvlist_t *be_attrs)
 		return (BE_ERR_INVAL);
 	}
 
-	ret = _be_activate(be_name);
+	if (nvlist_lookup_boolean_value(be_attrs, BE_ATTR_ACTIVE_NEXTBOOT,
+	    &next_boot) == 0) {
+		nextboot = (int)next_boot;
+	}
+
+	ret = _be_activate(be_name, nextboot);
 
 	be_zfs_fini();
 
@@ -206,6 +214,9 @@ be_installboot(nvlist_t *be_attrs)
  * Description:	This does the actual work described in be_activate.
  * Parameters:
  *		be_name - pointer to the name of BE to activate.
+ *		nextboot - -1 ignore
+ *		B_TRUE, next boot is temporary.
+ *		B_FALSE, unset nextboot
  *
  * Return:
  *		BE_SUCCESS - Success
@@ -214,7 +225,7 @@ be_installboot(nvlist_t *be_attrs)
  *		Public
  */
 int
-_be_activate(char *be_name)
+_be_activate(char *be_name, int nextboot)
 {
 	be_transaction_data_t cb = { 0 };
 	zfs_handle_t	*zhp = NULL;
@@ -231,6 +242,9 @@ _be_activate(char *be_name)
 	 */
 
 	if (be_name == NULL)
+		return (BE_ERR_INVAL);
+
+	if (nextboot == B_TRUE && getzoneid() != GLOBAL_ZONEID)
 		return (BE_ERR_INVAL);
 
 	/* Set obe_name to be_name in the cb structure */
@@ -288,11 +302,31 @@ _be_activate(char *be_name)
 	}
 
 	if (getzoneid() == GLOBAL_ZONEID) {
-		if ((ret = set_bootfs(be_nodes->be_rpool,
-		    root_ds)) != BE_SUCCESS) {
-			be_print_err(gettext("be_activate: failed to set "
-			    "bootfs pool property for %s\n"), root_ds);
-			goto done;
+		switch (nextboot) {
+		case B_TRUE:
+			if ((ret = set_nextboot(be_nodes->be_rpool,
+			    root_ds)) != BE_SUCCESS) {
+				be_print_err(gettext("be_activate: failed to "
+				    "set nextboot for %s\n"), root_ds);
+				goto done;
+			}
+			break;
+		case B_FALSE:
+			if ((ret = set_nextboot(be_nodes->be_rpool,
+			    "")) != BE_SUCCESS) {
+				be_print_err(gettext("be_activate: failed to "
+				    "clear nextboot for %s\n"), root_ds);
+				goto done;
+			}
+			/* FALLTHROUGH */
+		default:
+			if ((ret = set_bootfs(be_nodes->be_rpool,
+			    root_ds)) != BE_SUCCESS) {
+				be_print_err(gettext("be_activate: failed to "
+				    "set bootfs pool property for %s\n"),
+				    root_ds);
+				goto done;
+			}
 		}
 	}
 
@@ -415,7 +449,7 @@ be_activate_current_be(void)
 		return (ret);
 	}
 
-	if ((ret = _be_activate(bt.obe_name)) != BE_SUCCESS) {
+	if ((ret = _be_activate(bt.obe_name, -1)) != BE_SUCCESS) {
 		be_print_err(gettext("be_activate_current_be: failed to "
 		    "activate %s\n"), bt.obe_name);
 		return (ret);
@@ -467,6 +501,46 @@ be_is_active_on_boot(char *be_name)
 /* ******************************************************************** */
 /*			Private Functions				*/
 /* ******************************************************************** */
+
+/*
+ * Function:   set_nextboot
+ * Description:        Sets the nextboot data on the boot pool to be the
+ *             root dataset of the activated BE.
+ * Parameters:
+ *             boot_pool - The pool we're setting nextboot in.
+ *             be_root_ds - The main dataset for the BE.
+ * Return:
+ *             BE_SUCCESS - Success
+ *             be_errno_t - Failure
+ * Scope:
+ *             Private
+ */
+static int
+set_nextboot(char *boot_rpool, char *be_root_ds)
+{
+	zpool_handle_t *zhp;
+	int err = BE_SUCCESS;
+
+	if ((zhp = zpool_open(g_zfs, boot_rpool)) == NULL) {
+		be_print_err(gettext("set_bootfs: failed to open pool "
+		    "(%s): %s\n"), boot_rpool, libzfs_error_description(g_zfs));
+		err = zfs_err_to_be_err(g_zfs);
+		return (err);
+	}
+
+	err = zpool_set_nextboot(zhp, be_root_ds);
+	if (err) {
+		be_print_err(gettext("set_nextboot: failed to set "
+		    "nextboot data for pool %s: %s\n"), boot_rpool,
+		    libzfs_error_description(g_zfs));
+		err = zfs_err_to_be_err(g_zfs);
+		zpool_close(zhp);
+		return (err);
+	}
+
+	zpool_close(zhp);
+	return (BE_SUCCESS);
+}
 
 /*
  * Function:	set_bootfs
