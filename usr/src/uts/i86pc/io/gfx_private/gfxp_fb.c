@@ -345,6 +345,13 @@ do_gfx_ioctl(int cmd, intptr_t data, int mode, struct gfxp_fb_softc *softc)
 			return (EFAULT);
 		break;
 
+	/* KDGET_SCRNMAP/KDSET_SCRNMAP is only supported in text mode. */
+	case KDGET_SCRNMAP:
+	case KDSET_SCRNMAP:
+		if (softc->fb_type == GFXP_BITMAP)
+			return (ENXIO);
+		return (gfxp_vga_scrnmap(cmd, data, mode, softc));
+
 	case VIS_GETIDENTIFIER:
 		if (ddi_copyout(softc->gfxp_ops->ident, (void *)data,
 		    sizeof (struct vis_identifier), mode))
