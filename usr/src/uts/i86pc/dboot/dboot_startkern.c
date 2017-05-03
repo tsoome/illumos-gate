@@ -2058,20 +2058,26 @@ build_page_tables(void)
 		end = start + fb_tagp->framebuffer_common.framebuffer_height *
 		    fb_tagp->framebuffer_common.framebuffer_pitch;
 
-		if (map_debug)
-			dboot_printf("FB 1:1 map pa=%" PRIx64 "..%" PRIx64 "\n",
-			    start, end);
-		pte_bits |= PT_NOCACHE;
-		if (PAT_support != 0)
-			pte_bits |= PT_PAT_4K;
+		/* VGA text memory is already mapped. */
+		if (fb_tagp->framebuffer_common.framebuffer_type !=
+		    MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT) {
+			if (map_debug) {
+				dboot_printf("FB 1:1 map pa=%" PRIx64 "..%"
+				    PRIx64 "\n", start, end);
+			}
 
-		while (start < end) {
-			map_pa_at_va(start, start, 0);
-			start += MMU_PAGESIZE;
+			pte_bits |= PT_NOCACHE;
+			if (PAT_support != 0)
+				pte_bits |= PT_PAT_4K;
+
+			while (start < end) {
+				map_pa_at_va(start, start, 0);
+				start += MMU_PAGESIZE;
+			}
+			pte_bits &= ~PT_NOCACHE;
+			if (PAT_support != 0)
+				pte_bits &= ~PT_PAT_4K;
 		}
-		pte_bits &= ~PT_NOCACHE;
-		if (PAT_support != 0)
-			pte_bits &= ~PT_PAT_4K;
 	}
 #endif /* !__xpv */
 
