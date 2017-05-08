@@ -2035,10 +2035,16 @@ startup_vm(void)
 	 */
 	protect_boot_range(0, kernelbase, 1);
 
+/*
 	if (fb_info.paddr != 0 && fb_info.fb_type != FB_TYPE_EGA_TEXT) {
-		protect_boot_range(fb_info.paddr, fb_info.paddr +
+		protect_boot_range((uintptr_t)fb_info.fb,
+		    (uintptr_t)fb_info.fb +
+		    P2ROUNDUP(fb_info.fb_size, MMU_PAGESIZE) + 1, 1);
+		protect_boot_range((uintptr_t)fb_info.shadow_fb,
+		    (uintptr_t)fb_info.shadow_fb +
 		    P2ROUNDUP(fb_info.fb_size, MMU_PAGESIZE) + 1, 1);
 	}
+*/
 
 	/*
 	 * Switch to running on regular HAT (not boot_mmu)
@@ -2494,10 +2500,15 @@ release_bootstrap(void)
 
 	clear_boot_mappings(0, _userlimit);
 
+#if 0
 	if (fb_info.paddr != 0 && fb_info.fb_type != FB_TYPE_EGA_TEXT) {
 		clear_boot_mappings(fb_info.paddr,
 		    P2ROUNDUP(fb_info.paddr + fb_info.fb_size, MMU_PAGESIZE));
+		clear_boot_mappings((uintptr_t)fb_info.fb,
+		    P2ROUNDUP((uintptr_t)fb_info.fb + fb_info.fb_size,
+		    MMU_PAGESIZE));
 	}
+#endif
 
 	postbootkernelbase = kernelbase;
 
