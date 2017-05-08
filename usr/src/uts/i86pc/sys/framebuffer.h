@@ -48,6 +48,7 @@ typedef struct fb_cursor {
 
 typedef struct boot_framebuffer {
 	uint64_t framebuffer;	/* native_ptr_t */
+	uint64_t boot_fb_virt;	/* native_ptr_t */
 	fb_cursor_t cursor;
 } __packed boot_framebuffer_t;
 

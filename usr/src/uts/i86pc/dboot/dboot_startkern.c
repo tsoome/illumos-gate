@@ -997,6 +997,7 @@ dboot_multiboot2_xboot_consinfo(void)
 	fbtag = dboot_multiboot2_find_tag(mb2_info,
 	    MULTIBOOT_TAG_TYPE_FRAMEBUFFER);
 	fb->framebuffer = (uint64_t)(uintptr_t)fbtag;
+	fb->boot_fb_virt = 0;
 }
 
 static int
@@ -2061,8 +2062,16 @@ build_page_tables(void)
 		/* VGA text memory is already mapped. */
 		if (fb_tagp->framebuffer_common.framebuffer_type !=
 		    MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT) {
+			uint64_t vaddr;
+
+#if defined(_BOOT_TARGET_amd64)
+			vaddr = start;
+#else
+			vaddr = (uintptr_t)mem_alloc(end - start);
+#endif
+			fb->boot_fb_virt = vaddr;
 			if (map_debug) {
-				dboot_printf("FB 1:1 map pa=%" PRIx64 "..%"
+				dboot_printf("FB map pa=%" PRIx64 "..%"
 				    PRIx64 "\n", start, end);
 			}
 
@@ -2071,8 +2080,9 @@ build_page_tables(void)
 				pte_bits |= PT_PAT_4K;
 
 			while (start < end) {
-				map_pa_at_va(start, start, 0);
+				map_pa_at_va(start, vaddr, 0);
 				start += MMU_PAGESIZE;
+				vaddr += MMU_PAGESIZE;
 			}
 			pte_bits &= ~PT_NOCACHE;
 			if (PAT_support != 0)

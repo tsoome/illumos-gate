@@ -165,6 +165,13 @@ xbi_fb_init(struct xboot_info *xbi, bcons_dev_t *bcons_dev)
 	}
 
 	fb_info.paddr = tag->framebuffer_common.framebuffer_addr;
+
+	/* frame buffer address is mapped in dboot. */
+	if (xbi_fb->boot_fb_virt != 0)
+		fb_info.fb = (uint8_t *)(uintptr_t)xbi_fb->boot_fb_virt;
+	else
+		fb_info.fb = (uint8_t *)(uintptr_t)fb_info.paddr;
+
 	fb_info.pitch = tag->framebuffer_common.framebuffer_pitch;
 	fb_info.depth = tag->framebuffer_common.framebuffer_bpp;
 	fb_info.bpp = P2ROUNDUP(fb_info.depth, 8) >> 3;
@@ -418,9 +425,6 @@ void
 boot_fb_init(int console)
 {
 	fb_info_pixel_coord_t window;
-
-	/* frame buffer address is mapped in dboot. */
-	fb_info.fb = (uint8_t *)(uintptr_t)fb_info.paddr;
 
 	boot_fb_set_font(fb_info.screen.y, fb_info.screen.x);
 	window.x = (fb_info.screen.x -
