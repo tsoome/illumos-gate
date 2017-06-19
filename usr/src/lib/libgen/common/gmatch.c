@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <libgen.h>
 #include <stdlib.h>
@@ -129,6 +127,7 @@ gmatch(const char *s, const char *p)
 	case '\\':
 		/* skip to quoted character and see if it matches */
 		Popwchar(p, c);
+		/*FALLTHRU*/
 
 	default:
 		if (c != scc)
