@@ -488,7 +488,7 @@ found :
 
 			cont_info->section_info[cont_info->
 			    num_sections].address = atoi(token);
-			if (item == '\0') {
+			if (item == NULL) {
 				(void) fclose(file);
 				return (-1);
 			}
