@@ -299,6 +299,7 @@ ficlVmParseFloatNumber(ficlVm *vm, ficlString s)
 		 * Converting integer part of number.
 		 * Only allow digits, decimal and 'E'.
 		 */
+		/* FALLTHROUGH */
 		case FPS_ININT:
 			if (c == '.') {
 				estate = FPS_INMANT;
@@ -344,6 +345,7 @@ ficlVmParseFloatNumber(ficlVm *vm, ficlString s)
 		 * Processing the exponent part of number.
 		 * Only allow digits.
 		 */
+		/* FALLTHROUGH */
 		case FPS_INEXP:
 			digit = (unsigned char)(c - '0');
 			if (digit > 9)
