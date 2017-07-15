@@ -27,8 +27,6 @@
 #ifndef _MULTIMEDIA_AUDIO_H
 #define	_MULTIMEDIA_AUDIO_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <AudioTypes.h>
 #include <AudioError.h>
 #include <AudioHdr.h>
@@ -86,7 +84,7 @@ public:
 	virtual AudioError RaiseError(
 	    AudioError code,			// error code
 	    AudioSeverity sev = Error,		// error severity
-	    char *msg = '\0') const;		// error message
+	    char *msg = NULL) const;		// error message
 
 	// Raise error msg
 	virtual void PrintMsg(
