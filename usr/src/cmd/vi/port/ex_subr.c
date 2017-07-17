@@ -1123,7 +1123,7 @@ int sig;
 	flush();
 	setty(f);
 	if (!inopen)
-		error(0);
+		error(NULL);
 	else {
 		if(vcnt < 0) {
 			vcnt = -vcnt;
