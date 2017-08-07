@@ -3521,12 +3521,10 @@ ata_init_pm(dev_info_t *dip)
 	(void) sprintf(pmc_name, "NAME=ata%d", instance);
 	pmc[0] = pmc_name;
 
-#ifdef	ATA_USE_AUTOPM
 	if (ddi_prop_update_string_array(DDI_DEV_T_NONE, dip,
 	    "pm-components", pmc, 3) != DDI_PROP_SUCCESS) {
 		return;
 	}
-#endif
 
 	ata_ctlp->ac_pm_support = 1;
 	ata_ctlp->ac_pm_level = PM_LEVEL_D0;
