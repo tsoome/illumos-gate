@@ -139,6 +139,7 @@ SUBDIRS +=				\
 	libgrubmgmt	\
 	libgss		\
 	libhotplug	\
+	libiconv	\
 	libidmap	\
 	libidspace	\
 	libilb		\
