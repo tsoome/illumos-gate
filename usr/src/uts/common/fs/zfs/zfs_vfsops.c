@@ -786,11 +786,11 @@ zfs_userspace_many(zfsvfs_t *zfsvfs, zfs_userquota_prop_t type,
 }
 
 /*
- * buf must be big enough (eg, 32 bytes)
+ * buf must be big enough (eg, 16+1 bytes)
  */
 static int
 id_to_fuidstr(zfsvfs_t *zfsvfs, const char *domain, uid_t rid,
-    char *buf, boolean_t addok)
+    char *buf, size_t len, boolean_t addok)
 {
 	uint64_t fuid;
 	int domainid = 0;
@@ -801,7 +801,7 @@ id_to_fuidstr(zfsvfs_t *zfsvfs, const char *domain, uid_t rid,
 			return (SET_ERROR(ENOENT));
 	}
 	fuid = FUID_ENCODE(domainid, rid);
-	(void) sprintf(buf, "%llx", (longlong_t)fuid);
+	(void) snprintf(buf, len, "%llx", (longlong_t)fuid);
 	return (0);
 }
 
@@ -841,11 +841,12 @@ zfs_userspace_one(zfsvfs_t *zfsvfs, zfs_userquota_prop_t type,
 
 	if (type == ZFS_PROP_USEROBJUSED || type == ZFS_PROP_GROUPOBJUSED ||
 	    type == ZFS_PROP_PROJECTOBJUSED) {
-		strncpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN);
+		strlcpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN + 1);
 		offset = DMU_OBJACCT_PREFIX_LEN;
 	}
 
-	err = id_to_fuidstr(zfsvfs, domain, rid, buf + offset, B_FALSE);
+	err = id_to_fuidstr(zfsvfs, domain, rid, buf + offset,
+	    sizeof (buf) - offset, B_FALSE);
 	if (err)
 		return (err);
 
@@ -901,7 +902,7 @@ zfs_set_userquota(zfsvfs_t *zfsvfs, zfs_userquota_prop_t type,
 		return (SET_ERROR(EINVAL));
 	}
 
-	err = id_to_fuidstr(zfsvfs, domain, rid, buf, B_TRUE);
+	err = id_to_fuidstr(zfsvfs, domain, rid, buf, sizeof (buf), B_TRUE);
 	if (err)
 		return (err);
 	fuid_dirtied = zfsvfs->z_fuid_dirty;
@@ -1584,7 +1585,8 @@ zfs_statfs_project(zfsvfs_t *zfsvfs, znode_t *zp, struct statvfs64 *statp,
 	int err;
 
 	strlcpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN + 1);
-	err = id_to_fuidstr(zfsvfs, NULL, zp->z_projid, buf + offset, B_FALSE);
+	err = id_to_fuidstr(zfsvfs, NULL, zp->z_projid, buf + offset,
+	    sizeof (buf) - offset, B_FALSE);
 	if (err)
 		return (err);
 
