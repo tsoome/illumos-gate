@@ -195,6 +195,7 @@ pci_check(void)
 			pci_putb_func = pci_mech1_putb;
 			pci_putw_func = pci_mech1_putw;
 			pci_putl_func = pci_mech1_putl;
+			pci_iocfg_max_offset = 0xfff;
 		}
 		break;
 
