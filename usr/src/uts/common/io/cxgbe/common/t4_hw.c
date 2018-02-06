@@ -348,7 +348,7 @@ int t4_wr_mbox_meat_timeout(struct adapter *adap, int mbox, const void *cmd,
 #ifdef T4_OS_NEEDS_MBOX_LOCKING
 	u16 access = 0;
 #endif
-	u16 execute = 0;
+	u16 __unused execute = 0;
 	u32 v;
 	u64 res;
 	int i, ret;
@@ -735,7 +735,7 @@ static int t4_edc_err_read(struct adapter *adap, int idx)
 		t4_read_reg(adap, edc_ecc_err_addr_reg));
 	CH_WARN(adap,
 	 	"bist: 0x%x, status %llx %llx %llx %llx %llx %llx %llx %llx %llx.\n",
-		edc_bist_status_rdata_reg,	
+		edc_bist_status_rdata_reg,
 		(unsigned long long)t4_read_reg64(adap, edc_bist_status_rdata_reg),
 		(unsigned long long)t4_read_reg64(adap, edc_bist_status_rdata_reg + 8),
 		(unsigned long long)t4_read_reg64(adap, edc_bist_status_rdata_reg + 16),
@@ -3175,7 +3175,7 @@ int t4_seeprom_wp(struct adapter *adapter, int enable)
  *	get_vpd_keyword_val - Locates an information field keyword in the VPD
  *	@v: Pointer to buffered vpd data structure
  *	@kw: The keyword to search for
- *	
+ *
  *	Returns the value of the information field keyword or
  *	-ENOENT otherwise.
  */
@@ -3272,7 +3272,7 @@ int t4_get_raw_vpd_params(struct adapter *adapter, struct vpd_params *p)
 			goto out;
 	}
  	v = (const struct t4_vpd_hdr *)vpd;
-	
+
 #define FIND_VPD_KW(var,name) do { \
 	var = get_vpd_keyword_val(v , name); \
 	if (var < 0) { \
@@ -3280,7 +3280,7 @@ int t4_get_raw_vpd_params(struct adapter *adapter, struct vpd_params *p)
 		ret = -EINVAL; \
 		goto out;      \
 	} \
-} while (0)	
+} while (0)
 
 	FIND_VPD_KW(i, "RV");
 	for (csum = 0; i >= 0; i--)
@@ -5558,7 +5558,7 @@ int t4_config_glbl_rss(struct adapter *adapter, int mbox, unsigned int mode,
  *	Configures VI-specific RSS properties.
  */
 int t4_config_vi_rss(struct adapter *adapter, int mbox, unsigned int viid,
-		     unsigned int flags, unsigned int defq, unsigned int skeyidx, 
+		     unsigned int flags, unsigned int defq, unsigned int skeyidx,
 		     unsigned int skey)
 {
 	struct fw_rss_vi_config_cmd c;
@@ -6321,7 +6321,7 @@ int t4_set_trace_filter(struct adapter *adap, const struct trace_params *tp, int
 		 * minus 2 flits for CPL_TRACE_PKT header.
 		 */
 		if (tp->snap_len > ((10 * 1024 / 4) - (2 * 8)))
-			return -EINVAL;		
+			return -EINVAL;
 	}
 	else {
 		/*
@@ -8730,7 +8730,7 @@ void t4_handle_get_port_info(struct port_info *pi, const __be64 *rpl)
  {
 	struct fw_port_cmd port_cmd;
 	int ret;
- 
+
 	memset(&port_cmd, 0, sizeof port_cmd);
 	port_cmd.op_to_portid = cpu_to_be32(V_FW_CMD_OP(FW_PORT_CMD) |
 					    F_FW_CMD_REQUEST | F_FW_CMD_READ |
@@ -8742,7 +8742,7 @@ void t4_handle_get_port_info(struct port_info *pi, const __be64 *rpl)
 			 &port_cmd, sizeof(port_cmd), &port_cmd);
 	if (ret)
 		return ret;
- 
+
 	t4_handle_get_port_info(pi, (__be64 *)&port_cmd);
 	return 0;
 }
@@ -11069,4 +11069,3 @@ int t4_set_devlog_level(struct adapter *adapter, unsigned int level)
 	return t4_wr_mbox(adapter, adapter->mbox, &devlog_cmd,
 			  sizeof(devlog_cmd), &devlog_cmd);
 }
-
