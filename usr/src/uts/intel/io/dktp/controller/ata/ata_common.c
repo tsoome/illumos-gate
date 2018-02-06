@@ -3528,6 +3528,7 @@ ata_init_pm(dev_info_t *dip)
 	    "pm-components", pmc, 3) != DDI_PROP_SUCCESS) {
 		return;
 	}
+#endif
 
 	ata_ctlp->ac_pm_support = 1;
 	ata_ctlp->ac_pm_level = PM_LEVEL_D0;
