@@ -769,6 +769,10 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/efe/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
+$(OBJS_DIR)/%.o:               $(UTSBASE)/common/io/efirt/%.c
+	$(COMPILE.c) -o $@ $<
+	$(CTFCONVERT_O)
+
 $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/elxl/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
@@ -1657,4 +1661,3 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/tpm/%.s
 $(OBJS_DIR)/bz2%.o:		$(COMMONBASE)/bzip2/%.c
 	$(COMPILE.c) -o $@ -I$(COMMONBASE)/bzip2 $<
 	$(CTFCONVERT_O)
-
