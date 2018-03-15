@@ -1830,6 +1830,8 @@ DMFE_OBJS += dmfe_log.o dmfe_main.o dmfe_mii.o
 
 EFE_OBJS += efe.o
 
+EFIRT_OBJS += efirt.o
+
 ELXL_OBJS += elxl.o
 
 HME_OBJS += hme.o

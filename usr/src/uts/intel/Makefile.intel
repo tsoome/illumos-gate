@@ -268,6 +268,7 @@ DRV_KMODS	+= dlpistub
 DRV_KMODS	+= dnet
 DRV_KMODS	+= dump
 DRV_KMODS	+= ecpp
+DRV_KMODS	+= efirt
 DRV_KMODS	+= emlxs
 DRV_KMODS	+= eventfd
 DRV_KMODS	+= fd

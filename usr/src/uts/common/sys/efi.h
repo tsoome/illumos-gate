@@ -217,6 +217,8 @@ typedef struct _EFI_SYSTEM_TABLE64 {
 	efiptr64_t		ConfigurationTable;
 } __packed EFI_SYSTEM_TABLE64;
 
+#define	EFIAPI	__attribute__((ms_abi))
+
 #ifdef __cplusplus
 }
 #endif

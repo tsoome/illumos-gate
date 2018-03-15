@@ -140,6 +140,7 @@ driver name=devinfo perms="devinfo 0640 root sys" \
     perms="devinfo,ro 0444 root sys"
 driver name=dld perms="* 0666 root sys"
 driver name=dlpistub perms="* 0666 root sys"
+$(i386_ONLY)driver name=efirt perms="* 0600 root sys"
 $(sparc_ONLY)driver name=i8042 alias=8042
 $(i386_ONLY)driver name=i8042
 driver name=icmp perms="icmp 0666 root sys" \
@@ -347,6 +348,7 @@ $(sparc_ONLY)file path=kernel/drv/$(ARCH64)/dad group=sys
 file path=kernel/drv/$(ARCH64)/devinfo group=sys
 file path=kernel/drv/$(ARCH64)/dld group=sys
 file path=kernel/drv/$(ARCH64)/dlpistub group=sys
+$(i386_ONLY)file path=kernel/drv/$(ARCH64)/efirt group=sys
 file path=kernel/drv/$(ARCH64)/i8042 group=sys
 file path=kernel/drv/$(ARCH64)/icmp group=sys
 file path=kernel/drv/$(ARCH64)/icmp6 group=sys
@@ -427,6 +429,7 @@ $(sparc_ONLY)file path=kernel/drv/dad.conf group=sys
 file path=kernel/drv/devinfo.conf group=sys
 file path=kernel/drv/dld.conf group=sys
 file path=kernel/drv/dlpistub.conf group=sys
+$(i386_ONLY)file path=kernel/drv/efirt.conf group=sys
 file path=kernel/drv/icmp.conf group=sys
 file path=kernel/drv/icmp6.conf group=sys
 $(i386_ONLY)file path=kernel/drv/intel_nb5000.conf group=sys
