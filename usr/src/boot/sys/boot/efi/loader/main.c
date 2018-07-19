@@ -250,7 +250,7 @@ set_currdev(const char *devname)
 static void
 set_currdev_devdesc(struct devdesc *currdev)
 {
-	char *devname;
+	const char *devname;
 
 	devname = efi_fmtdev(currdev);
 
@@ -371,6 +371,14 @@ find_currdev(EFI_LOADED_IMAGE *img)
 	struct devsw *dev;
 	int unit;
 	uint64_t extra;
+	const char *rootdev;
+
+	rootdev = getenv("rootdev");
+	if (rootdev != NULL) {
+		printf("Setting currdev to configured rootdev %s\n", rootdev);
+		set_currdev(rootdev);
+		return (0);
+	}
 
 	/*
 	 * Did efi_zfs_probe() detect the boot pool? If so, use the zpool
