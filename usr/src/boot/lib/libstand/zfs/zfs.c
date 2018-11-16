@@ -293,7 +293,7 @@ zfs_readdir(struct open_file *f, struct dirent *d)
 			/*
 			 * Check for EOF and read the new leaf.
 			 */
-			if (fp->f_seekp >= bsize * fp->f_num_leafs)
+			if (fp->f_seekp >= (off_t)(bsize * fp->f_num_leafs))
 				return (ENOENT);
 
 			rc = dnode_read(spa, &fp->f_dnode, fp->f_seekp,
