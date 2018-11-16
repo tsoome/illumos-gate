@@ -156,7 +156,7 @@ dos_read_fatblk(DOS_FS *fs, struct open_file *fd, uint_t blknum)
 	io_size = FATBLKSZ;
 	if (offset_in_fat > max_offset_in_fat)
 		offset_in_fat = max_offset_in_fat;
-	if (offset_in_fat + io_size > max_offset_in_fat)
+	if ((daddr_t)(offset_in_fat + io_size) > max_offset_in_fat)
 		io_size = ((size_t)(max_offset_in_fat - offset_in_fat));
 
 	if (io_size != 0) {
