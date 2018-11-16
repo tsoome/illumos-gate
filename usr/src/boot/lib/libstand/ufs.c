@@ -162,7 +162,7 @@ read_inode(ino_t inumber, struct open_file *f)
 	    buf, &rsize);
 	if (rc)
 		goto out;
-	if (rsize != fs->fs_bsize) {
+	if ((int32_t)rsize != fs->fs_bsize) {
 		rc = EIO;
 		goto out;
 	}
@@ -272,7 +272,7 @@ block_map(struct open_file *f, ufs2_daddr_t file_block,
 			    &fp->f_blksize[level]);
 			if (rc)
 				return (rc);
-			if (fp->f_blksize[level] != fs->fs_bsize)
+			if (fp->f_blksize[level] != (size_t)fs->fs_bsize)
 				return (EIO);
 			fp->f_blkno[level] = ind_block_num;
 		}
@@ -445,7 +445,7 @@ search_directory(char *name, struct open_file *f, ino_t *inumber_p)
 	length = strlen(name);
 
 	fp->f_seekp = 0;
-	while (fp->f_seekp < DIP(fp, di_size)) {
+	while (fp->f_seekp < (off_t)DIP(fp, di_size)) {
 		rc = buf_read_file(f, &buf, &buf_size);
 		if (rc)
 			return (rc);
@@ -513,7 +513,7 @@ ufs_open(const char *upath, struct open_file *f)
 		    fs->fs_sblockloc == sblock_try[i])) &&
 		    buf_size == SBLOCKSIZE &&
 		    fs->fs_bsize <= MAXBSIZE &&
-		    fs->fs_bsize >= sizeof (struct fs))
+		    fs->fs_bsize >= (int32_t)sizeof (struct fs))
 			break;
 	}
 	if (sblock_try[i] == -1) {
@@ -712,7 +712,7 @@ ufs_read(struct open_file *f, void *start, size_t size, size_t *resid)
 	char *addr = start;
 
 	while (size != 0) {
-		if (fp->f_seekp >= DIP(fp, di_size))
+		if ((uint64_t)fp->f_seekp >= DIP(fp, di_size))
 			break;
 
 		rc = buf_read_file(f, &buf, &buf_size);
@@ -749,7 +749,7 @@ ufs_write(struct open_file *f, const void *start, size_t size, size_t *resid)
 
 	csize = size;
 	while ((size != 0) && (csize != 0)) {
-		if (fp->f_seekp >= DIP(fp, di_size))
+		if ((uint64_t)fp->f_seekp >= DIP(fp, di_size))
 			break;
 
 		if (csize >= 512) csize = 512; /* XXX */
@@ -815,7 +815,7 @@ ufs_readdir(struct open_file *f, struct dirent *d)
 	 * assume that a directory entry will not be split across blocks
 	 */
 again:
-	if (fp->f_seekp >= DIP(fp, di_size))
+	if ((uint64_t)fp->f_seekp >= DIP(fp, di_size))
 		return (ENOENT);
 	error = buf_read_file(f, &buf, &buf_size);
 	if (error)

@@ -612,8 +612,9 @@ struct cg {
 	    ? (fs)->fs_bsize \
 	    : (fragroundup(fs, blkoff(fs, (ip)->i_size))))
 #define	sblksize(fs, size, lbn) \
-	(((lbn) >= NDADDR || (size) >= ((lbn) + 1) << (fs)->fs_bshift) \
-	  ? (fs)->fs_bsize \
+	(((lbn) >= NDADDR || \
+	  (size) >= ((uint64_t)(lbn) + 1) << (fs)->fs_bshift) \
+	  ? (size_t)(fs)->fs_bsize \
 	  : (fragroundup(fs, blkoff(fs, (size)))))
 
 /*
