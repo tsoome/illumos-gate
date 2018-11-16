@@ -175,7 +175,7 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 	if (cc == -1)
 		return (-1);
 
-	if (cc <= sizeof(*reply)) {
+	if (cc <= (ssize_t)sizeof(*reply)) {
 		errno = EBADRPC;
 		free(ptr);
 		return (-1);
@@ -413,7 +413,7 @@ rpc_getport(struct iodesc *d, n_long prog, n_long vers)
 
 	cc = rpc_call(d, PMAPPROG, PMAPVERS, PMAPPROC_GETPORT,
 	    args, sizeof(*args), (void **)&res, &pkt);
-	if (cc < sizeof(*res)) {
+	if (cc < (ssize_t)sizeof(*res)) {
 		printf("getport: %s", strerror(errno));
 		errno = EBADRPC;
 		free(pkt);
