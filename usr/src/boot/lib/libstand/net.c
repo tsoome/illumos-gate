@@ -113,7 +113,7 @@ sendrecv(struct iodesc *d,
 				return (-1);
 			}
 			cc = (*sproc)(d, sbuf, ssize);
-			if (cc != -1 && cc < ssize)
+			if (cc != -1 && cc < (ssize_t)ssize)
 				panic("sendrecv: short write! (%zd < %zd)",
 				    cc, ssize);
 
