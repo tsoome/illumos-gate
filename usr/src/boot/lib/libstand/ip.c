@@ -126,7 +126,7 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 	cc = sendether(d, ip, len, ea, ETHERTYPE_IP);
 	if (cc == -1)
 		return (-1);
-	if (cc != len)
+	if (cc != (ssize_t)len)
 		panic("sendip: bad write (%zd != %zd)", cc, len);
 	return (cc - sizeof(*ip));
 }
@@ -198,7 +198,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	ip = NULL;
 	ptr = NULL;
 	n = readether(d, (void **)&ptr, (void **)&ip, tleft, &etype);
-	if (n == -1 || n < sizeof(*ip) + sizeof(*uh)) {
+	if (n == -1 || n < (ssize_t)(sizeof(*ip) + sizeof(*uh))) {
 		free(ptr);
 		return (-1);
 	}
@@ -272,6 +272,8 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	/* Unfragmented packet. */
 	if ((ntohs(ip->ip_off) & IP_MF) == 0 &&
 	    (ntohs(ip->ip_off) & IP_OFFMASK) == 0) {
+		ssize_t rest;
+
 		uh = (struct udphdr *)((uintptr_t)ip + sizeof (*ip));
 		/* If there were ip options, make them go away */
 		if (hlen != sizeof(*ip)) {
@@ -280,8 +282,8 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 			n -= hlen - sizeof(*ip);
 		}
 
-		n = (n > (ntohs(ip->ip_len) - sizeof(*ip))) ?
-		    ntohs(ip->ip_len) - sizeof(*ip) : n;
+		rest = ntohs(ip->ip_len) - sizeof(*ip);
+		n = (n > rest) ? rest : n;
 		*pkt = ptr;
 		*payload = (void *)((uintptr_t)ip + sizeof(*ip));
 		return (n);
