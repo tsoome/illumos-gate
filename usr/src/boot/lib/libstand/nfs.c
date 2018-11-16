@@ -111,7 +111,7 @@ struct nfsv3_readdir_entry {
 
 struct nfs_iodesc {
 	struct iodesc *iodesc;
-	off_t off;
+	uint64_t off;
 	uint32_t fhsize;
 	uchar_t fh[NFS_V3MAXFHSIZE];
 	struct nfsv3_fattrs fa;	/* all in network order */
@@ -142,7 +142,7 @@ struct fs_ops nfs_fsops = {
 	.fo_readdir = nfs_readdir
 };
 
-static int nfs_read_size = NFSREAD_MIN_SIZE;
+static size_t nfs_read_size = NFSREAD_MIN_SIZE;
 
 /*
  * Improve boot performance over NFS
@@ -184,7 +184,7 @@ int
 nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 {
 	void *pkt = NULL;
-	int len;
+	uint32_t len;
 	struct args {
 		uint32_t len;
 		char path[FNAME_SIZE];
@@ -200,7 +200,7 @@ nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 		uint32_t h[RPC_HEADER_WORDS];
 		struct args d;
 	} sdata;
-	size_t cc;
+	ssize_t cc;
 
 #ifdef NFS_DEBUG
 	if (debug)
@@ -224,7 +224,7 @@ nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 		/* errno was set by rpc_call */
 		return (errno);
 	}
-	if (cc < 2 * sizeof (uint32_t)) {
+	if (cc < (ssize_t)(2 * sizeof (uint32_t))) {
 		free(pkt);
 		return (EBADRPC);
 	}
@@ -292,7 +292,7 @@ nfs_lookupfh(struct nfs_iodesc *d, const char *name, struct nfs_iodesc *newfd)
 		free(pkt);
 		return (errno);		/* XXX - from rpc_call */
 	}
-	if (cc < 2 * sizeof (uint32_t)) {
+	if (cc < (ssize_t)(2 * sizeof (uint32_t))) {
 		free(pkt);
 		return (EIO);
 	}
@@ -354,7 +354,7 @@ nfs_readlink(struct nfs_iodesc *d, char *buf)
 	if (cc == -1)
 		return (errno);
 
-	if (cc < 2 * sizeof (uint32_t)) {
+	if (cc < (ssize_t)(2 * sizeof (uint32_t))) {
 		rc = EIO;
 		goto done;
 	}
@@ -407,7 +407,7 @@ nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 		uint32_t h[RPC_HEADER_WORDS];
 		struct args d;
 	} sdata;
-	size_t cc;
+	ssize_t cc;
 	long x;
 	int hlen, rlen, pos;
 
@@ -466,7 +466,7 @@ nfs_open(const char *upath, struct open_file *f)
 	char buf[2 * NFS_V3MAXFHSIZE + 3];
 	uchar_t *fh;
 	char *cp;
-	int i;
+	uint32_t i;
 	struct nfs_iodesc *newfd = NULL;
 	char *ncp;
 	int c;
@@ -759,7 +759,7 @@ nfs_readdir(struct open_file *f, struct dirent *d)
 	static char *buf;
 	static struct nfs_iodesc *pfp = NULL;
 	static uint64_t cookie = 0;
-	size_t cc;
+	ssize_t cc;
 	int pos, rc;
 
 	struct args {
