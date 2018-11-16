@@ -305,12 +305,15 @@ load(void)
 	caddr_t p;
 	uint32_t addr, x;
 	int fd, fmt, i, j;
+	ssize_t size;
 
 	if ((fd = open(kname, O_RDONLY)) == -1) {
 		printf("\nCan't find %s\n", kname);
 		return;
 	}
-	if (read(fd, &hdr, sizeof (hdr)) != sizeof (hdr)) {
+
+	size = sizeof (hdr);
+	if (read(fd, &hdr, sizeof (hdr)) != size) {
 		close(fd);
 		return;
 	}
@@ -327,12 +330,14 @@ load(void)
 		addr = hdr.ex.a_entry & 0xffffff;
 		p = PTOV(addr);
 		lseek(fd, PAGE_SIZE, SEEK_SET);
-		if (read(fd, p, hdr.ex.a_text) != hdr.ex.a_text) {
+		size = hdr.ex.a_text;
+		if (read(fd, p, hdr.ex.a_text) != size) {
 			close(fd);
 			return;
 		}
 		p += roundup2(hdr.ex.a_text, PAGE_SIZE);
-		if (read(fd, p, hdr.ex.a_data) != hdr.ex.a_data) {
+		size = hdr.ex.a_data;
+		if (read(fd, p, hdr.ex.a_data) != size) {
 			close(fd);
 			return;
 		}
@@ -341,19 +346,22 @@ load(void)
 		memcpy(p, &hdr.ex.a_syms, sizeof (hdr.ex.a_syms));
 		p += sizeof (hdr.ex.a_syms);
 		if (hdr.ex.a_syms) {
-			if (read(fd, p, hdr.ex.a_syms) != hdr.ex.a_syms) {
+			size = hdr.ex.a_syms;
+			if (read(fd, p, hdr.ex.a_syms) != size) {
 				close(fd);
 				return;
 			}
 			p += hdr.ex.a_syms;
-			if (read(fd, p, sizeof (int)) != sizeof (int)) {
+			size = sizeof (int);
+			if (read(fd, p, sizeof (int)) != size) {
 				close(fd);
 				return;
 			}
 			x = *(uint32_t *)p;
 			p += sizeof (int);
 			x -= sizeof (int);
-			if (read(fd, p, x) != x) {
+			size = x;
+			if (read(fd, p, x) != size) {
 				close(fd);
 				return;
 			}
@@ -362,8 +370,8 @@ load(void)
 	} else {
 		lseek(fd, hdr.eh.e_phoff, SEEK_SET);
 		for (j = i = 0; i < hdr.eh.e_phnum && j < 2; i++) {
-			if (read(fd, ep + j, sizeof (ep[0])) !=
-			    sizeof (ep[0])) {
+			size = sizeof (ep[0]);
+			if (read(fd, ep + j, sizeof (ep[0])) != size) {
 				close(fd);
 				return;
 			}
@@ -373,7 +381,8 @@ load(void)
 		for (i = 0; i < 2; i++) {
 			p = PTOV(ep[i].p_paddr & 0xffffff);
 			lseek(fd, ep[i].p_offset, SEEK_SET);
-			if (read(fd, p, ep[i].p_filesz) != ep[i].p_filesz) {
+			size = ep[i].p_filesz;
+			if (read(fd, p, ep[i].p_filesz) != size) {
 				close(fd);
 				return;
 			}
@@ -384,7 +393,8 @@ load(void)
 			lseek(fd, hdr.eh.e_shoff +
 			    sizeof (es[0]) * (hdr.eh.e_shstrndx + 1),
 			    SEEK_SET);
-			if (read(fd, &es, sizeof (es)) != sizeof (es)) {
+			size = sizeof (es);
+			if (read(fd, &es, sizeof (es)) != size) {
 				close(fd);
 				return;
 			}
@@ -393,8 +403,8 @@ load(void)
 				    sizeof (es[i].sh_size));
 				p += sizeof (es[i].sh_size);
 				lseek(fd, es[i].sh_offset, SEEK_SET);
-				if (read(fd, p, es[i].sh_size) !=
-				    es[i].sh_size) {
+				size = es[i].sh_size;
+				if (read(fd, p, es[i].sh_size) != size) {
 					close(fd);
 					return;
 				}
@@ -626,7 +636,7 @@ parttblread(void *arg, void *buf, size_t blocks, uint64_t offset)
 	size_t size = ppa->secsz * blocks;
 
 	lseek(ppa->fd, offset * ppa->secsz, SEEK_SET);
-	if (read(ppa->fd, buf, size) == size)
+	if ((size_t)read(ppa->fd, buf, size) == size)
 		return (0);
 	return (EIO);
 }
@@ -644,7 +654,8 @@ probe_partition(void *arg, const char *partname,
 	uint64_t *pool_guid_ptr = NULL;
 	uint64_t pool_guid = 0;
 	char devname[32];
-	int len, ret = 0;
+	size_t len;
+	int ret = 0;
 
 	len = strlen(ppa->devname);
 	if (len > sizeof (devname))
