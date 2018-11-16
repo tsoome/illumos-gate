@@ -486,7 +486,7 @@ buf_read_file(struct open_file *f, char **buf_p, size_t *size_p)
 	*buf_p = fp->f_buf + blkoff;
 	*size_p = ISO_DEFAULT_BLOCK_SIZE - blkoff;
 
-	if (*size_p > fp->f_size - fp->f_off)
+	if (*size_p > (size_t)(fp->f_size - fp->f_off))
 		*size_p = fp->f_size - fp->f_off;
 	return (rc);
 }
