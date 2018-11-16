@@ -163,16 +163,16 @@ set_nfs_read_size(void)
 		}
 	}
 	if (nfs_read_size < NFSREAD_MIN_SIZE) {
-		printf("%s: bad value: \"%d\", defaulting to %d\n",
+		printf("%s: bad value: \"%zu\", defaulting to %d\n",
 		    "nfs.read_size", nfs_read_size, NFSREAD_MIN_SIZE);
 		nfs_read_size = NFSREAD_MIN_SIZE;
 	}
 	if (nfs_read_size > NFSREAD_MAX_SIZE) {
-		printf("%s: bad value: \"%d\", defaulting to %d\n",
+		printf("%s: bad value: \"%zu\", defaulting to %d\n",
 		    "nfs.read_size", nfs_read_size, NFSREAD_MIN_SIZE);
 		nfs_read_size = NFSREAD_MAX_SIZE;
 	}
-	snprintf(buf, sizeof (buf), "%d", nfs_read_size);
+	snprintf(buf, sizeof (buf), "%zu", nfs_read_size);
 	setenv("nfs.read_size", buf, 1);
 }
 

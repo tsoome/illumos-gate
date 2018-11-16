@@ -188,8 +188,7 @@ static void
 byteswap_uint64_array(void *vbuf, size_t size)
 {
 	uint64_t *buf = vbuf;
-	size_t count = size >> 3;
-	int i;
+	size_t i, count = size >> 3;
 
 	ASSERT((size & 7) == 0);
 
@@ -523,7 +522,7 @@ static void
 vdev_raidz_generate_parity_p(raidz_map_t *rm)
 {
 	uint64_t *p, *src, pcount __attribute__((unused)), ccount, i;
-	int c;
+	uint64_t c;
 
 	pcount = rm->rm_col[VDEV_RAIDZ_P].rc_size / sizeof (src[0]);
 
@@ -550,7 +549,7 @@ static void
 vdev_raidz_generate_parity_pq(raidz_map_t *rm)
 {
 	uint64_t *p, *q, *src, pcnt, ccnt, mask, i;
-	int c;
+	uint64_t c;
 
 	pcnt = rm->rm_col[VDEV_RAIDZ_P].rc_size / sizeof (src[0]);
 	ASSERT(rm->rm_col[VDEV_RAIDZ_P].rc_size ==
@@ -602,7 +601,7 @@ static void
 vdev_raidz_generate_parity_pqr(raidz_map_t *rm)
 {
 	uint64_t *p, *q, *r, *src, pcnt, ccnt, mask, i;
-	int c;
+	uint64_t c;
 
 	pcnt = rm->rm_col[VDEV_RAIDZ_P].rc_size / sizeof (src[0]);
 	ASSERT(rm->rm_col[VDEV_RAIDZ_P].rc_size ==
@@ -963,9 +962,9 @@ static void
 vdev_raidz_matrix_reconstruct(raidz_map_t *rm, int n, int nmissing,
     int *missing, uint8_t **invrows, const uint8_t *used)
 {
-	int i, j, x, cc, c;
+	int i, j, cc, c;
 	uint8_t *src;
-	uint64_t ccount;
+	uint64_t x, ccount;
 	uint8_t *dst[VDEV_RAIDZ_MAXPARITY];
 	uint64_t dcount[VDEV_RAIDZ_MAXPARITY];
 	uint8_t log, val;
@@ -1042,18 +1041,16 @@ vdev_raidz_matrix_reconstruct(raidz_map_t *rm, int n, int nmissing,
 static int
 vdev_raidz_reconstruct_general(raidz_map_t *rm, int *tgts, int ntgts)
 {
-	int n, i, c, t, tt;
+	int n, i, t, tt;
 	int nmissing_rows;
 	int missing_rows[VDEV_RAIDZ_MAXPARITY];
 	int parity_map[VDEV_RAIDZ_MAXPARITY];
-
 	uint8_t *p, *pp;
 	size_t psize;
-
 	uint8_t *rows[VDEV_RAIDZ_MAXPARITY];
 	uint8_t *invrows[VDEV_RAIDZ_MAXPARITY];
 	uint8_t *used;
-
+	uint64_t c;
 	int code = 0;
 
 
@@ -1064,7 +1061,7 @@ vdev_raidz_reconstruct_general(raidz_map_t *rm, int *tgts, int ntgts)
 	 */
 	nmissing_rows = 0;
 	for (t = 0; t < ntgts; t++) {
-		if (tgts[t] >= rm->rm_firstdatacol) {
+		if (tgts[t] >= (int)rm->rm_firstdatacol) {
 			missing_rows[nmissing_rows++] =
 			    tgts[t] - rm->rm_firstdatacol;
 		}
@@ -1081,7 +1078,7 @@ vdev_raidz_reconstruct_general(raidz_map_t *rm, int *tgts, int ntgts)
 		/*
 		 * Skip any targeted parity columns.
 		 */
-		if (c == tgts[tt]) {
+		if ((int)c == tgts[tt]) {
 			tt++;
 			continue;
 		}
@@ -1168,13 +1165,13 @@ vdev_raidz_reconstruct(raidz_map_t *rm, int *t, int nt)
 	nbadparity = rm->rm_firstdatacol;
 	nbaddata = rm->rm_cols - nbadparity;
 	ntgts = 0;
-	for (i = 0, c = 0; c < rm->rm_cols; c++) {
+	for (i = 0, c = 0; c < (int)rm->rm_cols; c++) {
 		if (i < nt && c == t[i]) {
 			tgts[ntgts++] = c;
 			i++;
 		} else if (rm->rm_col[c].rc_error != 0) {
 			tgts[ntgts++] = c;
-		} else if (c >= rm->rm_firstdatacol) {
+		} else if (c >= (int)rm->rm_firstdatacol) {
 			nbaddata--;
 		} else {
 			nbadparity--;
@@ -1368,7 +1365,7 @@ raidz_parity_verify(raidz_map_t *rm)
 	int c, ret = 0;
 	raidz_col_t *rc;
 
-	for (c = 0; c < rm->rm_firstdatacol; c++) {
+	for (c = 0; c < (int)rm->rm_firstdatacol; c++) {
 		rc = &rm->rm_col[c];
 		if (!rc->rc_tried || rc->rc_error != 0)
 			continue;
@@ -1424,7 +1421,7 @@ vdev_raidz_combrec(const spa_t *spa, raidz_map_t *rm, const blkptr_t *bp,
 	 */
 	tgts[-1] = -1;
 
-	for (n = 1; n <= rm->rm_firstdatacol - total_errors; n++) {
+	for (n = 1; n <= (int)rm->rm_firstdatacol - total_errors; n++) {
 		/*
 		 * Initialize the targets array by finding the first n columns
 		 * that contain no error.
@@ -1436,7 +1433,7 @@ vdev_raidz_combrec(const spa_t *spa, raidz_map_t *rm, const blkptr_t *bp,
 		 */
 		for (c = 0, i = 0; i < n; i++) {
 			if (i == n - 1 && data_errors == 0 &&
-			    c < rm->rm_firstdatacol) {
+			    c < (int)rm->rm_firstdatacol) {
 				c = rm->rm_firstdatacol;
 			}
 
@@ -1518,7 +1515,7 @@ vdev_raidz_combrec(const spa_t *spa, raidz_map_t *rm, const blkptr_t *bp,
 				 * position..
 				 */
 				for (next = tgts[current] + 1;
-				    next < rm->rm_cols &&
+				    next < (int)rm->rm_cols &&
 				    rm->rm_col[next].rc_error != 0; next++)
 					continue;
 
@@ -1563,10 +1560,10 @@ vdev_raidz_read(vdev_t *vd, const blkptr_t *bp, void *data,
 	raidz_col_t *rc;
 	int c, error;
 	int unexpected_errors;
-	int parity_errors;
+	uint64_t parity_errors;
 	int parity_untried;
 	int data_errors;
-	int total_errors;
+	uint64_t total_errors;
 	int n;
 	int tgts[VDEV_RAIDZ_MAXPARITY];
 	int code;
@@ -1587,7 +1584,7 @@ vdev_raidz_read(vdev_t *vd, const blkptr_t *bp, void *data,
 		rc = &rm->rm_col[c];
 		cvd = vdev_child(vd, rc->rc_devidx);
 		if (cvd == NULL || cvd->v_state != VDEV_STATE_HEALTHY) {
-			if (c >= rm->rm_firstdatacol)
+			if (c >= (int)rm->rm_firstdatacol)
 				rm->rm_missingdata++;
 			else
 				rm->rm_missingparity++;
@@ -1607,7 +1604,7 @@ vdev_raidz_read(vdev_t *vd, const blkptr_t *bp, void *data,
 			continue;
 		}
 #endif
-		if (c >= rm->rm_firstdatacol || rm->rm_missingdata > 0) {
+		if (c >= (int)rm->rm_firstdatacol || rm->rm_missingdata > 0) {
 			rc->rc_error = cvd->v_read(cvd, NULL, rc->rc_data,
 			    rc->rc_offset, rc->rc_size);
 			rc->rc_tried = 1;
@@ -1625,13 +1622,13 @@ reconstruct:
 	ASSERT(rm->rm_missingparity <= rm->rm_firstdatacol);
 	ASSERT(rm->rm_missingdata <= rm->rm_cols - rm->rm_firstdatacol);
 
-	for (c = 0; c < rm->rm_cols; c++) {
+	for (c = 0; c < (int)rm->rm_cols; c++) {
 		rc = &rm->rm_col[c];
 
 		if (rc->rc_error) {
 			ASSERT(rc->rc_error != ECKSUM);	/* child has no bp */
 
-			if (c < rm->rm_firstdatacol)
+			if (c < (int)rm->rm_firstdatacol)
 				parity_errors++;
 			else
 				data_errors++;
@@ -1640,7 +1637,7 @@ reconstruct:
 				unexpected_errors++;
 
 			total_errors++;
-		} else if (c < rm->rm_firstdatacol && !rc->rc_tried) {
+		} else if (c < (int)rm->rm_firstdatacol && !rc->rc_tried) {
 			parity_untried++;
 		}
 	}
@@ -1700,7 +1697,8 @@ reconstruct:
 			 * Identify the data columns that reported an error.
 			 */
 			n = 0;
-			for (c = rm->rm_firstdatacol; c < rm->rm_cols; c++) {
+			for (c = rm->rm_firstdatacol; c < (int)rm->rm_cols;
+			    c++) {
 				rc = &rm->rm_col[c];
 				if (rc->rc_error != 0) {
 					ASSERT(n < VDEV_RAIDZ_MAXPARITY);
@@ -1752,7 +1750,7 @@ reconstruct:
 	rm->rm_missingparity = 0;
 
 	n = 0;
-	for (c = 0; c < rm->rm_cols; c++) {
+	for (c = 0; c < (int)rm->rm_cols; c++) {
 		rc = &rm->rm_col[c];
 
 		if (rc->rc_tried)
