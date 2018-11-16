@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 2005 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
  *
@@ -25,7 +25,6 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <sys/types.h>
 #include <limits.h>
@@ -44,7 +43,7 @@ strcspn(const char *s, const char *charset)
 	const char *s1;
 	u_long bit;
 	u_long tbl[(UCHAR_MAX + 1) / LONG_BIT];
-	int idx;
+	u_long idx;
 
 	if(*s == '\0')
 		return (0);
