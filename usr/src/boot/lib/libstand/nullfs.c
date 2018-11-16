@@ -70,12 +70,14 @@
 int
 null_open(const char *path __unused, struct open_file *f __unused)
 {
+
 	return EINVAL;
 }
 
 int
 null_close(struct open_file *f __unused)
 {
+
 	return 0;
 }
 
@@ -83,6 +85,7 @@ int
 null_read(struct open_file *f __unused, void *buf __unused,
     size_t size __unused, size_t *resid __unused)
 {
+
 	return EIO;
 }
 
@@ -90,6 +93,7 @@ int
 null_write(struct open_file *f __unused, const void *buf __unused,
     size_t size __unused, size_t *resid __unused)
 {
+
 	return EROFS;
 }
 
@@ -97,6 +101,7 @@ off_t
 null_seek(struct open_file *f __unused, off_t offset __unused,
     int where __unused)
 {
+
 	errno = EIO;
 	return -1;
 }
@@ -104,11 +109,13 @@ null_seek(struct open_file *f __unused, off_t offset __unused,
 int
 null_stat(struct open_file *f __unused, struct stat *sb __unused)
 {
+
 	return EIO;
 }
 
 int
 null_readdir(struct open_file *f __unused, struct dirent *d __unused)
 {
+
 	return EIO;
 }
