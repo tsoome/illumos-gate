@@ -107,7 +107,7 @@ struct tftp_handle {
 	int		validsize;
 	int		off;
 	char		*path;	/* saved for re-requests */
-	unsigned int	tftp_blksize;
+	int		tftp_blksize;
 	unsigned long	tftp_tsize;
 	void		*pkt;
 	struct tftphdr	*tftp_hdr;
@@ -143,7 +143,7 @@ tftp_senderr(struct tftp_handle *h, ushort_t errcode, const char *msg)
 		uchar_t space[63]; /* +1 from t */
 	} __packed __aligned(4) wbuf;
 	char *wtail;
-	int len;
+	size_t len;
 
 	len = strlen(msg);
 	if (len > sizeof (wbuf.space))
@@ -471,7 +471,7 @@ tftp_open(const char *path, struct open_file *f)
 		extraslash = "/";
 	res = snprintf(tftpfile->path, pathsize, "%s%s%s",
 	    rootpath, extraslash, path);
-	if (res < 0 || res > pathsize) {
+	if (res < 0 || res > (int)pathsize) {
 		free(tftpfile->path);
 		free(tftpfile);
 		return (ENOMEM);
@@ -495,20 +495,20 @@ tftp_read(struct open_file *f, void *addr, size_t size,
     size_t *resid /* out */)
 {
 	struct tftp_handle *tftpfile;
-	size_t res;
+	int rest;
 	int rc;
 
 	rc = 0;
-	res = size;
+	rest = size;
 	tftpfile = f->f_fsdata;
 
 	/* Make sure we will not read past file end */
 	if (tftpfile->tftp_tsize > 0 &&
 	    tftpfile->off + size > tftpfile->tftp_tsize) {
-		size = tftpfile->tftp_tsize - tftpfile->off;
+		rest = tftpfile->tftp_tsize - tftpfile->off;
 	}
 
-	while (size > 0) {
+	while (rest > 0) {
 		int needblock, count;
 
 		twiddle(32);
@@ -548,14 +548,14 @@ tftp_read(struct open_file *f, void *addr, size_t size,
 #endif
 				return (EINVAL);
 			}
-			count = (size < inbuffer ? size : inbuffer);
+			count = (rest < inbuffer ? rest : inbuffer);
 			bcopy(tftpfile->tftp_hdr->th_data + offinblock,
 			    addr, count);
 
 			addr = (char *)addr + count;
 			tftpfile->off += count;
 			size -= count;
-			res -= count;
+			rest -= count;
 
 			if ((tftpfile->islastblock) && (count == inbuffer))
 				break;	/* EOF */
@@ -569,7 +569,7 @@ tftp_read(struct open_file *f, void *addr, size_t size,
 	}
 
 	if (resid != NULL)
-		*resid = res;
+		*resid = size;
 	return (rc);
 }
 
@@ -683,12 +683,10 @@ tftp_parse_oack(struct tftp_handle *h, char *buf, size_t len)
 	 */
 	char *tftp_options[128] = { 0 };
 	char *val = buf;
-	int i = 0;
-	int option_idx = 0;
+	size_t i = 0, option_idx = 0;
 	int blksize_is_set = 0;
 	int tsize = 0;
-
-	unsigned int orig_blksize;
+	int orig_blksize;
 
 	while (option_idx < 128 && i < len) {
 		if (buf[i] == '\0') {
