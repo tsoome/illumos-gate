@@ -128,7 +128,7 @@ static DOS_DE dot[2] = {
 #define	okclus(fs, c)	((c) >= LOCLUS && (c) <= (fs)->xclus)
 
 /* Get start cluster from directory entry */
-#define	stclus(sz, de)	((sz) != 32 ? cv2((de)->clus) :          \
+#define	stclus(sz, de)	((sz) != 32 ? (uint_t)cv2((de)->clus) :          \
 			((uint_t)cv2((de)->dex.h_clus) << 16) |  \
 			cv2((de)->clus))
 
