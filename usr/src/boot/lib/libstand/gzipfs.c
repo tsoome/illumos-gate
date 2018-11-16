@@ -314,11 +314,11 @@ zf_seek(struct open_file *f, off_t offset, int where)
 	}
 
 	/* rewind if required */
-	if (target < zf->zf_zstream.total_out && zf_rewind(f) != 0)
+	if (target < (off_t)zf->zf_zstream.total_out && zf_rewind(f) != 0)
 		return (-1);
 
 	/* skip forwards if required */
-	while (target > zf->zf_zstream.total_out) {
+	while (target > (off_t)zf->zf_zstream.total_out) {
 		errno = zf_read(f, discard, min(sizeof (discard),
 		    target - zf->zf_zstream.total_out), NULL);
 		if (errno != 0)
