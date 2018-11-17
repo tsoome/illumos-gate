@@ -992,9 +992,9 @@ efipart_readwrite(EFI_BLOCK_IO *blkio, int rw, daddr_t blk, daddr_t nblks,
 
 	if (blkio == NULL)
 		return (ENXIO);
-	if (blk < 0 || blk > blkio->Media->LastBlock)
+	if (blk < 0 || (EFI_LBA)blk > blkio->Media->LastBlock)
 		return (EIO);
-	if ((blk + nblks - 1) > blkio->Media->LastBlock)
+	if ((EFI_LBA)(blk + nblks - 1) > blkio->Media->LastBlock)
 		return (EIO);
 
 	switch (rw & F_MASK) {
