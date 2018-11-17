@@ -185,7 +185,9 @@ getstr(char *cmdstr, size_t cmdstrsize)
 			return;
 		default:
 			if (c >= 0x20 && c <= 0x7e) {
-				if (s - cmdstr < cmdstrsize - 1)
+				size_t size = s - cmdstr;
+
+				if (size < cmdstrsize - 1)
 					*s++ = c;
 				putchar(c);
 			}
