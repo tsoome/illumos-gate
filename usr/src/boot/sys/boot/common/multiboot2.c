@@ -85,7 +85,7 @@ static vm_offset_t entry_addr;
 static bool
 is_info_request_valid(multiboot_header_tag_information_request_t *rtag)
 {
-	int i;
+	uint32_t i;
 
 	/*
 	 * If the tag is optional and we do not support it, we do not
