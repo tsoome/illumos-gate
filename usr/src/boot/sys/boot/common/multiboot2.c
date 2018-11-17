@@ -270,7 +270,7 @@ multiboot2_loadfile(char *filename, uint64_t dest,
 		}
 		fp->f_size = archsw.arch_readin(fd, fp->f_addr, st.st_size);
 
-		if (fp->f_size != st.st_size) {
+		if ((off_t)fp->f_size != st.st_size) {
 			printf("error reading %s: %s\n", filename,
 			    strerror(errno));
 			file_discard(fp);
