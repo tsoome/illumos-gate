@@ -168,7 +168,7 @@ COMMAND_SET(smap, "smap", "show BIOS SMAP", command_smap);
 static int
 command_smap(int argc __unused, char *argv[] __unused)
 {
-	u_int i;
+	int i;
 
 	if (smapbase == NULL || smaplen == 0)
 		return (CMD_ERROR);
