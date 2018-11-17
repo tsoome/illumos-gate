@@ -331,7 +331,7 @@ fsread_size(ufs_ino_t inode, void *buf, size_t nbyte, size_t *fsizep)
 			return -1;
 		vbaddr = fsbtodb(&fs, addr2) + (off >> VBLKSHIFT) * DBPERVBLK;
 		vboff = off & VBLKMASK;
-		n = sblksize(&fs, (off_t)size, lbn) - (off & ~VBLKMASK);
+		n = sblksize(&fs, size, lbn) - (off & ~VBLKMASK);
 		if (n > VBLKSIZE)
 			n = VBLKSIZE;
 		if (blkmap != vbaddr) {
