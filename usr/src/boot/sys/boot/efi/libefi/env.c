@@ -528,7 +528,7 @@ efi_print_global(const CHAR16 *varnamearg, uint8_t *data, UINTN datasz)
 
 	if (strcmp("BootOrder", var) == 0 ||
 	    strcmp("DriverOrder", var) == 0) {
-		int i;
+		UINTN i;
 		UINT16 *u16 = (UINT16 *)data;
 
 		printf(" =");
