@@ -126,10 +126,14 @@ multiboot_loadfile(char *filename, u_int64_t dest,
 	}
 
 	search_size = read(fd, header_search, MULTIBOOT_SEARCH);
+	if (search_size < 0) {
+		error = errno;
+		goto out;
+	}
 	magic = (uint32_t *)header_search;
 
 	header = NULL;
-	for (i = 0; i < (search_size / sizeof(uint32_t)); i++) {
+	for (i = 0; i < (int)(search_size / sizeof(uint32_t)); i++) {
 		if (magic[i] == MULTIBOOT_HEADER_MAGIC) {
 			header = (struct multiboot_header *)&magic[i];
 			break;
