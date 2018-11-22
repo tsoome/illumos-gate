@@ -25,6 +25,8 @@
 
 include ../Makefile.com
 
+LDLIBS += ../../crt/i386/values-Xa.o
+
 .KEEP_STATE:
 
 all: $(LIBS)

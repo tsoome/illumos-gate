@@ -25,6 +25,8 @@
 
 include ../Makefile.com
 
+LDLIBS += ../../crt/sparc/values-Xa.o
+
 .KEEP_STATE:
 
 all: $(LIBS)
