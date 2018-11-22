@@ -26,6 +26,7 @@
 include ../Makefile.com
 include ../../Makefile.lib.64
 
+LDLIBS += ../../crt/sparcv9/values-Xa.o
 LIBS=	$(DYNLIB)
 
 .KEEP_STATE:
