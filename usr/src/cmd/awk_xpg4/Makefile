@@ -34,7 +34,7 @@ XPG4PROG= awk
 
 OBJ1= awk0.o awk1.o awk2.o awk3.o awk4.o
 OBJ2= awk.o
-XPG4AWKOBJ= values-xpg4.o
+XPG4AWKOBJ= #values-xpg4.o
 OBJS= $(OBJ2) $(OBJ1) $(XPG4AWKOBJ)
 SRCS= $(OBJ1:%.o=%.c)
 
