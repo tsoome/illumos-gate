@@ -35,6 +35,7 @@ XPG6EXOBJS= $(X6)/getconf.o
 
 include ../Makefile.cmd
 
+$(XPG4) := LDFLAGS += -_gcc8=-Wl,-zmuldefs -_gcc9=-Wl,-zmuldefs
 XPG4EXOBJS += values-xpg4.o
 CFLAGS += $(CCVERBOSE)
 # XPG4
