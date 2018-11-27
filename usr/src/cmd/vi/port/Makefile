@@ -73,9 +73,11 @@ POFILE= port.po
 
 # Include all XPG4 and XPG4ONLY changes in the XPG4 version
 $(XPG4) := CFLAGS += -DXPG4 -DXPG4ONLY
+$(XPG4) := LDFLAGS += -_gcc8=-Wl,-zmuldefs -_gcc9=-Wl,-zmuldefs
 
 # Include all XPG4 changes, but don't include XPG4ONLY in the XPG6 version
 $(XPG6) := CFLAGS += -DXPG4 -DXPG6 -I$(SRC)/lib/libc/inc
+$(XPG6) := LDFLAGS += -_gcc8=-Wl,-zmuldefs -_gcc9=-Wl,-zmuldefs
 
 CPPFLAGS +=  -DUSG -DSTDIO -DVMUNIX -DTABS=8 -DSINGLE -DTAG_STACK
 
