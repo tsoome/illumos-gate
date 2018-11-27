@@ -30,6 +30,7 @@ OBJS= env.o
 
 include ../Makefile.cmd
 
+$(XPG4) := LDFLAGS += -_gcc8=-Wl,-zmuldefs -_gcc9=-Wl,-zmuldefs
 clean $(XPG4) := OBJS += values-xpg4.o
 
 .KEEP_STATE:
