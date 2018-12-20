@@ -52,6 +52,7 @@
       - pkg:/metapackages/build-essential
       - pkg:/runtime/python-35
       - pkg:/developer/gcc-7
+      - pkg:/library/idnkit/header-idnkit
   register: result
   until: not result|failed
   retries: 10
