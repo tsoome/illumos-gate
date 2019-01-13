@@ -103,6 +103,19 @@ struct vesa_edid_info {
     (((uint_t)(edid_info)->detailed_timings[(timings_num)].vertical_hi & \
     0xf0) << 4))
 
+struct vesa_flat_panel_info {
+	uint16_t HSize;			/* Horizontal Size in Pixels */
+	uint16_t VSize;			/* Vertical Size in Lines */
+	uint16_t FPType;		/* Flat Panel Type */
+	uint8_t RedBPP;			/* Red Bits Per Primary */
+	uint8_t GreenBPP;		/* Green Bits Per Primary */
+	uint8_t BlueBPP;		/* Blue Bits Per Primary */
+	uint8_t ReservedBPP;		/* Reserved Bits Per Primary */
+	uint32_t RsvdOffScrnMemSize;	/* Size in KB of Offscreen Memory */
+	uint32_t RsvdOffScrnMemPtr; /* Pointer to reserved offscreen memory */
+	uint8_t Reserved[14];		/* remainder of FPInfo */
+} __packed;
+
 extern multiboot_tag_framebuffer_t gfx_fb;
 
 void gfx_framework_init(struct visual_ops *);
