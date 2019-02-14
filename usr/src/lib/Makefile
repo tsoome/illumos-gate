@@ -22,7 +22,7 @@
 #
 # Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2012 by Delphix. All rights reserved.
-# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+# Copyright 2015, Joyent, Inc.
 # Copyright (c) 2013 Gary Mills
 # Copyright 2014 Garrett D'Amore <garrett@damore.org>
 # Copyright (c) 2015 Gary Mills
@@ -31,6 +31,7 @@
 # Copyright (c) 2016, Chris Fraire <cfraire@me.com>.
 # Copyright 2017 RackTop Systems.
 # Copyirght 2018 Jason King
+# Copyright 2019 OmniOS Community Edition (OmniOSce) Association.
 #
 
 include ../Makefile.master
@@ -83,6 +84,7 @@ SUBDIRS +=				\
 	gss_mechs/mech_spnego	\
 	hal		\
 	hbaapi		\
+	iconv_modules	\
 	krb5		\
 	libadm		\
 	libads		\
@@ -122,6 +124,7 @@ SUBDIRS +=				\
 	libdoor		\
 	libdtrace	\
 	libdtrace_jni	\
+	libdwarf	\
 	libefi		\
 	libelfsign	\
 	libeti		\
@@ -389,6 +392,7 @@ HDRSUBDIRS=				\
 	libdhcputil	\
 	libdisasm	\
 	libdiskmgt	\
+	libdwarf	\
 	libdladm	\
 	libdll		\
 	libdlpi		\
@@ -509,7 +513,6 @@ clean :=	TARGET= clean
 clobber :=	TARGET= clobber
 install :=	TARGET= install
 install_h :=	TARGET= install_h
-lint :=		TARGET= lint
 _dc :=		TARGET= _dc
 _msg :=		TARGET= _msg
 
@@ -518,12 +521,12 @@ _msg :=		TARGET= _msg
 #
 # For the all and install targets, we clearly must respect library
 # dependencies so that the libraries link correctly.  However, for
-# the remaining targets (check, clean, clobber, install_h, lint, _dc
+# the remaining targets (check, clean, clobber, install_h, _dc
 # and _msg), libraries do not have any dependencies on one another
 # and thus respecting dependencies just slows down the build.
 # As such, for these rules, we use pattern replacement to explicitly
-# avoid triggering the dependency information.  Note that for clean,
-# clobber and lint, we must use $(NOWAIT_SUBDIRS) rather than
+# avoid triggering the dependency information.  Note that for clean and
+# clobber, we must use $(NOWAIT_SUBDIRS) rather than
 # $(SUBDIRS), to prevent `.WAIT' from expanding to `.WAIT-nodepend'.
 #
 
@@ -536,7 +539,9 @@ install_extra:
 	@cd ../cmd/sgs; pwd; $(MAKE) install_lib
 	@pwd
 
-clean clobber lint:	$(NOWAIT_SUBDIRS:%=%-nodepend)
+clean clobber:		$(NOWAIT_SUBDIRS:%=%-nodepend)
+
+lint:
 
 install_h check:	$(HDRSUBDIRS:%=%-nodepend)
 
@@ -589,6 +594,7 @@ libcmd:		libsum libast
 libcmdutils:	libavl
 libcpc:		libpctx
 libcrypt:	libgen
+libctf:		libdwarf
 libdevid:	libdevinfo
 libdevinfo:	libsec libgen
 libdhcpagent:	libdhcputil libuuid libdlpi libcontract

@@ -148,6 +148,7 @@ typedef enum {
 	ZFS_PROP_DEDUP,
 	ZFS_PROP_MLSLABEL,
 	ZFS_PROP_SYNC,
+	ZFS_PROP_DNODESIZE,
 	ZFS_PROP_REFRATIO,
 	ZFS_PROP_WRITTEN,
 	ZFS_PROP_CLONES,
@@ -210,6 +211,8 @@ typedef enum {
 	ZPOOL_PROP_MAXBLOCKSIZE,
 	ZPOOL_PROP_BOOTSIZE,
 	ZPOOL_PROP_CHECKPOINT,
+	ZPOOL_PROP_TNAME,
+	ZPOOL_PROP_MAXDNODESIZE,
 	ZPOOL_NUM_PROPS
 } zpool_prop_t;
 
@@ -363,6 +366,16 @@ typedef enum {
 	ZFS_SYNC_ALWAYS = 1,
 	ZFS_SYNC_DISABLED = 2
 } zfs_sync_type_t;
+
+typedef enum {
+	ZFS_DNSIZE_LEGACY = 0,
+	ZFS_DNSIZE_AUTO = 1,
+	ZFS_DNSIZE_1K = 1024,
+	ZFS_DNSIZE_2K = 2048,
+	ZFS_DNSIZE_4K = 4096,
+	ZFS_DNSIZE_8K = 8192,
+	ZFS_DNSIZE_16K = 16384
+} zfs_dnsize_type_t;
 
 typedef enum {
 	ZFS_REDUNDANT_METADATA_ALL,
@@ -855,7 +868,7 @@ typedef struct vdev_stat {
  * is passed between kernel and userland as an nvlist uint64 array.
  */
 typedef struct ddt_object {
-	uint64_t	ddo_count;	/* number of elments in ddt 	*/
+	uint64_t	ddo_count;	/* number of elments in ddt	*/
 	uint64_t	ddo_dspace;	/* size of ddt on disk		*/
 	uint64_t	ddo_mspace;	/* size of ddt in-core		*/
 } ddt_object_t;
@@ -1061,6 +1074,7 @@ typedef enum {
 #define	ZFS_IMPORT_MISSING_LOG	0x4
 #define	ZFS_IMPORT_ONLY		0x8
 #define	ZFS_IMPORT_CHECKPOINT	0x10
+#define	ZFS_IMPORT_TEMP_NAME	0x20
 
 /*
  * Channel program argument/return nvlist keys and defaults.
