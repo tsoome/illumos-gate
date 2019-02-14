@@ -30,7 +30,7 @@
 .\" Copyright 2018 Joyent, Inc.
 .\" Copyright (c) 2018 Datto Inc.
 .\"
-.Dd Feb 10, 2018
+.Dd Jan 05, 2019
 .Dt ZFS 1M
 .Os
 .Sh NAME
@@ -2447,7 +2447,7 @@ option was not specified.
 .Cm remap
 .Ar filesystem Ns | Ns Ar volume
 .Xc
-Remap the indirect blocks in the given fileystem or volume so that they no
+Remap the indirect blocks in the given filesystem or volume so that they no
 longer reference blocks on previously removed vdevs and we can eventually
 shrink the size of the indirect mapping objects for the previously removed
 vdevs. Note that remapping all blocks might not be possible and that
@@ -3770,9 +3770,9 @@ renames the remaining snapshots, and then creates a new snapshot, as follows:
 # zfs destroy -r pool/users@7daysago
 # zfs rename -r pool/users@6daysago @7daysago
 # zfs rename -r pool/users@5daysago @6daysago
-# zfs rename -r pool/users@yesterday @5daysago
-# zfs rename -r pool/users@yesterday @4daysago
-# zfs rename -r pool/users@yesterday @3daysago
+# zfs rename -r pool/users@4daysago @5daysago
+# zfs rename -r pool/users@3daysago @4daysago
+# zfs rename -r pool/users@2daysago @3daysago
 # zfs rename -r pool/users@yesterday @2daysago
 # zfs rename -r pool/users@today @yesterday
 # zfs snapshot -r pool/users@today

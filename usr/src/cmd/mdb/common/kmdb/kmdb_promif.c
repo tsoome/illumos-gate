@@ -72,7 +72,7 @@ kmdb_prom_getchar(int wait)
 	getchar = (uintptr_t)pio->cons_polledio_getchar;
 	arg = (uintptr_t)pio->cons_polledio_argument;
 
-	if (!wait && ischar != NULL && !kmdb_dpi_call(ischar, 1, &arg))
+	if (!wait && ischar != 0 && !kmdb_dpi_call(ischar, 1, &arg))
 		return (-1);
 
 	return ((int)kmdb_dpi_call(getchar, 1, &arg));
@@ -742,10 +742,10 @@ kmdb_prom_debugger_exit(void)
 	mdb.m_pio = NULL;
 }
 
-#ifdef DEBUG
 /*
- * The prom_* files use ASSERT, which is #defined as assfail().
- * We need to redirect that to our assert function.
+ * The prom_* files use ASSERT, which is #defined as assfail().  We need to
+ * redirect that to our assert function. This is also used by the various STAND
+ * libraries.
  */
 int
 kmdb_prom_assfail(const char *assertion, const char *file, int line)
@@ -754,7 +754,6 @@ kmdb_prom_assfail(const char *assertion, const char *file, int line)
 	/*NOTREACHED*/
 	return (0);
 }
-#endif
 
 /*
  * Begin the initialization of the debugger/PROM interface.  Initialization is

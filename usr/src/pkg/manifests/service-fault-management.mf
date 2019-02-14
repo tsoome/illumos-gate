@@ -21,7 +21,8 @@
 
 #
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2018, Joyent, Inc.
+# Copyright (c) 2019, Joyent, Inc.
+# Copyright 2019 OmniOS Community Edition (OmniOSce) Association.
 #
 
 #
@@ -270,11 +271,7 @@ file path=kernel/drv/fm.conf group=sys
 #
 file path=lib/fm/$(ARCH64)/libfmevent.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-file path=lib/fm/$(ARCH64)/llib-lfmevent.ln \
-    variant.opensolaris.zone=__NODEFAULT
 file path=lib/fm/libfmevent.so.1 variant.opensolaris.zone=__NODEFAULT
-file path=lib/fm/llib-lfmevent variant.opensolaris.zone=__NODEFAULT
-file path=lib/fm/llib-lfmevent.ln variant.opensolaris.zone=__NODEFAULT
 #
 # Service manifests are common to both global and non-global zones
 #
@@ -327,30 +324,6 @@ $(sparc_ONLY)file path=usr/lib/fm/$(ARCH64)/libldom.so.1
 $(sparc_ONLY)file path=usr/lib/fm/$(ARCH64)/libmdesc.so.1
 file path=usr/lib/fm/$(ARCH64)/libseslog.so.1
 file path=usr/lib/fm/$(ARCH64)/libtopo.so.1 \
-    variant.opensolaris.zone=__NODEFAULT
-#
-#	64-bit lint libraries
-#
-file path=usr/lib/fm/$(ARCH64)/llib-ldiagcode.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-ldiskstatus.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-lfmd_adm.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-lfmd_agent.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-lfmd_log.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-lfmd_msg.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-lfmd_snmp.ln \
-    variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/$(ARCH64)/llib-lfmnotify.ln \
-    variant.opensolaris.zone=__NODEFAULT
-$(sparc_ONLY)file path=usr/lib/fm/$(ARCH64)/llib-lldom.ln
-$(sparc_ONLY)file path=usr/lib/fm/$(ARCH64)/llib-lmdesc.ln
-file path=usr/lib/fm/$(ARCH64)/llib-lseslog.ln
-file path=usr/lib/fm/$(ARCH64)/llib-ltopo.ln \
     variant.opensolaris.zone=__NODEFAULT
 #
 # Dictionaries, whether they are hardware-specific or not, are
@@ -535,33 +508,6 @@ $(sparc_ONLY)file path=usr/lib/fm/libmdesc.so.1
 file path=usr/lib/fm/libseslog.so.1
 file path=usr/lib/fm/libtopo.so.1 variant.opensolaris.zone=__NODEFAULT
 #
-#	32-bit lint libraries
-#
-file path=usr/lib/fm/llib-ldiagcode variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-ldiagcode.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-ldiskstatus variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-ldiskstatus.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_adm variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_adm.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_agent variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_agent.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_log variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_log.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_msg variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_msg.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_snmp variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmd_snmp.ln variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmnotify variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-lfmnotify.ln variant.opensolaris.zone=__NODEFAULT
-$(sparc_ONLY)file path=usr/lib/fm/llib-lldom
-$(sparc_ONLY)file path=usr/lib/fm/llib-lldom.ln
-$(sparc_ONLY)file path=usr/lib/fm/llib-lmdesc
-$(sparc_ONLY)file path=usr/lib/fm/llib-lmdesc.ln
-file path=usr/lib/fm/llib-lseslog
-file path=usr/lib/fm/llib-lseslog.ln
-file path=usr/lib/fm/llib-ltopo variant.opensolaris.zone=__NODEFAULT
-file path=usr/lib/fm/llib-ltopo.ln variant.opensolaris.zone=__NODEFAULT
-#
 # Topo xml maps are all global-zone only
 #
 file path=usr/lib/fm/topo/maps/xfp-hc-topology.xml mode=0444
@@ -572,6 +518,7 @@ file path=usr/lib/fm/topo/plugins/ipmi.so mode=0555
 file path=usr/lib/fm/topo/plugins/nic.so mode=0555
 file path=usr/lib/fm/topo/plugins/ses.so mode=0555
 file path=usr/lib/fm/topo/plugins/smbios.so mode=0555
+file path=usr/lib/fm/topo/plugins/usb.so mode=0555
 file path=usr/lib/fm/topo/plugins/xfp.so mode=0555
 #
 # Dictionaries, whether they are hardware-specific or not, are
@@ -734,7 +681,67 @@ $(i386_ONLY)file \
     path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-1101-disk-hc-topology.xml \
     mode=0444
 $(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-3301-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-330x-chassis-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-330x-fan-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Storage-Platform-7001-chassis-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Storage-Platform-7001-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Storage-Platform-7001-slot-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
     path=usr/platform/i86pc/lib/fm/topo/maps/Netra-X4200-M2-disk-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2028R-ACR24L-chassis-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2028R-ACR24L-disk-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2028R-ACR24L-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2028R-ACR24L-slot-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2028R-ACR24L-usb.usbtopo \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2029P-ACR24L-chassis-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2029P-ACR24L-disk-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2029P-ACR24L-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2029P-ACR24L-slot-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-2029P-ACR24L-usb.usbtopo \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-6049P-E1CR36L-chassis-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-6049P-E1CR36L-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-6049P-E1CR36L-slot-hc-topology.xml \
+    mode=0444
+$(i386_ONLY)file \
+    path=usr/platform/i86pc/lib/fm/topo/maps/SSG-6049P-E1CR36L-usb.usbtopo \
     mode=0444
 $(i386_ONLY)file \
     path=usr/platform/i86pc/lib/fm/topo/maps/Sun-Fire-X4200-M2-disk-hc-topology.xml \
@@ -909,8 +916,6 @@ $(sparc_ONLY)link path=usr/lib/fm/$(ARCH64)/libmdesc.so target=libmdesc.so.1
 link path=usr/lib/fm/$(ARCH64)/libseslog.so target=./libseslog.so.1
 link path=usr/lib/fm/$(ARCH64)/libtopo.so target=libtopo.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-link path=usr/lib/fm/$(ARCH64)/llib-lfmevent.ln \
-    target=../../../../lib/fm/$(ARCH64)/llib-lfmevent.ln
 #
 #	32-bit .so symlinks
 #
@@ -939,8 +944,6 @@ $(sparc_ONLY)link path=usr/lib/fm/libmdesc.so target=libmdesc.so.1
 link path=usr/lib/fm/libseslog.so target=libseslog.so.1
 link path=usr/lib/fm/libtopo.so target=libtopo.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-link path=usr/lib/fm/llib-lfmevent target=../../../lib/fm/llib-lfmevent
-link path=usr/lib/fm/llib-lfmevent.ln target=../../../lib/fm/llib-lfmevent.ln
 #
 # symlinks for fmd plugins for particular platforms
 #
@@ -970,3 +973,34 @@ $(sparc_ONLY)link path=usr/platform/SUNW,T5140/lib/fm/fmd/plugins/etm.so \
     target=../../../../../sun4v/lib/fm/fmd/plugins/etm.so
 $(sparc_ONLY)link path=usr/platform/SUNW,USBRDT-5240/lib/fm/fmd/plugins/etm.so \
     target=../../../../../sun4v/lib/fm/fmd/plugins/etm.so
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-3101-hc-topology.xml \
+    target=SSG-2028R-ACR24L-hc-topology.xml
+#
+# symlinks for paticular topo maps
+#
+
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-3101-usb.usbtopo \
+    target=SSG-2028R-ACR24L-usb.usbtopo
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-3102-hc-topology.xml \
+    target=SSG-2028R-ACR24L-hc-topology.xml
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-3102-usb.usbtopo \
+    target=SSG-2028R-ACR24L-usb.usbtopo
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-Compute-Platform-3302-hc-topology.xml \
+    target=Joyent-Compute-Platform-3301-hc-topology.xml
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-M12G5-hc-topology.xml \
+    target=SSG-2029P-ACR24L-hc-topology.xml
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-M12G5-usb.usbtopo \
+    target=SSG-2029P-ACR24L-usb.usbtopo
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-S10G5-hc-topology.xml \
+    target=SSG-6049P-E1CR36L-hc-topology.xml
+$(i386_ONLY)link \
+    path=usr/platform/i86pc/lib/fm/topo/maps/Joyent-S10G5-usb.usbtopo \
+    target=SSG-6049P-E1CR36L-usb.usbtopo

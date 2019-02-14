@@ -25,6 +25,7 @@
 # Copyright (c) 2011 by Delphix. All rights reserved.
 # Copyright (c) 2013 Andrew Stormont.  All rights reserved.
 # Copyright 2016 Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
+# Copyright (c) 2019, Joyent, Inc.
 #
 
 #
@@ -225,6 +226,15 @@ CERRWARN += -_gcc=-Wno-missing-field-initializers
 # -nd builds
 $(RELEASE_BUILD)CERRWARN += -_gcc=-Wno-unused
 $(RELEASE_BUILD)CERRWARN += -_gcc=-Wno-empty-body
+
+CERRWARN += -_smatch=-p=illumos_kernel
+include $(SRC)/Makefile.smatch
+
+#
+# Unfortunately, _IOWR() is regularly used with a third argument of 0,
+# so we have to disable all these smatch checks.
+#
+SMOFF += sizeof
 
 CSTD = $(CSTD_GNU99)
 
@@ -633,3 +643,11 @@ PRIVS_DEF = $(SRC)/uts/common/os/priv_defs
 #
 USBDEVS_AWK =	$(SRC)/uts/common/io/usb/usbdevs2h.awk
 USBDEVS_DATA =	$(SRC)/uts/common/io/usb/usbdevs
+
+
+#
+# If we're using the newer CTF tools, then we need to make sure that we
+# are building with the private -X option to ctfconvert which allows us
+# to fixup the struct cpu to account for machcpu.
+#
+$(BUILD_NEW_CTF_TOOLS)CTFCVTFLAGS += -X

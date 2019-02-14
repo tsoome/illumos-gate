@@ -28,6 +28,7 @@
 # Copyright 2016 Toomas Soome <tsoome@me.com>
 # Copyright 2018 Nexenta Systems, Inc.
 # Copyright 2018 Gary Mills
+# Copyright 2019 Peter Tribble
 #
 
 include ../Makefile.master
@@ -62,7 +63,6 @@ COMMON_SUBDIRS=		\
 	adbgen		\
 	acct		\
 	acctadm		\
-	ahciem		\
 	arch		\
 	asa		\
 	ast		\
@@ -106,10 +106,13 @@ COMMON_SUBDIRS=		\
 	crypt		\
 	csh		\
 	csplit		\
+	ctfconvert	\
+	ctfdiff		\
+	ctfdump		\
+	ctfmerge	\
 	ctrun		\
 	ctstat		\
 	ctwatch		\
-	cxgbetool	\
 	datadm		\
 	date		\
 	dc		\
@@ -148,6 +151,7 @@ COMMON_SUBDIRS=		\
 	enhance		\
 	env		\
 	eqn		\
+	etdump		\
 	expand		\
 	expr		\
 	exstr		\
@@ -477,7 +481,9 @@ i386_SUBDIRS=		\
 	acpi		\
 	acpihpd		\
 	addbadsec	\
+	ahciem		\
 	biosdev		\
+	cxgbetool	\
 	diskscan	\
 	nvmeadm		\
 	rtc		\
@@ -777,7 +783,7 @@ AUDITSUBDIRS=		\
 	auditreduce	\
 	auditset	\
 	auditstat	\
-	praudit		
+	praudit
 
 #
 # commands not owned by the systems group

@@ -36,6 +36,7 @@ dir path=opt/util-tests/tests/dis/sparc
 dir path=opt/util-tests/tests/files
 dir path=opt/util-tests/tests/libnvpair_json
 dir path=opt/util-tests/tests/libsff
+dir path=opt/util-tests/tests/mergeq
 file path=opt/util-tests/README mode=0444
 file path=opt/util-tests/bin/print_json mode=0555
 file path=opt/util-tests/bin/utiltest mode=0555
@@ -62,6 +63,8 @@ file path=opt/util-tests/tests/dis/i386/32.bmi1.out mode=0444
 file path=opt/util-tests/tests/dis/i386/32.bmi1.s mode=0444
 file path=opt/util-tests/tests/dis/i386/32.bmi2.out mode=0444
 file path=opt/util-tests/tests/dis/i386/32.bmi2.s mode=0444
+file path=opt/util-tests/tests/dis/i386/32.clflush.out mode=0444
+file path=opt/util-tests/tests/dis/i386/32.clflush.s mode=0444
 file path=opt/util-tests/tests/dis/i386/32.f16c.out mode=0444
 file path=opt/util-tests/tests/dis/i386/32.f16c.s mode=0444
 file path=opt/util-tests/tests/dis/i386/32.fma-pd.out mode=0444
@@ -110,6 +113,8 @@ file path=opt/util-tests/tests/dis/i386/64.bmi1.out mode=0444
 file path=opt/util-tests/tests/dis/i386/64.bmi1.s mode=0444
 file path=opt/util-tests/tests/dis/i386/64.bmi2.out mode=0444
 file path=opt/util-tests/tests/dis/i386/64.bmi2.s mode=0444
+file path=opt/util-tests/tests/dis/i386/64.clflush.out mode=0444
+file path=opt/util-tests/tests/dis/i386/64.clflush.s mode=0444
 file path=opt/util-tests/tests/dis/i386/64.ept.out mode=0444
 file path=opt/util-tests/tests/dis/i386/64.ept.s mode=0444
 file path=opt/util-tests/tests/dis/i386/64.f16c.out mode=0444
@@ -122,6 +127,8 @@ file path=opt/util-tests/tests/dis/i386/64.fma-sd.out mode=0444
 file path=opt/util-tests/tests/dis/i386/64.fma-sd.s mode=0444
 file path=opt/util-tests/tests/dis/i386/64.fma-ss.out mode=0444
 file path=opt/util-tests/tests/dis/i386/64.fma-ss.s mode=0444
+file path=opt/util-tests/tests/dis/i386/64.fsbase.out mode=0444
+file path=opt/util-tests/tests/dis/i386/64.fsbase.s mode=0444
 file path=opt/util-tests/tests/dis/i386/64.lzcnt.out mode=0444
 file path=opt/util-tests/tests/dis/i386/64.lzcnt.s mode=0444
 file path=opt/util-tests/tests/dis/i386/64.movbe.out mode=0444
@@ -325,6 +332,8 @@ file path=opt/util-tests/tests/libsff/libsff_opts.out mode=0444
 file path=opt/util-tests/tests/libsff/libsff_strings mode=0555
 file path=opt/util-tests/tests/libsff/libsff_wave mode=0555
 file path=opt/util-tests/tests/libsff/libsff_wave.out mode=0444
+file path=opt/util-tests/tests/mergeq/mqt mode=0555
+file path=opt/util-tests/tests/mergeq/wqt mode=0555
 file path=opt/util-tests/tests/printf_test mode=0555
 file path=opt/util-tests/tests/set-linkprop mode=0555
 file path=opt/util-tests/tests/xargs_test mode=0555
