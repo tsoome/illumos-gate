@@ -10,25 +10,12 @@
 #
 
 #
-# Copyright 2016 Toomas Soome <tsoome@me.com>
+# Copyright (c) 2013, 2016 by Delphix. All rights reserved.
 #
 
 include $(SRC)/Makefile.master
 
-SUBDIRS=	$(MACH) $(MACH64)
+ROOTOPTPKG = $(ROOT)/opt/zfs-tests
+TARGETDIR = $(ROOTOPTPKG)/tests/functional/large_dnode
 
-all:=		TARGET= all
-install:=	TARGET= install
-clean:=		TARGET= clean
-clobber:=	TARGET= clobber
-
-.KEEP_STATE:
-
-all clean clobber: $(SUBDIRS)
-
-install: $(SUBDIRS)
-
-FRC:
-
-$(SUBDIRS): FRC
-	@cd $@; pwd; $(MAKE) $(TARGET)
+include $(SRC)/test/zfs-tests/Makefile.com
