@@ -72,7 +72,7 @@ struct usb_devno {
 
 static const struct ure_type {
 	struct usb_devno	dev;
-	uint8_t			rev;
+	uint32_t		info;
 } ure_devs[] = {
 #define	URE_DEV(v,p,i)	{ { USB_VENDOR_##v, USB_PRODUCT_##v##_##p }, i }
 	URE_DEV(LENOVO, RTL8153, 0),
@@ -89,9 +89,8 @@ static const struct ure_type {
 /*
  * device operations
  */
-static device_probe_t ure_probe;
-static device_attach_t ure_attach;
-static device_detach_t ure_detach;
+static int ure_attach(dev_info_t *, ddi_attach_cmd_t);
+static int ure_detach(dev_info_t *, ddi_detach_cmd_t);
 
 /*
  * Module Loading Data & Entry Points
@@ -107,10 +106,11 @@ static struct modldrv ure_modldrv = {
 
 static struct modlinkage modlinkage = {
 	.ml_rev = MODREV_1,
-	.ml_linkage = { &urtw_modldrv, NULL }
+	.ml_linkage = { &ure_modldrv, NULL }
 };
 
 
+#if 0
 static usb_callback_t ure_bulk_read_callback;
 static usb_callback_t ure_bulk_write_callback;
 
@@ -478,13 +478,14 @@ ure_probe(device_t dev)
 
 	return (usbd_lookup_id_by_uaa(ure_devs, sizeof(ure_devs), uaa));
 }
+#endif
 
 /*
  * Attach the interface. Allocate softc structures, do ifmedia
  * setup and ethernet/BPF attach.
  */
 static int
-ure_attach(device_t dev)
+ure_attach(dev_info_t *dev, ddi_attach_cmd_t cmd)
 {
 	struct usb_attach_arg *uaa = device_get_ivars(dev);
 	struct ure_softc *sc = device_get_softc(dev);
@@ -522,6 +523,7 @@ detach:
 	return (ENXIO);			/* failure */
 }
 
+#if 0
 static int
 ure_detach(device_t dev)
 {
@@ -1291,3 +1293,4 @@ ure_init_fifo(struct ure_softc *sc)
 	ure_write_4(sc, URE_PLA_TXFIFO_CTRL, URE_MCU_TYPE_PLA,
 	    URE_TXFIFO_THR_NORMAL);
 }
+#endif
