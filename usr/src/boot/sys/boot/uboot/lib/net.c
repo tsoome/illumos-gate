@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 2000-2001 Benno Rice
  * Copyright (c) 2007 Semihalf, Rafal Jaworowski <raj@semihalf.com>
  * All rights reserved.
@@ -118,7 +118,7 @@ get_env_net_params()
 	 */
 	if ((envstr = ub_env_get("rootpath")) == NULL)
 		return;
-	strlcpy(rootpath, envstr, sizeof(rootpath));
+	strlcpy(rootpath, envstr, sizeof (rootpath));
 	setenv("dhcp.root-path", rootpath, 0);
 
 	/*
@@ -155,7 +155,7 @@ get_env_net_params()
 	 */
 	serveraddr = INADDR_NONE;
 	if ((envstr = ub_env_get("serverip")) != NULL) {
-		if ((serveraddr = inet_addr(envstr)) == INADDR_NONE) 
+		if ((serveraddr = inet_addr(envstr)) == INADDR_NONE)
 			printf("Could not parse serverip '%s'\n", envstr);
 	}
 
@@ -323,13 +323,13 @@ net_init(struct iodesc *desc, void *machdep_hint)
 	sc = nif->nif_devdata = &uboot_softc;
 
 	if ((err = ub_dev_open(sc->sc_handle)) != 0)
-		panic("%s%d: initialisation failed with error %d\n",
+		panic("%s%d: initialisation failed with error %d",
 		    nif->nif_driver->netif_bname, nif->nif_unit, err);
 
 	/* Get MAC address */
 	di = ub_dev_get(sc->sc_handle);
 	memcpy(desc->myea, di->di_net.hwaddr, 6);
-	if (memcmp (desc->myea, "\0\0\0\0\0\0", 6) == 0) {
+	if (memcmp(desc->myea, "\0\0\0\0\0\0", 6) == 0) {
 		panic("%s%d: empty ethernet address!",
 		    nif->nif_driver->netif_bname, nif->nif_unit);
 	}
@@ -358,6 +358,6 @@ net_end(struct netif *nif)
 	int err;
 
 	if ((err = ub_dev_close(sc->sc_handle)) != 0)
-		panic("%s%d: net_end failed with error %d\n",
+		panic("%s%d: net_end failed with error %d",
 		    nif->nif_driver->netif_bname, nif->nif_unit, err);
 }
