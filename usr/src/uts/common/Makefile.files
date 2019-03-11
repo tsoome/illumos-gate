@@ -2174,6 +2174,8 @@ UDMF_OBJS = udmf_usbgem.o
 URF_OBJS = urf_usbgem.o
 UPF_OBJS = upf_usbgem.o
 
+URE_OBJS = if_ure.o
+
 #
 #	BNXE objects
 #

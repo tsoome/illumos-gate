@@ -1304,6 +1304,10 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/urf/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
+$(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/ure/%.c
+	$(COMPILE.c) -o $@ $<
+	$(CTFCONVERT_O)
+
 $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/vuidmice/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
