@@ -106,6 +106,15 @@ static void	tem_internal_init(struct tem_vt_state *, cred_t *, boolean_t,
 		    boolean_t);
 static void	tems_get_initial_color(tem_color_t *pcolor);
 
+#if 0
+static int	tem_rput(queue_t *, mblk_t *);
+static int	tem_wput(queue_t *, mblk_t *);
+static int	tem_rsrv(queue_t *);
+static int	tem_wsrv(queue_t *);
+static int	tem_open(queue_t *, dev_t *, int, int, cred_t *);
+static int	tem_close(queue_t *, int, cred_t *);
+#endif
+
 /*
  * Globals
  */
@@ -113,15 +122,69 @@ static ldi_ident_t	term_li = NULL;
 tem_state_t	tems;	/* common term info */
 _NOTE(MUTEX_PROTECTS_DATA(tems.ts_lock, tems))
 
-extern struct mod_ops mod_miscops;
+/*
+static struct module_info tem_info = {
+	.mi_idnum = 0,
+	.mi_idname = "ANSI Terminal Emulator",
+	.mi_minpsz = 0,
+	.mi_maxpsz = _TTY_BUFSIZ,
+	.mi_hiwat = _TTY_BUFSIZ,
+	.mi_lowat = 128
+};
 
-static struct modlmisc	modlmisc = {
-	&mod_miscops,	/* modops */
-	"ANSI Terminal Emulator", /* name */
+struct	qinit tem_rinit = {
+	.qi_putp = tem_rput,
+	.qi_srvp = tem_rsrv,
+	.qi_qopen = tem_open,
+	.qi_qclose = tem_close,
+	.qi_qadmin = NULL,
+	.qi_minfo = &tem_info,
+	.qi_mstat = NULL,
+	.qi_rwp = NULL,
+	.qi_infop = NULL,
+	.qi_struiot = 0
+};
+
+struct	qinit tem_winit = {
+	.qi_putp = tem_wput,
+	.qi_srvp = tem_wsrv,
+	.qi_qopen = NULL,
+	.qi_qclose = NULL,
+	.qi_qadmin = NULL,
+	.qi_minfo = &tem_info,
+	.qi_mstat = NULL,
+	.qi_rwp = NULL,
+	.qi_infop = NULL,
+	.qi_struiot = 0
+};
+
+static struct streamtab tem_streamtab = {
+	.st_rdinit = &tem_rinit,
+	.st_wrinit = &tem_winit,
+	.st_muxrinit = NULL,
+	.st_muxwinit = NULL
+};
+
+static struct fmodsw tem_fmodsw = {
+	.f_name = "tem",
+	.f_str = &tem_streamtab,
+	.f_flag = D_MP
+};
+
+static struct modlstrmod tem_modlstrmod = {
+	.strmod_modops = &mod_strmodops,
+	.strmod_linkinfo = "tem module",
+	.strmod_fmodsw = &tem_fmodsw
+};
+*/
+
+static struct modlmisc	tem_modlmisc = {
+	.misc_modops = &mod_miscops,
+	.misc_linkinfo = "ANSI Terminal Emulator"
 };
 
 static struct modlinkage modlinkage = {
-	MODREV_1, { (void *)&modlmisc, NULL }
+	MODREV_1, { (void *)&tem_modlmisc, NULL }
 };
 
 int
@@ -163,6 +226,54 @@ _info(struct modinfo *modinfop)
 {
 	return (mod_info(&modlinkage, modinfop));
 }
+
+#if 0
+static int
+tem_rput(queue_t *qp, mblk_t *mp)
+{
+	return (0);
+}
+
+static int
+tem_wput(queue_t *qp, mblk_t *mp)
+{
+	return (0);
+}
+
+static int
+tem_rsrv(queue_t *qp)
+{
+	return (0);
+}
+
+static int
+tem_wsrv(queue_t *qp)
+{
+	return (0);
+}
+
+static int
+tem_open(queue_t *qp, dev_t *devp, int oflag, int sflag, cred_t *credp)
+{
+	if (sflag != MODOPEN)
+		return (EINVAL);
+
+	if (qp->q_ptr != NULL) {
+		/* It's already attached. */
+		return (0);
+	}
+
+	return (0);
+}
+
+static int
+tem_close(queue_t *qp, int flag, cred_t *credp)
+{
+	qprocsoff(qp);
+	qp->q_ptr = WR(qp)->q_ptr = NULL;
+	return (0);
+}
+#endif
 
 static void
 tem_add(struct tem_vt_state *tem)
