@@ -655,6 +655,22 @@ done:
 }
 
 static void
+vbe_print_memory(unsigned vmem)
+{
+	char unit = 'K';
+
+	vmem /= 1024;
+	if (vmem >= 10240000) {
+		vmem /= 1048576;
+		unit = 'G';
+	} else if (vmem >= 10000) {
+		vmem /= 1024;
+		unit = 'M';
+	}
+	printf("Total memory: %u%cB\n", vmem, unit);
+}
+
+static void
 vbe_print_vbe_info(struct vbeinfoblock *vbep)
 {
 	char *oemstring = "";
@@ -680,6 +696,8 @@ vbe_print_vbe_info(struct vbeinfoblock *vbep)
 		    vbep->OemSoftwareRev >> 8, vbep->OemSoftwareRev & 0xF,
 		    oemvendor, oemproductname, oemproductrev);
 	}
+	vbe_print_memory(vbep->TotalMemory << 16);
+	printf("Number of Image Pages: %d\n", vbe_mode->LinNumberOfImagePages);
 }
 
 /* List available modes, filter by depth. If depth is -1, list all. */
