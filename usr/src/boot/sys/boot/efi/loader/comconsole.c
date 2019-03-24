@@ -28,6 +28,7 @@
 #include <stand.h>
 #include <sys/errno.h>
 #include <bootstrap.h>
+#include <stdbool.h>
 
 #include <efi.h>
 #include <efilib.h>
@@ -41,6 +42,8 @@ static EFI_GUID serial = SERIAL_IO_PROTOCOL;
 #ifndef	COMSPEED
 #define	COMSPEED	9600
 #endif
+
+#define	PNP0501		0x501		/* 16550A-compatible COM port */
 
 struct serial {
 	uint64_t	baudrate;
@@ -59,7 +62,7 @@ static void	comc_putchar(struct console *, int);
 static int	comc_getchar(struct console *);
 static int	comc_ischar(struct console *);
 static int	comc_ioctl(struct console *, int, void *);
-static void	comc_setup(struct console *);
+static bool	comc_setup(struct console *);
 static char	*comc_asprint_mode(struct serial *);
 static int	comc_parse_mode(struct serial *, const char *);
 static int	comc_mode_set(struct env_var *, int, const void *);
@@ -118,7 +121,7 @@ struct console ttyd = {
 	.c_private = NULL
 };
 
-EFI_STATUS
+static EFI_STATUS
 efi_serial_init(EFI_HANDLE **handlep, int *nhandles)
 {
 	UINTN bufsz = 0;
@@ -137,7 +140,7 @@ efi_serial_init(EFI_HANDLE **handlep, int *nhandles)
 	if ((handles = malloc(bufsz)) == NULL)
 		return (ENOMEM);
 
-	*nhandles = (int)(bufsz/sizeof (EFI_HANDLE));
+	*nhandles = (int)(bufsz / sizeof (EFI_HANDLE));
 	/*
 	 * get handle array
 	 */
@@ -150,28 +153,91 @@ efi_serial_init(EFI_HANDLE **handlep, int *nhandles)
 	return (status);
 }
 
+/*
+ * Find serial device number from device path.
+ * Return -1 if not found.
+ */
+static int
+efi_serial_get_index(EFI_DEVICE_PATH *devpath)
+{
+	ACPI_HID_DEVICE_PATH  *acpi;
+
+	while (!IsDevicePathEnd(devpath)) {
+		if (DevicePathType(devpath) == ACPI_DEVICE_PATH &&
+		    DevicePathSubType(devpath) == ACPI_DP) {
+
+			acpi = (ACPI_HID_DEVICE_PATH *)devpath;
+			if (acpi->HID == EISA_PNP_ID(PNP0501)) {
+				return (acpi->UID);
+			}
+		}
+
+		devpath = NextDevicePathNode(devpath);
+	}
+	return (-1);
+}
+
+/*
+ * The order of handles from LocateHandle() is not known, we need to
+ * iterate handles, pick device path for handle, and check the device
+ * number.
+ */
+static EFI_HANDLE
+efi_serial_get_handle(int port)
+{
+	EFI_STATUS status;
+	EFI_HANDLE *handles, handle;
+	EFI_DEVICE_PATH *devpath;
+	int index, nhandles;
+
+	if (port == -1)
+		return (NULL);
+
+	handles = NULL;
+	nhandles = 0;
+	status = efi_serial_init(&handles, &nhandles);
+	if (EFI_ERROR(status))
+		return (NULL);
+
+	handle = NULL;
+	for (index = 0; index < nhandles; index++) {
+		devpath = efi_lookup_devpath(handles[index]);
+		if (port == efi_serial_get_index(devpath)) {
+			handle = (handles[index]);
+			break;
+		}
+	}
+
+	/*
+	 * In case we did fail to identify the device by path, use port as
+	 * array index. Note, we did check port == -1 above.
+	 */
+	if (port < nhandles && handle == NULL)
+		handle = handles[port];
+
+	free(handles);
+	return (handle);
+}
+
 static void
 comc_probe(struct console *cp)
 {
 	EFI_STATUS status;
+	EFI_HANDLE handle;
 	struct serial *port;
 	char name[20];
 	char value[20];
 	char *env;
-	EFI_HANDLE *handles = NULL;	/* array of handles */
-	int nhandles = 0;		/* number of handles in array */
 
 	/* are we already set up? */
 	if (cp->c_private != NULL)
 		return;
 
-	/* make sure the handles are available */
-	status = efi_serial_init(&handles, &nhandles);
-
 	cp->c_private = malloc(sizeof (struct serial));
 	port = cp->c_private;
 	port->baudrate = COMSPEED;
 
+	port->ioaddr = -1;	/* invalid port */
 	if (strcmp(cp->c_name, "ttya") == 0)
 		port->ioaddr = 0;
 	else if (strcmp(cp->c_name, "ttyb") == 0)
@@ -181,9 +247,6 @@ comc_probe(struct console *cp)
 	else if (strcmp(cp->c_name, "ttyd") == 0)
 		port->ioaddr = 3;
 
-	if (port->ioaddr >= nhandles)
-		port->ioaddr = -1;	/* invalid port */
-
 	port->databits = 8;		/* 8,n,1 */
 	port->parity = NoParity;	/* 8,n,1 */
 	port->stopbits = OneStopBit;	/* 8,n,1 */
@@ -191,16 +254,16 @@ comc_probe(struct console *cp)
 	port->rtsdtr_off = 0;		/* rts-dtr is on */
 	port->sio = NULL;
 
-	if (port->ioaddr != -1) {
-		status = BS->OpenProtocol(handles[port->ioaddr],
-		    &serial, (void**)&port->sio, IH, NULL,
+	handle = efi_serial_get_handle(port->ioaddr);
+
+	if (handle != NULL) {
+		status = BS->OpenProtocol(handle, &serial,
+		    (void**)&port->sio, IH, NULL,
 		    EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 
 		if (EFI_ERROR(status))
-			port->ioaddr = -1;	/* invalid port */
+			port->sio = NULL;
 	}
-	if (handles != NULL)
-		free(handles);
 
 	snprintf(name, sizeof (name), "%s-mode", cp->c_name);
 	env = getenv(name);
@@ -243,18 +306,20 @@ comc_probe(struct console *cp)
 	    port->rtsdtr_off? "true" : "false");
 	unsetenv(name);
 	env_setenv(name, EV_VOLATILE, value, comc_rtsdtr_set, env_nounset);
-	comc_setup(cp);
+
+	cp->c_flags = 0;
+	if (comc_setup(cp))
+		cp->c_flags = C_PRESENTIN | C_PRESENTOUT;
 }
 
 static int
 comc_init(struct console *cp, int arg __attribute((unused)))
 {
 
-	comc_setup(cp);
-
-	if ((cp->c_flags & (C_PRESENTIN | C_PRESENTOUT)) ==
-	    (C_PRESENTIN | C_PRESENTOUT))
+	if (comc_setup(cp))
 		return (CMD_OK);
+
+	cp->c_flags = 0;
 	return (CMD_ERROR);
 }
 
@@ -495,7 +560,8 @@ comc_mode_set(struct env_var *ev, int flags, const void *value)
 	if (comc_parse_mode(cp->c_private, value) == CMD_ERROR)
 		return (CMD_ERROR);
 
-	comc_setup(cp);
+	(void) comc_setup(cp);
+
 	env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
 
 	return (CMD_OK);
@@ -521,7 +587,8 @@ comc_cd_set(struct env_var *ev, int flags, const void *value)
 	else
 		return (CMD_ERROR);
 
-	comc_setup(cp);
+	(void) comc_setup(cp);
+
 	env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
 
 	return (CMD_OK);
@@ -547,50 +614,48 @@ comc_rtsdtr_set(struct env_var *ev, int flags, const void *value)
 	else
 		return (CMD_ERROR);
 
-	comc_setup(cp);
+	(void) comc_setup(cp);
+
 	env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
 
 	return (CMD_OK);
 }
 
-static void
+/*
+ * In case of error, we also reset ACTIVE flags, so the console
+ * framefork will try alternate consoles.
+ */
+static bool
 comc_setup(struct console *cp)
 {
 	EFI_STATUS status;
 	UINT32 control;
 	struct serial *sp = cp->c_private;
 
-	if ((cp->c_flags & (C_ACTIVEIN | C_ACTIVEOUT)) == 0)
-		return;
-
 	/* port is not usable */
-	if (sp->sio == NULL) {
-		cp->c_flags &= ~(C_PRESENTIN | C_PRESENTOUT);
-		return;
-	}
+	if (sp->sio == NULL)
+		return (false);
 
-	cp->c_flags |= (C_PRESENTIN | C_PRESENTOUT);
 	status = sp->sio->Reset(sp->sio);
-	if (EFI_ERROR(status)) {
-		cp->c_flags &= ~(C_PRESENTIN | C_PRESENTOUT);
-	}
+	if (EFI_ERROR(status))
+		return (false);
 
 	status = sp->sio->SetAttributes(sp->sio, sp->baudrate, 0, 0, sp->parity,
 	    sp->databits, sp->stopbits);
-	if (EFI_ERROR(status)) {
-		cp->c_flags &= ~(C_PRESENTIN | C_PRESENTOUT);
-	}
+	if (EFI_ERROR(status))
+		return (false);
 
 	if (sp->rtsdtr_off) {
 		status = sp->sio->GetControl(sp->sio, &control);
-		if (EFI_ERROR(status)) {
-			cp->c_flags &= ~(C_PRESENTIN | C_PRESENTOUT);
-		}
+		if (EFI_ERROR(status))
+			return (false);
 		control &= ~(EFI_SERIAL_REQUEST_TO_SEND |
 		    EFI_SERIAL_DATA_TERMINAL_READY);
 		status = sp->sio->SetControl(sp->sio, control);
-		if (EFI_ERROR(status)) {
-			cp->c_flags &= ~(C_PRESENTIN | C_PRESENTOUT);
-		}
+		if (EFI_ERROR(status))
+			return (false);
 	}
+	/* Mark this port usable. */
+	cp->c_flags |= (C_PRESENTIN | C_PRESENTOUT);
+	return (true);
 }
