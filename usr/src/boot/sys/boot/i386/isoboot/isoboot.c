@@ -336,7 +336,6 @@ exit(int x __unused)
 
 	while (1)
 		;
-	__unreachable();
 }
 
 static void
