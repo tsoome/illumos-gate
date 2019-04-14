@@ -24,6 +24,10 @@
  */
 
 /*
+ * Copyright 2019, Joyent, Inc.
+ */
+
+/*
  * Softmac data-path switching:
  *
  * - Fast-path model
@@ -764,7 +768,7 @@ softmac_wput_single_nondata(softmac_upper_t *sup, mblk_t *mp)
 	 * operation is is serialized by softmac_wput_nondata_task().
 	 */
 	if (sup->su_mode != SOFTMAC_FASTPATH) {
-		dld_wput(sup->su_wq, mp);
+		(void) dld_wput(sup->su_wq, mp);
 		return;
 	}
 
@@ -986,9 +990,9 @@ softmac_wput_data(softmac_upper_t *sup, mblk_t *mp)
 	 * process of switching.
 	 */
 	if (sup->su_mode != SOFTMAC_FASTPATH)
-		dld_wput(sup->su_wq, mp);
+		(void) dld_wput(sup->su_wq, mp);
 	else
-		(void) softmac_fastpath_wput_data(sup, mp, NULL, 0);
+		(void) softmac_fastpath_wput_data(sup, mp, (uintptr_t)NULL, 0);
 }
 
 /*ARGSUSED*/
@@ -1019,7 +1023,7 @@ softmac_fastpath_wput_data(softmac_upper_t *sup, mblk_t *mp, uintptr_t f_hint,
 	 */
 	if (SOFTMAC_CANPUTNEXT(wq)) {
 		putnext(wq, mp);
-		return (NULL);
+		return ((mac_tx_cookie_t)NULL);
 	}
 
 	if (sup->su_tx_busy) {
