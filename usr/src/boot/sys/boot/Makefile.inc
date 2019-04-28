@@ -35,6 +35,7 @@ BOOTSRC=	$(SRC)/boot/sys/boot
 LIBSRC=		$(SRC)/boot/lib
 SASRC=		$(LIBSRC)/libstand
 ZFSSRC=		$(SASRC)/zfs
+ZLIB=		$(SRC)/contrib/zlib
 
 # set standard values
 AS_CPPFLAGS=
@@ -42,6 +43,7 @@ CPPFLAGS=	-D_STANDALONE -_gcc=-nostdinc
 CFLAGS64=	-_gcc=-mno-red-zone
 
 CFLAGS=		-_gcc=-Os -_gcc=-fPIC -_gcc=-ffreestanding -_gcc=-fno-builtin
+CFLAGS +=	-_gcc=-ffunction-sections -_gcc=-fdata-sections
 CFLAGS +=	-_gcc=-mno-mmx -_gcc=-mno-3dnow -_gcc=-mno-sse -_gcc=-mno-sse2
 CFLAGS +=	-_gcc=-mno-sse3 -_gcc=-msoft-float
 CFLAGS +=	-_gcc=-mno-avx -_gcc=-mno-aes
@@ -50,7 +52,7 @@ CFLAGS +=	$(CCNOAUTOINLINE) $(CCNOREORDER) $(CSTD_GNU99)
 CCASFLAGS=	-fPIC -Wa,--divide
 ASFLAGS=	--divide
 
-COMPILE.S=	$(CC) $(CCASFLAGS) $(CPPFLAGS) -c
+COMPILE.S=	$(CC) $(SMATCH_off) $(CCASFLAGS) $(CPPFLAGS) -c
 
 ROOT_BOOT=	$(ROOT)/boot
 ROOTBOOTPROG=$(PROG:%=$(ROOT_BOOT)/%)
