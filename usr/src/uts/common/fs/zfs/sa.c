@@ -243,31 +243,23 @@ sa_cache_fini(void)
 static int
 layout_num_compare(const void *arg1, const void *arg2)
 {
-	const sa_lot_t *node1 = arg1;
-	const sa_lot_t *node2 = arg2;
+	const sa_lot_t *node1 = (const sa_lot_t *)arg1;
+	const sa_lot_t *node2 = (const sa_lot_t *)arg2;
 
-	if (node1->lot_num > node2->lot_num)
-		return (1);
-	else if (node1->lot_num < node2->lot_num)
-		return (-1);
-	return (0);
+	return (AVL_CMP(node1->lot_num, node2->lot_num));
 }
 
 static int
 layout_hash_compare(const void *arg1, const void *arg2)
 {
-	const sa_lot_t *node1 = arg1;
-	const sa_lot_t *node2 = arg2;
+	const sa_lot_t *node1 = (const sa_lot_t *)arg1;
+	const sa_lot_t *node2 = (const sa_lot_t *)arg2;
 
-	if (node1->lot_hash > node2->lot_hash)
-		return (1);
-	if (node1->lot_hash < node2->lot_hash)
-		return (-1);
-	if (node1->lot_instance > node2->lot_instance)
-		return (1);
-	if (node1->lot_instance < node2->lot_instance)
-		return (-1);
-	return (0);
+	int cmp = AVL_CMP(node1->lot_hash, node2->lot_hash);
+	if (likely(cmp))
+		return (cmp);
+
+	return (AVL_CMP(node1->lot_instance, node2->lot_instance));
 }
 
 boolean_t
@@ -1577,12 +1569,12 @@ sa_attr_register_sync(sa_handle_t *hdl, dmu_tx_t *tx)
 
 	mutex_enter(&sa->sa_lock);
 
-	if (!sa->sa_need_attr_registration || sa->sa_master_obj == NULL) {
+	if (!sa->sa_need_attr_registration || sa->sa_master_obj == 0) {
 		mutex_exit(&sa->sa_lock);
 		return;
 	}
 
-	if (sa->sa_reg_attr_obj == NULL) {
+	if (sa->sa_reg_attr_obj == 0) {
 		sa->sa_reg_attr_obj = zap_create_link(hdl->sa_os,
 		    DMU_OT_SA_ATTR_REGISTRATION,
 		    sa->sa_master_obj, SA_REGISTRY, tx);

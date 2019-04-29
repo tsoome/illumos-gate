@@ -993,11 +993,11 @@ xen_parse_props(char *s, char *prop_map[], int n_prop)
 
 	do {
 		scp = cp;
-		while ((*cp != NULL) && (*cp != ':'))
+		while ((*cp != '\0') && (*cp != ':'))
 			cp++;
 
 		if ((scp != cp) && (*prop_name != NULL)) {
-			*cp = NULL;
+			*cp = '\0';
 			bsetprops(*prop_name, scp);
 		}
 
@@ -1259,7 +1259,7 @@ save_boot_info(struct xboot_info *xbi)
 		}
 	} else {
 		saved_mbi.drives_length = 0;
-		saved_mbi.drives_addr = NULL;
+		saved_mbi.drives_addr = 0;
 	}
 
 	/*
@@ -2017,6 +2017,7 @@ bop_trap(ulong_t *tfp)
 	bop_printf(NULL, "flags register       0x%lx\n", tf->flags_reg);
 	bop_printf(NULL, "return %%rsp          0x%lx\n", tf->stk_ptr);
 	bop_printf(NULL, "return %%ss           0x%lx\n", tf->stk_seg & 0xffff);
+	bop_printf(NULL, "%%cr2			0x%lx\n", getcr2());
 
 	/* grab %[er]bp pushed by our code from the stack */
 	fakeframe.old_frame = (bop_frame_t *)*(tfp - 3);
