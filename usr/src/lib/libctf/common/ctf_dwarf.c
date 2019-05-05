@@ -28,7 +28,7 @@
  */
 
 /*
- * Copyright 2018 Joyent, Inc.
+ * Copyright 2019, Joyent, Inc.
  */
 
 /*
@@ -281,9 +281,6 @@ static int ctf_dwarf_function_count(ctf_cu_t *, Dwarf_Die, ctf_funcinfo_t *,
     boolean_t);
 static int ctf_dwarf_convert_fargs(ctf_cu_t *, Dwarf_Die, ctf_funcinfo_t *,
     ctf_id_t *);
-
-typedef int (ctf_dwarf_symtab_f)(ctf_cu_t *, const GElf_Sym *, ulong_t,
-    const char *, const char *, void *);
 
 /*
  * This is a generic way to set a CTF Conversion backend error depending on what
@@ -886,7 +883,7 @@ ctf_dwarf_dwarf_base(ctf_cu_t *cup, Dwarf_Die die, int *kindp,
 		break;
 	default:
 		(void) snprintf(cup->cu_errbuf, cup->cu_errlen,
-		    "encountered unkown DWARF encoding: %d", type);
+		    "encountered unknown DWARF encoding: %d", type);
 		return (ECTF_CONVBKERR);
 	}
 
@@ -1488,6 +1485,75 @@ ctf_dwarf_create_array(ctf_cu_t *cup, Dwarf_Die die, ctf_id_t *idp, int isroot)
 	return (ctf_dwmap_add(cup, *idp, die, B_FALSE));
 }
 
+/*
+ * Given "const int const_array3[11]", GCC7 at least will create a DIE tree of
+ * DW_TAG_const_type:DW_TAG_array_type:DW_Tag_const_type:<member_type>.
+ *
+ * Given C's syntax, this renders out as "const const int const_array3[11]".  To
+ * get closer to round-tripping (and make the unit tests work), we'll peek for
+ * this case, and avoid adding the extraneous qualifier if we see that the
+ * underlying array referent already has the same qualifier.
+ *
+ * This is unfortunately less trivial than it could be: this issue applies to
+ * qualifier sets like "const volatile", as well as multi-dimensional arrays, so
+ * we need to descend down those.
+ *
+ * Returns CTF_ERR on error, or a boolean value otherwise.
+ */
+static int
+needed_array_qualifier(ctf_cu_t *cup, int kind, ctf_id_t ref_id)
+{
+	const ctf_type_t *t;
+	ctf_arinfo_t arinfo;
+	int akind;
+
+	if (kind != CTF_K_CONST && kind != CTF_K_VOLATILE &&
+	    kind != CTF_K_RESTRICT)
+		return (1);
+
+	if ((t = ctf_dyn_lookup_by_id(cup->cu_ctfp, ref_id)) == NULL)
+		return (CTF_ERR);
+
+	if (LCTF_INFO_KIND(cup->cu_ctfp, t->ctt_info) != CTF_K_ARRAY)
+		return (1);
+
+	if (ctf_dyn_array_info(cup->cu_ctfp, ref_id, &arinfo) != 0)
+		return (CTF_ERR);
+
+	ctf_id_t id = arinfo.ctr_contents;
+
+	for (;;) {
+		if ((t = ctf_dyn_lookup_by_id(cup->cu_ctfp, id)) == NULL)
+			return (CTF_ERR);
+
+		akind = LCTF_INFO_KIND(cup->cu_ctfp, t->ctt_info);
+
+		if (akind == kind)
+			break;
+
+		if (akind == CTF_K_ARRAY) {
+			if (ctf_dyn_array_info(cup->cu_ctfp,
+			    id, &arinfo) != 0)
+				return (CTF_ERR);
+			id = arinfo.ctr_contents;
+			continue;
+		}
+
+		if (akind != CTF_K_CONST && akind != CTF_K_VOLATILE &&
+		    akind != CTF_K_RESTRICT)
+			break;
+
+		id = t->ctt_type;
+	}
+
+	if (kind == akind) {
+		ctf_dprintf("ignoring extraneous %s qualifier for array %d\n",
+		    ctf_kind_name(cup->cu_ctfp, kind), ref_id);
+	}
+
+	return (kind != akind);
+}
+
 static int
 ctf_dwarf_create_reference(ctf_cu_t *cup, Dwarf_Die die, ctf_id_t *idp,
     int kind, int isroot)
@@ -1525,6 +1591,17 @@ ctf_dwarf_create_reference(ctf_cu_t *cup, Dwarf_Die die, ctf_id_t *idp,
 			ctf_free(name, namelen);
 			return (ret);
 		}
+	}
+
+	if ((ret = needed_array_qualifier(cup, kind, id)) <= 0) {
+		if (ret != 0) {
+			ret = (ctf_errno(cup->cu_ctfp));
+		} else {
+			*idp = id;
+		}
+
+		ctf_free(name, namelen);
+		return (ret);
 	}
 
 	if ((*idp = ctf_add_reftype(cup->cu_ctfp, isroot, name, id, kind)) ==
@@ -1781,6 +1858,7 @@ ctf_dwarf_convert_type(ctf_cu_t *cup, Dwarf_Die die, ctf_id_t *idp,
 		break;
 	default:
 		ctf_dprintf("ignoring tag type %x\n", tag);
+		*idp = CTF_ERR;
 		ret = 0;
 		break;
 	}
@@ -1823,7 +1901,7 @@ ctf_dwarf_function_count(ctf_cu_t *cup, Dwarf_Die die, ctf_funcinfo_t *fip,
 			return (ret);
 
 		/*
-		 * We have to check for a varargs type decleration. This will
+		 * We have to check for a varargs type declaration. This will
 		 * happen in one of two ways. If we have a function pointer
 		 * type, then it'll be done with a tag of type
 		 * DW_TAG_unspecified_parameters. However, it only means we have
@@ -1908,10 +1986,11 @@ ctf_dwarf_convert_fargs(ctf_cu_t *cup, Dwarf_Die die, ctf_funcinfo_t *fip,
 static int
 ctf_dwarf_convert_function(ctf_cu_t *cup, Dwarf_Die die)
 {
-	int ret;
-	char *name;
 	ctf_dwfunc_t *cdf;
 	Dwarf_Die tdie;
+	Dwarf_Bool b;
+	char *name;
+	int ret;
 
 	/*
 	 * Functions that don't have a name are generally functions that have
@@ -1925,7 +2004,25 @@ ctf_dwarf_convert_function(ctf_cu_t *cup, Dwarf_Die die)
 		return (ret);
 	}
 
-	ctf_dprintf("beginning work on function %s\n", name);
+	ctf_dprintf("beginning work on function %s (die %llx)\n",
+	    name, ctf_die_offset(die));
+
+	if ((ret = ctf_dwarf_boolean(cup, die, DW_AT_declaration, &b)) != 0) {
+		if (ret != ENOENT)
+			return (ret);
+	} else if (b != 0) {
+		/*
+		 * GCC7 at least creates empty DW_AT_declarations for functions
+		 * defined in headers.  As they lack details on the function
+		 * prototype, we need to ignore them.  If we later actually
+		 * see the relevant function's definition, we will see another
+		 * DW_TAG_subprogram that is more complete.
+		 */
+		ctf_dprintf("ignoring declaration of function %s (die %llx)\n",
+		    name, ctf_die_offset(die));
+		return (0);
+	}
+
 	if ((cdf = ctf_alloc(sizeof (ctf_dwfunc_t))) == NULL) {
 		ctf_free(name, strlen(name) + 1);
 		return (ENOMEM);
@@ -2166,126 +2263,132 @@ ctf_dwarf_fixup_die(ctf_cu_t *cup, boolean_t addpass)
 	return (0);
 }
 
+/*
+ * The DWARF information about a symbol and the information in the symbol table
+ * may not be the same due to symbol reduction that is performed by ld due to a
+ * mapfile or other such directive. We process weak symbols at a later time.
+ *
+ * The following are the rules that we employ:
+ *
+ * 1. A DWARF function that is considered exported matches STB_GLOBAL entries
+ * with the same name.
+ *
+ * 2. A DWARF function that is considered exported matches STB_LOCAL entries
+ * with the same name and the same file. This case may happen due to mapfile
+ * reduction.
+ *
+ * 3. A DWARF function that is not considered exported matches STB_LOCAL entries
+ * with the same name and the same file.
+ *
+ * 4. A DWARF function that has the same name as the symbol table entry, but the
+ * files do not match. This is considered a 'fuzzy' match. This may also happen
+ * due to a mapfile reduction. Fuzzy matching is only used when we know that the
+ * file in question refers to the primary object. This is because when a symbol
+ * is reduced in a mapfile, it's always going to be tagged as a local value in
+ * the generated output and it is considered as to belong to the primary file
+ * which is the first STT_FILE symbol we see.
+ */
+static boolean_t
+ctf_dwarf_symbol_match(const char *symtab_file, const char *symtab_name,
+    uint_t symtab_bind, const char *dwarf_file, const char *dwarf_name,
+    boolean_t dwarf_global, boolean_t *is_fuzzy)
+{
+	*is_fuzzy = B_FALSE;
+
+	if (symtab_bind != STB_LOCAL && symtab_bind != STB_GLOBAL) {
+		return (B_FALSE);
+	}
+
+	if (strcmp(symtab_name, dwarf_name) != 0) {
+		return (B_FALSE);
+	}
+
+	if (symtab_bind == STB_GLOBAL) {
+		return (dwarf_global);
+	}
+
+	if (strcmp(symtab_file, dwarf_file) == 0) {
+		return (B_TRUE);
+	}
+
+	if (dwarf_global) {
+		*is_fuzzy = B_TRUE;
+		return (B_TRUE);
+	}
+
+	return (B_FALSE);
+}
+
 static ctf_dwfunc_t *
 ctf_dwarf_match_func(ctf_cu_t *cup, const char *file, const char *name,
-    int bind)
+    uint_t bind, boolean_t primary)
 {
-	ctf_dwfunc_t *cdf;
+	ctf_dwfunc_t *cdf, *fuzzy = NULL;
 
 	if (bind == STB_WEAK)
 		return (NULL);
 
-	/* Nothing we can do if we can't find a name to compare it to. */
 	if (bind == STB_LOCAL && (file == NULL || cup->cu_name == NULL))
 		return (NULL);
 
 	for (cdf = ctf_list_next(&cup->cu_funcs); cdf != NULL;
 	    cdf = ctf_list_next(cdf)) {
-		if (bind == STB_GLOBAL && cdf->cdf_global == B_FALSE)
-			continue;
-		if (bind == STB_LOCAL && cdf->cdf_global == B_TRUE)
-			continue;
-		if (strcmp(name, cdf->cdf_name) != 0)
-			continue;
-		if (bind == STB_LOCAL && strcmp(file, cup->cu_name) != 0)
-			continue;
-		return (cdf);
+		boolean_t is_fuzzy = B_FALSE;
+
+		if (ctf_dwarf_symbol_match(file, name, bind, cup->cu_name,
+		    cdf->cdf_name, cdf->cdf_global, &is_fuzzy)) {
+			if (is_fuzzy) {
+				if (primary) {
+					fuzzy = cdf;
+				}
+				continue;
+			} else {
+				return (cdf);
+			}
+		}
 	}
 
-	return (NULL);
+	return (fuzzy);
 }
+
 static ctf_dwvar_t *
 ctf_dwarf_match_var(ctf_cu_t *cup, const char *file, const char *name,
-    int bind)
+    uint_t bind, boolean_t primary)
 {
-	ctf_dwvar_t *cdv;
+	ctf_dwvar_t *cdv, *fuzzy = NULL;
 
-	/* Nothing we can do if we can't find a name to compare it to. */
+	if (bind == STB_WEAK)
+		return (NULL);
+
 	if (bind == STB_LOCAL && (file == NULL || cup->cu_name == NULL))
 		return (NULL);
-	ctf_dprintf("Still considering %s\n", name);
 
 	for (cdv = ctf_list_next(&cup->cu_vars); cdv != NULL;
 	    cdv = ctf_list_next(cdv)) {
-		if (bind == STB_GLOBAL && cdv->cdv_global == B_FALSE)
-			continue;
-		if (bind == STB_LOCAL && cdv->cdv_global == B_TRUE)
-			continue;
-		if (strcmp(name, cdv->cdv_name) != 0)
-			continue;
-		if (bind == STB_LOCAL && strcmp(file, cup->cu_name) != 0)
-			continue;
-		return (cdv);
+		boolean_t is_fuzzy = B_FALSE;
+
+		if (ctf_dwarf_symbol_match(file, name, bind, cup->cu_name,
+		    cdv->cdv_name, cdv->cdv_global, &is_fuzzy)) {
+			if (is_fuzzy) {
+				if (primary) {
+					fuzzy = cdv;
+				}
+			} else {
+				return (cdv);
+			}
+		}
 	}
 
-	return (NULL);
+	return (fuzzy);
 }
 
 static int
-ctf_dwarf_symtab_iter(ctf_cu_t *cup, ctf_dwarf_symtab_f *func, void *arg)
+ctf_dwarf_conv_funcvars_cb(const Elf64_Sym *symp, ulong_t idx,
+    const char *file, const char *name, boolean_t primary, void *arg)
 {
 	int ret;
-	ulong_t i;
-	ctf_file_t *fp = cup->cu_ctfp;
-	const char *file = NULL;
-	uintptr_t symbase = (uintptr_t)fp->ctf_symtab.cts_data;
-	uintptr_t strbase = (uintptr_t)fp->ctf_strtab.cts_data;
-
-	for (i = 0; i < fp->ctf_nsyms; i++) {
-		const char *name;
-		int type;
-		GElf_Sym gsym;
-		const GElf_Sym *gsymp;
-
-		if (fp->ctf_symtab.cts_entsize == sizeof (Elf32_Sym)) {
-			const Elf32_Sym *symp = (Elf32_Sym *)symbase + i;
-			type = ELF32_ST_TYPE(symp->st_info);
-			if (type == STT_FILE) {
-				file = (char *)(strbase + symp->st_name);
-				continue;
-			}
-			if (type != STT_OBJECT && type != STT_FUNC)
-				continue;
-			if (ctf_sym_valid(strbase, type, symp->st_shndx,
-			    symp->st_value, symp->st_name) == B_FALSE)
-				continue;
-			name = (char *)(strbase + symp->st_name);
-			gsym.st_name = symp->st_name;
-			gsym.st_value = symp->st_value;
-			gsym.st_size = symp->st_size;
-			gsym.st_info = symp->st_info;
-			gsym.st_other = symp->st_other;
-			gsym.st_shndx = symp->st_shndx;
-			gsymp = &gsym;
-		} else {
-			const Elf64_Sym *symp = (Elf64_Sym *)symbase + i;
-			type = ELF64_ST_TYPE(symp->st_info);
-			if (type == STT_FILE) {
-				file = (char *)(strbase + symp->st_name);
-				continue;
-			}
-			if (type != STT_OBJECT && type != STT_FUNC)
-				continue;
-			if (ctf_sym_valid(strbase, type, symp->st_shndx,
-			    symp->st_value, symp->st_name) == B_FALSE)
-				continue;
-			name = (char *)(strbase + symp->st_name);
-			gsymp = symp;
-		}
-
-		ret = func(cup, gsymp, i, file, name, arg);
-		if (ret != 0)
-			return (ret);
-	}
-
-	return (0);
-}
-
-static int
-ctf_dwarf_conv_funcvars_cb(ctf_cu_t *cup, const GElf_Sym *symp, ulong_t idx,
-    const char *file, const char *name, void *arg)
-{
-	int ret, bind, type;
+	uint_t bind, type;
+	ctf_cu_t *cup = arg;
 
 	bind = GELF_ST_BIND(symp->st_info);
 	type = GELF_ST_TYPE(symp->st_info);
@@ -2298,19 +2401,19 @@ ctf_dwarf_conv_funcvars_cb(ctf_cu_t *cup, const GElf_Sym *symp, ulong_t idx,
 
 	if (type == STT_OBJECT) {
 		ctf_dwvar_t *cdv = ctf_dwarf_match_var(cup, file, name,
-		    bind);
-		ctf_dprintf("match for %s (%d): %p\n", name, idx, cdv);
+		    bind, primary);
 		if (cdv == NULL)
 			return (0);
 		ret = ctf_add_object(cup->cu_ctfp, idx, cdv->cdv_type);
-		ctf_dprintf("added object %s\n", name);
+		ctf_dprintf("added object %s->%ld\n", name, cdv->cdv_type);
 	} else {
 		ctf_dwfunc_t *cdf = ctf_dwarf_match_func(cup, file, name,
-		    bind);
+		    bind, primary);
 		if (cdf == NULL)
 			return (0);
 		ret = ctf_add_function(cup->cu_ctfp, idx, &cdf->cdf_fip,
 		    cdf->cdf_argv);
+		ctf_dprintf("added function %s\n", name);
 	}
 
 	if (ret == CTF_ERR) {
@@ -2323,7 +2426,7 @@ ctf_dwarf_conv_funcvars_cb(ctf_cu_t *cup, const GElf_Sym *symp, ulong_t idx,
 static int
 ctf_dwarf_conv_funcvars(ctf_cu_t *cup)
 {
-	return (ctf_dwarf_symtab_iter(cup, ctf_dwarf_conv_funcvars_cb, NULL));
+	return (ctf_symtab_iter(cup->cu_ctfp, ctf_dwarf_conv_funcvars_cb, cup));
 }
 
 /*
@@ -2365,18 +2468,19 @@ ctf_dwarf_conv_funcvars(ctf_cu_t *cup)
  * that we can consume.
  */
 typedef struct ctf_dwarf_weak_arg {
-	const GElf_Sym *cweak_symp;
+	const Elf64_Sym *cweak_symp;
 	const char *cweak_file;
 	boolean_t cweak_candidate;
 	ulong_t cweak_idx;
 } ctf_dwarf_weak_arg_t;
 
 static int
-ctf_dwarf_conv_check_weak(ctf_cu_t *cup, const GElf_Sym *symp,
-    ulong_t idx, const char *file, const char *name, void *arg)
+ctf_dwarf_conv_check_weak(const Elf64_Sym *symp, ulong_t idx, const char *file,
+    const char *name, boolean_t primary, void *arg)
 {
 	ctf_dwarf_weak_arg_t *cweak = arg;
-	const GElf_Sym *wsymp = cweak->cweak_symp;
+
+	const Elf64_Sym *wsymp = cweak->cweak_symp;
 
 	ctf_dprintf("comparing weak to %s\n", name);
 
@@ -2476,11 +2580,12 @@ ctf_dwarf_duplicate_func(ctf_cu_t *cup, ulong_t idx, ulong_t matchidx)
 }
 
 static int
-ctf_dwarf_conv_weaks_cb(ctf_cu_t *cup, const GElf_Sym *symp,
-    ulong_t idx, const char *file, const char *name, void *arg)
+ctf_dwarf_conv_weaks_cb(const Elf64_Sym *symp, ulong_t idx, const char *file,
+    const char *name, boolean_t primary, void *arg)
 {
 	int ret, type;
 	ctf_dwarf_weak_arg_t cweak;
+	ctf_cu_t *cup = arg;
 
 	/*
 	 * We only care about weak symbols.
@@ -2503,7 +2608,7 @@ ctf_dwarf_conv_weaks_cb(ctf_cu_t *cup, const GElf_Sym *symp,
 
 	ctf_dprintf("Trying to find weak equiv for %s\n", name);
 
-	ret = ctf_dwarf_symtab_iter(cup, ctf_dwarf_conv_check_weak, &cweak);
+	ret = ctf_symtab_iter(cup->cu_ctfp, ctf_dwarf_conv_check_weak, &cweak);
 	VERIFY(ret == 0 || ret == 1);
 
 	/*
@@ -2518,6 +2623,7 @@ ctf_dwarf_conv_weaks_cb(ctf_cu_t *cup, const GElf_Sym *symp,
 	/*
 	 * Now, finally go and add the type based on the match.
 	 */
+	ctf_dprintf("matched weak symbol %lu to %lu\n", idx, cweak.cweak_idx);
 	if (type == STT_OBJECT) {
 		ret = ctf_dwarf_duplicate_sym(cup, idx, cweak.cweak_idx);
 	} else {
@@ -2530,7 +2636,7 @@ ctf_dwarf_conv_weaks_cb(ctf_cu_t *cup, const GElf_Sym *symp,
 static int
 ctf_dwarf_conv_weaks(ctf_cu_t *cup)
 {
-	return (ctf_dwarf_symtab_iter(cup, ctf_dwarf_conv_weaks_cb, NULL));
+	return (ctf_symtab_iter(cup->cu_ctfp, ctf_dwarf_conv_weaks_cb, cup));
 }
 
 /* ARGSUSED */
@@ -2601,20 +2707,21 @@ ctf_dwarf_convert_one(void *arg, void *unused)
 		}
 	}
 
-	ctf_phase_dump(cup->cu_ctfp, "pre-dedup");
+	ctf_phase_dump(cup->cu_ctfp, "pre-dwarf-dedup", cup->cu_name);
 	ctf_dprintf("adding inputs for dedup\n");
 	if ((ret = ctf_merge_add(cup->cu_cmh, cup->cu_ctfp)) != 0) {
 		return (ctf_dwarf_error(cup, NULL, ret,
 		    "failed to add inputs for merge"));
 	}
 
-	ctf_dprintf("starting merge\n");
+	ctf_dprintf("starting dedup of %s\n", cup->cu_name);
 	if ((ret = ctf_merge_dedup(cup->cu_cmh, &dedup)) != 0) {
 		return (ctf_dwarf_error(cup, NULL, ret,
 		    "failed to deduplicate die"));
 	}
 	ctf_close(cup->cu_ctfp);
 	cup->cu_ctfp = dedup;
+	ctf_phase_dump(cup->cu_ctfp, "post-dwarf-dedup", cup->cu_name);
 
 	return (0);
 }
@@ -2670,7 +2777,8 @@ ctf_dwarf_free_die(ctf_cu_t *cup)
 	}
 
 	ctf_dprintf("Trying to clean up dwarf_t: %p\n", cup->cu_dwarf);
-	(void) dwarf_finish(cup->cu_dwarf, &derr);
+	if (cup->cu_dwarf != NULL)
+		(void) dwarf_finish(cup->cu_dwarf, &derr);
 	cup->cu_dwarf = NULL;
 	ctf_close(cup->cu_ctfp);
 
@@ -2720,13 +2828,6 @@ ctf_dwarf_count_dies(Dwarf_Debug dw, Dwarf_Error *derr, int *ndies,
 		*ndies = *ndies + 1;
 	}
 
-	if (*ndies == 0) {
-		(void) snprintf(errbuf, errlen,
-		    "file does not contain valid DWARF data: %s\n",
-		    dwarf_errmsg(*derr));
-		return (ECTF_CONVBKERR);
-	}
-
 	return (0);
 }
 
@@ -2762,10 +2863,9 @@ ctf_dwarf_init_die(int fd, Elf *elf, ctf_cu_t *cup, int ndie, char *errbuf,
 		cup->cu_elf = elf;
 		cup->cu_maxoff = nexthdr - 1;
 		cup->cu_ctfp = ctf_fdcreate(fd, &ret);
-		if (cup->cu_ctfp == NULL) {
-			ctf_free(cup, sizeof (ctf_cu_t));
+		if (cup->cu_ctfp == NULL)
 			return (ret);
-		}
+
 		avl_create(&cup->cu_map, ctf_dwmap_comp, sizeof (ctf_dwmap_t),
 		    offsetof(ctf_dwmap_t, cdm_avl));
 		cup->cu_errbuf = errbuf;
@@ -2775,46 +2875,32 @@ ctf_dwarf_init_die(int fd, Elf *elf, ctf_cu_t *cup, int ndie, char *errbuf,
 		bzero(&cup->cu_bitfields, sizeof (ctf_list_t));
 
 		if ((ret = ctf_dwarf_die_elfenc(elf, cup, errbuf,
-		    errlen)) != 0) {
-			avl_destroy(&cup->cu_map);
-			ctf_free(cup, sizeof (ctf_cu_t));
+		    errlen)) != 0)
 			return (ret);
-		}
 
-		if ((ret = ctf_dwarf_sib(cup, NULL, &cu)) != 0) {
-			avl_destroy(&cup->cu_map);
-			ctf_free(cup, sizeof (ctf_cu_t));
+		if ((ret = ctf_dwarf_sib(cup, NULL, &cu)) != 0)
 			return (ret);
-		}
+
 		if (cu == NULL) {
 			(void) snprintf(errbuf, errlen,
-			    "file does not contain DWARF data\n");
-			avl_destroy(&cup->cu_map);
-			ctf_free(cup, sizeof (ctf_cu_t));
-			return (ECTF_CONVBKERR);
+			    "file does not contain DWARF data");
+			return (ECTF_CONVNODEBUG);
 		}
 
-		if ((ret = ctf_dwarf_child(cup, cu, &child)) != 0) {
-			avl_destroy(&cup->cu_map);
-			ctf_free(cup, sizeof (ctf_cu_t));
+		if ((ret = ctf_dwarf_child(cup, cu, &child)) != 0)
 			return (ret);
-		}
+
 		if (child == NULL) {
 			(void) snprintf(errbuf, errlen,
-			    "file does not contain DWARF data\n");
-			avl_destroy(&cup->cu_map);
-			ctf_free(cup, sizeof (ctf_cu_t));
-			return (ECTF_CONVBKERR);
+			    "file does not contain DWARF data");
+			return (ECTF_CONVNODEBUG);
 		}
 
 		cup->cu_cuoff = offset;
 		cup->cu_cu = child;
 
-		if ((cup->cu_cmh = ctf_merge_init(fd, &ret)) == NULL) {
-			avl_destroy(&cup->cu_map);
-			ctf_free(cup, sizeof (ctf_cu_t));
+		if ((cup->cu_cmh = ctf_merge_init(fd, &ret)) == NULL)
 			return (ret);
-		}
 
 		if (ctf_dwarf_string(cup, cu, DW_AT_name, &name) == 0) {
 			size_t len = strlen(name) + 1;
@@ -2828,10 +2914,122 @@ ctf_dwarf_init_die(int fd, Elf *elf, ctf_cu_t *cup, int ndie, char *errbuf,
 	return (0);
 }
 
+/*
+ * This is our only recourse to identify a C source file that is missing debug
+ * info: it will be mentioned as an STT_FILE, but not have a compile unit entry.
+ * (A traditional ctfmerge works on individual files, so can identify missing
+ * DWARF more directly, via ctf_has_c_source() on the .o file.)
+ *
+ * As we operate on basenames, this can of course miss some cases, but it's
+ * better than not checking at all.
+ *
+ * We explicitly whitelist some CRT components.  Failing that, there's always
+ * the -m option.
+ */
+static boolean_t
+c_source_has_debug(const char *file, ctf_cu_t *cus, size_t nr_cus)
+{
+	const char *basename = strrchr(file, '/');
 
-ctf_conv_status_t
-ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, int *errp, ctf_file_t **fpp,
+	if (basename == NULL)
+		basename = file;
+	else
+		basename++;
+
+	if (strcmp(basename, "common-crt.c") == 0 ||
+	    strcmp(basename, "gmon.c") == 0 ||
+	    strcmp(basename, "dlink_init.c") == 0 ||
+	    strcmp(basename, "dlink_common.c") == 0 ||
+	    strncmp(basename, "crt", strlen("crt")) == 0 ||
+	    strncmp(basename, "values-", strlen("values-")) == 0)
+		return (B_TRUE);
+
+	for (size_t i = 0; i < nr_cus; i++) {
+		if (strcmp(basename, cus[i].cu_name) == 0)
+			return (B_TRUE);
+	}
+
+	return (B_FALSE);
+}
+
+static int
+ctf_dwarf_check_missing(ctf_cu_t *cus, size_t nr_cus, Elf *elf,
     char *errmsg, size_t errlen)
+{
+	Elf_Scn *scn, *strscn;
+	Elf_Data *data, *strdata;
+	GElf_Shdr shdr;
+	ulong_t i;
+
+	scn = NULL;
+	while ((scn = elf_nextscn(elf, scn)) != NULL) {
+		if (gelf_getshdr(scn, &shdr) == NULL) {
+			(void) snprintf(errmsg, errlen,
+			    "failed to get section header: %s\n",
+			    elf_errmsg(elf_errno()));
+			return (EINVAL);
+		}
+
+		if (shdr.sh_type == SHT_SYMTAB)
+			break;
+	}
+
+	if (scn == NULL)
+		return (0);
+
+	if ((strscn = elf_getscn(elf, shdr.sh_link)) == NULL) {
+		(void) snprintf(errmsg, errlen,
+		    "failed to get str section: %s\n",
+		    elf_errmsg(elf_errno()));
+		return (EINVAL);
+	}
+
+	if ((data = elf_getdata(scn, NULL)) == NULL) {
+		(void) snprintf(errmsg, errlen, "failed to read section: %s\n",
+		    elf_errmsg(elf_errno()));
+		return (EINVAL);
+	}
+
+	if ((strdata = elf_getdata(strscn, NULL)) == NULL) {
+		(void) snprintf(errmsg, errlen,
+		    "failed to read string table: %s\n",
+		    elf_errmsg(elf_errno()));
+		return (EINVAL);
+	}
+
+	for (i = 0; i < shdr.sh_size / shdr.sh_entsize; i++) {
+		GElf_Sym sym;
+		const char *file;
+		size_t len;
+
+		if (gelf_getsym(data, i, &sym) == NULL) {
+			(void) snprintf(errmsg, errlen,
+			    "failed to read sym %lu: %s\n",
+			    i, elf_errmsg(elf_errno()));
+			return (EINVAL);
+		}
+
+		if (GELF_ST_TYPE(sym.st_info) != STT_FILE)
+			continue;
+
+		file = (const char *)((uintptr_t)strdata->d_buf + sym.st_name);
+		len = strlen(file);
+		if (len < 2 || strncmp(".c", &file[len - 2], 2) != 0)
+			continue;
+
+		if (!c_source_has_debug(file, cus, nr_cus)) {
+			(void) snprintf(errmsg, errlen,
+			    "file %s is missing debug info\n", file);
+			return (ECTF_CONVNODEBUG);
+		}
+	}
+
+	return (0);
+}
+
+int
+ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, uint_t flags,
+    ctf_file_t **fpp, char *errbuf, size_t errlen)
 {
 	int err, ret, ndies, i;
 	Dwarf_Debug dw;
@@ -2839,30 +3037,20 @@ ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, int *errp, ctf_file_t **fpp,
 	ctf_cu_t *cdies = NULL, *cup;
 	workq_t *wqp = NULL;
 
-	if (errp == NULL)
-		errp = &err;
-	*errp = 0;
 	*fpp = NULL;
 
 	ret = dwarf_elf_init(elf, DW_DLC_READ, NULL, NULL, &dw, &derr);
 	if (ret != DW_DLV_OK) {
-		/*
-		 * We may want to expect DWARF data here and fail conversion if
-		 * it's missing. In this case, if we actually have some amount
-		 * of DWARF, but no section, for now, just go ahead and create
-		 * an empty CTF file.
-		 */
 		if (ret == DW_DLV_NO_ENTRY ||
 		    dwarf_errno(derr) == DW_DLE_DEBUG_INFO_NULL) {
-			*fpp = ctf_create(errp);
-			return (*fpp != NULL ? CTF_CONV_SUCCESS :
-			    CTF_CONV_ERROR);
+			(void) snprintf(errbuf, errlen,
+			    "file does not contain DWARF data\n");
+			return (ECTF_CONVNODEBUG);
 		}
-		(void) snprintf(errmsg, errlen,
-		    "failed to initialize DWARF: %s\n",
-		    dwarf_errmsg(derr));
-		*errp = ECTF_CONVBKERR;
-		return (CTF_CONV_ERROR);
+
+		(void) snprintf(errbuf, errlen,
+		    "dwarf_elf_init() failed: %s\n", dwarf_errmsg(derr));
+		return (ECTF_CONVBKERR);
 	}
 
 	/*
@@ -2873,18 +3061,23 @@ ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, int *errp, ctf_file_t **fpp,
 	 * only a single Dwarf_Debug as well.
 	 */
 	ndies = 0;
-	ret = ctf_dwarf_count_dies(dw, &derr, &ndies, errmsg, errlen);
-	if (ret != 0) {
-		*errp = ret;
-		goto out;
+	err = ctf_dwarf_count_dies(dw, &derr, &ndies, errbuf, errlen);
+
+	ctf_dprintf("found %d DWARF CUs\n", ndies);
+
+	if (ndies == 0) {
+		(void) snprintf(errbuf, errlen,
+		    "file does not contain DWARF data\n");
+		return (ECTF_CONVNODEBUG);
 	}
 
 	(void) dwarf_finish(dw, &derr);
 	cdies = ctf_alloc(sizeof (ctf_cu_t) * ndies);
 	if (cdies == NULL) {
-		*errp = ENOMEM;
-		return (CTF_CONV_ERROR);
+		return (ENOMEM);
 	}
+
+	bzero(cdies, sizeof (ctf_cu_t) * ndies);
 
 	for (i = 0; i < ndies; i++) {
 		cup = &cdies[i];
@@ -2892,22 +3085,23 @@ ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, int *errp, ctf_file_t **fpp,
 		    &cup->cu_dwarf, &derr);
 		if (ret != 0) {
 			ctf_free(cdies, sizeof (ctf_cu_t) * ndies);
-			(void) snprintf(errmsg, errlen,
+			(void) snprintf(errbuf, errlen,
 			    "failed to initialize DWARF: %s\n",
 			    dwarf_errmsg(derr));
-			*errp = ECTF_CONVBKERR;
-			return (CTF_CONV_ERROR);
+			return (ECTF_CONVBKERR);
 		}
 
-		ret = ctf_dwarf_init_die(fd, elf, &cdies[i], i, errmsg, errlen);
-		if (ret != 0) {
-			*errp = ret;
+		err = ctf_dwarf_init_die(fd, elf, cup, i, errbuf, errlen);
+		if (err != 0)
 			goto out;
-		}
+
 		cup->cu_doweaks = ndies > 1 ? B_FALSE : B_TRUE;
 	}
 
-	ctf_dprintf("found %d DWARF die(s)\n", ndies);
+	if (!(flags & CTF_ALLOW_MISSING_DEBUG) &&
+	    (err = ctf_dwarf_check_missing(cdies, ndies,
+	    elf, errbuf, errlen)) != 0)
+		goto out;
 
 	/*
 	 * If we only have one compilation unit, there's no reason to use
@@ -2918,71 +3112,65 @@ ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, int *errp, ctf_file_t **fpp,
 		nthrs = 1;
 
 	if (workq_init(&wqp, nthrs) == -1) {
-		*errp = errno;
+		err = errno;
 		goto out;
 	}
 
 	for (i = 0; i < ndies; i++) {
 		cup = &cdies[i];
-		ctf_dprintf("adding die %s: %p, %x %x\n", cup->cu_name,
+		ctf_dprintf("adding cu %s: %p, %x %x\n", cup->cu_name,
 		    cup->cu_cu, cup->cu_cuoff, cup->cu_maxoff);
 		if (workq_add(wqp, cup) == -1) {
-			*errp = errno;
+			err = errno;
 			goto out;
 		}
 	}
 
-	ret = workq_work(wqp, ctf_dwarf_convert_one, NULL, errp);
+	ret = workq_work(wqp, ctf_dwarf_convert_one, NULL, &err);
 	if (ret == WORKQ_ERROR) {
-		*errp = errno;
+		err = errno;
 		goto out;
 	} else if (ret == WORKQ_UERROR) {
 		ctf_dprintf("internal convert failed: %s\n",
-		    ctf_errmsg(*errp));
+		    ctf_errmsg(err));
 		goto out;
 	}
 
-	ctf_dprintf("Determining next phase: have %d dies\n", ndies);
+	ctf_dprintf("Determining next phase: have %d CUs\n", ndies);
 	if (ndies != 1) {
 		ctf_merge_t *cmp;
 
-		cmp = ctf_merge_init(fd, &ret);
-		if (cmp == NULL) {
-			*errp = ret;
+		cmp = ctf_merge_init(fd, &err);
+		if (cmp == NULL)
 			goto out;
-		}
 
 		ctf_dprintf("setting threads\n");
-		if ((ret = ctf_merge_set_nthreads(cmp, nthrs)) != 0) {
+		if ((err = ctf_merge_set_nthreads(cmp, nthrs)) != 0) {
 			ctf_merge_fini(cmp);
-			*errp = ret;
 			goto out;
 		}
 
-		ctf_dprintf("adding dies\n");
 		for (i = 0; i < ndies; i++) {
 			cup = &cdies[i];
-			if ((ret = ctf_merge_add(cmp, cup->cu_ctfp)) != 0) {
+			if ((err = ctf_merge_add(cmp, cup->cu_ctfp)) != 0) {
 				ctf_merge_fini(cmp);
-				*errp = ret;
 				goto out;
 			}
 		}
 
 		ctf_dprintf("performing merge\n");
-		ret = ctf_merge_merge(cmp, fpp);
-		if (ret != 0) {
+		err = ctf_merge_merge(cmp, fpp);
+		if (err != 0) {
 			ctf_dprintf("failed merge!\n");
 			*fpp = NULL;
 			ctf_merge_fini(cmp);
-			*errp = ret;
 			goto out;
 		}
 		ctf_merge_fini(cmp);
-		*errp = 0;
+		err = 0;
 		ctf_dprintf("successfully converted!\n");
 	} else {
-		*errp = 0;
+		err = 0;
 		*fpp = cdies->cu_ctfp;
 		cdies->cu_ctfp = NULL;
 		ctf_dprintf("successfully converted!\n");
@@ -2991,5 +3179,5 @@ ctf_dwarf_convert(int fd, Elf *elf, uint_t nthrs, int *errp, ctf_file_t **fpp,
 out:
 	workq_fini(wqp);
 	ctf_dwarf_free_dies(cdies, ndies);
-	return (*fpp != NULL ? CTF_CONV_SUCCESS : CTF_CONV_ERROR);
+	return (err);
 }

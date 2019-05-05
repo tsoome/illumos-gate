@@ -14,9 +14,10 @@
 # Copyright 2014 Garrett D'Amore <garrett@damore.org>
 # Copyright 2014 Nexenta Systems, Inc. All rights reserved.
 # Copyright 2017 Jason King
+# Copyright 2019 Joyent, Inc.
 #
 
 SUBDIRS = date dis dladm iconv libnvpair_json libsff printf xargs grep_xpg4
-SUBDIRS += demangle mergeq workq chown
+SUBDIRS += demangle mergeq workq chown ctf
 
 include $(SRC)/test/Makefile.com
