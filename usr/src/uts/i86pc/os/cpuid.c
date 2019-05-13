@@ -1036,7 +1036,8 @@ static char *x86_feature_names[NUM_X86_FEATURES] = {
 	"xop",
 	"fma4",
 	"tbm",
-	"avx512_vnni"
+	"avx512_vnni",
+	"amd_pcec"
 };
 
 boolean_t
@@ -3081,6 +3082,10 @@ cpuid_pass1(cpu_t *cpu, uchar_t *featureset)
 				add_x86_feature(featureset, X86FSET_TOPOEXT);
 			}
 
+			if (cp->cp_ecx & CPUID_AMD_ECX_PCEC) {
+				add_x86_feature(featureset, X86FSET_AMD_PCEC);
+			}
+
 			if (cp->cp_ecx & CPUID_AMD_ECX_XOP) {
 				add_x86_feature(featureset, X86FSET_XOP);
 			}
@@ -4488,6 +4493,8 @@ cpuid_pass4(cpu_t *cpu, uint_t *hwcap_out)
 		case X86_VENDOR_Intel:
 			if (*edx & CPUID_AMD_EDX_TSCP)
 				hwcap_flags |= AV_386_TSCP;
+			if (*ecx & CPUID_AMD_ECX_LZCNT)
+				hwcap_flags |= AV_386_AMD_LZCNT;
 			/*
 			 * Aarrgh.
 			 * Intel uses a different bit in the same word.
