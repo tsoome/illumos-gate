@@ -388,36 +388,56 @@ force_thread_migrate(kthread_id_t tp)
 
 /*
  * Set affinity for a specified CPU.
- * A reference count is incremented and the affinity is held until the
- * reference count is decremented to zero by thread_affinity_clear().
- * This is so regions of code requiring affinity can be nested.
- * Caller needs to ensure that cpu_id remains valid, which can be
- * done by holding cpu_lock across this call, unless the caller
- * specifies CPU_CURRENT in which case the cpu_lock will be acquired
- * by thread_affinity_set and CPU->cpu_id will be the target CPU.
+ *
+ * Specifying a cpu_id of CPU_CURRENT, allowed _only_ when setting affinity for
+ * curthread, will set affinity to the CPU on which the thread is currently
+ * running.  For other cpu_id values, the caller must ensure that the
+ * referenced CPU remains valid, which can be done by holding cpu_lock across
+ * this call.
+ *
+ * CPU affinity is guaranteed after return of thread_affinity_set().  If a
+ * caller setting affinity to CPU_CURRENT requires that its thread not migrate
+ * CPUs prior to a successful return, it should take extra precautions (such as
+ * their own call to kpreempt_disable) to ensure that safety.
+ *
+ * CPU_BEST can be used to pick a "best" CPU to migrate to, including
+ * potentially the current CPU.
+ *
+ * A CPU affinity reference count is maintained by thread_affinity_set and
+ * thread_affinity_clear (incrementing and decrementing it, respectively),
+ * maintaining CPU affinity while the count is non-zero, and allowing regions
+ * of code which require affinity to be nested.
  */
 void
 thread_affinity_set(kthread_id_t t, int cpu_id)
 {
-	cpu_t		*cp;
-	int		c;
+	cpu_t *cp;
 
 	ASSERT(!(t == curthread && t->t_weakbound_cpu != NULL));
 
-	if ((c = cpu_id) == CPU_CURRENT) {
-		mutex_enter(&cpu_lock);
-		cpu_id = CPU->cpu_id;
+	if (cpu_id == CPU_CURRENT) {
+		VERIFY3P(t, ==, curthread);
+		kpreempt_disable();
+		cp = CPU;
+	} else if (cpu_id == CPU_BEST) {
+		VERIFY3P(t, ==, curthread);
+		kpreempt_disable();
+		cp = disp_choose_best_cpu();
+	} else {
+		/*
+		 * We should be asserting that cpu_lock is held here, but
+		 * the NCA code doesn't acquire it.  The following assert
+		 * should be uncommented when the NCA code is fixed.
+		 *
+		 * ASSERT(MUTEX_HELD(&cpu_lock));
+		 */
+		VERIFY((cpu_id >= 0) && (cpu_id < NCPU));
+		cp = cpu[cpu_id];
+
+		/* user must provide a good cpu_id */
+		VERIFY(cp != NULL);
 	}
-	/*
-	 * We should be asserting that cpu_lock is held here, but
-	 * the NCA code doesn't acquire it.  The following assert
-	 * should be uncommented when the NCA code is fixed.
-	 *
-	 * ASSERT(MUTEX_HELD(&cpu_lock));
-	 */
-	ASSERT((cpu_id >= 0) && (cpu_id < NCPU));
-	cp = cpu[cpu_id];
-	ASSERT(cp != NULL);		/* user must provide a good cpu_id */
+
 	/*
 	 * If there is already a hard affinity requested, and this affinity
 	 * conflicts with that, panic.
@@ -434,13 +454,14 @@ thread_affinity_set(kthread_id_t t, int cpu_id)
 	 * Make sure we're running on the right CPU.
 	 */
 	if (cp != t->t_cpu || t != curthread) {
+		ASSERT(cpu_id != CPU_CURRENT);
 		force_thread_migrate(t);	/* drops thread lock */
 	} else {
 		thread_unlock(t);
 	}
 
-	if (c == CPU_CURRENT)
-		mutex_exit(&cpu_lock);
+	if (cpu_id == CPU_CURRENT || cpu_id == CPU_BEST)
+		kpreempt_enable();
 }
 
 /*
@@ -1475,8 +1496,8 @@ again:	for (loop_count = 0; (*bound_func)(cp, 0); loop_count++) {
 				 * Update CPU last ran on if it was this CPU
 				 */
 				if (t->t_cpu == cp && t->t_bound_cpu != cp)
-					t->t_cpu = disp_lowpri_cpu(ncp,
-					    t->t_lpl, t->t_pri, NULL);
+					t->t_cpu = disp_lowpri_cpu(ncp, t,
+					    t->t_pri);
 				ASSERT(t->t_cpu != cp || t->t_bound_cpu == cp ||
 				    t->t_weakbound_cpu == cp);
 
@@ -1518,10 +1539,9 @@ again:	for (loop_count = 0; (*bound_func)(cp, 0); loop_count++) {
 			 * Update CPU last ran on if it was this CPU
 			 */
 
-			if (t->t_cpu == cp && t->t_bound_cpu != cp) {
-				t->t_cpu = disp_lowpri_cpu(ncp,
-				    t->t_lpl, t->t_pri, NULL);
-			}
+			if (t->t_cpu == cp && t->t_bound_cpu != cp)
+				t->t_cpu = disp_lowpri_cpu(ncp, t, t->t_pri);
+
 			ASSERT(t->t_cpu != cp || t->t_bound_cpu == cp ||
 			    t->t_weakbound_cpu == cp);
 			t = t->t_next;

@@ -21,7 +21,7 @@
 #
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-# Copyright 2019 Joyent, Inc.  All rights reserved.
+# Copyright 2019 Joyent, Inc.
 # Copyright 2017 Nexenta Systems, Inc.
 #
 
@@ -142,23 +142,11 @@ $(OBJS_DIR)/%.o:		$(SRC)/common/acpica/disassembler/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(UTSBASE)/intel/io/agpgart/%.c
-	$(COMPILE.c) -o $@ $<
-	$(CTFCONVERT_O)
-
-$(OBJS_DIR)/%.o:		$(UTSBASE)/intel/io/agpmaster/%.c
-	$(COMPILE.c) -o $@ $<
-	$(CTFCONVERT_O)
-
 $(OBJS_DIR)/%.o:		$(UTSBASE)/intel/io/amd8111s/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
 $(OBJS_DIR)/%.o:		$(UTSBASE)/intel/io/amr/%.c
-	$(COMPILE.c) -o $@ $<
-	$(CTFCONVERT_O)
-
-$(OBJS_DIR)/%.o:		$(UTSBASE)/intel/io/drm/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
@@ -279,9 +267,7 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/intel/zfs/%.c
 KRTLD_INC_PATH	= -I$(UTSBASE)/common/krtld -I$(UTSBASE)/intel/sys
 KRTLD_INC_PATH	+= -I$(UTSBASE)/intel/$(SUBARCH_DIR)/krtld
 
-KRTLD_CPPFLAGS_32	= -DELF_TARGET_386
-KRTLD_CPPFLAGS_64	= -DELF_TARGET_AMD64 -DMODDIR_SUFFIX=\"amd64\"
-KRTLD_CPPFLAGS		= $(KRTLD_CPPFLAGS_$(CLASS)) -D_KRTLD
+KRTLD_CPPFLAGS	= -D_KRTLD -DELF_TARGET_AMD64 -DMODDIR_SUFFIX=\"amd64\"
 
 $(OBJS_DIR)/%.o:	$(UTSBASE)/common/krtld/%.c
 	$(COMPILE.c) $(KRTLD_INC_PATH) $(KRTLD_CPPFLAGS) -o $@ $<
@@ -382,12 +368,6 @@ $(LINTS_DIR)/%.ln:		$(SRC)/common/acpica/utilities/%.c
 $(LINTS_DIR)/%.ln:		$(SRC)/common/acpica/disassembler/%.c
 	@($(LHEAD) $(LINT.c) $< $(LTAIL))
 
-$(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/agpgart/%.c
-	@($(LHEAD) $(LINT.c) $< $(LTAIL))
-
-$(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/agpmaster/%.c
-	@($(LHEAD) $(LINT.c) $< $(LTAIL))
-
 $(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/amd8111s/%.c
 	@($(LHEAD) $(LINT.c) $< $(LTAIL))
 
@@ -395,9 +375,6 @@ $(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/amr/%.c
 	@($(LHEAD) $(LINT.c) $< $(LTAIL))
 
 $(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/scsi/adapters/arcmsr/%.c
-	@($(LHEAD) $(LINT.c) $< $(LTAIL))
-
-$(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/drm/%.c
 	@($(LHEAD) $(LINT.c) $< $(LTAIL))
 
 $(LINTS_DIR)/%.ln:		$(UTSBASE)/intel/io/hotplug/pcicfg/%.c
