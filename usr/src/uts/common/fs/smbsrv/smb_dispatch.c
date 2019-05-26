@@ -21,7 +21,7 @@
 
 /*
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2015 Nexenta Systems, Inc.  All rights reserved.
+ * Copyright 2017 Nexenta Systems, Inc.  All rights reserved.
  */
 
 /*
@@ -503,10 +503,12 @@ smbsr_cleanup(smb_request_t *sr)
 	 * smbsr_cleanup for the same request indicate a bug.
 	 */
 	mutex_enter(&sr->sr_mutex);
-	if (sr->sr_state != SMB_REQ_STATE_CANCELED)
+	if (sr->sr_state != SMB_REQ_STATE_CANCELLED)
 		sr->sr_state = SMB_REQ_STATE_CLEANED_UP;
 	mutex_exit(&sr->sr_mutex);
 }
+
+int smb_cancel_in_reader = 1;
 
 /*
  * This is the SMB1 handler for new smb requests, called from
@@ -527,20 +529,58 @@ smbsr_cleanup(smb_request_t *sr)
 int
 smb1sr_newrq(smb_request_t *sr)
 {
-	uint32_t magic;
+	uint16_t pid_hi, pid_lo;
+	int rc, save_offset;
 
-	magic = SMB_READ_PROTOCOL(sr->sr_request_buf);
-	if (magic != SMB_PROTOCOL_MAGIC) {
+	/*
+	 * Decode the SMB header now (peek) so that
+	 * SMB_COM_NT_CANCEL can find this SR.
+	 */
+	save_offset = sr->command.chain_offset;
+	rc = smb_mbc_decodef(&sr->command, SMB_HEADER_ED_FMT,
+	    &sr->smb_com,
+	    &sr->smb_rcls,
+	    &sr->smb_reh,
+	    &sr->smb_err,
+	    &sr->smb_flg,
+	    &sr->smb_flg2,
+	    &pid_hi,
+	    sr->smb_sig,
+	    &sr->smb_tid,
+	    &pid_lo,
+	    &sr->smb_uid,
+	    &sr->smb_mid);
+	sr->command.chain_offset = save_offset;
+	if (rc != 0) {
+		/* Failed decoding the header. Drop 'em. */
 		smb_request_free(sr);
 		return (EPROTO);
 	}
+	sr->smb_pid = (pid_hi << 16) | pid_lo;
 
-	if (sr->session->signing.flags & SMB_SIGNING_ENABLED) {
-		if (SMB_IS_NT_CANCEL(sr)) {
+	if (sr->smb_com == SMB_COM_NT_CANCEL) {
+		if (sr->session->signing.flags & SMB_SIGNING_ENABLED) {
 			sr->session->signing.seqnum++;
 			sr->sr_seqnum = sr->session->signing.seqnum + 1;
 			sr->reply_seqnum = 0;
-		} else {
+		}
+
+		/*
+		 * Normally execute cancel requests immediately,
+		 * (here in the reader thread) so they won't wait
+		 * for other commands already in the task queue.
+		 * Disable this via smb_cancel_in_reader=0 for
+		 * testing or diagnostic efforts, in which case
+		 * cancel runs via taskq_dispatch.
+		 */
+		if (smb_cancel_in_reader != 0) {
+			rc = smb1sr_newrq_cancel(sr);
+			smb_request_free(sr);
+			return (rc);
+		}
+	} else {
+		/* not NT cancel */
+		if (sr->session->signing.flags & SMB_SIGNING_ENABLED) {
 			sr->session->signing.seqnum += 2;
 			sr->sr_seqnum = sr->session->signing.seqnum;
 			sr->reply_seqnum = sr->sr_seqnum + 1;
@@ -574,24 +614,17 @@ smb1_tq_work(void *arg)
 	sr->sr_worker = curthread;
 	sr->sr_time_active = gethrtime();
 
+	/*
+	 * Always dispatch to the work function, because cancelled
+	 * requests need an error reply (NT_STATUS_CANCELLED).
+	 */
 	mutex_enter(&sr->sr_mutex);
-	switch (sr->sr_state) {
-	case SMB_REQ_STATE_SUBMITTED:
-		mutex_exit(&sr->sr_mutex);
-		smb1sr_work(sr);
-		sr = NULL;
-		break;
+	if (sr->sr_state == SMB_REQ_STATE_SUBMITTED)
+		sr->sr_state = SMB_REQ_STATE_ACTIVE;
+	mutex_exit(&sr->sr_mutex);
 
-	default:
-		/*
-		 * SMB1 requests that have been cancelled
-		 * have no reply.  Just free it.
-		 */
-		sr->sr_state = SMB_REQ_STATE_COMPLETED;
-		mutex_exit(&sr->sr_mutex);
-		smb_request_free(sr);
-		break;
-	}
+	smb1sr_work(sr);
+
 	smb_srqueue_runq_exit(srq);
 }
 
@@ -678,6 +711,9 @@ smb1sr_work(struct smb_request *sr)
 	    sr->smb_mid);
 	sr->first_smb_com = sr->smb_com;
 
+	/* Need this for early goto report_error cases. */
+	sr->cur_reply_offset = sr->reply.chain_offset;
+
 	if ((session->signing.flags & SMB_SIGNING_CHECK) != 0) {
 		if ((sr->smb_flg2 & SMB_FLAGS2_SMB_SECURITY_SIGNATURE) == 0 ||
 		    smb_sign_check_request(sr) != 0) {
@@ -752,11 +788,16 @@ andx_more:
 
 	mutex_enter(&sr->sr_mutex);
 	switch (sr->sr_state) {
-	case SMB_REQ_STATE_SUBMITTED:
+	case SMB_REQ_STATE_ACTIVE:
+		break;
 	case SMB_REQ_STATE_CLEANED_UP:
 		sr->sr_state = SMB_REQ_STATE_ACTIVE;
 		break;
-	case SMB_REQ_STATE_CANCELED:
+	case SMB_REQ_STATE_CANCELLED:
+		/*
+		 * Keep cancelled.  Handlers that might block will
+		 * check the state and return NT_STATUS_CANCELLED.
+		 */
 		break;
 	default:
 		ASSERT(0);
@@ -798,6 +839,8 @@ andx_more:
 		(*sdd->sdt_post_op)(sr);
 		smbsr_cleanup(sr);
 	}
+
+	smb_server_inc_req(server);
 	smb_latency_add_sample(&sds->sdt_lat, gethrtime() - sr->sr_time_start);
 
 	atomic_add_64(&sds->sdt_txb,

@@ -97,6 +97,27 @@ smb_opipe_dealloc(smb_opipe_t *opipe)
 }
 
 /*
+ * Unblock a request that might be blocked reading some
+ * pipe (AF_UNIX socket).  We don't have an easy way to
+ * interrupt just the thread servicing this request, so
+ * we shutdown(3socket) the socket, waking all readers.
+ * That's a bit heavy-handed, making the socket unusable
+ * after this, so we do this only when disconnecting a
+ * session (i.e. stopping the SMB service), and not when
+ * handling an SMB2_cancel or SMB_nt_cancel request.
+ */
+static void
+smb_opipe_cancel(smb_request_t *sr)
+{
+	ksocket_t so;
+
+	if (sr->session->s_state == SMB_SESSION_STATE_DISCONNECTED &&
+	    (so = sr->cancel_arg2) != NULL) {
+		(void) ksocket_shutdown(so, SHUT_RDWR, sr->user_cr);
+	}
+}
+
+/*
  * Helper for open: build pipe name and connect.
  */
 static int
@@ -167,31 +188,66 @@ smb_opipe_send_userinfo(smb_request_t *sr, smb_opipe_t *opipe,
 	if (!smb_netuserinfo_xdr(&xdrs, &nui))
 		goto out;
 
-	/*
-	 * If we fail sending the netuserinfo or recv'ing the
-	 * status reponse, we have probably run into the limit
-	 * on the number of open pipes.  That's this status:
-	 */
-	errp->status = NT_STATUS_PIPE_NOT_AVAILABLE;
+	mutex_enter(&sr->sr_mutex);
+	if (sr->sr_state != SMB_REQ_STATE_ACTIVE) {
+		mutex_exit(&sr->sr_mutex);
+		errp->status = NT_STATUS_CANCELLED;
+		goto out;
+	}
+	sr->sr_state = SMB_REQ_STATE_WAITING_PIPE;
+	sr->cancel_method = smb_opipe_cancel;
+	sr->cancel_arg2 = opipe->p_socket;
+	mutex_exit(&sr->sr_mutex);
 
 	rc = ksocket_send(opipe->p_socket, buf, buflen, 0,
 	    &iocnt, sr->user_cr);
 	if (rc == 0 && iocnt != buflen)
 		rc = EIO;
-	if (rc != 0)
-		goto out;
+	if (rc == 0)
+		rc = ksocket_recv(opipe->p_socket, &status, sizeof (status),
+		    0, &iocnt, sr->user_cr);
+	if (rc == 0 && iocnt != sizeof (status))
+		rc = EIO;
 
-	rc = ksocket_recv(opipe->p_socket, &status, sizeof (status), 0,
-	    &iocnt, sr->user_cr);
-	if (rc != 0 || iocnt != sizeof (status))
-		goto out;
+	mutex_enter(&sr->sr_mutex);
+	sr->cancel_method = NULL;
+	sr->cancel_arg2 = NULL;
+	switch (sr->sr_state) {
+	case SMB_REQ_STATE_WAITING_PIPE:
+		sr->sr_state = SMB_REQ_STATE_ACTIVE;
+		break;
+	case SMB_REQ_STATE_CANCEL_PENDING:
+		sr->sr_state = SMB_REQ_STATE_CANCELLED;
+		rc = EINTR;
+		break;
+	default:
+		/* keep rc from above */
+		break;
+	}
+	mutex_exit(&sr->sr_mutex);
+
 
 	/*
 	 * Return the status we read from the pipe service,
 	 * normally NT_STATUS_SUCCESS, but could be something
 	 * else like NT_STATUS_ACCESS_DENIED.
 	 */
-	errp->status = status;
+	switch (rc) {
+	case 0:
+		errp->status = status;
+		break;
+	case EINTR:
+		errp->status = NT_STATUS_CANCELLED;
+		break;
+	/*
+	 * If we fail sending the netuserinfo or recv'ing the
+	 * status reponse, we have probably run into the limit
+	 * on the number of open pipes.  That's this status:
+	 */
+	default:
+		errp->status = NT_STATUS_PIPE_NOT_AVAILABLE;
+		break;
+	}
 
 out:
 	xdr_destroy(&xdrs);
@@ -212,6 +268,7 @@ int
 smb_opipe_open(smb_request_t *sr, uint32_t uniqid)
 {
 	smb_arg_open_t	*op = &sr->sr_open;
+	smb_attr_t *ap = &op->fqi.fq_fattr;
 	smb_ofile_t *ofile;
 	smb_opipe_t *opipe;
 	smb_error_t err;
@@ -248,14 +305,19 @@ smb_opipe_open(smb_request_t *sr, uint32_t uniqid)
 	/* An "up" pointer, for debug. */
 	opipe->p_ofile = ofile;
 
-	op->dsize = 0x01000;
-	op->dattr = FILE_ATTRIBUTE_NORMAL;
+	/*
+	 * Caller expects attributes in op->fqi
+	 */
+	(void) smb_opipe_getattr(ofile, &op->fqi.fq_fattr);
+
+	op->dsize = 0;
+	op->dattr = ap->sa_dosattr;
+	op->fileid = ap->sa_vattr.va_nodeid;
 	op->ftype = SMB_FTYPE_MESG_PIPE;
-	op->action_taken = SMB_OACT_LOCK | SMB_OACT_OPENED; /* 0x8001 */
+	op->action_taken = SMB_OACT_OPLOCK | SMB_OACT_OPENED;
 	op->devstate = SMB_PIPE_READMODE_MESSAGE
 	    | SMB_PIPE_TYPE_MESSAGE
 	    | SMB_PIPE_UNLIMITED_INSTANCES; /* 0x05ff */
-	op->fileid = ofile->f_fid;
 
 	sr->smb_fid = ofile->f_fid;
 	sr->fid_ofile = ofile;
@@ -372,17 +434,45 @@ smb_opipe_read(smb_request_t *sr, struct uio *uio)
 	if (sock == NULL)
 		return (EBADF);
 
-	bzero(&msghdr, sizeof (msghdr));
-	msghdr.msg_iov = uio->uio_iov;
-	msghdr.msg_iovlen = uio->uio_iovcnt;
+	mutex_enter(&sr->sr_mutex);
+	if (sr->sr_state != SMB_REQ_STATE_ACTIVE) {
+		mutex_exit(&sr->sr_mutex);
+		rc = EINTR;
+		goto out;
+	}
+	sr->sr_state = SMB_REQ_STATE_WAITING_PIPE;
+	sr->cancel_method = smb_opipe_cancel;
+	sr->cancel_arg2 = sock;
+	mutex_exit(&sr->sr_mutex);
 
 	/*
 	 * This should block only if there's no data.
 	 * A single call to recvmsg does just that.
 	 * (Intentionaly no recv loop here.)
 	 */
+	bzero(&msghdr, sizeof (msghdr));
+	msghdr.msg_iov = uio->uio_iov;
+	msghdr.msg_iovlen = uio->uio_iovcnt;
 	rc = ksocket_recvmsg(sock, &msghdr, 0,
 	    &recvcnt, ofile->f_cr);
+
+	mutex_enter(&sr->sr_mutex);
+	sr->cancel_method = NULL;
+	sr->cancel_arg2 = NULL;
+	switch (sr->sr_state) {
+	case SMB_REQ_STATE_WAITING_PIPE:
+		sr->sr_state = SMB_REQ_STATE_ACTIVE;
+		break;
+	case SMB_REQ_STATE_CANCEL_PENDING:
+		sr->sr_state = SMB_REQ_STATE_CANCELLED;
+		rc = EINTR;
+		break;
+	default:
+		/* keep rc from above */
+		break;
+	}
+	mutex_exit(&sr->sr_mutex);
+
 	if (rc != 0)
 		goto out;
 
@@ -440,8 +530,9 @@ smb_opipe_getattr(smb_ofile_t *of, smb_attr_t *ap)
 
 	ap->sa_vattr.va_type = VFIFO;
 	ap->sa_vattr.va_nlink = 1;
+	ap->sa_vattr.va_nodeid = (uintptr_t)of->f_pipe;
 	ap->sa_dosattr = FILE_ATTRIBUTE_NORMAL;
-	ap->sa_allocsz = 0x1000LL;
+	ap->sa_allocsz = SMB_PIPE_MAX_MSGSIZE;
 
 	return (0);
 }
