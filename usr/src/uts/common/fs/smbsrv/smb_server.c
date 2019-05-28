@@ -219,8 +219,6 @@
 #include <smbsrv/smb_door.h>
 #include <smbsrv/smb_kstat.h>
 
-extern void smb_reply_notify_change_request(smb_request_t *);
-
 typedef struct {
 	smb_listener_daemon_t	*ra_listener;
 	smb_session_t		*ra_session;
@@ -270,6 +268,7 @@ kmem_cache_t		*smb_cache_ofile;
 kmem_cache_t		*smb_cache_odir;
 kmem_cache_t		*smb_cache_opipe;
 kmem_cache_t		*smb_cache_event;
+kmem_cache_t		*smb_cache_lock;
 
 /*
  * *****************************************************************************
@@ -325,6 +324,8 @@ smb_server_g_init(void)
 	    sizeof (smb_opipe_t), 8, NULL, NULL, NULL, NULL, NULL, 0);
 	smb_cache_event = kmem_cache_create("smb_event_cache",
 	    sizeof (smb_event_t), 8, NULL, NULL, NULL, NULL, NULL, 0);
+	smb_cache_lock = kmem_cache_create("smb_lock_cache",
+	    sizeof (smb_lock_t), 8, NULL, NULL, NULL, NULL, NULL, 0);
 
 	smb_llist_init();
 	smb_llist_constructor(&smb_servers, sizeof (smb_server_t),
@@ -360,6 +361,7 @@ smb_server_g_fini(void)
 	kmem_cache_destroy(smb_cache_odir);
 	kmem_cache_destroy(smb_cache_opipe);
 	kmem_cache_destroy(smb_cache_event);
+	kmem_cache_destroy(smb_cache_lock);
 
 	smb_node_fini();
 	smb_mbc_fini();
@@ -1412,6 +1414,7 @@ smb_server_shutdown(smb_server_t *sv)
 	/*
 	 * Stop the listeners first, so we don't get any more
 	 * new work while we're trying to shut down.
+	 * Also disconnects all sessions under each.
 	 */
 	smb_server_listener_stop(&sv->sv_nbt_daemon);
 	smb_server_listener_stop(&sv->sv_tcp_daemon);
@@ -1628,8 +1631,24 @@ smb_server_listener(smb_thread_t *thread, void *arg)
 
 	DTRACE_PROBE1(so__wait__accept, struct sonode *, ld->ld_so);
 
-	while (ksocket_accept(ld->ld_so, NULL, NULL, &s_so, CRED())
-	    == 0) {
+	for (;;) {
+		int ret = ksocket_accept(ld->ld_so, NULL, NULL, &s_so, CRED());
+
+		switch (ret) {
+		case 0:
+			break;
+		case ECONNABORTED:
+			continue;
+		case EINTR:
+		case EBADF:	/* libfakekernel */
+			goto out;
+		default:
+			cmn_err(CE_WARN,
+			    "smb_server_listener: ksocket_accept(%d)",
+			    ret);
+			goto out;
+		}
+
 		DTRACE_PROBE1(so__accept, struct sonode *, s_so);
 
 		on = 1;
@@ -1649,6 +1668,7 @@ smb_server_listener(smb_thread_t *thread, void *arg)
 		 */
 		smb_server_create_session(ld, s_so);
 	}
+out:
 	/* Disconnect all the sessions this listener created. */
 	smb_llist_enter(&ld->ld_session_list, RW_READER);
 	session = smb_llist_head(&ld->ld_session_list);

@@ -22,7 +22,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# Copyright 2014 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2017 Nexenta Systems, Inc.  All rights reserved.
 #
 # Copyright (c) 2018, Joyent, Inc.
 
@@ -122,6 +122,7 @@ OBJS_FS_SMBSRV = \
 		smb_vss.o				\
 		smb_write.o				\
 		\
+		smb2_aapl.o \
 		smb2_dispatch.o \
 		smb2_cancel.o \
 		smb2_change_notify.o \
