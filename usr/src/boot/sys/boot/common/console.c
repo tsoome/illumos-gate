@@ -163,6 +163,28 @@ putchar(int c)
 		}
 }
 
+void
+putchar_device(int c, void *name)
+{
+	int	cons;
+
+	if (name == NULL)
+		return;
+
+	cons = cons_find(name);
+	if (cons < 0)
+		return;
+
+	/* Expand newlines if not in raw mode */
+	if ((consoles[cons]->c_flags & C_PRESENTOUT) ==
+	    C_PRESENTOUT) {
+		if (c == '\n' &&
+		    (consoles[cons]->c_flags & C_MODERAW) == 0)
+			consoles[cons]->c_out(consoles[cons], '\r');
+		consoles[cons]->c_out(consoles[cons], c);
+	}
+}
+
 /*
  * Find the console with the specified name.
  */
