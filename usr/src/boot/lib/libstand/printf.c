@@ -60,6 +60,25 @@ typedef void (kvprintf_fn_t)(int, void *);
 static char *ksprintn(char *, uintmax_t, int, int *, int);
 static int kvprintf(char const *, kvprintf_fn_t *, void *, int, va_list);
 
+__weak_symbol void
+putchar_device(int c __unused, void *ptr __unused)
+{
+}
+
+int
+diag_printf(const char *fmt, ...)
+{
+	va_list ap;
+	int retval;
+	char *diag;
+
+	diag = getenv("diag-device");
+	va_start(ap, fmt);
+	retval = kvprintf(fmt, putchar_device, diag, 10, ap);
+	va_end(ap);
+	return retval;
+}
+
 static void
 putchar_wrapper(int cc, void *arg __unused)
 {

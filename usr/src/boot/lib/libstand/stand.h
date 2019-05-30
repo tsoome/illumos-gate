@@ -270,6 +270,7 @@ extern char	*sbrk(int incr);
 
 extern void	mallocstats(void);
 
+extern int	diag_printf(const char *fmt, ...) __printflike(1, 2);
 extern int	printf(const char *fmt, ...) __printflike(1, 2);
 extern void	vprintf(const char *fmt, __va_list);
 extern int	asprintf(char **buf, const char *cfmt, ...) __printflike(2, 3);
@@ -403,6 +404,7 @@ extern void	exit(int) __dead2;
 extern int	getchar(void);
 extern int	ischar(void);
 extern void	putchar(int);
+extern void	putchar_device(int, void *);
 extern int	devopen(struct open_file *, const char *, const char **);
 extern int	devclose(struct open_file *f);
 extern void	panic(const char *, ...) __dead2 __printflike(1, 2);
