@@ -921,6 +921,11 @@ tems_get_initial_color(tem_color_t *pcolor)
 		 */
 		if (pcolor->bg_color == ANSI_COLOR_WHITE)
 			flags |= TEM_ATTR_BRIGHT_BG;
+		
+		/* If background color is black, set bright foreground. */
+		/* Check tem.fg_brigth? allow colors 8-16? */
+		if (pcolor->bg_color == ANSI_COLOR_BLACK)
+			flags |= TEM_ATTR_BRIGHT_FG;
 	}
 
 	pcolor->a_flags = flags;
