@@ -303,11 +303,13 @@ check_whitelist(unsigned c)
 	if (filter == false)
 		return (true);
 
-	if (format == VT_C_SOURCE) {
+/*
+	if (format == VT_C_SOURCE || format == VT_C_COMPRESSED) {
 		w = s_list;
 		n = sizeof (s_list) / sizeof (s_list[0]);
 	}
-	if (format == VT_C_COMPRESSED) {
+*/
+	if (format == VT_C_SOURCE || format == VT_C_COMPRESSED) {
 		w = c_list;
 		n = sizeof (c_list) / sizeof (c_list[0]);
 	}
