@@ -26,6 +26,13 @@ extern "C" {
 #include <nfs/nfs4_kprot.h>
 
 /*
+ * 24 bytes of rpc header
+ * 12 bytes for compound header
+ * 44 bytes for SEQUENCE response
+ */
+#define	NFS4_MIN_HDR_SEQSZ	(24 + 12 + 44)
+
+/*
  * NFSv4.1: slot support (reply cache)
  */
 

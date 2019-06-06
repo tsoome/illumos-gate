@@ -647,7 +647,7 @@ rfs4x_op_create_session(nfs_argop4 *argop, nfs_resop4 *resop,
 	rok->csr_fore_chan_attrs =
 	    crp->csr_fore_chan_attrs = sp->sn_fore->cn_attrs;
 	rok->csr_back_chan_attrs = crp->csr_back_chan_attrs =
-	    args->csa_back_chan_attrs;
+	    sp->sn_fore->cn_back_attrs;
 
 	rfs4_update_lease(cp);
 
@@ -930,6 +930,7 @@ rfs4x_op_sequence(nfs_argop4 *argop, nfs_resop4 *resop,
 	rfs4_slot_t	*slot = cs->slot;
 	nfsstat4	 status = NFS4_OK;
 	uint32_t	 cbstat = 0;
+	int buflen;
 
 	DTRACE_NFSV4_2(op__sequence__start,
 	    struct compound_state *, cs,
@@ -944,6 +945,16 @@ rfs4x_op_sequence(nfs_argop4 *argop, nfs_resop4 *resop,
 
 	if (rfs4_lease_expired(sp->sn_clnt)) {
 		status = NFS4ERR_BADSESSION;
+		goto out;
+	}
+
+	buflen = args->sa_cachethis ?
+	    sp->sn_fore->cn_attrs.ca_maxresponsesize_cached :
+	    sp->sn_fore->cn_attrs.ca_maxresponsesize;
+
+	if (buflen < NFS4_MIN_HDR_SEQSZ) {
+		status = args->sa_cachethis ?
+		    NFS4ERR_REP_TOO_BIG_TO_CACHE : NFS4ERR_REP_TOO_BIG;
 		goto out;
 	}
 
