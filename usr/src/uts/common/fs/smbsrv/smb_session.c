@@ -817,6 +817,9 @@ smb_session_delete(smb_session_t *session)
 
 	ASSERT(session->s_magic == SMB_SESSION_MAGIC);
 
+	if (session->enc_mech != NULL)
+		smb3_encrypt_fini(session);
+
 	if (session->sign_fini != NULL)
 		session->sign_fini(session);
 
@@ -1482,7 +1485,6 @@ smb_request_free(smb_request_t *sr)
 	ASSERT(sr->r_xa == NULL);
 
 	if (sr->fid_ofile != NULL) {
-		smb_ofile_request_complete(sr->fid_ofile);
 		smb_ofile_release(sr->fid_ofile);
 	}
 
@@ -1491,6 +1493,9 @@ smb_request_free(smb_request_t *sr)
 
 	if (sr->uid_user != NULL)
 		smb_user_release(sr->uid_user);
+
+	if (sr->tform_ssn != NULL)
+		smb_user_release(sr->tform_ssn);
 
 	/*
 	 * The above may have left work on the delete queues
@@ -1532,10 +1537,6 @@ boolean_t
 smb_session_levelII_oplocks(smb_session_t *session)
 {
 	SMB_SESSION_VALID(session);
-
-	/* Clients using SMB2 and later always know about oplocks. */
-	if (session->dialect > NT_LM_0_12)
-		return (B_TRUE);
 
 	/* Older clients only do Level II oplocks if negotiated. */
 	if ((session->capabilities & CAP_LEVEL_II_OPLOCKS) != 0)
