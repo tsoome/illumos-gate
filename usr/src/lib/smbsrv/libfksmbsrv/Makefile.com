@@ -31,6 +31,7 @@ VERS =		.1
 
 OBJS_LOCAL = \
 		fksmb_cred.o \
+		fksmb_encrypt_pkcs.o \
 		fksmb_fem.o \
 		fksmb_idmap.o \
 		fksmb_init.o \
@@ -54,6 +55,7 @@ OBJS_FS_SMBSRV = \
 		smb_alloc.o				\
 		smb_authenticate.o			\
 		smb_close.o				\
+		smb_cmn_oplock.o			\
 		smb_cmn_rename.o			\
 		smb_cmn_setfile.o			\
 		smb_common_open.o			\
@@ -108,6 +110,7 @@ OBJS_FS_SMBSRV = \
 		smb_session_setup_andx.o		\
 		smb_set_fileinfo.o			\
 		smb_signing.o				\
+		smb_srv_oplock.o			\
 		smb_thread.o				\
 		smb_tree.o				\
 		smb_trans2_create_directory.o		\
@@ -131,6 +134,7 @@ OBJS_FS_SMBSRV = \
 		smb2_echo.o \
 		smb2_flush.o \
 		smb2_ioctl.o \
+		smb2_lease.o \
 		smb2_lock.o \
 		smb2_logoff.o \
 		smb2_negotiate.o \
@@ -152,12 +156,15 @@ OBJS_FS_SMBSRV = \
 		smb2_signing.o \
 		smb2_tree_connect.o \
 		smb2_tree_disconn.o \
-		smb2_write.o
+		smb2_write.o \
+	        \
+	        smb3_encrypt.o
 
 # Can't just link with -lsmb because of user vs kernel API
 # i.e. can't call free with mem from kmem_alloc, which is
 # what happens if we just link with -lsmb
 OBJS_CMN_SMBSRV = \
+		smb_cfg_util.o \
 		smb_inet.o \
 		smb_match.o \
 		smb_msgbuf.o \

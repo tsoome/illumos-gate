@@ -21,7 +21,7 @@
 
 /*
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2015 Nexenta Systems, Inc.  All rights reserved.
+ * Copyright 2017 Nexenta Systems, Inc.  All rights reserved.
  * Copyright (c) 2016 by Delphix. All rights reserved.
  */
 
@@ -34,6 +34,7 @@
 #include <smbsrv/string.h>
 #include <smbsrv/smb_inet.h>
 #include <smbsrv/hash_table.h>
+#include <smbsrv/smbinfo.h>
 
 #if !defined(_KERNEL) && !defined(_FAKE_KERNEL)
 #include <libshare.h>
@@ -76,7 +77,13 @@ extern "C" {
  *
  * quotas		SMB quotas presented & supported (T/F)
  *
- * next three properties use access-list a al NFS
+ * encrypt		Controls SMB3 encryption per-share.
+ *	disabled	Server does not tell the client to encrypt requests.
+ *	enabled		Server asks, but does not require, that the client
+ *			encrypt its requests.
+ *	required	Server denies unencrypted share access.
+ *
+ * next three properties use access-list a la NFS
  *
  * ro			list of hosts that will have read-only access
  * rw			list of hosts that will have read/write access
@@ -94,6 +101,8 @@ extern "C" {
 #define	SHOPT_DFSROOT		"dfsroot"
 #define	SHOPT_DESCRIPTION	"description"
 #define	SHOPT_QUOTAS		"quotas"
+#define	SHOPT_FSO		"fso"	/* Force Shared Oplocks */
+#define	SHOPT_ENCRYPT		"encrypt"
 #define	SHOPT_AUTOHOME		"Autohome"
 
 #define	SMB_DEFAULT_SHARE_GROUP	"smb"
@@ -174,7 +183,8 @@ extern "C" {
 #define	SMB_SHRF_ACC_RW		0x0400
 #define	SMB_SHRF_ACC_ALL	0x0F00
 
-#define	SMB_SHRF_QUOTAS		0x1000
+#define	SMB_SHRF_QUOTAS		0x1000	/* Enable SMB Quotas */
+#define	SMB_SHRF_FSO		0x2000	/* Force Shared Oplocks */
 
 /*
  * Runtime flags
@@ -206,6 +216,7 @@ typedef struct smb_share {
 	char		shr_access_none[MAXPATHLEN];
 	char		shr_access_ro[MAXPATHLEN];
 	char		shr_access_rw[MAXPATHLEN];
+	smb_cfg_val_t	shr_encrypt;
 } smb_share_t;
 
 typedef struct smb_shriter {

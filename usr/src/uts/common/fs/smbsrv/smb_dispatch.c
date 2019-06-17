@@ -836,9 +836,9 @@ andx_more:
 	sr->sr_time_start = gethrtime();
 	if ((sdrc = (*sdd->sdt_pre_op)(sr)) == SDRC_SUCCESS)
 		sdrc = (*sdd->sdt_function)(sr);
-	(*sdd->sdt_post_op)(sr);
 
 	if (sdrc != SDRC_SR_KEPT) {
+		(*sdd->sdt_post_op)(sr);
 		smbsr_cleanup(sr);
 	}
 
@@ -906,19 +906,8 @@ reply_ready:
 	smbsr_send_reply(sr);
 
 drop_connection:
-	if (disconnect) {
-		smb_rwx_rwenter(&session->s_lock, RW_WRITER);
-		switch (session->s_state) {
-		case SMB_SESSION_STATE_DISCONNECTED:
-		case SMB_SESSION_STATE_TERMINATED:
-			break;
-		default:
-			smb_soshutdown(session->sock);
-			session->s_state = SMB_SESSION_STATE_DISCONNECTED;
-			break;
-		}
-		smb_rwx_rwexit(&session->s_lock);
-	}
+	if (disconnect)
+		smb_session_disconnect(session);
 
 out:
 	if (sr != NULL) {

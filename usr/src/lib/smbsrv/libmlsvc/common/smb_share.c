@@ -19,7 +19,7 @@
  * CDDL HEADER END
  *
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2016 Nexenta Systems, Inc. All rights reserved.
+ * Copyright 2017 Nexenta Systems, Inc. All rights reserved.
  */
 
 /*
@@ -770,6 +770,10 @@ smb_shr_modify(smb_share_t *new_si)
 	si->shr_flags &= ~SMB_SHRF_DFSROOT;
 	si->shr_flags |= flag;
 
+	flag = (new_si->shr_flags & SMB_SHRF_FSO);
+	si->shr_flags &= ~SMB_SHRF_FSO;
+	si->shr_flags |= flag;
+
 	flag = (new_si->shr_flags & SMB_SHRF_QUOTAS);
 	si->shr_flags &= ~SMB_SHRF_QUOTAS;
 	si->shr_flags |= flag;
@@ -783,6 +787,8 @@ smb_shr_modify(smb_share_t *new_si)
 	access = (new_si->shr_flags & SMB_SHRF_ACC_ALL);
 	si->shr_flags &= ~SMB_SHRF_ACC_ALL;
 	si->shr_flags |= access;
+
+	si->shr_encrypt = new_si->shr_encrypt;
 
 	if (access & SMB_SHRF_ACC_NONE)
 		(void) strlcpy(si->shr_access_none, new_si->shr_access_none,
@@ -1769,6 +1775,12 @@ smb_shr_sa_get(sa_share_t share, sa_resource_t resource, smb_share_t *si)
 		free(val);
 	}
 
+	val = smb_shr_sa_getprop(opts, SHOPT_FSO);
+	if (val != NULL) {
+		smb_shr_sa_setflag(val, si, SMB_SHRF_FSO);
+		free(val);
+	}
+
 	val = smb_shr_sa_getprop(opts, SHOPT_QUOTAS);
 	if (val != NULL) {
 		/* Turn the flag on or off */
@@ -1777,6 +1789,12 @@ smb_shr_sa_get(sa_share_t share, sa_resource_t resource, smb_share_t *si)
 	} else {
 		/* Default for this is enabled. */
 		si->shr_flags |= SMB_SHRF_QUOTAS;
+	}
+
+	val = smb_shr_sa_getprop(opts, SHOPT_ENCRYPT);
+	if (val != NULL) {
+		smb_cfg_set_require(val, &si->shr_encrypt);
+		free(val);
 	}
 
 	val = smb_shr_sa_getprop(opts, SHOPT_CSC);
@@ -2546,8 +2564,17 @@ smb_shr_encode(smb_share_t *si, nvlist_t **nvlist)
 		rc |= nvlist_add_string(smb, SHOPT_GUEST, "true");
 	if ((si->shr_flags & SMB_SHRF_DFSROOT) != 0)
 		rc |= nvlist_add_string(smb, SHOPT_DFSROOT, "true");
+	if ((si->shr_flags & SMB_SHRF_FSO) != 0)
+		rc |= nvlist_add_string(smb, SHOPT_FSO, "true");
 	if ((si->shr_flags & SMB_SHRF_QUOTAS) != 0)
 		rc |= nvlist_add_string(smb, SHOPT_QUOTAS, "true");
+
+	if (si->shr_encrypt == SMB_CONFIG_REQUIRED)
+		rc |= nvlist_add_string(smb, SHOPT_ENCRYPT, "required");
+	else if (si->shr_encrypt == SMB_CONFIG_ENABLED)
+		rc |= nvlist_add_string(smb, SHOPT_ENCRYPT, "enabled");
+	else
+		rc |= nvlist_add_string(smb, SHOPT_ENCRYPT, "disabled");
 
 	if ((si->shr_flags & SMB_SHRF_AUTOHOME) != 0) {
 		rc |= nvlist_add_string(smb, SHOPT_AUTOHOME, "true");
