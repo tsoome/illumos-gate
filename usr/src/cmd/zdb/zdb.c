@@ -50,11 +50,13 @@
 #include <sys/dsl_dir.h>
 #include <sys/dsl_dataset.h>
 #include <sys/dsl_pool.h>
+#include <sys/dsl_bookmark.h>
 #include <sys/dbuf.h>
 #include <sys/zil.h>
 #include <sys/zil_impl.h>
 #include <sys/stat.h>
 #include <sys/resource.h>
+#include <sys/dmu_send.h>
 #include <sys/dmu_traverse.h>
 #include <sys/zio_checksum.h>
 #include <sys/zio_compress.h>
@@ -138,6 +140,7 @@ usage(void)
 	    "\t\t[<poolname> [<object> ...]]\n"
 	    "\t%s [-AdiPv] [-e [-V] [-p <path> ...]] [-U <cache>] <dataset> "
 	    "[<object> ...]\n"
+	    "\t%s [-v] <bookmark>\n"
 	    "\t%s -C [-A] [-U <cache>]\n"
 	    "\t%s -l [-Aqu] <device>\n"
 	    "\t%s -m [-AFLPX] [-e [-V] [-p <path> ...]] [-t <txg>] "
@@ -149,7 +152,7 @@ usage(void)
 	    "\t%s -S [-AP] [-e [-V] [-p <path> ...]] [-U <cache>] "
 	    "<poolname>\n\n",
 	    cmdname, cmdname, cmdname, cmdname, cmdname, cmdname, cmdname,
-	    cmdname, cmdname);
+	    cmdname, cmdname, cmdname);
 
 	(void) fprintf(stderr, "    Dataset name must include at least one "
 	    "separator character '/' or '@'\n");
@@ -412,6 +415,43 @@ dump_uint8(objset_t *os, uint64_t object, void *data, size_t size)
 static void
 dump_uint64(objset_t *os, uint64_t object, void *data, size_t size)
 {
+	uint64_t *arr;
+
+	if (dump_opt['d'] < 6)
+		return;
+	if (data == NULL) {
+		dmu_object_info_t doi;
+
+		VERIFY0(dmu_object_info(os, object, &doi));
+		size = doi.doi_max_offset;
+		arr = kmem_alloc(size, KM_SLEEP);
+
+		int err = dmu_read(os, object, 0, size, arr, 0);
+		if (err != 0) {
+			(void) printf("got error %u from dmu_read\n", err);
+			kmem_free(arr, size);
+			return;
+		}
+	} else {
+		arr = data;
+	}
+
+	if (size == 0) {
+		(void) printf("\t\t[]\n");
+		return;
+	}
+
+	(void) printf("\t\t[%0llx", (u_longlong_t)arr[0]);
+	for (size_t i = 1; i * sizeof (uint64_t) < size; i++) {
+		if (i % 4 != 0)
+			(void) printf(", %0llx", (u_longlong_t)arr[i]);
+		else
+			(void) printf(",\n\t\t%0llx", (u_longlong_t)arr[i]);
+	}
+	(void) printf("]\n");
+
+	if (data == NULL)
+		kmem_free(arr, size);
 }
 
 /*ARGSUSED*/
@@ -1864,6 +1904,33 @@ dump_full_bpobj(bpobj_t *bpo, const char *name, int indent)
 	}
 }
 
+static int
+dump_bookmark(dsl_pool_t *dp, char *name, boolean_t print_redact __unused,
+    boolean_t print_list)
+{
+	int err = 0;
+	zfs_bookmark_phys_t prop;
+	err = dsl_bookmark_lookup(dp, name, NULL, &prop);
+
+	if (err != 0) {
+		return (err);
+	}
+
+	(void) printf("\t#%s: ", strchr(name, '#') + 1);
+	(void) printf("{guid: %llx creation_txg: %llu creation_time: "
+	    "%llu}\n", (u_longlong_t)prop.zbm_guid,
+	    (u_longlong_t)prop.zbm_creation_txg,
+	    (u_longlong_t)prop.zbm_creation_time);
+
+	return (0);
+}
+
+static void
+dump_bookmarks(objset_t *os __unused, int verbosity __unused)
+{
+	/* needs redacted send/receive bits */
+}
+
 static void
 bpobj_count_refd(bpobj_t *bpo)
 {
@@ -1966,19 +2033,26 @@ static objset_t *sa_os = NULL;
 static sa_attr_type_t *sa_attr_table = NULL;
 
 static int
-open_objset(const char *path, dmu_objset_type_t type, void *tag, objset_t **osp)
+open_objset(const char *path, void *tag, objset_t **osp)
 {
 	int err;
 	uint64_t sa_attrs = 0;
 	uint64_t version = 0;
 
 	VERIFY3P(sa_os, ==, NULL);
-	err = dmu_objset_own(path, type, B_TRUE, B_FALSE, tag, osp);
+	/*
+	 * We can't own an objset if it's redacted.  Therefore, we do this
+	 * dance: hold the objset, then acquire a long hold on its dataset, then
+	 * release the pool (which is held as part of holding the objset).
+	 */
+	err = dmu_objset_hold(path, tag, osp);
 	if (err != 0) {
-		(void) fprintf(stderr, "failed to own dataset '%s': %s\n", path,
-		    strerror(err));
+		(void) fprintf(stderr, "failed to hold dataset '%s': %s\n",
+		    path, strerror(err));
 		return (err);
 	}
+	dsl_dataset_long_hold(dmu_objset_ds(*osp), tag);
+	dsl_pool_rele(dmu_objset_pool(*osp), tag);
 
 	if (dmu_objset_type(*osp) == DMU_OST_ZFS && !(*osp)->os_encrypted) {
 		(void) zap_lookup(*osp, MASTER_NODE_OBJ, ZPL_VERSION_STR,
@@ -1992,7 +2066,8 @@ open_objset(const char *path, dmu_objset_type_t type, void *tag, objset_t **osp)
 		if (err != 0) {
 			(void) fprintf(stderr, "sa_setup failed: %s\n",
 			    strerror(err));
-			dmu_objset_disown(*osp, B_FALSE, tag);
+			dsl_dataset_long_rele(dmu_objset_ds(*osp), tag);
+			dsl_dataset_rele(dmu_objset_ds(*osp), tag);
 			*osp = NULL;
 		}
 	}
@@ -2007,7 +2082,8 @@ close_objset(objset_t *os, void *tag)
 	VERIFY3P(os, ==, sa_os);
 	if (os->os_sa != NULL)
 		sa_tear_down(os);
-	dmu_objset_disown(os, B_FALSE, tag);
+	dsl_dataset_long_rele(dmu_objset_ds(os), tag);
+	dsl_dataset_rele(dmu_objset_ds(os), tag);
 	sa_attr_table = NULL;
 	sa_os = NULL;
 }
@@ -2230,8 +2306,8 @@ static object_viewer_t *object_viewer[DMU_OT_NUMTYPES + 1] = {
 };
 
 static void
-dump_object(objset_t *os, uint64_t object, int verbosity, int *print_header,
-    uint64_t *dnode_slots_used)
+dump_object(objset_t *os, uint64_t object, int verbosity,
+    boolean_t *print_header, uint64_t *dnode_slots_used)
 {
 	dmu_buf_t *db = NULL;
 	dmu_object_info_t doi;
@@ -2351,7 +2427,7 @@ dump_object(objset_t *os, uint64_t object, int verbosity, int *print_header,
 			(void) printf("\t\t(object encrypted)\n");
 		}
 
-		*print_header = 1;
+		*print_header = B_TRUE;
 	}
 
 	if (verbosity >= 5)
@@ -2436,7 +2512,7 @@ dump_dir(objset_t *os)
 	char osname[ZFS_MAX_DATASET_NAME_LEN];
 	const char *type = "UNKNOWN";
 	int verbosity = dump_opt['d'];
-	int print_header = 1;
+	boolean_t print_header;
 	unsigned i;
 	int error;
 	uint64_t total_slots_used = 0;
@@ -2449,6 +2525,8 @@ dump_dir(objset_t *os)
 	dsl_pool_config_enter(dmu_objset_pool(os), FTAG);
 	dmu_objset_fast_stat(os, &dds);
 	dsl_pool_config_exit(dmu_objset_pool(os), FTAG);
+
+	print_header = B_TRUE;
 
 	if (dds.dds_type < DMU_OST_NUMTYPES)
 		type = objset_types[dds.dds_type];
@@ -2484,9 +2562,10 @@ dump_dir(objset_t *os)
 	    (dds.dds_inconsistent) ? " (inconsistent)" : "");
 
 	if (zopt_objects != 0) {
-		for (i = 0; i < zopt_objects; i++)
+		for (i = 0; i < zopt_objects; i++) {
 			dump_object(os, zopt_object[i], verbosity,
 			    &print_header, NULL);
+		}
 		(void) printf("\n");
 		return;
 	}
@@ -2504,6 +2583,9 @@ dump_dir(objset_t *os)
 		}
 		count_ds_mos_objects(ds);
 	}
+
+	if (dmu_objset_ds(os) != NULL)
+		dump_bookmarks(os, verbosity);
 
 	if (verbosity < 2)
 		return;
@@ -2944,7 +3026,7 @@ static int
 dump_path_impl(objset_t *os, uint64_t obj, char *name)
 {
 	int err;
-	int header = 1;
+	boolean_t header = B_TRUE;
 	uint64_t child_obj;
 	char *s;
 	dmu_buf_t *db;
@@ -3015,7 +3097,7 @@ dump_path(char *ds, char *path)
 	objset_t *os;
 	uint64_t root_obj;
 
-	err = open_objset(ds, DMU_OST_ZFS, FTAG, &os);
+	err = open_objset(ds, FTAG, &os);
 	if (err != 0)
 		return (err);
 
@@ -3023,7 +3105,7 @@ dump_path(char *ds, char *path)
 	if (err != 0) {
 		(void) fprintf(stderr, "can't lookup root znode: %s\n",
 		    strerror(err));
-		dmu_objset_disown(os, B_FALSE, FTAG);
+		close_objset(os, FTAG);
 		return (EINVAL);
 	}
 
@@ -3377,6 +3459,7 @@ dump_label(const char *dev)
 }
 
 static uint64_t dataset_feature_count[SPA_FEATURES];
+static uint64_t global_feature_count[SPA_FEATURES];
 static uint64_t remap_deadlist_count = 0;
 
 static int
@@ -3385,7 +3468,7 @@ dump_one_dir(const char *dsname, void *arg __unused)
 	int error;
 	objset_t *os;
 
-	error = open_objset(dsname, DMU_OST_ANY, FTAG, &os);
+	error = open_objset(dsname, FTAG, &os);
 	if (error != 0)
 		return (0);
 
@@ -3636,7 +3719,7 @@ zdb_blkptr_cb(spa_t *spa, zilog_t *zilog, const blkptr_t *bp,
 	dmu_object_type_t type;
 	boolean_t is_metadata;
 
-	if (bp == NULL)
+	if (zb->zb_level == ZB_DNODE_LEVEL)
 		return (0);
 
 	if (dump_opt['b'] >= 5 && bp->blk_birth > 0) {
@@ -4850,7 +4933,8 @@ zdb_ddt_add_cb(spa_t *spa, zilog_t *zilog, const blkptr_t *bp,
 	avl_index_t where;
 	zdb_ddt_entry_t *zdde, zdde_search;
 
-	if (bp == NULL || BP_IS_HOLE(bp) || BP_IS_EMBEDDED(bp))
+	if (zb->zb_level == ZB_DNODE_LEVEL || BP_IS_HOLE(bp) ||
+	    BP_IS_EMBEDDED(bp))
 		return (0);
 
 	if (dump_opt['S'] > 1 && zb->zb_level == ZB_ROOT_LEVEL) {
@@ -5783,6 +5867,10 @@ dump_zpool(spa_t *spa)
 			}
 			dump_dtl(spa->spa_root_vdev, 0);
 		}
+
+		for (spa_feature_t f = 0; f < SPA_FEATURES; f++)
+			global_feature_count[f] = UINT64_MAX;
+
 		(void) dmu_objset_find(spa_name(spa), dump_one_dir,
 		    NULL, DS_FIND_SNAPSHOTS | DS_FIND_CHILDREN);
 
@@ -5792,20 +5880,30 @@ dump_zpool(spa_t *spa)
 		for (spa_feature_t f = 0; f < SPA_FEATURES; f++) {
 			uint64_t refcount;
 
+			uint64_t *arr;
 			if (!(spa_feature_table[f].fi_flags &
-			    ZFEATURE_FLAG_PER_DATASET) ||
-			    !spa_feature_is_enabled(spa, f)) {
-				ASSERT0(dataset_feature_count[f]);
-				continue;
+			    ZFEATURE_FLAG_PER_DATASET)) {
+				if (global_feature_count[f] == UINT64_MAX)
+					continue;
+				if (!spa_feature_is_enabled(spa, f)) {
+					ASSERT0(global_feature_count[f]);
+					continue;
+				}
+				arr = global_feature_count;
+			} else {
+				if (!spa_feature_is_enabled(spa, f)) {
+					ASSERT0(dataset_feature_count[f]);
+					continue;
+				}
+				arr = dataset_feature_count;
 			}
 			(void) feature_get_refcount(spa,
 			    &spa_feature_table[f], &refcount);
-			if (dataset_feature_count[f] != refcount) {
+			if (arr[f] != refcount) {
 				(void) printf("%s feature refcount mismatch: "
-				    "%lld datasets != %lld refcount\n",
+				    "%lld consumers != %lld refcount\n",
 				    spa_feature_table[f].fi_uname,
-				    (longlong_t)dataset_feature_count[f],
-				    (longlong_t)refcount);
+				    (longlong_t)arr[f], (longlong_t)refcount);
 				rc = 2;
 			} else {
 				(void) printf("Verified %s feature refcount "
@@ -6555,9 +6653,23 @@ main(int argc, char **argv)
 					    FTAG, policy, NULL);
 				}
 			}
+		} else if (strpbrk(target, "#") != NULL) {
+			dsl_pool_t *dp;
+			error = dsl_pool_hold(target, FTAG, &dp);
+			if (error != 0) {
+				fatal("can't dump '%s': %s", target,
+				    strerror(error));
+			}
+			error = dump_bookmark(dp, target, B_TRUE, verbose > 1);
+			dsl_pool_rele(dp, FTAG);
+			if (error != 0) {
+				fatal("can't dump '%s': %s", target,
+				    strerror(error));
+			}
+			return (error);
 		} else {
 			zdb_set_skip_mmp(target);
-			error = open_objset(target, DMU_OST_ANY, FTAG, &os);
+			error = open_objset(target, FTAG, &os);
 		}
 	}
 	nvlist_free(policy);
@@ -6606,10 +6718,11 @@ main(int argc, char **argv)
 			free(checkpoint_target);
 	}
 
-	if (os != NULL)
+	if (os != NULL) {
 		close_objset(os, FTAG);
-	else
+	} else {
 		spa_close(spa, FTAG);
+	}
 
 	fuid_table_destroy();
 
