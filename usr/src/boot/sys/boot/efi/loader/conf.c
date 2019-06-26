@@ -38,6 +38,7 @@ struct devsw *devsw[] = {
 	&efipart_fddev,
 	&efipart_cddev,
 	&efipart_hddev,
+	&efihttp_dev, /* ordering with efinet_dev matters */
 	&efinet_dev,
 	&vdisk_dev,
 	&zfs_dev,
@@ -51,6 +52,7 @@ struct fs_ops *file_system[] = {
 	&ufs_fsops,
 	&cd9660_fsops,
 	&dosfs_fsops,
+	&efihttp_fsops,
 	&tftp_fsops,
 	&nfs_fsops,
 #ifdef LOADER_BZIP2_SUPPORT
