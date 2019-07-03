@@ -126,7 +126,7 @@ setup_ipv4_config2(EFI_HANDLE handle, MAC_ADDR_DEVICE_PATH *mac,
 		return (efi_status_to_errno(status));
 	if (ipv4) {
 		setenv("boot.netif.hwaddr",
-		    ether_sprintf((u_char *)mac->MacAddress.Addr), 1);
+		    ether_sprintf((uchar_t *)mac->MacAddress.Addr), 1);
 		setenv("boot.netif.ip",
 		    inet_ntoa(*(struct in_addr *)ipv4->LocalIpAddress.Addr), 1);
 		setenv("boot.netif.netmask",
@@ -135,14 +135,14 @@ setup_ipv4_config2(EFI_HANDLE handle, MAC_ADDR_DEVICE_PATH *mac,
 		    inet_ntoa(*(struct in_addr *)ipv4->GatewayIpAddress.Addr),
 		    1);
 		status = ip4config2->SetData(ip4config2,
-		    Ip4Config2DataTypePolicy, sizeof(EFI_IP4_CONFIG2_POLICY),
+		    Ip4Config2DataTypePolicy, sizeof (EFI_IP4_CONFIG2_POLICY),
 		    &(EFI_IP4_CONFIG2_POLICY) { Ip4Config2PolicyStatic });
 		if (EFI_ERROR(status))
 			return (efi_status_to_errno(status));
 
 		status = ip4config2->SetData(ip4config2,
 		    Ip4Config2DataTypeManualAddress,
-		    sizeof(EFI_IP4_CONFIG2_MANUAL_ADDRESS),
+		    sizeof (EFI_IP4_CONFIG2_MANUAL_ADDRESS),
 		    &(EFI_IP4_CONFIG2_MANUAL_ADDRESS) {
 			.Address = ipv4->LocalIpAddress,
 			.SubnetMask = ipv4->SubnetMask });
@@ -151,7 +151,8 @@ setup_ipv4_config2(EFI_HANDLE handle, MAC_ADDR_DEVICE_PATH *mac,
 
 		if (ipv4->GatewayIpAddress.Addr[0] != 0) {
 			status = ip4config2->SetData(ip4config2,
-			    Ip4Config2DataTypeGateway, sizeof(EFI_IPv4_ADDRESS),
+			    Ip4Config2DataTypeGateway,
+			    sizeof (EFI_IPv4_ADDRESS),
 			    &ipv4->GatewayIpAddress);
 			if (EFI_ERROR(status))
 				return (efi_status_to_errno(status));
@@ -160,13 +161,13 @@ setup_ipv4_config2(EFI_HANDLE handle, MAC_ADDR_DEVICE_PATH *mac,
 		if (dns) {
 			status = ip4config2->SetData(ip4config2,
 			    Ip4Config2DataTypeDnsServer,
-			    sizeof(EFI_IPv4_ADDRESS), &dns->DnsServerIp);
+			    sizeof (EFI_IPv4_ADDRESS), &dns->DnsServerIp);
 			if (EFI_ERROR(status))
 				return (efi_status_to_errno(status));
 		}
 	} else {
 		status = ip4config2->SetData(ip4config2,
-		    Ip4Config2DataTypePolicy, sizeof(EFI_IP4_CONFIG2_POLICY),
+		    Ip4Config2DataTypePolicy, sizeof (EFI_IP4_CONFIG2_POLICY),
 		    &(EFI_IP4_CONFIG2_POLICY) { Ip4Config2PolicyDhcp });
 		if (EFI_ERROR(status))
 			return (efi_status_to_errno(status));
@@ -249,6 +250,7 @@ efihttp_dev_open(struct open_file *f, ...)
 	status = BS->LocateDevicePath(&httpsb_guid, &devpath, &handle);
 	if (EFI_ERROR(status))
 		return (efi_status_to_errno(status));
+	mac = NULL;
 	ipv4 = NULL;
 	dns = NULL;
 	uri = NULL;
@@ -281,7 +283,7 @@ efihttp_dev_open(struct open_file *f, ...)
 	if (err)
 		return (err);
 
-	oh = calloc(1, sizeof(struct open_efihttp));
+	oh = calloc(1, sizeof (struct open_efihttp));
 	if (!oh)
 		return (ENOMEM);
 	oh->dev_handle = handle;
@@ -333,7 +335,7 @@ efihttp_dev_open(struct open_file *f, ...)
 	 *
 	 * http://127.0.0.1/foo/
 	 */
-	len = DevicePathNodeLength(&uri->Header) - sizeof(URI_DEVICE_PATH);
+	len = DevicePathNodeLength(&uri->Header) - sizeof (URI_DEVICE_PATH);
 	oh->uri_base = malloc(len + 1);
 	if (oh->uri_base == NULL) {
 		err = ENOMEM;
@@ -400,7 +402,7 @@ _efihttp_fs_open(const char *path, struct open_file *f)
 
 	dev = (struct devdesc *)f->f_devdata;
 	oh = (struct open_efihttp *)dev->d_opendata;
-	fh = calloc(1, sizeof(struct file_efihttp));
+	fh = calloc(1, sizeof (struct file_efihttp));
 	if (fh == NULL)
 		return (ENOMEM);
 	f->f_fsdata = fh;
@@ -422,8 +424,8 @@ _efihttp_fs_open(const char *path, struct open_file *f)
 	 * unconfigure and reconfigure the http instance to force the
 	 * connection closed.
 	 */
-	memset(&config, 0, sizeof(config));
-	memset(&config_access, 0, sizeof(config_access));
+	memset(&config, 0, sizeof (config));
+	memset(&config_access, 0, sizeof (config_access));
 	config.AccessPoint.IPv4Node = &config_access;
 	status = oh->http->GetModeData(oh->http, &config);
 	if (EFI_ERROR(status))
@@ -444,8 +446,10 @@ _efihttp_fs_open(const char *path, struct open_file *f)
 
 	/* extract the host portion of the URL */
 	host = strdup(oh->uri_base);
-	if (host == NULL)
+	if (host == NULL) {
+		BS->CloseEvent(token.Event);
 		return (ENOMEM);
+	}
 	hostp = host;
 	/* Remove the protocol scheme */
 	c = strchr(host, '/');
@@ -466,6 +470,10 @@ _efihttp_fs_open(const char *path, struct open_file *f)
 	message.Body = NULL;
 	request.Method = HttpMethodGet;
 	request.Url = calloc(strlen(oh->uri_base) + strlen(path) + 1, 2);
+	if (request.Url == NULL) {
+		BS->CloseEvent(token.Event);
+		return (ENOMEM);
+	}
 	headers[0].FieldName = (CHAR8 *)"Host";
 	headers[0].FieldValue = (CHAR8 *)hostp;
 	headers[1].FieldName = (CHAR8 *)"Connection";
@@ -541,16 +549,24 @@ _efihttp_fs_open(const char *path, struct open_file *f)
 	fh->is_dir = false;
 	for (i = 0; i < message.HeaderCount; i++) {
 		if (strcasecmp((const char *)message.Headers[i].FieldName,
-		    "Content-Length") == 0)
-			fh->size = strtoul((const char *)
-			    message.Headers[i].FieldValue, NULL, 10);
-		else if (strcasecmp((const char *)message.Headers[i].FieldName,
-		    "Content-type") == 0) {
+		    "Content-Length") == 0) {
+			char *cl, *end;
+
+			errno = 0;
+			cl = (char *)message.Headers[i].FieldValue;
+			fh->size = strtoul(cl, &end, 10);
+			if (errno != 0 || *cl == '\0' || *end != '\0') {
+				BS->FreePool(message.Headers);
+				return (EIO);
+			}
+		} else if (strcasecmp((const char *)
+		    message.Headers[i].FieldName, "Content-type") == 0) {
 			if (strncmp((const char *)message.Headers[i].FieldValue,
 			    "text/html", 9) == 0)
 				fh->is_dir = true;
 		}
 	}
+	BS->FreePool(message.Headers);
 
 	return (0);
 }
@@ -604,7 +620,7 @@ _efihttp_fs_read(struct open_file *f, void *buf, size_t size, size_t *resid)
 		if (resid != NULL)
 			*resid = size;
 
-		return 0;
+		return (0);
 	}
 
 	dev = (struct devdesc *)f->f_devdata;
@@ -659,7 +675,7 @@ static int
 efihttp_fs_read(struct open_file *f, void *buf, size_t size, size_t *resid)
 {
 	size_t res;
-	int err;
+	int err = 0;
 
 	while (size > 0) {
 		err = _efihttp_fs_read(f, buf, size, &res);
@@ -695,6 +711,8 @@ efihttp_fs_seek(struct open_file *f, off_t offset, int where)
 		return (0);
 	if (where == SEEK_SET && fh->offset < offset) {
 		buf = malloc(1500);
+		if (buf == NULL)
+			return (ENOMEM);
 		res = offset - fh->offset;
 		while (res > 0) {
 			err = _efihttp_fs_read(f, buf, min(1500, res), &res2);
@@ -714,7 +732,7 @@ efihttp_fs_seek(struct open_file *f, off_t offset, int where)
 		free(path);
 		if (err != 0)
 			return (err);
-		return efihttp_fs_seek(f, offset, where);
+		return (efihttp_fs_seek(f, offset, where));
 	}
 	return (EIO);
 }
@@ -725,7 +743,7 @@ efihttp_fs_stat(struct open_file *f, struct stat *sb)
 	struct file_efihttp *fh;
 
 	fh = (struct file_efihttp *)f->f_fsdata;
-	memset(sb, 0, sizeof(*sb));
+	memset(sb, 0, sizeof (*sb));
 	sb->st_nlink = 1;
 	sb->st_mode = 0777 | (fh->is_dir ? S_IFDIR : S_IFREG);
 	sb->st_size = fh->size;
