@@ -497,6 +497,85 @@ interactive_interrupt(const char *msg)
 	return (false);
 }
 
+/*
+ * Parse ConOut (the list of consoles active) and see if we can find a
+ * serial port and/or a video port. It would be nice to also walk the
+ * ACPI name space to map the UID for the serial port to a port. The
+ * latter is especially hard.
+ */
+static int
+parse_uefi_con_out(void)
+{
+	int how, rv;
+	int vid_seen = 0, com_seen = 0, seen = 0;
+	size_t sz;
+	char buf[4096], *ep;
+	EFI_DEVICE_PATH *node;
+	ACPI_HID_DEVICE_PATH  *acpi;
+	bool pci_pending = false;
+
+	how = 0;
+	sz = sizeof (buf);
+	rv = efi_global_getenv("ConOut", buf, &sz);
+	if (rv != EFI_SUCCESS)
+		goto out;
+	ep = buf + sz;
+	node = (EFI_DEVICE_PATH *)buf;
+	while ((char *)node < ep) {
+		if (DevicePathType(node) == ACPI_DEVICE_PATH &&
+		    DevicePathSubType(node) == ACPI_DP) {
+			/* Check for Serial node */
+			acpi = (void *)node;
+			if (EISA_ID_TO_NUM(acpi->HID) == 0x501) {
+				/* setenv_int("efi_8250_uid", acpi->UID); */
+				com_seen = ++seen;
+			}
+		} else if (DevicePathType(node) == ACPI_DEVICE_PATH &&
+		    DevicePathSubType(node) == ACPI_ADR_DP) {
+			/* Check for AcpiAdr() Node for video */
+			vid_seen = ++seen;
+		} else if (DevicePathType(node) == HARDWARE_DEVICE_PATH &&
+		    DevicePathSubType(node) == HW_PCI_DP) {
+			/*
+			 * Note, vmware fusion has a funky console device
+			 *	PciRoot(0x0)/Pci(0xf,0x0)
+			 * which we can only detect at the end since we also
+			 * have to cope with:
+			 *	PciRoot(0x0)/Pci(0x1f,0x0)/Serial(0x1)
+			 * so only match it if it's last.
+			 */
+			pci_pending = true;
+		}
+		node = NextDevicePathNode(node); /* Skip the end node */
+	}
+	if (pci_pending && vid_seen == 0)
+		vid_seen = ++seen;
+
+	/*
+	 * Truth table for RB_MULTIPLE | RB_SERIAL
+	 * Value		Result
+	 * 0			Use only video console
+	 * RB_SERIAL		Use only serial console
+	 * RB_MULTIPLE		Use both video and serial console
+	 *			(but video is primary so gets rc messages)
+	 * both			Use both video and serial console
+	 *			(but serial is primary so gets rc messages)
+	 *
+	 * Try to honor this as best we can. If only one of serial / video
+	 * found, then use that. Otherwise, use the first one we found.
+	 * This also implies if we found nothing, default to video.
+	 */
+	how = 0;
+	if (vid_seen && com_seen) {
+		how |= RB_MULTIPLE;
+		if (com_seen < vid_seen)
+			how |= RB_SERIAL;
+	} else if (com_seen)
+		how |= RB_SERIAL;
+out:
+	return (how);
+}
+
 EFI_STATUS
 main(int argc, CHAR16 *argv[])
 {
@@ -520,14 +599,10 @@ main(int argc, CHAR16 *argv[])
 	archsw.arch_readin = efi_readin;
 	archsw.arch_loadaddr = efi_loadaddr;
 	archsw.arch_free_loadaddr = efi_free_loadaddr;
-	/* Note this needs to be set before ZFS init. */
 	archsw.arch_zfs_probe = efi_zfs_probe;
 
 	/* Get our loaded image protocol interface structure. */
 	(void) OpenProtocolByHandle(IH, &imgid, (void **)&img);
-
-	/* Init the time source */
-	efi_time_init();
 
 	has_kbd = has_keyboard();
 
@@ -537,8 +612,12 @@ main(int argc, CHAR16 *argv[])
 	 * eg. the boot device, which we can't do yet.  We can use
 	 * printf() etc. once this is done.
 	 */
+	setenv("console", "text", 1);
 	cons_probe();
 	efi_getsmap();
+
+	/* Init the time source */
+	efi_time_init();
 
 	/*
 	 * Initialise the block cache. Set the upper limit.
@@ -557,7 +636,7 @@ main(int argc, CHAR16 *argv[])
 	 * args from UCS-2 to ASCII (16 to 8 bit) as they are copied (though
 	 * this method is flawed for non-ASCII characters).
 	 */
-	howto = 0;
+	howto = parse_uefi_con_out();
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] == '-') {
 			for (j = 1; argv[i][j] != 0; j++) {
