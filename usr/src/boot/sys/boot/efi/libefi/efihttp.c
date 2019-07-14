@@ -50,12 +50,14 @@ static EFI_GUID httpsb_guid = EFI_HTTP_SERVICE_BINDING_PROTOCOL_GUID;
 static EFI_GUID ip4config2_guid = EFI_IP4_CONFIG2_PROTOCOL_GUID;
 
 static bool efihttp_init_done = false;
+static CHAR8 *efihttp_uri;
 
 static int efihttp_dev_init(void);
 static int efihttp_dev_strategy(void *devdata, int rw, daddr_t blk, size_t size,
     char *buf, size_t *rsize);
 static int efihttp_dev_open(struct open_file *f, ...);
 static int efihttp_dev_close(struct open_file *f);
+static int efihttp_dev_print(int);
 
 static int efihttp_fs_open(const char *path, struct open_file *f);
 static int efihttp_fs_close(struct open_file *f);
@@ -89,7 +91,7 @@ struct devsw efihttp_dev = {
 	.dv_open =	efihttp_dev_open,
 	.dv_close =	efihttp_dev_close,
 	.dv_ioctl =	noioctl,
-	.dv_print =	NULL,
+	.dv_print =	efihttp_dev_print,
 	.dv_cleanup =	NULL,
 };
 
@@ -197,8 +199,10 @@ efihttp_dev_init(void)
 		    DevicePathSubType(devpath) != MSG_URI_DP)
 			continue;
 		uri = (URI_DEVICE_PATH *)devpath;
-		if (strncmp("http", (const char *)uri->Uri, 4) == 0)
+		if (strncmp("http", (const char *)uri->Uri, 4) == 0) {
 			found_http = true;
+			efihttp_uri = uri->Uri;
+		}
 	}
 	if (!found_http)
 		return (ENXIO);
@@ -220,6 +224,23 @@ efihttp_dev_strategy(void *devdata __unused, int rw __unused,
     size_t *rsize __unused)
 {
 	return (EIO);
+}
+
+static int
+efihttp_dev_print(int verbose)
+{
+	if (!efihttp_init_done)
+		return (0);
+
+	printf("%s devices:", efihttp_dev.dv_name);
+	if (pager_output("\n") != 0)
+		return (1);
+	printf("    %s0:", efihttp_dev.dv_name);
+	if (verbose) {
+		printf("    %s", efihttp_uri);
+	}
+
+	return (pager_output("\n"));
 }
 
 static int
