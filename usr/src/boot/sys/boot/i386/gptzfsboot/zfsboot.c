@@ -90,6 +90,18 @@ static const unsigned char flags[NOPT] = {
 };
 uint32_t opts;
 
+/*
+ * Paths to try loading before falling back to the boot2 prompt.
+ */
+#define	PATH_ZFSLOADER "/boot/zfsloader"
+static const struct string {
+	const char *p;
+	size_t len;
+} loadpath[] = {
+	{ PATH_LOADER, sizeof (PATH_LOADER) },
+	{ PATH_ZFSLOADER, sizeof (PATH_ZFSLOADER) }
+};
+
 static const unsigned char dev_maj[NDEV] = {30, 4, 2};
 
 static struct i386_devdesc *bdev;
@@ -130,8 +142,8 @@ struct fs_ops *file_system[] = {
 int
 main(void)
 {
-	int auto_boot, i, fd;
-	int nextboot = 0;
+	unsigned i;
+	int auto_boot, fd, nextboot = 0;
 	struct disk_devdesc devdesc;
 
 	bios_getmem();
@@ -240,30 +252,21 @@ main(void)
 	if (nextboot && !auto_boot)
 		exit(0);
 
-	/*
-	 * Try to exec stage 3 boot loader. If interrupted by a keypress,
-	 * or in case of failure, switch off auto boot.
-	 */
-
 	if (auto_boot && !*kname) {
-		memcpy(kname, PATH_LOADER, sizeof (PATH_LOADER));
-		if (!keyhit(3)) {
+		/*
+		 * Try to exec stage 3 boot loader. If interrupted by a
+		 * keypress, or in case of failure, drop the user to the
+		 * boot2 prompt..
+		 */
+		for (i = 0; i < nitems(loadpath); i++) {
+			memcpy(kname, loadpath[i].p, loadpath[i].len);
+			if (keyhit(3))
+				break;
 			load();
-			auto_boot = 0;
-			/*
-			 * Try to fall back to /boot/zfsloader.
-			 * This fallback should be eventually removed.
-			 * Created: 08/03/2018
-			 */
-#define	PATH_ZFSLOADER "/boot/zfsloader"
-			memcpy(kname, PATH_ZFSLOADER, sizeof (PATH_ZFSLOADER));
-			load();
-			/*
-			 * Still there? restore default loader name for prompt.
-			 */
-			memcpy(kname, PATH_LOADER, sizeof (PATH_LOADER));
 		}
 	}
+	/* Reset to default */
+	memcpy(kname, loadpath[0].p, loadpath[0].len);
 
 	/* Present the user with the boot2 prompt. */
 
