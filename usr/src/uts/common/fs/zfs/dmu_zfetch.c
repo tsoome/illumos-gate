@@ -122,7 +122,7 @@ dmu_zfetch_init(zfetch_t *zf, dnode_t *dno)
 	list_create(&zf->zf_stream, sizeof (zstream_t),
 	    offsetof(zstream_t, zs_node));
 
-	rw_init(&zf->zf_rwlock, NULL, RW_DEFAULT, NULL);
+	mutex_init(&zf->zf_lock, NULL, MUTEX_DEFAULT, NULL);
 }
 
 static void
@@ -136,7 +136,7 @@ dmu_zfetch_stream_fini(zstream_t *zs)
 static void
 dmu_zfetch_stream_remove(zfetch_t *zf, zstream_t *zs)
 {
-	ASSERT(RW_WRITE_HELD(&zf->zf_rwlock));
+	ASSERT(MUTEX_HELD(&zf->zf_lock));
 	list_remove(&zf->zf_stream, zs);
 	dmu_zfetch_stream_fini(zs);
 	zf->zf_numstreams--;
@@ -145,7 +145,7 @@ dmu_zfetch_stream_remove(zfetch_t *zf, zstream_t *zs)
 static void
 dmu_zfetch_stream_orphan(zfetch_t *zf, zstream_t *zs)
 {
-	ASSERT(RW_WRITE_HELD(&zf->zf_rwlock));
+	ASSERT(MUTEX_HELD(&zf->zf_lock));
 	list_remove(&zf->zf_stream, zs);
 	zs->zs_fetch = NULL;
 	zf->zf_numstreams--;
@@ -160,18 +160,16 @@ dmu_zfetch_fini(zfetch_t *zf)
 {
 	zstream_t *zs;
 
-	ASSERT(!RW_LOCK_HELD(&zf->zf_rwlock));
-
-	rw_enter(&zf->zf_rwlock, RW_WRITER);
+	mutex_enter(&zf->zf_lock);
 	while ((zs = list_head(&zf->zf_stream)) != NULL) {
 		if (zfs_refcount_count(&zs->zs_blocks) != 0)
 			dmu_zfetch_stream_orphan(zf, zs);
 		else
 			dmu_zfetch_stream_remove(zf, zs);
 	}
-	rw_exit(&zf->zf_rwlock);
+	mutex_exit(&zf->zf_lock);
 	list_destroy(&zf->zf_stream);
-	rw_destroy(&zf->zf_rwlock);
+	mutex_destroy(&zf->zf_lock);
 
 	zf->zf_dnode = NULL;
 }
@@ -188,7 +186,7 @@ dmu_zfetch_stream_create(zfetch_t *zf, uint64_t blkid)
 	zstream_t *zs_next;
 	hrtime_t now = gethrtime();
 
-	ASSERT(RW_WRITE_HELD(&zf->zf_rwlock));
+	ASSERT(MUTEX_HELD(&zf->zf_lock));
 
 	/*
 	 * Clean up old streams.
@@ -311,7 +309,7 @@ dmu_zfetch(zfetch_t *zf, uint64_t blkid, uint64_t nblks, boolean_t fetch_data,
 			rw_exit(&zf->zf_dnode->dn_struct_rwlock);
 		return;
 	}
-	rw_enter(&zf->zf_rwlock, RW_READER);
+	mutex_enter(&zf->zf_lock);
 
 	/*
 	 * Find matching prefetch stream.  Depending on whether the accesses
@@ -334,7 +332,7 @@ dmu_zfetch(zfetch_t *zf, uint64_t blkid, uint64_t nblks, boolean_t fetch_data,
 				if (nblks == 0) {
 					/* Already prefetched this before. */
 					mutex_exit(&zs->zs_lock);
-					rw_exit(&zf->zf_rwlock);
+					mutex_exit(&zf->zf_lock);
 					if (!have_lock) {
 						rw_exit(&zf->zf_dnode->
 						    dn_struct_rwlock);
@@ -353,9 +351,8 @@ dmu_zfetch(zfetch_t *zf, uint64_t blkid, uint64_t nblks, boolean_t fetch_data,
 		 * a new stream for it.
 		 */
 		ZFETCHSTAT_BUMP(zfetchstat_misses);
-		if (rw_tryupgrade(&zf->zf_rwlock))
-			dmu_zfetch_stream_create(zf, end_of_access_blkid);
-		rw_exit(&zf->zf_rwlock);
+		dmu_zfetch_stream_create(zf, end_of_access_blkid);
+		mutex_exit(&zf->zf_lock);
 		if (!have_lock)
 			rw_exit(&zf->zf_dnode->dn_struct_rwlock);
 		return;
@@ -426,7 +423,7 @@ dmu_zfetch(zfetch_t *zf, uint64_t blkid, uint64_t nblks, boolean_t fetch_data,
 	zfs_refcount_add_few(&zs->zs_blocks, pf_nblks + ipf_iend - ipf_istart,
 	    NULL);
 	mutex_exit(&zs->zs_lock);
-	rw_exit(&zf->zf_rwlock);
+	mutex_exit(&zf->zf_lock);
 	issued = 0;
 
 	/*
