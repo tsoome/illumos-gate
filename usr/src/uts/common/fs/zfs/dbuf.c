@@ -2905,15 +2905,15 @@ dbuf_prefetch(dnode_t *dn, int64_t level, uint64_t blkid, zio_priority_t prio,
 }
 
 /*
- * Helper function for __dbuf_hold_impl() to copy a buffer. Handles
+ * Helper function for dbuf_hold_impl() to copy a buffer. Handles
  * the case of encrypted, compressed and uncompressed buffers by
  * allocating the new buffer, respectively, with arc_alloc_raw_buf(),
  * arc_alloc_compressed_buf() or arc_alloc_buf().*
  *
- * NOTE: Declared noinline to avoid stack bloat in __dbuf_hold_impl().
+ * NOTE: Declared noinline to avoid stack bloat in dbuf_hold_impl().
  */
-static void
-dbuf_hold_copy(dnode_t *dn,	dmu_buf_impl_t *db, dbuf_dirty_record_t *dr)
+noinline static void
+dbuf_hold_copy(dnode_t *dn, dmu_buf_impl_t *db, dbuf_dirty_record_t *dr)
 {
 	arc_buf_t *data = dr->dt.dl.dr_data;
 	enum zio_compress compress_type = arc_get_compression(data);
@@ -2954,12 +2954,19 @@ dbuf_hold_impl(dnode_t *dn, uint8_t level, uint64_t blkid,
 {
 	dmu_buf_impl_t *db, *parent = NULL;
 
+	/* If the pool has been created, verify the tx_sync_lock is not held */
+	spa_t *spa = dn->dn_objset->os_spa;
+	dsl_pool_t *dp = spa->spa_dsl_pool;
+	if (dp != NULL) {
+		ASSERT(!MUTEX_HELD(&dp->dp_tx.tx_sync_lock));
+	}
+
 	ASSERT(blkid != DMU_BONUS_BLKID);
 	ASSERT(RW_LOCK_HELD(&dn->dn_struct_rwlock));
 	ASSERT3U(dn->dn_nlevels, >, level);
 
 	*dbp = NULL;
-top:
+
 	/* dbuf_find() returns with db_mtx held */
 	db = dbuf_find(dn->dn_objset, dn->dn_object, level, blkid);
 
@@ -4038,6 +4045,29 @@ dbuf_remap_impl(dnode_t *dn, blkptr_t *bp, krwlock_t *rw, dmu_tx_t *tx)
 	drica.drica_tx = tx;
 	if (spa_remap_blkptr(spa, &bp_copy, dbuf_remap_impl_callback,
 	    &drica)) {
+		/*
+		 * If the blkptr being remapped is tracked by a livelist,
+		 * then we need to make sure the livelist reflects the update.
+		 * First, cancel out the old blkptr by appending a 'FREE'
+		 * entry. Next, add an 'ALLOC' to track the new version. This
+		 * way we avoid trying to free an inaccurate blkptr at delete.
+		 * Note that embedded blkptrs are not tracked in livelists.
+		 */
+		if (dn->dn_objset != spa_meta_objset(spa)) {
+			dsl_dataset_t *ds = dmu_objset_ds(dn->dn_objset);
+			if (dsl_deadlist_is_open(&ds->ds_dir->dd_livelist) &&
+			    bp->blk_birth > ds->ds_dir->dd_origin_txg) {
+				ASSERT(!BP_IS_EMBEDDED(bp));
+				ASSERT(dsl_dir_is_clone(ds->ds_dir));
+				ASSERT(spa_feature_is_enabled(spa,
+				    SPA_FEATURE_LIVELIST));
+				bplist_append(&ds->ds_dir->dd_pending_frees,
+				    bp);
+				bplist_append(&ds->ds_dir->dd_pending_allocs,
+				    &bp_copy);
+			}
+		}
+
 		/*
 		 * The db_rwlock prevents dbuf_read_impl() from
 		 * dereferencing the BP while we are changing it.  To

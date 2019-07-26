@@ -262,7 +262,17 @@ zpool_feature_init(void)
 	    ZFEATURE_FLAG_MOS | ZFEATURE_FLAG_ACTIVATE_ON_ENABLE,
 	    ZFEATURE_TYPE_BOOLEAN, NULL);
 
-	/* Slot for SPA_FEATURE_LIVELIST */
+	{
+		static const spa_feature_t livelist_deps[] = {
+			SPA_FEATURE_EXTENSIBLE_DATASET,
+			SPA_FEATURE_NONE
+		};
+		zfeature_register(SPA_FEATURE_LIVELIST,
+		    "com.delphix:livelist", "livelist",
+		    "Improved clone deletion performance.",
+		    ZFEATURE_FLAG_READONLY_COMPAT, ZFEATURE_TYPE_BOOLEAN,
+		    livelist_deps);
+	}
 
 	{
 		static const spa_feature_t log_spacemap_deps[] = {
@@ -356,8 +366,8 @@ zpool_feature_init(void)
 		};
 		zfeature_register(SPA_FEATURE_OBSOLETE_COUNTS,
 		    "com.delphix:obsolete_counts", "obsolete_counts",
-		    "Reduce memory used by removed devices when their blocks are "
-		    "freed or remapped.",
+		    "Reduce memory used by removed devices when their blocks "
+		    "are freed or remapped.",
 		    ZFEATURE_FLAG_READONLY_COMPAT, ZFEATURE_TYPE_BOOLEAN,
 		    obsolete_counts_deps);
 	}

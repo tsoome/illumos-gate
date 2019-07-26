@@ -191,12 +191,15 @@ struct zthr {
 	/* flag set to true if we are canceling the zthr */
 	boolean_t	zthr_cancel;
 
+	/* flag set to true if we are waiting for the zthr to finish */
+	boolean_t	zthr_haswaiters;
+	kcondvar_t	zthr_wait_cv;
 	/*
 	 * maximum amount of time that the zthr is spent sleeping;
 	 * if this is 0, the thread doesn't wake up until it gets
 	 * signaled.
 	 */
-	hrtime_t	zthr_wait_time;
+	hrtime_t	zthr_sleep_timeout;
 
 	/* consumer-provided callbacks & data */
 	zthr_checkfunc_t	*zthr_checkfunc;
@@ -219,13 +222,17 @@ zthr_procedure(void *arg)
 			mutex_enter(&t->zthr_state_lock);
 		} else {
 			/* go to sleep */
-			if (t->zthr_wait_time == 0) {
+			if (t->zthr_sleep_timeout == 0) {
 				cv_wait(&t->zthr_cv, &t->zthr_state_lock);
 			} else {
 				(void) cv_timedwait_hires(&t->zthr_cv,
-				    &t->zthr_state_lock, t->zthr_wait_time,
+				    &t->zthr_state_lock, t->zthr_sleep_timeout,
 				    MSEC2NSEC(1), 0);
 			}
+		}
+		if (t->zthr_haswaiters) {
+			t->zthr_haswaiters = B_FALSE;
+			cv_broadcast(&t->zthr_wait_cv);
 		}
 	}
 
@@ -260,12 +267,13 @@ zthr_create_timer(zthr_checkfunc_t *checkfunc, zthr_func_t *func,
 	mutex_init(&t->zthr_state_lock, NULL, MUTEX_DEFAULT, NULL);
 	mutex_init(&t->zthr_request_lock, NULL, MUTEX_DEFAULT, NULL);
 	cv_init(&t->zthr_cv, NULL, CV_DEFAULT, NULL);
+	cv_init(&t->zthr_wait_cv, NULL, CV_DEFAULT, NULL);
 
 	mutex_enter(&t->zthr_state_lock);
 	t->zthr_checkfunc = checkfunc;
 	t->zthr_func = func;
 	t->zthr_arg = arg;
-	t->zthr_wait_time = max_sleep;
+	t->zthr_sleep_timeout = max_sleep;
 
 	t->zthr_thread = thread_create(NULL, 0, zthr_procedure, t,
 	    0, &p0, TS_RUN, minclsyspri);
@@ -283,6 +291,7 @@ zthr_destroy(zthr_t *t)
 	mutex_destroy(&t->zthr_request_lock);
 	mutex_destroy(&t->zthr_state_lock);
 	cv_destroy(&t->zthr_cv);
+	cv_destroy(&t->zthr_wait_cv);
 	kmem_free(t, sizeof (*t));
 }
 
@@ -300,16 +309,16 @@ zthr_wakeup(zthr_t *t)
 	 * There are 4 states that we can find the zthr when issuing
 	 * this broadcast:
 	 *
-	 * [1] The common case of the thread being asleep, at which
-	 *     point the broadcast will wake it up.
-	 * [2] The thread has been cancelled. Waking up a cancelled
-	 *     thread is a no-op. Any work that is still left to be
-	 *     done should be handled the next time the thread is
-	 *     resumed.
-	 * [3] The thread is doing work and is already up, so this
-	 *     is basically a no-op.
-	 * [4] The thread was just created/resumed, in which case the
-	 *     behavior is similar to [3].
+	 * [1]	The common case of the thread being asleep, at which
+	 *	point the broadcast will wake it up.
+	 * [2]	The thread has been cancelled. Waking up a cancelled
+	 *	thread is a no-op. Any work that is still left to be
+	 *	done should be handled the next time the thread is
+	 *	resumed.
+	 * [3]	The thread is doing work and is already up, so this
+	 *	is basically a no-op.
+	 * [4]	The thread was just created/resumed, in which case the
+	 *	behavior is similar to [3].
 	 */
 	cv_broadcast(&t->zthr_cv);
 
@@ -332,15 +341,14 @@ zthr_cancel(zthr_t *t)
 	 * Since we are holding the zthr_state_lock at this point
 	 * we can find the state in one of the following 4 states:
 	 *
-	 * [1] The thread has already been cancelled, therefore
-	 *     there is nothing for us to do.
-	 * [2] The thread is sleeping, so we broadcast the CV first
-	 *     to wake it up and then we set the flag and we are
-	 *     waiting for it to exit.
-	 * [3] The thread is doing work, in which case we just set
-	 *     the flag and wait for it to finish.
-	 * [4] The thread was just created/resumed, in which case
-	 *     the behavior is similar to [3].
+	 * [1]	The thread has already been cancelled, therefore
+	 *	there is nothing for us to do.
+	 * [2]	The thread is sleeping so we set the flag, broadcast
+	 *	the CV and wait for it to exit.
+	 * [3]	The thread is doing work, in which case we just set
+	 *	the flag and wait for it to finish.
+	 * [4]	The thread was just created/resumed, in which case
+	 *	the behavior is similar to [3].
 	 *
 	 * Since requests are serialized, by the time that we get
 	 * control back we expect that the zthr is cancelled and
@@ -375,17 +383,18 @@ zthr_resume(zthr_t *t)
 	ASSERT3P(&t->zthr_checkfunc, !=, NULL);
 	ASSERT3P(&t->zthr_func, !=, NULL);
 	ASSERT(!t->zthr_cancel);
+	ASSERT(!t->zthr_haswaiters);
 
 	/*
 	 * There are 4 states that we find the zthr in at this point
 	 * given the locks that we hold:
 	 *
 	 * [1] The zthr was cancelled, so we spawn a new thread for
-	 *     the zthr (common case).
+	 *	the zthr (common case).
 	 * [2] The zthr is running at which point this is a no-op.
 	 * [3] The zthr is sleeping at which point this is a no-op.
 	 * [4] The zthr was just spawned at which point this is a
-	 *     no-op.
+	 *	no-op.
 	 */
 	if (t->zthr_thread == NULL) {
 		t->zthr_thread = thread_create(NULL, 0, zthr_procedure, t,
@@ -428,4 +437,75 @@ zthr_iscancelled(zthr_t *t)
 	boolean_t cancelled = t->zthr_cancel;
 	mutex_exit(&t->zthr_state_lock);
 	return (cancelled);
+}
+
+/*
+ * Wait for the zthr to finish its current function. Similar to
+ * zthr_iscancelled, you can use zthr_has_waiters to have the zthr_func end
+ * early. Unlike zthr_cancel, the thread is not destroyed. If the zthr was
+ * sleeping or cancelled, return immediately.
+ */
+void
+zthr_wait_cycle_done(zthr_t *t)
+{
+	mutex_enter(&t->zthr_state_lock);
+
+	/*
+	 * Since we are holding the zthr_state_lock at this point
+	 * we can find the state in one of the following 5 states:
+	 *
+	 * [1]	The thread has already cancelled, therefore
+	 *	there is nothing for us to do.
+	 * [2]	The thread is sleeping so we set the flag, broadcast
+	 *	the CV and wait for it to exit.
+	 * [3]	The thread is doing work, in which case we just set
+	 *	the flag and wait for it to finish.
+	 * [4]	The thread was just created/resumed, in which case
+	 *	the behavior is similar to [3].
+	 * [5]	The thread is the middle of being cancelled, which is
+	 *	similar to [3]. We'll wait for the cancel, which is
+	 *	waiting for the zthr func.
+	 *
+	 * Since requests are serialized, by the time that we get
+	 * control back we expect that the zthr has completed it's
+	 * zthr_func.
+	 */
+	if (t->zthr_thread != NULL) {
+		t->zthr_haswaiters = B_TRUE;
+
+		/* broadcast in case the zthr is sleeping */
+		cv_broadcast(&t->zthr_cv);
+
+		while ((t->zthr_haswaiters) && (t->zthr_thread != NULL))
+			cv_wait(&t->zthr_wait_cv, &t->zthr_state_lock);
+
+		ASSERT(!t->zthr_haswaiters);
+	}
+
+	mutex_exit(&t->zthr_state_lock);
+}
+
+/*
+ * This function is intended to be used by the zthr itself
+ * to check if another thread is waiting on it to finish
+ *
+ * returns TRUE if we have been asked to finish.
+ *
+ * returns FALSE otherwise.
+ */
+boolean_t
+zthr_has_waiters(zthr_t *t)
+{
+	ASSERT3P(t->zthr_thread, ==, curthread);
+
+	mutex_enter(&t->zthr_state_lock);
+
+	/*
+	 * Similarly to zthr_iscancelled(), we only grab the
+	 * zthr_state_lock so that the zthr itself can use this
+	 * to check for the request.
+	 */
+	boolean_t has_waiters = t->zthr_haswaiters;
+	mutex_exit(&t->zthr_state_lock);
+	return (has_waiters);
 }
