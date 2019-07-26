@@ -17,7 +17,7 @@
 .\" Portions Copyright [yyyy] [name of copyright owner]
 .\" Copyright (c) 2019, Klara Inc.
 .\" Copyright (c) 2019, Allan Jude
-.Dd June 21, 2022
+.Dd December 21, 2024
 .Dt ZPOOL-FEATURES 7
 .Os
 .
@@ -456,6 +456,14 @@ once all filesystems that have ever contained a dnode larger than 512 B
 are destroyed.
 Large dnodes allow more data to be stored in the bonus buffer,
 thus potentially improving performance by avoiding the use of spill blocks.
+.
+.feature com.delphix livelist yes
+This feature allows clones to be deleted faster than the traditional method
+when a large number of random/sparse writes have been made to the clone.
+All blocks allocated and freed after a clone is created are tracked by the
+the clone's livelist which is referenced during the deletion of the clone.
+The feature is activated when a clone is created and remains active until all
+clones have been destroyed.
 .
 .feature com.delphix log_spacemap yes com.delphix:spacemap_v2
 This feature improves performance for heavily-fragmented pools,
