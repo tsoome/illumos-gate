@@ -127,15 +127,17 @@ setup_ipv4_config2(EFI_HANDLE handle, MAC_ADDR_DEVICE_PATH *mac,
 	if (EFI_ERROR(status))
 		return (efi_status_to_errno(status));
 	if (ipv4) {
+		struct in_addr addr;
+		n_long mask;
+
 		setenv("boot.netif.hwaddr",
 		    ether_sprintf((uchar_t *)mac->MacAddress.Addr), 1);
-		setenv("boot.netif.ip",
-		    inet_ntoa(*(struct in_addr *)ipv4->LocalIpAddress.Addr), 1);
-		setenv("boot.netif.netmask",
-		    intoa(*(n_long *)ipv4->SubnetMask.Addr), 1);
-		setenv("boot.netif.gateway",
-		    inet_ntoa(*(struct in_addr *)ipv4->GatewayIpAddress.Addr),
-		    1);
+		bcopy(ipv4->LocalIpAddress.Addr, &addr, sizeof (addr));
+		setenv("boot.netif.ip", inet_ntoa(addr), 1);
+		bcopy(ipv4->SubnetMask.Addr, &mask, sizeof (mask));
+		setenv("boot.netif.netmask", intoa(mask), 1);
+		bcopy(ipv4->GatewayIpAddress.Addr, &addr, sizeof (addr));
+		setenv("boot.netif.gateway", inet_ntoa(addr), 1);
 		status = ip4config2->SetData(ip4config2,
 		    Ip4Config2DataTypePolicy, sizeof (EFI_IP4_CONFIG2_POLICY),
 		    &(EFI_IP4_CONFIG2_POLICY) { Ip4Config2PolicyStatic });
