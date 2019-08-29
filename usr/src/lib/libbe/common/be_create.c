@@ -1552,6 +1552,8 @@ _be_destroy(const char *root_ds, be_destroy_data_t *dd)
 		return (ret);
 	}
 
+	be_print_err(gettext("be_destroy: has_origin %d: %s\n"), has_origin,
+	    origin);
 	/* If BE has an origin */
 	if (has_origin) {
 
