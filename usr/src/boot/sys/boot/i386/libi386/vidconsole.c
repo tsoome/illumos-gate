@@ -742,7 +742,7 @@ vidc_install_font(tem_modechg_cb_arg_t arg __unused)
 	uchar_t volatile *to;
 	uint16_t c;
 	int i, j, s;
-	int bpc, f_offset;
+	int fsr, bpc, f_offset;
 
 	if (plat_stdout_is_framebuffer())
 		return;
@@ -781,7 +781,7 @@ vidc_install_font(tem_modechg_cb_arg_t arg __unused)
 	 * This assumes 8x16 characters, which yield the traditional 80x25
 	 * screen.  It really should support other character heights.
 	 */
-	bpc = 16;
+	bpc = tems.ts_font.vf_height;
 	s = 0;		/* font slot, maybe should use tunable there. */
 	f_offset = s * 8 * 1024;
 	for (i = 0; i < 256; i++) {
@@ -822,6 +822,9 @@ vidc_install_font(tem_modechg_cb_arg_t arg __unused)
 	vga_set_grc(VGA_REG_ADDR, 0x06, 0x0e);
 	/* enable all color plane */
 	vga_set_atr(VGA_REG_ADDR, 0x12, 0x0f);
+	fsr = vga_get_crtc(VGA_REG_ADDR, VGA_CRTC_MAX_S_LN);
+	fsr = (fsr & 0xE0) | (bpc - 1);
+	vga_set_crtc(VGA_REG_ADDR, VGA_CRTC_MAX_S_LN, fsr);
 }
 
 static int
