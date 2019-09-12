@@ -323,7 +323,7 @@ zio_checksum_verify(const spa_t *spa, const blkptr_t *bp, void *data)
 
 	if (!ZIO_CHECKSUM_EQUAL(actual_cksum, expected_cksum)) {
 		/* printf("ZFS: read checksum %s failed\n", ci->ci_name); */
-		return (EIO);
+		return (ECKSUM);
 	}
 
 	return (0);
@@ -334,6 +334,7 @@ zio_decompress_data(int cpfunc, void *src, uint64_t srcsize,
     void *dest, uint64_t destsize)
 {
 	zio_compress_info_t *ci;
+	int ret;
 
 	if (cpfunc >= ZIO_COMPRESS_FUNCTIONS) {
 		printf("ZFS: unsupported compression algorithm %u\n", cpfunc);
@@ -347,7 +348,10 @@ zio_decompress_data(int cpfunc, void *src, uint64_t srcsize,
 		return (EIO);
 	}
 
-	return (ci->ci_decompress(src, dest, srcsize, destsize, ci->ci_level));
+	ret = ci->ci_decompress(src, dest, srcsize, destsize, ci->ci_level);
+	if (ret != 0)
+		ret = EINVAL;
+	return (ret);
 }
 
 static uint64_t
