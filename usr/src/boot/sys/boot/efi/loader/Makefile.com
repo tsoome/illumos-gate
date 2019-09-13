@@ -139,7 +139,8 @@ LIBEFI=		../../libefi/$(MACHINE)/libefi.a
 LIBCRYPTO=	../../../libcrypto/$(MACHINE)/libcrypto.a
 
 DPADD=		$(LIBFICL) $(LIBEFI) $(LIBCRYPTO) $(LIBSTAND) $(LDSCRIPT)
-LDADD=		$(LIBFICL) $(LIBEFI) $(LIBCRYPTO) $(LIBSTAND)
+LDADD=		$(LIBFICL) $(LIBEFI)
+LDADD +=	--start-group $(LIBCRYPTO) $(LIBSTAND) --end-group
 
 loader.sym:	$(OBJS) $(DPADD)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDADD)

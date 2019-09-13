@@ -131,8 +131,7 @@ FORTH +=	menu.rc
 
 # XXX crt0.o needs to be first for pxeboot(8) to work
 
-DPADD=	$(LIBFICL) $(LIBI386) $(LIBCRYPTO) $(LIBSTAND)
-LDADD=	$(LIBFICL) $(LIBI386) $(LIBCRYPTO) $(LIBSTAND)
+LDADD=	$(LIBFICL) $(LIBI386) --start-group $(LIBCRYPTO) $(LIBSTAND) --end-group
 
 CLEANFILES +=	machine x86
 
@@ -148,7 +147,7 @@ OBJS=		$(SRCS:%.c=%.o)
 
 $(OBJS): machine x86
 
-$(PROG): $(OBJS) $(LDADD)
+$(PROG): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(BTXCRT) $(OBJS) $(LDADD)
 
 clean: clobber

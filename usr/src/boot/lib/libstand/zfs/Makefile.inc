@@ -30,6 +30,7 @@ OBJS +=		list.o
 
 zfs.o := CPPFLAGS +=	-I../../common
 zfs.o := CPPFLAGS +=	-I../../../cddl/boot/zfs -I$(LZ4)
+zfs.o := CPPFLAGS +=	-I$(BOOTSRC)/libcrypto
 
 # Do not unroll skein loops, reduce code size
 skein_block.o := CPPFLAGS +=	-DSKEIN_LOOP=111

@@ -50,9 +50,10 @@ CPPFLAGS += -DBOOTPROG=\"gptzfsboot\" \
 
 LDSCRIPT=	../boot.ldscript
 LD_FLAGS=	-static -N --gc-sections
-LIBI386=	../libi386/libi386.a
-LIBSTAND=	../../libstand/$(MACH)/libstand.a
-LIBS=		$(LIBI386) $(LIBSTAND)
+LIBI386=	-L ../libi386 -li386
+LIBCRYPTO=	-L ../../libcrypto/$(MACH) -lcrypto
+LIBSTAND=	-L ../../libstand/$(MACH) -lstand
+LIBS=		$(LIBI386) --start-group $(LIBCRYPTO) $(LIBSTAND) --end-group
 
 include ../Makefile.inc
 
@@ -89,7 +90,7 @@ CLEANFILES +=	gptzfsboot.bin gptzfsboot.out
 gptzfsboot.bin: gptzfsboot.out
 	$(OBJCOPY) -S -O binary gptzfsboot.out $@
 
-gptzfsboot.out: $(BTXCRT) $(OBJS) $(LIBSTAND)
+gptzfsboot.out: $(BTXCRT) $(OBJS)
 	$(LD) $(LD_FLAGS) -T $(LDSCRIPT) -o $@ $(BTXCRT) $(OBJS) $(LIBS)
 
 machine:
