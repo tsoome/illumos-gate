@@ -58,6 +58,9 @@ pics/%.o objs/%.o:	$(ZLIB)/%.c
 pics/%.o objs/%.o:	$(LZ4)/%.c
 	$(COMPILE.c) -o $@ $<
 
+pics/%.o objs/%.o:	$(SRC)/common/avl/%.c
+	$(COMPILE.c) -o $@ $<
+
 pics/%.o objs/%.o:	$(SRC)/common/util/%.c
 	$(COMPILE.c) -o $@ $<
 

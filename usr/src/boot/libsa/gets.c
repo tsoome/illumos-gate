@@ -37,6 +37,48 @@
 
 /* gets() with constrained input length */
 
+char *
+readpassphrase(const char *prompt, char *buf, size_t bufsiz)
+{
+	int c, n;
+	char *lp;
+
+	if (bufsiz == 0) {
+		errno = EINVAL;
+		return (NULL);
+	}
+
+	n = bufsiz;
+
+	if (prompt != NULL)
+		printf(prompt);
+
+	for (lp = buf; ; ) {
+		c = getchar();
+		if (c == -1)
+			continue;
+		switch (c & 0177) {
+		case '\n':
+		case '\r':
+			*lp = '\0';
+			putchar('\n');
+			return (buf);
+		case '\b':
+		case '\177':
+			if (lp > buf)
+				lp--;
+			break;
+		default:
+			if ((lp - buf) < n - 1) {
+				*lp++ = c;
+			} else {
+				*lp = '\0';
+				return (buf);
+			}
+		}
+	}
+}
+
 void
 ngets(char *buf, int n)
 {

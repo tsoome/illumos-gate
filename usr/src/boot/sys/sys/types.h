@@ -293,12 +293,11 @@ typedef	_Bool	bool;
 #endif /* !__bool_true_false_are_defined && !__cplusplus */
 
 #define offsetof(type, field) __offsetof(type, field)
-
-#else
-/* for illumos compatibility */
-typedef enum boolean { B_FALSE, B_TRUE } boolean_t;
-
 #endif /* !_KERNEL */
+
+#if defined(_STANDALONE)
+typedef enum { B_FALSE = 0, B_TRUE = 1, _B_FALSE = 0, _B_TRUE = 1 } boolean_t;
+#endif
 
 /*
  * The following are all things that really shouldn't exist in this header,

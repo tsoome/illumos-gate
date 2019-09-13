@@ -41,6 +41,7 @@
 #include <sys/font.h>
 #include <sys/sha1.h>
 #include <libcrypto.h>
+#include <nvlist.h>
 
 #include "bootstrap.h"
 
@@ -629,6 +630,85 @@ build_font_module(void)
 	loadaddr = laddr;
 
 	file_insert_tail(fp);
+}
+
+void
+build_secrets_module(void)
+{
+	struct preloaded_file *fp;
+	size_t size;
+	char *name = "secrets";
+	vm_offset_t laddr = 0;
+	nvlist_t *nv, buf = { 0 };
+	extern nvlist_t *spa_wkeys_to_nvlist(void);
+
+	/* We can't load first */
+	if (file_findfile(NULL, NULL) == NULL) {
+		printf("Can not load secrets module: %s\n",
+		    "the kernel is not loaded");
+		return;
+	}
+
+	if (file_findfile(name, name) != NULL) {
+		printf("warning: '%s' is already loaded\n", name);
+		return;
+	}
+
+	nv = spa_wkeys_to_nvlist();
+	if (nv == NULL)
+		return;
+
+	fp = file_alloc();
+	if (fp != NULL) {
+		fp->f_name = strdup(name);
+		fp->f_type = strdup(name);
+	}
+
+	if (fp == NULL || fp->f_name == NULL || fp->f_type == NULL) {
+		printf("Can not load secrets module: %s\n",
+		    "out of memory");
+		goto error;
+	}
+
+	size = nv->nv_size + sizeof (nvs_header_t);
+	if (archsw.arch_loadaddr != NULL)
+		loadaddr = archsw.arch_loadaddr(LOAD_MEM, &size, loadaddr);
+
+	if (loadaddr == 0) {
+		printf("Can not load secrets module: %s\n",
+		    "out of memory");
+		goto error;
+	}
+	fp->f_loader = -1;
+	fp->f_addr = loadaddr;
+	fp->f_size = size;
+
+	laddr = loadaddr;
+	buf.nv_header = nv->nv_header;
+	buf.nv_asize = nv->nv_asize;
+	buf.nv_size = nv->nv_size;
+
+	laddr += archsw.arch_copyin(&nv->nv_header, laddr,
+	    sizeof (nv->nv_header));
+	buf.nv_data = (uint8_t *)ptov(laddr);
+	laddr += archsw.arch_copyin(nv->nv_data, laddr,
+	    size - sizeof (nv->nv_header));
+
+	if (nvlist_export(&buf)) {	/* convert to stream failed? */
+		goto error;
+	}
+
+	module_hash(fp, ptov(loadaddr), size);
+
+	/* recognise space consumption */
+	loadaddr = laddr;
+
+	nvlist_destroy(nv);
+	file_insert_tail(fp);
+	return;
+error:
+	nvlist_destroy(nv);
+	file_discard(fp);
 }
 
 /*
