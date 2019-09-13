@@ -16,12 +16,14 @@
 COMDIR = $(SRC)/common/crypto
 
 SRCS +=		$(CRYPTOSRC)/digest.c
+SRCS +=		$(CRYPTOSRC)/pkcs5_pbkdf2.c
 SRCS +=		$(COMDIR)/sha1/sha1.c
 SRCS +=		$(COMDIR)/edonr/edonr.c
 SRCS +=		$(COMDIR)/skein/skein.c
 SRCS +=		$(COMDIR)/skein/skein_iv.c
 SRCS +=		$(COMDIR)/skein/skein_block.c
 OBJECTS +=	digest.o
+OBJECTS +=	pkcs5_pbkdf2.o
 OBJECTS +=	sha1.o
 OBJECTS +=	edonr.o
 OBJECTS +=	skein.o

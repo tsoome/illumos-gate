@@ -52,6 +52,7 @@ LDSCRIPT=	../boot.ldscript
 LD_FLAGS=	-static -N --gc-sections
 LIBI386=	-L ../libi386 -li386
 LIBSTAND=	-L ../../libstand/$(MACH) -lstand
+LIBSTAND=	-L ../../libstand/$(MACH) -lstand
 LIBS=		$(LIBI386) $(LIBSTAND)
 DPADD=		../libi386/libi386.a ../../libstand/$(MACH)/libstand.a
 

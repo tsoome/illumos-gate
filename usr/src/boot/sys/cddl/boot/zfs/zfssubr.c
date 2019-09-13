@@ -97,6 +97,68 @@ typedef struct zio_checksum_info {
 	const char			*ci_name;	/* descriptive name */
 } zio_checksum_info_t;
 
+const dmu_object_type_info_t dmu_ot[DMU_OT_NUMTYPES] = {
+	{ DMU_BSWAP_UINT8,  B_TRUE,  B_FALSE, B_FALSE, "unallocated"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "object directory"},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_TRUE,  B_FALSE, "object array"	},
+	{ DMU_BSWAP_UINT8,  B_TRUE,  B_FALSE, B_FALSE, "packed nvlist"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "packed nvlist size"},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "bpobj"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "bpobj header"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "SPA space map header"},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "SPA space map"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_TRUE,  "ZIL intent log"	},
+	{ DMU_BSWAP_DNODE,  B_TRUE,  B_FALSE, B_TRUE,  "DMU dnode"	},
+	{ DMU_BSWAP_OBJSET, B_TRUE,  B_TRUE,  B_FALSE, "DMU objset"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_TRUE,  B_FALSE, "DSL directory"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE,
+	    "DSL directory child map" },
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "DSL dataset snap map"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "DSL props"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_TRUE,  B_FALSE, "DSL dataset"	},
+	{ DMU_BSWAP_ZNODE,  B_TRUE,  B_FALSE, B_FALSE, "ZFS znode"	},
+	{ DMU_BSWAP_OLDACL, B_TRUE,  B_FALSE, B_TRUE,  "ZFS V0 ACL"	},
+	{ DMU_BSWAP_UINT8,  B_FALSE, B_FALSE, B_TRUE,  "ZFS plain file"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,  "ZFS directory"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "ZFS master node"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,  "ZFS delete queue"},
+	{ DMU_BSWAP_UINT8,  B_FALSE, B_FALSE, B_TRUE,  "zvol object"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "zvol prop"	},
+	{ DMU_BSWAP_UINT8,  B_FALSE, B_FALSE, B_TRUE,  "other uint8[]"	},
+	{ DMU_BSWAP_UINT64, B_FALSE, B_FALSE, B_TRUE,  "other uint64[]"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "other ZAP"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "persistent error log"},
+	{ DMU_BSWAP_UINT8,  B_TRUE,  B_FALSE, B_FALSE, "SPA history"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "SPA history offsets"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "Pool properties"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "DSL permissions"},
+	{ DMU_BSWAP_ACL,    B_TRUE,  B_FALSE, B_TRUE,  "ZFS ACL"	},
+	{ DMU_BSWAP_UINT8,  B_TRUE,  B_FALSE, B_TRUE,  "ZFS SYSACL"	},
+	{ DMU_BSWAP_UINT8,  B_TRUE,  B_FALSE, B_TRUE,  "FUID table"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "FUID table size"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE,
+	    "DSL dataset next clones" },
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "scan work queue"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,
+	    "ZFS user/group/project used"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,
+	    "ZFS user/group/proj quota"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE,
+	    "snapshot refcount tags"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "DDT ZAP algorithm"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "DDT statistics"	},
+	{ DMU_BSWAP_UINT8,  B_TRUE,  B_FALSE, B_TRUE,  "System attributes"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,  "SA master node"	},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,  "SA attr registration"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_TRUE,  "SA attr layouts"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_FALSE, B_FALSE, "scan translations"},
+	{ DMU_BSWAP_UINT8,  B_FALSE, B_FALSE, B_TRUE,  "deduplicated block"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "DSL deadlist map" },
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_TRUE,  B_FALSE, "DSL deadlist map hdr"},
+	{ DMU_BSWAP_ZAP,    B_TRUE,  B_TRUE,  B_FALSE, "DSL dir clones"	},
+	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "bpobj subobj"	}
+};
+
 #include "blkptr.c"
 
 #include "fletcher.c"
@@ -278,6 +340,7 @@ zio_checksum_verify(const spa_t *spa, const blkptr_t *bp, void *data)
 
 	if (checksum >= ZIO_CHECKSUM_FUNCTIONS)
 		return (EINVAL);
+
 	ci = &zio_checksum_table[checksum];
 	if (ci->ci_func[0] == NULL || ci->ci_func[1] == NULL)
 		return (EINVAL);
@@ -322,6 +385,25 @@ zio_checksum_verify(const spa_t *spa, const blkptr_t *bp, void *data)
 		ci->ci_func[byteswap](data, size, ctx, &actual_cksum);
 	}
 
+	/*
+	 * MAC checksums are a special case since half of this checksum will
+	 * actually be the encryption MAC. This will be verified by the
+	 * decryption process, so we just check the truncated checksum now.
+	 * Objset blocks use embedded MACs so we don't truncate the checksum
+	 * for them.
+	 */
+	if (BP_USES_CRYPT(bp) && BP_GET_TYPE(bp) != DMU_OT_OBJSET) {
+		if (!(ci->ci_flags & ZCHECKSUM_FLAG_DEDUP)) {
+			actual_cksum.zc_word[0] ^= actual_cksum.zc_word[2];
+			actual_cksum.zc_word[1] ^= actual_cksum.zc_word[3];
+		}
+
+		actual_cksum.zc_word[2] = 0;
+		actual_cksum.zc_word[3] = 0;
+		expected_cksum.zc_word[2] = 0;
+		expected_cksum.zc_word[3] = 0;
+	}
+
 	if (!ZIO_CHECKSUM_EQUAL(actual_cksum, expected_cksum)) {
 		/* printf("ZFS: read checksum %s failed\n", ci->ci_name); */
 		return (EIO);
@@ -350,6 +432,20 @@ zio_decompress_data(int cpfunc, void *src, uint64_t srcsize,
 
 	return (ci->ci_decompress(src, dest, srcsize, destsize, ci->ci_level));
 }
+
+#define	SUN_CKM_AES_CCM NULL
+#define	SUN_CKM_AES_GCM NULL
+zio_crypt_info_t zio_crypt_table[ZIO_CRYPT_FUNCTIONS] = {
+	{NULL,			ZC_TYPE_NONE,	0,	"inherit"},
+	{NULL,			ZC_TYPE_NONE,	0,	"on"},
+	{NULL,			ZC_TYPE_NONE,	0,	"off"},
+	{SUN_CKM_AES_CCM,	ZC_TYPE_CCM,	16,	"aes-128-ccm"},
+	{SUN_CKM_AES_CCM,	ZC_TYPE_CCM,	24,	"aes-192-ccm"},
+	{SUN_CKM_AES_CCM,	ZC_TYPE_CCM,	32,	"aes-256-ccm"},
+	{SUN_CKM_AES_GCM,	ZC_TYPE_GCM,	16,	"aes-128-gcm"},
+	{SUN_CKM_AES_GCM,	ZC_TYPE_GCM,	24,	"aes-192-gcm"},
+	{SUN_CKM_AES_GCM,	ZC_TYPE_GCM,	32,	"aes-256-gcm"}
+};
 
 static uint64_t
 zap_hash(uint64_t salt, const char *name)

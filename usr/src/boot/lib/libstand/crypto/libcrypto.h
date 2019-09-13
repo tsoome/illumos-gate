@@ -21,6 +21,8 @@ extern "C" {
 #endif
 
 extern void sha1(void *, size_t, uint8_t *);
+extern int pkcs5_pbkdf2(const uint8_t *, size_t, const uint8_t *,
+    size_t, uint8_t *, size_t, unsigned int);
 
 #ifdef __cplusplus
 }

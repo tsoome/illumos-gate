@@ -37,6 +37,7 @@
 #include <sys/list.h>
 #include <sys/zfs_bootenv.h>
 #include <inttypes.h>
+#include <libcrypto.h>
 
 #include "zfsimpl.h"
 #include "zfssubr.c"
@@ -2239,7 +2240,7 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 	int cpfunc = BP_GET_COMPRESS(bp);
 	uint64_t align, size;
 	void *pbuf;
-	int i, error;
+	int i, ndva, error;
 
 	/*
 	 * Process data embedded in block pointer
@@ -2274,7 +2275,12 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 
 	error = EIO;
 
-	for (i = 0; i < SPA_DVAS_PER_BP; i++) {
+	/* The encrypted BP's use last DVA slot for encryption parameters. */
+	ndva = SPA_DVAS_PER_BP;
+	if (BP_IS_ENCRYPTED(bp))
+		ndva--;
+
+	for (i = 0; i < ndva; i++) {
 		const dva_t *dva = &bp->blk_dva[i];
 		vdev_t *vdev;
 		vdev_list_t *vlist;
@@ -2314,7 +2320,15 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 			error = zio_read_gang(spa, bp, pbuf);
 		else
 			error = vdev->v_read(vdev, bp, pbuf, offset, size);
+
 		if (error == 0) {
+			if (BP_IS_ENCRYPTED(bp)) {
+				printf("encrypted bp\n");
+				if (buf != pbuf)
+					free(pbuf);
+				continue;
+			}
+
 			if (cpfunc != ZIO_COMPRESS_OFF)
 				error = zio_decompress_data(cpfunc, pbuf,
 				    BP_GET_PSIZE(bp), buf, BP_GET_LSIZE(bp));
@@ -3111,6 +3125,107 @@ zfs_rlookup(const spa_t *spa, uint64_t objnum, char *result)
 }
 
 static int
+get_key_material(uint64_t keyformat, uint64_t iters, uint64_t salt)
+{
+	char buf[WRAPPING_KEY_LEN];
+	uint8_t *key;
+	int ret;
+
+	if (keyformat != ZFS_KEYFORMAT_PASSPHRASE)
+		return (EINVAL);
+
+	if (readpassphrase("Enter password: ", buf, WRAPPING_KEY_LEN) == NULL)
+		return (EAGAIN);
+
+	key = malloc(WRAPPING_KEY_LEN);
+	salt = htole64(salt);
+	ret = pkcs5_pbkdf2((const uint8_t *)buf, strlen(buf),
+	    (const uint8_t *)&salt, sizeof (salt),
+	    key, WRAPPING_KEY_LEN, iters);
+	free(key);
+	return (ret);
+}
+
+static int
+crypto_key_open(const spa_t *spa, uint64_t dckobj)
+{
+	int ret;
+	uint64_t crypt = 0, guid = 0, version = 0;
+	uint64_t keyformat, salt, iters;
+	uint8_t raw_keydata[MASTER_KEY_MAX_LEN];
+	uint8_t raw_hmac_keydata[SHA512_HMAC_KEYLEN];
+	uint8_t iv[WRAPPING_IV_LEN];
+	uint8_t mac[WRAPPING_MAC_LEN];
+	dnode_phys_t *keyobj;
+
+	keyobj = malloc(sizeof (*keyobj));
+	if (keyobj == NULL)
+		return (ENOMEM);
+
+	ret = objset_get_dnode(spa, &spa->spa_mos, dckobj, keyobj);
+	if (ret != 0)
+		goto error;
+
+	/* fetch all of the values we need from the ZAP */
+	/* we need to check for encryption root */
+	ret = zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_CRYPTO_SUITE, 8, 1,
+	    &crypt);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_GUID, 8, 1, &guid);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_MASTER_KEY, 1,
+	    MASTER_KEY_MAX_LEN, raw_keydata);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_HMAC_KEY, 1,
+	    SHA512_HMAC_KEYLEN, raw_hmac_keydata);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_IV, 1,
+	    WRAPPING_IV_LEN, iv);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_MAC, 1,
+	    WRAPPING_MAC_LEN, mac);
+	if (ret != 0)
+		goto error;
+
+	/* the initial on-disk format for encryption did not have a version */
+	(void) zap_lookup(spa, keyobj, DSL_CRYPTO_KEY_VERSION, 8, 1, &version);
+
+	ret = zap_lookup(spa, keyobj, ZFS_PROP_KEYFORMAT, 8, 1, &keyformat);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, ZFS_PROP_PBKDF2_SALT, 8, 1, &salt);
+	if (ret != 0)
+		goto error;
+
+	ret = zap_lookup(spa, keyobj, ZFS_PROP_PBKDF2_ITERS, 8, 1, &iters);
+	if (ret != 0)
+		goto error;
+
+	/*
+	 * Unwrap the keys. If there is an error return EACCES to indicate
+	 * an authentication failure.
+	 */
+	ret = get_key_material(keyformat, iters, salt);
+	if (ret != 0)
+		goto error;
+
+error:
+	free(keyobj);
+	return (ret);
+}
+
+static int
 zfs_lookup_dataset(const spa_t *spa, const char *name, uint64_t *objnum)
 {
 	char element[256];
@@ -3118,6 +3233,7 @@ zfs_lookup_dataset(const spa_t *spa, const char *name, uint64_t *objnum)
 	dnode_phys_t child_dir_zap, dir;
 	dsl_dir_phys_t *dd;
 	const char *p, *q;
+	uint64_t crypto_obj;
 
 	if (objset_get_dnode(spa, &spa->spa_mos,
 	    DMU_POOL_DIRECTORY_OBJECT, &dir))
@@ -3130,6 +3246,20 @@ zfs_lookup_dataset(const spa_t *spa, const char *name, uint64_t *objnum)
 	for (;;) {
 		if (objset_get_dnode(spa, &spa->spa_mos, dir_obj, &dir))
 			return (EIO);
+
+		if (dir.dn_type == DMU_OTN_ZAP_METADATA) {
+			if (zap_lookup(spa, &dir, DD_FIELD_CRYPTO_KEY_OBJ,
+			    sizeof (crypto_obj), 1, &crypto_obj) == 0) {
+				int rc;
+
+				printf("%s has crypto obj: %lu\n",
+				    name, (long)crypto_obj);
+				rc = crypto_key_open(spa, crypto_obj);
+				if (rc != 0)
+					return (rc);
+			}
+		}
+
 		dd = (dsl_dir_phys_t *)&dir.dn_bonus;
 
 		while (*p == '/')

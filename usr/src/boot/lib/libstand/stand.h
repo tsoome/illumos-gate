@@ -281,6 +281,7 @@ extern void	vsnprintf(char *buf, size_t size, const char *cfmt, __va_list);
 extern void	twiddle(uint_t callerdiv);
 extern void	twiddle_divisor(uint_t globaldiv);
 
+extern char	*readpassphrase(const char *, char *, size_t);
 extern void	ngets(char *, int);
 #define	gets(x)	ngets((x), 0)
 extern int	fgetstr(char *buf, int size, int fd);

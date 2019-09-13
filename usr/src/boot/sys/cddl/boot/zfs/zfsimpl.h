@@ -232,6 +232,83 @@ typedef struct zio_cksum_salt {
  */
 
 /*
+ * The blkptr_t's of encrypted blocks also need to store the encryption
+ * parameters so that the block can be decrypted. This layout is as follows:
+ *
+ *	64	56	48	40	32	24	16	8	0
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 0	|		vdev1		| GRID  |	  ASIZE		|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 1	|G|			 offset1				|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 2	|		vdev2		| GRID  |	  ASIZE		|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 3	|G|			 offset2				|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 4	|			salt					|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 5	|			IV1					|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 6	|BDX|lvl| type	| cksum |E| comp|    PSIZE	|     LSIZE	|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 7	|			padding					|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 8	|			padding					|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * 9	|			physical birth txg			|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * a	|			logical birth txg			|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * b	|		IV2		|	    fill count		|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * c	|			checksum[0]				|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * d	|			checksum[1]				|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * e	|			MAC[0]					|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ * f	|			MAC[1]					|
+ *	+-------+-------+-------+-------+-------+-------+-------+-------+
+ *
+ * Legend:
+ *
+ * salt		Salt for generating encryption keys
+ * IV1		First 64 bits of encryption IV
+ * X		Block requires encryption handling (set to 1)
+ * E		blkptr_t contains embedded data (set to 0, see below)
+ * fill count	number of non-zero blocks under this bp (truncated to 32 bits)
+ * IV2		Last 32 bits of encryption IV
+ * checksum[2]	128-bit checksum of the data this bp describes
+ * MAC[2]	128-bit message authentication code for this data
+ *
+ * The X bit being set indicates that this block is one of 3 types. If this is
+ * a level 0 block with an encrypted object type, the block is encrypted
+ * (see BP_IS_ENCRYPTED()). If this is a level 0 block with an unencrypted
+ * object type, this block is authenticated with an HMAC (see
+ * BP_IS_AUTHENTICATED()). Otherwise (if level > 0), this bp will use the MAC
+ * words to store a checksum-of-MACs from the level below (see
+ * BP_HAS_INDIRECT_MAC_CKSUM()). For convenience in the code, BP_IS_PROTECTED()
+ * refers to both encrypted and authenticated blocks and BP_USES_CRYPT()
+ * refers to any of these 3 kinds of blocks.
+ *
+ * The additional encryption parameters are the salt, IV, and MAC which are
+ * explained in greater detail in the block comment at the top of zio_crypt.c.
+ * The MAC occupies half of the checksum space since it serves a very similar
+ * purpose: to prevent data corruption on disk. The only functional difference
+ * is that the checksum is used to detect on-disk corruption whether or not the
+ * encryption key is loaded and the MAC provides additional protection against
+ * malicious disk tampering. We use the 3rd DVA to store the salt and first
+ * 64 bits of the IV. As a result encrypted blocks can only have 2 copies
+ * maximum instead of the normal 3. The last 32 bits of the IV are stored in
+ * the upper bits of what is usually the fill count. Note that only blocks at
+ * level 0 or -2 are ever encrypted, which allows us to guarantee that these
+ * 32 bits are not trampled over by other code (see zio_crypt.c for details).
+ * The salt and IV are not used for authenticated bps or bps with an indirect
+ * MAC checksum, so these blocks can utilize all 3 DVAs and the full 64 bits
+ * for the fill count.
+ */
+
+/*
  * "Embedded" blkptr_t's don't actually point to a block, instead they
  * have a data payload embedded in the blkptr_t itself.  See the comment
  * in blkptr.c for more details.
@@ -286,7 +363,9 @@ typedef struct zio_cksum_salt {
  * BP's so the BP_SET_* macros can be used with them.  etype, PSIZE, LSIZE must
  * be set with the BPE_SET_* macros.  BP_SET_EMBEDDED() should be called before
  * other macros, as they assert that they are only used on BP's of the correct
- * "embedded-ness".
+ * "embedded-ness". Encrypted blkptr_t's cannot be embedded because they use
+ * the payload space for encryption parameters (see the comment above on
+ * how encryption parameters are stored).
  */
 
 #define	BPE_GET_ETYPE(bp)	\
@@ -378,6 +457,8 @@ _NOTE(CONSTCOND) } while (0)
 #define	BP_GET_COMPRESS(bp)	BF64_GET((bp)->blk_prop, 32, 7)
 #define	BP_SET_COMPRESS(bp, x)	BF64_SET((bp)->blk_prop, 32, 7, x)
 
+#define	BP_IS_EMBEDDED(bp)	BF64_GET((bp)->blk_prop, 39, 1)
+
 #define	BP_GET_CHECKSUM(bp)	BF64_GET((bp)->blk_prop, 40, 8)
 #define	BP_SET_CHECKSUM(bp, x)	BF64_SET((bp)->blk_prop, 40, 8, x)
 
@@ -387,7 +468,25 @@ _NOTE(CONSTCOND) } while (0)
 #define	BP_GET_LEVEL(bp)	BF64_GET((bp)->blk_prop, 56, 5)
 #define	BP_SET_LEVEL(bp, x)	BF64_SET((bp)->blk_prop, 56, 5, x)
 
-#define	BP_IS_EMBEDDED(bp)	BF64_GET((bp)->blk_prop, 39, 1)
+/* encrypted, authenticated, and MAC cksum bps use the same bit */
+#define	BP_USES_CRYPT(bp)	BF64_GET((bp)->blk_prop, 61, 1)
+#define	BP_SET_CRYPT(bp, x)	BF64_SET((bp)->blk_prop, 61, 1, x)
+
+#define	BP_IS_ENCRYPTED(bp)		\
+	(BP_USES_CRYPT(bp) &&		\
+	BP_GET_LEVEL(bp) == 0 &&	\
+	DMU_OT_IS_ENCRYPTED(BP_GET_TYPE(bp)))
+
+#define	BP_IS_AUTHENTICATED(bp)		\
+	(BP_USES_CRYPT(bp) &&		\
+	BP_GET_LEVEL(bp) == 0 &&	\
+	!DMU_OT_IS_ENCRYPTED(BP_GET_TYPE(bp)))
+
+#define	BP_HAS_INDIRECT_MAC_CKSUM(bp)	\
+	(BP_USES_CRYPT(bp) && BP_GET_LEVEL(bp) > 0)
+
+#define	BP_IS_PROTECTED(bp)		\
+	(BP_IS_ENCRYPTED(bp) || BP_IS_AUTHENTICATED(bp))
 
 #define	BP_GET_DEDUP(bp)	BF64_GET((bp)->blk_prop, 62, 1)
 #define	BP_SET_DEDUP(bp, x)	BF64_SET((bp)->blk_prop, 62, 1, x)
@@ -398,18 +497,37 @@ _NOTE(CONSTCOND) } while (0)
 #define	BP_PHYSICAL_BIRTH(bp)		\
 	((bp)->blk_phys_birth ? (bp)->blk_phys_birth : (bp)->blk_birth)
 
-#define	BP_GET_ASIZE(bp)	\
-	(DVA_GET_ASIZE(&(bp)->blk_dva[0]) + DVA_GET_ASIZE(&(bp)->blk_dva[1]) + \
-		DVA_GET_ASIZE(&(bp)->blk_dva[2]))
+#define	BP_GET_FILL(bp)			\
+	((BP_IS_ENCRYPTED(bp)) ? BF64_GET((bp)->blk_fill, 0, 32) : \
+	((BP_IS_EMBEDDED(bp)) ? 1 : (bp)->blk_fill))
+
+#define	BP_GET_IV2(bp)			\
+	(ASSERT(BP_IS_ENCRYPTED(bp)),	\
+	BF64_GET((bp)->blk_fill, 32, 32))
+
+#define	BP_IS_METADATA			\
+	(BP_GET_LEVEL(bp) > 0 || DMU_OT_IS_METADATA(BP_GET_TYPE(bp)))
+
+#define	BP_GET_ASIZE(bp)		\
+	(BP_IS_EMBEDDED(bp) ? 0 :	\
+	DVA_GET_ASIZE(&(bp)->blk_dva[0]) + \
+	DVA_GET_ASIZE(&(bp)->blk_dva[1]) + \
+	(DVA_GET_ASIZE(&(bp)->blk_dva[2]) * !BP_IS_ENCRYPTED(bp)))
 
 #define	BP_GET_UCSIZE(bp) \
-	((BP_GET_LEVEL(bp) > 0 || dmu_ot[BP_GET_TYPE(bp)].ot_metadata) ? \
-	BP_GET_PSIZE(bp) : BP_GET_LSIZE(bp));
+	(BP_IS_METADATA((bp) ? BP_GET_PSIZE(bp) : BP_GET_LSIZE(bp));
 
 #define	BP_GET_NDVAS(bp)	\
-	(!!DVA_GET_ASIZE(&(bp)->blk_dva[0]) + \
+	(BP_IS_EMBEDDED(bp) ? 0 : \
+	!!DVA_GET_ASIZE(&(bp)->blk_dva[0]) + \
 	!!DVA_GET_ASIZE(&(bp)->blk_dva[1]) + \
-	!!DVA_GET_ASIZE(&(bp)->blk_dva[2]))
+	(!!DVA_GET_ASIZE(&(bp)->blk_dva[2]) * !BP_IS_ENCRYPTED(bp)))
+
+#define	BP_COUNT_GANG(bp)	\
+	(BP_IS_EMBEDDED(bp) ? 0 : \
+	(DVA_GET_GANG(&(bp)->blk_dva[0]) + \
+	DVA_GET_GANG(&(bp)->blk_dva[1]) + \
+	(DVA_GET_GANG(&(bp)->blk_dva[2]) * !BP_IS_ENCRYPTED(bp))))
 
 #define	DVA_EQUAL(dva1, dva2)	\
 	((dva1)->dva_word[1] == (dva2)->dva_word[1] && \
@@ -421,6 +539,9 @@ _NOTE(CONSTCOND) } while (0)
 	((zc1).zc_word[2] - (zc2).zc_word[2]) | \
 	((zc1).zc_word[3] - (zc2).zc_word[3])))
 
+#define	ZIO_CHECKSUM_MAC_EQUAL(zc1, zc2) \
+	(0 == (((zc1).zc_word[0] - (zc2).zc_word[0]) | \
+	((zc1).zc_word[1] - (zc2).zc_word[1])))
 
 #define	DVA_IS_VALID(dva)	(DVA_GET_ASIZE(dva) != 0)
 
@@ -433,10 +554,12 @@ _NOTE(CONSTCOND) } while (0)
 }
 
 #define	BP_IDENTITY(bp)		(&(bp)->blk_dva[0])
-#define	BP_IS_GANG(bp)		DVA_GET_GANG(BP_IDENTITY(bp))
+#define	BP_IS_GANG(bp)		\
+	(BP_IS_EMBEDDED(bp) ? B_FALSE : DVA_GET_GANG(BP_IDENTITY(bp)))
 #define	DVA_IS_EMPTY(dva)	((dva)->dva_word[0] == 0ULL &&  \
 	(dva)->dva_word[1] == 0ULL)
-#define	BP_IS_HOLE(bp)		DVA_IS_EMPTY(BP_IDENTITY(bp))
+#define	BP_IS_HOLE(bp)		\
+	(!BP_IS_EMBEDDED(bp) && DVA_IS_EMPTY(BP_IDENTITY(bp)))
 #define	BP_IS_OLDER(bp, txg)	(!BP_IS_HOLE(bp) && (bp)->blk_birth < (txg))
 
 #define	BP_ZERO(bp)				\
@@ -615,6 +738,77 @@ enum zio_compress {
 
 #define	ZIO_COMPRESS_ON_VALUE	ZIO_COMPRESS_LZJB
 #define	ZIO_COMPRESS_DEFAULT	ZIO_COMPRESS_OFF
+
+/* supported encryption algorithms */
+enum zio_encrypt {
+	ZIO_CRYPT_INHERIT = 0,
+	ZIO_CRYPT_ON,
+	ZIO_CRYPT_OFF,
+	ZIO_CRYPT_AES_128_CCM,
+	ZIO_CRYPT_AES_192_CCM,
+	ZIO_CRYPT_AES_256_CCM,
+	ZIO_CRYPT_AES_128_GCM,
+	ZIO_CRYPT_AES_192_GCM,
+	ZIO_CRYPT_AES_256_GCM,
+	ZIO_CRYPT_FUNCTIONS
+};
+
+#define	ZIO_CRYPT_ON_VALUE	ZIO_CRYPT_AES_256_CCM
+#define	ZIO_CRYPT_DEFAULT	ZIO_CRYPT_OFF
+
+/* macros defining encryption lengths */
+#define	ZIO_OBJSET_MAC_LEN		32
+#define	ZIO_DATA_IV_LEN			12
+#define	ZIO_DATA_SALT_LEN		8
+#define	ZIO_DATA_MAC_LEN		16
+
+#define	WRAPPING_KEY_LEN	32
+#define	WRAPPING_IV_LEN		ZIO_DATA_IV_LEN
+#define	WRAPPING_MAC_LEN	ZIO_DATA_MAC_LEN
+#define	MASTER_KEY_MAX_LEN	32
+#define	SHA512_HMAC_KEYLEN	64
+
+#define	ZIO_CRYPT_KEY_CURRENT_VERSION	1ULL
+
+#define	ZFS_PROP_KEYFORMAT	"keyformat"
+#define	ZFS_PROP_PBKDF2_SALT	"pbkdf2salt"
+#define	ZFS_PROP_PBKDF2_ITERS	"pbkdf2iters"
+
+typedef enum zfs_keyformat {
+	ZFS_KEYFORMAT_NONE = 0,
+	ZFS_KEYFORMAT_RAW,
+	ZFS_KEYFORMAT_HEX,
+	ZFS_KEYFORMAT_PASSPHRASE,
+	ZFS_KEYFORMAT_FORMATS
+} zfs_keyformat_t;
+
+typedef enum zfs_key_location {
+	ZFS_KEYLOCATION_NONE = 0,
+	ZFS_KEYLOCATION_PROMPT,
+	ZFS_KEYLOCATION_URI,
+	ZFS_KEYLOCATION_LOCATIONS
+} zfs_keylocation_t;
+
+typedef enum zio_crypt_type {
+	ZC_TYPE_NONE = 0,
+	ZC_TYPE_CCM,
+	ZC_TYPE_GCM
+} zio_crypt_type_t;
+
+/* table of supported crypto algorithms, modes and keylengths. */
+typedef struct zio_crypt_info {
+	/* mechanism name, needed by ICP */
+	void *ci_mechname;
+
+	/* cipher mode type (GCM, CCM) */
+	zio_crypt_type_t ci_crypt_type;
+
+	/* length of the encryption key */
+	size_t ci_keylen;
+
+	/* human-readable name of the encryption alforithm */
+	char *ci_name;
+} zio_crypt_info_t;
 
 /* nvlist pack encoding */
 #define	NV_ENCODE_NATIVE	0
@@ -1105,16 +1299,30 @@ typedef enum dmu_object_byteswap {
 
 #define	DMU_OT_NEWTYPE 0x80
 #define	DMU_OT_METADATA 0x40
-#define	DMU_OT_BYTESWAP_MASK 0x3f
+#define	DMU_OT_ENCRYPTED 0x20
+#define	DMU_OT_BYTESWAP_MASK 0x1f
+
+#define	DMU_OT_IS_METADATA(ot) (((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_METADATA) : \
+	DMU_OT_IS_METADATA_IMPL(ot))
+
+#define	DMU_OT_IS_ENCRYPTED(ot) (((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_ENCRYPTED) : \
+	DMU_OT_IS_ENCRYPTED_IMPL(ot))
+
+#define	DMU_OT_BYTESWAP(ot) (((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_BYTESWAP_MASK) : \
+	DMU_OT_BYTESWAP_IMPL(ot))
 
 /*
  * Defines a uint8_t object type. Object types specify if the data
  * in the object is metadata (boolean) and how to byteswap the data
  * (dmu_object_byteswap_t).
  */
-#define	DMU_OT(byteswap, metadata) \
+#define	DMU_OT(byteswap, metadata, encrypted) \
 	(DMU_OT_NEWTYPE | \
 	((metadata) ? DMU_OT_METADATA : 0) | \
+	((encrypted) ? DMU_OT_ENCRYPTED : 0) | \
 	((byteswap) & DMU_OT_BYTESWAP_MASK))
 
 typedef enum dmu_object_type {
@@ -1124,8 +1332,8 @@ typedef enum dmu_object_type {
 	DMU_OT_OBJECT_ARRAY,		/* UINT64 */
 	DMU_OT_PACKED_NVLIST,		/* UINT8 (XDR by nvlist_pack/unpack) */
 	DMU_OT_PACKED_NVLIST_SIZE,	/* UINT64 */
-	DMU_OT_BPLIST,			/* UINT64 */
-	DMU_OT_BPLIST_HDR,		/* UINT64 */
+	DMU_OT_BPOBJ,			/* UINT64 */
+	DMU_OT_BPOBJ_HDR,		/* UINT64 */
 	/* spa: */
 	DMU_OT_SPACE_MAP_HEADER,	/* UINT64 */
 	DMU_OT_SPACE_MAP,		/* UINT64 */
@@ -1177,21 +1385,51 @@ typedef enum dmu_object_type {
 	DMU_OT_SA_ATTR_LAYOUTS,		/* ZAP */
 	DMU_OT_SCAN_XLATE,		/* ZAP */
 	DMU_OT_DEDUP,			/* fake dedup BP from ddt_bp_create() */
+	DMU_OT_DEADLIST,		/* ZAP */
+	DMU_OT_DEADLIST_HDR,		/* UINT64 */
+	DMU_OT_DSL_CLONES,		/* ZAP */
+	DMU_OT_BPOBJ_SUBOBJ,		/* UINT64 */
+	/*
+	 * Do not allocate new object types here. Doing so makes the on-disk
+	 * format incompatible with any other format that uses the same object
+	 * type number.
+	 *
+	 * When creating an object which does not have one of the above types
+	 * use the DMU_OTN_* type with the correct byteswap and metadata
+	 * values.
+	 *
+	 * The DMU_OTN_* types do not have entries in the dmu_ot table,
+	 * use the DMU_OT_IS_METDATA() and DMU_OT_BYTESWAP() macros instead
+	 * use the DMU_OT_IS_METADATA() and DMU_OT_BYTESWAP() macros instead
+	 * of indexing into dmu_ot directly (this works for both DMU_OT_* types
+	 * and DMU_OTN_* types).
+	 */
 	DMU_OT_NUMTYPES,
 
 	/*
 	 * Names for valid types declared with DMU_OT().
 	 */
-	DMU_OTN_UINT8_DATA = DMU_OT(DMU_BSWAP_UINT8, B_FALSE),
-	DMU_OTN_UINT8_METADATA = DMU_OT(DMU_BSWAP_UINT8, B_TRUE),
-	DMU_OTN_UINT16_DATA = DMU_OT(DMU_BSWAP_UINT16, B_FALSE),
-	DMU_OTN_UINT16_METADATA = DMU_OT(DMU_BSWAP_UINT16, B_TRUE),
-	DMU_OTN_UINT32_DATA = DMU_OT(DMU_BSWAP_UINT32, B_FALSE),
-	DMU_OTN_UINT32_METADATA = DMU_OT(DMU_BSWAP_UINT32, B_TRUE),
-	DMU_OTN_UINT64_DATA = DMU_OT(DMU_BSWAP_UINT64, B_FALSE),
-	DMU_OTN_UINT64_METADATA = DMU_OT(DMU_BSWAP_UINT64, B_TRUE),
-	DMU_OTN_ZAP_DATA = DMU_OT(DMU_BSWAP_ZAP, B_FALSE),
-	DMU_OTN_ZAP_METADATA = DMU_OT(DMU_BSWAP_ZAP, B_TRUE)
+	DMU_OTN_UINT8_DATA = DMU_OT(DMU_BSWAP_UINT8, B_FALSE, B_FALSE),
+	DMU_OTN_UINT8_METADATA = DMU_OT(DMU_BSWAP_UINT8, B_TRUE, B_FALSE),
+	DMU_OTN_UINT16_DATA = DMU_OT(DMU_BSWAP_UINT16, B_FALSE, B_FALSE),
+	DMU_OTN_UINT16_METADATA = DMU_OT(DMU_BSWAP_UINT16, B_TRUE, B_FALSE),
+	DMU_OTN_UINT32_DATA = DMU_OT(DMU_BSWAP_UINT32, B_FALSE, B_FALSE),
+	DMU_OTN_UINT32_METADATA = DMU_OT(DMU_BSWAP_UINT32, B_TRUE, B_FALSE),
+	DMU_OTN_UINT64_DATA = DMU_OT(DMU_BSWAP_UINT64, B_FALSE, B_FALSE),
+	DMU_OTN_UINT64_METADATA = DMU_OT(DMU_BSWAP_UINT64, B_TRUE, B_FALSE),
+	DMU_OTN_ZAP_DATA = DMU_OT(DMU_BSWAP_ZAP, B_FALSE, B_FALSE),
+	DMU_OTN_ZAP_METADATA = DMU_OT(DMU_BSWAP_ZAP, B_TRUE, B_FALSE),
+
+	DMU_OTN_UINT8_ENC_DATA = DMU_OT(DMU_BSWAP_UINT8, B_FALSE, B_TRUE),
+	DMU_OTN_UINT8_ENC_METADATA = DMU_OT(DMU_BSWAP_UINT8, B_TRUE, B_TRUE),
+	DMU_OTN_UINT16_ENC_DATA = DMU_OT(DMU_BSWAP_UINT16, B_FALSE, B_TRUE),
+	DMU_OTN_UINT16_ENC_METADATA = DMU_OT(DMU_BSWAP_UINT16, B_TRUE, B_TRUE),
+	DMU_OTN_UINT32_ENC_DATA = DMU_OT(DMU_BSWAP_UINT32, B_FALSE, B_TRUE),
+	DMU_OTN_UINT32_ENC_METADATA = DMU_OT(DMU_BSWAP_UINT32, B_TRUE, B_TRUE),
+	DMU_OTN_UINT64_ENC_DATA = DMU_OT(DMU_BSWAP_UINT64, B_FALSE, B_TRUE),
+	DMU_OTN_UINT64_ENC_METADATA = DMU_OT(DMU_BSWAP_UINT64, B_TRUE, B_FALSE),
+	DMU_OTN_ZAP_ENC_DATA = DMU_OT(DMU_BSWAP_ZAP, B_FALSE, B_TRUE),
+	DMU_OTN_ZAP_ENC_METADATA = DMU_OT(DMU_BSWAP_ZAP, B_TRUE, B_TRUE)
 } dmu_object_type_t;
 
 typedef enum dmu_objset_type {
@@ -1203,6 +1441,18 @@ typedef enum dmu_objset_type {
 	DMU_OST_ANY,			/* Be careful! */
 	DMU_OST_NUMTYPES
 } dmu_objset_type_t;
+
+typedef struct dmu_object_type_info {
+	dmu_object_byteswap_t	ot_byteswap;
+	boolean_t		ot_metadata;
+	boolean_t		ot_dbuf_metadata_cache;
+	boolean_t		ot_encrypt;
+	char			*ot_name;
+} dmu_object_type_info_t;
+
+#define	DMU_OT_IS_METADATA_IMPL(ot) (dmu_ot[ot].ot_metadata)
+#define	DMU_OT_IS_ENCRYPTED_IMPL(ot) (dmu_ot[ot].ot_encrypt)
+#define	DMU_OT_BYTESWAP_IMPL(ot) (dmu_ot[ot].ot_byteswap)
 
 #define	ZAP_MAXVALUELEN	(1024 * 8)
 
@@ -1292,6 +1542,23 @@ typedef struct objset_phys {
 	dnode_phys_t os_projectused_dnode;
 	char os_pad1[OBJSET_PHYS_PAD1_SIZE];
 } objset_phys_t;
+
+#define	DD_FIELD_CRYPTO_KEY_OBJ		"com.datto:crypto_key_obj"
+
+/*
+ * ZAP entry keys for DSL Crypto Keys stored on disk. In addition,
+ * ZFS_PROP_KEYFORMAT, ZFS_PROP_PBKDF2_SALT, and ZFS_PROP_PBKDF2_ITERS are
+ * also maintained here using their respective property names.
+ */
+#define	DSL_CRYPTO_KEY_CRYPTO_SUITE	"DSL_CRYPTO_SUITE"
+#define	DSL_CRYPTO_KEY_GUID		"DSL_CRYPTO_GUID"
+#define	DSL_CRYPTO_KEY_IV		"DSL_CRYPTO_IV"
+#define	DSL_CRYPTO_KEY_MAC		"DSL_CRYPTO_MAC"
+#define	DSL_CRYPTO_KEY_MASTER_KEY	"DSL_CRYPTO_MASTER_KEY_1"
+#define	DSL_CRYPTO_KEY_HMAC_KEY		"DSL_CRYPTO_HMAC_KEY_1"
+#define	DSL_CRYPTO_KEY_ROOT_DDOBJ	"DSL_CRYPTO_ROOT_DDOBJ"
+#define	DSL_CRYPTO_KEY_REFCOUNT		"DSL_CRYPTO_REFCOUNT"
+#define	DSL_CRYPTO_KEY_VERSION		"DSL_CRYPTO_VERSION"
 
 typedef struct dsl_dir_phys {
 	uint64_t dd_creation_time; /* not actually used */
