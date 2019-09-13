@@ -44,9 +44,11 @@ CPPFLAGS += -I$(SRC)/common/ficl -I../../../libficl
 CPPFLAGS += -I../../include
 CPPFLAGS += -I../../include/$(MACHINE)
 CPPFLAGS += -I../../../libsa
-CPPFLAGS += -I$(ZFSSRC)
-CPPFLAGS += -I../../../sys/cddl/boot/zfs
 
+devicename.o := CPPFLAGS += -I$(ZFSSRC) -I$(CRYPTOSRC)
+devicename.o := CPPFLAGS += -I../../../sys/cddl/boot/zfs
+efizfs.o := CPPFLAGS += -I$(ZFSSRC) -I$(CRYPTOSRC)
+efizfs.o := CPPFLAGS += -I../../../sys/cddl/boot/zfs
 gfx_fb.o := CPPFLAGS += $(DEFAULT_CONSOLE_COLOR) -I$(LZ4)
 pnglite.o := CPPFLAGS += -I$(ZLIB)
 gfx_fb.o pnglite.o efi_console.o := CPPFLAGS += -I$(PNGLITE)

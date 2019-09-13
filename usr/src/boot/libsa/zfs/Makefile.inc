@@ -19,11 +19,13 @@ SRCS +=	$(SRC)/common/list/list.c
 OBJECTS +=	zfs.o
 OBJECTS +=	gzip.o
 OBJECTS +=	list.o
+OBJECTS +=	hkdf.o
 
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I../../common
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I../../sys/cddl/boot/zfs -I$(LZ4)
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(SRC)/uts/common/fs/zfs
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(CRYPTOSRC)
+objs/hkdf.o pics/hkdf.o := CPPFLAGS +=	-I$(CRYPTOSRC)
 
 pics/%.o objs/%.o:	$(ZFSSRC)/%.c
 	$(COMPILE.c) -o $@ $<

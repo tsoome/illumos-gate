@@ -1,0 +1,3 @@
+/*
+ * Compatibility header for illumos.
+ */

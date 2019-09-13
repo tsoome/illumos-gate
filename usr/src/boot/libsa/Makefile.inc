@@ -33,6 +33,9 @@ OBJECTS += __main.o abort.o assert.o bcd.o environment.o \
 	strdup.o strerror.o strtol.o strtoll.o strtoul.o strtoull.o random.o \
 	sbrk.o twiddle.o zalloc.o zalloc_malloc.o
 
+# avl implementation
+OBJECTS += avl.o
+
 # private (pruned) versions of libc string functions
 SRCS +=	$(SASRC)/strcasecmp.c
 OBJECTS += strcasecmp.o

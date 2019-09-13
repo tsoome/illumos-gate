@@ -61,6 +61,9 @@ pics/%.o objs/%.o:	$(LZ4)/%.c
 pics/%.o objs/%.o:	$(SRC)/uts/common/rpc/%.c
 	$(COMPILE.c) -o $@ $<
 
+pics/%.o objs/%.o:	$(SRC)/common/avl/%.c
+	$(COMPILE.c) -o $@ $<
+
 pics/%.o objs/%.o:	$(SRC)/common/nvpair/%.c
 	$(COMPILE.c) -o $@ $<
 

@@ -1,5 +1,8 @@
-/*
- * Copyright (c) 2018 Netflix, Inc.
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (c) 1982, 1986, 1993, 1994
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -9,11 +12,14 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -21,29 +27,25 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ *	@(#)uio.h	8.5 (Berkeley) 2/22/94
  */
 
-#include <sys/cdefs.h>
+#ifndef _SYS__UIO_H_
+#define	_SYS__UIO_H_
 
-#include <stand.h>
+#if __BSD_VISIBLE
+enum uio_rw {
+	UIO_READ,
+	UIO_WRITE
+};
 
-void
-abort(void)
-{
-	panic("Bootloader aborted by abort");
-}
+/* Segment flag values. */
+enum uio_seg {
+	UIO_USERSPACE,		/* from user data space */
+	UIO_SYSSPACE,		/* from system space */
+	UIO_NOCOPY		/* don't copy, already in object */
+};
+#endif /* __BSD_VISIBLE */
 
-void
-assfail3(const char *a, uintmax_t lv, const char *op, uintmax_t rv,
-    const char *f, int l)
-{
-	panic("assertion failed: %s (0x%jx %s 0x%jx), file: %s, "
-	    "line: %d", a, (uintmax_t)lv, op, (uintmax_t)rv, f, l);
-}
-
-int
-assfail(const char *a, const char *f, int l)
-{
-	panic("assertion failed: %s, file: %s, line: %d\n", a, f, l);
-	return (0);
-}
+#endif /* !_SYS__UIO_H_ */

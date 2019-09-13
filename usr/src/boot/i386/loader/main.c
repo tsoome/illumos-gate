@@ -61,6 +61,7 @@ struct bootargs *kargs;
 uint32_t	opts;
 static uint32_t	initial_bootdev;
 static struct bootinfo	*initial_bootinfo;
+static struct wkey_data wkey;
 
 struct arch_switch	archsw;		/* MI/MD interface boundary */
 
@@ -80,6 +81,24 @@ caddr_t
 ptov(uintptr_t x)
 {
 	return (PTOV(x));
+}
+
+static void
+extract_wkey(void)
+{
+	struct zfs_boot_args	*zargs;
+
+	if ((kargs->bootflags & (KARGS_FLAGS_ZFS | KARGS_FLAGS_EXTARG)) == 0)
+		return;
+
+	zargs = (struct zfs_boot_args *)(kargs + 1);
+
+	/* Do we have key? */
+	if (zargs->size >= offsetof(struct zfs_boot_args,
+	    wkey) + sizeof (struct wkey_data)) {
+		bcopy(&zargs->wkey, &wkey, sizeof (wkey));
+		bzero(&zargs->wkey, sizeof (zargs->wkey));
+	}
 }
 
 int
@@ -159,6 +178,9 @@ main(void)
 		else if (kargs->bootflags & KARGS_FLAGS_CD)
 			bc_add(initial_bootdev);
 	}
+
+	/* extract zfs key */
+	extract_wkey();
 
 	archsw.arch_autoload = i386_autoload;
 	archsw.arch_getdev = i386_getdev;
@@ -377,5 +399,16 @@ i386_zfs_probe(void)
 		snprintf(devname, sizeof (devname), "%s%d:", bioshd.dv_name,
 		    dev.dd.d_unit);
 		zfs_probe_dev(devname, NULL);
+	}
+
+	/* insert provided key */
+	if (wkey.format != 0) {
+		struct zfs_boot_args	*zargs;
+
+		zargs = (struct zfs_boot_args *)(kargs + 1);
+		if (spa_set_wkey(zargs->pool, &wkey.wkey[0], wkey.format,
+		    wkey.salt, wkey.iters, wkey.ddobj))
+			printf("Warning: Failed to set key\n");
+		bzero(&wkey, sizeof (wkey));
 	}
 }

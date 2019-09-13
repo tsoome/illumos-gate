@@ -122,10 +122,9 @@ CPPFLAGS +=	-I$(SRC)/common/ficl -I../../libficl \
 # the location of libstand
 CPPFLAGS +=	-I../../libsa
 
-multiboot.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
-multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
-devicename.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
-devicename_stubs.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
+multiboot.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
+devicename.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
+devicename_stubs.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
 
 CLEANFILES +=	machine x86
 

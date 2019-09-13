@@ -68,7 +68,8 @@ OBJS =	mb_header.o zfsboot.o sio.o cons.o devopen.o \
 	part.o disk.o bcache.o zfs_cmd.o
 
 zfsboot.o := CPPFLAGS += -I$(SRC)/uts/common -I$(SRC)/uts/common/fs/zfs
-zfs_cmd.o := CPPFLAGS += -I$(SRC)/uts/common
+zfsboot.o := CPPFLAGS += -I$(CRYPTOSRC)
+zfs_cmd.o := CPPFLAGS += -I$(SRC)/uts/common -I$(CRYPTOSRC)
 part.o := CPPFLAGS += -I$(ZLIB)
 smbios.o := CPPFLAGS += -DSMBIOS_SERIAL_NUMBERS
 smbios.o := CPPFLAGS += -DSMBIOS_LITTLE_ENDIAN_UUID

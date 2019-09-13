@@ -41,6 +41,7 @@
 #include <sys/font.h>
 #include <sys/sha1.h>
 #include <libcrypto.h>
+#include <sys/nvpair.h>
 
 #include "bootstrap.h"
 
@@ -632,6 +633,77 @@ build_font_module(void)
 	loadaddr = laddr;
 
 	file_insert_tail(fp);
+}
+
+void
+build_secrets_module(void)
+{
+	struct preloaded_file *fp;
+	size_t size;
+	char *buf = NULL;
+	char *name = "secrets";
+	vm_offset_t laddr = 0;
+	nvlist_t *nv;
+	extern nvlist_t *spa_wkeys_to_nvlist(void);
+
+	/* We can't load first */
+	if (file_findfile(NULL, NULL) == NULL) {
+		printf("Can not load secrets module: %s\n",
+		    "the kernel is not loaded");
+		return;
+	}
+
+	if (file_findfile(name, name) != NULL) {
+		printf("warning: '%s' is already loaded\n", name);
+		return;
+	}
+
+	nv = spa_wkeys_to_nvlist();
+	if (nv == NULL)
+		return;
+
+	fp = file_alloc();
+	if (fp != NULL) {
+		fp->f_name = strdup(name);
+		fp->f_type = strdup(name);
+	}
+
+	if (fp == NULL || fp->f_name == NULL || fp->f_type == NULL) {
+		printf("Can not load secrets module: %s\n",
+		    "out of memory");
+		goto error;
+	}
+
+	if (nvlist_pack(nv, &buf, &size, NV_ENCODE_XDR, 0) != 0)
+		goto error;
+
+	if (archsw.arch_loadaddr != NULL)
+		loadaddr = archsw.arch_loadaddr(LOAD_MEM, &size, loadaddr);
+
+	if (loadaddr == 0) {
+		printf("Can not load secrets module: %s\n",
+		    "out of memory");
+		goto error;
+	}
+	fp->f_loader = -1;
+	fp->f_addr = loadaddr;
+	fp->f_size = size;
+
+	laddr = loadaddr;
+	laddr += archsw.arch_copyin(buf, laddr, size);
+
+	module_hash(fp, ptov(loadaddr), size);
+
+	/* recognise space consumption */
+	loadaddr = laddr;
+	file_insert_tail(fp);
+	goto done;
+
+error:
+	file_discard(fp);
+done:
+	nvlist_free(nv);
+	free(buf);
 }
 
 /*

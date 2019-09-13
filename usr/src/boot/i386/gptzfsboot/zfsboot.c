@@ -148,6 +148,25 @@ ptov(uintptr_t x)
 	return (PTOV(x));
 }
 
+/* store wrapping key information to wkey_data for passing to loader */
+size_t
+export_wkey_data(struct wkey_data *wd)
+{
+	dsl_wrapping_key_t *wk;
+
+	wk = spa_get_wkey(bdev->d_kind.zfs.pool_guid,
+	    bdev->d_kind.zfs.root_guid);
+	if (wk == NULL)
+		return (0);
+	wd->salt = wk->wk_salt;
+	wd->iters = wk->wk_iters;
+	wd->ddobj = wk->wk_ddobj;
+	wd->format = wk->wk_keyformat;
+	wd->dsize = CRYPTO_BITS2BYTES(wk->wk_key.ck_length);
+	bcopy(wk->wk_key.ck_data, wd->wkey, WRAPPING_KEY_LEN);
+	return (sizeof (*wd));
+}
+
 int
 main(void)
 {
@@ -482,6 +501,7 @@ load(void)
 		zfsargs.size = sizeof (zfsargs);
 		zfsargs.pool = bdev->d_kind.zfs.pool_guid;
 		zfsargs.root = bdev->d_kind.zfs.root_guid;
+		zfsargs.size += export_wkey_data(&zfsargs.wkey);
 		__exec((caddr_t)addr, RB_BOOTINFO | (opts & RBX_MASK),
 		    bootdev,
 		    KARGS_FLAGS_ZFS | KARGS_FLAGS_EXTARG,

@@ -61,6 +61,15 @@ struct bootargs {
 	 */
 };
 
+struct wkey_data {
+	uint64_t	salt;	/* the pbkdf2 salt */
+	uint64_t	iters;	/* the pbkdf2 iterations */
+	uint64_t	ddobj;	/* dsl directory object */
+	uint_t		format; /* zio_crypt_type_t */
+	uint_t		dsize;	/* size of wkey array */
+	uint8_t		wkey[32]; /* wrapping key */
+};
+
 struct zfs_boot_args {
 	uint32_t		size;
 	uint32_t		reserved;
@@ -68,6 +77,7 @@ struct zfs_boot_args {
 	uint64_t		root;
 	uint64_t		primary_pool;
 	uint64_t		primary_vdev;
+	struct wkey_data	wkey;
 };
 
 #endif /* __ASSEMBLER__ */

@@ -1914,6 +1914,19 @@ zfs_dev_strategy(void *devdata __unused, int rw __unused,
 	return (ENOSYS);
 }
 
+static void
+zfs_dev_cleanup(void)
+{
+	spa_t *spa;
+
+	/*
+	 * Destroy stored crypto keys.
+	 */
+	STAILQ_FOREACH(spa, &zfs_pools, spa_link) {
+		spa_keystore_cleanup(spa);
+	}
+}
+
 struct devsw zfs_dev = {
 	.dv_name = "zfs",
 	.dv_type = DEVT_ZFS,
@@ -1923,7 +1936,7 @@ struct devsw zfs_dev = {
 	.dv_close = zfs_dev_close,
 	.dv_ioctl = noioctl,
 	.dv_print = zfs_dev_print,
-	.dv_cleanup = NULL
+	.dv_cleanup = zfs_dev_cleanup
 };
 
 int

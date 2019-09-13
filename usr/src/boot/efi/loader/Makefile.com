@@ -59,7 +59,11 @@ OBJS=	\
 
 module.o := CPPFLAGS += -I$(CRYPTOSRC)
 tem.o := CPPFLAGS += $(DEFAULT_CONSOLE_COLOR)
+main.o := CPPFLAGS += -I../../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
 main.o := CPPFLAGS += -I$(SRC)/uts/common/fs/zfs
+conf.o := CPPFLAGS += -I../../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
+multiboot2.o := CPPFLAGS += -I../../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
+zfs_cmd.o := CPPFLAGS += -I../../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
 
 CPPFLAGS += -I../../../include -I../../../sys
 CPPFLAGS += -I../../../libsa
@@ -72,7 +76,6 @@ CPPFLAGS +=	-I. -I..
 CPPFLAGS +=	-I../../include
 CPPFLAGS +=	-I../../include/$(MACHINE)
 CPPFLAGS +=	-I$(ZFSSRC)
-CPPFLAGS +=	-I../../../sys/cddl/boot/zfs
 CPPFLAGS +=	-I$(SRC)/uts/intel/sys/acpi
 CPPFLAGS +=	-I$(PNGLITE)
 CPPFLAGS +=	-DNO_PCI -DEFI

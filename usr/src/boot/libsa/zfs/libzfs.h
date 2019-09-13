@@ -41,6 +41,9 @@ struct zfs_devdesc {
 	uint64_t	root_guid;
 };
 
+int hkdf_sha512(uint8_t *, uint_t, uint8_t *, uint_t, uint8_t *, uint_t,
+     uint8_t *, uint_t);
+
 int	zfs_parsedev(struct zfs_devdesc *, const char *, const char **);
 char	*zfs_bootfs(void *);
 char	*zfs_fmtdev(void *);
@@ -51,6 +54,10 @@ int	zfs_get_bootenv(void *, nvlist_t **);
 int	zfs_set_bootenv(void *, nvlist_t *);
 int	zfs_attach_nvstore(void *);
 uint64_t ldi_get_size(void *);
+dsl_wrapping_key_t *spa_get_wkey(uint64_t, uint64_t);
+int spa_set_wkey(uint64_t, uint8_t *, uint_t, uint64_t, uint64_t, uint64_t);
+nvlist_t *spa_wkeys_to_nvlist(void);
+void	spa_keystore_cleanup(spa_t *);
 
 nvlist_t *vdev_read_bootenv(vdev_t *);
 

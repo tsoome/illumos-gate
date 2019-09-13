@@ -101,10 +101,11 @@ CPPFLAGS +=	-I../btx/lib
 
 include ../Makefile.inc
 
-conf.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
-multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
+conf.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
+multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
 main.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(SRC)/uts/common/fs/zfs
-zfs_cmd.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
+main.o := CPPFLAGS += -I$(CRYPTOSRC)
+zfs_cmd.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(CRYPTOSRC)
 
 # For multiboot2.h, must be last, to avoid conflicts
 CPPFLAGS +=	-I$(SRC)/uts/common

@@ -279,6 +279,7 @@ int  file_addmodule(struct preloaded_file *, char *, int,
 	struct kernel_module **);
 void build_environment_module(void);
 void build_font_module(void);
+void build_secrets_module(void);
 vm_offset_t bi_copyenv(vm_offset_t);
 
 /* MI module loaders */

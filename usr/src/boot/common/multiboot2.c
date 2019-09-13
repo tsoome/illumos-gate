@@ -909,6 +909,9 @@ multiboot2_exec(struct preloaded_file *fp)
 	/* Pass the loaded console font for kernel. */
 	build_font_module();
 
+	/* Pass zfs wrapping key(s) for kernel. */
+	build_secrets_module();
+
 	size = mbi_size(fp, cmdline);	/* Get the size for MBI. */
 
 	/* Set up the base for mb_malloc. */
@@ -1327,6 +1330,7 @@ multiboot2_exec(struct preloaded_file *fp)
 	memmove((void *)relocator->rel_memmove, memmove, EFI_PAGE_SIZE);
 	relocator->rel_stack = relocator->rel_memmove + EFI_PAGE_SIZE - 8;
 
+	dev_cleanup();
 	trampoline(MULTIBOOT2_BOOTLOADER_MAGIC, relocator, entry_addr);
 #else
 	dev_cleanup();
