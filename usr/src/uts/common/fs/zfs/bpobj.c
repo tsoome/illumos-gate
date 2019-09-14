@@ -205,10 +205,20 @@ bpobj_close(bpobj_t *bpo)
 }
 
 boolean_t
-bpobj_is_empty(bpobj_t *bpo)
+bpobj_is_empty_impl(bpobj_t *bpo)
 {
+	ASSERT(MUTEX_HELD(&bpo->bpo_lock));
 	return (bpo->bpo_phys->bpo_num_blkptrs == 0 &&
 	    (!bpo->bpo_havesubobj || bpo->bpo_phys->bpo_num_subobjs == 0));
+}
+
+boolean_t
+bpobj_is_empty(bpobj_t *bpo)
+{
+	mutex_enter(&bpo->bpo_lock);
+	boolean_t is_empty = bpobj_is_empty_impl(bpo);
+	mutex_exit(&bpo->bpo_lock);
+	return (is_empty);
 }
 
 /*
@@ -388,7 +398,7 @@ bpobj_iterate_impl(bpobj_t *initial_bpo, bpobj_itor_t func, void *arg,
 			 * If there are no entries, there should
 			 * be no bytes.
 			 */
-			if (bpobj_is_empty(bpo)) {
+			if (bpobj_is_empty_impl(bpo)) {
 				ASSERT0(bpo->bpo_phys->bpo_bytes);
 				ASSERT0(bpo->bpo_phys->bpo_comp);
 				ASSERT0(bpo->bpo_phys->bpo_uncomp);
