@@ -91,13 +91,13 @@ function check_err # <pool> [<vdev>]
 
 	[[ "$output" ==  "$healthstr" ]] && return $errnum
 
-	zpool status -x $pool | grep -v "^$" | grep -v "pool:" \
+	zpool status -x $pool | grep -v '^$' | grep -v "pool:" \
 			| grep -v "state:" | grep -v "config:" \
 			| grep -v "errors:" > $tmpfile
 	typeset line
 	typeset -i fetchbegin=1
 	while read line; do
-		if (( $fetchbegin != 0 )); then
+		if (( fetchbegin != 0 )); then
                         echo $line | grep "NAME" >/dev/null 2>&1
                         (( $? == 0 )) && (( fetchbegin = 0 ))
                          continue
@@ -149,30 +149,30 @@ function do_testing #<clear type> <vdevs>
 	while true ; do
 		file_write -o create -f $file.$i -b $BLOCKSZ -c $NUM_WRITES
 		ret=$?
-		(( $ret != 0 )) && break
+		(( ret != 0 )) && break
 		(( i = i + 1 ))
 	done
-	(( $ret != 28 )) && log_fail "file_write fails to fully fill up the $FS."
+	(( ret != 28 )) && log_fail "file_write fails to fully fill up the $FS."
 
 	#
 	#Make errors to the testing pool by overwrite the vdev device with
 	#/usr/bin/dd command. We donot want to have a full overwrite. That
 	#may cause the system panic. So, we should skip the vdev label space.
 	#
-	(( i = $RANDOM % 3 ))
+	(( i = RANDOM % 3 ))
 	typeset -i wcount=0
 	typeset -i size
 	case $FILESIZE in
 		*g|*G)
-			(( size = ${FILESIZE%%[g|G]} ))
+			(( size = FILESIZE%%'[g|G]' ))
 			(( wcount = size*1024*1024 - 512 ))
 			;;
 		*m|*M)
-			(( size = ${FILESIZE%%[m|M]} ))
+			(( size = FILESIZE%%'[m|M]' ))
 			(( wcount = size*1024 - 512 ))
 			;;
 		*k|*K)
-			(( size = ${FILESIZE%%[k|K]} ))
+			(( size = FILESIZE%%'[k|K]' ))
 			(( wcount = size - 512 ))
 			;;
 		*)
@@ -182,11 +182,7 @@ function do_testing #<clear type> <vdevs>
 	dd if=/dev/zero of=$fbase.$i seek=512 bs=1024 count=$wcount conv=notrunc \
 			> /dev/null 2>&1
 	log_must sync
-	log_must zpool scrub $TESTPOOL1
-	# Wait for the completion of scrub operation
-	while is_pool_scrubbing $TESTPOOL1; do
-		sleep 1
-	done
+	log_must zpool scrub -w $TESTPOOL1
 
 	check_err $TESTPOOL1 && \
 		log_fail "No error generated."
