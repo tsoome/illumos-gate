@@ -20,8 +20,8 @@ COMDIR = ../../../../../common/crypto
 
 install:
 
-SRCS +=	sha1.c digest.c
-OBJS += sha1.o digest.o
+SRCS +=	sha1.c digest.c pkcs5_pbkdf2.c
+OBJS +=	sha1.o digest.o pkcs5_pbkdf2.o
 
 CPPFLAGS += -I. -I../../../../include -I../../..
 CPPFLAGS += -I../../../../lib/libstand
