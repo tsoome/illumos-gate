@@ -10,11 +10,9 @@
 #
 
 #
-# Copyright 2016 Toomas Soome <tsoome@me.com>
+# Copyright 2019 Toomas Soome <tsoome@me.com>
 #
 # Please update the svn revision number on source refresh.
-
-Current snapshot from freebsd revision 296191.
 
 This is source tree snapshot of loader and related parts from
 freebsd source.
@@ -26,10 +24,9 @@ containing Makefile and licence notes for build and packaging.
 
 Directories from freebsd userland (freebsd /usr/src tree):
 include
-lib
 
-Directories from freebsd kernel tree, including boot loader itself
-are located in sys subdirectory (freebsd /usr/src/sys tree):
+Directories from freebsd kernel tree are located in sys subdirectory
+(freebsd /usr/src/sys tree):
 
 platform specific include files:
 
@@ -44,13 +41,10 @@ sys/ufs
 zfs boot module import in freebsd:
 sys/cddl 
 
-boot loader sources are in:
-sys/boot
-
 Note, some of the directories are not 1:1 mapping in this source import,
 because of differences of build systems used in illumos and freebsd.
 Also some differences are due to fact, we do not need all the variants of
 stage1/stage2 boot blocks which are built in freebsd due to the historical
 or technical reasons.
 
-Mar, 2016
+Oct, 2019
