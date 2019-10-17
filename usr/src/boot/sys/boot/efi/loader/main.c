@@ -64,8 +64,6 @@ EFI_GUID inputid = SIMPLE_TEXT_INPUT_PROTOCOL;
 extern void acpi_detect(void);
 extern void efi_getsmap(void);
 
-static EFI_LOADED_IMAGE *img;
-
 /*
  * Number of seconds to wait for a keystroke before exiting with failure
  * in the event no currdev is found. -2 means always break, -1 means
@@ -74,6 +72,16 @@ static EFI_LOADED_IMAGE *img;
  * well.
  */
 static int fail_timeout = 5;
+
+/*
+ * Current boot variable
+ */
+UINT16 boot_current;
+
+/*
+ * Image that we booted from.
+ */
+EFI_LOADED_IMAGE *boot_img;
 
 bool
 efi_zfs_is_preferred(EFI_HANDLE *h)
@@ -84,13 +92,13 @@ efi_zfs_is_preferred(EFI_HANDLE *h)
 	extern UINT64 start_sector;	/* from mb_header.S */
 
 	/* This check is true for chainloader case. */
-	if (h == img->DeviceHandle)
+	if (h == boot_img->DeviceHandle)
 		return (true);
 
 	/*
 	 * Make sure the image was loaded from the hard disk.
 	 */
-	devpath = efi_lookup_devpath(img->DeviceHandle);
+	devpath = efi_lookup_devpath(boot_img->DeviceHandle);
 	if (devpath == NULL)
 		return (false);
 	node = efi_devpath_last_node(devpath);
@@ -481,6 +489,33 @@ interactive_interrupt(const char *msg)
 	return (false);
 }
 
+static int
+parse_args(int argc, CHAR16 *argv[])
+{
+	int i, howto;
+	char var[128];
+
+	/*
+	 * Parse the args to set the console settings, etc
+	 * iPXE may be setup to pass these in. Or the optional argument in the
+	 * boot environment was used to pass these arguments in (in which case
+	 * neither /boot.config nor /boot/config are consulted).
+	 *
+	 * Loop through the args, and for each one that contains an '=' that is
+	 * not the first character, add it to the environment.  This allows
+	 * loader and kernel env vars to be passed on the command line.  Convert
+	 * args from UCS-2 to ASCII (16 to 8 bit) as they are copied (though
+	 * this method is flawed for non-ASCII characters).
+	 */
+	howto = 0;
+	for (i = 1; i < argc; i++) {
+		cpy16to8(argv[i], var, sizeof(var));
+		howto |= boot_parse_arg(var);
+	}
+
+	return (howto);
+}
+
 /*
  * Parse ConOut (the list of consoles active) and see if we can find a
  * serial port and/or a video port. It would be nice to also walk the
@@ -563,16 +598,13 @@ out:
 EFI_STATUS
 main(int argc, CHAR16 *argv[])
 {
-	char var[128];
-	int i, j, howto;
-	bool vargood;
+	int howto, i, uhowto;
 	void *ptr;
 	bool has_kbd;
 	char *s;
 	EFI_DEVICE_PATH *imgpath;
 	CHAR16 *text;
 	EFI_STATUS status;
-	UINT16 boot_current;
 	size_t sz;
 	UINT16 boot_order[100];
 
@@ -586,9 +618,7 @@ main(int argc, CHAR16 *argv[])
 	archsw.arch_zfs_probe = efi_zfs_probe;
 
 	/* Get our loaded image protocol interface structure. */
-	(void) OpenProtocolByHandle(IH, &imgid, (void **)&img);
-
-	has_kbd = has_keyboard();
+	(void) OpenProtocolByHandle(IH, &imgid, (void **)&boot_img);
 
 	/*
 	 * XXX Chicken-and-egg problem; we want to have console output
@@ -609,151 +639,114 @@ main(int argc, CHAR16 *argv[])
 	bcache_init(32768, 512);
 
 	/*
-	 * Parse the args to set the console settings, etc
-	 * iPXE may be setup to pass these in. Or the optional argument in the
-	 * boot environment was used to pass these arguments in (in which case
-	 * neither /boot.config nor /boot/config are consulted).
-	 *
-	 * Loop through the args, and for each one that contains an '=' that is
-	 * not the first character, add it to the environment.  This allows
-	 * loader and kernel env vars to be passed on the command line.  Convert
-	 * args from UCS-2 to ASCII (16 to 8 bit) as they are copied (though
-	 * this method is flawed for non-ASCII characters).
+	 * Scan the BLOCK IO MEDIA handles then
+	 * march through the device switch probing for things.
 	 */
-	howto = parse_uefi_con_out();
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
-			for (j = 1; argv[i][j] != 0; j++) {
-				int ch;
+	i = efipart_inithandles();
+	if (i != 0 && i != ENOENT) {
+		printf("efipart_inithandles failed with ERRNO %d, expect "
+		    "failures\n", i);
+	}
 
-				ch = argv[i][j];
-				switch (ch) {
-				case 'a':
-					howto |= RB_ASKNAME;
-					break;
-				case 'd':
-					howto |= RB_KDB;
-					break;
-				case 'D':
-					howto |= RB_MULTIPLE;
-					break;
-				case 'h':
-					howto |= RB_SERIAL;
-					break;
-				case 'm':
-					howto |= RB_MUTE;
-					break;
-				case 'p':
-					howto |= RB_PAUSE;
-					break;
-				case 'P':
-					if (!has_kbd) {
-						howto |= RB_SERIAL;
-						howto |= RB_MULTIPLE;
-					}
-					break;
-				case 'r':
-					howto |= RB_DFLTROOT;
-					break;
-				case 's':
-					howto |= RB_SINGLE;
-					break;
-				case 'S':
-					if (argv[i][j + 1] == 0) {
-						if (i + 1 == argc) {
-							strncpy(var, "115200",
-							    sizeof (var));
-						} else {
-							CHAR16 *ptr;
-							ptr = &argv[i + 1][0];
-							cpy16to8(ptr, var,
-							    sizeof (var));
-						}
-						i++;
-					} else {
-						cpy16to8(&argv[i][j + 1], var,
-						    sizeof (var));
-					}
-					strncat(var, ",8,n,1,-", sizeof (var));
-					setenv("ttya-mode", var, 1);
-					break;
-				case 'v':
-					howto |= RB_VERBOSE;
-					break;
-				}
-			}
+	for (i = 0; devsw[i] != NULL; i++)
+		if (devsw[i]->dv_init != NULL)
+			(devsw[i]->dv_init)();
+
+	/*
+	 * Detect console settings two different ways: one via the command
+	 * args (eg -h) or via the UEFI ConOut variable.
+	 */
+	has_kbd = has_keyboard();
+	howto = parse_args(argc, argv);
+	if (!has_kbd && (howto & RB_PROBE))
+		howto |= RB_SERIAL | RB_MULTIPLE;
+	howto &= ~RB_PROBE;
+	uhowto = parse_uefi_con_out();
+
+	/*
+	 * We now have two notions of console. howto should be viewed as
+	 * overrides. If console is already set, don't set it again.
+	 */
+#define	VIDEO_ONLY	0
+#define	SERIAL_ONLY	RB_SERIAL
+#define	VID_SER_BOTH	RB_MULTIPLE
+#define	SER_VID_BOTH	(RB_SERIAL | RB_MULTIPLE)
+#define	CON_MASK	(RB_SERIAL | RB_MULTIPLE)
+
+	if (strcmp(getenv("console"), "text") == 0) {
+		if ((howto & CON_MASK) == 0) {
+			/*
+			 * No override, uhowto is controlling and efi
+			 * console is perfect.
+			 */
+			howto = howto | (uhowto & CON_MASK);
+		} else if ((howto & CON_MASK) == (uhowto & CON_MASK)) {
+			/*
+			 * override matches what UEFI told us, efi console
+			 * is perfect.
+			 */
+		} else if ((uhowto & (CON_MASK)) != 0) {
+			/*
+			 * We detected a serial console on ConOut. All possible
+			 * overrides include serial. We can't really override
+			 * what efi gives us, so we use it knowing it's the
+			 * best choice.
+			 */
 		} else {
-			vargood = false;
-			for (j = 0; argv[i][j] != 0; j++) {
-				if (j == sizeof (var)) {
-					vargood = false;
-					break;
-				}
-				if (j > 0 && argv[i][j] == '=')
-					vargood = true;
-				var[j] = (char)argv[i][j];
-			}
-			if (vargood) {
-				var[j] = 0;
-				putenv(var);
+			/*
+			 * We detected some kind of serial in the override,
+			 * but ConOut has no serial, so we have to sort out
+			 * which case it really is.
+			 */
+			switch (howto & CON_MASK) {
+			case SERIAL_ONLY:
+				setenv("console", "ttya", 1);
+				break;
+			case VID_SER_BOTH:
+				setenv("console", "text ttya", 1);
+				break;
+			case SER_VID_BOTH:
+				setenv("console", "ttya text", 1);
+				break;
+				/*
+				 * case VIDEO_ONLY can't happen -- it's the
+				 * first if above.
+				 */
 			}
 		}
 	}
-	for (i = 0; howto_names[i].ev != NULL; i++)
-		if (howto & howto_names[i].mask)
-			setenv(howto_names[i].ev, "YES", 1);
 
 	/*
-	 * XXX we need fallback to this stuff after looking at the ConIn,
-	 * ConOut and ConErr variables.
+	 * howto is set now how we want to export the flags to the kernel, so
+	 * set the env based on it.
 	 */
-	if (howto & RB_MULTIPLE) {
-		if (howto & RB_SERIAL)
-			setenv("console", "ttya text", 1);
-		else
-			setenv("console", "text ttya", 1);
-	} else if (howto & RB_SERIAL) {
-		setenv("console", "ttya", 1);
-	} else
-		setenv("console", "text", 1);
+	boot_howto_to_env(howto);
 
 	if ((s = getenv("fail_timeout")) != NULL)
 		fail_timeout = strtol(s, NULL, 10);
 
-	/*
-	 * Scan the BLOCK IO MEDIA handles then
-	 * march through the device switch probing for things.
-	 */
-	if ((i = efipart_inithandles()) == 0) {
-		for (i = 0; devsw[i] != NULL; i++)
-			if (devsw[i]->dv_init != NULL)
-				(devsw[i]->dv_init)();
-	} else
-		printf("efipart_inithandles failed %d, expect failures", i);
-
+	printf("%s\n", bootprog_info);
 	printf("Command line arguments:");
 	for (i = 0; i < argc; i++) {
 		printf(" %S", argv[i]);
 	}
 	printf("\n");
 
-	printf("Image base: 0x%lx\n", (unsigned long)img->ImageBase);
+	printf("Image base: 0x%lx\n", (unsigned long)boot_img->ImageBase);
 	printf("EFI version: %d.%02d\n", ST->Hdr.Revision >> 16,
 	    ST->Hdr.Revision & 0xffff);
 	printf("EFI Firmware: %S (rev %d.%02d)\n", ST->FirmwareVendor,
 	    ST->FirmwareRevision >> 16, ST->FirmwareRevision & 0xffff);
 
-	printf("\n%s", bootprog_info);
-
 	/* Determine the devpath of our image so we can prefer it. */
-	text = efi_devpath_name(img->FilePath);
+	text = efi_devpath_name(boot_img->FilePath);
 	if (text != NULL) {
 		printf("   Load Path: %S\n", text);
 		efi_setenv_illumos_wcs("LoaderPath", text);
 		efi_free_devpath_name(text);
 	}
 
-	status = OpenProtocolByHandle(img->DeviceHandle, &devid,
+	status = OpenProtocolByHandle(boot_img->DeviceHandle, &devid,
 	    (void **)&imgpath);
 	if (status == EFI_SUCCESS) {
 		text = efi_devpath_name(imgpath);
@@ -795,7 +788,7 @@ main(int argc, CHAR16 *argv[])
 	 * the boot protocol and also allow an escape hatch for users wishing
 	 * to try something different.
 	 */
-	if (!find_currdev(img))
+	if (!find_currdev(boot_img))
 		if (!interactive_interrupt("Failed to find bootable partition"))
 			return (EFI_NOT_FOUND);
 

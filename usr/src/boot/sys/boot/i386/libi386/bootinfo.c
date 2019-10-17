@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1998 Michael Smith <msmith@freebsd.org>
  * All rights reserved.
  *
@@ -38,112 +38,54 @@
 int
 bi_getboothowto(char *kargs)
 {
-    char	*cp;
-    char	*curpos, *next, *string;
-    int		howto;
-    int		active;
-    int		i;
-    int		vidconsole;
+	char	*curpos, *next, *string;
+	int	howto;
+	int	vidconsole;
 
-    /* Parse kargs */
-    howto = 0;
-    if (kargs  != NULL) {
-	cp = kargs;
-	active = 0;
-	while (*cp != 0) {
-	    if (!active && (*cp == '-')) {
-		active = 1;
-	    } else if (active)
-		switch (*cp) {
-		case 'a':
-		    howto |= RB_ASKNAME;
-		    break;
-		case 'C':
-		    howto |= RB_CDROM;
-		    break;
-		case 'd':
-		    howto |= RB_KDB;
-		    break;
-		case 'D':
-		    howto |= RB_MULTIPLE;
-		    break;
-		case 'm':
-		    howto |= RB_MUTE;
-		    break;
-		case 'g':
-		    howto |= RB_GDB;
-		    break;
-		case 'h':
-		    howto |= RB_SERIAL;
-		    break;
-		case 'p':
-		    howto |= RB_PAUSE;
-		    break;
-		case 'r':
-		    howto |= RB_DFLTROOT;
-		    break;
-		case 's':
-		    howto |= RB_SINGLE;
-		    break;
-		case 'v':
-		    howto |= RB_VERBOSE;
-		    break;
-		default:
-		    active = 0;
-		    break;
-		}
-	    cp++;
+	howto = boot_parse_cmdline(kargs);
+	howto |= boot_env_to_howto();
+
+	/* Enable selected consoles */
+	string = next = strdup(getenv("console"));
+	vidconsole = 0;
+	while (next != NULL) {
+		curpos = strsep(&next, " ,");
+		if (*curpos == '\0')
+			continue;
+		if (strcmp(curpos, "text") == 0)
+			vidconsole = 1;
+		else if (strcmp(curpos, "ttya") == 0)
+			howto |= RB_SERIAL;
+		else if (strcmp(curpos, "ttyb") == 0)
+			howto |= RB_SERIAL;
+		else if (strcmp(curpos, "ttyc") == 0)
+			howto |= RB_SERIAL;
+		else if (strcmp(curpos, "ttyd") == 0)
+			howto |= RB_SERIAL;
+		else if (strcmp(curpos, "null") == 0)
+			howto |= RB_MUTE;
 	}
-    }
-    /* get equivalents from the environment */
-    for (i = 0; howto_names[i].ev != NULL; i++)
-	if (getenv(howto_names[i].ev) != NULL)
-	    howto |= howto_names[i].mask;
 
-    /* Enable selected consoles */
-    string = next = strdup(getenv("console"));
-    vidconsole = 0;
-    while (next != NULL) {
-	curpos = strsep(&next, " ,");
-	if (*curpos == '\0')
-		continue;
-	if (!strcmp(curpos, "text"))
-	    vidconsole = 1;
-	else if (!strcmp(curpos, "ttya"))
-	    howto |= RB_SERIAL;
-	else if (!strcmp(curpos, "ttyb"))
-	    howto |= RB_SERIAL;
-	else if (!strcmp(curpos, "ttyc"))
-	    howto |= RB_SERIAL;
-	else if (!strcmp(curpos, "ttyd"))
-	    howto |= RB_SERIAL;
-	else if (!strcmp(curpos, "null"))
-	    howto |= RB_MUTE;
-    }
+	if (vidconsole && (howto & RB_SERIAL))
+		howto |= RB_MULTIPLE;
 
-    if (vidconsole && (howto & RB_SERIAL))
-	howto |= RB_MULTIPLE;
+	/*
+	 * XXX: Note that until the kernel is ready to respect multiple consoles
+	 * for the boot messages, the first named console is the primary console
+	*/
+	if (!strcmp(string, "text"))
+		howto &= ~RB_SERIAL;
 
-    /*
-     * XXX: Note that until the kernel is ready to respect multiple consoles
-     * for the boot messages, the first named console is the primary console
-     */
-    if (!strcmp(string, "text"))
-	howto &= ~RB_SERIAL;
+	free(string);
 
-    free(string);
-
-    return(howto);
+	return (howto);
 }
 
 void
 bi_setboothowto(int howto)
 {
-    int		i;
 
-    for (i = 0; howto_names[i].ev != NULL; i++)
-	if (howto & howto_names[i].mask)
-	    setenv(howto_names[i].ev, "YES", 1);
+	boot_howto_to_env(howto);
 }
 
 /*
@@ -154,22 +96,22 @@ bi_setboothowto(int howto)
 vm_offset_t
 bi_copyenv(vm_offset_t addr)
 {
-    struct env_var	*ep;
+	struct env_var	*ep;
     
-    /* traverse the environment */
-    for (ep = environ; ep != NULL; ep = ep->ev_next) {
-	i386_copyin(ep->ev_name, addr, strlen(ep->ev_name));
-	addr += strlen(ep->ev_name);
-	i386_copyin("=", addr, 1);
-	addr++;
-	if (ep->ev_value != NULL) {
-	    i386_copyin(ep->ev_value, addr, strlen(ep->ev_value));
-	    addr += strlen(ep->ev_value);
+	/* traverse the environment */
+	for (ep = environ; ep != NULL; ep = ep->ev_next) {
+		i386_copyin(ep->ev_name, addr, strlen(ep->ev_name));
+		addr += strlen(ep->ev_name);
+		i386_copyin("=", addr, 1);
+		addr++;
+		if (ep->ev_value != NULL) {
+			i386_copyin(ep->ev_value, addr, strlen(ep->ev_value));
+			addr += strlen(ep->ev_value);
+		}
+		i386_copyin("", addr, 1);
+		addr++;
 	}
 	i386_copyin("", addr, 1);
 	addr++;
-    }
-    i386_copyin("", addr, 1);
-    addr++;
-    return(addr);
+	return (addr);
 }
