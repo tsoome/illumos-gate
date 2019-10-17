@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1998 Michael Smith <msmith@freebsd.org>
  * Copyright (c) 2004, 2006 Marcel Moolenaar
  * Copyright (c) 2014 The FreeBSD Foundation
@@ -58,50 +58,47 @@ int bi_load(char *args, vm_offset_t *modulep, vm_offset_t *kernendp);
 
 extern EFI_SYSTEM_TABLE	*ST;
 
-static const char howto_switches[] = "aCdrgDmphsv";
-static int howto_masks[] = {
-	RB_ASKNAME, RB_CDROM, RB_KDB, RB_DFLTROOT, RB_GDB, RB_MULTIPLE,
-	RB_MUTE, RB_PAUSE, RB_SERIAL, RB_SINGLE, RB_VERBOSE
-};
-
 static int
 bi_getboothowto(char *kargs)
 {
-	const char *sw;
-	char *opts;
-	char *console;
-	int howto, i;
+	char *curpos, *next, *string;
+	int howto;
+	int vidconsole;
 
-	howto = 0;
+	howto = boot_parse_cmdline(kargs);
+	howto |= boot_env_to_howto();
 
-	/* Get the boot options from the environment first. */
-	for (i = 0; howto_names[i].ev != NULL; i++) {
-		if (getenv(howto_names[i].ev) != NULL)
-			howto |= howto_names[i].mask;
-	}
-
-	console = getenv("console");
-	if (console != NULL) {
-		if (strcmp(console, "comconsole") == 0)
+	string = next = strdup(getenv("console"));
+	vidconsole = 0;
+	while (next != NULL) {
+		curpos = strsep(&next, " ,");
+		if (*curpos == '\0')
+			continue;
+		if (strcmp(curpos, "text") == 0)
+			vidconsole = 1;
+		else if (strcmp(curpos, "ttya") == 0)
 			howto |= RB_SERIAL;
-		if (strcmp(console, "nullconsole") == 0)
+		else if (strcmp(curpos, "ttyb") == 0)
+			howto |= RB_SERIAL;
+		else if (strcmp(curpos, "ttyc") == 0)
+			howto |= RB_SERIAL;
+		else if (strcmp(curpos, "ttyd") == 0)
+			howto |= RB_SERIAL;
+		if (strcmp(curpos, "null") == 0)
 			howto |= RB_MUTE;
 	}
 
-	/* Parse kargs */
-	if (kargs == NULL)
-		return (howto);
+	if (vidconsole && (howto & RB_SERIAL))
+		howto |= RB_MULTIPLE;
 
-	opts = strchr(kargs, '-');
-	while (opts != NULL) {
-		while (*(++opts) != '\0') {
-			sw = strchr(howto_switches, *opts);
-			if (sw == NULL)
-				break;
-			howto |= howto_masks[sw - howto_switches];
-		}
-		opts = strchr(opts, '-');
-	}
+	/*
+	 * XXX: Note that until the kernel is ready to respect multiple consoles
+	 * for the boot messages, the first named console is the primary console
+	 */
+	if (!strcmp(string, "text"))
+		howto &= ~RB_SERIAL;
+
+	free(string);
 
 	return (howto);
 }
