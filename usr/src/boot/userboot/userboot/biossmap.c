@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Warner Losh <imp@freebd.org>
+ * Copyright (c) 1998 Michael Smith <msmith@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,43 +25,48 @@
  */
 
 #include <sys/cdefs.h>
-
 #include <stand.h>
-#include <stddef.h>
-#include <sys/disk.h>
+#include <sys/param.h>
 #include <sys/reboot.h>
+#include <sys/linker.h>
+#include <machine/pc/bios.h>
+#include <machine/metadata.h>
 
 #include "bootstrap.h"
+#include "libuserboot.h"
 
-#include "libzfs.h"
+#define	GB (1024UL * 1024 * 1024)
 
-COMMAND_SET(lszfs, "lszfs", "list child datasets of a zfs dataset",
-    command_lszfs);
-
-static int
-command_lszfs(int argc, char *argv[])
+void
+bios_addsmapdata(struct preloaded_file *kfp)
 {
-	int err;
+	uint64_t lowmem, highmem;
+	int smapnum, len;
+	struct bios_smap smap[3], *sm;
 
-	if (argc != 2) {
-		command_errmsg = "a single dataset must be supplied";
-		return (CMD_ERROR);
+	CALLBACK(getmem, &lowmem, &highmem);
+
+	sm = &smap[0];
+
+	sm->base = 0;				/* base memory */
+	sm->length = 640 * 1024;
+	sm->type = SMAP_TYPE_MEMORY;
+	sm++;
+
+	sm->base = 0x100000;			/* extended memory */
+	sm->length = lowmem - 0x100000;
+	sm->type = SMAP_TYPE_MEMORY;
+	sm++;
+
+	smapnum = 2;
+
+	if (highmem != 0) {
+		sm->base = 4 * GB;
+		sm->length = highmem;
+		sm->type = SMAP_TYPE_MEMORY;
+		smapnum++;
 	}
 
-	err = zfs_list(argv[1]);
-	if (err != 0) {
-		command_errmsg = strerror(err);
-		return (CMD_ERROR);
-	}
-	return (CMD_OK);
-}
-
-uint64_t
-ldi_get_size(void *priv)
-{
-	int fd = (uintptr_t)priv;
-	uint64_t size;
-
-	(void) ioctl(fd, DIOCGMEDIASIZE, &size);
-	return (size);
+	len = smapnum * sizeof (struct bios_smap);
+	file_addmetadata(kfp, MODINFOMD_SMAP, len, &smap[0]);
 }
