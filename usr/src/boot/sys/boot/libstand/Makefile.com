@@ -28,6 +28,7 @@ include $(ZFSSRC)/Makefile.inc
 
 LIBCSRC=	$(SRC)/lib/libc
 OBJS +=		explicit_bzero.o
+OBJS +=		memmem.o
 
 CPPFLAGS +=	-I$(SRC)/uts/common
 
