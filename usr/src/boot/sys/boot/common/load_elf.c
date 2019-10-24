@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1998 Michael Smith <msmith@freebsd.org>
  * Copyright (c) 1998 Peter Wemm <peter@freebsd.org>
  * All rights reserved.
@@ -26,7 +26,6 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <sys/param.h>
 #include <sys/exec.h>
@@ -41,7 +40,7 @@ __FBSDID("$FreeBSD$");
 
 #include "bootstrap.h"
 
-#define COPYOUT(s,d,l)	archsw.arch_copyout((vm_offset_t)(s), d, l)
+#define COPYOUT(s,d,l)	(void)archsw.arch_copyout((vm_offset_t)(s), d, l)
 
 #if defined(__i386__) && __ELF_WORD_SIZE == 64
 #undef ELF_TARG_CLASS
@@ -102,7 +101,7 @@ __elfN(load_elf_header)(char *filename, elf_file_t ef)
 		return (errno);
 	ef->firstpage = malloc(PAGE_SIZE);
 	if (ef->firstpage == NULL) {
-		close(ef->fd);
+		(void)close(ef->fd);
 		return (ENOMEM);
 	}
 	bytes_read = read(ef->fd, ef->firstpage, PAGE_SIZE);
@@ -135,7 +134,7 @@ error:
 		ef->firstpage = NULL;
 	}
 	if (ef->fd != -1) {
-		close(ef->fd);
+		(void)close(ef->fd);
 		ef->fd = -1;
 	}
 	return (err);
@@ -249,7 +248,7 @@ __elfN(loadfile_raw)(char *filename, u_int64_t dest,
 	    goto out;
     }
     if (ef.kernel == 1 && multiboot == 0)
-	setenv("kernelname", filename, 1);
+	(void)setenv("kernelname", filename, 1);
     fp->f_name = strdup(filename);
     if (multiboot == 0) {
 	fp->f_type = strdup(ef.kernel ?
@@ -288,7 +287,7 @@ __elfN(loadfile_raw)(char *filename, u_int64_t dest,
     if (ef.firstpage)
 	free(ef.firstpage);
     if (ef.fd != -1)
-    	close(ef.fd);
+	(void)close(ef.fd);
     return(err);
 }
 
@@ -430,10 +429,10 @@ __elfN(loadimage)(struct preloaded_file *fp, elf_file_t ef, u_int64_t off)
 	if (ef->firstlen > phdr[i].p_offset) {
 	    fpcopy = ef->firstlen - phdr[i].p_offset;
 	    if (ehdr->e_ident[EI_OSABI] == ELFOSABI_SOLARIS) {
-		archsw.arch_copyin(ef->firstpage + phdr[i].p_offset,
+		(void)archsw.arch_copyin(ef->firstpage + phdr[i].p_offset,
 		    phdr[i].p_paddr + off, fpcopy);
 	    } else {
-		archsw.arch_copyin(ef->firstpage + phdr[i].p_offset,
+		(void)archsw.arch_copyin(ef->firstpage + phdr[i].p_offset,
 		    phdr[i].p_vaddr + off, fpcopy);
 	    }
 	}
@@ -594,7 +593,7 @@ __elfN(loadimage)(struct preloaded_file *fp, elf_file_t ef, u_int64_t off)
 #endif
 
 	size = shdr[i].sh_size;
-	archsw.arch_copyin(&size, lastaddr, sizeof(size));
+	(void)archsw.arch_copyin(&size, lastaddr, sizeof(size));
 	lastaddr += sizeof(size);
 
 #ifdef ELF_VERBOSE
@@ -664,9 +663,9 @@ nosyms:
     if (dp == NULL)
 	goto out;
     if (ehdr->e_ident[EI_OSABI] == ELFOSABI_SOLARIS)
-	archsw.arch_copyout(php->p_paddr + off, dp, php->p_filesz);
+	COPYOUT(php->p_paddr + off, dp, php->p_filesz);
     else
-	archsw.arch_copyout(php->p_vaddr + off, dp, php->p_filesz);
+	COPYOUT(php->p_vaddr + off, dp, php->p_filesz);
 
     ef->strsz = 0;
     for (i = 0; i < ndp; i++) {
@@ -889,7 +888,7 @@ out:
 	if (ef.firstpage != NULL)
 		free(ef.firstpage);
 	if (ef.fd != -1)
-		close(ef.fd);
+		(void)close(ef.fd);
 	return (err);
 }
 
@@ -962,7 +961,7 @@ __elfN(parse_modmetadata)(struct preloaded_file *fp, elf_file_t ef,
 	    if (mdepend == NULL)
 		return ENOMEM;
 	    COPYOUT((vm_offset_t)md.md_data, mdepend, sizeof(*mdepend));
-	    strcpy((char*)(mdepend + 1), s);
+	    (void)strcpy((char*)(mdepend + 1), s);
 	    free(s);
 	    file_addmetadata(fp, MODINFOMD_DEPLIST, minfolen, mdepend);
 	    free(mdepend);
@@ -970,7 +969,7 @@ __elfN(parse_modmetadata)(struct preloaded_file *fp, elf_file_t ef,
 	  case MDT_VERSION:
 	    s = strdupout((vm_offset_t)md.md_cval);
 	    COPYOUT((vm_offset_t)md.md_data, &mver, sizeof(mver));
-	    file_addmodule(fp, s, mver.mv_version, NULL);
+	    (void)file_addmodule(fp, s, mver.mv_version, NULL);
 	    free(s);
 	    modcnt++;
 	    break;
@@ -978,7 +977,7 @@ __elfN(parse_modmetadata)(struct preloaded_file *fp, elf_file_t ef,
     }
     if (modcnt == 0) {
 	s = fake_modname(fp->f_name);
-	file_addmodule(fp, s, 1, NULL);
+	(void)file_addmodule(fp, s, 1, NULL);
 	free(s);
     }
     return 0;

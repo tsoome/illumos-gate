@@ -53,7 +53,7 @@ cons_probe(void)
 	char	*prefconsole;
 
 	/* We want a callback to install the new value when this var changes. */
-	env_setenv("twiddle_divisor", EV_VOLATILE, "1", twiddle_set,
+	(void)env_setenv("twiddle_divisor", EV_VOLATILE, "1", twiddle_set,
 	    env_nounset);
 
 	/* Do all console probes */
@@ -78,11 +78,11 @@ cons_probe(void)
 	if (prefconsole != NULL)
 		prefconsole = strdup(prefconsole);
 	if (prefconsole != NULL) {
-		unsetenv("console");		/* we want to replace this */
-		cons_change(prefconsole);
+		(void)unsetenv("console");	/* we want to replace this */
+		(void)cons_change(prefconsole);
 	} else {
 		consoles[active]->c_flags |= C_ACTIVEIN | C_ACTIVEOUT;
-		consoles[active]->c_init(consoles[active], 0);
+		(void)consoles[active]->c_init(consoles[active], 0);
 		prefconsole = strdup(consoles[active]->c_name);
 	}
 
@@ -93,7 +93,7 @@ cons_probe(void)
 	printf("\n");
 
 	if (prefconsole != NULL) {
-		env_setenv("console", EV_VOLATILE, prefconsole, cons_set,
+		(void)env_setenv("console", EV_VOLATILE, prefconsole, cons_set,
 		    env_nounset);
 		free(prefconsole);
 	}
@@ -220,7 +220,7 @@ cons_set(struct env_var *ev, int flags, const void *value)
 	if (ret != CMD_OK)
 		return (ret);
 
-	env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
+	(void)env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
 	return (CMD_OK);
 }
 
@@ -296,7 +296,7 @@ cons_change(const char *string)
 		cons = cons_find(curpos);
 		if (cons >= 0) {
 			consoles[cons]->c_flags |= C_ACTIVEIN | C_ACTIVEOUT;
-			consoles[cons]->c_init(consoles[cons], 0);
+			(void)consoles[cons]->c_init(consoles[cons], 0);
 			if ((consoles[cons]->c_flags &
 			    (C_ACTIVEIN | C_ACTIVEOUT)) ==
 			    (C_ACTIVEIN | C_ACTIVEOUT)) {
@@ -323,7 +323,7 @@ cons_change(const char *string)
 		 */
 		for (cons = 0; consoles[cons] != NULL; cons++) {
 			consoles[cons]->c_flags |= C_ACTIVEIN | C_ACTIVEOUT;
-			consoles[cons]->c_init(consoles[cons], 0);
+			(void)consoles[cons]->c_init(consoles[cons], 0);
 			if ((consoles[cons]->c_flags &
 			    (C_ACTIVEIN | C_ACTIVEOUT)) ==
 			    (C_ACTIVEIN | C_ACTIVEOUT))
@@ -357,7 +357,7 @@ twiddle_set(struct env_var *ev, int flags, const void *value)
 		return (CMD_ERROR);
 	}
 	twiddle_divisor((uint_t)tdiv);
-	env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
+	(void)env_setenv(ev->ev_name, flags | EV_NOHOOK, value, NULL, NULL);
 
 	return (CMD_OK);
 }
