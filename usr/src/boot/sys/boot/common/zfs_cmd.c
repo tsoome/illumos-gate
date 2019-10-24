@@ -60,8 +60,8 @@ uint64_t
 ldi_get_size(void *priv)
 {
 	int fd = (uintptr_t) priv;
-	uint64_t size;
+	uint64_t size = 512;
 
-	ioctl(fd, DIOCGMEDIASIZE, &size);
+	(void)ioctl(fd, DIOCGMEDIASIZE, &size);
 	return (size);
 }

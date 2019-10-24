@@ -108,8 +108,8 @@ command_ls(int argc, char *argv[])
 	goto out;
     }
     pager_open();
-    pager_output(path);
-    pager_output("\n");
+    (void)pager_output(path);
+    (void)pager_output("\n");
 
     while ((d = readdirfd(fd)) != NULL) {
 	if (strcmp(d->d_name, ".") && strcmp(d->d_name, "..")) {
@@ -119,7 +119,7 @@ command_ls(int argc, char *argv[])
 		sb.st_mode = 0;
 		buf = malloc(strlen(path) + strlen(d->d_name) + 2);
 		if (buf != NULL) {
-		    sprintf(buf, "%s/%s", path, d->d_name);
+		    (void)sprintf(buf, "%s/%s", path, d->d_name);
 		    /* ignore return, could be symlink, etc. */
 		    if (stat(buf, &sb)) {
 			sb.st_size = 0;
@@ -129,11 +129,11 @@ command_ls(int argc, char *argv[])
 		}
 	    }
 	    if (verbose) {
-		snprintf(lbuf, sizeof (lbuf), " %c %8d %s\n",
+		(void)snprintf(lbuf, sizeof (lbuf), " %c %8d %s\n",
 		    typestr[d->d_type? d->d_type:sb.st_mode >> 12],
 		    (int)sb.st_size, d->d_name);
 	    } else {
-		snprintf(lbuf, sizeof (lbuf), " %c  %s\n",
+		(void)snprintf(lbuf, sizeof (lbuf), " %c  %s\n",
 		    typestr[d->d_type? d->d_type:sb.st_mode >> 12], d->d_name);
 	    }
 	    if (pager_output(lbuf))
@@ -143,7 +143,7 @@ command_ls(int argc, char *argv[])
  out:
     pager_close();
     if (fd != -1)
-	close(fd);
+	(void)close(fd);
     free(path);		/* ls_getdir() did allocate path */
     return (result);
 }
@@ -165,37 +165,37 @@ ls_getdir(char **pathp)
     /* one extra byte for a possible trailing slash required */
     path = malloc(strlen(*pathp) + 2);
     if (path == NULL) {
-	snprintf(command_errbuf, sizeof (command_errbuf),
+	(void)snprintf(command_errbuf, sizeof (command_errbuf),
 	    "out of memory");
 	goto out;
     }
 
-    strcpy(path, *pathp);
+    (void)strcpy(path, *pathp);
 
     /* Make sure the path is respectable to begin with */
     if (archsw.arch_getdev(NULL, path, &cp)) {
-	snprintf(command_errbuf, sizeof (command_errbuf),
+	(void)snprintf(command_errbuf, sizeof (command_errbuf),
 	    "bad path '%s'", path);
 	goto out;
     }
 
     /* If there's no path on the device, assume '/' */
     if (*cp == 0)
-	strcat(path, "/");
+	(void)strcat(path, "/");
 
     fd = open(path, O_RDONLY);
     if (fd < 0) {
-	snprintf(command_errbuf, sizeof (command_errbuf),
+	(void)snprintf(command_errbuf, sizeof (command_errbuf),
 	    "open '%s' failed: %s", path, strerror(errno));
 	goto out;
     }
     if (fstat(fd, &sb) < 0) {
-	snprintf(command_errbuf, sizeof (command_errbuf),
+	(void)snprintf(command_errbuf, sizeof (command_errbuf),
 	    "stat failed: %s", strerror(errno));
 	goto out;
     }
     if (!S_ISDIR(sb.st_mode)) {
-	snprintf(command_errbuf, sizeof (command_errbuf),
+	(void)snprintf(command_errbuf, sizeof (command_errbuf),
 	    "%s: %s", path, strerror(ENOTDIR));
 	goto out;
     }
@@ -207,6 +207,6 @@ ls_getdir(char **pathp)
     free(path);
     *pathp = NULL;
     if (fd != -1)
-	close(fd);
+	(void)close(fd);
     return (-1);
 }

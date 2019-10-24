@@ -100,9 +100,9 @@ interact(const char *rc)
 
     if (rc == NULL) {
 	/* Read our default configuration. */
-	include("/boot/loader.rc");
+	(void)include("/boot/loader.rc");
     } else if (*rc != '\0')
-	include(rc);
+	(void)include(rc);
 
     printf("\n");
 
@@ -116,14 +116,14 @@ interact(const char *rc)
      */
     printf("\nType '?' for a list of commands, 'help' for more detailed help.\n");
     if (getenv("prompt") == NULL)
-	setenv("prompt", "${interpret}", 1);
+	(void)setenv("prompt", "${interpret}", 1);
     if (getenv("interpret") == NULL)
-        setenv("interpret", "ok", 1);
+        (void)setenv("interpret", "ok", 1);
 
     while ((input = linenoise(prompt())) != NULL) {
 	bf_vm->sourceId.i = 0;
-	bf_run(input);
-	linenoiseHistoryAdd(input);
+	(void)bf_run(input);
+	(void)linenoiseHistoryAdd(input);
 	free(input);
     }
 }
@@ -203,8 +203,8 @@ include(const char *filename)
     char *cp, input[256];		/* big enough? */
 
     if (((fd = open(filename, O_RDONLY)) == -1)) {
-	snprintf(command_errbuf, sizeof (command_errbuf), "can't open '%s': %s",
-	    filename, strerror(errno));
+	(void)snprintf(command_errbuf, sizeof (command_errbuf),
+	    "can't open '%s': %s", filename, strerror(errno));
 	return(CMD_ERROR);
     }
     /*
@@ -230,13 +230,13 @@ include(const char *filename)
 			script = script->next;
 			free(se);
 		}
-		snprintf(command_errbuf, sizeof (command_errbuf),
+		(void)snprintf(command_errbuf, sizeof (command_errbuf),
 		    "file '%s' line %d: memory allocation failure - aborting",
 		    filename, line);
-		close(fd);
+		(void)close(fd);
 		return (CMD_ERROR);
 	}
-	strcpy(sp->text, cp);
+	(void)strcpy(sp->text, cp);
 	sp->line = line;
 	sp->next = NULL;
 
@@ -247,7 +247,7 @@ include(const char *filename)
 	}
 	se = sp;
     }
-    close(fd);
+    (void)close(fd);
 
     /*
      * Execute the script
@@ -261,7 +261,7 @@ include(const char *filename)
     for (sp = script; sp != NULL; sp = sp->next) {
 	res = bf_run(sp->text);
 	if (res != FICL_VM_STATUS_OUT_OF_TEXT) {
-		snprintf(command_errbuf, sizeof (command_errbuf),
+		(void)snprintf(command_errbuf, sizeof (command_errbuf),
 		    "Error while including %s, in the line %d:\n%s",
 		    filename, sp->line, sp->text);
 		res = CMD_ERROR;

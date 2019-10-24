@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 2004 Ian Dowse <iedowse@freebsd.org>
  * Copyright (c) 1998 Michael Smith <msmith@freebsd.org>
  * Copyright (c) 1998 Peter Wemm <peter@freebsd.org>
@@ -27,7 +27,6 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <sys/param.h>
 #include <sys/exec.h>
@@ -42,7 +41,7 @@ __FBSDID("$FreeBSD$");
 
 #include "bootstrap.h"
 
-#define COPYOUT(s,d,l)	archsw.arch_copyout((vm_offset_t)(s), d, l)
+#define COPYOUT(s,d,l)	(void)archsw.arch_copyout((vm_offset_t)(s), d, l)
 
 #if defined(__i386__) && __ELF_WORD_SIZE == 64
 #undef ELF_TARG_CLASS
@@ -174,7 +173,7 @@ ioerr:
 oerr:
 	file_discard(fp);
 out:
-	close(ef.fd);
+	(void)close(ef.fd);
 	if (ef.e_shdr != NULL)
 		free(ef.e_shdr);
 
@@ -395,7 +394,7 @@ __elfN(obj_parse_modmetadata)(struct preloaded_file *fp, elf_file_t ef)
 				return ENOMEM;
 			COPYOUT((vm_offset_t)md.md_data, mdepend,
 			    sizeof(*mdepend));
-			strcpy((char*)(mdepend + 1), s);
+			(void)strcpy((char*)(mdepend + 1), s);
 			free(s);
 			file_addmetadata(fp, MODINFOMD_DEPLIST, minfolen,
 			    mdepend);
@@ -404,7 +403,7 @@ __elfN(obj_parse_modmetadata)(struct preloaded_file *fp, elf_file_t ef)
 		case MDT_VERSION:
 			s = strdupout((vm_offset_t)md.md_cval);
 			COPYOUT((vm_offset_t)md.md_data, &mver, sizeof(mver));
-			file_addmodule(fp, s, mver.mv_version, NULL);
+			(void)file_addmodule(fp, s, mver.mv_version, NULL);
 			free(s);
 			modcnt++;
 			break;

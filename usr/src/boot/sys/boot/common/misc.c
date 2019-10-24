@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1998 Michael Smith <msmith@freebsd.org>
  * All rights reserved.
  *
@@ -25,7 +25,6 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <string.h>
 #include <stand.h>
@@ -51,9 +50,9 @@ unargv(int argc, char *argv[])
     cp = malloc(hlong);
     cp[0] = 0;
     for (i = 0; i < argc; i++) {
-	strcat(cp, argv[i]);
+	(void)strcat(cp, argv[i]);
 	if (i < (argc - 1))
-	  strcat(cp, " ");
+	  (void)strcat(cp, " ");
     }
 	  
     return(cp);
@@ -69,7 +68,7 @@ strlenout(vm_offset_t src)
     size_t	len;
     
     for (len = 0; ; len++) {
-	archsw.arch_copyout(src++, &c, 1);
+	(void)archsw.arch_copyout(src++, &c, 1);
 	if (c == 0)
 	    break;
     }
@@ -86,7 +85,7 @@ strdupout(vm_offset_t str)
     
     result = malloc(strlenout(str) + 1);
     for (cp = result; ;cp++) {
-	archsw.arch_copyout(str++, cp, 1);
+	(void)archsw.arch_copyout(str++, cp, 1);
 	if (*cp == 0)
 	    break;
     }
@@ -104,7 +103,7 @@ kern_bzero(vm_offset_t dest, size_t len)
 	resid = len;
 	while (resid > 0) {
 		chunk = min(sizeof(buf), resid);
-		archsw.arch_copyin(buf, dest, chunk);
+		(void)archsw.arch_copyin(buf, dest, chunk);
 		resid -= chunk;
 		dest += chunk;
 	}
@@ -176,7 +175,7 @@ hexdump(caddr_t region, size_t len)
     caddr_t	line;
     int		x, c;
     char	lbuf[80];
-#define emit(fmt, args...)	{sprintf(lbuf, fmt , ## args); pager_output(lbuf);}
+#define emit(fmt, args...)	{(void)sprintf(lbuf, fmt , ## args); (void)pager_output(lbuf);}
 
     pager_open();
     for (line = region; line < (region + len); line += 16) {
