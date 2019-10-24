@@ -18,7 +18,7 @@
 include $(SRC)/Makefile.master
 
 INSTDIRS = i386 efi
-SUBDIRS = libstand libficl libcrypto $(INSTDIRS)
+SUBDIRS = libstand libficl libcrypto userboot $(INSTDIRS)
 
 all	:=	TARGET = all
 clean	:=	TARGET = clean
