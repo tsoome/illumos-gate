@@ -55,6 +55,7 @@ CFLAGS +=	-_gcc=-mno-sse3 -_gcc=-msoft-float
 CFLAGS +=	-_gcc=-mno-avx -_gcc=-mno-aes
 CFLAGS +=	-_gcc=-Wall -_gcc=-Wextra -_gcc=-Werror
 CFLAGS +=	$(CCNOAUTOINLINE) $(CCNOREORDER) $(CSTD_GNU99)
+CFLAGS +=	-DDEBUG_MALLOC
 CCASFLAGS=	-fPIC -Wa,--divide
 ASFLAGS=	--divide
 
