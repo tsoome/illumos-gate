@@ -167,6 +167,59 @@ zfs_init(void)
 	zfs_init_crc();
 }
 
+static void
+printf_blkptr(const blkptr_t *bp)
+{
+	const dva_t *dva;
+	unsigned ndvas;
+
+	if (bp == NULL) {
+		printf("bp is NULL\n");
+		return;
+	}
+
+	dva = bp->blk_dva;
+	ndvas = BP_GET_NDVAS(bp);
+
+	if (BP_GET_TYPE(bp) & DMU_OT_NEWTYPE) {
+	} else {
+		(void)printf("%s ", dmu_ot[BP_GET_TYPE(bp)].ot_name);
+	}
+
+	if (BP_IS_EMBEDDED(bp)) {
+		(void)printf("EMBEDDED et=%u %" PRIx64 "L/%" PRIx64 "P B=%"
+		    PRIu64,
+		    (int)BPE_GET_ETYPE(bp),
+		    (uint64_t)BPE_GET_LSIZE(bp),
+		    (uint64_t)BPE_GET_PSIZE(bp),
+		    (uint64_t)bp->blk_birth);
+		return;
+	}
+
+	for (unsigned i = 0; i < ndvas; i++) {
+		(void)printf("DVA[%u]=<%" PRIu64 ":%" PRIx64 ":%" PRIx64 "> ",
+		    i,
+		    (uint64_t)DVA_GET_VDEV(&dva[i]),
+		    (uint64_t)DVA_GET_OFFSET(&dva[i]),
+		    (uint64_t)DVA_GET_ASIZE(&dva[i]));
+	}
+
+	if (BP_IS_HOLE(bp)) {
+		(void)printf("%" PRIx64 "L B=%" PRIu64,
+		    (uint64_t)BP_GET_LSIZE(bp),
+		    (uint64_t)bp->blk_birth);
+	} else {
+		(void)printf("%" PRIx64 "L/%" PRIx64" P F=%" PRIu64 " B=%"
+		    PRIu64 "/%" PRIu64,
+		    (uint64_t)BP_GET_LSIZE(bp),
+		    (uint64_t)BP_GET_PSIZE(bp),
+		    (uint64_t)BP_GET_FILL(bp),
+		    (uint64_t)bp->blk_birth,
+		    (uint64_t)BP_PHYSICAL_BIRTH(bp));
+        }
+	printf("\n");
+}
+
 static int
 nvlist_check_features_for_read(nvlist_t *nvl)
 {
@@ -1608,6 +1661,35 @@ uberblock_verify(uberblock_t *ub)
 	return (0);
 }
 
+static void
+vdev_dump_uberblock(unsigned idx, uberblock_t *ub)
+{
+	printf("UB[%u]\n", idx);
+	printf("\tmagic = %" PRIx64 "\n", ub->ub_magic);
+	printf("\tversion = %" PRIu64 "\n", ub->ub_version);
+	printf("\ttxg = %" PRIu64 "\n", ub->ub_txg);
+	printf("\tguid_sum = %" PRIu64 "\n", ub->ub_guid_sum);
+	printf("\ttimestamp = %" PRIu64 "\n", ub->ub_timestamp);
+	printf("\tmmp_magic = %" PRIx64 "\n", ub->ub_mmp_magic);
+	if (MMP_VALID(ub)) {
+		printf("\tmmp_delay = %" PRIx64 "\n", ub->ub_mmp_delay);
+		if (MMP_SEQ_VALID(ub))
+			printf("\tmmp_seq = %u\n", (unsigned) MMP_SEQ(ub));
+		if (MMP_FAIL_INT_VALID(ub))
+			printf("\tmmp_fail = %u\n",
+			    (unsigned) MMP_FAIL_INT(ub));
+		if (MMP_INTERVAL_VALID(ub))
+			(void) printf("\tmmp_write = %u\n",
+			    (unsigned) MMP_INTERVAL(ub));
+		printf("\tmmp_valid = %x\n",
+		    (unsigned) ub->ub_mmp_config & 0xFF);
+		printf("\t");
+		printf_blkptr(&ub->ub_rootbp);
+		printf("\tcheckpoint_txg = %" PRIu64 "\n",
+		    ub->ub_checkpoint_txg);
+	}
+}
+
 static int
 vdev_label_read(vdev_t *vd, int l, void *buf, uint64_t offset,
     size_t size)
@@ -2006,8 +2088,11 @@ vdev_uberblock_load(vdev_t *vd, uberblock_t *ub)
 			if (uberblock_verify(buf) != 0)
 				continue;
 
-			if (vdev_uberblock_compare(buf, ub) > 0)
+			vdev_dump_uberblock(n, buf);
+
+			if (vdev_uberblock_compare(buf, ub) > 0) {
 				*ub = *buf;
+			}
 		}
 	}
 	free(buf);
@@ -2275,11 +2360,7 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 
 	error = EIO;
 
-	/* The encrypted BP's use last DVA slot for encryption parameters. */
-	ndva = SPA_DVAS_PER_BP;
-	if (BP_IS_ENCRYPTED(bp))
-		ndva--;
-
+	ndva = BP_GET_NDVAS(bp);
 	for (i = 0; i < ndva; i++) {
 		const dva_t *dva = &bp->blk_dva[i];
 		vdev_t *vdev;
@@ -2316,10 +2397,18 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 			break;
 		}
 
-		if (DVA_GET_GANG(dva))
+		if (DVA_GET_GANG(dva)) {
 			error = zio_read_gang(spa, bp, pbuf);
-		else
+			if (error)
+				printf("zio_read_gang: %d\n", error);
+		} else {
 			error = vdev->v_read(vdev, bp, pbuf, offset, size);
+			if (error) {
+				printf("v_read: %d offset: %jx (%jx/%jx)\n",
+				    error, offset, size,
+				    (uintmax_t)BP_GET_LSIZE(bp));
+			}
+		}
 
 		if (error == 0) {
 			if (BP_IS_ENCRYPTED(bp)) {
@@ -2329,10 +2418,12 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 				continue;
 			}
 
-			if (cpfunc != ZIO_COMPRESS_OFF)
+			if (cpfunc != ZIO_COMPRESS_OFF) {
 				error = zio_decompress_data(cpfunc, pbuf,
 				    BP_GET_PSIZE(bp), buf, BP_GET_LSIZE(bp));
-			else if (size != BP_GET_PSIZE(bp))
+				if (error)
+					printf("zio_decompress_data: %d\n", error);
+			} else if (size != BP_GET_PSIZE(bp))
 				bcopy(pbuf, buf, BP_GET_PSIZE(bp));
 		}
 		if (buf != pbuf)
@@ -2366,6 +2457,7 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 	 * Note: bsize may not be a power of two here so we need to do an
 	 * actual divide rather than a bitshift.
 	 */
+	printf("dnode_read: %jx %jx\n", (uintmax_t)offset, (uintmax_t)bsize);
 	while (buflen > 0) {
 		uint64_t bn = offset / bsize;
 		int boff = offset % bsize;
@@ -2373,6 +2465,7 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 		const blkptr_t *indbp;
 		blkptr_t bp;
 
+		printf("bn: %jx off: %x\n", (uintmax_t)bn, boff);
 		if (bn > dnode->dn_maxblkid) {
 			printf("warning: zfs bug: bn %llx > dn_maxblkid %llx\n",
 			    (unsigned long long)bn,
@@ -2396,13 +2489,18 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 			ibn = bn >> ((nlevels - i - 1) * ibshift);
 			ibn &= ((1 << ibshift) - 1);
 			bp = indbp[ibn];
+			printf("ibn: %d\n", ibn);
 			if (BP_IS_HOLE(&bp)) {
 				memset(dnode_cache_buf, 0, bsize);
 				break;
 			}
 			rc = zio_read(spa, &bp, dnode_cache_buf);
-			if (rc)
+			if (rc) {
+				printf("dnode_read: %d offset: %lx (%lx/%lx)\n", rc,
+				    (unsigned long)DVA_GET_OFFSET(&bp.blk_dva[0]),
+				    (unsigned long)BP_GET_PSIZE(&bp), (unsigned long)BP_GET_LSIZE(&bp));
 				return (rc);
+			}
 			indbp = (const blkptr_t *) dnode_cache_buf;
 		}
 		dnode_cache_obj = dnode;
@@ -3598,6 +3696,7 @@ zfs_spa_init(spa_t *spa)
 	nvlist_t *nvlist;
 	int rc;
 
+	printf_blkptr(&spa->spa_uberblock.ub_rootbp);
 	if (zio_read(spa, &spa->spa_uberblock.ub_rootbp, &spa->spa_mos)) {
 		printf("ZFS: can't read MOS of pool %s\n", spa->spa_name);
 		return (EIO);
