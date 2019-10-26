@@ -43,6 +43,8 @@
 #include "zfssubr.c"
 
 
+int zfs_debug = 0;
+
 struct zfsmount {
 	const spa_t	*spa;
 	objset_phys_t	objset;
@@ -171,7 +173,9 @@ static void
 printf_blkptr(const blkptr_t *bp)
 {
 	const dva_t *dva;
-	unsigned ndvas;
+	unsigned ndvas, copies = 0;
+	static const char *copyname[] =
+	    { "zero", "single", "double", "triple" };
 
 	if (bp == NULL) {
 		printf("bp is NULL\n");
@@ -183,7 +187,8 @@ printf_blkptr(const blkptr_t *bp)
 
 	if (BP_GET_TYPE(bp) & DMU_OT_NEWTYPE) {
 	} else {
-		(void)printf("%s ", dmu_ot[BP_GET_TYPE(bp)].ot_name);
+		(void)printf("[L%" PRIu64 " %s] ", (uint64_t)BP_GET_LEVEL(bp),
+		    dmu_ot[BP_GET_TYPE(bp)].ot_name);
 	}
 
 	if (BP_IS_EMBEDDED(bp)) {
@@ -197,6 +202,9 @@ printf_blkptr(const blkptr_t *bp)
 	}
 
 	for (unsigned i = 0; i < ndvas; i++) {
+		if (DVA_IS_VALID(&dva[i]))
+			copies++;
+
 		(void)printf("DVA[%u]=<%" PRIu64 ":%" PRIx64 ":%" PRIx64 "> ",
 		    i,
 		    (uint64_t)DVA_GET_VDEV(&dva[i]),
@@ -209,7 +217,7 @@ printf_blkptr(const blkptr_t *bp)
 		    (uint64_t)BP_GET_LSIZE(bp),
 		    (uint64_t)bp->blk_birth);
 	} else {
-		(void)printf("%" PRIx64 "L/%" PRIx64" P F=%" PRIu64 " B=%"
+		(void)printf("%" PRIx64 "L/%" PRIx64 "P F=%" PRIu64 " B=%"
 		    PRIu64 "/%" PRIu64,
 		    (uint64_t)BP_GET_LSIZE(bp),
 		    (uint64_t)BP_GET_PSIZE(bp),
@@ -217,7 +225,18 @@ printf_blkptr(const blkptr_t *bp)
 		    (uint64_t)bp->blk_birth,
 		    (uint64_t)BP_PHYSICAL_BIRTH(bp));
         }
-	printf("\n");
+	if (BP_IS_GANG(bp) &&
+	    DVA_GET_ASIZE(&bp->blk_dva[2]) <=
+	    DVA_GET_ASIZE(&bp->blk_dva[1]) / 2)
+		copies--;
+
+	printf(" %s %s", copyname[copies],
+	    BP_GET_BYTEORDER(bp) == 0 ? "BE" : "LE");
+	printf(" cksum=%" PRIx64 ":%" PRIx64 ":%" PRIx64 ":%" PRIx64 "\n",
+	    bp->blk_cksum.zc_word[0],
+	    bp->blk_cksum.zc_word[1],
+	    bp->blk_cksum.zc_word[2],
+	    bp->blk_cksum.zc_word[3]);
 }
 
 static int
@@ -2088,7 +2107,8 @@ vdev_uberblock_load(vdev_t *vd, uberblock_t *ub)
 			if (uberblock_verify(buf) != 0)
 				continue;
 
-			vdev_dump_uberblock(n, buf);
+			if (zfs_debug)
+				vdev_dump_uberblock(n, buf);
 
 			if (vdev_uberblock_compare(buf, ub) > 0) {
 				*ub = *buf;
@@ -2457,7 +2477,6 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 	 * Note: bsize may not be a power of two here so we need to do an
 	 * actual divide rather than a bitshift.
 	 */
-	printf("dnode_read: %jx %jx\n", (uintmax_t)offset, (uintmax_t)bsize);
 	while (buflen > 0) {
 		uint64_t bn = offset / bsize;
 		int boff = offset % bsize;
@@ -2465,7 +2484,6 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 		const blkptr_t *indbp;
 		blkptr_t bp;
 
-		printf("bn: %jx off: %x\n", (uintmax_t)bn, boff);
 		if (bn > dnode->dn_maxblkid) {
 			printf("warning: zfs bug: bn %llx > dn_maxblkid %llx\n",
 			    (unsigned long long)bn,
@@ -2489,18 +2507,13 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 			ibn = bn >> ((nlevels - i - 1) * ibshift);
 			ibn &= ((1 << ibshift) - 1);
 			bp = indbp[ibn];
-			printf("ibn: %d\n", ibn);
 			if (BP_IS_HOLE(&bp)) {
 				memset(dnode_cache_buf, 0, bsize);
 				break;
 			}
 			rc = zio_read(spa, &bp, dnode_cache_buf);
-			if (rc) {
-				printf("dnode_read: %d offset: %lx (%lx/%lx)\n", rc,
-				    (unsigned long)DVA_GET_OFFSET(&bp.blk_dva[0]),
-				    (unsigned long)BP_GET_PSIZE(&bp), (unsigned long)BP_GET_LSIZE(&bp));
+			if (rc)
 				return (rc);
-			}
 			indbp = (const blkptr_t *) dnode_cache_buf;
 		}
 		dnode_cache_obj = dnode;
@@ -3656,35 +3669,46 @@ check_mos_features(const spa_t *spa)
 static int
 load_nvlist(spa_t *spa, uint64_t obj, nvlist_t **value)
 {
-	dnode_phys_t dir;
+	dnode_phys_t *dir;
 	size_t size;
 	int rc;
 	char *nv;
 
 	*value = NULL;
-	if ((rc = objset_get_dnode(spa, &spa->spa_mos, obj, &dir)) != 0)
-		return (rc);
-	if (dir.dn_type != DMU_OT_PACKED_NVLIST &&
-	    dir.dn_bonustype != DMU_OT_PACKED_NVLIST_SIZE) {
-		return (EIO);
-	}
-
-	if (dir.dn_bonuslen != sizeof (uint64_t))
-		return (EIO);
-
-	size = *(uint64_t *)DN_BONUS(&dir);
-	nv = malloc(size);
-	if (nv == NULL)
+	dir = malloc(sizeof (*dir));
+	if (dir == NULL)
 		return (ENOMEM);
 
-	rc = dnode_read(spa, &dir, 0, nv, size);
+	if ((rc = objset_get_dnode(spa, &spa->spa_mos, obj, dir)) != 0)
+		goto done;
+
+	if (dir->dn_type != DMU_OT_PACKED_NVLIST &&
+	    dir->dn_bonustype != DMU_OT_PACKED_NVLIST_SIZE) {
+		rc = EIO;
+		goto done;
+	}
+
+	if (dir->dn_bonuslen != sizeof (uint64_t)) {
+		rc = EIO;
+		goto done;
+	}
+
+	size = *(uint64_t *)DN_BONUS(dir);
+	nv = malloc(size);
+	if (nv == NULL) {
+		rc = ENOMEM;
+		goto done;
+	}
+
+	rc = dnode_read(spa, dir, 0, nv, size);
 	if (rc != 0) {
 		free(nv);
 		nv = NULL;
-		return (rc);
 	}
 	*value = nvlist_import(nv, size);
 	free(nv);
+done:
+	free(dir);
 	return (rc);
 }
 
