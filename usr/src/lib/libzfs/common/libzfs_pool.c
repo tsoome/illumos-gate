@@ -919,12 +919,6 @@ zpool_prop_get_feature(zpool_handle_t *zhp, const char *propname, char *buf,
 }
 
 /*
- * Don't start the slice at the default block of 34; many storage
- * devices will use a stripe width of 128k, so start there instead.
- */
-#define	NEW_START_BLOCK	256
-
-/*
  * Validate the given pool name, optionally putting an extended error message in
  * 'buf'.
  */
