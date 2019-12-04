@@ -173,8 +173,22 @@ typedef struct efi_gpe_Attrs {
 
 #define	EFI_PART_NAME_LEN	36
 
-/* size of the "reserved" partition, in blocks */
+/* size of the "reserved" partition, in blocks of 512B */
 #define	EFI_MIN_RESV_SIZE	(16 * 1024)
+
+/*
+ * Don't start the slice at the default block; many storage
+ * devices will use a stripe width of 128k, other vendors prefer a 1m
+ * alignment. It is best to play it safe and ensure a 1m alignment
+ * given 512B blocks. When the block size is larger by a power of 2
+ * we will still be 1m aligned. Some devices are sensitive to the
+ * partition ending alignment as well.
+ * NB: the constants below are in units of 512B.
+ */
+#define	NEW_START_BLOCK		2048
+#define	PARTITION_END_ALIGNMENT	2048
+
+#define	DEV_BLOCKS(n, lbasize)	((n * DEV_BSIZE + lbasize - 1) / lbasize)
 
 /* EFI Guid Partition Entry */
 typedef struct efi_gpe {
