@@ -3720,7 +3720,8 @@ zfs_spa_init(spa_t *spa)
 	nvlist_t *nvlist;
 	int rc;
 
-	printf_blkptr(&spa->spa_uberblock.ub_rootbp);
+	if (zfs_debug)
+		printf_blkptr(&spa->spa_uberblock.ub_rootbp);
 	if (zio_read(spa, &spa->spa_uberblock.ub_rootbp, &spa->spa_mos)) {
 		printf("ZFS: can't read MOS of pool %s\n", spa->spa_name);
 		return (EIO);
