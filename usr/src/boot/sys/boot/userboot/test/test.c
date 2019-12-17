@@ -89,9 +89,12 @@ test_getc(void *arg)
 {
 	char c;
 
-	if (read(script, &c, 1) == 1)
-		return c;
-	return -1;
+	if (read(script, &c, 1) == 1) {
+		if (c == '\n')
+			c = '\r';
+		return (c);
+	}
+	return (-1);
 }
 
 int
@@ -465,7 +468,7 @@ main(int argc, char** argv)
 	free(buffer);
 	(void)setenv("ISADIR", "amd64", 1);
 
-	while ((opt = getopt(argc, argv, "b:d:h:z")) != -1) {
+	while ((opt = getopt(argc, argv, "b:d:h:s:z")) != -1) {
 		switch (opt) {
 		case 'b':
 			userboot_obj = optarg;
