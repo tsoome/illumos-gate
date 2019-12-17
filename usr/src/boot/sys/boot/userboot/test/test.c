@@ -47,10 +47,11 @@
 
 int *zfs_debug;
 
-char *host_base = NULL;
-struct termios term, oldterm;
-char *image;
-size_t image_size;
+static int script;
+static char *host_base;
+static struct termios term, oldterm;
+static char *image;
+static size_t image_size;
 
 uint64_t regs[16];
 uint64_t pc;
@@ -88,7 +89,7 @@ test_getc(void *arg)
 {
 	char c;
 
-	if (read(0, &c, 1) == 1)
+	if (read(script, &c, 1) == 1)
 		return c;
 	return -1;
 }
@@ -98,7 +99,7 @@ test_poll(void *arg)
 {
 	int n;
 
-	if (ioctl(0, FIONREAD, &n) >= 0)
+	if (ioctl(script, FIONREAD, &n) >= 0)
 		return (n > 0);
 	return (0);
 }
@@ -481,6 +482,16 @@ main(int argc, char** argv)
 
 		case 'h':
 			host_base = optarg;
+			break;
+
+		case 's':
+			if (strcmp(optarg, "-") == 0)
+				script = 0;
+			else
+				script = open(optarg, O_RDONLY);
+
+			if (script < 0)
+				err(1, "Can't open script file '%s'", optarg);
 			break;
 
 		case 'z':
