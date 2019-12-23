@@ -275,7 +275,7 @@ zfs_readdir(struct open_file *f, struct dirent *d)
 		 * Initialise this so we can use the ZAP size
 		 * calculating macros.
 		 */
-		zl.l_bs = ilog2(bsize);
+		zl.l_bs = highbit64(bsize) - 1;
 		zl.l_phys = fp->f_zap_leaf;
 
 		/*

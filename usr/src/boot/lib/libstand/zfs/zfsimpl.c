@@ -186,6 +186,12 @@ printf_blkptr(const blkptr_t *bp)
 	ndvas = BP_GET_NDVAS(bp);
 
 	if (BP_GET_TYPE(bp) & DMU_OT_NEWTYPE) {
+		uint8_t bswap = DMU_OT_BYTESWAP(BP_GET_TYPE(bp));
+
+		(void) printf("[L%" PRIu64 " bswap %s %s] ",
+		    (uint64_t)BP_GET_LEVEL(bp),
+		    DMU_OT_IS_METADATA(BP_GET_TYPE(bp)) ? "metadata" : "data",
+		    dmu_ot_byteswap[bswap].ob_name);
 	} else {
 		(void)printf("[L%" PRIu64 " %s] ", (uint64_t)BP_GET_LEVEL(bp),
 		    dmu_ot[BP_GET_TYPE(bp)].ot_name);
@@ -193,7 +199,7 @@ printf_blkptr(const blkptr_t *bp)
 
 	if (BP_IS_EMBEDDED(bp)) {
 		(void)printf("EMBEDDED et=%u %" PRIx64 "L/%" PRIx64 "P B=%"
-		    PRIu64,
+		    PRIu64 "\n",
 		    (int)BPE_GET_ETYPE(bp),
 		    (uint64_t)BPE_GET_LSIZE(bp),
 		    (uint64_t)BPE_GET_PSIZE(bp),
@@ -2292,17 +2298,6 @@ vdev_probe(vdev_phys_read_t *_read, vdev_phys_write_t *_write, void *priv,
 }
 
 static int
-ilog2(int n)
-{
-	int v;
-
-	for (v = 0; v < 32; v++)
-		if (n == (1 << v))
-			return (v);
-	return (-1);
-}
-
-static int
 zio_read_gang(const spa_t *spa, const blkptr_t *bp, void *buf)
 {
 	blkptr_t gbh_bp;
@@ -2320,6 +2315,9 @@ zio_read_gang(const spa_t *spa, const blkptr_t *bp, void *buf)
 		DVA_SET_GANG(&gbh_bp.blk_dva[i], 0);
 
 	/* Read gang header block using the artificial BP. */
+	if (BP_SHOULD_BYTESWAP(bp))
+		printf("zio_read_gang BP_SHOULD_BYTESWAP\n");
+
 	if (zio_read(spa, &gbh_bp, &zio_gb))
 		return (EIO);
 
@@ -2347,6 +2345,10 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 	void *pbuf;
 	int i, ndva, error;
 
+	if (zfs_debug) {
+		printf("zio_read: ");
+		printf_blkptr(bp);
+	}
 	/*
 	 * Process data embedded in block pointer
 	 */
@@ -2372,10 +2374,12 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 			    size, buf, BP_GET_LSIZE(bp));
 			free(pbuf);
 		}
-		if (error != 0)
+		if (error != 0) {
 			printf("ZFS: i/o error - unable to decompress "
 			    "block pointer data, error %d\n", error);
-		return (error);
+			return (error);
+		}
+		goto byteswap;
 	}
 
 	error = EIO;
@@ -2452,8 +2456,21 @@ zio_read(const spa_t *spa, const blkptr_t *bp, void *buf)
 			break;
 	}
 	if (error != 0)
-		printf("ZFS: i/o error - all block copies unavailable\n");
+		printf("ZFS: i/o error - all block copies unavailable: %d\n",
+		    error);
 
+byteswap:
+	if (BP_SHOULD_BYTESWAP(bp)) {
+		uint8_t bswap;
+
+		if (BP_GET_LEVEL(bp) > 0) {
+			bswap = DMU_BSWAP_UINT64;
+		} else {
+			bswap = DMU_OT_BYTESWAP(BP_GET_TYPE(bp));
+		}
+		if (bswap < DMU_BSWAP_NUMFUNCS)
+			dmu_ot_byteswap[bswap].ob_func(buf, BP_GET_LSIZE(bp));
+	}
 	return (error);
 }
 
@@ -2839,7 +2856,7 @@ fzap_lookup(const spa_t *spa, const dnode_phys_t *dnode, zap_phys_t *zh,
 	if ((rc = fzap_check_size(integer_size, num_integers)) != 0)
 		return (rc);
 
-	z.zap_block_shift = ilog2(bsize);
+	z.zap_block_shift = highbit64(bsize) - 1;
 	z.zap_phys = zh;
 	z.zap_spa = spa;
 	z.zap_dnode = dnode;
@@ -2932,10 +2949,12 @@ fzap_list(const spa_t *spa, const dnode_phys_t *dnode, zap_phys_t *zh,
 	uint64_t i;
 	int j, rc;
 
-	if (zh->zap_magic != ZAP_MAGIC)
+	if (zh->zap_magic != ZAP_MAGIC) {
+		printf("zap_magic: %x\n", (unsigned)zh->zap_magic);
 		return (EIO);
+	}
 
-	z.zap_block_shift = ilog2(bsize);
+	z.zap_block_shift = highbit64(bsize) - 1;
 	z.zap_phys = zh;
 
 	/*
@@ -3028,11 +3047,12 @@ zap_list(const spa_t *spa, const dnode_phys_t *dnode)
 
 	rc = dnode_read(spa, dnode, 0, zap, size);
 	if (rc == 0) {
-		if (zap->zap_block_type == ZBT_MICRO)
+		if (zap->zap_block_type == ZBT_MICRO) {
 			rc = mzap_list((const mzap_phys_t *)zap, size,
 			    zfs_printf);
-		else
+		} else {
 			rc = fzap_list(spa, dnode, zap, zfs_printf);
+		}
 	}
 	free(zap);
 	return (rc);
@@ -3111,7 +3131,7 @@ fzap_rlookup(const spa_t *spa, const dnode_phys_t *dnode, zap_phys_t *zh,
 	if (zh->zap_magic != ZAP_MAGIC)
 		return (EIO);
 
-	z.zap_block_shift = ilog2(bsize);
+	z.zap_block_shift = highbit64(bsize) - 1;
 	z.zap_phys = zh;
 
 	/*
@@ -3767,10 +3787,45 @@ zfs_spa_init(spa_t *spa)
 	return (rc);
 }
 
+static void
+sa_byteswap(sa_hdr_phys_t *sa_hdr_phys)
+{
+	int num_lengths = 1;
+	int i;
+	char *ptr;
+
+	if (sa_hdr_phys->sa_magic == SA_MAGIC)
+		return;
+
+	sa_hdr_phys->sa_magic = BSWAP_32(sa_hdr_phys->sa_magic);
+	sa_hdr_phys->sa_layout_info = BSWAP_16(sa_hdr_phys->sa_layout_info);
+
+	/*
+	 * Determine number of variable lenghts in header
+	 * The standard 8 byte header has one for free and a
+	 * 16 byte header would have 4 + 1;
+	 */
+	if (SA_HDR_SIZE(sa_hdr_phys) > 8)
+		num_lengths += (SA_HDR_SIZE(sa_hdr_phys) - 8) >> 1;
+
+	for (i = 0; i != num_lengths; i++)
+		sa_hdr_phys->sa_lengths[i] =
+		    BSWAP_16(sa_hdr_phys->sa_lengths[i]);
+
+	ptr = (char *)sa_hdr_phys + SA_HDR_SIZE(sa_hdr_phys);
+	*((uint64_t *)(ptr + SA_MODE_OFFSET)) =
+	    BSWAP_64(*((uint64_t *)(ptr + SA_MODE_OFFSET)));
+	*((uint64_t *)(ptr + SA_UID_OFFSET)) =
+	    BSWAP_64(*((uint64_t *)(ptr + SA_UID_OFFSET)));
+	*((uint64_t *)(ptr + SA_GID_OFFSET)) =
+	    BSWAP_64(*((uint64_t *)(ptr + SA_GID_OFFSET)));
+	*((uint64_t *)(ptr + SA_SIZE_OFFSET)) =
+	    BSWAP_64(*((uint64_t *)(ptr + SA_SIZE_OFFSET)));
+}
+
 static int
 zfs_dnode_stat(const spa_t *spa, dnode_phys_t *dn, struct stat *sb)
 {
-
 	if (dn->dn_bonustype != DMU_OT_SA) {
 		znode_phys_t *zp = (znode_phys_t *)dn->dn_bonus;
 
@@ -3791,6 +3846,7 @@ zfs_dnode_stat(const spa_t *spa, dnode_phys_t *dn, struct stat *sb)
 				blkptr_t *bp = DN_SPILL_BLKPTR(dn);
 				int error;
 
+				printf_blkptr(bp);
 				size = BP_GET_LSIZE(bp);
 				buf = malloc(size);
 				if (buf == NULL)
@@ -3807,6 +3863,10 @@ zfs_dnode_stat(const spa_t *spa, dnode_phys_t *dn, struct stat *sb)
 				return (EIO);
 			}
 		}
+		if (sahdrp->sa_magic != SA_MAGIC &&
+		    BSWAP_32(sahdrp->sa_magic) == SA_MAGIC)
+			sa_byteswap(sahdrp);
+
 		hdrsize = SA_HDR_SIZE(sahdrp);
 		sb->st_mode = *(uint64_t *)((char *)sahdrp + hdrsize +
 		    SA_MODE_OFFSET);

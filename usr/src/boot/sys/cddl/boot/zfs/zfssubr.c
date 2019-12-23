@@ -36,6 +36,45 @@ static uint64_t zfs_crc64_table[256];
 #define	ASSERT0(x)		((void)0)
 #define	ASSERT(x)		((void)0)
 
+static void byteswap_uint8_array(void *, size_t);
+static void byteswap_uint16_array(void *, size_t);
+static void byteswap_uint32_array(void *, size_t);
+static void byteswap_uint64_array(void *, size_t);
+static void zap_byteswap(void *, size_t);
+static void dnode_buf_byteswap(void *, size_t);
+static void dmu_objset_byteswap(void *, size_t);
+static void zfs_znode_byteswap(void *, size_t);
+static void zfs_oldacl_byteswap(void *, size_t);
+static void zfs_acl_byteswap(void *, size_t);
+
+static int
+highbit64(uint64_t i)
+{
+	int h = 1;
+
+	if (i == 0)
+		return (0);
+	if (i & 0xffffffff00000000ULL) {
+		h += 32; i >>= 32;
+	}
+	if (i & 0xffff0000) {
+		h += 16; i >>= 16;
+	}
+	if (i & 0xff00) {
+		h += 8; i >>= 8;
+	}
+	if (i & 0xf0) {
+		h += 4; i >>= 4;
+	}
+	if (i & 0xc) {
+		h += 2; i >>= 2;
+	}
+	if (i & 0x2) {
+		h += 1;
+	}
+	return (h);
+}
+
 static void
 zfs_init_crc(void)
 {
@@ -159,6 +198,19 @@ const dmu_object_type_info_t dmu_ot[DMU_OT_NUMTYPES] = {
 	{ DMU_BSWAP_UINT64, B_TRUE,  B_FALSE, B_FALSE, "bpobj subobj"	}
 };
 
+const dmu_object_byteswap_info_t dmu_ot_byteswap[DMU_BSWAP_NUMFUNCS] = {
+	{	byteswap_uint8_array,	"uint8"		},
+	{	byteswap_uint16_array,	"uint16"	},
+	{	byteswap_uint32_array,	"uint32"	},
+	{	byteswap_uint64_array,	"uint64"	},
+	{	zap_byteswap,		"zap"		},
+	{	dnode_buf_byteswap,	"dnode"		},
+	{	dmu_objset_byteswap,	"objset"	},
+	{	zfs_znode_byteswap,	"znode"		},
+	{	zfs_oldacl_byteswap,	"oldacl"	},
+	{	zfs_acl_byteswap,	"acl"		}
+};
+
 #include "blkptr.c"
 
 #include "fletcher.c"
@@ -256,6 +308,275 @@ byteswap_uint64_array(void *vbuf, size_t size)
 
 	for (i = 0; i < count; i++)
 		buf[i] = BSWAP_64(buf[i]);
+}
+
+static void
+byteswap_uint32_array(void *vbuf, size_t size)
+{
+	uint32_t *buf = vbuf;
+	size_t i, count = size >> 2;
+
+	ASSERT((size & 3) == 0);
+
+	for (i = 0; i < count; i++)
+		buf[i] = BSWAP_32(buf[i]);
+}
+
+static void
+byteswap_uint16_array(void *vbuf, size_t size)
+{
+	uint16_t *buf = vbuf;
+	size_t i, count = size >> 1;
+
+	ASSERT((size & 1) == 0);
+
+	for (i = 0; i < count; i++)
+		buf[i] = BSWAP_16(buf[i]);
+}
+
+static void
+byteswap_uint8_array(void *vbuf __unused, size_t size __unused)
+{
+}
+
+static void
+mzap_byteswap(mzap_phys_t *buf, size_t size)
+{
+	size_t max = (size / MZAP_ENT_LEN) - 1;
+
+	buf->mz_block_type = BSWAP_64(buf->mz_block_type);
+	buf->mz_salt = BSWAP_64(buf->mz_salt);
+	buf->mz_normflags = BSWAP_64(buf->mz_normflags);
+
+	for (size_t i = 0; i < max; i++) {
+		buf->mz_chunk[i].mze_value =
+		    BSWAP_64(buf->mz_chunk[i].mze_value);
+		buf->mz_chunk[i].mze_cd =
+		    BSWAP_32(buf->mz_chunk[i].mze_cd);
+	}
+}
+
+static void
+zap_leaf_byteswap(zap_leaf_phys_t *buf, int size)
+{
+	zap_leaf_t l;
+
+        l.l_bs = highbit64(size) - 1;
+        l.l_phys = buf;
+
+        buf->l_hdr.lh_block_type =      BSWAP_64(buf->l_hdr.lh_block_type);
+        buf->l_hdr.lh_prefix =          BSWAP_64(buf->l_hdr.lh_prefix);
+        buf->l_hdr.lh_magic =           BSWAP_32(buf->l_hdr.lh_magic);
+        buf->l_hdr.lh_nfree =           BSWAP_16(buf->l_hdr.lh_nfree);
+        buf->l_hdr.lh_nentries =        BSWAP_16(buf->l_hdr.lh_nentries);
+        buf->l_hdr.lh_prefix_len =      BSWAP_16(buf->l_hdr.lh_prefix_len);
+        buf->l_hdr.lh_freelist =        BSWAP_16(buf->l_hdr.lh_freelist);
+
+	for (int i = 0; i < ZAP_LEAF_HASH_NUMENTRIES(&l); i++)
+		buf->l_hash[i] = BSWAP_16(buf->l_hash[i]);
+
+	for (int i = 0; i < ZAP_LEAF_NUMCHUNKS(&l); i++) {
+		zap_leaf_chunk_t *lc = &ZAP_LEAF_CHUNK(&l, i);
+		struct zap_leaf_entry *le;
+
+		switch (lc->l_free.lf_type) {
+		case ZAP_CHUNK_ENTRY:
+			le = &lc->l_entry;
+
+			le->le_type =		BSWAP_8(le->le_type);
+			le->le_value_intlen =	BSWAP_8(le->le_value_intlen);
+			le->le_next =		BSWAP_16(le->le_next);
+			le->le_name_chunk =	BSWAP_16(le->le_name_chunk);
+			le->le_name_numints =	BSWAP_16(le->le_name_numints);
+			le->le_value_chunk =	BSWAP_16(le->le_value_chunk);
+			le->le_value_numints =	BSWAP_16(le->le_value_numints);
+			le->le_cd =		BSWAP_32(le->le_cd);
+			le->le_hash =		BSWAP_64(le->le_hash);
+			break;
+		case ZAP_CHUNK_FREE:
+			lc->l_free.lf_type =	BSWAP_8(lc->l_free.lf_type);
+			lc->l_free.lf_next =	BSWAP_16(lc->l_free.lf_next);
+			break;
+		case ZAP_CHUNK_ARRAY:
+			lc->l_array.la_type =	BSWAP_8(lc->l_array.la_type);
+			lc->l_array.la_next =	BSWAP_16(lc->l_array.la_next);
+			/* la_array doesn't need swapping */
+			break;
+		default:
+			printf("bad leaf type\n");
+		}
+	}
+}
+
+static void
+fzap_byteswap(void *vbuf, size_t size)
+{
+	uint64_t block_type = *(uint64_t *)vbuf;
+
+	if (block_type == ZBT_LEAF || block_type == BSWAP_64(ZBT_LEAF)) {
+		zap_leaf_byteswap(vbuf, size);
+	} else {
+		/* it's a ptrtbl block */
+		byteswap_uint64_array(vbuf, size);
+	}
+}
+
+void
+zap_byteswap(void *buf, size_t size)
+{
+	uint64_t block_type = *(uint64_t *)buf;
+
+	if (block_type == ZBT_MICRO || block_type == BSWAP_64(ZBT_MICRO)) {
+		mzap_byteswap(buf, size);
+	} else {
+		fzap_byteswap(buf, size);
+	}
+}
+
+static void
+dnode_byteswap(dnode_phys_t *dnp)
+{
+	uint64_t *buf64 = (void*)&dnp->dn_blkptr;
+	size_t i;
+
+	if (dnp->dn_type == DMU_OT_NONE) {
+		bzero(dnp, sizeof (dnode_phys_t));
+		return;
+	}
+
+	dnp->dn_datablkszsec = BSWAP_16(dnp->dn_datablkszsec);
+	dnp->dn_bonuslen = BSWAP_16(dnp->dn_bonuslen);
+	dnp->dn_extra_slots = BSWAP_8(dnp->dn_extra_slots);
+	dnp->dn_maxblkid = BSWAP_64(dnp->dn_maxblkid);
+	dnp->dn_used = BSWAP_64(dnp->dn_used);
+
+	/*
+	 * dn_nblkptr is only one byte, so it's OK to read it in either
+	 * byte order.  We can't read dn_bouslen.
+	 */
+	ASSERT(dnp->dn_indblkshift <= SPA_MAXBLOCKSHIFT);
+	ASSERT(dnp->dn_nblkptr <= DN_MAX_NBLKPTR);
+	for (i = 0; i < dnp->dn_nblkptr * sizeof (blkptr_t)/8; i++)
+		buf64[i] = BSWAP_64(buf64[i]);
+
+	/*
+	 * OK to check dn_bonuslen for zero, because it won't matter if
+	 * we have the wrong byte order.  This is necessary because the
+	 * dnode dnode is smaller than a regular dnode.
+	 */
+	if (dnp->dn_bonuslen != 0) {
+		/*
+		 * Note that the bonus length calculated here may be
+		 * longer than the actual bonus buffer.  This is because
+		 * we always put the bonus buffer after the last block
+		 * pointer (instead of packing it against the end of the
+		 * dnode buffer).
+		 */
+		int off = (dnp->dn_nblkptr-1) * sizeof (blkptr_t);
+		int slots = dnp->dn_extra_slots + 1;
+		size_t len = DN_SLOTS_TO_BONUSLEN(slots) - off;
+		ASSERT(DMU_OT_IS_VALID(dnp->dn_bonustype));
+		dmu_object_byteswap_t byteswap =
+			DMU_OT_BYTESWAP(dnp->dn_bonustype);
+		dmu_ot_byteswap[byteswap].ob_func(dnp->dn_bonus + off, len);
+	}
+
+	/* Swap SPILL block if we have one */
+	if (dnp->dn_flags & DNODE_FLAG_SPILL_BLKPTR)
+		byteswap_uint64_array(DN_SPILL_BLKPTR(dnp), sizeof (blkptr_t));
+}
+
+static void
+dnode_buf_byteswap(void *vbuf, size_t size)
+{
+	size_t i = 0;
+
+	ASSERT3U(sizeof (dnode_phys_t), ==, (1<<DNODE_SHIFT));
+	ASSERT((size & (sizeof (dnode_phys_t)-1)) == 0);
+
+	while (i < size) {
+		dnode_phys_t *dnp = (void *)(((char *)vbuf) + i);
+		dnode_byteswap(dnp);
+
+		i += DNODE_MIN_SIZE;
+		if (dnp->dn_type != DMU_OT_NONE)
+			i += dnp->dn_extra_slots * DNODE_MIN_SIZE;
+	}
+}
+
+static void
+dmu_objset_byteswap(void *buf, size_t size)
+{
+	objset_phys_t *osp = buf;
+
+	dnode_byteswap(&osp->os_meta_dnode);
+	byteswap_uint64_array(&osp->os_zil_header, sizeof (zil_header_t));
+	osp->os_type = BSWAP_64(osp->os_type);
+	osp->os_flags = BSWAP_64(osp->os_flags);
+	if (size >= OBJSET_PHYS_SIZE_V2) {
+		dnode_byteswap(&osp->os_userused_dnode);
+		dnode_byteswap(&osp->os_groupused_dnode);
+		if (size >= sizeof (objset_phys_t))
+			dnode_byteswap(&osp->os_projectused_dnode);
+	}
+}
+
+static void
+zfs_znode_byteswap(void *buf, size_t size __unused)
+{
+	znode_phys_t *zp = buf;
+
+	ASSERT(size >= sizeof (znode_phys_t));
+	printf("%s called\n", __FUNCTION__);
+
+	zp->zp_crtime[0] = BSWAP_64(zp->zp_crtime[0]);
+	zp->zp_crtime[1] = BSWAP_64(zp->zp_crtime[1]);
+	zp->zp_atime[0] = BSWAP_64(zp->zp_atime[0]);
+	zp->zp_atime[1] = BSWAP_64(zp->zp_atime[1]);
+	zp->zp_mtime[0] = BSWAP_64(zp->zp_mtime[0]);
+	zp->zp_mtime[1] = BSWAP_64(zp->zp_mtime[1]);
+	zp->zp_ctime[0] = BSWAP_64(zp->zp_ctime[0]);
+	zp->zp_ctime[1] = BSWAP_64(zp->zp_ctime[1]);
+	zp->zp_gen = BSWAP_64(zp->zp_gen);
+	zp->zp_mode = BSWAP_64(zp->zp_mode);
+	zp->zp_size = BSWAP_64(zp->zp_size);
+	zp->zp_parent = BSWAP_64(zp->zp_parent);
+	zp->zp_links = BSWAP_64(zp->zp_links);
+	zp->zp_xattr = BSWAP_64(zp->zp_xattr);
+	zp->zp_rdev = BSWAP_64(zp->zp_rdev);
+	zp->zp_flags = BSWAP_64(zp->zp_flags);
+	zp->zp_uid = BSWAP_64(zp->zp_uid);
+	zp->zp_gid = BSWAP_64(zp->zp_gid);
+	zp->zp_zap = BSWAP_64(zp->zp_zap);
+	zp->zp_pad[0] = BSWAP_64(zp->zp_pad[0]);
+	zp->zp_pad[1] = BSWAP_64(zp->zp_pad[1]);
+	zp->zp_pad[2] = BSWAP_64(zp->zp_pad[2]);
+
+#if 0
+	zp->zp_acl.z_acl_extern_obj = BSWAP_64(zp->zp_acl.z_acl_extern_obj);
+	zp->zp_acl.z_acl_size = BSWAP_32(zp->zp_acl.z_acl_size);
+	zp->zp_acl.z_acl_version = BSWAP_16(zp->zp_acl.z_acl_version);
+	zp->zp_acl.z_acl_count = BSWAP_16(zp->zp_acl.z_acl_count);
+	if (zp->zp_acl.z_acl_version == ZFS_ACL_VERSION) {
+		zfs_acl_byteswap((void *)&zp->zp_acl.z_ace_data[0],
+		    ZFS_ACE_SPACE);
+	} else {
+		zfs_oldace_byteswap((ace_t *)&zp->zp_acl.z_ace_data[0],
+		    ACE_SLOT_CNT);
+	}
+#endif
+}
+
+static void
+zfs_oldacl_byteswap(void *vbuf __unused, size_t size __unused)
+{
+	printf("%s called\n", __FUNCTION__);
+}
+
+static void
+zfs_acl_byteswap(void *vbuf __unused, size_t size __unused)
+{
+	printf("%s called\n", __FUNCTION__);
 }
 
 /*
