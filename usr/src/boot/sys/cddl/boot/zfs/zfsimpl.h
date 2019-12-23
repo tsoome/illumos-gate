@@ -1282,18 +1282,6 @@ typedef enum dmu_object_byteswap {
 #define	DMU_OT_ENCRYPTED 0x20
 #define	DMU_OT_BYTESWAP_MASK 0x1f
 
-#define	DMU_OT_IS_METADATA(ot) (((ot) & DMU_OT_NEWTYPE) ? \
-	((ot) & DMU_OT_METADATA) : \
-	DMU_OT_IS_METADATA_IMPL(ot))
-
-#define	DMU_OT_IS_ENCRYPTED(ot) (((ot) & DMU_OT_NEWTYPE) ? \
-	((ot) & DMU_OT_ENCRYPTED) : \
-	DMU_OT_IS_ENCRYPTED_IMPL(ot))
-
-#define	DMU_OT_BYTESWAP(ot) (((ot) & DMU_OT_NEWTYPE) ? \
-	((ot) & DMU_OT_BYTESWAP_MASK) : \
-	DMU_OT_BYTESWAP_IMPL(ot))
-
 /*
  * Defines a uint8_t object type. Object types specify if the data
  * in the object is metadata (boolean) and how to byteswap the data
@@ -1304,6 +1292,46 @@ typedef enum dmu_object_byteswap {
 	((metadata) ? DMU_OT_METADATA : 0) | \
 	((encrypted) ? DMU_OT_ENCRYPTED : 0) | \
 	((byteswap) & DMU_OT_BYTESWAP_MASK))
+
+#define	DMU_OT_IS_VALID(ot)	(((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_BYTESWAP_MASK) < DMU_BSWAP_NUMFUNCS : \
+	(ot) < DMU_OT_NUMTYPES)
+
+#define	DMU_OT_IS_METADATA_IMPL(ot) (dmu_ot[ot].ot_metadata)
+#define	DMU_OT_IS_ENCRYPTED_IMPL(ot) (dmu_ot[ot].ot_encrypt)
+#define	DMU_OT_BYTESWAP_IMPL(ot) (dmu_ot[ot].ot_byteswap)
+
+#define	DMU_OT_IS_METADATA(ot) (((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_METADATA) : \
+	DMU_OT_IS_METADATA_IMPL(ot))
+
+#define	DMU_OT_IS_DDT(ot) \
+	((ot) == DMU_OT_DDT_ZAP)
+
+#define	DMU_OT_IS_ZIL(ot) \
+	((ot) == DMU_OT_INTENT_LOG)
+
+#define	DMU_OT_IS_FILE(ot) \
+	((ot) == DMU_OT_PLAIN_FILE_CONTENTS || (ot) == DMU_OT_UINT64_OTHER)
+
+#define	DMU_OT_IS_METADATA_CACHED(ot)	(((ot) & DMU_OT_NEWTYPE) ? \
+	B_TRUE : dmu_ot[(ot)].ot_dbuf_metadata_cache)
+
+#define	DMU_OT_IS_ENCRYPTED(ot) (((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_ENCRYPTED) : \
+	DMU_OT_IS_ENCRYPTED_IMPL(ot))
+
+/*
+ * These object types use bp_fill != 1 for their L0 bp's. Therefore they can't
+ * have their data embedded (i.e. use a BP_IS_EMBEDDED() bp), because bp_fill
+ * is repurposed for embedded BPs.
+ */
+#define	DMU_OT_HAS_FILL(ot) \
+	((ot) == DMU_OT_DNODE || (ot) == DMU_OT_OBJSET)
+
+#define	DMU_OT_BYTESWAP(ot) (((ot) & DMU_OT_NEWTYPE) ? \
+	((ot) & DMU_OT_BYTESWAP_MASK) : \
+	DMU_OT_BYTESWAP_IMPL(ot))
 
 typedef enum dmu_object_type {
 	DMU_OT_NONE,
@@ -1422,6 +1450,8 @@ typedef enum dmu_objset_type {
 	DMU_OST_NUMTYPES
 } dmu_objset_type_t;
 
+typedef void arc_byteswap_func_t(void *buf, size_t size);
+
 typedef struct dmu_object_type_info {
 	dmu_object_byteswap_t	ot_byteswap;
 	boolean_t		ot_metadata;
@@ -1430,9 +1460,10 @@ typedef struct dmu_object_type_info {
 	char			*ot_name;
 } dmu_object_type_info_t;
 
-#define	DMU_OT_IS_METADATA_IMPL(ot) (dmu_ot[ot].ot_metadata)
-#define	DMU_OT_IS_ENCRYPTED_IMPL(ot) (dmu_ot[ot].ot_encrypt)
-#define	DMU_OT_BYTESWAP_IMPL(ot) (dmu_ot[ot].ot_byteswap)
+typedef struct dmu_object_byteswap_info {
+	arc_byteswap_func_t	*ob_func;
+	char			*ob_name;
+} dmu_object_byteswap_info_t;
 
 #define	ZAP_MAXVALUELEN	(1024 * 8)
 
@@ -1869,6 +1900,9 @@ typedef struct ace {
 } ace_t;
 
 #define	ACE_SLOT_CNT	6
+#define	ZFS_ACL_VERSION_INITIAL	0ULL
+#define	ZFS_ACL_VERSION_FUID	1ULL
+#define	ZFS_ACL_VERSION		ZFS_ACL_VERSION_FUID
 
 typedef struct zfs_znode_acl {
 	uint64_t	z_acl_extern_obj;	  /* ext acl pieces */
@@ -1898,7 +1932,8 @@ typedef struct znode_phys {
 	uint64_t zp_flags;		/* 120 - persistent flags */
 	uint64_t zp_uid;		/* 128 - file owner */
 	uint64_t zp_gid;		/* 136 - owning group */
-	uint64_t zp_pad[4];		/* 144 - future */
+	uint64_t zp_zap;		/* 144 - extra attributes */
+	uint64_t zp_pad[3];		/* 152 - future */
 	zfs_znode_acl_t zp_acl;		/* 176 - 263 ACL */
 	/*
 	 * Data may pad out any remaining bytes in the znode buffer, eg:
