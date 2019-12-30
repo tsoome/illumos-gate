@@ -260,6 +260,7 @@ audio_strclose(queue_t *rq, int flag, cred_t *credp)
 	_NOTE(ARGUNUSED(flag));
 	_NOTE(ARGUNUSED(credp));
 
+	rv = 0;
 	if ((c = rq->q_ptr) == NULL) {
 		return (ENXIO);
 	}
