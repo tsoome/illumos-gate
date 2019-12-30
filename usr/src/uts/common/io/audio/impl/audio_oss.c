@@ -605,6 +605,9 @@ sndctl_dsp_speed(audio_client_t *c, int *ratep)
 	int		rate;
 	int		oflag;
 
+	if (ratep == NULL)
+		return (EINVAL);
+
 	rate = *ratep;
 
 	oflag = auclnt_get_oflag(c);
@@ -628,7 +631,11 @@ sndctl_dsp_setfmt(audio_client_t *c, int *fmtp)
 	int		i;
 	int		oflag;
 
+	if (fmtp == NULL)
+		return (EINVAL);
+
 	oflag = auclnt_get_oflag(c);
+	fmt = AUDIO_FORMAT_NONE;
 
 	if (*fmtp != AFMT_QUERY) {
 		/* convert from OSS */
@@ -675,6 +682,9 @@ sndctl_dsp_getfmts(audio_client_t *c, int *fmtsp)
 {
 	_NOTE(ARGUNUSED(c));
 
+	if (fmtsp == NULL)
+		return (EINVAL);
+
 	/*
 	 * For now, we support all the standard ones.  Later we might
 	 * add in conditional support for AC3.
@@ -694,6 +704,9 @@ sndctl_dsp_channels(audio_client_t *c, int *chanp)
 {
 	int		nchan;
 	int		oflag;
+
+	if (chanp == NULL)
+		return (EINVAL);
 
 	oflag = auclnt_get_oflag(c);
 
@@ -723,6 +736,9 @@ static int
 sndctl_dsp_stereo(audio_client_t *c, int *onoff)
 {
 	int	nchan;
+
+	if (onoff == NULL)
+		return (EINVAL);
 
 	switch (*onoff) {
 	case 0:
@@ -755,6 +771,9 @@ sndctl_dsp_getcaps(audio_client_t *c, int *capsp)
 	int		ncaps;
 	int		osscaps = 0;
 
+	if (capsp == NULL)
+		return (EINVAL);
+
 	ncaps = auclnt_get_dev_capab(auclnt_get_dev(c));
 
 	if (ncaps & AUDIO_CLIENT_CAP_PLAY)
@@ -784,6 +803,9 @@ sndctl_dsp_gettrigger(audio_client_t *c, int *trigp)
 	int		triggers = 0;
 	int		oflag;
 
+	if (trigp == NULL)
+		return (EINVAL);
+
 	oflag = auclnt_get_oflag(c);
 
 	if (oflag & FWRITE) {
@@ -808,6 +830,9 @@ sndctl_dsp_settrigger(audio_client_t *c, int *trigp)
 	int		triggers;
 	int		oflag;
 	audio_stream_t	*sp;
+
+	if (trigp == NULL)
+		return (EINVAL);
 
 	oflag = auclnt_get_oflag(c);
 	triggers = *trigp;
@@ -866,6 +891,9 @@ sndctl_dsp_getplayvol(audio_client_t *c, int *volp)
 {
 	int	vol;
 
+	if (volp == NULL)
+		return (EINVAL);
+
 	/* convert monophonic soft value to OSS stereo value */
 	vol = auclnt_get_gain(auclnt_output_stream(c));
 	*volp = vol | (vol << 8);
@@ -876,6 +904,9 @@ static int
 sndctl_dsp_setplayvol(audio_client_t *c, int *volp)
 {
 	uint8_t		vol;
+
+	if (volp == NULL)
+		return (EINVAL);
 
 	vol = *volp & 0xff;
 	if (vol > 100) {
@@ -893,6 +924,9 @@ sndctl_dsp_getrecvol(audio_client_t *c, int *volp)
 {
 	int	vol;
 
+	if (volp == NULL)
+		return (EINVAL);
+
 	vol = auclnt_get_gain(auclnt_input_stream(c));
 	*volp = (vol | (vol << 8));
 	return (0);
@@ -902,6 +936,9 @@ static int
 sndctl_dsp_setrecvol(audio_client_t *c, int *volp)
 {
 	uint8_t		vol;
+
+	if (volp == NULL)
+		return (EINVAL);
 
 	vol = *volp & 0xff;
 	if (vol > 100) {
@@ -919,6 +956,9 @@ sound_mixer_write_ogain(audio_client_t *c, int *volp)
 {
 	uint8_t		vol;
 
+	if (volp == NULL)
+		return (EINVAL);
+
 	vol = *volp & 0xff;
 	if (vol > 100) {
 		return (EINVAL);
@@ -932,6 +972,9 @@ static int
 sound_mixer_write_igain(audio_client_t *c, int *volp)
 {
 	uint8_t		vol;
+
+	if (volp == NULL)
+		return (EINVAL);
 
 	vol = *volp & 0xff;
 	if (vol > 100) {
@@ -947,7 +990,10 @@ sndctl_dsp_readctl(audio_client_t *c, oss_digital_control *ctl)
 {
 	/* SPDIF: need to add support with spdif */
 	_NOTE(ARGUNUSED(c));
-	_NOTE(ARGUNUSED(ctl));
+
+	if (ctl == NULL)
+		return (EINVAL);
+
 	return (ENOTSUP);
 }
 
@@ -956,7 +1002,10 @@ sndctl_dsp_writectl(audio_client_t *c, oss_digital_control *ctl)
 {
 	/* SPDIF: need to add support with spdif */
 	_NOTE(ARGUNUSED(c));
-	_NOTE(ARGUNUSED(ctl));
+
+	if (ctl == NULL)
+		return (EINVAL);
+
 	return (ENOTSUP);
 }
 
@@ -964,6 +1013,9 @@ static int
 sndctl_dsp_cookedmode(audio_client_t *c, int *rvp)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (rvp == NULL)
+		return (EINVAL);
 
 	/* We are *always* in cooked mode -- at least until we have AC3. */
 	if (*rvp == 0) {
@@ -1039,6 +1091,9 @@ sndctl_dsp_setfragment(audio_client_t *c, int *fragp)
 	int	nfrags;
 	int	fragsz;
 
+	if (fragp == NULL)
+		return (EINVAL);
+
 	nfrags = (*fragp) >> 16;
 	if ((nfrags >= 0x7fffU) || (nfrags < 2)) {
 		/* use infinite setting... no change */
@@ -1080,7 +1135,12 @@ sndctl_dsp_setfragment(audio_client_t *c, int *fragp)
 static int
 sndctl_dsp_policy(audio_client_t *c, int *policy)
 {
-	int	hint = *policy;
+	int	hint;
+
+	if (policy == NULL)
+		return (EINVAL);
+
+	hint = *policy;
 	if ((hint >= 2) && (hint <= 10)) {
 		auclnt_set_latency(auclnt_input_stream(c), hint, 0);
 		auclnt_set_latency(auclnt_output_stream(c), hint, 0);
@@ -1100,6 +1160,9 @@ sndctl_dsp_get_recsrc_names(audio_client_t *c, oss_mixer_enuminfo *ei)
 {
 	_NOTE(ARGUNUSED(c));
 
+	if (ei == NULL)
+		return (EINVAL);
+
 	ei->nvalues = 1;
 	(void) snprintf(ei->strings, sizeof (ei->strings), "default");
 	ei->strindex[0] = 0;
@@ -1111,6 +1174,10 @@ static int
 sndctl_dsp_get_recsrc(audio_client_t *c, int *srcp)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (srcp == NULL)
+		return (EINVAL);
+
 	*srcp = 0;
 	return (0);
 }
@@ -1119,6 +1186,10 @@ static int
 sndctl_dsp_set_recsrc(audio_client_t *c, int *srcp)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (srcp == NULL)
+		return (EINVAL);
+
 	*srcp = 0;
 	return (0);
 }
@@ -1127,6 +1198,9 @@ static int
 sndctl_dsp_get_playtgt_names(audio_client_t *c, oss_mixer_enuminfo *ei)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (ei == NULL)
+		return (EINVAL);
 
 	ei->nvalues = 1;
 	(void) snprintf(ei->strings, sizeof (ei->strings), "default");
@@ -1139,6 +1213,10 @@ static int
 sndctl_dsp_get_playtgt(audio_client_t *c, int *tgtp)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (tgtp == NULL)
+		return (EINVAL);
+
 	*tgtp = 0;
 	return (0);
 }
@@ -1147,6 +1225,10 @@ static int
 sndctl_dsp_set_playtgt(audio_client_t *c, int *tgtp)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (tgtp == NULL)
+		return (EINVAL);
+
 	*tgtp = 0;
 	return (0);
 }
@@ -1154,6 +1236,9 @@ sndctl_dsp_set_playtgt(audio_client_t *c, int *tgtp)
 static int
 sndctl_sysinfo(oss_sysinfo *si)
 {
+	if (si == NULL)
+		return (EINVAL);
+
 	bzero(si, sizeof (*si));
 	(void) snprintf(si->product, sizeof (si->product), "SunOS Audio");
 	(void) snprintf(si->version, sizeof (si->version), "4.0");
@@ -1174,6 +1259,9 @@ sndctl_cardinfo(audio_client_t *c, oss_card_info *ci)
 	const char 	*info;
 	int		n;
 	boolean_t	release;
+
+	if (ci == NULL)
+		return (EINVAL);
 
 	if ((n = ci->card) == -1) {
 		release = B_FALSE;
@@ -1261,6 +1349,9 @@ sndctl_audioinfo(audio_client_t *c, oss_audioinfo *si)
 	boolean_t		release;
 	unsigned		cap;
 
+	if (si == NULL)
+		return (EINVAL);
+
 	if ((n = si->dev) == -1) {
 		release = B_FALSE;
 		d = auclnt_get_dev(c);
@@ -1345,6 +1436,9 @@ sound_mixer_info(audio_client_t *c, mixer_info *mi)
 	audio_dev_t	*d;
 	const char	*name;
 
+	if (mi == NULL)
+		return (EINVAL);
+
 	d = auclnt_get_dev(c);
 
 	name = auclnt_get_dev_name(d);
@@ -1361,6 +1455,10 @@ static int
 sound_mixer_read_devmask(audio_client_t *c, int *devmask)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (devmask == NULL)
+		return (EINVAL);
+
 	*devmask = SOUND_MASK_VOLUME | SOUND_MASK_PCM | SOUND_MASK_IGAIN;
 	return (0);
 }
@@ -1369,6 +1467,10 @@ static int
 sound_mixer_read_recmask(audio_client_t *c, int *recmask)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (recmask == NULL)
+		return (EINVAL);
+
 	*recmask = 0;
 	return (0);
 }
@@ -1377,6 +1479,10 @@ static int
 sound_mixer_read_recsrc(audio_client_t *c, int *recsrc)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (recsrc == NULL)
+		return (EINVAL);
+
 	*recsrc = 0;
 	return (0);
 }
@@ -1385,6 +1491,10 @@ static int
 sound_mixer_read_caps(audio_client_t *c, int *caps)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (caps == NULL)
+		return (EINVAL);
+
 	/* single recording source... sort of */
 	*caps = SOUND_CAP_EXCL_INPUT;
 	return (0);
@@ -1398,6 +1508,9 @@ sndctl_mixerinfo(audio_client_t *c, oss_mixerinfo *mi)
 	const char		*name;
 	int			n;
 	boolean_t		release = B_FALSE;
+
+	if (mi == NULL)
+		return (EINVAL);
 
 	if ((n = mi->dev) == -1) {
 		release = B_FALSE;
@@ -1458,6 +1571,9 @@ sndctl_dsp_getblksize(audio_client_t *c, int *fragsz)
 {
 	int	oflag = auclnt_get_oflag(c);
 
+	if (fragsz == NULL)
+		return (EINVAL);
+
 	if (oflag & FWRITE)
 		*fragsz  = auclnt_get_fragsz(auclnt_output_stream(c));
 	else if (oflag & FREAD)
@@ -1471,6 +1587,9 @@ sndctl_dsp_getospace(audio_client_t *c, audio_buf_info *bi)
 {
 	audio_stream_t	*sp;
 	unsigned	n;
+
+	if (bi == NULL)
+		return (EINVAL);
 
 	if ((auclnt_get_oflag(c) & FWRITE) == 0) {
 		return (EACCES);
@@ -1493,6 +1612,9 @@ sndctl_dsp_getispace(audio_client_t *c, audio_buf_info *bi)
 	audio_stream_t	*sp;
 	unsigned	n;
 
+	if (bi == NULL)
+		return (EINVAL);
+
 	if ((auclnt_get_oflag(c) & FREAD) == 0) {
 		return (EACCES);
 	}
@@ -1514,6 +1636,9 @@ sndctl_dsp_getodelay(audio_client_t *c, int *bytes)
 	unsigned	framesz;
 	unsigned	slen, flen;
 
+	if (bytes == NULL)
+		return (EINVAL);
+
 	if (auclnt_get_oflag(c) & FWRITE) {
 		audio_stream_t	*sp = auclnt_output_stream(c);
 		framesz = auclnt_get_framesz(sp);
@@ -1528,6 +1653,9 @@ sndctl_dsp_getodelay(audio_client_t *c, int *bytes)
 static int
 sndctl_dsp_current_iptr(audio_client_t *c, oss_count_t *count)
 {
+	if (count == NULL)
+		return (EINVAL);
+
 	if (auclnt_get_oflag(c) & FREAD) {
 		count->samples = auclnt_get_samples(auclnt_input_stream(c));
 		count->fifo_samples = 0;	/* not quite accurate */
@@ -1542,6 +1670,9 @@ static int
 sndctl_dsp_current_optr(audio_client_t *c, oss_count_t *count)
 {
 	unsigned samples, fifo;
+
+	if (count == NULL)
+		return (EINVAL);
 
 	if (auclnt_get_oflag(c) & FWRITE) {
 		auclnt_get_output_qlen(c, &samples, &fifo);
@@ -1560,6 +1691,9 @@ sndctl_dsp_getoptr(audio_client_t *c, count_info *ci)
 	audio_stream_t	*sp;
 	unsigned	framesz;
 	unsigned	fragsz;
+
+	if (ci == NULL)
+		return (EINVAL);
 
 	bzero(ci, sizeof (*ci));
 	if ((auclnt_get_oflag(c) & FWRITE) == 0) {
@@ -1582,6 +1716,9 @@ sndctl_dsp_getiptr(audio_client_t *c, count_info *ci)
 	unsigned	framesz;
 	unsigned	fragsz;
 
+	if (ci == NULL)
+		return (EINVAL);
+
 	bzero(ci, sizeof (*ci));
 	if ((auclnt_get_oflag(c) & FREAD) == 0) {
 		return (0);
@@ -1601,6 +1738,10 @@ sndctl_dsp_geterror(audio_client_t *c, audio_errinfo *bi)
 {
 	audio_stream_t	*sp;
 	unsigned	fragsz;
+
+	if (bi == NULL)
+		return (EINVAL);
+
 	/*
 	 * Note: The use of this structure is unsafe... different
 	 * meanings for error codes are used by different implementations,
@@ -1634,6 +1775,9 @@ sndctl_sun_send_number(audio_client_t *c, int *num, cred_t *cr)
 	audio_dev_t	*dev;
 	int		rv;
 
+	if (num == NULL)
+		return (EINVAL);
+
 	if ((rv = drv_priv(cr)) != 0) {
 		return (rv);
 	}
@@ -1646,6 +1790,9 @@ sndctl_sun_send_number(audio_client_t *c, int *num, cred_t *cr)
 static int
 oss_getversion(int *versp)
 {
+	if (versp == NULL)
+		return (EINVAL);
+
 	*versp = OSS_VERSION;
 	return (0);
 }
@@ -1661,8 +1808,11 @@ oss_ioctl(audio_client_t *c, int cmd, intptr_t arg, int mode, cred_t *credp,
 	_NOTE(ARGUNUSED(credp));
 
 	sz = OSSIOC_GETSZ(cmd);
+	data = NULL;
+	if ((cmd & OSSIOC_INOUT) != 0) {
+		if (sz == 0)
+			return (EINVAL);
 
-	if ((cmd & (OSSIOC_IN | OSSIOC_OUT)) && sz) {
 		if ((data = kmem_zalloc(sz, KM_NOSLEEP)) == NULL) {
 			return (ENOMEM);
 		}
@@ -1968,6 +2118,9 @@ sndctl_mix_nrext(audio_client_t *c, int *ncp)
 	audio_dev_t	*d;
 	ossdev_t	*odev;
 
+	if (ncp == NULL)
+		return (EINVAL);
+
 	d = auclnt_get_dev(c);
 
 	if ((*ncp != -1) && (*ncp != (auclnt_get_dev_index(d) - 1))) {
@@ -1990,6 +2143,9 @@ sndctl_mix_extinfo(audio_client_t *c, oss_mixext *pext)
 	ossdev_t		*odev;
 	int			rv = 0;
 	int			dev;
+
+	if (pext == NULL)
+		return (EINVAL);
 
 	d = auclnt_get_dev(c);
 
@@ -2018,6 +2174,9 @@ sndctl_mix_enuminfo(audio_client_t *c, oss_mixer_enuminfo *ei)
 	uint64_t		mask;
 	int			bit;
 	ushort_t		nxt;
+
+	if (ei == NULL)
+		return (EINVAL);
 
 	d = auclnt_get_dev(c);
 
@@ -2057,6 +2216,9 @@ sndctl_mix_read(audio_client_t *c, oss_mixer_value *vr)
 	audio_dev_t		*d;
 	audio_ctrl_t		*ctrl;
 	ossdev_t		*odev;
+
+	if (vr == NULL)
+		return (EINVAL);
 
 	d = auclnt_get_dev(c);
 
@@ -2109,6 +2271,9 @@ sndctl_mix_write(audio_client_t *c, oss_mixer_value *vr)
 	audio_dev_t		*d;
 	audio_ctrl_t		*ctrl;
 	ossdev_t		*odev;
+
+	if (vr == NULL)
+		return (EINVAL);
 
 	d = auclnt_get_dev(c);
 
@@ -2165,6 +2330,10 @@ static int
 sndctl_mix_nrmix(audio_client_t *c, int *nmixp)
 {
 	_NOTE(ARGUNUSED(c));
+
+	if (nmixp == NULL)
+		return (EINVAL);
+
 	*nmixp = oss_cnt_devs() - 1;
 	return (0);
 }
@@ -2178,8 +2347,11 @@ ossmix_ioctl(audio_client_t *c, int cmd, intptr_t arg, int mode, cred_t *credp,
 	int	rv = 0;
 
 	sz = OSSIOC_GETSZ(cmd);
+	data = NULL;
+	if ((cmd & OSSIOC_INOUT) != 0) {
+		if (sz == 0)
+			return (EINVAL);
 
-	if ((cmd & (OSSIOC_IN | OSSIOC_OUT)) && sz) {
 		if ((data = kmem_zalloc(sz, KM_NOSLEEP)) == NULL) {
 			return (ENOMEM);
 		}
