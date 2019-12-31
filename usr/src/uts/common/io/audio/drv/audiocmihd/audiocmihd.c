@@ -673,7 +673,7 @@ void
 cmediahd_reset_port(cmediahd_portc_t *portc)
 {
 	cmediahd_devc_t *devc = portc->devc;
-	int channels;
+	int channels = 0;
 
 	if (devc->suspended)
 		return;
