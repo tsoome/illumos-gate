@@ -687,6 +687,9 @@ solo_alloc_ctrl(solo_dev_t *dev, uint32_t num, uint64_t val)
 		desc.acd_flags = RECCTL;
 		fn = solo_set_stereo;
 		break;
+
+	default:
+		return;
 	}
 
 	pc->val = val;
