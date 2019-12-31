@@ -551,6 +551,7 @@ audiohd_get_channels(audiohd_state_t *statep)
 	uint8_t		maxp, assoc;
 
 	maxp = 2;
+	assoc = 0;
 	for (i = 0; i < AUDIOHD_MAX_ASSOC; i++) {
 		if (maxp < statep->chann[i]) {
 			maxp = statep->chann[i];
@@ -1086,42 +1087,44 @@ audiohd_set_pin_volume(audiohd_state_t *statep, audiohda_device_type_t type)
 	audiohd_ctrl_t			control;
 
 	switch (type) {
-		case DTYPE_SPEAKER:
-			control = statep->ctrls[CTL_SPEAKER];
-			if (control.ctrl == NULL)
-				return;
-			val = control.val;
-			break;
-		case DTYPE_HP_OUT:
-			control = statep->ctrls[CTL_HEADPHONE];
-			if (control.ctrl == NULL)
-				return;
-			val = control.val;
-			break;
-		case DTYPE_LINEOUT:
-			control = statep->ctrls[CTL_FRONT];
-			if (control.ctrl == NULL)
-				return;
-			val = control.val;
-			break;
-		case DTYPE_CD:
-			control = statep->ctrls[CTL_CD];
-			if (control.ctrl == NULL)
-				return;
-			val = control.val;
-			break;
-		case DTYPE_LINE_IN:
-			control = statep->ctrls[CTL_LINEIN];
-			if (control.ctrl == NULL)
-				return;
-			val = control.val;
-			break;
-		case DTYPE_MIC_IN:
-			control = statep->ctrls[CTL_MIC];
-			if (control.ctrl == NULL)
-				return;
-			val = control.val;
-			break;
+	case DTYPE_SPEAKER:
+		control = statep->ctrls[CTL_SPEAKER];
+		if (control.ctrl == NULL)
+			return;
+		val = control.val;
+		break;
+	case DTYPE_HP_OUT:
+		control = statep->ctrls[CTL_HEADPHONE];
+		if (control.ctrl == NULL)
+			return;
+		val = control.val;
+		break;
+	case DTYPE_LINEOUT:
+		control = statep->ctrls[CTL_FRONT];
+		if (control.ctrl == NULL)
+			return;
+		val = control.val;
+		break;
+	case DTYPE_CD:
+		control = statep->ctrls[CTL_CD];
+		if (control.ctrl == NULL)
+			return;
+		val = control.val;
+		break;
+	case DTYPE_LINE_IN:
+		control = statep->ctrls[CTL_LINEIN];
+		if (control.ctrl == NULL)
+			return;
+		val = control.val;
+		break;
+	case DTYPE_MIC_IN:
+		control = statep->ctrls[CTL_MIC];
+		if (control.ctrl == NULL)
+			return;
+		val = control.val;
+		break;
+	default:
+		return;
 	}
 
 	for (i = 0; i < statep->pathnum; i++) {
@@ -1156,6 +1159,7 @@ audiohd_set_pin_volume_by_color(audiohd_state_t *statep,
 	audiohd_pin_color_t	clr;
 	audiohd_ctrl_t		control;
 
+	val = 0;
 	switch (color) {
 		case AUDIOHD_PIN_GREEN:
 			control = statep->ctrls[CTL_FRONT];
@@ -1285,7 +1289,7 @@ static void
 audiohd_set_pin_monitor_gain(hda_codec_t *codec, audiohd_state_t *statep,
     uint_t caddr, audiohd_pin_t *pin, uint64_t gain)
 {
-	int 			i, k;
+	int			i, k;
 	uint_t			ltmp, rtmp;
 	audiohd_widget_t	*widget;
 	uint8_t		l, r;
@@ -2034,7 +2038,7 @@ audiohd_beep_off(void *arg)
 static void
 audiohd_beep_freq(void *arg, int freq)
 {
-	hda_codec_t 	*codec = ((audiohd_widget_t *)arg)->codec;
+	hda_codec_t	*codec = ((audiohd_widget_t *)arg)->codec;
 	audiohd_state_t	*statep = codec->statep;
 	uint32_t	vid = codec->vid >> 16;
 	int		divider;
@@ -3300,7 +3304,7 @@ audiohd_do_build_output_path(hda_codec_t *codec, int mixer, int *mnum,
 static void
 audiohd_build_output_path(hda_codec_t *codec)
 {
-	int 			mnum = 0;
+	int			mnum = 0;
 	uint8_t			mixer_allow = 1;
 
 	/*
@@ -3343,6 +3347,7 @@ audiohd_build_output_amp(hda_codec_t *codec)
 	int		i, j;
 	uint32_t	gain;
 
+	pin = NULL;
 	for (i = 0; i < codec->statep->pathnum; i++) {
 		path = codec->statep->path[i];
 		if (path == NULL || path->path_type != PLAY ||
@@ -3600,12 +3605,12 @@ audiohd_finish_output_path(hda_codec_t *codec)
  * audiohd_find_input_pins()
  *
  * Description:
- * 	Here we consider a mixer/selector with multi-input as a real sum
- * 	widget. Only the first real mixer/selector widget is permitted in
- * 	an input path(recording path). If there are more mixers/selectors
- * 	execept the first one, only the first input/connection of those
- * 	widgets will be used by our driver, that means, we ignore other
- * 	inputs of those mixers/selectors.
+ *	Here we consider a mixer/selector with multi-input as a real sum
+ *	widget. Only the first real mixer/selector widget is permitted in
+ *	an input path(recording path). If there are more mixers/selectors
+ *	execept the first one, only the first input/connection of those
+ *	widgets will be used by our driver, that means, we ignore other
+ *	inputs of those mixers/selectors.
  */
 static int
 audiohd_find_input_pins(hda_codec_t *codec, wid_t wid, int allowmixer,
@@ -4107,10 +4112,10 @@ audiohd_finish_input_path(hda_codec_t *codec)
 static int
 audiohd_find_inpin_for_monitor(hda_codec_t *codec, wid_t id, int mixer)
 {
-	wid_t 			wid;
+	wid_t			wid;
 	audiohd_widget_t	*widget, *w;
 	audiohd_pin_t		*pin;
-	int 			i, find = 0;
+	int			i, find = 0;
 
 	wid = id;
 	widget = codec->widget[wid];
@@ -4188,12 +4193,12 @@ audiohd_find_inpin_for_monitor(hda_codec_t *codec, wid_t id, int mixer)
  * audiohd_build_monitor_path()
  *
  * Description:
- * 	The functionality of mixer is to mix inputs, such as CD-IN, MIC,
- * 	Line-in, etc, with DAC outputs, so as to minitor what is being
- * 	recorded and implement "What you hear is what you get". However,
- * 	this functionality are really hardware-dependent: the inputs
- * 	must be directed to MIXER if they can be directed to ADC as
- * 	recording sources.
+ *	The functionality of mixer is to mix inputs, such as CD-IN, MIC,
+ *	Line-in, etc, with DAC outputs, so as to minitor what is being
+ *	recorded and implement "What you hear is what you get". However,
+ *	this functionality are really hardware-dependent: the inputs
+ *	must be directed to MIXER if they can be directed to ADC as
+ *	recording sources.
  */
 static void
 audiohd_build_monitor_path(hda_codec_t *codec)
@@ -4236,6 +4241,7 @@ audiohd_build_monitor_path(hda_codec_t *codec)
 					break;
 				}
 				mixernum++;
+				find = 0;
 				for (k = 0; k < widget->nconns; k++) {
 
 					/*
@@ -4309,7 +4315,7 @@ static void
 audiohd_do_finish_monitor_path(hda_codec_t *codec, audiohd_widget_t *wgt)
 {
 	uint_t			caddr = codec->index;
-	audiohd_widget_t 	*widget = wgt;
+	audiohd_widget_t	*widget = wgt;
 	audiohd_widget_t	*w;
 	audiohd_state_t		*statep = codec->statep;
 	wid_t			wid;
@@ -4363,7 +4369,7 @@ audiohd_finish_monitor_path(hda_codec_t *codec)
 	audiohd_widget_t	*widget;
 	audiohd_state_t		*statep = codec->statep;
 	wid_t			wid;
-	int 			i, j, k;
+	int			i, j, k;
 
 	for (i = 0; i < statep->pathnum; i++) {
 		path = statep->path[i];
@@ -4486,8 +4492,8 @@ static wid_t
 audiohd_find_beep(hda_codec_t *codec, wid_t wid, int depth)
 {
 	audiohd_widget_t	*widget = codec->widget[wid];
-	wid_t   		wbeep = (uint32_t)(DDI_FAILURE);
-	wid_t   		retval;
+	wid_t			wbeep = (uint32_t)(DDI_FAILURE);
+	wid_t			retval;
 
 	if (depth > AUDIOHD_MAX_DEPTH)
 		return (uint32_t)(DDI_FAILURE);
@@ -5208,9 +5214,9 @@ audiohd_free_port(audiohd_state_t *statep)
 /*
  * audiohd_change_widget_power_state(audiohd_state_t *statep, int state)
  * Description:
- * 	This routine is used to change the widget power betwen D0 and D2.
- * 	D0 is fully on; D2 allows the lowest possible power consuming state
- * 	from which it can return to the fully on state: D0.
+ *	This routine is used to change the widget power betwen D0 and D2.
+ *	D0 is fully on; D2 allows the lowest possible power consuming state
+ *	from which it can return to the fully on state: D0.
  */
 static void
 audiohd_change_widget_power_state(audiohd_state_t *statep, int state)
@@ -5240,7 +5246,7 @@ audiohd_change_widget_power_state(audiohd_state_t *statep, int state)
 /*
  * audiohd_restore_path()
  * Description:
- * 	This routine is used to restore the path on the codec.
+ *	This routine is used to restore the path on the codec.
  */
 static void
 audiohd_restore_path(audiohd_state_t *statep)
@@ -5262,8 +5268,8 @@ audiohd_restore_path(audiohd_state_t *statep)
 /*
  * audiohd_reset_pins_ur_cap()
  * Description:
- * 	Enable the unsolicited response of the pins which have the unsolicited
- * 	response capability
+ *	Enable the unsolicited response of the pins which have the unsolicited
+ *	response capability
  */
 static void
 audiohd_reset_pins_ur_cap(audiohd_state_t *statep)
@@ -5480,7 +5486,7 @@ audiohd_change_speaker_state(audiohd_state_t *statep, int on)
  */
 static void
 audiohd_select_mic(audiohd_state_t *statep, uint8_t index,
-uint8_t id, int select)
+    uint8_t id, int select)
 {
 	hda_codec_t		*codec;
 	audiohd_path_t		*path;
@@ -5623,9 +5629,9 @@ uint8_t id, int select)
  *
  * Description
  *
- * 	When the earphone is plugged into the jack associtated with the pin
- * 	complex, we disable the built in speaker. When the earphone is plugged
- * 	out of the jack, we enable the built in speaker.
+ *	When the earphone is plugged into the jack associtated with the pin
+ *	complex, we disable the built in speaker. When the earphone is plugged
+ *	out of the jack, we enable the built in speaker.
  */
 static void
 audiohd_pin_sense(audiohd_state_t *statep, uint32_t resp, uint32_t respex)
