@@ -569,6 +569,7 @@ ath9k_hw_get_4k_gain_boundaries_pdadcs(struct ath_hal *ah,
 	struct chan_centers centers;
 #define	PD_GAIN_BOUNDARY_DEFAULT	58;
 
+	bzero(minPwrT4, sizeof (minPwrT4));
 	ath9k_hw_get_channel_centers(ah, chan, &centers);
 
 	for (numPiers = 0; numPiers < availPiers; numPiers++) {
@@ -737,6 +738,7 @@ ath9k_hw_get_def_gain_boundaries_pdadcs(struct ath_hal *ah,
 	int16_t minDelta = 0;
 	struct chan_centers centers;
 
+	bzero(minPwrT4, sizeof (minPwrT4));
 	ath9k_hw_get_channel_centers(ah, chan, &centers);
 
 	for (numPiers = 0; numPiers < availPiers; numPiers++) {
@@ -2085,14 +2087,22 @@ ath9k_hw_set_txpower(struct ath_hal *ah,
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	int val;
 
-	if (ahp->ah_eep_map == EEP_MAP_DEFAULT)
+	switch (ahp->ah_eep_map) {
+	case EEP_MAP_DEFAULT:
 		val = ath9k_hw_def_set_txpower(ah, chan, cfgCtl,
 		    twiceAntennaReduction, twiceMaxRegulatoryPower,
 		    powerLimit);
-	else if (ahp->ah_eep_map == EEP_MAP_4KBITS)
+		break;
+	case EEP_MAP_4KBITS:
 		val = ath9k_hw_4k_set_txpower(ah, chan, cfgCtl,
 		    twiceAntennaReduction, twiceMaxRegulatoryPower,
 		    powerLimit);
+		break;
+	default:
+		val = 0;
+		break;
+	}
+
 	return (val);
 }
 
@@ -2619,10 +2629,17 @@ ath9k_hw_eeprom_set_board_values(struct ath_hal *ah, struct ath9k_channel *chan)
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	boolean_t val;
 
-	if (ahp->ah_eep_map == EEP_MAP_DEFAULT)
+	switch (ahp->ah_eep_map) {
+	case EEP_MAP_DEFAULT:
 		val = ath9k_hw_eeprom_set_def_board_values(ah, chan);
-	else if (ahp->ah_eep_map == EEP_MAP_4KBITS)
+		break;
+	case EEP_MAP_4KBITS:
 		val = ath9k_hw_eeprom_set_4k_board_values(ah, chan);
+		break;
+	default:
+		val = 0;
+		break;
+	}
 
 	return (val);
 }
@@ -2688,12 +2705,19 @@ ath9k_hw_get_eeprom_antenna_cfg(struct ath_hal *ah,
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	int val;
 
-	if (ahp->ah_eep_map == EEP_MAP_DEFAULT)
+	switch (ahp->ah_eep_map) {
+	case EEP_MAP_DEFAULT:
 		val = ath9k_hw_get_def_eeprom_antenna_cfg(ah, chan,
 		    index, config);
-	else if (ahp->ah_eep_map == EEP_MAP_4KBITS)
+		break;
+	case EEP_MAP_4KBITS:
 		val = ath9k_hw_get_4k_eeprom_antenna_cfg(ah, chan,
 		    index, config);
+		break;
+	default:
+		val = 0;
+		break;
+	}
 
 	return (val);
 }
@@ -2734,11 +2758,17 @@ ath9k_hw_get_num_ant_config(struct ath_hal *ah,
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	uint8_t val;
 
-	if (ahp->ah_eep_map == EEP_MAP_DEFAULT)
+	switch (ahp->ah_eep_map) {
+	case EEP_MAP_DEFAULT:
 		val = ath9k_hw_get_def_num_ant_config(ah, freq_band);
-	else if (ahp->ah_eep_map == EEP_MAP_4KBITS)
+		break;
+	case EEP_MAP_4KBITS:
 		val = ath9k_hw_get_4k_num_ant_config(ah, freq_band);
-
+		break;
+	default:
+		val = 0;
+		break;
+	}
 	return (val);
 }
 
@@ -2828,10 +2858,10 @@ ath9k_hw_get_eeprom_4k(struct ath_hal *ah,
 uint32_t
 ath9k_hw_get_eeprom_def(struct ath_hal *ah, enum eeprom_param param)
 {
-	struct ath_hal_5416 	*ahp = AH5416(ah);
+	struct ath_hal_5416 *ahp = AH5416(ah);
 	struct ar5416_eeprom_def *eep = &ahp->ah_eeprom.def;
 	struct modal_eep_header *pModal = eep->modalHeader;
-	struct base_eep_header 	*pBase = &eep->baseEepHeader;
+	struct base_eep_header *pBase = &eep->baseEepHeader;
 
 	switch (param) {
 	case EEP_NFTHRESH_5:
@@ -2905,10 +2935,17 @@ ath9k_hw_get_eeprom(struct ath_hal *ah, enum eeprom_param param)
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	uint32_t val;
 
-	if (ahp->ah_eep_map == EEP_MAP_DEFAULT)
+	switch (ahp->ah_eep_map) {
+	case EEP_MAP_DEFAULT:
 		val = ath9k_hw_get_eeprom_def(ah, param);
-	else if (ahp->ah_eep_map == EEP_MAP_4KBITS)
+		break;
+	case EEP_MAP_4KBITS:
 		val = ath9k_hw_get_eeprom_4k(ah, param);
+		break;
+	default:
+		val = 0;
+		break;
+	}
 
 	return (val);
 }
