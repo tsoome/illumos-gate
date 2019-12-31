@@ -685,6 +685,8 @@ audioens_count(void *arg)
 		page = CONC_ADCCTL_PAGE;
 		offs = CONC_wADCFC_OFF;
 		break;
+	default:
+		return (0);
 	}
 
 	mutex_enter(&dev->mutex);
