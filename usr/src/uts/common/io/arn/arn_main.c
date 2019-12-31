@@ -557,7 +557,7 @@ arn_chan2mode(struct ath9k_channel *chan)
 static void
 arn_update_txpow(struct arn_softc *sc)
 {
-	struct ath_hal 	*ah = sc->sc_ah;
+	struct ath_hal *ah = sc->sc_ah;
 	uint32_t txpow;
 
 	if (sc->sc_curtxpow != sc->sc_config.txpowlimit) {
@@ -785,9 +785,8 @@ arn_chan2flags(ieee80211com_t *isc, struct ieee80211_channel *chan)
 		channel_mode = CHANNEL_G;
 		break;
 	case IEEE80211_MODE_FH:
-		channel_mode = 0;
-		break;
 	default:
+		channel_mode = 0;
 		break;
 	}
 
@@ -820,7 +819,7 @@ arn_chan_change(struct arn_softc *sc, struct ieee80211_channel *chan)
 		wlmode = ATH9K_MODE_11B;
 		break;
 	default:
-		break;
+		return;
 	}
 	if (wlmode != sc->sc_curmode)
 		arn_setcurmode(sc, wlmode);
@@ -1398,6 +1397,7 @@ arn_newstate(ieee80211com_t *ic, enum ieee80211_state nstate, int arg)
 	struct ath9k_channel *channel;
 	int pos;
 
+	error = 0;
 	/* Should set up & init LED here */
 
 	if (sc->sc_flags & SC_OP_INVALID)
