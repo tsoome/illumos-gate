@@ -942,6 +942,7 @@ proto_setphysaddr_req(dld_str_t *dsp, mblk_t *mp)
 	    mac_protect_enabled(dsp->ds_mch, MPT_MACNOSPOOF)) {
 		dls_active_clear(dsp, B_FALSE);
 		err = EACCES;
+		dl_err = DL_ACCESS;
 		goto failed2;
 	}
 
