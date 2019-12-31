@@ -459,6 +459,8 @@ audiopci_count(void *arg)
 		page = CONC_ADCCTL_PAGE;
 		offs = CONC_wADCFC_OFF;
 		break;
+	default:
+		return (0);
 	}
 
 	/*
@@ -1135,6 +1137,8 @@ audiopci_alloc_ctrl(audiopci_dev_t *dev, uint32_t num, uint64_t val)
 		desc.acd_flags = RECCTL;
 		fn = audiopci_set_micboost;
 		break;
+	default:
+		return;
 	}
 
 	pc->val = val;
