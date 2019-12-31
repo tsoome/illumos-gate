@@ -5341,7 +5341,7 @@ bge_chip_factotum(caddr_t arg)
 	bge_t *bgep;
 	uint_t result;
 	boolean_t error;
-	int dma_state;
+	int dma_state = DDI_FM_OK;
 
 	bgep = (void *)arg;
 
@@ -5375,6 +5375,7 @@ bge_chip_factotum(caddr_t arg)
 		}
 
 		error = bge_factotum_stall_check(bgep);
+		/* TODO: where dma_state is coming from? */
 		if (dma_state != DDI_FM_OK) {
 			bgep->bge_dma_error = B_TRUE;
 			error = B_TRUE;
