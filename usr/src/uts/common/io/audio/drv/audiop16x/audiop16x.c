@@ -340,7 +340,7 @@ static void
 p16x_chinfo(void *arg, int chan, unsigned *offset, unsigned *incr)
 {
 	p16x_port_t *port = arg;
-	unsigned mult;
+	unsigned mult = 0;
 
 	if (port->port_num == P16X_PLAY) {
 		switch (chan) {
