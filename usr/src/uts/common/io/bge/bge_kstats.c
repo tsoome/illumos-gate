@@ -295,7 +295,7 @@ static const bge_ksindex_t bge_chipid[] = {
 
 	{ 21,				"asic_rev_prod_id"	},
 
-	{ -1,				NULL 			}
+	{ -1,				NULL			}
 };
 
 static void
@@ -395,7 +395,7 @@ static const bge_ksindex_t bge_driverinfo[] = {
 	{ 25,				"buff_mgr_status"	},
 	{ 26,				"rcv_init_status"	},
 
-	{ -1,				NULL 			}
+	{ -1,				NULL			}
 };
 
 static int
@@ -694,6 +694,7 @@ bge_m_stat(void *arg, uint_t stat, uint64_t *val)
 		return (EINVAL);
 	}
 
+	bstp = NULL;
 	if (bgep->chipid.statistic_type == BGE_STAT_BLK)
 		bstp = DMA_VPTR(bgep->statistics);
 	else {
