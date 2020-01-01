@@ -87,48 +87,48 @@ hxge_tx_ring_send(void *arg, mblk_t *mp)
 static int
 hxge_start(p_hxge_t hxgep, p_tx_ring_t tx_ring_p, p_mblk_t mp)
 {
-	int 			dma_status, status = 0;
-	p_tx_desc_t 		tx_desc_ring_vp;
+	int			dma_status, status = 0;
+	p_tx_desc_t		tx_desc_ring_vp;
 	hpi_handle_t		hpi_desc_handle;
-	hxge_os_dma_handle_t 	tx_desc_dma_handle;
-	p_tx_desc_t 		tx_desc_p;
-	p_tx_msg_t 		tx_msg_ring;
-	p_tx_msg_t 		tx_msg_p;
+	hxge_os_dma_handle_t	tx_desc_dma_handle;
+	p_tx_desc_t		tx_desc_p;
+	p_tx_msg_t		tx_msg_ring;
+	p_tx_msg_t		tx_msg_p;
 	tx_desc_t		tx_desc, *tmp_desc_p;
 	tx_desc_t		sop_tx_desc, *sop_tx_desc_p;
 	p_tx_pkt_header_t	hdrp;
 	p_tx_pkt_hdr_all_t	pkthdrp;
 	uint8_t			npads = 0;
-	uint64_t 		dma_ioaddr;
+	uint64_t		dma_ioaddr;
 	uint32_t		dma_flags;
 	int			last_bidx;
-	uint8_t 		*b_rptr;
-	caddr_t 		kaddr;
+	uint8_t			*b_rptr;
+	caddr_t			kaddr;
 	uint32_t		nmblks;
 	uint32_t		ngathers;
 	uint32_t		clen;
-	int 			len;
+	int			len;
 	uint32_t		pkt_len, pack_len, min_len;
 	uint32_t		bcopy_thresh;
-	int 			i, cur_index, sop_index;
+	int			i, cur_index, sop_index;
 	uint16_t		tail_index;
 	boolean_t		tail_wrap = B_FALSE;
 	hxge_dma_common_t	desc_area;
-	hxge_os_dma_handle_t 	dma_handle;
-	ddi_dma_cookie_t 	dma_cookie;
+	hxge_os_dma_handle_t	dma_handle;
+	ddi_dma_cookie_t	dma_cookie;
 	hpi_handle_t		hpi_handle;
-	p_mblk_t 		nmp;
+	p_mblk_t		nmp;
 	p_mblk_t		t_mp;
-	uint32_t 		ncookies;
-	boolean_t 		good_packet;
-	boolean_t 		mark_mode = B_FALSE;
-	p_hxge_stats_t 		statsp;
+	uint32_t		ncookies;
+	boolean_t		good_packet;
+	boolean_t		mark_mode = B_FALSE;
+	p_hxge_stats_t		statsp;
 	p_hxge_tx_ring_stats_t	tdc_stats;
-	t_uscalar_t 		start_offset = 0;
-	t_uscalar_t 		stuff_offset = 0;
-	t_uscalar_t 		end_offset = 0;
-	t_uscalar_t 		value = 0;
-	t_uscalar_t 		cksum_flags = 0;
+	t_uscalar_t		start_offset = 0;
+	t_uscalar_t		stuff_offset = 0;
+	t_uscalar_t		end_offset = 0;
+	t_uscalar_t		value = 0;
+	t_uscalar_t		cksum_flags = 0;
 	boolean_t		cksum_on = B_FALSE;
 	uint32_t		boff = 0;
 	uint64_t		tot_xfer_len = 0, tmp_len = 0;
@@ -136,8 +136,8 @@ hxge_start(p_hxge_t hxgep, p_tx_ring_t tx_ring_p, p_mblk_t mp)
 	tdc_tdr_kick_t		kick;
 	uint32_t		offset;
 #ifdef HXGE_DEBUG
-	p_tx_desc_t 		tx_desc_ring_pp;
-	p_tx_desc_t 		tx_desc_pp;
+	p_tx_desc_t		tx_desc_ring_pp;
+	p_tx_desc_t		tx_desc_pp;
 	tx_desc_t		*save_desc_p;
 	int			dump_len;
 	int			sad_len;
@@ -152,6 +152,8 @@ hxge_start(p_hxge_t hxgep, p_tx_ring_t tx_ring_p, p_mblk_t mp)
 	    "==> hxge_start: Starting tdc %d desc pending %d",
 	    tx_ring_p->tdc, tx_ring_p->descs_pending));
 
+	hdrp = NULL;
+	tx_msg_p = NULL;
 	statsp = hxgep->statsp;
 
 	if (hxgep->statsp->port_stats.lb_mode == hxge_lb_normal) {
