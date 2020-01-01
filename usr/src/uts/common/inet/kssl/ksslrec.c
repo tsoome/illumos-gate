@@ -2145,6 +2145,7 @@ kssl_handle_v2client_hello(ssl_t *ssl, mblk_t *mp, int recsz)
 	bcopy(rand, &ssl->client_random[SSL3_RANDOM_LENGTH - randlen],
 	    randlen);
 
+	selected_suite = 0;
 	for (i = 0; i < ssl->kssl_entry->kssl_cipherSuites_nentries; i++) {
 		suite = ssl->kssl_entry->kssl_cipherSuites[i];
 		for (j = 0; j < cslen; j += 3) {
