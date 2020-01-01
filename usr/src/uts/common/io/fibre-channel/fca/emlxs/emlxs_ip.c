@@ -314,6 +314,7 @@ emlxs_ip_handle_rcv_seq_list(emlxs_hba_t *hba, CHANNEL *cp, IOCBQ *iocbq)
 	 */
 	cmd = &iocbq->iocb;
 	rp = &hba->sli.sli3.ring[cp->channelno];
+	hbq_id = 0;
 
 	HBASTATS.IpRcvEvent++;
 
