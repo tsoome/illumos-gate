@@ -991,35 +991,36 @@ oce_destroy_q(struct oce_dev *dev, struct oce_mbx  *mbx, size_t req_size,
 	int ret;
 
 	switch (qtype) {
-	case QTYPE_EQ: {
+	case QTYPE_EQ:
 		opcode = OPCODE_DESTROY_COMMON_EQ;
 		subsys = MBX_SUBSYSTEM_COMMON;
 		break;
-	}
-	case QTYPE_CQ: {
+
+	case QTYPE_CQ:
 		opcode = OPCODE_DESTROY_COMMON_CQ;
 		subsys = MBX_SUBSYSTEM_COMMON;
 		break;
-	}
-	case QTYPE_MQ: {
+
+	case QTYPE_MQ:
 		opcode = OPCODE_DESTROY_COMMON_MQ;
 		subsys = MBX_SUBSYSTEM_COMMON;
 		break;
-	}
-	case QTYPE_WQ: {
+
+	case QTYPE_WQ:
 		opcode = OPCODE_DELETE_NIC_WQ;
 		subsys = MBX_SUBSYSTEM_NIC;
 		break;
-	}
-	case QTYPE_RQ: {
+
+	case QTYPE_RQ:
 		opcode = OPCODE_DELETE_NIC_RQ;
 		subsys = MBX_SUBSYSTEM_NIC;
 		break;
-	}
-	default: {
+
+	default:
+		opcode = 0;
+		subsys = 0;
 		ASSERT(0);
 		break;
-	}
 	}
 
 	mbx_common_req_hdr_init(hdr, 0, 0, subsys,
