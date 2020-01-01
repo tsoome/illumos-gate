@@ -3912,13 +3912,13 @@ ql_add_intr_handlers(qlge_t *qlge)
 	uint32_t value;
 	struct intr_ctx *intr_ctx = &qlge->intr_ctx[0];
 
+	value = 0;
 	switch (qlge->intr_type) {
 	case DDI_INTR_TYPE_MSIX:
 		/*
 		 * Add interrupt handler for rx and tx rings: vector[0 -
 		 * (qlge->intr_cnt -1)].
 		 */
-		value = 0;
 		for (vector = 0; vector < qlge->intr_cnt; vector++) {
 			ql_atomic_set_32(&intr_ctx->irq_cnt, value);
 
@@ -4200,6 +4200,7 @@ ql_request_irq_vectors(qlge_t *qlge, int intr_type)
 	int rc;
 
 	devinfo = qlge->dip;
+	orig = 0;
 
 	switch (intr_type) {
 	case DDI_INTR_TYPE_FIXED:
@@ -5324,7 +5325,7 @@ ql_send_common(struct tx_ring *tx_ring, mblk_t *mp)
 	size_t max_seg_len = 0;
 	boolean_t use_lso = B_FALSE;
 	struct oal_entry *tx_entry = NULL;
-	struct oal_entry *last_oal_entry;
+	struct oal_entry *last_oal_entry = NULL;
 	qlge_t *qlge = tx_ring->qlge;
 	ddi_dma_cookie_t dma_cookie;
 	size_t tx_buf_len = QL_MAX_COPY_LENGTH;
