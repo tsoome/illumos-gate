@@ -2984,9 +2984,10 @@ iwp_send(ieee80211com_t *ic, mblk_t *mp, uint8_t type)
 	uint16_t masks = 0;
 	uint32_t rate, s_id = 0;
 
-	if (NULL == ic) {
+	if (ic == NULL) {
 		return (IWP_FAIL);
 	}
+	rate = 0;
 	sc = (iwp_sc_t *)ic;
 
 	if (sc->sc_flags & IWP_F_SUSPEND) {
