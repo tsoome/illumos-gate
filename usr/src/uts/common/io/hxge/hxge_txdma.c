@@ -1870,6 +1870,9 @@ hxge_map_txdma_channel_buf_ring(p_hxge_t hxgep, uint16_t channel,
 	HXGE_DEBUG_MSG((hxgep, MEM3_CTL,
 	    "==> hxge_map_txdma_channel_buf_ring"));
 
+	index = 0;
+	size = 0;
+	tx_msg_ring = NULL;
 	dma_bufp = tmp_bufp = *dma_buf_p;
 	HXGE_DEBUG_MSG((hxgep, MEM3_CTL,
 	    " hxge_map_txdma_channel_buf_ring: channel %d to map %d "
