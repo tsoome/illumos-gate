@@ -941,12 +941,12 @@ pm_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *cr, int *rval_p)
 	char		pathbuf[MAXNAMELEN];
 	struct pm_component *cp;
 #ifdef	_MULTI_DATAMODEL
-	pm_state_change32_t		*pscp32;
+	pm_state_change32_t		*pscp32 = NULL;
 	pm_state_change32_t		psc32;
 	pm_searchargs32_t		psa32;
 	size_t				copysize32;
 #endif
-	pm_state_change_t		*pscp;
+	pm_state_change_t		*pscp = NULL;
 	pm_state_change_t		psc;
 	pm_searchargs_t		psa;
 	char		listname[MAXCOPYBUF];
