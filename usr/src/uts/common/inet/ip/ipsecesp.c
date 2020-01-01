@@ -1843,6 +1843,7 @@ esp_submit_req_inbound(mblk_t *esp_mp, ip_recv_attr_t *ira,
 	ipsec_stack_t *ipss = ns->netstack_ipsec;
 	ipsecesp_stack_t *espstack = ns->netstack_ipsecesp;
 
+	mp = NULL;
 	do_auth = assoc->ipsa_auth_alg != SADB_AALG_NONE;
 	do_encr = assoc->ipsa_encr_alg != SADB_EALG_NULL;
 	force = (assoc->ipsa_flags & IPSA_F_ASYNC);
@@ -2172,6 +2173,7 @@ esp_submit_req_outbound(mblk_t *data_mp, ip_xmit_attr_t *ixa, ipsa_t *assoc,
 	esp3dbg(espstack, ("esp_submit_req_outbound:%s",
 	    is_natt ? "natt" : "not natt"));
 
+	mp = NULL;
 	do_encr = assoc->ipsa_encr_alg != SADB_EALG_NULL;
 	do_auth = assoc->ipsa_auth_alg != SADB_AALG_NONE;
 	force = (assoc->ipsa_flags & IPSA_F_ASYNC);
@@ -2382,6 +2384,7 @@ esp_outbound(mblk_t *data_mp, ip_xmit_attr_t *ixa)
 	boolean_t	need_refrele = B_FALSE;
 
 	ESP_BUMP_STAT(espstack, out_requests);
+	ip6h = NULL;
 
 	/*
 	 * <sigh> We have to copy the message here, because TCP (for example)
