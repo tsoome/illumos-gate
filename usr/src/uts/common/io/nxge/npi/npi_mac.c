@@ -965,7 +965,7 @@ npi_mac_port_attr(npi_handle_t handle, io_op_t op, uint8_t portn,
 
 	case MAC_PORT_FRAME_SIZE: {
 		uint32_t min_fsize;
-		uint32_t max_fsize;
+		uint32_t max_fsize = 0;
 
 		switch (portn) {
 		case XMAC_PORT_0:
