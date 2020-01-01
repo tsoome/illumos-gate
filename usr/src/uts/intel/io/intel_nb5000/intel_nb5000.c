@@ -236,6 +236,7 @@ nf_memory_error(const nb_regs_t *rp, void *data)
 	char *intr = "nb.unknown";
 	nb_mem_scatchpad_t *sp = &((nb_scatchpad_t *)data)->ms;
 
+	recmemb = 0;
 	sp->rank = -1;
 	sp->dimm = -1;
 	sp->bank = -1;
@@ -2165,6 +2166,8 @@ nb_drain(void *ignored, const void *data, const errorq_elem_t *eqe)
 	char buf[FM_MAX_CLASS];
 	nb_scatchpad_t nb_scatchpad;
 
+	eqep = NULL;
+	scr_eqep = NULL;
 	if (panicstr) {
 		if ((eqep = errorq_reserve(ereport_errorq)) == NULL)
 			return;
