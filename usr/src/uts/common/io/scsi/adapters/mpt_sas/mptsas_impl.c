@@ -313,6 +313,7 @@ mptsas_access_config_page(mptsas_t *mpt, uint8_t action, uint8_t page_type,
 
 	va_start(ap, callback);
 	ASSERT(mutex_owned(&mpt->m_mutex));
+	iocloginfo = 0;
 
 	/*
 	 * Get a command from the pool.
