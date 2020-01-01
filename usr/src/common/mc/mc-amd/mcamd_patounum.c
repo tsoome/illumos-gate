@@ -106,6 +106,7 @@ iaddr_gen(struct mcamd_hdl *hdl, mcamd_node_t *mc, uint64_t pa,
 
 	dramaddr = BITS(pa, 39, 0) - BITS(base, 39, 24);
 
+	top = 0;
 	if (ilen != 0) {
 		int pailsel;
 
@@ -285,6 +286,9 @@ unum_fill(struct mcamd_hdl *hdl, mcamd_node_t *cs, int which,
 		unump->unum_dimms[0] = (int)dimm1;
 		unump->unum_dimms[1] = (int)dimm2;
 		offsetdimm = (int)dimm1;
+		break;
+	default:
+		offsetdimm = 0;
 		break;
 	}
 

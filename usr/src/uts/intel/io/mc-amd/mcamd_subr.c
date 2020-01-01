@@ -104,6 +104,7 @@ mcamd_cs_next(mcamd_hdl_t *hdl, mcamd_node_t *node, mcamd_node_t *last)
 	int i;
 	void *retval;
 
+	retval = NULL;
 	ASSERT(nt == MC_NT_MC || nt == MC_NT_DIMM);
 
 	if (last == NULL) {
@@ -142,7 +143,7 @@ mcamd_cs_next(mcamd_hdl_t *hdl, mcamd_node_t *node, mcamd_node_t *last)
 		}
 	}
 
-	return ((mcamd_node_t *)retval);
+	return (retval);
 }
 
 /*
@@ -161,6 +162,7 @@ mcamd_dimm_next(mcamd_hdl_t *hdl, mcamd_node_t *node, mcamd_node_t *last)
 	int i;
 	void *retval;
 
+	retval = NULL;
 	ASSERT(nt == MC_NT_MC || nt == MC_NT_CS);
 
 	if (last == NULL) {
@@ -199,7 +201,7 @@ mcamd_dimm_next(mcamd_hdl_t *hdl, mcamd_node_t *node, mcamd_node_t *last)
 		}
 	}
 
-	return ((mcamd_node_t *)retval);
+	return (retval);
 }
 
 /*ARGSUSED*/
