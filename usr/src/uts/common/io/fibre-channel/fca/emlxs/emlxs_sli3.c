@@ -3162,6 +3162,7 @@ emlxs_sli3_issue_mbox_cmd(emlxs_hba_t *hba, MAILBOXQ *mbq, int32_t flag,
 	uint32_t		tmo_local;
 	MAILBOX			*swpmb;
 
+	offset = 0;
 	if (!mbq->port) {
 		mbq->port = &PPORT;
 	}

@@ -2972,6 +2972,8 @@ emlxs_dfc_create_vport(emlxs_hba_t *hba, dfc_t *dfc, int32_t mode)
 	char		name[256];
 	uint8_t		wwn[8];
 
+	vpi = 0;
+	vport = NULL;
 	options = dfc->data1;
 
 	if (!dfc->buf1 || !dfc->buf1_size) {
@@ -3066,7 +3068,7 @@ emlxs_dfc_create_vport(emlxs_hba_t *hba, dfc_t *dfc, int32_t mode)
 		/* Generate new WWPN */
 		bcopy((caddr_t)&hba->wwpn, (caddr_t)dfc_vport->wwpn, 8);
 		dfc_vport->wwpn[0] = 0x20;
-		dfc_vport->wwpn[1] = (uint8_t)vpi;
+		dfc_vport->wwpn[1] = vpi;
 	} else {	/* use one provided */
 
 		/* Make sure WWPN is unique */
@@ -3087,7 +3089,7 @@ emlxs_dfc_create_vport(emlxs_hba_t *hba, dfc_t *dfc, int32_t mode)
 		/* Generate new WWNN */
 		bcopy((caddr_t)&hba->wwnn, (caddr_t)dfc_vport->wwnn, 8);
 		dfc_vport->wwnn[0] = 0x28;
-		dfc_vport->wwnn[1] = (uint8_t)vpi;
+		dfc_vport->wwnn[1] = vpi;
 	}
 	/* else use WWNN provided */
 

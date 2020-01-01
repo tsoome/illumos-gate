@@ -410,6 +410,7 @@ emlxs_dhc_state(emlxs_port_t *port, emlxs_node_t *ndlp, uint32_t state,
 	emlxs_node_dhc_t *node_dhc = &ndlp->node_dhc;
 	uint32_t pstate;
 
+	pstate = 0;
 	if ((state != NODE_STATE_NOCHANGE) && (node_dhc->state != state)) {
 		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_state_msg,
 		    "Node:0x%x %s --> %s", ndlp->nlp_DID,
@@ -1495,7 +1496,9 @@ emlxs_issue_auth_negotiate(
 	uint16_t hash_wcnt = 0;
 	uint16_t dhgp_wcnt = 0;
 
-
+	ap2 = NULL;
+	null_ap1 = NULL;
+	null_ap2 = NULL;
 	emlxs_dhc_state(port, ndlp, NODE_STATE_AUTH_NEGOTIATE_ISSUE, 0, 0);
 
 	/* Full DH group support limit:2, only NULL group support limit:1 */
@@ -4699,8 +4702,8 @@ emlxs_port_t *port,
 	uint32_t msglen;
 	uint8_t *tmp;
 
-	uint8_t ReasonCode;
-	uint8_t ReasonCodeExplanation;
+	uint8_t ReasonCode = 0;
+	uint8_t ReasonCodeExplanation = 0;
 	AUTH_MSG_HDR *msg;
 	uint8_t *temp;
 	uint32_t rc, i, hs_id[2], dh_id[5];
@@ -5023,7 +5026,7 @@ emlxs_hash_vrf(
 	emlxs_node_dhc_t *node_dhc = &ndlp->node_dhc;
 	uint32_t dhgp_id;
 	uint32_t hash_id;
-	uint32_t *hash_val;
+	uint32_t *hash_val = NULL;
 	uint32_t hash_size;
 	MD5_CTX mdctx;
 	SHA1_CTX sha1ctx;
@@ -5235,7 +5238,7 @@ uint32_t dhvallen)
 	emlxs_node_dhc_t *node_dhc = &ndlp->node_dhc;
 	uint32_t dhgp_id;
 	uint32_t hash_id;
-	uint32_t *hash_val;
+	uint32_t *hash_val = NULL;
 	uint32_t hash_size;
 	MD5_CTX mdctx;
 	SHA1_CTX sha1ctx;
@@ -5635,6 +5638,10 @@ emlxs_BIGNUM_get_pubkey(
 		plen = 256;
 		tmp = dhgp4_pVal;
 		break;
+
+	default:
+		err = BIG_INVALID_ARGS;
+		goto ret2;
 	}
 
 	if (big_init(&n, CHARLEN2BIGNUMLEN(plen)) != BIG_OK) {
@@ -5644,7 +5651,7 @@ emlxs_BIGNUM_get_pubkey(
 		err = BIG_NO_MEM;
 		goto ret2;
 	}
-	bytestring2bignum(&n, (unsigned char *)tmp, plen);
+	bytestring2bignum(&n, tmp, plen);
 
 	if (big_init(&result, CHARLEN2BIGNUMLEN(512)) != BIG_OK) {
 		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
@@ -5851,6 +5858,10 @@ uint32_t privkey_len)
 		plen = 256;
 		tmp = dhgp4_pVal;
 		break;
+
+	default:
+		err = BIG_INVALID_ARGS;
+		goto ret3;
 	}
 
 	if (big_init(&n, CHARLEN2BIGNUMLEN(plen)) != BIG_OK) {
@@ -5862,7 +5873,7 @@ uint32_t privkey_len)
 		goto ret3;
 	}
 	/* get p */
-	bytestring2bignum(&n, (unsigned char *)tmp, plen);
+	bytestring2bignum(&n, tmp, plen);
 
 	/* to cal: (g^x mod p) */
 	if (big_modexp(&result1, &g, &e, &n, NULL) != BIG_OK) {
@@ -5986,6 +5997,10 @@ emlxs_BIGNUM_pubkey(
 		plen = 256;
 		tmp = dhgp4_pVal;
 		break;
+
+	default:
+		err = BIG_INVALID_ARGS;
+		goto ret2;
 	}
 
 	if (big_init(&n, CHARLEN2BIGNUMLEN(plen)) != BIG_OK) {
@@ -5996,7 +6011,7 @@ emlxs_BIGNUM_pubkey(
 		err = BIG_NO_MEM;
 		goto ret2;
 	}
-	bytestring2bignum(&n, (unsigned char *)tmp, plen);
+	bytestring2bignum(&n, tmp, plen);
 
 	if (big_init(&result, CHARLEN2BIGNUMLEN(512)) != BIG_OK) {
 		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
@@ -8072,6 +8087,7 @@ emlxs_auth_cfg_parse(
 	uint32_t sum;
 	char *s;
 
+	sum = 0;
 	s = prop_str;
 	bzero(auth_cfg, sizeof (emlxs_auth_cfg_t));
 
@@ -8723,6 +8739,7 @@ emlxs_auth_key_parse(
 	uint32_t sum;
 	char *s;
 
+	sum = 0;
 	s = prop_str;
 	bzero(auth_key, sizeof (emlxs_auth_key_t));
 
