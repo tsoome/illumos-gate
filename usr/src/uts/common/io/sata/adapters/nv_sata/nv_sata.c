@@ -2504,7 +2504,7 @@ nv_reset(nv_port_t *nvp, char *reason)
 static void
 mcp5x_reg_init(nv_ctl_t *nvc, ddi_acc_handle_t pci_conf_handle)
 {
-	nv_port_t *nvp;
+	nv_port_t *nvp = NULL;
 	uchar_t *bar5  = nvc->nvc_bar_addr[5];
 	uint8_t off, port;
 
@@ -4064,7 +4064,7 @@ nv_vcmn_err(int ce, nv_ctl_t *nvc, nv_port_t *nvp, const char *fmt, va_list ap,
 {
 	char port[NV_STR_LEN];
 	char inst[NV_STR_LEN];
-	dev_info_t *dip;
+	dev_info_t *dip = NULL;
 
 	if (nvc) {
 		(void) snprintf(inst, NV_STR_LEN, "inst%d ",
@@ -5783,7 +5783,7 @@ nv_timeout(void *arg)
 		sata_pkt_t *spkt = nv_slotp->nvslot_spkt;
 		sata_cmd_t *satacmd = &spkt->satapkt_cmd;
 		uint8_t cmd = satacmd->satacmd_cmd_reg;
-		uint64_t lba;
+		uint64_t lba = 0;
 
 #if ! defined(__lock_lint) && defined(DEBUG)
 
