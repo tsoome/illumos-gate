@@ -434,10 +434,11 @@ create_kssl_entry(kssl_params_t *kssl_params, Certificate_t *cert,
 		}
 	}
 
+	cnt = 0;
+	got_rsa = got_md5 = got_sha1 = got_rc4 =
+	    got_des = got_3des = got_aes = B_FALSE;
 	mechs = crypto_get_mech_list(&mech_count, KM_SLEEP);
 	if (mechs != NULL) {
-		got_rsa = got_md5 = got_sha1 = got_rc4 =
-		    got_des = got_3des = got_aes = B_FALSE;
 		for (i = 0; i < mech_count; i++) {
 			if (strncmp(SUN_CKM_RSA_X_509, mechs[i],
 			    CRYPTO_MAX_MECH_NAME) == 0)
@@ -462,7 +463,6 @@ create_kssl_entry(kssl_params_t *kssl_params, Certificate_t *cert,
 				got_aes = B_TRUE;
 		}
 
-		cnt = 0;
 		ep = kssl_entry;
 		for (i = 0; i < CIPHER_SUITE_COUNT - 1; i++) {
 			switch (s = kssl_params->kssl_suites[i]) {
