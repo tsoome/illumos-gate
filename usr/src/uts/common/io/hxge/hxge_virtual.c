@@ -95,7 +95,7 @@ hxge_set_hw_vlan_class_config(p_hxge_t hxgep)
 	int			*vlan_cfg_val;
 	hxge_param_map_t	*vmap;
 	char			*prop;
-	p_hxge_class_pt_cfg_t 	p_class_cfgp;
+	p_hxge_class_pt_cfg_t	p_class_cfgp;
 	uint32_t		good_cfg[32];
 	int			good_count = 0;
 	hxge_mv_cfg_t		*vlan_tbl;
@@ -229,8 +229,8 @@ hxge_use_cfg_dma_config(p_hxge_t hxgep)
 	dev_info_t		*dip;
 	p_hxge_param_t		param_arr;
 	char			*prop;
-	int 			*prop_val;
-	uint_t 			prop_len;
+	int			*prop_val;
+	uint_t			prop_len;
 
 	HXGE_DEBUG_MSG((hxgep, CFG_CTL, " ==> hxge_use_cfg_dma_config"));
 	param_arr = hxgep->param_arr;
@@ -472,6 +472,7 @@ hxge_ldgv_init(p_hxge_t hxgep, int *navail_p, int *nrequired_p)
 	hxge_status_t		status = HXGE_OK;
 	peu_intr_mask_t		parity_err_mask;
 
+	ldgp = NULL;
 	HXGE_DEBUG_MSG((hxgep, INT_CTL, "==> hxge_ldgv_init"));
 	if (!*navail_p) {
 		*nrequired_p = 0;
@@ -905,7 +906,7 @@ hxge_get_mac_addr_properties(p_hxge_t hxgep)
 
 static void
 hxge_ldgv_setup(p_hxge_ldg_t *ldgp, p_hxge_ldv_t *ldvp, uint8_t ldv,
-	uint8_t endldg, int *ngrps)
+    uint8_t endldg, int *ngrps)
 {
 	HXGE_DEBUG_MSG((NULL, INT_CTL, "==> hxge_ldgv_setup"));
 	/* Assign the group number for each device. */
