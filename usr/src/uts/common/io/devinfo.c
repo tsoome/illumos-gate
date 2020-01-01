@@ -1734,6 +1734,7 @@ di_copytree(struct dev_info *root, di_off_t *off_p, struct di_state *st)
 	struct dev_info	*node;
 	struct di_stack	*dsp = kmem_zalloc(sizeof (struct di_stack), KM_SLEEP);
 
+	off = 0;
 	dcmn_err((CE_CONT, "di_copytree: root = %p, *off_p = %x\n",
 	    (void *)root, *off_p));
 
@@ -2760,6 +2761,7 @@ di_path_getprop(mdi_pathinfo_t *pip, di_off_t *off_p,
 	uchar_t			*buf;
 	uint_t			nelems;
 
+	me = NULL;
 	off = *off_p;
 	if (mdi_pi_get_next_prop(pip, NULL) == NULL) {
 		*off_p = 0;
