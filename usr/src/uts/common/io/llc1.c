@@ -2172,6 +2172,7 @@ llc1_form_udata(llc1_t *lld, llc_mac_info_t *macinfo, mblk_t *mp)
 		else
 			mp->b_rptr += sizeof (struct ether_header);
 
+		snap = NULL;
 		if (lld->llc_flags & LLC_SNAP) {
 			mp->b_rptr += sizeof (struct snaphdr);
 			snap = (struct snaphdr *)(llchdr + 1);
@@ -2278,6 +2279,7 @@ llc1_xid_reply(llc_mac_info_t *macinfo, mblk_t *mp, int sap)
 	} else {
 		if (mp->b_cont == NULL)
 			return (mp);
+		hdr = NULL;
 		llchdr = (struct llchdr *)(mp->b_cont->b_rptr);
 	}
 
