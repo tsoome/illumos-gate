@@ -77,6 +77,7 @@ emlxs_handle_fcp_event(emlxs_hba_t *hba, CHANNEL *cp, IOCBQ *iocbq)
 	uint32_t length;
 
 	cmd = &iocbq->iocb;
+	scsi_dl = 0;
 
 	/* Initialize the status */
 	iostat = cmd->ULPSTATUS;
