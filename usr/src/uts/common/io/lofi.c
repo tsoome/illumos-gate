@@ -2827,6 +2827,7 @@ lofi_map_file(dev_t dev, struct lofi_ioctl *ulip, int pickminor,
 	int	flag;
 	char	namebuf[MAXNAMELEN];
 
+	flag = FREAD | FWRITE | FOFFMAX | FEXCL;
 	error = copy_in_lofi_ioctl(ulip, &klip, ioctl_flag);
 	if (error != 0)
 		return (error);
@@ -2839,7 +2840,6 @@ lofi_map_file(dev_t dev, struct lofi_ioctl *ulip, int pickminor,
 		goto err;
 	}
 
-	flag = FREAD | FWRITE | FOFFMAX | FEXCL;
 	error = vn_open(klip->li_filename, UIO_SYSSPACE, flag, 0, &vp, 0, 0);
 	if (error) {
 		/* try read-only */
