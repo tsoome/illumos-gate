@@ -3085,9 +3085,10 @@ iwh_send(ieee80211com_t *ic, mblk_t *mp, uint8_t type)
 	struct ieee80211_qosframe *qwh = NULL;
 	int tid = WME_TID_INVALID;
 
-	if (NULL == ic) {
+	if (ic == NULL) {
 		return (IWH_FAIL);
 	}
+	rate = 0;
 	sc = (iwh_sc_t *)ic;
 
 	if (sc->sc_flags & IWH_F_SUSPEND) {
