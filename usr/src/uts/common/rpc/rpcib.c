@@ -1947,8 +1947,10 @@ rib_ping_srv(int addr_type, struct netbuf *raddr, rpcib_ping_t *rptp)
 		rptp->dstip.family = AF_INET;
 		rptp->dstip.un.ip4addr = sinp->sin_addr.s_addr;
 		sinp = addrs4.ri_list;
+		sin6p = NULL;
 	} else {
 		addr_count = addrs6.ri_count;
+		sinp = NULL;
 		sin6p = (struct sockaddr_in6 *)raddr->buf;
 		rptp->dstip.family = AF_INET6;
 		rptp->dstip.un.ip6addr = sin6p->sin6_addr;
@@ -2305,7 +2307,7 @@ rdma_stat
 rib_send_and_wait(CONN *conn, struct clist *cl, uint32_t msgid,
     int send_sig, int cv_sig, caddr_t *swid)
 {
-	struct send_wid	*wdesc;
+	struct send_wid	*wdesc = NULL;
 	struct clist	*clp;
 	ibt_status_t	ibt_status = IBT_SUCCESS;
 	rdma_stat	ret = RDMA_SUCCESS;
@@ -2843,7 +2845,7 @@ rib_read(CONN *conn, struct clist *cl, int wait)
 	ibt_send_wr_t	rx_wr;
 	int		cv_sig = 0;
 	ibt_wr_ds_t	sgl;
-	struct send_wid	*wdesc;
+	struct send_wid	*wdesc = NULL;
 	ibt_status_t	ibt_status = IBT_SUCCESS;
 	rdma_stat	ret = RDMA_SUCCESS;
 	rib_qp_t	*qp = ctoqp(conn);
