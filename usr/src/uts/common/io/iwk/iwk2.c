@@ -2700,6 +2700,7 @@ iwk_send(ieee80211com_t *ic, mblk_t *mp, uint8_t type)
 
 	wh = (struct ieee80211_frame *)m->b_rptr;
 
+	index = 0;
 	if (ic->ic_opmode == IEEE80211_M_IBSS &&
 	    (!(IEEE80211_IS_MULTICAST(wh->i_addr1)))) {
 		mutex_enter(&sc->sc_glock);
