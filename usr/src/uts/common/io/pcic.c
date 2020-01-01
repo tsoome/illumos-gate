@@ -4525,7 +4525,7 @@ static int
 pcic_ll_reset(pcicdev_t *pcic, int socket)
 {
 	int windowbits, iobits;
-	uint32_t pwr;
+	uint32_t pwr = 0;
 
 	/* save windows that were on */
 	windowbits = pcic_getb(pcic, socket, PCIC_MAPPING_ENABLE);
@@ -4614,11 +4614,11 @@ pcic_ll_reset(pcicdev_t *pcic, int socket)
 	 * Return VPP power to whatever it was before.
 	 */
 		if (pcic->pc_flags & PCF_CBPWRCTL) {
-		pcic_putcb(pcic, CB_CONTROL, pwr);
-		(void) pcic_getcb(pcic, CB_CONTROL);
+			pcic_putcb(pcic, CB_CONTROL, pwr);
+			(void) pcic_getcb(pcic, CB_CONTROL);
 		} else {
-		pcic_putb(pcic, socket, PCIC_POWER_CONTROL, pwr);
-		(void) pcic_getb(pcic, socket, PCIC_POWER_CONTROL);
+			pcic_putb(pcic, socket, PCIC_POWER_CONTROL, pwr);
+			(void) pcic_getb(pcic, socket, PCIC_POWER_CONTROL);
 		}
 	}
 
@@ -6699,7 +6699,7 @@ static int
 pcic_cbus_powerctl(pcicdev_t *pcic, int socket)
 {
 	uint32_t cbctl = 0, orig_cbctl, cbstev, cbps;
-	int ind, iobits;
+	int ind, iobits = 0;
 	pcic_socket_t *sockp = &pcic->pc_sockets[socket];
 
 	pcic_putcb(pcic, CB_STATUS_EVENT, CB_SE_POWER_CYCLE);
