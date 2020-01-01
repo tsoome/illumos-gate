@@ -8875,6 +8875,7 @@ mptsas_deliver_doneq_thread(mptsas_t *mpt)
 	uint32_t			min = 0xffffffff;
 	mptsas_doneq_thread_list_t	*item;
 
+	t = 0;
 	for (i = 0; i < mpt->m_doneq_thread_n; i++) {
 		item = &mpt->m_doneq_thread_id[i];
 		/*
@@ -11122,6 +11123,7 @@ mptsas_do_passthru(mptsas_t *mpt, uint8_t *request, uint8_t *reply,
 
 	ASSERT(mutex_owned(&mpt->m_mutex));
 
+	request_hdrp = NULL;
 	reply_msg = (pMPI2DefaultReply_t)(&rep_msg);
 	bzero(reply_msg, sizeof (MPI2_DEFAULT_REPLY));
 	request_msg = kmem_zalloc(request_size, KM_SLEEP);
@@ -11597,6 +11599,7 @@ mptsas_post_fw_diag_buffer(mptsas_t *mpt,
 	uint16_t			iocstatus;
 	uint32_t			iocloginfo, transfer_length;
 
+	status = DDI_SUCCESS;
 	/*
 	 * If buffer is not enabled, just leave.
 	 */
@@ -11749,6 +11752,7 @@ mptsas_release_fw_diag_buffer(mptsas_t *mpt,
 	uint16_t		iocstatus;
 	uint32_t		iocloginfo;
 
+	status = DDI_SUCCESS;
 	/*
 	 * If buffer is not enabled, just leave.
 	 */
