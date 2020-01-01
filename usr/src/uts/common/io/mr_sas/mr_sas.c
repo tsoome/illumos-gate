@@ -3783,7 +3783,7 @@ mfi_state_transition_to_ready(struct mrsas_instance *instance)
 	uint32_t	fw_state;
 	uint32_t	cur_state;
 	uint32_t	cur_abs_reg_val;
-	uint32_t	prev_abs_reg_val;
+	uint32_t	prev_abs_reg_val = 0;
 	uint32_t	status;
 
 	cur_abs_reg_val =
@@ -5056,8 +5056,8 @@ build_cmd(struct mrsas_instance *instance, struct scsi_address *ap,
 	uint32_t	tmp_data_xfer_len;
 	ddi_acc_handle_t acc_handle;
 	struct mrsas_cmd		*cmd;
-	struct mrsas_sge64		*mfi_sgl;
-	struct mrsas_sge_ieee		*mfi_sgl_ieee;
+	struct mrsas_sge64		*mfi_sgl = NULL;
+	struct mrsas_sge_ieee		*mfi_sgl_ieee = NULL;
 	struct scsa_cmd			*acmd = PKT2CMD(pkt);
 	struct mrsas_pthru_frame	*pthru;
 	struct mrsas_io_frame		*ldio;
@@ -5674,7 +5674,7 @@ issue_mfi_smp(struct mrsas_instance *instance, struct mrsas_ioctl *ioctl,
 	ddi_acc_handle_t	acc_handle = cmd->frame_dma_obj.acc_handle;
 	struct mrsas_smp_frame		*ksmp;
 	struct mrsas_smp_frame		*smp;
-	struct mrsas_sge32		*sge32;
+	struct mrsas_sge32		*sge32 = NULL;
 #ifndef _ILP32
 	struct mrsas_sge64		*sge64;
 #endif
@@ -6551,7 +6551,7 @@ display_scsi_inquiry(caddr_t scsi_inq)
 static void
 io_timeout_checker(void *arg)
 {
-	struct scsi_pkt *pkt;
+	struct scsi_pkt *pkt = NULL;
 	struct mrsas_instance *instance = arg;
 	struct mrsas_cmd	*cmd = NULL;
 	struct mrsas_header	*hdr;
