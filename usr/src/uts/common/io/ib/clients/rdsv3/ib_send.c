@@ -562,7 +562,7 @@ rdsv3_ib_xmit(struct rdsv3_connection *conn, struct rdsv3_message *rm,
 	struct rdsv3_ib_send_work *send = NULL;
 	struct rdsv3_ib_send_work *first;
 	struct rdsv3_ib_send_work *prev;
-	ibt_send_wr_t *wr;
+	ibt_send_wr_t *wr = NULL;
 	struct rdsv3_scatterlist *scat;
 	uint32_t pos;
 	uint32_t i;
