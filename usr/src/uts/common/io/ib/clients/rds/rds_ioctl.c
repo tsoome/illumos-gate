@@ -282,7 +282,7 @@ void
 rds_ioctl_copyin_setup(queue_t *q, mblk_t *mp)
 {
 	struct iocblk *iocp = (struct iocblk *)(uintptr_t)mp->b_rptr;
-	int	copyin_size;
+	int	copyin_size = 0;
 
 	if (mp->b_cont == NULL) {
 		iocp->ioc_error = EINVAL;
