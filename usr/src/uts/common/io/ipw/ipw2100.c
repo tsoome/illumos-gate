@@ -225,9 +225,9 @@ uint32_t ipw2100_debug = 0;
 /*
  * global tuning parameters to work around unknown hardware issues
  */
-static uint32_t delay_config_stable 	= 100000;	/* 100ms */
+static uint32_t delay_config_stable	= 100000;	/* 100ms */
 static uint32_t delay_fatal_recover	= 100000 * 20;	/* 2s */
-static uint32_t delay_aux_thread 	= 100000;	/* 100ms */
+static uint32_t delay_aux_thread	= 100000;	/* 100ms */
 
 void
 ipw2100_dbg(dev_info_t *dip, int level, const char *fmt, ...)
@@ -2035,6 +2035,7 @@ ipw2100_send(ieee80211com_t *ic, mblk_t *mp, uint8_t type)
 
 	ASSERT(mp->b_next == NULL);
 
+	bidx = 0;
 	m0 = NULL;
 	m = NULL;
 	err = DDI_SUCCESS;
@@ -2381,7 +2382,7 @@ ipw2100_ioctl(struct ipw2100_softc *sc, queue_t *q, mblk_t *m)
 
 static int
 ipw2100_getset(struct ipw2100_softc *sc, mblk_t *m, uint32_t cmd,
-	boolean_t *need_net80211)
+    boolean_t *need_net80211)
 {
 	wldp_t		*infp, *outfp;
 	uint32_t	id;
@@ -2476,7 +2477,7 @@ ipw2100_m_getprop(void *arg, const char *pr_name, mac_prop_id_t wldp_pr_num,
 {
 	struct ipw2100_softc	*sc = (struct ipw2100_softc *)arg;
 	struct ieee80211com	*ic = &sc->sc_ic;
-	int 			err = 0;
+	int			err = 0;
 
 	switch (wldp_pr_num) {
 	/* mac_prop_id */
