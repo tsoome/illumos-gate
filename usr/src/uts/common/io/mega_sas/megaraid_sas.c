@@ -765,13 +765,10 @@ megasas_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd,  void *arg, void **resultp)
 	struct megasas_instance	*instance;
 
 	con_log(CL_ANN1, (CE_NOTE, "chkpnt:%s:%d", __func__, __LINE__));
+	instance = ddi_get_soft_state(megasas_state, MINOR2INST(megasas_minor));
 
 	switch (cmd) {
 		case DDI_INFO_DEVT2DEVINFO:
-			instance = (struct megasas_instance *)
-			    ddi_get_soft_state(megasas_state,
-			    MINOR2INST(megasas_minor));
-
 			if (instance == NULL) {
 				*resultp = NULL;
 				rval = DDI_FAILURE;
@@ -781,7 +778,7 @@ megasas_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd,  void *arg, void **resultp)
 			}
 			break;
 		case DDI_INFO_DEVT2INSTANCE:
-			*resultp = (void *)instance;
+			*resultp = instance;
 			rval = DDI_SUCCESS;
 			break;
 		default:
