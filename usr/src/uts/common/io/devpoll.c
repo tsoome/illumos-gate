@@ -1150,6 +1150,8 @@ dpioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp, int *rvalp)
 	if (cmd == DP_POLL || cmd == DP_PPOLL) {
 		/* do this now, before we sleep on DP_WRITER_PRESENT */
 		now = gethrtime();
+	} else {
+		now = 0;
 	}
 
 	minor = getminor(dev);
