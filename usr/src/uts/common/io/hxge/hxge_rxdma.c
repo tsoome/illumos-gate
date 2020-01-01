@@ -2325,6 +2325,7 @@ hxge_map_rxdma(p_hxge_t hxgep)
 	hxgep->intr_threshold = RXDMA_RCR_PTHRES_DEFAULT;
 	hxgep->intr_timeout = RXDMA_RCR_TO_DEFAULT;
 
+	channel = 0;
 	/*
 	 * Map descriptors from the buffer polls for each dam channel.
 	 */
@@ -3236,6 +3237,8 @@ hxge_rxdma_hw_start(p_hxge_t hxgep)
 	rx_mbox_areas_p = hxgep->rx_mbox_areas_p;
 	if (rx_mbox_areas_p) {
 		rx_mbox_p = rx_mbox_areas_p->rxmbox_areas;
+	} else {
+		rx_mbox_p = NULL;
 	}
 
 	for (i = 0; i < ndmas; i++) {
