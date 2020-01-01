@@ -7473,7 +7473,7 @@ rsm_iovec_ioctl(dev_t dev, caddr_t arg, int cmd, int mode, cred_t *credp)
 	uint_t			i;
 	uint_t			iov_proc = 0; /* num of iovecs processed */
 	size_t			size = 0;
-	size_t			ka_size;
+	size_t			ka_size = 0;
 
 	DBG_DEFINE(category, RSM_KERNEL_AGENT | RSM_IMPORT | RSM_IOCTL);
 
