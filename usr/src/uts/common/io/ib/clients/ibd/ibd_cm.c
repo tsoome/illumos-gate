@@ -1826,6 +1826,7 @@ ibd_rc_init_tx_largebuf_list(ibd_state_t *state)
 	memp = state->rc_tx_mr_bufs;
 	mutex_enter(&state->rc_tx_large_bufs_lock);
 	lbufp = state->rc_tx_largebuf_desc_base;
+	tail = NULL;
 	for (i = 0; i < num_swqe; i++) {
 		lbufp->lb_buf = memp;
 		lbufp->lb_next = lbufp + 1;

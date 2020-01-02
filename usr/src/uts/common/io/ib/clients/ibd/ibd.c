@@ -3607,6 +3607,7 @@ ibd_alloc_tx_lsobufs(ibd_state_t *state)
 	 */
 	memp = membase;
 	lbufp = buflist;
+	tail = NULL;
 	for (i = 0; i < state->id_num_lso_bufs; i++) {
 		lbufp->lb_isfree = 1;
 		lbufp->lb_buf = memp;
