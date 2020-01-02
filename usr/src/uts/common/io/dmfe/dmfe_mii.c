@@ -145,7 +145,7 @@ dmfe_read_eeprom(dmfe_t *dmfep, uint16_t raddr, uint8_t *ptr, int cnt)
 static void
 dmfe_poke_mii(dmfe_t *dmfep, uint32_t mii_data, uint_t nbits)
 {
-	uint32_t dbit;
+	uint32_t dbit = 0;
 
 	ASSERT(mutex_owned(dmfep->milock));
 
