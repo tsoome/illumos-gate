@@ -455,6 +455,7 @@ e1000g_receive(e1000g_rx_ring_t *rx_ring, mblk_t **tail, uint_t sz)
 	uint32_t max_size;
 	uint32_t min_size;
 
+	last_desc = NULL;
 	ret_mp = NULL;
 	ret_nmp = NULL;
 	pkt_count = 0;
