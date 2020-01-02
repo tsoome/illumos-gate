@@ -253,6 +253,7 @@ softmac_capab_send(softmac_lower_t *slp, boolean_t enable)
 	size_t			size = 0;
 
 	softmac = slp->sl_softmac;
+	subcapb = NULL;
 
 	if (enable) {
 		/* No need to enable DL_CAPAB_ZEROCOPY */
@@ -559,6 +560,7 @@ i_capab_id_ack(mblk_t *mp, dl_capability_sub_t *outers,
 	int			err = EINVAL;
 
 	ASSERT(outers->dl_cap == DL_CAPAB_ID_WRAPPER);
+	inners = NULL;
 
 	capend = (caddr_t)(outers + 1) + outers->dl_length;
 	if (capend > (caddr_t)mp->b_wptr) {
