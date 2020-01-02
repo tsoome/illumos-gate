@@ -875,7 +875,7 @@ static int
 hme_get_vpd_props(dev_info_t *dip)
 {
 	struct hme *hmep;
-	int v0, v1, vpd_base;
+	int v0, v1, vpd_base = 0;
 	int i, epromsrchlimit;
 
 
