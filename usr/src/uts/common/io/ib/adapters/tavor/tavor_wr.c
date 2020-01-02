@@ -110,6 +110,7 @@ tavor_post_send(tavor_state_t *state, tavor_qphdl_t qp,
 	int				status;
 
 	TAVOR_TNF_ENTER(tavor_post_send);
+	desc = NULL;
 
 	/*
 	 * Check for user-mappable QP memory.  Note:  We do not allow kernel
@@ -407,6 +408,7 @@ tavor_post_recv(tavor_state_t *state, tavor_qphdl_t qp,
 	int				status;
 
 	TAVOR_TNF_ENTER(tavor_post_recv);
+	desc = NULL;
 
 	/*
 	 * Check for user-mappable QP memory.  Note:  We do not allow kernel
@@ -660,6 +662,7 @@ tavor_post_srq(tavor_state_t *state, tavor_srqhdl_t srq,
 	int				status;
 
 	TAVOR_TNF_ENTER(tavor_post_srq);
+	desc = NULL;
 
 	/*
 	 * Check for user-mappable QP memory.  Note:  We do not allow kernel
@@ -1308,6 +1311,7 @@ tavor_wqe_send_linknext(ibt_send_wr_t *curr_wr, ibt_send_wr_t *prev_wr,
 	uint64_t	next, ctrl;
 	uint32_t	nopcode, fence;
 
+	nopcode = 0;
 	/*
 	 * Calculate the "next" field of the descriptor.  This amounts to
 	 * setting up the "next_wqe_addr", "nopcode", "fence", and "nds"
@@ -2078,7 +2082,7 @@ tavor_wqe_sync(void *hdl, uint_t sync_from, uint_t sync_to,
     uint_t sync_type, uint_t flag)
 {
 	tavor_qphdl_t		qp;
-	tavor_srqhdl_t		srq;
+	tavor_srqhdl_t		srq = NULL;
 	uint_t			is_sync_req;
 	uint64_t		*wqe_from, *wqe_to, *wqe_base, *wqe_top;
 	ddi_dma_handle_t	dmahdl;
@@ -2864,7 +2868,7 @@ tavor_wrid_find_match(tavor_workq_hdr_t *wq, tavor_cqhdl_t cq,
 	tavor_wrid_list_hdr_t	*container;
 	uint32_t		wqeaddr_size;
 	uint32_t		head, tail, size;
-	int			found = 0, last_container;
+	int			found = 0, last_container = 0;
 
 	TAVOR_TNF_ENTER(tavor_wrid_find_match);
 

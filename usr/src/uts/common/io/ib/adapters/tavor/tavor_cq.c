@@ -65,7 +65,7 @@ tavor_cq_alloc(tavor_state_t *state, ibt_cq_hdl_t ibt_cqhdl,
     uint_t sleepflag)
 {
 	tavor_rsrc_t		*cqc, *rsrc;
-	tavor_umap_db_entry_t	*umapdb;
+	tavor_umap_db_entry_t	*umapdb = NULL;
 	tavor_hw_cqc_t		cqc_entry;
 	tavor_cqhdl_t		cq;
 	ibt_mr_attr_t		mr_attr;
@@ -74,7 +74,7 @@ tavor_cq_alloc(tavor_state_t *state, ibt_cq_hdl_t ibt_cqhdl,
 	tavor_mrhdl_t		mr;
 	tavor_hw_cqe_t		*buf;
 	uint64_t		addr, value;
-	uint32_t		log_cq_size, lkey, uarpg;
+	uint32_t		log_cq_size, lkey, uarpg = 0;
 	uint_t			dma_xfer_mode, cq_sync, cq_is_umap;
 	int			status, i, flag;
 	char			*errormsg;

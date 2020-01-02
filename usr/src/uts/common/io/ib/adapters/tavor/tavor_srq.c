@@ -81,6 +81,8 @@ tavor_srq_alloc(tavor_state_t *state, tavor_srq_info_t *srqinfo,
 	_NOTE(NOW_INVISIBLE_TO_OTHER_THREADS(*sizes))
 
 	TAVOR_TNF_ENTER(tavor_srq_alloc);
+	umapdb = NULL;
+	uarpg = 0;
 
 	/*
 	 * Check the "options" flag.  Currently this flag tells the driver
@@ -1090,6 +1092,8 @@ tavor_srq_sgl_to_logwqesz(tavor_state_t *state, uint_t num_sgl,
 	uint_t	max_size, log2, actual_sgl;
 
 	TAVOR_TNF_ENTER(tavor_srq_sgl_to_logwqesz);
+	log2 = 0;
+	actual_sgl = 0;
 
 	switch (wq_type) {
 	case TAVOR_QP_WQ_TYPE_RECVQ:

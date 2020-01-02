@@ -578,7 +578,7 @@ tavor_close(dev_t dev, int flag, int otyp, cred_t *credp)
 static int
 tavor_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 {
-	tavor_state_t	*state;
+	tavor_state_t	*state = NULL;
 	ibc_clnt_hdl_t	tmp_ibtfpriv;
 	ibc_status_t	ibc_status;
 	int		instance;
@@ -590,9 +590,9 @@ tavor_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	(void) tavor_quiesce(dip);
 #endif
 
+	instance = ddi_get_instance(dip);
 	switch (cmd) {
 	case DDI_ATTACH:
-		instance = ddi_get_instance(dip);
 		status = ddi_soft_state_zalloc(tavor_statep, instance);
 		if (status != DDI_SUCCESS) {
 			TNF_PROBE_0(tavor_attach_ssz_fail, TAVOR_TNF_ERROR, "");
@@ -721,7 +721,7 @@ tavor_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 
 fail_attach:
 	cmn_err(CE_NOTE, "tavor%d: driver failed to attach: %s", instance,
-	    state->ts_attach_buf);
+			state->ts_attach_buf);
 	tavor_drv_fini2(state);
 	ddi_soft_state_free(tavor_statep, instance);
 fail_attach_nomsg:
