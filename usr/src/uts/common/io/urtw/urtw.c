@@ -1953,8 +1953,10 @@ urtw_rx_setconf(struct urtw_softc *sc)
 	uint32_t data, a, b;
 	usbd_status error;
 
-	if (urtw_read32_c(sc, URTW_RX, &data, 0))
+	error = urtw_read32_c(sc, URTW_RX, &data, 0);
+	if (error != 0)
 		goto fail;
+
 	data = data &~ URTW_RX_FILTER_MASK;
 	data = data | URTW_RX_FILTER_MNG | URTW_RX_FILTER_DATA;
 	data = data | URTW_RX_FILTER_BCAST | URTW_RX_FILTER_MCAST;
