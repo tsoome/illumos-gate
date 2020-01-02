@@ -646,7 +646,7 @@ pmcs_process_sas_hw_event(pmcs_hw_t *pwp, void *iomb, size_t amt)
 		mutex_exit(&tphyp->phy_lock);
 		break;
 	case IOP_EVENT_PHY_DOWN: {
-		uint64_t wwn;
+		uint64_t wwn = 0;
 
 		/*
 		 * If we're not at running state, don't do anything
