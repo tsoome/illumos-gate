@@ -2740,6 +2740,7 @@ dtrace_speculation_commit(dtrace_state_t *state, processorid_t cpu,
 	spec = &state->dts_speculations[which - 1];
 	src = &spec->dtsp_buffer[cpu];
 	dest = &state->dts_buffer[cpu];
+	new = DTRACESPEC_INACTIVE;
 
 	do {
 		current = spec->dtsp_state;
@@ -2930,6 +2931,7 @@ dtrace_speculation_discard(dtrace_state_t *state, processorid_t cpu,
 			break;
 
 		default:
+			new = DTRACESPEC_INACTIVE;
 			ASSERT(0);
 		}
 	} while (dtrace_cas32((uint32_t *)&spec->dtsp_state,
@@ -3104,6 +3106,7 @@ dtrace_speculation_buffer(dtrace_state_t *state, processorid_t cpuid,
 			break;
 
 		default:
+			new = DTRACESPEC_INACTIVE;
 			ASSERT(0);
 		}
 	} while (dtrace_cas32((uint32_t *)&spec->dtsp_state,
@@ -4612,6 +4615,7 @@ dtrace_dif_subr(uint_t subr, uint_t rd, uint64_t *regs,
 		char *dest = (char *)mstate->dtms_scratch_ptr;
 		int i;
 
+		c = '\0';
 		/*
 		 * Check both the token buffer and (later) the input buffer,
 		 * since both could be non-scratch addresses.
@@ -5768,7 +5772,7 @@ dtrace_dif_emulate(dtrace_difo_t *difo, dtrace_mstate_t *mstate,
 
 	uint8_t cc_n = 0, cc_z = 0, cc_v = 0, cc_c = 0;
 	int64_t cc_r;
-	uint_t pc = 0, id, opc;
+	uint_t pc = 0, id, opc = 0;
 	uint8_t ttop = 0;
 	dif_instr_t instr;
 	uint_t r1, r2, rd;
@@ -6884,7 +6888,8 @@ dtrace_store_by_ref(dtrace_difo_t *dp, caddr_t tomax, size_t size,
 				break;
 		}
 	} else {
-		uint8_t c;
+		uint8_t c = 0;
+
 		while (valoffs < end) {
 			if (dtkind == DIF_TF_BYREF) {
 				c = dtrace_load8(val++);
@@ -9967,6 +9972,7 @@ dtrace_difo_chunksize(dtrace_difo_t *dp, dtrace_vstate_t *vstate)
 	size_t size, ksize;
 	uint_t id, i;
 
+	sval = 0;
 	for (pc = 0; pc < dp->dtdo_len; pc++) {
 		dif_instr_t instr = text[pc];
 		uint_t op = DIF_INSTR_OP(instr);
@@ -10177,6 +10183,8 @@ dtrace_difo_init(dtrace_difo_t *dp, dtrace_vstate_t *vstate)
 			break;
 
 		default:
+			np = NULL;
+			svarp = NULL;
 			ASSERT(0);
 		}
 
@@ -10293,6 +10301,8 @@ dtrace_difo_destroy(dtrace_difo_t *dp, dtrace_vstate_t *vstate)
 			break;
 
 		default:
+			np = NULL;
+			svarp = NULL;
 			ASSERT(0);
 		}
 
@@ -13933,6 +13943,7 @@ dtrace_state_buffer(dtrace_state_t *state, dtrace_buffer_t *buf, int which)
 	processorid_t cpu;
 	int flags = 0, rval, factor, divisor = 1;
 
+	cpu = P_ALL_SIBLINGS;
 	ASSERT(MUTEX_HELD(&dtrace_lock));
 	ASSERT(MUTEX_HELD(&cpu_lock));
 	ASSERT(which < DTRACEOPT_MAX);
@@ -14774,7 +14785,7 @@ dtrace_helper(int which, dtrace_mstate_t *mstate,
 	uint16_t *flags = &cpu_core[CPU->cpu_id].cpuc_dtrace_flags;
 	uint64_t sarg0 = mstate->dtms_arg[0];
 	uint64_t sarg1 = mstate->dtms_arg[1];
-	uint64_t rval;
+	uint64_t rval = 0;
 	dtrace_helpers_t *helpers = curproc->p_dtrace_helpers;
 	dtrace_helper_action_t *helper;
 	dtrace_vstate_t *vstate;
