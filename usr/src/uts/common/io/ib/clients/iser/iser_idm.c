@@ -751,7 +751,7 @@ iser_handle_numerical(nvpair_t *nvp, uint64_t value, const idm_kv_xlate_t *ikvx,
     nvlist_t *request_nvl, nvlist_t *response_nvl, nvlist_t *negotiated_nvl)
 {
 	kv_status_t		kvrc = KV_UNHANDLED;
-	int			nvrc;
+	int			nvrc = 0;
 	boolean_t		respond = B_FALSE;
 
 	/* Validate against standard */

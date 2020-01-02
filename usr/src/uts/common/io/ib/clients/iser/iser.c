@@ -159,10 +159,10 @@ iser_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	int		instance;
 	int		status;
 
+	instance = ddi_get_instance(dip);
 	switch (cmd) {
 	case DDI_ATTACH:
 		ISER_LOG(CE_CONT, "iser_attach: DDI_ATTACH");
-		instance = ddi_get_instance(dip);
 
 		iser_state->is_dip = dip;
 		iser_state->is_instance = instance;
