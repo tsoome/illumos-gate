@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <fs/fs_subr.h>
 
 #include <sys/elf.h>
@@ -215,6 +213,9 @@ objfs_data_init(void)
 	section_desc_t *sect;
 	char *strdata;
 
+	shstrtab = 0;
+	strtab = 0;
+	symtab = 0;
 	for (i = 0; i < NSECTIONS; i++) {
 		sect = &data_sections[i];
 
@@ -281,6 +282,10 @@ sect_addr(section_desc_t *sp, struct module *mp)
 	case SECT_TYPE_INFO:
 		addr = 1;	/* This can be anything nonzero */
 		break;
+
+	default:
+		addr = 0;
+		break;
 	}
 
 	return (addr);
@@ -324,6 +329,11 @@ sect_size(section_desc_t *sp, struct module *mp)
 			size = 0;
 		else
 			size = strlen(mp->filename) + 1;
+		break;
+
+	default:
+		size = 0;
+		break;
 	}
 
 	return (size);
