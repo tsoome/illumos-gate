@@ -62,7 +62,7 @@ hermon_srq_alloc(hermon_state_t *state, hermon_srq_info_t *srqinfo,
 	hermon_hw_srqc_t	srqc_entry;
 	uint32_t		*buf;
 	hermon_srqhdl_t		srq;
-	hermon_umap_db_entry_t	*umapdb;
+	hermon_umap_db_entry_t	*umapdb = NULL;
 	ibt_mr_attr_t		mr_attr;
 	hermon_mr_options_t	mr_op;
 	hermon_mrhdl_t		mr;
@@ -966,6 +966,8 @@ hermon_srq_sgl_to_logwqesz(hermon_state_t *state, uint_t num_sgl,
 {
 	uint_t	max_size, log2, actual_sgl;
 
+	log2 = 0;
+	actual_sgl = 0;
 	switch (wq_type) {
 	case HERMON_QP_WQ_TYPE_RECVQ:
 		/*

@@ -543,7 +543,7 @@ hermon_close(dev_t dev, int flag, int otyp, cred_t *credp)
 static int
 hermon_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 {
-	hermon_state_t	*state;
+	hermon_state_t	*state = NULL;
 	ibc_clnt_hdl_t	tmp_ibtfpriv;
 	ibc_status_t	ibc_status;
 	int		instance;
@@ -553,9 +553,9 @@ hermon_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	(void) hermon_quiesce(dip);
 #endif
 
+	instance = ddi_get_instance(dip);
 	switch (cmd) {
 	case DDI_ATTACH:
-		instance = ddi_get_instance(dip);
 		status = ddi_soft_state_zalloc(hermon_statep, instance);
 		if (status != DDI_SUCCESS) {
 			cmn_err(CE_NOTE, "hermon%d: driver failed to attach: "
@@ -4629,7 +4629,7 @@ static void
 hermon_set_msix_info(hermon_state_t *state)
 {
 	uint_t			rnumber, breg, nregs;
-	ushort_t		caps_ctrl, msix_ctrl;
+	ushort_t		caps_ctrl, msix_ctrl = 0;
 	pci_regspec_t		*rp;
 	int			reg_size, addr_space, offset, *regs_list, i;
 

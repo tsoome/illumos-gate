@@ -458,6 +458,7 @@ hermon_kstat_cntr_update(kstat_t *ksp, int rw)
 			tmp = 0;	/* XXX */
 			break;
 		default:
+			tmp = 0;
 			cmn_err(CE_CONT, "perf counter out of range\n");
 		}
 
