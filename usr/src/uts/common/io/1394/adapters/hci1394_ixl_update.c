@@ -1515,7 +1515,7 @@ static int
 hci1394_ixl_update_perform(hci1394_ixl_update_vars_t *uvp)
 {
 	int			ii;
-	uint_t			skipaddrlast;
+	uint_t			skipaddrlast = 0;
 	hci1394_xfer_ctl_t	*xferctlp;
 	hci1394_desc_imm_t	*hcidescp;
 	hci1394_iso_ctxt_t	*ctxtp;
