@@ -433,6 +433,8 @@ bsd_scsi_io(struct scsi_pkt *pkt)
 	diskaddr_t		lblkno;
 	int			nblks;
 
+	nblks = 0;
+	lblkno = 0;
 	switch (cdb->scc_cmd) {
 	case SCMD_READ:
 			lblkno = (uint32_t)GETG0ADDR(cdb);
@@ -509,11 +511,11 @@ bsd_scsi_io(struct scsi_pkt *pkt)
 				    "write g4 blk=%lld (0x%llx) nblks=%d\n",
 				    emul64_name, lblkno, lblkno, nblks);
 			}
-		break;
+			break;
 	default:
-		cmn_err(CE_WARN, "%s: bsd_scsi_io: unhandled I/O: 0x%x",
-		    emul64_name, cdb->scc_cmd);
-		break;
+			cmn_err(CE_WARN, "%s: bsd_scsi_io: unhandled I/O: 0x%x",
+					emul64_name, cdb->scc_cmd);
+			break;
 	}
 
 	if (pkt->pkt_resid != 0)
