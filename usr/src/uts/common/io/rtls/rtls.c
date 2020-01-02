@@ -344,6 +344,7 @@ rtls_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	mac_register_t *macp;
 	int err;
 
+	macp = NULL;
 	switch (cmd) {
 	case DDI_ATTACH:
 		break;
