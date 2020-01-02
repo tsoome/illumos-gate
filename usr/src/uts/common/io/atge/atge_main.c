@@ -1267,6 +1267,9 @@ atge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	case ATGE_CHIP_L1C:
 		mii_ops = &atge_l1c_mii_ops;
 		break;
+	default:
+		mii_ops = NULL;
+		break;
 	}
 
 	if ((atgep->atge_mii = mii_alloc(atgep, devinfo,
@@ -2049,6 +2052,7 @@ atge_device_start(atge_t *atgep)
 	uint32_t reg;
 	uint32_t fsize;
 
+	fsize = 0;
 	/*
 	 * Reprogram the Station address.
 	 */

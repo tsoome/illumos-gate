@@ -743,6 +743,7 @@ atge_l1c_rx(atge_t *atgep)
 	uchar_t *bufp;
 	int sync = 0;
 
+	slotlen = 0;
 	l1c = atgep->atge_private_data;
 	ASSERT(l1c != NULL);
 
