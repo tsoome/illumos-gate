@@ -1722,7 +1722,7 @@ si_tran_reset_dport(dev_info_t *dip, sata_device_t *sd)
 	si_ctl_state_t	*si_ctlp;
 	uint8_t port = sd->satadev_addr.cport;
 	int i;
-	si_port_state_t *si_portp;
+	si_port_state_t *si_portp = NULL;
 	int retval = SI_SUCCESS;
 
 	si_ctlp = ddi_get_soft_state(si_statep, ddi_get_instance(dip));
