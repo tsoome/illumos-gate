@@ -524,6 +524,7 @@ uftdi_usb_power(ds_hdl_t hdl, int comp, int level, int *new_state)
 			uf->uf_dev_state = *new_state;
 		break;
 	default:
+		rval = USB_FAILURE;
 		ASSERT(0);	/* cannot happen */
 	}
 
