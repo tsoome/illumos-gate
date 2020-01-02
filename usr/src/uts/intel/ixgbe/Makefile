@@ -54,12 +54,6 @@ include $(UTSBASE)/intel/Makefile.intel
 INC_PATH	+= -I$(UTSBASE)/common/io/ixgbe
 INC_PATH	+= -I$(UTSBASE)/common/io/ixgbe/core
 
-CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-switch
-CERRWARN	+= $(CNOWARN_UNINIT)
-CERRWARN	+= -_gcc=-Wno-unused-value
-CERRWARN	+= -_cc=-erroff=E_STATEMENT_NOT_REACHED
-
 # 3rd party code
 SMOFF += all_func_returns
 
