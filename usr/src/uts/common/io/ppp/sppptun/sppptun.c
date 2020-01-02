@@ -2087,6 +2087,8 @@ sppptun_recv(queue_t *q, mblk_t **mpp, const void *srcaddr)
 	tll = q->q_ptr;
 	ASSERT(!(tll->tll_flags & TLLF_NOTLOWER));
 
+	sessid = 0;
+	isdata = 0;
 	tcl = NULL;
 	switch (tll->tll_style) {
 	case PTS_PPPOE:
