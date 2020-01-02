@@ -4456,6 +4456,7 @@ pr_lookup_pathdir(vnode_t *dp, char *comp)
 	/*
 	 * Determine if this is an object entry
 	 */
+	idx = 0;
 	if (type == NAME_UNKNOWN) {
 		/*
 		 * Start with the inode index immediately after the number of
@@ -5297,7 +5298,7 @@ pr_readdir_objectdir(prnode_t *pnp, uio_t *uiop, int *eofp)
 	size_t objdirsize;
 	proc_t *p;
 	struct as *as;
-	vnode_t *vp;
+	vnode_t *vp = NULL;
 
 	ASSERT(pnp->pr_type == PR_OBJECTDIR);
 
