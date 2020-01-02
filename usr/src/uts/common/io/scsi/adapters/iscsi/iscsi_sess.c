@@ -2064,13 +2064,13 @@ static void
 iscsi_sess_inquiry(iscsi_sess_t *isp, uint16_t lun_num, uint8_t lun_addr_type,
     uint32_t event_count, iscsi_lun_t *ilp)
 {
-	iscsi_status_t		rval;
+	iscsi_status_t		rval = ISCSI_STATUS_SUCCESS;
 	struct uscsi_cmd	ucmd;
 	uchar_t			cdb[CDB_GROUP0];
 	uchar_t			*inq;
 	size_t			inq_len;
 	uchar_t			*inq83;
-	size_t			inq83_len;
+	size_t			inq83_len = 0;
 	int			retries;
 	ddi_devid_t		devid;
 	char			*guid = NULL;
@@ -2087,6 +2087,7 @@ iscsi_sess_inquiry(iscsi_sess_t *isp, uint16_t lun_num, uint8_t lun_addr_type,
 
 	inq	= kmem_zalloc(ISCSI_MAX_INQUIRY_BUF_SIZE, KM_SLEEP);
 	inq83	= kmem_zalloc(ISCSI_MAX_INQUIRY_BUF_SIZE, KM_SLEEP);
+	inq_len = 0;
 
 	if (ilp == NULL) {
 		/* easy case, just to create the new lun */

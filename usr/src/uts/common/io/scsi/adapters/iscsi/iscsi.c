@@ -1494,7 +1494,7 @@ iscsi_ioctl(dev_t dev, int cmd, intptr_t arg, int mode,
 	int			stl_sz;
 	iscsi_target_entry_t	*target;
 	uint32_t		old_oid;
-	uint32_t		target_oid;
+	uint32_t		target_oid = 0;
 	iscsi_targetparam_entry_t *curr_entry;
 	char			*initiator_node_name;
 	char			*initiator_node_alias;
