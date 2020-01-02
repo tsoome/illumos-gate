@@ -1021,19 +1021,15 @@ umad_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
  *	Gets information about specific device
  */
 static int
-umad_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg, void **resultp)
+umad_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg __unused,
+    void **resultp)
 {
 	int rc;
-
-#if defined(__lint)
-	extern void dummy2(void *);
-
-	dummy2(arg);
-#endif
 
 	switch (cmd) {
 	case DDI_INFO_DEVT2DEVINFO:
 		*resultp = (void *)dip;
+		rc = DDI_SUCCESS;
 		break;
 
 	case DDI_INFO_DEVT2INSTANCE:
