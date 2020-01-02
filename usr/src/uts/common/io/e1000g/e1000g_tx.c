@@ -628,6 +628,7 @@ e1000g_fill_tx_ring(e1000g_tx_ring_t *tx_ring, LIST_DESCRIBER *pending_list,
 	descriptor = NULL;
 	first_packet = NULL;
 	packet = NULL;
+	previous_packet = NULL;
 	buff_overrun_flag = B_FALSE;
 	zeroed.upper.data = 0;
 

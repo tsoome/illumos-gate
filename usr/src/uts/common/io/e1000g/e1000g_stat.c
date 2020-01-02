@@ -885,6 +885,7 @@ e1000g_read_phy_stat(struct e1000_hw *hw, int reg)
 	uint16_t phy_low, phy_high;
 	uint32_t val;
 
+	val = 0;
 	/* get statistic from PHY in these cases */
 	if ((hw->phy.type == e1000_phy_82578) ||
 	    (hw->phy.type == e1000_phy_82577)) {
