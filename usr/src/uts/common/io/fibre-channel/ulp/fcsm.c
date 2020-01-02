@@ -1432,7 +1432,7 @@ fcsm_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 
 	case FCSMIO_CMD: {
 		fcio_t	fcio;
-		int	status;
+		int	status = DDI_SUCCESS;
 #ifdef	_MULTI_DATAMODEL
 		switch (ddi_model_convert_from(mode & FMODELS)) {
 		case DDI_MODEL_ILP32: {
@@ -1681,7 +1681,7 @@ fcsm_fciocmd(intptr_t arg, int mode, cred_t *credp, fcio_t *fcio)
 static int
 fcsm_fcio_copyout(fcio_t *fcio, intptr_t arg, int mode)
 {
-	int status;
+	int status = DDI_SUCCESS;
 
 #ifdef	_MULTI_DATAMODEL
 	switch (ddi_model_convert_from(mode & FMODELS)) {
