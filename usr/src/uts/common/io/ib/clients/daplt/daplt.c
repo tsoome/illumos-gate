@@ -3027,7 +3027,7 @@ daplka_event_poll(daplka_ia_resource_t *ia_rp, intptr_t arg, int mode,
 	dapl_ib_event_t		evp_arr[NUM_EVENTS_PER_POLL];
 	dapl_ib_event_t		*evp;
 	dapl_ib_event_t		*evp_start;
-	size_t			evp_size;
+	size_t			evp_size = 0;
 	int			threshold;
 	clock_t			timeout;
 	uint32_t		max_events;
