@@ -501,6 +501,7 @@ av1394_async_db2arq_type(int dbtype)
 		arq_type = IEC61883_ARQ_BUS_RESET;
 		break;
 	default:
+		arq_type = 0;
 		ASSERT(0);	/* cannot happen */
 	}
 	return (arq_type);
