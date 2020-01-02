@@ -675,7 +675,7 @@ softmac_wput_single_nondata(softmac_upper_t *sup, mblk_t *mp)
 	softmac_t *softmac = sup->su_softmac;
 	softmac_lower_t	*slp = sup->su_slp;
 	unsigned char	dbtype;
-	t_uscalar_t	prim;
+	t_uscalar_t	prim = 0;
 
 	dbtype = DB_TYPE(mp);
 	sup->su_is_arp = 0;
