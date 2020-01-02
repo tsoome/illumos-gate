@@ -226,6 +226,7 @@ void ehci_isoc_pipe_cleanup(
 	/* Go ahead and remove all remaining itds if there are any */
 	ehci_remove_isoc_itds(ehcip, pp);
 
+	completion_reason = USB_CR_OK;
 	switch (pipe_state) {
 	case EHCI_PIPE_STATE_CLOSE:
 		completion_reason = USB_CR_PIPE_CLOSING;

@@ -1370,7 +1370,7 @@ ehci_take_control(ehci_state_t *ehcip)
 #if defined(__x86)
 	uint32_t		extended_cap;
 	uint32_t		extended_cap_offset;
-	uint32_t		extended_cap_id;
+	uint32_t		extended_cap_id = 0;
 	uint_t			retry;
 
 	USB_DPRINTF_L4(PRINT_MASK_ATTA, ehcip->ehci_log_hdl,
