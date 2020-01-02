@@ -161,7 +161,7 @@ ud_xlate_to_daddr(struct udf_vfs *udf_vfsp,
 	int32_t i;
 	struct ud_map *map;
 	struct ud_part *ud_parts;
-	uint32_t lblkno, retblkno = 0, *addr;
+	uint32_t lblkno = 0, retblkno = 0, *addr;
 	uint32_t begin_req, end_req;
 	uint32_t begin_bad, end_bad;
 

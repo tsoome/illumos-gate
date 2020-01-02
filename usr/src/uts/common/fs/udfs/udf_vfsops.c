@@ -546,7 +546,7 @@ udf_vget(struct vfs *vfsp, struct vnode **vpp, struct fid *fidp)
 static int32_t
 udf_mountroot(struct vfs *vfsp, enum whymountroot why)
 {
-	dev_t rootdev;
+	dev_t rootdev = NODEV;
 	static int32_t udf_rootdone = 0;
 	struct vnode *vp = NULL;
 	int32_t ovflags, error;
@@ -557,7 +557,7 @@ udf_mountroot(struct vfs *vfsp, enum whymountroot why)
 			return (EBUSY);
 		}
 		rootdev = getrootdev();
-		if (rootdev == (dev_t)NODEV) {
+		if (rootdev == NODEV) {
 			return (ENODEV);
 		}
 		vfsp->vfs_dev = rootdev;
@@ -1653,8 +1653,8 @@ static int32_t
 ud_val_get_vat(struct udf_vfs *udf_vfsp, dev_t dev,
     daddr_t blkno, struct ud_map *udm)
 {
-	struct buf *secbp;
-	struct file_entry *fe;
+	struct buf *secbp = NULL;
+	struct file_entry *fe = NULL;
 	int32_t end_loc, i, j, ad_type;
 	struct short_ad *sad;
 	struct long_ad *lad;
@@ -1768,8 +1768,10 @@ ud_val_get_vat(struct udf_vfs *udf_vfsp, dev_t dev,
 end:
 	if (err)
 		ud_free_map(udm);
-	secbp->b_flags |= B_AGE | B_STALE;
-	brelse(secbp);
+	if (secbp != NULL) {
+		secbp->b_flags |= B_AGE | B_STALE;
+		brelse(secbp);
+	}
 	return (err);
 }
 

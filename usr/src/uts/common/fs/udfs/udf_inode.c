@@ -1315,8 +1315,8 @@ ud_updat_ext4(struct ud_inode *ip, struct file_entry *fe)
 	int32_t elen, ndent, index, count, con_index;
 	daddr_t bno;
 	struct buf *bp;
-	struct short_ad *sad;
-	struct long_ad *lad;
+	struct short_ad *sad = NULL;
+	struct long_ad *lad = NULL;
 	struct icb_ext *iext, *icon;
 
 
@@ -1684,12 +1684,12 @@ void
 ud_trunc_ext4(struct ud_inode *ip, u_offset_t length)
 {
 	int32_t index, l2b, count, ecount;
-	int32_t elen, ndent, nient;
-	u_offset_t ext_beg, ext_end;
-	struct icb_ext *iext, *icon;
+	int32_t elen = 0, ndent, nient;
+	u_offset_t ext_beg, ext_end = 0;
+	struct icb_ext *iext = NULL, *icon;
 	int32_t lbmask, ext_used;
 	uint32_t loc;
-	struct icb_ext text;
+	struct icb_ext text = { 0 };
 	uint32_t con_freed;
 
 	ASSERT((ip->i_desc_type == ICB_FLAG_SHORT_AD) ||
