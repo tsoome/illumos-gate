@@ -1209,6 +1209,7 @@ fct_register_local_port(fct_local_port_t *port)
 	iport->iport_cmd_slots = (fct_cmd_slot_t *)kmem_zalloc(
 	    port->port_max_xchges * sizeof (fct_cmd_slot_t), KM_SLEEP);
 	iport->iport_next_free_slot = 0;
+	slot = NULL;
 	for (i = 0; i < port->port_max_xchges; ) {
 		slot = &iport->iport_cmd_slots[i];
 		slot->slot_no = (uint16_t)i;
