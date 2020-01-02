@@ -98,7 +98,7 @@ extern uint_t rds_wc_signal;
 static uint8_t
 rds_is_port_marked(rds_session_t *sp, in_port_t port, uint_t qualifier)
 {
-	uint8_t	ret;
+	uint8_t	ret = 0;
 
 	switch (qualifier) {
 	case RDS_LOOPBACK: /* loopback */
@@ -128,7 +128,7 @@ rds_is_port_marked(rds_session_t *sp, in_port_t port, uint_t qualifier)
 static uint8_t
 rds_check_n_mark_port(rds_session_t *sp, in_port_t port, uint_t qualifier)
 {
-	uint8_t	ret;
+	uint8_t	ret = 0;
 
 	switch (qualifier) {
 	case RDS_LOOPBACK: /* loopback */
@@ -175,7 +175,7 @@ rds_check_n_mark_port(rds_session_t *sp, in_port_t port, uint_t qualifier)
 static uint8_t
 rds_check_n_unmark_port(rds_session_t *sp, in_port_t port, uint_t qualifier)
 {
-	uint8_t	ret;
+	uint8_t	ret = 0;
 
 	switch (qualifier) {
 	case RDS_LOOPBACK: /* loopback */
@@ -2220,6 +2220,7 @@ rds_received_msg(rds_ep_t *ep, rds_buf_t *bp)
 
 	RDS_DPRINTF4("rds_received_msg", "Enter: EP(%p)", ep);
 
+	pktp1 = NULL;
 	pktp = (rds_data_hdr_t *)(uintptr_t)bp->buf_ds.ds_va;
 	datap = ((uint8_t *)(uintptr_t)bp->buf_ds.ds_va) + RDS_DATA_HDR_SZ;
 	npkts = pktp->dh_npkts;
