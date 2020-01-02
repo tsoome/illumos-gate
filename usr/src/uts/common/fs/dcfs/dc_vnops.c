@@ -570,6 +570,7 @@ dc_getpage(struct vnode *vp, offset_t off, size_t len, uint_t *protp,
 	vp_baddr = (caddr_t)rounddown((uintptr_t)addr, bsize);
 
 	nblks = (vp_bend - vp_boff) / bsize;
+	error = 0;
 	while (nblks--) {
 		error = dc_getblock(vp, vp_boff, bsize, &pp, seg, vp_baddr,
 		    rw, cr);
