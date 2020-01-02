@@ -93,7 +93,7 @@ ixgbe_ring_tx(void *arg, mblk_t *mp)
 	int desc_num;
 	boolean_t copy_done, eop;
 	mblk_t *current_mp, *next_mp, *nmp, *pull_mp = NULL;
-	tx_control_block_t *tcb;
+	tx_control_block_t *tcb = NULL;
 	ixgbe_tx_context_t tx_context, *ctx;
 	link_list_t pending_list;
 	uint32_t len, hdr_frag_len, hdr_len;
@@ -103,6 +103,7 @@ ixgbe_ring_tx(void *arg, mblk_t *mp)
 	mblk_t *hdr_nmp = NULL;
 
 	ASSERT(mp->b_next == NULL);
+	hdr_len = 0;
 
 	if ((ixgbe->ixgbe_state & IXGBE_SUSPENDED) ||
 	    (ixgbe->ixgbe_state & IXGBE_ERROR) ||
