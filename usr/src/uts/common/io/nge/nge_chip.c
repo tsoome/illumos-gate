@@ -140,6 +140,8 @@ nge_chip_peek_cfg(nge_t *ngep, nge_peekpoke_t *ppd)
 	case 8:
 		regval = pci_config_get64(ngep->cfg_handle, regno);
 		break;
+	default:
+		return (DDI_FAILURE);
 	}
 	ppd->pp_acc_data = regval;
 	return (err);
