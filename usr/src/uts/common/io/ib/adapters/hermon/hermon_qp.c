@@ -92,6 +92,9 @@ hermon_qp_alloc(hermon_state_t *state, hermon_qp_info_t *qpinfo,
 	int				status, flag;
 
 	_NOTE(NOW_INVISIBLE_TO_OTHER_THREADS(*attr_p, *queuesz_p))
+	rq_depth = 0;
+	umapdb = NULL;
+	srq = NULL;
 
 	/*
 	 * Extract the necessary info from the hermon_qp_info_t structure
@@ -1253,6 +1256,9 @@ hermon_qp_alloc_range(hermon_state_t *state, uint_t log2,
 	uint_t				serv_type;
 
 	_NOTE(NOW_INVISIBLE_TO_OTHER_THREADS(*attr_p, *queuesz_p))
+	qp = NULL;
+	rq_depth = 0;
+	srq = NULL;
 
 	/*
 	 * Extract the necessary info from the hermon_qp_info_t structure
@@ -2820,6 +2826,8 @@ hermon_qp_sgl_to_logwqesz(hermon_state_t *state, uint_t num_sgl,
 {
 	uint_t	max_size, log2, actual_sgl;
 
+	log2 = 0;
+	actual_sgl = 0;
 	switch (wq_type) {
 	case HERMON_QP_WQ_TYPE_SENDQ_UD:
 		/*

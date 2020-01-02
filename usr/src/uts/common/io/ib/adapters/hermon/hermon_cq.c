@@ -70,7 +70,7 @@ hermon_cq_alloc(hermon_state_t *state, ibt_cq_hdl_t ibt_cqhdl,
     uint_t sleepflag)
 {
 	hermon_rsrc_t		*cqc, *rsrc;
-	hermon_umap_db_entry_t	*umapdb;
+	hermon_umap_db_entry_t	*umapdb = NULL;
 	hermon_hw_cqc_t		cqc_entry;
 	hermon_cqhdl_t		cq;
 	ibt_mr_attr_t		mr_attr;

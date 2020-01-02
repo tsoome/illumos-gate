@@ -1330,6 +1330,7 @@ hermon_qp_init2rtr(hermon_state_t *state, hermon_qphdl_t qp,
 	int			status;
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
+	rc = NULL;
 
 	/*
 	 * Grab the temporary QPC entry from QP software state
@@ -1703,6 +1704,7 @@ hermon_qp_rtr2rts(hermon_state_t *state, hermon_qphdl_t qp,
 	int			status;
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
+	rc = NULL;
 
 	/*
 	 * Grab the temporary QPC entry from QP software state
@@ -2556,7 +2558,7 @@ hermon_qp_sqd2sqd(hermon_state_t *state, hermon_qphdl_t qp,
 	ibt_qp_ud_attr_t	*ud;
 	ibt_qp_uc_attr_t	*uc;
 	hermon_hw_addr_path_t	*qpc_path;
-	ibt_adds_vect_t		*adds_vect;
+	ibt_adds_vect_t		*adds_vect = NULL;
 	uint_t			portnum, pkeyindx;
 	uint_t			rra_max, sra_max;
 	uint32_t		opmask = 0;
