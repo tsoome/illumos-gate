@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"Copyright 2010 QLogic Corporation; ql_nx.c"
-
 /*
  * ISP2xxx Solaris Fibre Channel Adapter (FCA) driver source file.
  *
@@ -1653,7 +1651,7 @@ ql_8021_reset_chip(ql_adapter_state_t *ha)
 static int
 ql_8021_reset_hw(ql_adapter_state_t *ha, int type)
 {
-	int		ret;
+	int		ret = 0;
 	uint32_t	rst;
 
 	/* scrub dma mask expansion register */
@@ -1876,6 +1874,7 @@ ql_8021_idc_handler(ql_adapter_state_t *ha)
 
 	/* wait for 30 seconds for device to go ready */
 	timer = 30;
+	rval = 0;
 	while (timer) {
 		if (lock == B_FALSE) {
 			(void) ql_8021_hw_lock(ha, IDC_LOCK_TIMEOUT);
