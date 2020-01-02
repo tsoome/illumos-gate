@@ -816,7 +816,7 @@ ql_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	uint_t			progress = 0;
 	char			*buf;
 	ushort_t		caps_ptr, cap;
-	fc_fca_tran_t		*tran;
+	fc_fca_tran_t		*tran = NULL;
 	ql_adapter_state_t	*ha = NULL;
 
 	static char *pmcomps[] = {
@@ -825,16 +825,14 @@ ql_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 		PM_LEVEL_D0_STR,		/* Device ON */
 	};
 
-	QL_PRINT_3(CE_CONT, "(%d): started, cmd=%xh\n",
-	    ddi_get_instance(dip), cmd);
+	/* first get the instance */
+	instance = ddi_get_instance(dip);
+	QL_PRINT_3(CE_CONT, "(%d): started, cmd=%xh\n", instance, cmd);
 
 	buf = (char *)(kmem_zalloc(MAXPATHLEN, KM_SLEEP));
 
 	switch (cmd) {
 	case DDI_ATTACH:
-		/* first get the instance */
-		instance = ddi_get_instance(dip);
-
 		cmn_err(CE_CONT, "!Qlogic %s(%d) FCA Driver v%s\n",
 		    QL_NAME, instance, QL_VERSION);
 
@@ -1653,7 +1651,7 @@ attach_failed:
 	case DDI_RESUME:
 		rval = DDI_FAILURE;
 
-		ha = ddi_get_soft_state(ql_state, ddi_get_instance(dip));
+		ha = ddi_get_soft_state(ql_state, instance);
 		if (ha == NULL) {
 			cmn_err(CE_WARN, "%s(%d): can't get soft state",
 			    QL_NAME, instance);
@@ -1694,7 +1692,7 @@ attach_failed:
 
 		/* Restart driver timer. */
 		if (ql_timer_timeout_id == NULL) {
-			ql_timer_timeout_id = timeout(ql_timer, (void *)0,
+			ql_timer_timeout_id = timeout(ql_timer, NULL,
 			    ql_timer_ticks);
 		}
 
@@ -1724,7 +1722,7 @@ attach_failed:
 
 	default:
 		cmn_err(CE_WARN, "%s(%d): attach, unknown code:"
-		    " %x", QL_NAME, ddi_get_instance(dip), cmd);
+		    " %x", QL_NAME, instance, cmd);
 		rval = DDI_FAILURE;
 		break;
 	}
@@ -1734,10 +1732,10 @@ attach_failed:
 	if (rval != DDI_SUCCESS) {
 		/*EMPTY*/
 		QL_PRINT_2(CE_CONT, "(%d): failed, rval = %xh\n",
-		    ddi_get_instance(dip), rval);
+		    instance, rval);
 	} else {
 		/*EMPTY*/
-		QL_PRINT_3(CE_CONT, "(%d): done\n", ddi_get_instance(dip));
+		QL_PRINT_3(CE_CONT, "(%d): done\n", instance);
 	}
 
 	return (rval);
@@ -10894,10 +10892,10 @@ ql_erase_flash(ql_adapter_state_t *ha, int erase_all)
 {
 	int		rval;
 	uint32_t	erase_delay = 2000000;
-	uint32_t	sStartAddr;
-	uint32_t	ssize;
+	uint32_t	sStartAddr = 0;
+	uint32_t	ssize = 0;
 	uint32_t	cnt;
-	uint8_t		*bfp;
+	uint8_t		*bfp = NULL;
 	uint8_t		*tmp;
 
 	QL_PRINT_3(CE_CONT, "(%d): started\n", ha->instance);
@@ -17621,7 +17619,7 @@ static int
 ql_n_port_plogi(ql_adapter_state_t *ha)
 {
 	int		rval;
-	ql_tgt_t	*tq;
+	ql_tgt_t	*tq = NULL;
 	ql_head_t done_q = { NULL, NULL };
 
 	rval = QL_SUCCESS;

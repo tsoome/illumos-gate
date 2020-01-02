@@ -780,6 +780,7 @@ ql_async_event(ql_adapter_state_t *ha, uint32_t mbx, ql_head_t *done_q,
 		break;
 
 	default:
+		handle = 0;
 		break;
 	}
 
@@ -1711,7 +1712,7 @@ static void
 ql_error_entry(ql_adapter_state_t *ha, response_t *pkt, ql_head_t *done_q,
     uint32_t *set_flags, uint32_t *reset_flags)
 {
-	ql_srb_t	*sp;
+	ql_srb_t	*sp = NULL;
 	uint32_t	index, resp_identifier;
 
 	if (pkt->entry_type == INVALID_ENTRY_TYPE) {
@@ -1810,7 +1811,7 @@ static int
 ql_status_entry(ql_adapter_state_t *ha, sts_entry_t *pkt,
     ql_head_t *done_q, uint32_t *set_flags, uint32_t *reset_flags)
 {
-	ql_srb_t		*sp;
+	ql_srb_t		*sp = NULL;
 	uint32_t		index, resp_identifier;
 	uint16_t		comp_status;
 	int			rval = 0;
@@ -2666,7 +2667,7 @@ static void
 ql_ip_entry(ql_adapter_state_t *ha, ip_entry_t *pkt23, ql_head_t *done_q,
     uint32_t *set_flags, uint32_t *reset_flags)
 {
-	ql_srb_t	*sp;
+	ql_srb_t	*sp = NULL;
 	uint32_t	index, resp_identifier;
 	ql_tgt_t	*tq;
 
@@ -2971,7 +2972,7 @@ static void
 ql_ms_entry(ql_adapter_state_t *ha, ms_entry_t *pkt23, ql_head_t *done_q,
     uint32_t *set_flags, uint32_t *reset_flags)
 {
-	ql_srb_t		*sp;
+	ql_srb_t		*sp = NULL;
 	uint32_t		index, cnt, resp_identifier;
 	ql_tgt_t		*tq;
 	ct_passthru_entry_t	*pkt24 = (ct_passthru_entry_t *)pkt23;
@@ -3194,9 +3195,9 @@ static void
 ql_els_passthru_entry(ql_adapter_state_t *ha, els_passthru_entry_rsp_t *rsp,
     ql_head_t *done_q, uint32_t *set_flags, uint32_t *reset_flags)
 {
-	ql_tgt_t	*tq;
+	ql_tgt_t	*tq = NULL;
 	port_id_t	d_id, s_id;
-	ql_srb_t	*srb;
+	ql_srb_t	*srb = NULL;
 	uint32_t	index, resp_identifier;
 
 	QL_PRINT_3(CE_CONT, "(%d): started\n", ha->instance);
