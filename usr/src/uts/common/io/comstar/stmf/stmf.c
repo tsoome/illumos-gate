@@ -5607,6 +5607,8 @@ stmf_ctl(int cmd, void *obj, void *arg)
 	stmf_i_local_port_t		*ilport;
 	stmf_state_change_info_t	*ssci = (stmf_state_change_info_t *)arg;
 
+	ilu = NULL;
+	ilport = NULL;
 	mutex_enter(&stmf_state.stmf_lock);
 	ret = STMF_INVALID_ARG;
 	if (cmd & STMF_CMD_LU_OP) {
@@ -6609,6 +6611,7 @@ stmf_worker_task(void *arg)
 	uint8_t wait_queue;
 	uint8_t dec_qdepth;
 
+	curcmd = 0;
 	w = (stmf_worker_t *)arg;
 	wait_ticks = drv_usectohz(10000);
 
@@ -6750,52 +6753,52 @@ out_itask_flag_loop:
 		mutex_exit(&itask->itask_mutex);
 
 		switch (curcmd) {
-		case ITASK_CMD_NEW_TASK:
-			iss = (stmf_i_scsi_session_t *)
-			    task->task_session->ss_stmf_private;
-			stmf_itl_lu_new_task(itask);
-			if (iss->iss_flags & ISS_LUN_INVENTORY_CHANGED) {
-				if (stmf_handle_cmd_during_ic(itask)) {
-					break;
+			case ITASK_CMD_NEW_TASK:
+				iss = (stmf_i_scsi_session_t *)
+					task->task_session->ss_stmf_private;
+				stmf_itl_lu_new_task(itask);
+				if (iss->iss_flags & ISS_LUN_INVENTORY_CHANGED) {
+					if (stmf_handle_cmd_during_ic(itask)) {
+						break;
+					}
 				}
-			}
 #ifdef	DEBUG
-			if (stmf_drop_task_counter > 0) {
-				if (atomic_dec_32_nv(
-				    (uint32_t *)&stmf_drop_task_counter) == 1) {
-					break;
+				if (stmf_drop_task_counter > 0) {
+					if (atomic_dec_32_nv(
+								(uint32_t *)&stmf_drop_task_counter) == 1) {
+						break;
+					}
 				}
-			}
 #endif
-			DTRACE_PROBE1(scsi__task__start, scsi_task_t *, task);
-			lu->lu_new_task(task, dbuf);
-			break;
-		case ITASK_CMD_DATA_XFER_DONE:
-			lu->lu_dbuf_xfer_done(task, dbuf);
-			break;
-		case ITASK_CMD_STATUS_DONE:
-			lu->lu_send_status_done(task);
-			break;
-		case ITASK_CMD_ABORT:
-			if (abort_free) {
-				mutex_enter(&itask->itask_mutex);
-				stmf_task_free(task);
-			} else {
-				stmf_do_task_abort(task);
-			}
-			break;
-		case ITASK_CMD_POLL_LU:
-			if (!wait_queue) {
-				lu->lu_task_poll(task);
-			}
-			break;
-		case ITASK_CMD_POLL_LPORT:
-			if (!wait_queue)
-				task->task_lport->lport_task_poll(task);
-			break;
-		case ITASK_CMD_SEND_STATUS:
-		/* case ITASK_CMD_XFER_DATA: */
-			break;
+				DTRACE_PROBE1(scsi__task__start, scsi_task_t *, task);
+				lu->lu_new_task(task, dbuf);
+				break;
+			case ITASK_CMD_DATA_XFER_DONE:
+				lu->lu_dbuf_xfer_done(task, dbuf);
+				break;
+			case ITASK_CMD_STATUS_DONE:
+				lu->lu_send_status_done(task);
+				break;
+			case ITASK_CMD_ABORT:
+				if (abort_free) {
+					mutex_enter(&itask->itask_mutex);
+					stmf_task_free(task);
+				} else {
+					stmf_do_task_abort(task);
+				}
+				break;
+			case ITASK_CMD_POLL_LU:
+				if (!wait_queue) {
+					lu->lu_task_poll(task);
+				}
+				break;
+			case ITASK_CMD_POLL_LPORT:
+				if (!wait_queue)
+					task->task_lport->lport_task_poll(task);
+				break;
+			case ITASK_CMD_SEND_STATUS:
+				/* case ITASK_CMD_XFER_DATA: */
+				break;
 		}
 
 		mutex_enter(&w->worker_lock);
@@ -6815,7 +6818,7 @@ out_itask_flag_loop:
 	if (wait_timer) {
 		DTRACE_PROBE1(worker__timed__sleep, stmf_worker_t, w);
 		(void) cv_reltimedwait(&w->worker_cv, &w->worker_lock,
-		    wait_delta, TR_CLOCK_TICK);
+				wait_delta, TR_CLOCK_TICK);
 	} else {
 		DTRACE_PROBE1(worker__sleep, stmf_worker_t, w);
 		cv_wait(&w->worker_cv, &w->worker_lock);
