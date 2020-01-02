@@ -197,7 +197,7 @@ vnic_ioc_create(void *karg, intptr_t arg, int mode, cred_t *cred, int *rvalp)
 	vnic_ioc_create_t *create_arg = karg;
 	int err = 0, mac_len = 0, mac_slot;
 	uchar_t mac_addr[MAXMACADDRLEN];
-	uint_t mac_prefix_len;
+	uint_t mac_prefix_len = 0;
 	vnic_mac_addr_type_t mac_addr_type;
 	vnic_ioc_diag_t diag = VNIC_IOC_DIAG_NONE;
 	boolean_t is_anchor = create_arg->vc_flags & VNIC_IOC_CREATE_ANCHOR;
