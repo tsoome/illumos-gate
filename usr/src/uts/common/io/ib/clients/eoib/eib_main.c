@@ -196,7 +196,7 @@ _fini()
 static int
 eib_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 {
-	eib_t *ss;
+	eib_t *ss = NULL;
 	ibt_status_t ret;
 	int instance;
 	uint_t progress = 0;

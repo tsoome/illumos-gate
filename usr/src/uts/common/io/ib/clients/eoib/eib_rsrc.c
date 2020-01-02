@@ -808,6 +808,7 @@ eib_rsrc_setup_lsobufs(eib_t *ss, int *err)
 	 */
 	memp = lsomem;
 	elem = bkt->bk_bufl;
+	tail = NULL;
 	for (i = 0; i < eib_lso_num_bufs; i++) {
 		elem->lb_isfree = 1;
 		elem->lb_buf = memp;
