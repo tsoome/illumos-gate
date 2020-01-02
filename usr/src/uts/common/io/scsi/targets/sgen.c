@@ -1029,12 +1029,11 @@ sgen_probe(dev_info_t *dip)
 		return (DDI_PROBE_FAILURE);
 	}
 
+	rval = DDI_PROBE_FAILURE;
 	if (scsi_probe(scsidevp, NULL_FUNC) == SCSIPROBE_EXISTS) {
 		if (sgen_get_binding(dip) == 0) {
 			rval = DDI_PROBE_SUCCESS;
 		}
-	} else {
-		rval = DDI_PROBE_FAILURE;
 	}
 	scsi_unprobe(scsidevp);
 
