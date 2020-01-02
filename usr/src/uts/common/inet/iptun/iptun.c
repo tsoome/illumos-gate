@@ -1989,6 +1989,7 @@ iptun_get_maxmtu(iptun_t *iptun, ip_xmit_attr_t *ixa, uint32_t new_pmtu)
 	 * Now calculate tunneling overhead and subtract that from the
 	 * path-MTU information obtained above.
 	 */
+	header_size = 0;
 	if (iptun->iptun_header_size != 0) {
 		header_size = iptun->iptun_header_size;
 	} else {
