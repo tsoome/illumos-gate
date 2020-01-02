@@ -192,7 +192,7 @@ void
 scsa1394_sbp2_fake_inquiry(scsa1394_state_t *sp, struct scsi_inquiry *inq)
 {
 	sbp2_cfgrom_ent_t *r = &sp->s_tgt->t_cfgrom.cr_root;
-	sbp2_cfgrom_ent_t *e, *eref, *evid;
+	sbp2_cfgrom_ent_t *e, *eref, *evid = NULL;
 	int	i, len;
 
 	bzero(inq, sizeof (struct scsi_inquiry));
