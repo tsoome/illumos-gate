@@ -580,7 +580,7 @@ static int
 sdev_self_access(sdev_node_t *dv, int mode, int flags, struct cred *cr,
     caller_context_t *ct)
 {
-	int ret;
+	int ret = 0;
 
 	ASSERT(RW_READ_HELD(&dv->sdev_contents));
 	ASSERT(dv->sdev_attr || dv->sdev_attrvp);
