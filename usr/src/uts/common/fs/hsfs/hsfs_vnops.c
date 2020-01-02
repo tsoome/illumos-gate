@@ -1024,7 +1024,7 @@ hsfs_getapage(struct vnode *vp, u_offset_t off, size_t len, uint_t *protp,
 	int	xarsiz;
 	diskaddr_t driver_block;
 	u_offset_t io_off_tmp;
-	ksema_t *fio_done;
+	ksema_t *fio_done = NULL;
 	int	calcdone;
 
 	/*
@@ -2042,6 +2042,7 @@ hsched_invoke_strategy(struct hsfs *fsp)
 	fvp = fio->bp->b_file;
 	nio = AVL_NEXT(&hqueue->read_tree, fio);
 	tio = fio;
+	prev = NULL;
 	while (nio != NULL && IS_ADJACENT(tio, nio) &&
 	    bsize < hqueue->dev_maxtransfer) {
 		avl_remove(&hqueue->deadline_tree, tio);

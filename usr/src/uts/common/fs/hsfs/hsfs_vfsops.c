@@ -1460,14 +1460,14 @@ hsfs_mountroot(struct vfs *vfsp, enum whymountroot why)
 	struct hsfs *fsp;
 	struct hs_volume *fvolp;
 	static int hsfsrootdone = 0;
-	dev_t rootdev;
+	dev_t rootdev = NODEV;
 	mode_t mode = 0;
 
 	if (why == ROOT_INIT) {
 		if (hsfsrootdone++)
 			return (EBUSY);
 		rootdev = getrootdev();
-		if (rootdev == (dev_t)NODEV)
+		if (rootdev == NODEV)
 			return (ENODEV);
 		vfsp->vfs_dev = rootdev;
 		vfsp->vfs_flag |= VFS_RDONLY;

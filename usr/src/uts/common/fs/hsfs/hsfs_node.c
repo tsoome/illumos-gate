@@ -723,8 +723,7 @@ hs_remakenode(uint_t lbn, uint_t off, struct vfs *vfsp,
 	fsp = VFS_TO_HSFS(vfsp);
 	if (off > HS_SECTOR_SIZE) {
 		cmn_err(CE_WARN, "hs_remakenode: bad offset");
-		error = EINVAL;
-		goto end;
+		return (EINVAL);
 	}
 	secno = LBN_TO_SEC(lbn, vfsp);
 	secbp = bread(fsp->hsfs_devvp->v_rdev, secno * 4, HS_SECTOR_SIZE);
@@ -931,7 +930,7 @@ hs_parsedir(
 	char	*on_disk_name;
 	int	on_disk_namelen;
 	int	on_disk_dirlen;
-	uchar_t	flags;
+	uchar_t	flags = 0;
 	int	namelen;
 	int	error;
 	int	name_change_flag = 0;	/* set if name was gotten in SUA */
