@@ -2165,7 +2165,7 @@ usb_ac_set_monitor_gain_control(usb_ac_state_t *uacp, uint_t dir,
 	uint_t unit, id;
 	uint_t depth = 0;
 
-
+	id = 0;
 	for (unit = 1; unit < uacp->usb_ac_max_unit; unit++) {
 		usb_audio_output_term_descr_t *d =
 		    uacp->usb_ac_units[unit].acu_descriptor;
@@ -5140,7 +5140,7 @@ usb_audio_ctrl_alloc(usb_ac_state_t *statep, uint32_t num, uint64_t val)
 
 
 	default:
-
+		fn = NULL;
 		break;
 	}
 
