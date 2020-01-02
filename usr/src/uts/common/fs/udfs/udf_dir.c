@@ -898,6 +898,7 @@ ud_dircheckforname(struct ud_inode *tdp,
 
 	offset = 0;
 	dirsize = tdp->i_size;
+	sz_req = 0;
 
 	if (slotp->status != FOUND) {
 		int32_t temp;

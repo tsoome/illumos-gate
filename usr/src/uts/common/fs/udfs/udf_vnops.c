@@ -2191,7 +2191,7 @@ udf_pageio(
 	daddr_t bn;
 	struct buf *bp;
 	struct ud_inode *ip = VTOI(vp);
-	int32_t dolock, error = 0, contig, multi_io;
+	int32_t dolock, error = 0, contig, multi_io = 0;
 	size_t done_len = 0, cur_len = 0;
 	page_t *npp = NULL, *opp = NULL, *cpp = pp;
 
