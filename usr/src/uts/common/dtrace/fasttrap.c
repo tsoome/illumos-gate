@@ -281,6 +281,7 @@ fasttrap_pid_cleanup_cb(void *data)
 	static volatile int in = 0;
 	ASSERT(in == 0);
 	in = 1;
+	later = 0;
 
 	mutex_enter(&fasttrap_cleanup_mtx);
 	while (fasttrap_cleanup_work) {
@@ -720,6 +721,7 @@ fasttrap_tracepoint_disable(proc_t *p, fasttrap_probe_t *probe, uint_t index)
 		break;
 
 	default:
+		idp = NULL;
 		ASSERT(0);
 	}
 
