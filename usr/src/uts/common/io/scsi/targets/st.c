@@ -1222,6 +1222,7 @@ st_detach(dev_info_t *devi, ddi_detach_cmd_t cmd)
 	struct scsi_tape *un;
 	clock_t wait_cmds_complete;
 
+	result = 0;
 	ST_ENTR(devi, st_detach);
 
 	instance = ddi_get_instance(devi);
@@ -7903,7 +7904,7 @@ st_setup_cmd(struct scsi_tape *un, buf_t *bp, int com, int64_t count)
 static int
 st_set_compression(struct scsi_tape *un)
 {
-	int rval;
+	int rval = 0;
 	int turn_compression_on;
 	minor_t minor;
 
@@ -8638,7 +8639,7 @@ st_make_cmd(struct scsi_tape *un, struct buf *bp, int (*func)(caddr_t))
 	int flags = 0;
 	int cdb_len = CDB_GROUP0; /* default */
 	uchar_t com;
-	char fixbit;
+	char fixbit = 0;
 	char short_fm = 0;
 	optype prev_op = un->un_lastop;
 	int stat_size =
