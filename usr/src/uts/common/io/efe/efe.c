@@ -253,7 +253,7 @@ efe_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	int actual;
 	uint_t pri;
 	efe_t *efep;
-	mac_register_t *macp;
+	mac_register_t *macp = NULL;
 
 	switch (cmd) {
 	case DDI_ATTACH:
