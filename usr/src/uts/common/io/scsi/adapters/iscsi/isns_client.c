@@ -1196,6 +1196,7 @@ do_isns_dev_attr_query_all_nodes(iscsi_addr_t *isns_server_addr,
 
 	/* Initialize */
 	*pg_list = NULL;
+	rsp_status = ISNS_RSP_SUCCESSFUL;
 
 	so = isns_open(isns_server_addr);
 	if (so == NULL) {
@@ -2449,6 +2450,7 @@ isns_process_dev_attr_qry_target_nodes_pdu(
 	isns_portal_group_t *pg;
 	uint8_t	junk[IPV4_RSVD_BYTES];
 
+	target_node_type_b = B_FALSE;
 	*pg_list = NULL;
 	bzero(junk, IPV4_RSVD_BYTES);
 

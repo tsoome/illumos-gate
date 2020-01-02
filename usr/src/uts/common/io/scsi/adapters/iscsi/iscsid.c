@@ -1334,7 +1334,7 @@ iscsid_login_tgt(iscsi_hba_t *ihp, char *target_name,
 	/* Loop thru sessions */
 	isp = ihp->hba_sess_list;
 	while (isp != NULL) {
-		boolean_t try_online;
+		boolean_t try_online = B_FALSE;
 		if (!(method & iSCSIDiscoveryMethodBoot)) {
 			if (target_name == NULL) {
 				if (method == iSCSIDiscoveryMethodUnknown) {
