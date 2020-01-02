@@ -1447,7 +1447,7 @@ static boolean_t
 usbgem_mii_link_check(struct usbgem_dev *dp, int *oldstatep, int *newstatep)
 {
 	boolean_t	tx_sched = B_FALSE;
-	uint16_t	status;
+	uint16_t	status = USB_FAILURE;
 	uint16_t	advert;
 	uint16_t	lpable;
 	uint16_t	exp;
@@ -1456,7 +1456,7 @@ usbgem_mii_link_check(struct usbgem_dev *dp, int *oldstatep, int *newstatep)
 	uint16_t	val;
 	clock_t		now;
 	clock_t		diff;
-	int		linkdown_action;
+	int		linkdown_action = 0;
 	boolean_t	fix_phy = B_FALSE;
 	int		err;
 	uint_t		rwlock;
@@ -2618,6 +2618,7 @@ usbgem_add_multicast(struct usbgem_dev *dp, const uint8_t *ep)
 		dp->rxmode &= ~RXMODE_MULTI_OVF;
 	}
 
+	err = USB_FAILURE;
 	if (dp->mac_state != MAC_STATE_DISCONNECTED) {
 		/* tell new multicast list to the hardware */
 		err = usbgem_hal_set_rx_filter(dp);
@@ -2660,6 +2661,7 @@ usbgem_remove_multicast(struct usbgem_dev *dp, const uint8_t *ep)
 		dp->rxmode &= ~RXMODE_MULTI_OVF;
 	}
 
+	err = USB_FAILURE;
 	if (dp->mac_state != MAC_STATE_DISCONNECTED) {
 		err = usbgem_hal_set_rx_filter(dp);
 	}
@@ -2874,6 +2876,7 @@ usbgem_m_propinfo(void *arg, const char *pr_name, mac_prop_id_t pr_num,
 		break;
 
 	case MAC_PROP_FLOWCTRL:
+		fl = LINK_FLOWCTRL_NONE;
 		switch (dp->ugc.usbgc_flow_control) {
 		case FLOW_CONTROL_NONE:
 			fl = LINK_FLOWCTRL_NONE;
@@ -5488,6 +5491,7 @@ usbgem_ctrl_out(struct usbgem_dev *dp,
 	setup.wLength = len;
 	setup.attrs = 0;	/* attributes */
 
+	ret = USB_FAILURE;
 	for (i = usbgem_ctrl_retry; i > 0; i--) {
 		completion_reason = 0;
 		cb_flags = 0;
@@ -5550,6 +5554,7 @@ usbgem_ctrl_in(struct usbgem_dev *dp,
 	setup.wLength = len;
 	setup.attrs = USB_ATTRS_AUTOCLEARING;	/* XXX */
 
+	ret = USB_FAILURE;
 	for (i = usbgem_ctrl_retry; i > 0; i--) {
 		completion_reason = 0;
 		cb_flags = 0;
