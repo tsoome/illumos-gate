@@ -62,6 +62,7 @@ nge_mii_access(nge_t *ngep, nge_regno_t regno, uint16_t data, uint32_t cmd)
 	NGE_TRACE(("nge_mii_access($%p, 0x%lx, 0x%x, 0x%x)",
 	    (void *)ngep, regno, data, cmd));
 
+	mdio_data = 0;
 	/*
 	 * Clear the privous interrupt event
 	 */
