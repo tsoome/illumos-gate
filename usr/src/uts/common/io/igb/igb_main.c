@@ -1358,7 +1358,9 @@ igb_init_adapter(igb_t *igb)
 	case e1000_i210:
 	case e1000_i211:
 		pba = E1000_PBA_34K;
+		break;
 	default:
+		pba = 0;
 		break;
 	}
 
@@ -4421,6 +4423,7 @@ igb_alloc_intr_handles(igb_t *igb, int intr_type)
 	int rc;
 
 	devinfo = igb->dip;
+	orig = 0;
 
 	switch (intr_type) {
 	case DDI_INTR_TYPE_FIXED:
