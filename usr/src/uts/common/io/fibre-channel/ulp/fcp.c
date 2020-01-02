@@ -2297,10 +2297,10 @@ fcp_send_scsi_ioctl(struct fcp_scsi_cmd *fscsi)
 	struct fcp_cmd		*fcmd;
 	union scsi_cdb		*scsi_cdb;
 	la_wwn_t		*wwn_ptr;
-	int			nodma;
+	int			nodma = 0;
 	struct fcp_rsp		*rsp;
 	struct fcp_rsp_info	*rsp_info;
-	caddr_t			rsp_sense;
+	caddr_t			rsp_sense = NULL;
 	int			buf_len;
 	int			info_len;
 	int			sense_len;
@@ -2316,8 +2316,8 @@ fcp_send_scsi_ioctl(struct fcp_scsi_cmd *fscsi)
 	int			pkt_action;
 	int			pkt_reason;
 	int			ret, xport_retval = ~FC_SUCCESS;
-	int			lcount;
-	int			tcount;
+	int			lcount = 0;
+	int			tcount = 0;
 	int			reconfig_status;
 	int			port_busy = FALSE;
 	uchar_t			*lun_string;
@@ -3714,7 +3714,7 @@ fcp_port_ioctl(opaque_t ulph, opaque_t port_handle, dev_t dev, int cmd,
 	int			retval = FC_UNCLAIMED;	/* return value */
 	struct fcp_port		*pptr = NULL;		/* our soft state */
 	struct devctl_iocdata	*dcp = NULL;		/* for devctl */
-	dev_info_t		*cdip;
+	dev_info_t		*cdip = NULL;
 	mdi_pathinfo_t		*pip = NULL;
 	char			*ndi_nm;		/* NDI name */
 	char			*ndi_addr;		/* NDI addr */
@@ -8154,6 +8154,7 @@ fcp_trigger_lun(struct fcp_lun *plun, child_info_t *cip, int old_mpxio,
 	dev_info_t		*cdip, *pdip;
 	char			*devname;
 
+	cdip = NULL;
 	if ((old_mpxio != 0) && (plun->lun_mpxio != old_mpxio)) {
 		/*
 		 * When this event gets serviced, lun_cip and lun_mpxio
@@ -9770,7 +9771,7 @@ fcp_handle_port_attach(opaque_t ulph, fc_ulp_port_info_t *pinfo,
 	int			event_bind = FALSE;
 	struct fcp_port		*pptr;
 	fc_portmap_t		*tmp_list = NULL;
-	uint32_t		max_cnt, alloc_cnt;
+	uint32_t		max_cnt, alloc_cnt = 0;
 	uchar_t			*boot_wwn = NULL;
 	uint_t			nbytes;
 	int			manual_cfg;
