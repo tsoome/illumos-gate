@@ -5195,6 +5195,7 @@ ohci_start_pipe_polling(
 	ASSERT(pp->pp_max_periodic_req_cnt != 0);
 
 	/* Allocate all the necessary resources for the IN transfer */
+	tw = NULL;
 	tw_list = NULL;
 	total_tws = pp->pp_max_periodic_req_cnt - pp->pp_cur_periodic_req_cnt;
 	for (i = 0; i < total_tws; i++) {

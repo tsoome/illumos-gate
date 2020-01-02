@@ -884,7 +884,7 @@ ohci_polled_save_state(ohci_polled_t	*ohci_polledp)
 	uint8_t			ep_addr;
 	ohci_save_intr_sts_t	*ohci_intr_sts;
 	ohci_regs_t		*ohci_polled_regsp;
-	ohci_td_t		*td, *prev_td;
+	ohci_td_t		*td, *prev_td = NULL;
 	ohci_td_t		*done_head, **done_list;
 
 #ifndef lint
@@ -1925,6 +1925,9 @@ ohci_polled_insert_td(
 		break;
 	case USB_EP_ATTR_BULK:
 		td_control = tw->tw_direction|HC_TD_DT_0|HC_TD_1I|HC_TD_R;
+		break;
+	default:
+		td_control = 0;
 		break;
 	}
 
