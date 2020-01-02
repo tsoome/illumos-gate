@@ -122,6 +122,7 @@ igb_tx(igb_tx_ring_t *tx_ring, mblk_t *mp)
 	uint32_t copy_thresh;
 
 	copy_thresh = igb->tx_copy_thresh;
+	tcb = NULL;
 
 	/* Get the mblk size */
 	mbsize = 0;
