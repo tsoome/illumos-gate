@@ -273,7 +273,7 @@ ibnex_devctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	case DEVCTL_AP_CONTROL:
 	{
 		int			num_nodes = 0;
-		ibnex_ioctl_data_t	ioc;	/* for 64-bit copies only */
+		ibnex_ioctl_data_t	ioc = { 0 };/* for 64-bit copies only */
 
 		msg = "\tdevctl: DEVCTL_AP_CONTROL";
 #ifdef	_MULTI_DATAMODEL
@@ -937,6 +937,8 @@ ibnex_devctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 		} else if (nodep->node_type == IBNEX_PSEUDO_NODE) {
 			/* unconfigure the pseudo node */
 			ret_val = ibnex_pseudo_fininode(apid_dip);
+		} else {
+			ret_val = 0;
 		}
 
 		/* reset upon failure */

@@ -1613,7 +1613,7 @@ ibnex_config_port_node(dev_info_t *parent, char *devname)
 	ib_pkey_t		pkey;
 	dev_info_t		*cdip;
 	ibdm_port_attr_t	*port_attr;
-	ibdm_hca_list_t		*hca_list;
+	ibdm_hca_list_t		*hca_list = NULL;
 
 	IBTF_DPRINTF_L4("ibnex", "\tconfig_port_node: %s", devname);
 
