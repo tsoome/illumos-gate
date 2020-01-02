@@ -3697,6 +3697,7 @@ ehci_pipe_cleanup(
 	/* Free DMA resources */
 	ehci_free_dma_resources(ehcip, ph);
 
+	completion_reason = USB_CR_OK;
 	switch (pipe_state) {
 	case EHCI_PIPE_STATE_CLOSE:
 		completion_reason = USB_CR_PIPE_CLOSING;
