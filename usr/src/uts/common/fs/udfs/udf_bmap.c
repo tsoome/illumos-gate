@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/t_lock.h>
 #include <sys/param.h>
@@ -198,7 +196,7 @@ ud_bmap_write(struct ud_inode *ip,
 {
 	int32_t error = 0, i, isdir, issync;
 	struct udf_vfs *udf_vfsp;
-	struct icb_ext *iext, *pext;
+	struct icb_ext *iext, *pext = NULL;
 	uint32_t blkno, sz;
 	u_offset_t isize;
 	uint32_t acount, prox;
@@ -606,8 +604,8 @@ ud_common_ad(struct ud_inode *ip, struct buf *bp)
 	struct alloc_ext_desc *aed;
 	struct icb_ext *iext, *con;
 	u_offset_t offset;
-	long_ad_t *lad;
-	short_ad_t *sad;
+	long_ad_t *lad = NULL;
+	short_ad_t *sad = NULL;
 	int islong;
 	void *addr;
 
