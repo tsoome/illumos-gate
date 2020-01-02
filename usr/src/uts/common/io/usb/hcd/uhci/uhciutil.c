@@ -2966,7 +2966,7 @@ uhci_fill_in_bulk_isoc_td(uhci_state_t *uhcip, uhci_td_t *current_td,
 {
 	uhci_pipe_private_t	*pp = (uhci_pipe_private_t *)ph->p_hcd_private;
 	usb_ep_descr_t		*ept = &pp->pp_pipe_handle->p_ep;
-	uint32_t		buf_addr;
+	uint32_t		buf_addr = 0;
 
 	USB_DPRINTF_L4(PRINT_MASK_LISTS, uhcip->uhci_log_hdl,
 	    "uhci_fill_in_bulk_isoc_td: tw 0x%p offs 0x%x length 0x%x",
@@ -3998,6 +3998,9 @@ uhci_insert_isoc_td(
 	    (void *)ph, (void *)isoc_req, length);
 
 	ASSERT(mutex_owned(&uhcip->uhci_int_mutex));
+
+	start_frame = 0;
+	end_frame = 0;
 
 	/* Allocate a transfer wrapper */
 	if ((tw = uhci_create_isoc_transfer_wrapper(uhcip, pp, isoc_req,
