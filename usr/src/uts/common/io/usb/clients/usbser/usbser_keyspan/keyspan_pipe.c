@@ -293,6 +293,7 @@ keyspan_init_pipes_usa49wg(keyspan_state_t *ksp)
 	    *datain[KEYSPAN_MAX_PORT_NUM],
 	    *status = NULL, *tmp_ep;
 
+	bzero(datain, sizeof (datain));
 	ifc = dev_data->dev_curr_if;
 	alt = 0;
 
@@ -308,7 +309,7 @@ keyspan_init_pipes_usa49wg(keyspan_state_t *ksp)
 		    "keyspan_init_pipes: can't find port1 data out ep");
 
 		return (USB_FAILURE);
-		}
+	}
 	ep_addr = tmp_ep->ep_descr.bEndpointAddress;
 
 	/* match the port0 data out EP */
@@ -862,6 +863,7 @@ keyspan_open_port_pipes(keyspan_port_t *kp)
 		USB_DPRINTF_L2(DPRINT_OPEN, kp->kp_lh,
 		    "keyspan_open_port_pipes:"
 		    "the device's product id can't be recognized");
+		rval = USB_FAILURE;
 	}
 
 	if (rval != USB_SUCCESS) {
