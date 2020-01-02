@@ -89,6 +89,9 @@ tavor_qp_alloc(tavor_state_t *state, tavor_qp_info_t *qpinfo,
 	char			*errormsg;
 
 	TAVOR_TNF_ENTER(tavor_qp_alloc);
+	srq = NULL;
+	uarpg = 0;
+	umapdb = NULL;
 
 	_NOTE(NOW_INVISIBLE_TO_OTHER_THREADS(*attr_p, *queuesz_p))
 
@@ -1981,6 +1984,8 @@ tavor_qp_sgl_to_logwqesz(tavor_state_t *state, uint_t num_sgl,
 	uint_t	max_size, log2, actual_sgl;
 
 	TAVOR_TNF_ENTER(tavor_qp_sgl_to_logwqesz);
+	log2 = 0;
+	actual_sgl = 0;
 
 	switch (wq_type) {
 	case TAVOR_QP_WQ_TYPE_SENDQ:
