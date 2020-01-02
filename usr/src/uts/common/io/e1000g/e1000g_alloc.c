@@ -1329,6 +1329,7 @@ e1000g_alloc_rx_sw_packet(e1000g_rx_data_t *rx_data, ddi_dma_attr_t *p_dma_attr)
 	struct e1000g *Adapter;
 
 	Adapter = rx_data->rx_ring->adapter;
+	mystat = DDI_FAILURE;
 
 	packet = kmem_zalloc(sizeof (rx_sw_packet_t), KM_NOSLEEP);
 	if (packet == NULL) {
