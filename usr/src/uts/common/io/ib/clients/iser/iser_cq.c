@@ -453,7 +453,7 @@ iser_msg_handle(iser_chan_t *chan, iser_msg_t *msg)
 	int		opcode;
 	iser_ctrl_hdr_t	*hdr = NULL;
 	iser_conn_t	*iser_conn = chan->ic_conn;
-	int		status;
+	int		status = DDI_FAILURE;
 
 	hdr = (iser_ctrl_hdr_t *)(uintptr_t)msg->msg_ds.ds_va;
 	ASSERT(hdr != NULL);
