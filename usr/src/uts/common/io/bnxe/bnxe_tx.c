@@ -1281,6 +1281,7 @@ int BnxeTxPktsInit(um_device_t * pUM,
 {
     int idx, rc;
 
+    rc = -1;
     switch (cliIdx)
     {
     case LM_CLI_IDX_FCOE:
