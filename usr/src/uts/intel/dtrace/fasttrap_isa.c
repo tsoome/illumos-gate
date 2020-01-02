@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/fasttrap_isa.h>
 #include <sys/fasttrap_impl.h>
 #include <sys/dtrace.h>
@@ -789,6 +787,8 @@ fasttrap_do_seg(fasttrap_tracepoint_t *tp, struct regs *rp, uintptr_t *addr)
 	case FASTTRAP_SEG_SS:
 		sel = rp->r_ss;
 		break;
+	default:
+		return (-1);
 	}
 
 	/*
@@ -1196,7 +1196,9 @@ fasttrap_pid_probe(struct regs *rp)
 			    ((rp->r_ps & FASTTRAP_EFLAGS_SF) == 0) ==
 			    ((rp->r_ps & FASTTRAP_EFLAGS_OF) == 0);
 			break;
-
+		default:
+			taken = 0;
+			break;
 		}
 
 		if (taken)
@@ -1226,6 +1228,9 @@ fasttrap_pid_probe(struct regs *rp)
 			break;
 		case FASTTRAP_LOOP:
 			taken = (cx != 0);
+			break;
+		default:
+			taken = 0;
 			break;
 		}
 
@@ -1536,6 +1541,9 @@ fasttrap_pid_probe(struct regs *rp)
 			case FASTTRAP_RIP_2 | FASTTRAP_RIP_X:
 				reg = &rp->r_r9;
 				curthread->t_dtrace_reg = REG_R9;
+				break;
+			default:
+				reg = NULL;
 				break;
 			}
 
