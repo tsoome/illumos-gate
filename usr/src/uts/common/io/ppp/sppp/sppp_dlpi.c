@@ -45,8 +45,6 @@
  * for improved performance and scalability.
  */
 
-#define	RCSID	"$Id: sppp_dlpi.c,v 1.0 2000/05/08 01:10:12 masputra Exp $"
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -587,6 +585,7 @@ sppp_dl_bind(queue_t *q, mblk_t *mp)
 	spppreqsap_t		req_sap;
 	mblk_t			*lsmp;
 
+	sap = 0;
 	ASSERT(q != NULL && q->q_ptr != NULL);
 	sps = (spppstr_t *)q->q_ptr;
 	ASSERT(mp != NULL && mp->b_rptr != NULL);
