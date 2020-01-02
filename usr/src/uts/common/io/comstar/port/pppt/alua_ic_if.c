@@ -2044,7 +2044,7 @@ stmf_ic_scsi_devid_desc_unmarshal(nvlist_t *nvl)
 {
 	scsi_devid_desc_t *sdid = NULL;
 	uint8_t ident_length = 0;
-	size_t sdid_size;
+	size_t sdid_size = 0;
 	int rc = 0;
 
 	/*
