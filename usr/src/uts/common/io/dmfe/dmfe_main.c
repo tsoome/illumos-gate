@@ -1850,6 +1850,8 @@ dmfe_interrupt(caddr_t arg)
 				msg = "Link status change?";
 			} else if (interrupts & GP_TIMER_INT) {
 				msg = "Timer expired?";
+			} else {
+				msg = "Unknown";
 			}
 
 			if (warning_msg)
