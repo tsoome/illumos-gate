@@ -3072,6 +3072,8 @@ scsa2usb_cmd_transport(scsa2usb_state_t *scsa2usbp, scsa2usb_cmd_t *cmd)
 	} else if (SCSA2USB_IS_CB(scsa2usbp) || SCSA2USB_IS_CBI(scsa2usbp)) {
 		transport =  scsa2usb_check_ufi_blacklist_attrs(scsa2usbp,
 		    pkt->pkt_cdbp[0], cmd);
+	} else {
+		transport = 0;
 	}
 
 	/* just accept the command or return error */
@@ -3898,6 +3900,11 @@ scsa2usb_rw_transport(scsa2usb_state_t *scsa2usbp, struct scsi_pkt *pkt)
 		lba = SCSA2USB_LBA_12BYTE(pkt);
 		len = SCSA2USB_LEN_12BYTE(pkt);
 		dir = USB_EP_DIR_OUT;
+		break;
+	default:
+		lba = 0;
+		len = 0;
+		dir = 0;
 		break;
 	}
 
