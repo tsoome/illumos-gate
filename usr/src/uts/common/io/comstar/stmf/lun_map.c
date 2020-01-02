@@ -1346,7 +1346,10 @@ stmf_remove_group(uint8_t *grpname, uint16_t grpname_size,
 	else if (group_type == STMF_ID_TYPE_TARGET_GROUP)
 		id = stmf_lookup_id(&stmf_state.stmf_tg_list,
 		    grpname_size, grpname);
-	if (!id) {
+	else
+		id = NULL;
+
+	if (id == NULL) {
 		*err_detail = (group_type == STMF_ID_TYPE_HOST_GROUP)?
 		    STMF_IOCERR_INVALID_HG:STMF_IOCERR_INVALID_TG;
 		return (ENODEV); /* no such grp */
