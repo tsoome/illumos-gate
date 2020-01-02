@@ -2557,6 +2557,8 @@ spdsock_do_updatealg(spd_ext_t *extv[], spd_stack_t *spds)
 	uint_t i, cur_key, cur_block, algid;
 	int diag = -1;
 
+	cur_key = 0;
+	cur_block = 0;
 	ASSERT(MUTEX_HELD(&spds->spds_alg_lock));
 
 	/* parse the message, building the list of algorithms */
