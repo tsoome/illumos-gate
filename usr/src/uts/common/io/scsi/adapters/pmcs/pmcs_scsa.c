@@ -1444,7 +1444,7 @@ pmcs_scsi_quiesce(dev_info_t *dip)
 {
 	pmcs_hw_t *pwp;
 	int totactive = -1;
-	pmcs_xscsi_t *xp;
+	pmcs_xscsi_t *xp = NULL;
 	uint16_t target;
 
 	if (ddi_get_soft_state(pmcs_iport_softstate, ddi_get_instance(dip)))
