@@ -2128,6 +2128,9 @@ isnst_add_portal_attr(isns_pdu_t *pdu, size_t pdu_size,
 	} else if (ss->ss_family == AF_INET6) {
 		attr_numeric_data = sizeof (in6_addr_t);
 		inaddrp = (void *)&in6->sin6_addr;
+	} else {
+		attr_numeric_data = 0;
+		inaddrp = NULL;
 	}
 
 	/* Portal Group Portal IP Address */
