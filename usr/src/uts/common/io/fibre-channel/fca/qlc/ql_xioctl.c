@@ -911,8 +911,8 @@ ql_qry_hba_port(ql_adapter_state_t *ha, EXT_IOCTL *cmd, int mode)
 {
 	ql_link_t	*link;
 	ql_tgt_t	*tq;
-	ql_mbx_data_t	mr;
-	EXT_HBA_PORT	tmp_port = {0};
+	ql_mbx_data_t	mr = { 0 };
+	EXT_HBA_PORT	tmp_port = { 0 };
 	int		rval;
 	uint16_t	port_cnt, tgt_cnt, index;
 
@@ -2684,7 +2684,7 @@ ql_wwpn_to_scsiaddr(ql_adapter_state_t *ha, EXT_IOCTL *cmd, int mode)
 	int		status;
 	uint8_t		wwpn[EXT_DEF_WWN_NAME_SIZE];
 	EXT_SCSI_ADDR	*tmp_addr;
-	ql_tgt_t	*tq;
+	ql_tgt_t	*tq = NULL;
 
 	QL_PRINT_9(CE_CONT, "(%d): started\n", ha->instance);
 
@@ -3585,7 +3585,7 @@ ql_send_els_rnid(ql_adapter_state_t *ha, EXT_IOCTL *cmd, int mode)
 	port_id_t	tmp_fcid;
 	caddr_t		tmp_buf, bptr;
 	uint32_t	copy_len;
-	ql_tgt_t	*tq;
+	ql_tgt_t	*tq = NULL;
 	EXT_RNID_DATA	rnid_data;
 	uint32_t	loop_ready_wait = 10 * 60 * 10;
 	int		rval = 0;
@@ -5230,6 +5230,7 @@ ql_dump_fcode(ql_adapter_state_t *ha, uint8_t *dp, uint32_t size,
 	dma_mem_t	mem;
 
 	QL_PRINT_9(CE_CONT, "(%d): started\n", ha->instance);
+	addr = 0;
 
 	/* make sure startpos+size doesn't exceed flash */
 	if (size + startpos > ha->xioctl->fdesc.flash_size) {

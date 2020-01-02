@@ -917,11 +917,11 @@ ql_nvram_24xx_config(ql_adapter_state_t *ha)
 
 	QL_PRINT_3(CE_CONT, "(%d): started\n", ha->instance);
 
+	chksum = saved_chksum = 0;
 	if ((rval = ql_lock_nvram(ha, &addr, LNF_NVRAM_DATA)) == QL_SUCCESS) {
 
 		/* Get NVRAM data and calculate checksum. */
 		longptr = (uint32_t *)nv;
-		chksum = saved_chksum = 0;
 		for (index = 0; index < sizeof (nvram_24xx_t) / 4; index++) {
 			rval = ql_24xx_read_flash(ha, addr++, longptr);
 			if (rval != QL_SUCCESS) {
@@ -2920,7 +2920,7 @@ ql_fw_ready(ql_adapter_state_t *ha, uint8_t secs)
 static int
 ql_configure_loop(ql_adapter_state_t *ha)
 {
-	int			rval;
+	int			rval = QL_SUCCESS;
 	ql_adapter_state_t	*vha;
 
 	QL_PRINT_3(CE_CONT, "(%d): started\n", ha->instance);

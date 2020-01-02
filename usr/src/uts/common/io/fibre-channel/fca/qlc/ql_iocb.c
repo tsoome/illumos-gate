@@ -25,8 +25,6 @@
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-#pragma ident	"Copyright 2010 QLogic Corporation; ql_iocb.c"
-
 /*
  * ISP2xxx Solaris Fibre Channel Adapter (FCA) driver source file.
  *
@@ -1420,7 +1418,7 @@ ql_isp_rcvbuf(ql_adapter_state_t *ha)
 static void
 ql_isp24xx_rcvbuf(ql_adapter_state_t *ha)
 {
-	rcvbuf_t		*container;
+	rcvbuf_t		*container = NULL;
 	uint16_t		index;
 	ql_srb_t		*sp;
 	fc_unsol_buf_t		*ubp;
