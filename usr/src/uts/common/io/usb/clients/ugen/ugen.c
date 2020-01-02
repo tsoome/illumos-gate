@@ -210,7 +210,7 @@ ugen_skel_getinfo(dev_info_t *dip, ddi_info_cmd_t infocmd, void *arg,
 static int
 ugen_skel_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 {
-	ugen_skel_state_t	*ugen_skelp;
+	ugen_skel_state_t	*ugen_skelp = NULL;
 	int			instance;	/* Driver instance number */
 	int			rval;
 	usb_ugen_info_t		usb_ugen_info;
