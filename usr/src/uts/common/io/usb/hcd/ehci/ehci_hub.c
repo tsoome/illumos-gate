@@ -2095,6 +2095,7 @@ ehci_root_hub_hcdi_callback(
 		break;
 	}
 
+	curr_xfer_reqp = NULL;
 	switch (attributes) {
 	case USB_EP_ATTR_CONTROL:
 		curr_xfer_reqp = (usb_opaque_t)
