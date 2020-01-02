@@ -430,6 +430,7 @@ eib_vnic_join_data_mcg(eib_t *ss, eib_vnic_t *vnic, uint8_t *mcast_mac,
 	 * Compose the multicast MGID to join
 	 */
 	bzero(&mcg_attr, sizeof (ibt_mcg_attr_t));
+	mcg = NULL;
 
 	eib_vnic_make_vhub_mgid(ld->ld_gw_mgid_prefix,
 	    (uint8_t)EIB_MGID_VHUB_DATA, mcast_mac, ld->ld_n_mac_mcgid, 0,
