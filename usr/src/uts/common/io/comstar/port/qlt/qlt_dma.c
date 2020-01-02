@@ -171,6 +171,7 @@ qlt_dmem_init(qlt_state_t *qlt)
 		bsize = p->dmem_buf_size;
 		p->dmem_bctl_free_list = bctl;
 		p->dmem_nbufs_free = p->dmem_nbufs;
+		prev = NULL;
 		for (i = 0; i < p->dmem_nbufs; i++) {
 			stmf_data_buf_t	*db;
 			prev = bctl;
@@ -527,6 +528,7 @@ qlt_dma_alloc_handle_list(qlt_state_t *qlt, int handle_count)
 	 */
 	first_handle = pool->free_list;
 	tmp_handle = first_handle;
+	last_handle = NULL;
 	for (i = 0; i < handle_count; i++) {
 		last_handle = tmp_handle;
 		tmp_handle = tmp_handle->next;
@@ -553,6 +555,7 @@ qlt_dma_free_handles(qlt_state_t *qlt, qlt_dma_handle_t *first_handle)
 	 */
 	ASSERT(first_handle);
 	tmp_handle = first_handle;
+	last_handle = NULL;
 	handle_count = 0;
 	while (tmp_handle != NULL) {
 		last_handle = tmp_handle;
