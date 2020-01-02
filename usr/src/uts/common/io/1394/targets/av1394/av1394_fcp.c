@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * av1394 FCP module
  */
@@ -460,8 +458,8 @@ static void
 av1394_fcp_common_write_request_cb(cmd1394_cmd_t *req, int mtype)
 {
 	av1394_inst_t	*avp = req->cmd_callback_arg;
-	mblk_t		*mp;
-	uint32_t	quadlet_data;
+	mblk_t		*mp = NULL;
+	uint32_t	quadlet_data = 0;
 	int		err;
 
 	AV1394_TNF_ENTER(av1394_fcp_common_write_request_cb);

@@ -356,7 +356,7 @@ static int
 av1394_ioctl_plug_init_local(av1394_inst_t *avp, iec61883_plug_init_t *pip)
 {
 	av1394_cmp_t	*cmp = &avp->av_i.i_cmp;
-	int		err;
+	int		err = DDI_FAILURE;
 	int		ph;		/* plug handle */
 	int		idx, max_idx;	/* plug index */
 
@@ -534,7 +534,7 @@ av1394_pcr_free_addr(av1394_inst_t *avp, t1394_addr_handle_t *hdlp)
 static int
 av1394_pcr_make_ph(int loc, int type, int num)
 {
-	int	ph;
+	int	ph = 0;
 
 	switch (type) {
 	case IEC61883_PLUG_IN:
