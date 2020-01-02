@@ -1414,7 +1414,7 @@ arcmsr_tran_bus_config(dev_info_t *parent, uint_t flags,
 {
 	struct ACB *acb;
 	int circ = 0;
-	int rval;
+	int rval = NDI_FAILURE;
 	int tgt, lun;
 
 	if ((acb = ddi_get_soft_state(arcmsr_soft_state,
@@ -1470,7 +1470,7 @@ arcmsr_dma_alloc(struct ACB *acb, struct scsi_pkt *pkt,
 	int resid = 0;
 	int total_ccb_xferlen = 0;
 	int (*cb)(caddr_t);
-	uint8_t i;
+	uint8_t i = 0;
 
 	/*
 	 * at this point the PKT SCSI CDB is empty, and dma xfer length
@@ -3282,14 +3282,14 @@ static void
 arcmsr_dr_handle(struct ACB *acb)
 {
 	char *acb_dev_map = (char *)acb->device_map;
-	char *devicemap;
+	char *devicemap = NULL;
 	char temp;
 	uint16_t target;
 	uint8_t lun;
 	char diff;
 	int circ = 0;
 	dev_info_t *dip;
-	ddi_acc_handle_t reg;
+	ddi_acc_handle_t reg = NULL;
 
 	switch (acb->adapter_type) {
 	case ACB_ADAPTER_TYPE_A:
@@ -3439,7 +3439,7 @@ arcmsr_devMap_monitor(void* arg)
 static uint32_t
 arcmsr_disable_allintr(struct ACB *acb) {
 
-	uint32_t intmask_org;
+	uint32_t intmask_org = 0;
 
 	switch (acb->adapter_type) {
 	case ACB_ADAPTER_TYPE_A:
@@ -3985,7 +3985,7 @@ arcmsr_iop_reset(struct ACB *acb)
 static struct QBUFFER *
 arcmsr_get_iop_rqbuffer(struct ACB *acb)
 {
-	struct QBUFFER *qb;
+	struct QBUFFER *qb = NULL;
 
 	switch (acb->adapter_type) {
 	case ACB_ADAPTER_TYPE_A:
