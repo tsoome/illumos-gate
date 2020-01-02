@@ -3480,7 +3480,7 @@ vhci_mpapi_update_tpg_data(struct scsi_address *ap, char *ptr,
 	mpapi_lu_data_t		*ld;
 	mpapi_tpg_data_t	*tpg_data;
 	mpapi_path_data_t	*pd;
-	mpapi_tport_data_t	*tpd;
+	mpapi_tport_data_t	*tpd = NULL;
 	mpapi_initiator_data_t	*initd;
 
 	/*
