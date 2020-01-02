@@ -407,6 +407,7 @@ apush_iocdata(
 	dev_t dev;
 	str_stack_t *ss;
 
+	dev = NODEV;
 	sadp = (struct saddev *)qp->q_ptr;
 	ss = sadp->sa_ss;
 
