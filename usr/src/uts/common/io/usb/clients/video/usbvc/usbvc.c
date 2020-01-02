@@ -3760,7 +3760,7 @@ usbvc_set_default_stream_fmt(usbvc_state_t *usbvcp)
 {
 	usbvc_vs_probe_commit_t ctrl, ctrl_get;
 	usbvc_stream_if_t *strm_if;
-	usbvc_format_group_t *curr_fmtgrp;
+	usbvc_format_group_t *curr_fmtgrp = NULL;
 	uint32_t bandwidth;
 	uint8_t  index, i;
 
