@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * dcam_param.c
  *
@@ -1690,6 +1688,7 @@ feature_csr_val_construct(uint_t subparam, uint_t param_val, uint_t init_val)
 		break;
 
 	default:
+		ret_val = 0;
 		break;
 
 	}

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * dcam_frame.c
  *
@@ -214,6 +212,7 @@ dcam_frame_rcv_init(dcam_state_t *softc_p, int vid_mode, int frame_rate,
 	max_ixl_buff_size = (SHRT_MAX / bytes_per_pkt) * bytes_per_pkt;
 
 	/* for each frame build frame's ixl list */
+	last_ixlp = NULL;
 	for (frame = 0; frame < softc_p->ring_buff_p->num_buffs; frame++) {
 
 		buff_info_p = &(softc_p->ring_buff_p->buff_info_array_p[frame]);
