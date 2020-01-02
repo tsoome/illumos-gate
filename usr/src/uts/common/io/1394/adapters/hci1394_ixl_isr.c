@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * hci1394_ixl_isr.c
  *    Isochronous IXL Interrupt Service Routines.
@@ -547,7 +545,7 @@ hci1394_ixl_intr_check_done(hci1394_state_t *soft_statep,
 	hci1394_desc_t	    *hcidescp;
 	off_t		    hcidesc_off;
 	int		    err;
-	uint32_t	    dma_cmd_cur_loc;
+	uint32_t	    dma_cmd_cur_loc = 0;
 	uint32_t	    dma_cmd_last_loc;
 	uint32_t	    dma_loc_check_enabled;
 	uint32_t	    dmastartp;
