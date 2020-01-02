@@ -407,6 +407,7 @@ fp_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 		return (DDI_FAILURE);
 	}
 
+	converse = FC_CMD_ATTACH;
 	mutex_enter(&port->fp_mutex);
 
 	if (port->fp_ulp_attach) {
@@ -7228,7 +7229,7 @@ fp_fciocmd(fc_local_port_t *port, intptr_t data, int mode, fcio_t *fcio)
 	uint32_t	ret;
 	uchar_t		open_flag;
 	fcio_t		*kfcio;
-	job_request_t	*job;
+	job_request_t	*job = NULL;
 	boolean_t	use32 = B_FALSE;
 
 #ifdef _MULTI_DATAMODEL
@@ -9968,7 +9969,7 @@ fp_send_rnid(fc_local_port_t *port, intptr_t data, int mode, fcio_t *fcio,
 static int
 fp_fcio_copyout(fcio_t *fcio, intptr_t data, int mode)
 {
-	int rval;
+	int rval = DDI_FAILURE;
 
 #ifdef	_MULTI_DATAMODEL
 	switch (ddi_model_convert_from(mode & FMODELS)) {
@@ -11919,6 +11920,7 @@ fp_handle_unsol_plogi(fc_local_port_t *port, fc_unsol_buf_t *buf,
 	fc_remote_port_t	*pd;
 	char			dww_name[17];
 
+	cmd = NULL;
 	payload = (la_els_logi_t *)buf->ub_buffer;
 	f_port = FP_IS_F_PORT(payload->common_service.cmn_features) ? 1 : 0;
 
