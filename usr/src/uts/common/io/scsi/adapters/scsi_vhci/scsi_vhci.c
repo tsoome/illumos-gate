@@ -1129,7 +1129,7 @@ vhci_scsi_start(struct scsi_address *ap, struct scsi_pkt *pkt)
 	int			flags = 0;
 	scsi_vhci_priv_t	*svp, *svp_resrv;
 	dev_info_t		*cdip;
-	client_lb_t		lbp;
+	client_lb_t		lbp = LOAD_BALANCE_NONE;
 	int			restore_lbp = 0;
 	/* set if pkt is SCSI-II RESERVE cmd */
 	int			pkt_reserve_cmd = 0;
@@ -2693,6 +2693,7 @@ vhci_run_cmd(void *arg)
 	uchar_t			cdb_1;
 	vhci_prout_t		*prout;
 
+	vlun = NULL;
 	vpkt = (struct vhci_pkt *)pkt->pkt_private;
 	tpkt = vpkt->vpkt_tgt_pkt;
 	pip = vpkt->vpkt_path;
@@ -4541,6 +4542,7 @@ vhci_parse_mpxio_lb_options(dev_info_t *dip, dev_info_t *cdip,
 
 	list_len = config_list_len;
 	next_entry = config_list;
+	load_balance = LOAD_BALANCE_NONE;
 	while (config_list_len > 0) {
 		dataptr = next_entry;
 
