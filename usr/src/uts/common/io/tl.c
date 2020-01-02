@@ -3420,8 +3420,8 @@ tl_conn_res(mblk_t *mp, tl_endpt_t *tep)
 	uchar_t			*addr_startp;
 	tl_endpt_t		*acc_ep = NULL, *cl_ep = NULL;
 	tl_icon_t		*tip;
-	size_t			size;
-	mblk_t			*ackmp, *respmp;
+	size_t			size = 0;
+	mblk_t			*ackmp, *respmp = NULL;
 	mblk_t			*dimp, *ccmp = NULL;
 	struct T_discon_ind	*di;
 	struct T_conn_con	*cc;
@@ -3950,10 +3950,10 @@ tl_discon_req(mblk_t *mp, tl_endpt_t *tep)
 	ssize_t			msz;
 	tl_endpt_t		*peer_tep = tep->te_conp;
 	tl_endpt_t		*srv_tep = tep->te_oconp;
-	tl_icon_t		*tip;
+	tl_icon_t		*tip = NULL;
 	size_t			size;
 	mblk_t			*ackmp, *dimp, *respmp;
-	struct T_discon_ind	*di;
+	struct T_discon_ind	*di = NULL;
 	t_scalar_t		save_state, new_state;
 
 	if (tep->te_closing) {
