@@ -675,6 +675,7 @@ sbd_read_meta(sbd_lu_t *sl, uint64_t offset, uint64_t size, uint8_t *buf)
 	int		vret;
 
 	ASSERT(sl->sl_flags & SL_META_OPENED);
+	vp = NULL;
 	if (sl->sl_flags & SL_SHARED_META) {
 		meta_align = (((uint64_t)1) << sl->sl_data_blocksize_shift) - 1;
 		vp = sl->sl_data_vp;
@@ -760,6 +761,7 @@ sbd_write_meta(sbd_lu_t *sl, uint64_t offset, uint64_t size, uint8_t *buf)
 	int		vret;
 
 	ASSERT(sl->sl_flags & SL_META_OPENED);
+	vp = NULL;
 	if (sl->sl_flags & SL_SHARED_META) {
 		meta_align = (((uint64_t)1) << sl->sl_data_blocksize_shift) - 1;
 		vp = sl->sl_data_vp;
@@ -1515,6 +1517,8 @@ sbd_open_data_file(sbd_lu_t *sl, uint32_t *err_ret, int lu_size_valid,
 	struct dk_cinfo dki;
 	int unused;
 
+	flag = 0;
+	vt = VNON;
 	mutex_enter(&sl->sl_lock);
 	if (vp_valid) {
 		goto odf_over_open;
@@ -3479,6 +3483,7 @@ sbd_open_zfs_meta(sbd_lu_t *sl)
 	int		len;
 	char		*file;
 
+	len = 0;
 	if (sl->sl_zfs_meta == NULL) {
 		if (sbd_create_zfs_meta_object(sl) == SBD_FAILURE)
 			return (SBD_FAILURE);
