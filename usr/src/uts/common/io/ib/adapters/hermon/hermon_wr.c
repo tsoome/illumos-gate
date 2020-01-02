@@ -77,7 +77,7 @@ hermon_post_send_ud(hermon_state_t *state, hermon_qphdl_t qp,
 	hermon_workq_hdr_t		*wq;
 	hermon_ahhdl_t			ah;
 	ibt_wr_rfci_send_t		*rfci;
-	ibt_wr_init_send_t		*is;
+	ibt_wr_init_send_t		*is = NULL;
 	ibt_ud_dest_t			*dest;
 	uint64_t			*desc;
 	uint32_t			desc_sz;
@@ -85,7 +85,7 @@ hermon_post_send_ud(hermon_state_t *state, hermon_qphdl_t qp,
 	uint32_t			head, tail, next_tail, qsize_msk;
 	uint32_t			hdrmwqes;
 	uint32_t			nopcode, fence, immed_data = 0;
-	hermon_hw_wqe_sgl_t		*ds, *old_ds;
+	hermon_hw_wqe_sgl_t		*ds, *old_ds = NULL;
 	ibt_wr_ds_t			*sgl;
 	int				nds;
 	int				i, j, last_ds, num_ds, status;
@@ -94,7 +94,7 @@ hermon_post_send_ud(hermon_state_t *state, hermon_qphdl_t qp,
 	uint_t				posted_cnt = 0;
 	int				total_len, strong_order, fc_bits, cksum;
 
-
+	i = 0;
 	/* initialize the FMA retry loop */
 	hermon_pio_init(fm_loop_cnt, fm_status, fm_test_num);
 
@@ -449,8 +449,8 @@ hermon_post_send_rc(hermon_state_t *state, hermon_qphdl_t qp,
 	int				strong_order;
 	int				print_rdma;
 	int				rlen;
-	uint32_t			rkey;
-	uint64_t			raddr;
+	uint32_t			rkey = 0;
+	uint64_t			raddr = 0;
 
 	/* initialize the FMA retry loop */
 	hermon_pio_init(fm_loop_cnt, fm_status, fm_test_num);
@@ -796,6 +796,7 @@ hermon_post_send(hermon_state_t *state, hermon_qphdl_t qp,
 	uint32_t			prev_nopcode;
 	uint_t				qp_state;
 
+	nopcode = 0;
 	/* initialize the FMA retry loop */
 	hermon_pio_init(fm_loop_cnt, fm_status, fm_test);
 

@@ -93,6 +93,7 @@ hermon_eq_init_all(hermon_state_t *state)
 	struct hermon_sw_eq_s **eq;
 	ddi_acc_handle_t uarhdl = hermon_get_uarhdl(state);
 
+	num_eq_unmap = 0;
 	/* initialize the FMA retry loop */
 	hermon_pio_init(fm_loop_cnt, fm_status, fm_test);
 
