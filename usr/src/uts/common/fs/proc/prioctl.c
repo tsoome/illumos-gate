@@ -148,8 +148,8 @@ prioctl(struct vnode *vp, int cmd, intptr_t arg, int flag, cred_t *cr,
 	caddr_t cmaddr = (caddr_t)arg;
 	proc_t *p;
 	user_t *up;
-	kthread_t *t;
-	klwp_t *lwp;
+	kthread_t *t = NULL;
+	klwp_t *lwp = NULL;
 	prnode_t *pnp = VTOP(vp);
 	prcommon_t *pcp;
 	prnode_t *xpnp = NULL;
@@ -1686,8 +1686,8 @@ prioctl32(
 	caddr_t cmaddr = (caddr_t)arg;
 	proc_t *p;
 	user_t *up;
-	kthread_t *t;
-	klwp_t *lwp;
+	kthread_t *t = NULL;
+	klwp_t *lwp = NULL;
 	prnode_t *pnp = VTOP(vp);
 	prcommon_t *pcp;
 	prnode_t *xpnp = NULL;
