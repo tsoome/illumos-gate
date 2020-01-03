@@ -214,6 +214,7 @@ svc_rdma_kcreate(char *netid, SVC_CALLOUT_TABLE *sct, int id,
 		/*CONSTANTCONDITION*/
 		ASSERT(sizeof (struct clone_rdma_data) <= SVC_P2LEN);
 
+		error = 0;
 		mutex_enter(&rdma_modload_lock);
 		if (!rdma_modloaded) {
 			error = rdma_modload();
@@ -834,7 +835,7 @@ svc_rdma_ksend(SVCXPRT * clone_xprt, struct rpc_msg *msg)
 	struct clist *cl_send = NULL;
 	struct clist *cl_write = NULL;
 	xdrproc_t xdr_results;		/* results XDR encoding function */
-	caddr_t xdr_location;		/* response results pointer */
+	caddr_t xdr_location = NULL;	/* response results pointer */
 
 	int retval = FALSE;
 	int status, msglen, num_wreply_segments = 0;
@@ -1084,7 +1085,7 @@ svc_rdma_kfreeargs(SVCXPRT *clone_xprt, xdrproc_t xdr_args,
     caddr_t args_ptr)
 {
 	struct clone_rdma_data *crdp;
-	bool_t retval;
+	bool_t retval = FALSE;
 
 	/*
 	 * If the cloned bit is true, then this transport specific

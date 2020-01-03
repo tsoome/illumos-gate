@@ -266,6 +266,9 @@ rpc_uaddr2port(int af, char *addr)
 		p1 = strtoi(p, &p);
 		p2 = strtoi(p, &p);
 		RPCLOG(1, "rpc_uaddr2port: IPv6 port %d\n", ((p1 << 8) + p2));
+	} else {
+		p1 = 0;
+		p2 = 0;
 	}
 
 	return ((p1 << 8) + p2);
@@ -764,6 +767,7 @@ kinet_ntop6(uchar_t *src, char *dst, size_t size)
 	for (i = 0; i < IN6ADDRSZ; i++)
 		words[i / 2] |= (src[i] << ((1 - (i % 2)) << 3));
 	best.base = -1;
+	best.len = 0;
 	cur.base = -1;
 
 	for (i = 0; i < (IN6ADDRSZ / INT16SZ); i++) {
