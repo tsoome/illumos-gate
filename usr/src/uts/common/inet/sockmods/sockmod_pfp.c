@@ -902,7 +902,7 @@ sdpfp_ioctl(sock_lower_handle_t handle, int cmd, intptr_t arg, int mod,
 	struct timeval tival;
 	mac_client_promisc_type_t mtype;
 	struct sockaddr_dl *sock;
-	datalink_id_t linkid;
+	datalink_id_t linkid = 0;
 	struct lifreq lifreq;
 	struct ifreq ifreq;
 	struct pfpsock *ps;
@@ -1496,7 +1496,7 @@ static int
 pfp_set_promisc(struct pfpsock *ps, mac_client_promisc_type_t turnon)
 {
 	int error = 0;
-	int flags;
+	int flags = 0;
 
 	/*
 	 * There are 4 combinations of turnon/ps_promisc.
