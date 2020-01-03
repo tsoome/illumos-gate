@@ -42,8 +42,6 @@
  * Sun elects to use this software under the MPL license.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "ecp.h"
 #include "ecl-priv.h"
 #include "mplogic.h"
@@ -222,14 +220,14 @@ CLEANUP:
  * Curves Over Prime Fields. */
 mp_err
 ec_GFp_pt_mul_jm_wNAF(const mp_int *n, const mp_int *px, const mp_int *py,
-					  mp_int *rx, mp_int *ry, const ECGroup *group)
+    mp_int *rx, mp_int *ry, const ECGroup *group)
 {
 	mp_err res = MP_OKAY;
 	mp_int precomp[16][2], rz, tpx, tpy;
 	mp_int raz4;
 	mp_int scratch[MAX_SCRATCH];
 	signed char *naf = NULL;
-	int i, orderBitSize;
+	int i, orderBitSize = 0;
 
 	MP_DIGITS(&rz) = 0;
 	MP_DIGITS(&raz4) = 0;
