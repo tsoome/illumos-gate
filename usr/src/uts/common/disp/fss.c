@@ -462,9 +462,9 @@ fss_allocbuf(int op, int type)
 {
 	fssbuf_t *fssbuf;
 	void **fsslist;
-	int cnt;
+	int cnt = 0;
 	int i;
-	size_t size;
+	size_t size = 0;
 
 	ASSERT(op == FSS_NPSET_BUF || op == FSS_NPROJ_BUF || op == FSS_ONE_BUF);
 	ASSERT(type == FSS_ALLOC_PROJ || type == FSS_ALLOC_ZONE);
@@ -504,7 +504,7 @@ fss_freebuf(fssbuf_t *fssbuf, int type)
 {
 	void **fsslist;
 	int i;
-	size_t size;
+	size_t size = 0;
 
 	ASSERT(fssbuf != NULL);
 	ASSERT(type == FSS_ALLOC_PROJ || type == FSS_ALLOC_ZONE);
