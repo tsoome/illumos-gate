@@ -433,7 +433,7 @@ usb_ah_mctl_receive(queue_t *q, mblk_t *mp)
 {
 	usb_ah_state_t *usb_ahd = (usb_ah_state_t *)q->q_ptr;
 	struct iocblk *iocp;
-	caddr_t  data;
+	caddr_t  data = NULL;
 
 	iocp = (struct iocblk *)mp->b_rptr;
 	if (mp->b_cont != NULL)
