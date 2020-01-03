@@ -1595,7 +1595,7 @@ usbms_mctl_receive(queue_t *q, mblk_t *mp)
 	struct iocblk				*iocp;
 	caddr_t					data;
 
-
+	data = NULL;
 	iocp = (struct iocblk *)mp->b_rptr;
 	if (mp->b_cont != NULL)
 		data = (caddr_t)mp->b_cont->b_rptr;
@@ -1971,7 +1971,7 @@ usbms_make_copyreq(mblk_t *mp, uint_t pvtsize, uint_t state, uint_t reqsize,
 
 	struct copyreq		*cq;
 	struct copyresp		*cr;
-	mblk_t			*ioctmp;
+	mblk_t			*ioctmp = NULL;
 	mblk_t			*conttmp;
 	usbms_iocstate_t	*usbmsioc;
 
