@@ -1710,7 +1710,10 @@ i_dls_devnet_create_iptun(const char *linkname, const char *drvname,
 	} else if (IS_IPV6_TUN(drvname)) {
 		ik.iptun_kparam_type = IPTUN_TYPE_IPV6;
 		media = DL_IPV6;
+	} else {
+		media = 0;
 	}
+	
 	ik.iptun_kparam_flags = (IPTUN_KPARAM_TYPE | IPTUN_KPARAM_IMPLICIT);
 
 	/* Obtain a datalink id for this tunnel. */
