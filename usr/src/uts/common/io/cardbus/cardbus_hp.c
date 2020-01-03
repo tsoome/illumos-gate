@@ -1123,7 +1123,7 @@ cardbus_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	int ap_minor;
 	hpc_slot_state_t rstate;
 	devctl_ap_state_t ap_state;
-	struct hpc_control_data hpc_ctrldata;
+	struct hpc_control_data hpc_ctrldata = { 0 };
 	struct hpc_led_info led_info;
 
 	_NOTE(ARGUNUSED(credp))
@@ -1466,15 +1466,15 @@ cardbus_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 		case HPC_CTRL_GET_LED_STATE:
 			/* copy the led info from the user space */
 			if (copyin(hpc_ctrldata.data, (void *)&led_info,
-			    sizeof (hpc_led_info_t)) != 0) {
+						sizeof (hpc_led_info_t)) != 0) {
 				rv = ENXIO;
 				break;
 			}
 
 			/* get the state of LED information */
 			if (hpc_nexus_control(cbp->slot_handle,
-			    HPC_CTRL_GET_LED_STATE,
-			    (caddr_t)&led_info) != 0) {
+						HPC_CTRL_GET_LED_STATE,
+						(caddr_t)&led_info) != 0) {
 				rv = ENXIO;
 				break;
 			}
