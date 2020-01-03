@@ -4121,6 +4121,9 @@ ibdm_retry_command(ibdm_timeout_cb_args_t *cb_args)
 		ioc = &gid_info->gl_iou->iou_ioc_info[ioc_no];
 		timeout_id = &ioc->ioc_dc_timeout_id;
 		break;
+	default:
+		timeout_id = NULL;
+		break;
 	}
 	_NOTE(NOW_VISIBLE_TO_OTHER_THREADS(*hdr))
 
@@ -4761,7 +4764,7 @@ ibdm_ibnex_port_settle_wait(ib_guid_t hca_guid, int dft_wait)
 ibdm_port_attr_t *
 ibdm_ibnex_probe_hcaport(ib_guid_t hca_guid, uint8_t port_num)
 {
-	int			ii, jj;
+	int			ii, jj = 0;
 	ibdm_hca_list_t		*hca_list;
 	ibdm_port_attr_t	*port_attr;
 
