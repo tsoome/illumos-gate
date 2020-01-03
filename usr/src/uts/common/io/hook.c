@@ -1570,7 +1570,7 @@ hook_event_shutdown(hook_family_int_t *hfi, hook_event_t *he)
 static void
 hook_event_free(hook_event_int_t *hei, hook_family_int_t *hfi)
 {
-	boolean_t free_family;
+	boolean_t free_family = B_FALSE;
 
 	ASSERT(hei != NULL);
 
