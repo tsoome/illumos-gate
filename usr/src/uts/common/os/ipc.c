@@ -995,6 +995,7 @@ ipc_get(ipc_service_t *service, key_t key, int flag, kipc_perm_t **permp,
 	int		error, index;
 	cred_t		*cr = CRED();
 
+	index = 0;
 	if (key != IPC_PRIVATE) {
 
 		mutex_enter(&service->ipcs_lock);
