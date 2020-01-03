@@ -1475,7 +1475,7 @@ pci_put_available_prop(dev_info_t *dip, uint64_t base, uint64_t len,
 	pci_regspec_t	*regs, *newregs;
 	uint_t		status;
 	int		rlen, rcount;
-	int		i, j, k;
+	int		i, j, k = 0;
 	int		matched = 0;
 	uint64_t	orig_base = base;
 	uint64_t	orig_len = len;
