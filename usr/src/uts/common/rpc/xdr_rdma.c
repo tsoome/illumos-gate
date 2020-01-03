@@ -176,7 +176,7 @@ xdrrdma_getrdmablk(XDR *xdrs, struct clist **rlist, uint_t *sizep,
 	uint32_t	cur_offset = 0;
 	uint32_t	total_segments = 0;
 	uint32_t	actual_segments = 0;
-	uint32_t	alen;
+	uint32_t	alen = 0;
 	uint_t		total_len;
 
 	ASSERT(xdrs->x_op != XDR_FREE);

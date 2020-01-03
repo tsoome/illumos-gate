@@ -799,7 +799,7 @@ clnt_cots_kcallit(CLIENT *h, rpcproc_t procnum, xdrproc_t xdr_args,
 	enum clnt_stat status;
 	struct timeval cwait;
 	bool_t delay_first = FALSE;
-	clock_t ticks, now;
+	clock_t ticks = 0, now;
 
 	RPCLOG(2, "clnt_cots_kcallit, procnum %u\n", procnum);
 	COTSRCSTAT_INCR(p->cku_stats, rccalls);
