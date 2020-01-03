@@ -727,8 +727,8 @@ hidparser_lookup_usage_collection(hidparser_handle_t parse_handle,
 	int found_usage_id = 0;
 	int found_page = 0;
 	uint32_t usage;
-	uint_t usage_page;
-	uint_t usage_id;
+	uint_t usage_page = 0;
+	uint_t usage_id = 0;
 
 	if ((parse_handle == NULL) ||
 	    (parse_handle->hidparser_handle_parse_tree == NULL))
@@ -896,6 +896,9 @@ hidparser_get_usage_list_in_order_internal(entity_item_t *parser_handle,
 	uint32_t usage, usage_min, usage_max, usage_id[USAGE_MAX];
 	hidparser_usage_info_t *ui;
 
+	usage_min = 0;
+	usage_max = 0;
+	ui = NULL;
 	found_usage_min = 0;
 	found_usage_max = 0;
 	foundreportid = 0;
