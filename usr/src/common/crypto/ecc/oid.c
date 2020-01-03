@@ -412,7 +412,7 @@ SECOidData *
 SECOID_FindOID(const SECItem *oid)
 {
     SECOidData *po;
-    SECOidData *ret;
+    SECOidData *ret = NULL;
     int i;
 
     if (oid->len == 8) {
@@ -436,7 +436,7 @@ SECOID_FindOID(const SECItem *oid)
     } else {
 	ret = NULL;
     }
-    return(ret);
+    return (ret);
 }
 
 ECCurveName

@@ -732,7 +732,7 @@ ecc_sign(crypto_ctx_t *ctx, crypto_data_t *data, crypto_data_t *signature,
 static int
 ecc_sign_update(crypto_ctx_t *ctx, crypto_data_t *data, crypto_req_handle_t req)
 {
-	int rv;
+	int rv = CRYPTO_SUCCESS;
 	digest_ecc_ctx_t *ctxp;
 	ecc_mech_type_t mech_type;
 
