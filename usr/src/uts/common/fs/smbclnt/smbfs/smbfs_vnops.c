@@ -636,7 +636,7 @@ smbfs_read(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 #ifdef	_KERNEL
 	/* (else) Do I/O through segmap. */
 	do {
-		caddr_t		base;
+		caddr_t		base = NULL;
 		u_offset_t	off;
 		size_t		n;
 		int		on;
@@ -864,7 +864,7 @@ smbfs_fwrite:
 	bsize = vp->v_vfsp->vfs_bsize;
 
 	do {
-		caddr_t		base;
+		caddr_t		base = NULL;
 		u_offset_t	off;
 		size_t		n;
 		int		on;
@@ -1026,8 +1026,8 @@ smbfs_writenp(smbnode_t *np, caddr_t base, int tcount, struct uio *uio,
 {
 	int		pagecreate;
 	int		n;
-	int		saved_n;
-	caddr_t		saved_base;
+	int		saved_n = 0;
+	caddr_t		saved_base = NULL;
 	u_offset_t	offset;
 	int		error;
 	int		sm_error;
