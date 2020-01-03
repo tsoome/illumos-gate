@@ -345,8 +345,8 @@ ufs_directio_write(struct inode *ip, uio_t *arg_uio, int ioflag, int rewrite,
 	int		exclusive, ncur, bmap_peek;
 	uio_t		copy_uio;
 	iovec_t		copy_iov;
-	char		*copy_base;
-	long		copy_resid;
+	char		*copy_base = NULL;
+	long		copy_resid = 0;
 
 	/*
 	 * assume that directio isn't possible (normal case)

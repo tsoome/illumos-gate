@@ -669,7 +669,7 @@ wrip(struct inode *ip, struct uio *uio, int ioflag, struct cred *cr)
 	struct fs *fs;
 	struct vnode *vp;
 	struct ufsvfs *ufsvfsp;
-	caddr_t base;
+	caddr_t base = NULL;
 	long start_resid = uio->uio_resid;	/* save starting resid */
 	long premove_resid;			/* resid before uiomove() */
 	uint_t flags;
@@ -1271,7 +1271,7 @@ int
 rdip(struct inode *ip, struct uio *uio, int ioflag, cred_t *cr)
 {
 	u_offset_t off;
-	caddr_t base;
+	caddr_t base = NULL;
 	struct fs *fs;
 	struct ufsvfs *ufsvfsp;
 	struct vnode *vp;
@@ -1458,10 +1458,11 @@ ufs_ioctl(
 	offset_t	off;
 	extern int	maxphys;
 	int		error;
-	int		issync;
-	int		trans_size;
+	int		issync = 0;
+	int		trans_size = 0;
 
-
+	comment = NULL;
+	original_comment = NULL;
 	/*
 	 * forcibly unmounted
 	 */
@@ -2007,8 +2008,8 @@ ufs_setattr(struct vnode *vp, struct vattr *vap, int flags, struct cred *cr,
 	long blocks;
 	long int mask = vap->va_mask;
 	size_t len1, len2;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	int dotrans;
 	int dorwlock;
 	int error;
@@ -2807,9 +2808,9 @@ ufs_create(struct vnode *dvp, char *name, struct vattr *vap, enum vcexcl excl,
 	struct ufsvfs *ufsvfsp;
 	struct ulockfs *ulp;
 	int error;
-	int issync;
+	int issync = 0;
 	int truncflag;
-	int trans_size;
+	int trans_size = 0;
 	int noentry;
 	int defer_dip_seq_update = 0;	/* need to defer update of dip->i_seq */
 	int retry = 1;
@@ -3091,8 +3092,8 @@ ufs_remove(struct vnode *vp, char *nm, struct cred *cr, caller_context_t *ct,
 	vnode_t *rmvp = NULL;	/* Vnode corresponding to name being removed */
 	int indeadlock;
 	int error;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 
 	/*
 	 * don't let the delete queue get too long
@@ -3157,8 +3158,8 @@ ufs_link(struct vnode *tdvp, struct vnode *svp, char *tnm, struct cred *cr,
 	struct ulockfs *ulp;
 	struct vnode *realvp;
 	int error;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	int isdev;
 	int indeadlock;
 
@@ -3259,8 +3260,8 @@ ufs_rename(struct vnode *sdvp, char *snm, struct vnode *tdvp, char *tnm,
 	struct ufs_slot slot;
 	timestruc_t now;
 	int error;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	krwlock_t *first_lock;
 	krwlock_t *second_lock;
 	krwlock_t *reverse_lock;
@@ -3652,8 +3653,8 @@ ufs_mkdir(struct vnode *dvp, char *dirname, struct vattr *vap,
 	struct ufsvfs *ufsvfsp;
 	struct ulockfs *ulp;
 	int error;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	int indeadlock;
 	int retry = 1;
 
@@ -3729,8 +3730,8 @@ ufs_rmdir(struct vnode *vp, char *nm, struct vnode *cdir, struct cred *cr,
 	struct ulockfs *ulp;
 	vnode_t *rmvp = NULL;	/* Vnode of removed directory */
 	int error;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	int indeadlock;
 
 	/*
@@ -3859,6 +3860,7 @@ ufs_readdir(struct vnode *vp, struct uio *uiop, struct cred *cr, int *eofp,
 		outbuf = kmem_alloc(bufsize, KM_SLEEP);
 		odp = (struct dirent64 *)outbuf;
 	} else {
+		outbuf = NULL;
 		bufsize = total_bytes_wanted;
 		odp = (struct dirent64 *)iovp->iov_base;
 	}
@@ -3995,8 +3997,8 @@ ufs_symlink(struct vnode *dvp, char *linkname, struct vattr *vap, char *target,
 	struct ufsvfs *ufsvfsp = dip->i_ufsvfs;
 	struct ulockfs *ulp;
 	int error;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	int residual;
 	int ioflag;
 	int retry = 1;
@@ -4418,7 +4420,7 @@ ufs_getpage(struct vnode *vp, offset_t off, size_t len, uint_t *protp,
 	int		pgsize = PAGESIZE;
 	int		dolock;
 	int		do_qlock;
-	int		trans_size;
+	int		trans_size = 0;
 
 	ASSERT((uoff & PAGEOFFSET) == 0);
 
@@ -5689,7 +5691,7 @@ ufs_l_pathconf(struct vnode *vp, int cmd, ulong_t *valp, struct cred *cr,
 	struct inode	*sip = NULL;
 	int		error;
 	struct inode	*ip = VTOI(vp);
-	int		issync;
+	int		issync = 0;
 
 	error = ufs_lockfs_begin(ufsvfsp, &ulp, ULOCKFS_PATHCONF_MASK);
 	if (error)
@@ -5808,7 +5810,7 @@ ufs_pageio(struct vnode *vp, page_t *pp, u_offset_t io_off, size_t io_len,
 	int contig = 0;
 	int dolock;
 	int vmpss = 0;
-	struct ulockfs *ulp;
+	struct ulockfs *ulp = NULL;
 
 	if ((flags & B_READ) && pp != NULL && pp->p_vnode == vp &&
 	    vp->v_mpssdata != NULL) {

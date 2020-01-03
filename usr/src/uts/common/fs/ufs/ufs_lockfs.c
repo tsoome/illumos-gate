@@ -593,7 +593,7 @@ ufs_reconcile_fs(struct vfs *vfsp, struct ufsvfs *ufsvfsp, int errlck)
 	struct fs	*dfs;	/* on-disk   superblock */
 	struct buf	*bp;	/* on-disk   superblock buf */
 	int		 needs_unlock;
-	char		 finished_fsclean;
+	char		 finished_fsclean = FSCLEAN;
 
 	mfs = ufsvfsp->vfs_fs;
 
@@ -1333,7 +1333,7 @@ ufs_lockfs_begin(struct ufsvfs *ufsvfsp, struct ulockfs **ulpp, ulong_t mask)
 	struct ulockfs *ulp;
 	ulockfs_info_t	*ulockfs_info;
 	ulockfs_info_t	*ulockfs_info_free;
-	ulockfs_info_t	*ulockfs_info_temp;
+	ulockfs_info_t	*ulockfs_info_temp = NULL;
 
 	/*
 	 * file system has been forcibly unmounted
@@ -1540,7 +1540,7 @@ ufs_lockfs_trybegin(struct ufsvfs *ufsvfsp, struct ulockfs **ulpp, ulong_t mask)
 	struct ulockfs *ulp;
 	ulockfs_info_t	*ulockfs_info;
 	ulockfs_info_t	*ulockfs_info_free;
-	ulockfs_info_t	*ulockfs_info_temp;
+	ulockfs_info_t	*ulockfs_info_temp = NULL;
 
 	/*
 	 * file system has been forcibly unmounted
@@ -1693,7 +1693,7 @@ ufs_lockfs_begin_getpage(
 	struct ulockfs		*ulp;
 	ulockfs_info_t		*ulockfs_info;
 	ulockfs_info_t		*ulockfs_info_free;
-	ulockfs_info_t		*ulockfs_info_temp;
+	ulockfs_info_t		*ulockfs_info_temp = NULL;
 
 	/*
 	 * file system has been forcibly unmounted

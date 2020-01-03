@@ -1385,7 +1385,7 @@ mapsearch(struct ufsvfs *ufsvfsp, struct cg *cgp, daddr_t bpref, int allocsiz)
 	struct fs *fs	= ufsvfsp->vfs_fs;
 	daddr_t bno, cfrag;
 	int start, len, loc, i, last, first, secondtime;
-	int blk, field, subfield, pos;
+	int blk, field, subfield, pos = 0;
 	int gotit;
 
 	/*
@@ -1551,12 +1551,12 @@ int
 ufs_allocsp(struct vnode *vp, struct flock64 *lp, cred_t *cr)
 {
 	struct lockfs lf;
-	int berr, err, resv, issync;
+	int berr = 0, err, resv, issync = 0;
 	off_t istart, len; /* istart, special for idb */
 	struct inode *ip;
 	struct fs *fs;
 	struct ufsvfs *ufsvfsp;
-	u_offset_t resid, i, uoff;
+	u_offset_t resid, i, uoff = 0;
 	daddr32_t db_undo[NDADDR];	/* old direct blocks */
 	struct allocsp_undo *ib_undo = NULL;	/* ib undo */
 	struct allocsp_undo *undo = NULL;
@@ -1567,7 +1567,7 @@ ufs_allocsp(struct vnode *vp, struct flock64 *lp, cred_t *cr)
 	daddr_t totblks = 0;
 	struct ulockfs	*ulp;
 	size_t done_len;
-	int nbytes, offsetn;
+	int nbytes = 0, offsetn;
 
 
 	ASSERT(vp->v_type == VREG);
@@ -2056,6 +2056,7 @@ findlogstartcg(struct fs *fs, daddr_t requested, daddr_t minblk)
 	int	 bs; /* index of the first element in the best window so far */
 	int	 header, max_extents;
 
+	bs = 0;
 	target = requested;
 	ncgs = fs->fs_ncg;
 
