@@ -223,7 +223,7 @@ ibcm_path_cache_init(void)
 void
 ibcm_path_cache_fini(void)
 {
-	timeout_id_t tmp_timeout_id;
+	timeout_id_t tmp_timeout_id = 0;
 	int cache_size;
 	ibcm_path_cache_t *path_cachep;
 
@@ -2027,7 +2027,7 @@ ibcm_saa_service_rec(ibcm_path_tqargs_t *p_arg, ibtl_cm_port_list_t *sl,
 	size_t			length;
 	uint8_t			i, j, k, rec_found, s;
 	ibmf_saa_access_args_t	access_args;
-	ibt_status_t		retval;
+	ibt_status_t		retval = IBT_SUCCESS;
 	ibt_path_attr_t		*attrp = &p_arg->attr;
 	uint64_t		tmp_sd_flag = attrp->pa_sd_flags;
 	uint8_t			num_req;
