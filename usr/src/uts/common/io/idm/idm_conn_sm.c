@@ -284,7 +284,7 @@ idm_conn_event_handler(void *event_ctx_opaque)
 	idm_conn_event_ctx_t *event_ctx = event_ctx_opaque;
 	idm_conn_t *ic = event_ctx->iec_ic;
 	idm_pdu_t *pdu = (idm_pdu_t *)event_ctx->iec_info;
-	idm_pdu_event_action_t action;
+	idm_pdu_event_action_t action = 0;
 
 	IDM_SM_LOG(CE_NOTE, "idm_conn_event_handler: conn %p event %s(%d)",
 	    (void *)ic, idm_ce_name[event_ctx->iec_event],
