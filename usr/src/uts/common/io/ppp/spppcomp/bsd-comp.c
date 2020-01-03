@@ -40,8 +40,6 @@
  * SUCH DAMAGE.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This version is for use with STREAMS in Solaris 2
  *
@@ -565,7 +563,7 @@ bsd_compress(void *state, mblk_t **mretp, mblk_t *mp, int slen,	int maxolen)
 	uchar_t		c;
 	int		hval;
 	int		disp;
-	int		ent;
+	int		ent = 0;
 	int		ilen = slen - (PPP_HDRLEN-1);
 	mblk_t		*mret;
 	uchar_t		*rptr, *rmax;
@@ -574,11 +572,7 @@ bsd_compress(void *state, mblk_t **mretp, mblk_t *mp, int slen,	int maxolen)
 	int		olen;
 	mblk_t		*m;
 	mblk_t		**mnp;
-#if defined(lint) || defined(_lint)
-	uchar_t		hdlcaddr, hdlcctl;
-#else
-	int		hdlcaddr, hdlcctl;
-#endif
+	int		hdlcaddr = 0, hdlcctl = 0;
 
 	ASSERT(db->flags & DS_INITDONE);
 
@@ -707,7 +701,7 @@ bsd_compress(void *state, mblk_t **mretp, mblk_t *mp, int slen,	int maxolen)
 	 */
 	*wptr++ = hdlcaddr;
 	*wptr++ = hdlcctl;
-	*wptr++ = PPP_COMP>>8;		/* change the protocol */
+	*wptr++ = PPP_COMP >> 8;	/* change the protocol */
 	*wptr++ = PPP_COMP;
 	*wptr++ = db->seqno >> 8;
 	*wptr++ = db->seqno;
@@ -912,7 +906,7 @@ bsd_incomp(void *state, mblk_t *mp)
 	int		ilen;
 	uint_t		bitno = 7;
 	uchar_t		*rptr, *rmax;
-	uint_t		ent;
+	uint_t		ent = 0;
 
 	ASSERT(db->flags & DS_INITDONE);
 
