@@ -2047,7 +2047,7 @@ _mii_task(void *_mh)
 	mii_handle_t	mh = _mh;
 	phy_handle_t	*ph;
 	clock_t		wait;
-	clock_t		downtime;
+	clock_t		downtime = 0;
 
 	mutex_enter(&mh->m_lock);
 
