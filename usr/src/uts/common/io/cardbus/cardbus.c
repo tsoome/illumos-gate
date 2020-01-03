@@ -1096,7 +1096,7 @@ cardbus_init_child_regs(dev_info_t *child)
 	uint8_t bcr;
 #endif
 	uint8_t header_type;
-	uint8_t min_gnt, latency_timer;
+	uint8_t min_gnt, latency_timer = 0;
 	uint_t n;
 
 	/*
@@ -1600,7 +1600,7 @@ cardbus_parse_devprop(cbus_t *cbp, char *cp)
 	int	state = PT_STATE_TOKEN, qm = 0, em = 0, smc = 0, l = 0;
 	int	length;
 	char	*token = "beginning of line";
-	char	*ptoken = NULL, *quote;
+	char	*ptoken = NULL, *quote = NULL;
 	char	eq = '\0';
 	struct cb_deviceset_props *cdsp;
 
