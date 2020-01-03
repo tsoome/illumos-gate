@@ -419,7 +419,7 @@ nfs_read(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 	offset_t diff;
 	int on;
 	size_t n;
-	caddr_t base;
+	caddr_t base = NULL;
 	uint_t flags;
 	int error;
 	mntinfo_t *mi;
@@ -550,7 +550,7 @@ nfs_write(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 {
 	rnode_t *rp;
 	u_offset_t off;
-	caddr_t base;
+	caddr_t base = NULL;
 	uint_t flags;
 	int remainder;
 	size_t n;
