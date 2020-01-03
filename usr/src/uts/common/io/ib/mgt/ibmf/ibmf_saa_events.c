@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/ib/mgt/ibmf/ibmf_saa_impl.h>
 #include <sys/ib/mgt/ibmf/ibmf_saa_utils.h>
 
@@ -87,7 +85,7 @@ void
 ibmf_saa_subscribe_events(saa_port_t *saa_portp, boolean_t subscribe,
     boolean_t unseq_unsubscribe)
 {
-	int				res;
+	int				res = 0;
 	ibmf_saa_event_details_t	event_details;
 	boolean_t			notify_clients = B_FALSE;
 	uint8_t				success_mask;
@@ -1063,7 +1061,7 @@ ibmf_saa_report_cb(ibmf_handle_t ibmf_handle, ibmf_msg_t *msgp,
 	ib_mad_notice_t		*notice_report;
 	saa_impl_trans_info_t	*trans_info;
 	boolean_t		port_valid;
-	uint16_t		mad_status;
+	uint16_t		mad_status = 0;
 	uint16_t		attr_id;
 	boolean_t		response_sent = B_FALSE;
 	size_t			length;
