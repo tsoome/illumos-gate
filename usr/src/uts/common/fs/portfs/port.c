@@ -1173,7 +1173,7 @@ port_getn(port_t *pp, port_event_t *uevp, uint_t max, uint_t *nget,
 	uint_t		tnent;
 	int		rval;
 	int		blocking = -1;
-	int		timecheck;
+	int		timecheck = 0;
 	int		flag;
 	timespec_t	rqtime;
 	timespec_t	*rqtp = NULL;
