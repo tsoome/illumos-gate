@@ -3846,7 +3846,7 @@ cmlb_dkio_set_partition(struct cmlb_lun *cl, caddr_t arg, int flag)
 	struct dk_map	dk_map[NDKMAP];
 	struct dk_map	*lp;
 	int		rval = 0;
-	int		size;
+	int		size = 0;
 	int		i;
 #if defined(_SUNOS_VTOC_16)
 	struct dkl_partition	*vp;
