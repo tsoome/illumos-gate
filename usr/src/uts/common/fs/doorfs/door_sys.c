@@ -1364,7 +1364,7 @@ door_return(caddr_t data_ptr, size_t data_size,
 	int		error = 0;
 	door_node_t	*dp;
 	door_server_t	*st;		/* curthread door_data */
-	door_client_t	*ct;		/* caller door_data */
+	door_client_t	*ct = NULL;	/* caller door_data */
 	int		cancel_pending;
 
 	st = door_my_server(1);
