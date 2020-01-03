@@ -840,7 +840,7 @@ static int
 rlmodrmsg(queue_t *q, mblk_t *mp)
 {
 	unsigned char *tmp, *tmp1;
-	mblk_t	*newmp;
+	mblk_t	*newmp = NULL;
 	size_t	sz;
 	ssize_t	count, newcount = 0;
 	struct	rlmod_info	*rmip = (struct rlmod_info *)q->q_ptr;
