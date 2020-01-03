@@ -1095,6 +1095,10 @@ sha2_mac_final(crypto_ctx_t *ctx, crypto_data_t *mac, crypto_req_handle_t req)
 		sha_digest_len = SHA512_DIGEST_LENGTH;
 		digest_len = PROV_SHA2_HMAC_CTX(ctx)->hc_digest_len;
 		break;
+	default:
+		sha_digest_len = 0;
+		digest_len = 0;
+		break;
 	}
 
 	/*
