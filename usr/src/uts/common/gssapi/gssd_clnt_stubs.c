@@ -487,7 +487,7 @@ kgss_add_cred(minor_status,
 {
 
 	OM_uint32	err;
-	OM_uint32 gssd_cred_verifier;
+	OM_uint32 gssd_cred_verifier = 0;
 	gssd_cred_id_t gssd_input_cred_handle;
 
 	if (input_cred_handle != GSS_C_NO_CREDENTIAL) {
@@ -855,7 +855,7 @@ kgss_init_sec_context(
 	struct kgss_ctx	*kctx;
 	gss_OID	amt;
 	gssd_cred_id_t gssd_cl_cred_handle;
-	OM_uint32 gssd_cred_verifier;
+	OM_uint32 gssd_cred_verifier = 0;
 
 	/*
 	 * If this is an initial call, we'll need to create the
@@ -1131,7 +1131,7 @@ kgss_accept_sec_context(
 	OM_uint32 err;
 	struct kgss_ctx	*kctx;
 	gss_OID mt;
-	OM_uint32 gssd_cred_verifier;
+	OM_uint32 gssd_cred_verifier = 0;
 	gssd_cred_id_t gssd_ver_cred_handle;
 
 
