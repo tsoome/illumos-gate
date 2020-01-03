@@ -1709,6 +1709,9 @@ audit_psecflags(proc_t *p,
 		s = "upper";
 		old = &psec->psf_upper;
 		break;
+	default:
+		s = NULL;
+		old = NULL;
 	}
 
 	secflags_copy(&new, old);
