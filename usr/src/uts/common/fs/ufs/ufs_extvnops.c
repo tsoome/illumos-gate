@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/sysmacros.h>
@@ -250,10 +248,10 @@ ufs_alloc_data(
 	struct fs	*fs;
 	struct ufsvfs	*ufsvfsp = ip->i_ufsvfs;
 	int		i_size_changed = 0;
-	u_offset_t	old_i_size;
+	u_offset_t	old_i_size = 0;
 	struct ulockfs	*ulp;
-	int		trans_size;
-	int		issync;			/* UFS Log transaction */
+	int		trans_size = 0;
+	int		issync = 0;		/* UFS Log transaction */
 						/* synchronous when non-zero */
 
 	int		io_started = 0;		/* No IO started */

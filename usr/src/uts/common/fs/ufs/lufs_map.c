@@ -1544,9 +1544,10 @@ logmap_sethead(mt_map_t *mtm, ml_unit_t *ul)
 		me = me->me_next;
 	}
 
-	if (me == (mapentry_t *)mtm)
+	if (me == (mapentry_t *)mtm) {
 		lof = -1;
-	else {
+		tid = 0;
+	} else {
 		lof = me->me_lof;
 		tid = me->me_tid;
 	}
@@ -1568,9 +1569,10 @@ logmap_settail(mt_map_t *mtm, ml_unit_t *ul)
 	 */
 	mutex_enter(&ul->un_log_mutex);
 	mutex_enter(&mtm->mtm_mutex);
-	if (mtm->mtm_prev == (mapentry_t *)mtm)
+	if (mtm->mtm_prev == (mapentry_t *)mtm) {
 		lof = -1;
-	else {
+		nb = 0;
+	} else {
 		/*
 		 * set the tail to the end of the last commit
 		 */

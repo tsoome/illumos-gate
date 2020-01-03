@@ -209,6 +209,7 @@ top_begin_sync(ufsvfs_t *ufsvfsp, top_t topid, ulong_t size, int *error)
 		 * or those where a commit is in progress
 		 * (last_async_tid == mtm->mtm_committid)
 		 */
+		tp = NULL;
 		if (curthread->t_flag & T_DONTPEND) {
 			tp = tsd_get(topkey);
 			if (tp && (tp->last_async_tid != mtm->mtm_tid) &&

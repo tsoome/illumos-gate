@@ -920,7 +920,7 @@ bmap_has_holes(struct inode *ip)
 	uint_t	mblks;			/* # of data + metadata blocks */
 	int	nindirshift;
 	int	nindiroffset;
-	uint_t	cnt;
+	uint_t	cnt = 0;
 	int	n, j, shft;
 	uint_t nindirblks;
 

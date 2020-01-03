@@ -797,7 +797,7 @@ done:
 int
 ufs_trans_itrunc(struct inode *ip, u_offset_t length, int flags, cred_t *cr)
 {
-	int 		err, issync, resv;
+	int 		err, issync = 0, resv;
 	u_offset_t	resid;
 	int		do_block	= 0;
 	struct ufsvfs	*ufsvfsp	= ip->i_ufsvfs;

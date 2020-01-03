@@ -351,9 +351,7 @@ log_roll_write(ml_unit_t *ul, rollbuf_t *rbs, int nbuf)
 	 * Order the buffers by blkno
 	 */
 	ASSERT(nbuf > 0);
-#ifdef lint
 	prev = rbs;
-#endif
 	for (head = rbs, rbp = rbs + 1; rbp < rbs + nbuf; rbp++) {
 		for (rbp2 = head; rbp2; prev = rbp2, rbp2 = rbp2->rb_next) {
 			if (rbp->rb_bh.b_blkno < rbp2->rb_bh.b_blkno) {

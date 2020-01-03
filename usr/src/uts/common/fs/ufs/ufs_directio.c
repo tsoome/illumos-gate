@@ -228,7 +228,7 @@ directio_wait(struct directio_buf *tail, long *bytes_iop)
 {
 	int	error = 0, newerror;
 	struct directio_buf	*dbp;
-	uint_t	kpri_req_save;
+	uint_t	kpri_req_save = 0;
 
 	/*
 	 * The linked list of directio buf structures is maintained
@@ -362,8 +362,8 @@ ufs_directio_write(struct inode *ip, uio_t *arg_uio, int ioflag, int rewrite,
 	int		exclusive, ncur, bmap_peek;
 	uio_t		copy_uio;
 	iovec_t		copy_iov;
-	char		*copy_base;
-	long		copy_resid;
+	char		*copy_base = NULL;
+	long		copy_resid = 0;
 
 	/*
 	 * assume that directio isn't possible (normal case)
