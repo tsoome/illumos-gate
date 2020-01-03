@@ -850,7 +850,7 @@ rsa_sign_verify_common_init(crypto_ctx_t *ctx, crypto_mechanism_t *mechanism,
 	int rv;
 	int kmflag;
 	rsa_ctx_t *ctxp;
-	digest_rsa_ctx_t *dctxp;
+	digest_rsa_ctx_t *dctxp = NULL;
 
 	if ((rv = check_mech_and_key(mechanism, key)) != CRYPTO_SUCCESS)
 		return (rv);
@@ -940,7 +940,7 @@ rsa_digest_svrfy_common(digest_rsa_ctx_t *ctxp, crypto_data_t *data,
 	uchar_t digest[SHA512_DIGEST_LENGTH];
 	/* The der_data size is enough for MD5 also */
 	uchar_t der_data[SHA512_DIGEST_LENGTH + SHA2_DER_PREFIX_Len];
-	ulong_t der_data_len;
+	ulong_t der_data_len = 0;
 	crypto_data_t der_cd;
 	rsa_mech_type_t mech_type;
 
