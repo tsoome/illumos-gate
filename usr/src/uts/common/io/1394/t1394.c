@@ -2396,7 +2396,7 @@ t1394_setup_isoch_cec(t1394_handle_t t1394_hdl,
 	uint32_t			try_chnl;
 	uint_t				bw_alloc_units;
 	uint_t				generation;
-	int				chnl_num;
+	int				chnl_num = 0;
 	int				err;
 	int				ret;
 	int				j;

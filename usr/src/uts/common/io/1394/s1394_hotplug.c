@@ -159,6 +159,7 @@ s1394_create_devinfo(s1394_hal_t *hal, s1394_node_t *node, uint32_t *unit_dir,
 	    S1394_TNF_SL_HOTPLUG_STACK, "", tnf_uint, guid_hi,
 	    node->node_guid_hi, tnf_uint, guid_lo, node->node_guid_lo);
 
+	module_vendor_id = 0;
 	hal_dip = hal->halinfo.dip;
 
 	/* Allocate and init a new device node instance. */
