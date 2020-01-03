@@ -1286,7 +1286,7 @@ nl7c_sendfilev(struct sonode *so, u_offset_t *fileoff, sendfilevec_t *sfvp,
 	char		*alloc;
 	uri_rd_t	*rdp;
 	int		max;
-	int		perror;
+	int		perror = 0;
 	int		error = 0;
 	boolean_t	first = B_TRUE;
 
@@ -1928,7 +1928,7 @@ nl7c_parse(struct sonode *so, boolean_t nonblocking, boolean_t *ret)
 	char	*ep = (char *)sti->sti_nl7c_rcv_mp->b_wptr;
 	char	*get = "GET ";
 	char	*post = "POST ";
-	char	c;
+	char	c = '\0';
 	char	*uris;
 	uri_desc_t *uri = NULL;
 	uri_desc_t *ruri = NULL;
