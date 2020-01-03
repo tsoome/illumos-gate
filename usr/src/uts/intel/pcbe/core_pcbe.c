@@ -1065,7 +1065,7 @@ configure_gpc(uint_t picnum, char *event, uint64_t preset, uint32_t flags,
     uint_t nattrs, kcpc_attr_t *attrs, void **data)
 {
 	core_pcbe_config_t	conf;
-	const struct nametable_core_uarch	*n;
+	const struct nametable_core_uarch	*n = NULL;
 	const struct generic_events *k = NULL;
 	const struct nametable_core_uarch	*m;
 	const struct nametable_core_uarch	*picspecific_events;
