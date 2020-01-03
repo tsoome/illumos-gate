@@ -53,6 +53,7 @@
 #include <des/softdes.h>
 #include <des/desdata.h>
 #include <sys/debug.h>
+#include <sys/null.h>
 
 static void des_setkey(u_char userkey[8], struct deskeydata *kd,
     unsigned int dir);
@@ -150,7 +151,7 @@ des_setkey(u_char userkey[8], struct deskeydata *kd, unsigned int dir)
 	 * using PC2.
 	 */
 	for (i = 0; i < 16; i++) {
-		chunk_t *c;
+		chunk_t *c = NULL;
 		short j, k, bit;
 		int bbit;
 
