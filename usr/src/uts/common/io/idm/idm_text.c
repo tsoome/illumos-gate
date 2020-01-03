@@ -422,6 +422,7 @@ idm_nvlist_add_kv(nvlist_t *nvl,  const idm_kv_xlate_t *ikvx, char *value)
 		    value);
 		break;
 	default:
+		rc = 0;
 		ASSERT(0); /* This should never happen */
 		break;
 	}
