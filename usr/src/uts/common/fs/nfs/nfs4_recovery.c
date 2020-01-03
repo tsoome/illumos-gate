@@ -1578,16 +1578,8 @@ recov_newserver(recov_info_t *recovp, nfs4_server_t **spp, bool_t *recov_fail)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
-#ifdef lint
-	/*
-	 * Lint can't follow the logic, so thinks that snames and len
-	 * can be used before being set.  They can't, but lint can't
-	 * figure it out.  To address the lint warning, initialize
-	 * snames and len for lint.
-	 */
 	snames = NULL;
 	len = 0;
-#endif
 
 	/*
 	 * Ping the null NFS procedure of every server in
@@ -2488,7 +2480,7 @@ recov_openfiles(recov_info_t *recovp, nfs4_server_t *sp)
 	int remap;
 	char *fail_msg = "No such file or directory on replica";
 	rnode4_t *rp;
-	fattr4_change pre_change;
+	fattr4_change pre_change = 0;
 
 	ASSERT(sp != NULL);
 

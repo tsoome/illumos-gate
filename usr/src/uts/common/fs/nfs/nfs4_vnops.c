@@ -2620,7 +2620,7 @@ nfs4_read(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 	offset_t diff;
 	uint_t on;
 	uint_t n;
-	caddr_t base;
+	caddr_t base = NULL;
 	uint_t flags;
 	int error;
 	mntinfo4_t *mi;
@@ -2743,7 +2743,7 @@ nfs4_write(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 	rlim64_t limit = uiop->uio_llimit;
 	rnode4_t *rp;
 	u_offset_t off;
-	caddr_t base;
+	caddr_t base = NULL;
 	uint_t flags;
 	int remainder;
 	size_t n;
@@ -3800,7 +3800,7 @@ nfs4setattr(vnode_t *vp, struct vattr *vap, int flags, cred_t *cr,
 	nfs4_recov_state_t recov_state;
 	nfs4_stateid_types_t sid_types;
 	stateid4 stateid;
-	hrtime_t t;
+	hrtime_t t = 0;
 	nfs4_error_t e = { 0, NFS4_OK, RPC_SUCCESS };
 	servinfo4_t *svp;
 	bitmap4 supp_attrs;
@@ -4495,7 +4495,7 @@ nfs4_readlink(vnode_t *vp, struct uio *uiop, cred_t *cr, caller_context_t *ct)
 	nfs_argop4 argop[3];
 	nfs_resop4 *resop;
 	READLINK4res *lr_res;
-	nfs4_ga_res_t *garp;
+	nfs4_ga_res_t *garp = NULL;
 	uint_t len;
 	char *linkdata;
 	bool_t needrecov = FALSE;
@@ -7713,7 +7713,7 @@ nfs4rename(vnode_t *odvp, char *onm, vnode_t *ndvp, char *nnm, cred_t *cr,
 	vnode_t *nvp = NULL;
 	vnode_t *ovp = NULL;
 	char *tmpname = NULL;
-	rnode4_t *rp;
+	rnode4_t *rp = NULL;
 	rnode4_t *odrp;
 	rnode4_t *ndrp;
 	int did_link = 0;
@@ -9184,6 +9184,8 @@ nfs4readdir(vnode_t *vp, rddir4_cache *rdc, cred_t *cr)
 	ASSERT(!RP_ISSTUB(rp));
 
 	num_ops = 2;
+	nodeid = 0;
+	pnodeid = 0;
 	if (cookie == (nfs_cookie4)0 || cookie == (nfs_cookie4)1) {
 		/*
 		 * Since nfsv4 readdir may not return entries for "." and "..",
@@ -14874,7 +14876,7 @@ vtoname(vnode_t *vp, char *fnamep, ssize_t maxlen)
 {
 	char *fn;
 	int err = 0;
-	servinfo4_t *svp;
+	servinfo4_t *svp = NULL;
 	svnode_t *shvp;
 
 	/*

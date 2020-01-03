@@ -776,6 +776,7 @@ authget(servinfo4_t *svp, CLIENT *ch_client, cred_t *cr)
 	 * sv_currsec to the selected security mechanism for
 	 * later sessions.
 	 */
+	error = 0;
 	(void) nfs_rw_enter_sig(&svp->sv_lock, RW_WRITER, 0);
 	if ((svp->sv_flags & SV4_TRYSECINFO) && svp->sv_secinfo) {
 		for (i = svp->sv_secinfo->index; i < svp->sv_secinfo->count;

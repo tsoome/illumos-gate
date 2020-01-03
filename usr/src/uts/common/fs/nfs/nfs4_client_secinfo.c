@@ -560,7 +560,7 @@ comp_total(char *inpath)
 static void
 comp_getn(char *inpath, int nth, component4 *comp)
 {
-	char *path = inpath, *comp_start, *slash = NULL;
+	char *path = inpath, *comp_start = NULL, *slash = NULL;
 	int count = 0;
 
 	while ((count != nth) && (*path != '\0')) {
@@ -588,7 +588,7 @@ comp_getn(char *inpath, int nth, component4 *comp)
 		comp->utf8string_len = strlen(comp_start);
 		comp->utf8string_val = comp_start;
 
-		if (comp_start != inpath) {
+		if (comp_start != NULL && comp_start != inpath) {
 			comp_start--;
 			*comp_start = '\0';
 		}

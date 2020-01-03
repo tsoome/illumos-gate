@@ -428,7 +428,7 @@ static int
 nfs4_trigger_getattr(vnode_t *vp, struct vattr *vap, int flags, cred_t *cr,
     caller_context_t *ct)
 {
-	int error;
+	int error = 0;
 
 	if (flags & ATTR_TRIGGER) {
 		vnode_t	*newvp;
