@@ -2173,7 +2173,7 @@ mac_rx_srs_fanout(mac_soft_ring_set_t *mac_srs, mblk_t *head)
 
 		for (i = 0; i < fanout_cnt; i++) {
 			if (headmp[type][i] != NULL) {
-				mac_soft_ring_t	*softring;
+				mac_soft_ring_t	*softring = NULL;
 
 				ASSERT(tailmp[type][i]->b_next == NULL);
 				switch (type) {

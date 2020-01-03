@@ -4184,6 +4184,7 @@ mac_init_rings(mac_impl_t *mip, mac_ring_type_t rtype)
 		cap_rings->mr_type = MAC_RING_TYPE_TX;
 		break;
 	default:
+		cap_rings = 0;
 		ASSERT(B_FALSE);
 	}
 
@@ -4540,6 +4541,8 @@ mac_free_rings(mac_impl_t *mip, mac_ring_type_t rtype)
 		mip->mi_default_tx_ring = NULL;
 		break;
 	default:
+		groups = NULL;
+		group_count = 0;
 		ASSERT(B_FALSE);
 	}
 
@@ -4704,6 +4707,7 @@ i_mac_group_add_ring(mac_group_t *group, mac_ring_t *ring, int index)
 		group_type = mip->mi_tx_group_type;
 		break;
 	default:
+		cap_rings = NULL;
 		ASSERT(B_FALSE);
 	}
 

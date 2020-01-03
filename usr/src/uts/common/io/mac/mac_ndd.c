@@ -167,6 +167,7 @@ mac_ndd_ioctl(mac_impl_t *mip, queue_t *wq, mblk_t *mp)
 
 	cmd = iocp->ioc_cmd;
 
+	err = 0;
 	if (cmd == ND_SET) {
 		err = mac_ndd_set_ioctl(mip, mp, iocp->ioc_count, &rval);
 	} else if (cmd == ND_GET) {
@@ -284,6 +285,9 @@ mac_ndd_get_ioctl(mac_impl_t *mip, mblk_t *mp, int avail, int *rval)
 				 */
 				new_value = (u64/1000000);
 				break;
+			default:
+				new_value = 0;
+				break;
 			}
 		}
 
@@ -337,6 +341,7 @@ mac_ndd_set_ioctl(mac_impl_t *mip, mblk_t *mp, int avail, int *rval)
 	IOCP		iocp;
 	char		priv_name[MAXLINKPROPNAME];
 
+	status = 0;
 	if (avail == 0 || !(mp1 = mp->b_cont))
 		return (EINVAL);
 

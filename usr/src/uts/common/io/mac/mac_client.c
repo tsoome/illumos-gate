@@ -3032,7 +3032,7 @@ mac_unicast_remove(mac_client_handle_t mch, mac_unicast_handle_t mah)
 	mac_unicast_impl_t *muip = (mac_unicast_impl_t *)mah;
 	mac_unicast_impl_t *pre;
 	mac_impl_t *mip = mcip->mci_mip;
-	flow_entry_t		*flent;
+	flow_entry_t *flent = NULL;
 	uint16_t mui_vid;
 
 	i_mac_perim_enter(mip);
@@ -3493,7 +3493,7 @@ mac_tx(mac_client_handle_t mch, mblk_t *mp_chain, uintptr_t hint,
 {
 	mac_tx_cookie_t		cookie = 0;
 	int			error;
-	mac_tx_percpu_t		*mytx;
+	mac_tx_percpu_t		*mytx = NULL;;
 	mac_soft_ring_set_t	*srs;
 	flow_entry_t		*flent;
 	boolean_t		is_subflow = B_FALSE;
