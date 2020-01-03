@@ -694,7 +694,7 @@ top:
 		struct pcdir *ep;
 		int	ndirentries;
 		pc_cluster16_t pct_lo;
-		pc_cluster16_t pct_hi;
+		pc_cluster16_t pct_hi = 0;
 		offset_t offset;
 		int	boff;
 		struct buf *bp = NULL;
@@ -704,7 +704,7 @@ top:
 		struct pctime crtime;
 		uchar_t	ntattr;
 		ushort_t ladate;
-		ushort_t eattr;
+		ushort_t eattr = 0;
 		uchar_t	crtime_msec;
 
 		/*
