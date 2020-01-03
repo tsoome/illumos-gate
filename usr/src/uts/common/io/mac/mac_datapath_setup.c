@@ -722,6 +722,7 @@ mac_tx_cpu_init(flow_entry_t *flent, mac_resource_props_t *mrp,
 		retargetable_client = B_TRUE;
 	}
 
+	j = 0;
 	if (MAC_TX_SOFT_RINGS(tx_srs)) {
 		if (mrp != NULL)
 			j = mrp->mrp_ncpus - 1;
@@ -2283,6 +2284,9 @@ mac_find_fanout(flow_entry_t *flent, uint32_t link_type)
 		break;
 	case SRST_LINK:
 		fanout_type = SRST_FANOUT_PROTO;
+		break;
+	default:
+		fanout_type = 0;
 		break;
 	}
 
@@ -3859,6 +3863,7 @@ mac_tx_srs_del_ring(mac_soft_ring_set_t *mac_srs, mac_ring_t *tx_ring)
 	mac_soft_ring_t *soft_ring, *remove_sring;
 	mac_client_impl_t *mcip = mac_srs->srs_mcip;
 
+	soft_ring = NULL;
 	mutex_enter(&mac_srs->srs_lock);
 	for (i = 0; i < mac_srs->srs_tx_ring_count; i++) {
 		soft_ring =  mac_srs->srs_tx_soft_rings[i];
