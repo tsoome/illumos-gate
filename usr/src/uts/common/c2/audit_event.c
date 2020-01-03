@@ -1853,7 +1853,7 @@ aus_msgsys(struct t_audit_data *tad)
 static void
 auf_msgsys(struct t_audit_data *tad, int error, rval_t *rval)
 {
-	int id;
+	int id = 0;
 
 	if (error != 0)
 		return;
@@ -1922,7 +1922,7 @@ aus_semsys(struct t_audit_data *tad)
 static void
 auf_semsys(struct t_audit_data *tad, int error, rval_t *rval)
 {
-	int id;
+	int id = 0;
 
 	if (error != 0)
 		return;
@@ -2281,7 +2281,7 @@ aus_shmsys(struct t_audit_data *tad)
 static void
 auf_shmsys(struct t_audit_data *tad, int error, rval_t *rval)
 {
-	int id;
+	int id = 0;
 
 	if (error != 0)
 		return;
