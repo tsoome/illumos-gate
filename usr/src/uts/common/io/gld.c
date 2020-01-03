@@ -518,7 +518,7 @@ gld_register(dev_info_t *devinfo, char *devname, gld_mac_info_t *macinfo)
 	gld_mac_pvt_t *mac_pvt;
 	char minordev[32];
 	char pbuf[3*GLD_MAX_ADDRLEN];
-	gld_interface_t *ifp;
+	gld_interface_t *ifp = NULL;
 
 	ASSERT(devinfo != NULL);
 	ASSERT(macinfo != NULL);
@@ -4340,7 +4340,7 @@ gld_inforeq(queue_t *q, mblk_t *mp)
 	dl_info_ack_t	*dlp;
 	int		bufsize;
 	glddev_t	*glddev;
-	gld_mac_info_t	*macinfo;
+	gld_mac_info_t	*macinfo = NULL;
 	gld_mac_pvt_t	*mac_pvt;
 	int		sel_offset = 0;
 	int		range_offset = 0;
@@ -4359,6 +4359,7 @@ gld_inforeq(queue_t *q, mblk_t *mp)
 	ASSERT(gld);
 	glddev = gld->gld_device;
 	ASSERT(glddev);
+	mac_pvt = NULL;
 
 	if (gld->gld_state == DL_IDLE || gld->gld_state == DL_UNBOUND) {
 		macinfo = gld->gld_mac_info;
