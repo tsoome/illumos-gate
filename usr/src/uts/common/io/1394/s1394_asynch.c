@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * s1394_asynch.c
  *    1394 Services Layer Asynchronous Communications Routines
@@ -2005,12 +2003,12 @@ s1394_pending_q_helper(s1394_hal_t *hal, cmd1394_cmd_t *cmd)
 static int
 s1394_process_split_lock(cmd1394_cmd_t *cmd, cmd1394_cmd_t *target_cmd)
 {
-	uint64_t	 new_value64;
+	uint64_t	 new_value64 = 0;
 	uint64_t	 data_value64;
 	uint64_t	 arg_value64;
 	uint64_t	 old_value64;
 	uint64_t	 temp_value64;
-	uint32_t	 new_value32;
+	uint32_t	 new_value32 = 0;
 	uint32_t	 data_value32;
 	uint32_t	 arg_value32;
 	uint32_t	 old_value32;

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * s1394_addr.c
  *    1394 Address Space Routines
@@ -1310,6 +1308,7 @@ s1394_used_tree_delete(s1394_hal_t *hal, s1394_addr_space_blk_t *z)
 	TNF_PROBE_0_DEBUG(s1394_used_tree_delete_enter,
 	    S1394_TNF_SL_ARREQ_STACK, "");
 
+	w = NULL;
 	/* Lock the "used" tree */
 	mutex_enter(&hal->addr_space_used_mutex);
 

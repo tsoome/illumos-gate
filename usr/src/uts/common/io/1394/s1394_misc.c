@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * s1394_misc.c
  *    1394 Services Layer Miscellaneous Routines
@@ -457,6 +455,10 @@ s1394_address_rollover(cmd1394_cmd_t *cmd)
 	case CMD1394_ASYNCH_RD_BLOCK:
 	case CMD1394_ASYNCH_WR_BLOCK:
 		length = cmd->cmd_u.b.blk_length;
+		break;
+
+	default:
+		length = 0;
 		break;
 	}
 

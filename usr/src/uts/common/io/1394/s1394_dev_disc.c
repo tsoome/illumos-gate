@@ -2641,6 +2641,7 @@ s1394_do_bus_mgr_processing(s1394_hal_t *hal)
 		    (IRM_node_num == (int)hal_node_num)))) {
 
 		IRM_flags = 0;
+		new_gap_cnt = 0;
 
 		/* Make sure the root node is cycle master capable */
 		if (!s1394_cycle_master_capable(hal)) {
