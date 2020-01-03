@@ -692,6 +692,10 @@ vuidmice_handle_wheel_resolution_ioctl(queue_t *qp, mblk_t *mp, int cmd)
 		case MSIOSRESOLUTION:
 			size = sizeof (Ms_screen_resolution);
 			break;
+
+		default:
+			size = 0;
+			break;
 		}
 
 		if ((ioctmp = allocb(sizeof (Mouse_iocstate_t),
