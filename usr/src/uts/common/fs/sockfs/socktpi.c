@@ -5233,7 +5233,7 @@ sotpi_getsockopt(struct sonode *so, int level, int option_name,
 	int			error = 0;
 	void			*option = NULL;	/* Set if fallback value */
 	t_uscalar_t		maxlen = *optlenp;
-	t_uscalar_t		len;
+	t_uscalar_t		len = 0;
 	uint32_t		value;
 	struct timeval		tmo_val; /* used for SO_RCVTIMEO, SO_SNDTIMEO */
 	struct timeval32	tmo_val32;

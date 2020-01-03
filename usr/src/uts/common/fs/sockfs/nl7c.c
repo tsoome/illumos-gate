@@ -355,6 +355,8 @@ ncaportconf_read(void)
 	/*
 	 * Read portconf one buf[] at a time, parse one char at a time.
 	 */
+	stringp = NULL;
+	tok = NULL;
 	for (;;) {
 		if (bp == ebp) {
 			/* Nothing left in buf[], read another */
@@ -651,6 +653,10 @@ ncalogdconf_read(void)
 	/*
 	 * Read ncalogd.conf one buf[] at a time, parse one char at a time.
 	 */
+	tokstatusp = NULL;
+	toksizep = NULL;
+	tokfilep = NULL;
+	tok = NULL;
 	for (;;) {
 		if (bp == ebp) {
 			/* Nothing left in buf[], read another */
