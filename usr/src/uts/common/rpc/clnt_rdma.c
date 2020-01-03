@@ -466,7 +466,7 @@ clnt_setup_wlist(CONN *conn, XDR *xdrs, XDR *call_xdrp, rdma_buf_t *rndbuf)
 {
 	int status;
 	struct clist *wlist, *rndcl;
-	int wlen, rndlen;
+	int wlen, rndlen = 0;
 	int32_t xdr_flag = XDR_RDMA_WLIST_REG;
 
 	XDR_CONTROL(call_xdrp, XDR_RDMA_GET_WLIST, &wlist);
