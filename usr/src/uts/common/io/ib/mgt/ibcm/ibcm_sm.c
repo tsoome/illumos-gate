@@ -4477,7 +4477,7 @@ ibcm_process_sidr_req_msg(ibcm_hca_info_t *hcap, uint8_t *input_madp,
 	ib_lid_t		lid;
 	uint32_t		req_id;
 	ibcm_status_t		state_lookup_status;
-	ibcm_status_t		cm_status;
+	ibcm_status_t		cm_status = IBCM_SUCCESS;
 	ibt_sidr_status_t	sidr_status;
 	ibcm_svc_info_t		*svc_infop;
 	ibcm_svc_bind_t		*svc_bindp;

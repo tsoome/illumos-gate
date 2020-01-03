@@ -113,7 +113,7 @@ ibt_open_rc_channel(ibt_channel_hdl_t channel, ibt_chan_open_flags_t flags,
 	/* all fields that are related to REQ MAD formation */
 
 	ib_pkey_t		prim_pkey;
-	ib_lid_t		primary_slid, alternate_slid;
+	ib_lid_t		primary_slid, alternate_slid = 0;
 	ib_qpn_t		local_qpn = 0;
 	ib_guid_t		hca_guid;
 	ib_qkey_t		local_qkey = 0;
@@ -2687,7 +2687,7 @@ ibt_bind_service(ibt_srv_hdl_t srv_hdl, ib_gid_t gid, ibt_srv_bind_t *srv_bind,
 	ibcm_svc_bind_t		*sbindp, *sbp;
 	ibcm_hca_info_t		*hcap;
 	ib_svc_id_t		sid, start_sid, end_sid;
-	ibmf_saa_handle_t	saa_handle;
+	ibmf_saa_handle_t	saa_handle = NULL;
 	sa_service_record_t	srv_rec;
 	uint16_t		pkey_ix;
 
@@ -5654,8 +5654,8 @@ ibt_gid_to_node_info(ib_gid_t gid, ibt_node_info_t *node_info_p)
 {
 	sa_node_record_t	nr_req, *nr_resp;
 	ibmf_saa_handle_t	saa_handle;
-	ibt_status_t		retval;
-	ibcm_hca_info_t		*hcap;
+	ibt_status_t		retval = IBT_SUCCESS;
+	ibcm_hca_info_t		*hcap = NULL;
 	ibtl_cm_hca_port_t	hport;
 	int			i, j;
 	uint_t			num_rec;
@@ -5664,7 +5664,7 @@ ibt_gid_to_node_info(ib_gid_t gid, ibt_node_info_t *node_info_p)
 	size_t			len;
 	uint8_t			npaths;
 	uint32_t		num_hcas = 0;
-	ib_lid_t		node_lid;
+	ib_lid_t		node_lid = 0;
 	boolean_t		local_node = B_FALSE;
 	void			*res_p;
 	uint8_t			num_ports = 0;
@@ -5945,7 +5945,7 @@ ibcm_get_node_rec(ibmf_saa_handle_t saa_handle, sa_node_record_t *nr_req,
 ibt_status_t
 ibt_lid_to_node_info(ib_lid_t lid, ibt_node_info_t *node_info_p)
 {
-	ibt_status_t	retval;
+	ibt_status_t	retval = IBT_SUCCESS;
 	ibcm_hca_info_t	*hcap;
 	uint8_t		i, j;
 	ib_guid_t	*guid_array = NULL;
