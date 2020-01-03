@@ -117,8 +117,8 @@ wrtmp(
 	struct caller_context *ct)
 {
 	pgcnt_t pageoffset;	/* offset in pages */
-	ulong_t segmap_offset;	/* pagesize byte offset into segmap */
-	caddr_t base;		/* base of segmap */
+	ulong_t segmap_offset = 0; /* pagesize byte offset into segmap */
+	caddr_t base = NULL;	/* base of segmap */
 	ssize_t bytes;		/* bytes to uiomove */
 	pfn_t pagenumber;	/* offset in pages into tmp file */
 	struct vnode *vp;
@@ -130,7 +130,7 @@ wrtmp(
 	timestruc_t now;
 
 	long tn_size_changed = 0;
-	long old_tn_size;
+	long old_tn_size = 0;
 	long new_tn_size;
 
 	vp = TNTOV(tp);
@@ -454,7 +454,7 @@ rdtmp(
 {
 	ulong_t pageoffset;	/* offset in tmpfs file (uio_offset) */
 	ulong_t segmap_offset;	/* pagesize byte offset into segmap */
-	caddr_t base;		/* base of segmap */
+	caddr_t base = NULL;	/* base of segmap */
 	ssize_t bytes;		/* bytes to uiomove */
 	struct vnode *vp;
 	int error;
