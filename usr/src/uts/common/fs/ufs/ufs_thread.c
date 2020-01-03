@@ -248,9 +248,9 @@ ufs_delete(struct ufsvfs *ufsvfsp, struct inode *ip, int dolockfs)
 	ushort_t	mode;
 	struct vnode	*vp	= ITOV(ip);
 	struct ulockfs	*ulp;
-	int		trans_size;
+	int		trans_size = 0;
 	int		dorwlock = ((ip->i_mode & IFMT) == IFREG);
-	int		issync;
+	int		issync = 0;
 	int		err;
 	struct inode	*dp;
 	struct ufs_q    *delq = &ufsvfsp->vfs_delete;
@@ -1177,8 +1177,8 @@ ufs_attr_purge(struct inode *dp)
 	struct inode *tp;
 	struct fbuf *fbp;	/* pointer to directory block */
 	struct direct *ep;	/* directory entry */
-	int trans_size;
-	int issync;
+	int trans_size = 0;
+	int issync = 0;
 	struct ufsvfs	*ufsvfsp = dp->i_ufsvfs;
 
 	rw_enter(&ufsvfsp->vfs_dqrwlock, RW_READER);

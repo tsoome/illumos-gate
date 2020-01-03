@@ -186,16 +186,16 @@ ufs_dirlook(
 	struct direct *ep;		/* the current directory entry */
 	struct vnode *vp;
 	struct vnode *dvp;		/* directory vnode ptr */
-	struct ulockfs *ulp;
+	struct ulockfs *ulp = NULL;
 	dcanchor_t *dcap;
 	off_t endsearch;		/* offset to end directory search */
 	off_t offset;
-	off_t start_off;		/* starting offset from middle search */
+	off_t start_off = 0;		/* starting offset from middle search */
 	off_t last_offset;		/* last offset */
 	int entryoffsetinblock;		/* offset of ep in addr's buffer */
 	int numdirpasses;		/* strategy for directory search */
 	int namlen;			/* length of name */
-	int err;
+	int err = 0;
 	int doingchk;
 	int i;
 	int caching;
@@ -656,7 +656,7 @@ ufs_direnter_cm(
 	int noentry = flags & ~IQUIET;
 	int quiet = flags & IQUIET;	/* Suppress out of inodes message */
 	int indeadlock;
-	struct ulockfs *ulp;
+	struct ulockfs *ulp = NULL;
 
 	ASSERT(RW_WRITE_HELD(&tdp->i_rwlock));
 
@@ -2413,7 +2413,7 @@ ufs_dirremove(
 {
 	struct direct *ep, *pep, *nep;
 	struct inode *ip;
-	vnode_t *dvp, *vp;
+	vnode_t *dvp, *vp = NULL;
 	struct ufs_slot slot;
 	int namlen;
 	int err;
@@ -3169,8 +3169,8 @@ ufs_xattrmkdir(
 	int retry = 1;
 	struct ufsvfs *ufsvfsp;
 	struct ulockfs *ulp;
-	int issync;
-	int trans_size;
+	int issync = 0;
+	int trans_size = 0;
 	int dorwlock;		/* 0 = not yet taken, */
 				/* 1 = taken outside the transaction, */
 				/* 2 = taken inside the transaction */

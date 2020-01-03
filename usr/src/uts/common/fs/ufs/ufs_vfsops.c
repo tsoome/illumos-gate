@@ -468,7 +468,7 @@ ufs_mountroot(struct vfs *vfsp, enum whymountroot why)
 	struct fs *fsp;
 	int error;
 	static int ufsrootdone = 0;
-	dev_t rootdev;
+	dev_t rootdev = NODEV;
 	struct vnode *vp;
 	struct vnode *devvp = 0;
 	int ovflags;
@@ -479,7 +479,7 @@ ufs_mountroot(struct vfs *vfsp, enum whymountroot why)
 		if (ufsrootdone++)
 			return (EBUSY);
 		rootdev = getrootdev();
-		if (rootdev == (dev_t)NODEV)
+		if (rootdev == NODEV)
 			return (ENODEV);
 		vfsp->vfs_dev = rootdev;
 		vfsp->vfs_flag |= VFS_RDONLY;
