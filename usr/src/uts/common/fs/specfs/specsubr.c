@@ -851,6 +851,7 @@ device_close(struct vnode *vp, int flag, struct cred *cr)
 	dev = sp->s_dev;
 	cvp = sp->s_commonvp;
 
+	error = 0;
 	switch (type) {
 
 	case VCHR:
