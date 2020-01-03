@@ -615,7 +615,7 @@ ptemwmsg(queue_t *q, mblk_t *mp)
 	mblk_t *dack_ptr;		/* disconnect message ACK block */
 	mblk_t *pckt_msgp;		/* message sent to the PCKT module */
 	mblk_t *dp;			/* ioctl reply data */
-	tcflag_t cflags;
+	tcflag_t cflags = 0;
 	int error;
 
 	switch (mp->b_datap->db_type) {
