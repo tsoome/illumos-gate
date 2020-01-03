@@ -528,7 +528,7 @@ aiowait(struct timeval *timout, int dontblockflg, long *rval)
 	aio_req_t	*reqp;
 	clock_t		status;
 	int		blocking;
-	int		timecheck;
+	int		timecheck = 0;
 	timestruc_t	rqtime;
 	timestruc_t	*rqtp;
 
@@ -618,7 +618,7 @@ aiowaitn(void *uiocb, uint_t nent, uint_t *nwait, timespec_t *timout)
 	int		iocb_index = 0;
 	model_t		model = get_udatamodel();
 	int		blocking = 1;
-	int		timecheck;
+	int		timecheck = 0;
 	timestruc_t	rqtime;
 	timestruc_t	*rqtp;
 
@@ -896,7 +896,7 @@ aiosuspend(void	*aiocb, int nent, struct timespec *timout, int flag,
 {
 	int		error;
 	aio_t		*aiop;
-	aio_req_t	*reqp, *found, *next;
+	aio_req_t	*reqp = NULL, *found, *next;
 	caddr_t		cbplist = NULL;
 	aiocb_t		*cbp, **ucbp;
 #ifdef	_SYSCALL32_IMPL
@@ -909,7 +909,7 @@ aiosuspend(void	*aiocb, int nent, struct timespec *timout, int flag,
 	size_t		ssize;
 	model_t		model = get_udatamodel();
 	int		blocking;
-	int		timecheck;
+	int		timecheck = 0;
 	timestruc_t	rqtime;
 	timestruc_t	*rqtp;
 
@@ -973,6 +973,8 @@ aiosuspend(void	*aiocb, int nent, struct timespec *timout, int flag,
 		}
 		/* check for requests on done queue */
 		if (aiop->aio_doneq) {
+			ucbp = NULL;
+			ucbp32 = NULL;
 			if (model == DATAMODEL_NATIVE)
 				ucbp = (aiocb_t **)cbplist;
 #ifdef	_SYSCALL32_IMPL
@@ -1215,7 +1217,7 @@ alio(
 	size_t		ssize;
 	int		deadhead = 0;
 	int		aio_notsupported = 0;
-	int		lio_head_port;
+	int		lio_head_port = 0;
 	int		aio_port;
 	int		aio_thread;
 	port_kevent_t	*pkevtp = NULL;
@@ -1223,6 +1225,7 @@ alio(
 	port_notify_t	pnotify;
 	int		event;
 
+	aio_func = NULL;
 	aiop = curproc->p_aio;
 	if (aiop == NULL || nent <= 0 || nent > _AIO_LISTIO_MAX)
 		return (EINVAL);
@@ -1581,6 +1584,9 @@ aliowait(
 
 	cbplist = kmem_alloc(ssize, KM_SLEEP);
 
+	ucbp = NULL;
+	ucbp32 = NULL;
+
 	if (model == DATAMODEL_NATIVE)
 		ucbp = (aiocb_t **)cbplist;
 #ifdef	_SYSCALL32_IMPL
@@ -1726,7 +1732,7 @@ alio_cleanup(aio_t *aiop, aiocb_t **cbp, int nent, int run_mode)
 {
 	int i;
 	aio_req_t *reqp;
-	aio_result_t *resultp;
+	aio_result_t *resultp = NULL;
 	aiocb64_32_t *aiocb_64;
 
 	for (i = 0; i < nent; i++) {
@@ -1784,7 +1790,7 @@ alio_cleanup(aio_t *aiop, aiocb_t **cbp, int nent, int run_mode)
 static int
 aioerror(void *cb, int run_mode)
 {
-	aio_result_t *resultp;
+	aio_result_t *resultp = NULL;
 	aio_t *aiop;
 	aio_req_t *reqp;
 	int retval;
@@ -1843,7 +1849,7 @@ static int
 aio_cancel(int fildes, void *cb, long *rval, int run_mode)
 {
 	aio_t *aiop;
-	void *resultp;
+	void *resultp = NULL;
 	int index;
 	aio_req_t **bucket;
 	aio_req_t *ent;
@@ -2035,15 +2041,15 @@ aiorw(
 {
 #ifdef _SYSCALL32_IMPL
 	aiocb32_t	aiocb32;
-	struct	sigevent32 *sigev32;
+	struct	sigevent32 *sigev32 = NULL;
 	port_notify32_t	pntfy32;
 #endif
 	aiocb64_32_t	aiocb64;
 	aiocb_t		aiocb;
 	file_t		*fp;
-	int		error, fd;
-	size_t		bufsize;
-	struct vnode	*vp;
+	int		error, fd = -1;
+	size_t		bufsize = 0;
+	struct vnode	*vp = NULL;
 	aio_req_t	*reqp;
 	aio_t		*aiop;
 	int		(*aio_func)();
@@ -2911,7 +2917,7 @@ alioLF(
 	size_t		ssize;
 	int		deadhead = 0;
 	int		aio_notsupported = 0;
-	int		lio_head_port;
+	int		lio_head_port = 0;
 	int		aio_port;
 	int		aio_thread;
 	port_kevent_t	*pkevtp = NULL;
@@ -2919,6 +2925,7 @@ alioLF(
 	port_notify32_t	pnotify;
 	int		event;
 
+	aio_func = NULL;
 	aiop = curproc->p_aio;
 	if (aiop == NULL || nent <= 0 || nent > _AIO_LISTIO_MAX)
 		return (EINVAL);
@@ -3390,7 +3397,7 @@ alio32(
 	size_t		ssize;
 	int		deadhead = 0;
 	int		aio_notsupported = 0;
-	int		lio_head_port;
+	int		lio_head_port = 0;
 	int		aio_port;
 	int		aio_thread;
 	port_kevent_t	*pkevtp = NULL;
@@ -3402,6 +3409,7 @@ alio32(
 #endif
 	int		event;
 
+	aio_func = NULL;
 	aiop = curproc->p_aio;
 	if (aiop == NULL || nent <= 0 || nent > _AIO_LISTIO_MAX)
 		return (EINVAL);
