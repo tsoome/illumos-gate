@@ -383,7 +383,7 @@ hpc_nexus_register_bus(dev_info_t *dip,
 int
 hpc_nexus_unregister_bus(dev_info_t *dip)
 {
-	hpc_bus_entry_t *busp, *busp_prev;
+	hpc_bus_entry_t *busp, *busp_prev = NULL;
 	hpc_slot_entry_t *slotp;
 
 	/*
@@ -548,7 +548,7 @@ int
 hpc_slot_unregister(hpc_slot_t *handlep)
 {
 	hpc_slot_entry_t *slotp;
-	hpc_bus_entry_t *busp, *busp_prev;
+	hpc_bus_entry_t *busp, *busp_prev = NULL;
 	boolean_t run_callback;
 	int (* callback)(dev_info_t *dip, hpc_slot_t hdl,
 		hpc_slot_info_t *slot_info, int slot_state);
