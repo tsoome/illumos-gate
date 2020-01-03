@@ -392,6 +392,8 @@ uwacom_pad_events_intuos(usbwcm_state_t *usbwcmp, uint8_t *packet)
 	int rx, ry, prox;
 	int b8, whl, rot;
 
+	b7 = 0;
+	b8 = 0;
 	switch (sc->sc_type->protocol) {
 	case INTUOS4L:
 		b7 = PACKET_BIT(3, 6);
@@ -863,6 +865,7 @@ usbwcm_copyreq(mblk_t *mp, uint_t pvtsize, uint_t state, uint_t reqsize,
 	struct copyreq	*cq;
 	struct copyresp	*cr;
 
+	iocmp = NULL;
 	if ((pvtsize == 0) && (state != 0)) {
 		cr = (struct copyresp *)mp->b_rptr;
 		iocmp = cr->cp_private;
