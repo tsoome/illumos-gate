@@ -439,7 +439,7 @@ ibmf_i_do_recv_cb(void *taskq_arg)
 	ibmf_rmpp_hdr_t		*rmpp_hdr;
 	ibmf_alt_qp_t		*qpp;
 	ib_gid_t		gid;
-	ib_lid_t		lid;
+	ib_lid_t		lid = 0;
 	int			msg_trans_state_flags, msg_flags;
 	uint_t			ref_cnt;
 	timeout_id_t		msg_rp_unset_id, msg_tr_unset_id;

@@ -1254,7 +1254,7 @@ ibmf_i_alloc_send_resources(ibmf_ci_t *cip, ibmf_msg_impl_t *msgimplp,
 	ibmf_send_wqe_t		*send_wqep;
 	struct kmem_cache	*kmem_cachep;
 	ibmf_qp_handle_t	ibmf_qp_handle = msgimplp->im_qp_hdl;
-	ibmf_alt_qp_t		*altqp;
+	ibmf_alt_qp_t		*altqp = NULL;
 
 	IBMF_TRACE_3(IBMF_TNF_DEBUG, DPRINT_L4,
 	    ibmf_i_alloc_send_resources_start, IBMF_TNF_TRACE, "",
