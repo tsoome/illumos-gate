@@ -1172,7 +1172,7 @@ sendit(int sock, struct nmsghdr *msg, struct uio *uiop, int flags)
 	socklen_t namelen;
 	void *control;
 	socklen_t controllen;
-	ssize_t len;
+	ssize_t len = 0;
 	int error;
 
 	if ((so = getsonode(sock, &error, &fp)) == NULL)
@@ -2193,6 +2193,7 @@ snf_async_read(snf_req_t *sr)
 	    kcred, NULL, NULL);
 
 	vp = sr->sr_vp;
+	so = NULL;
 	if (vp->v_type == VSOCK) {
 		stdata_t *stp;
 
@@ -2788,6 +2789,7 @@ snf_cache(file_t *fp, vnode_t *fvp, u_offset_t fileoff, u_offset_t size,
 	struct nmsghdr msg;
 
 	vp = fp->f_vnode;
+	so = NULL;
 	if (vp->v_type == VSOCK) {
 		stdata_t *stp;
 

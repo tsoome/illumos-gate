@@ -221,6 +221,7 @@ http_date2time_t(char *cp, char *ep)
 	ssize_t	min;
 	ssize_t	sec;
 
+	c = '\0';
 	/* Parse and skip day-of-week (we don't use it) */
 	tpp = dow;
 	tp = *tpp;
@@ -717,16 +718,12 @@ static token_t *
 ttree_line_parse(ttree_t *t, char **cpp, char **epp, char **hpp, uint32_t *hash)
 {
 	char	ca, cb;			/* current line <=> parse node */
-
 	char	*cp = *cpp;
 	char	*ep = *epp;
-
 	char	*tp = t->tok->text;	/* current parse text */
 	char	*sp = cp;		/* saved *cp */
-
 	int	parse;			/* parse state */
-
-	uint32_t hv;			/* hash value */
+	uint32_t hv = 0;		/* hash value */
 
 	if (hash != NULL)
 		hv = *hash;
@@ -1309,7 +1306,7 @@ got_version:
 				 */
 				char	c;
 				int	n = 0;
-				time_t	secs;
+				time_t	secs = 0;
 
 				ASSERT(hp != NULL && ep != NULL);
 
@@ -1468,7 +1465,7 @@ nl7c_http_response(char **cpp, char *ep, uri_desc_t *uri, struct sonode *so)
 	http_t	*http = uri->scheme;
 	char	*cp = *cpp;
 	char	*hp;
-	char	*scp, *sep;
+	char	*scp = NULL, *sep;
 	char	*HTTP = "HTTP/";
 	int	status = 0;
 	token_t	*match;
@@ -1621,7 +1618,7 @@ got_version:
 				 */
 				char	c;
 				int	n = 0;
-				time_t	secs;
+				time_t	secs = 0;
 
 				ASSERT(hp != NULL && ep != NULL);
 
