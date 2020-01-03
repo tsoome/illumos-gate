@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma	ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * s1394_isoch.c
  *    1394 Services Layer Isochronous Communication Routines
@@ -56,7 +54,7 @@ s1394_isoch_rsrc_realloc(s1394_hal_t *hal)
 	s1394_isoch_cec_t *cec_curr;
 	uint32_t	  chnl_mask;
 	uint32_t	  old_chnl_mask;
-	uint_t		  bw_alloc_units;
+	uint_t		  bw_alloc_units = 0;
 	uint_t		  generation;
 	uint_t		  chnl_num;
 	int		  err;
@@ -905,6 +903,8 @@ s1394_compute_bw_alloc_units(s1394_hal_t *hal, uint_t bandwidth, uint_t speed)
 	case IEEE1394_S100:
 		speed_factor = ISOCH_SPEED_FACTOR_S100;
 		break;
+	default:
+		speed_factor = 0;
 	}
 	/* See IEC 61883-1 pp. 26-29 for this formula */
 	bau = (32 * max_hops) + (total_quads * speed_factor);
