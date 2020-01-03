@@ -1026,7 +1026,7 @@ spec_read(
 	bdevsize = SPEC_SIZE(VTOS(blkvp));
 
 	do {
-		caddr_t base;
+		caddr_t base = NULL;
 		offset_t diff;
 
 		off = uiop->uio_loffset & (offset_t)MAXBMASK;
@@ -1131,7 +1131,7 @@ spec_write(
 	do {
 		int pagecreate;
 		int newpage;
-		caddr_t base;
+		caddr_t base = NULL;
 		offset_t diff;
 
 		off = uiop->uio_loffset & (offset_t)MAXBMASK;
