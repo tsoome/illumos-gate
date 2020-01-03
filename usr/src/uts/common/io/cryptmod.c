@@ -414,6 +414,9 @@ encrypt_size(struct cipher_data_t *cd, size_t plainlen)
 	case CRYPT_METHOD_NONE:
 		cipherlen = plainlen;
 		break;
+	default:
+		cipherlen = 0;
+		break;
 	}
 
 	return (cipherlen);
@@ -945,6 +948,9 @@ create_derived_keys(struct cipher_data_t *cdata, uint32_t usage,
 			break;
 		case CRYPT_METHOD_AES256:
 			keybytes = CRYPT_AES256_KEYBYTES;
+			break;
+		default:
+			keybytes = 0;
 			break;
 	}
 
@@ -2568,6 +2574,9 @@ do_decrypt(queue_t *q, mblk_t *mp)
 	case CRYPT_METHOD_AES256:
 		outmp = aes_decrypt(q, tmi, mp, &sha1_hash);
 		break;
+	default:
+		outmp = NULL;
+		break;
 	}
 	return (outmp);
 }
@@ -2612,6 +2621,9 @@ do_encrypt(queue_t *q, mblk_t *mp)
 		break;
 	case CRYPT_METHOD_NONE:
 		outmp = mp;
+		break;
+	default:
+		outmp = NULL;
 		break;
 	}
 	return (outmp);
@@ -2720,6 +2732,9 @@ setup_crypto(struct cr_info_t *ci, struct cipher_data_t *cd, int encrypt)
 			enc_usage = AES_ENCRYPT_USAGE;
 			dec_usage = AES_DECRYPT_USAGE;
 			break;
+		default:
+			newblocklen = 0;
+			break;
 	}
 	if (cd->mech_type == CRYPTO_MECH_INVALID) {
 		return (CRYPTO_FAILED);
@@ -2765,12 +2780,12 @@ setup_crypto(struct cr_info_t *ci, struct cipher_data_t *cd, int encrypt)
 		cd->blocklen = newblocklen;
 		if (cd->blocklen) {
 			cd->block = (char *)kmem_zalloc((size_t)cd->blocklen,
-				KM_SLEEP);
+			    KM_SLEEP);
 		}
 
 		if (cd->method == CRYPT_METHOD_DES_CFB)
 			cd->saveblock = (char *)kmem_zalloc(cd->blocklen,
-						KM_SLEEP);
+			    KM_SLEEP);
 		else
 			cd->saveblock = NULL;
 	}
