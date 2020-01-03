@@ -363,6 +363,7 @@ semctl(int semid, uint_t semnum, int cmd, uintptr_t arg)
 	/*
 	 * Perform pre- or non-lookup actions (e.g. copyins, RMID).
 	 */
+	vals = NULL;
 	switch (cmd) {
 	case IPC_SET:
 		if (copyin((void *)arg, STRUCT_BUF(sid), STRUCT_SIZE(sid)))
