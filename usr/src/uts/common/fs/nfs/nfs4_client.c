@@ -2266,8 +2266,8 @@ writerp4(rnode4_t *rp, caddr_t base, int tcount, struct uio *uio, int pgcreated)
 {
 	int pagecreate;
 	int n;
-	int saved_n;
-	caddr_t saved_base;
+	int saved_n = 0;
+	caddr_t saved_base = NULL;
 	u_offset_t offset;
 	int error;
 	int sm_error;
@@ -2469,6 +2469,7 @@ nfs4_putpages(vnode_t *vp, u_offset_t off, size_t len, int flags, cred_t *cr)
 		 * If there are no full file async write operations
 		 * pending and RDIRTY bit is set, clear it.
 		 */
+		rdirty = 0;
 		if (off == (u_offset_t)0 &&
 		    !(flags & B_ASYNC) &&
 		    (rp->r_flags & R4DIRTY)) {
@@ -2483,8 +2484,7 @@ nfs4_putpages(vnode_t *vp, u_offset_t off, size_t len, int flags, cred_t *cr)
 				rp->r_flags &= ~R4DIRTY;
 			}
 			mutex_exit(&rp->r_statelock);
-		} else
-			rdirty = 0;
+		}
 
 		/*
 		 * Search the entire vp list for pages >= off, and flush

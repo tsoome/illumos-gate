@@ -545,7 +545,7 @@ nfs3_read(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 	offset_t diff;
 	int on;
 	size_t n;
-	caddr_t base;
+	caddr_t base = NULL;
 	uint_t flags;
 	int error = 0;
 	mntinfo_t *mi;
@@ -652,7 +652,7 @@ nfs3_write(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 	rlim64_t limit = uiop->uio_llimit;
 	rnode_t *rp;
 	u_offset_t off;
-	caddr_t base;
+	caddr_t base = NULL;
 	uint_t flags;
 	int remainder;
 	size_t n;

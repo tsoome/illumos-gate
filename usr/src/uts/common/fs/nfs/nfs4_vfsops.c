@@ -706,7 +706,7 @@ nfs4_mount(vfs_t *vfsp, vnode_t *mvp, struct mounta *uap, cred_t *cr)
 	rnode4_t *rp;
 	struct servinfo4 *svp;		/* nfs server info */
 	struct servinfo4 *svp_tail = NULL; /* previous nfs server info */
-	struct servinfo4 *svp_head;	/* first nfs server info */
+	struct servinfo4 *svp_head = NULL; /* first nfs server info */
 	struct servinfo4 *svp_2ndlast;	/* 2nd last in server info list */
 	struct sec_data *secdata;	/* security data */
 	struct nfs_args *args = NULL;
@@ -900,6 +900,7 @@ more:
 		/*
 		 * Determine the addr type for RDMA, IPv4 or v6.
 		 */
+		addr_type = AF_UNSPEC;
 		if (strcmp(svp->sv_knconf->knc_protofmly, NC_INET) == 0)
 			addr_type = AF_INET;
 		else if (strcmp(svp->sv_knconf->knc_protofmly, NC_INET6) == 0)
