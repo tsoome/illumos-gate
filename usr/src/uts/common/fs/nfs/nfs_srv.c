@@ -3037,6 +3037,8 @@ acl_perm(struct vnode *vp, struct exportinfo *exi, struct vattr *va, cred_t *cr)
 				/* maximal permissions */
 				grp_perm = 0;
 				other_perm = 0;
+				mask_perm = 0;
+				other_orig = 0;
 				for (; aclcnt > 0; aclcnt--, aclentp++) {
 					switch (aclentp->a_type) {
 					case USER_OBJ:

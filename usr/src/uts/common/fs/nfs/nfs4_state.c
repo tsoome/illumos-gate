@@ -174,6 +174,8 @@ deep_open_copy(OPEN4res *dres, OPEN4res *sres)
 		sacep = &sres->delegation.open_delegation4_u.write.permissions;
 		dacep = &dres->delegation.open_delegation4_u.write.permissions;
 		break;
+	default:
+		return;
 	}
 	dacep->who.utf8string_val =
 	    kmem_alloc(sacep->who.utf8string_len, KM_SLEEP);
@@ -185,6 +187,7 @@ static void
 deep_open_free(OPEN4res *res)
 {
 	nfsace4 *acep;
+
 	if (res->status != NFS4_OK)
 		return;
 
@@ -197,6 +200,8 @@ deep_open_free(OPEN4res *res)
 	case OPEN_DELEGATE_WRITE:
 		acep = &res->delegation.open_delegation4_u.write.permissions;
 		break;
+	default:
+		return;
 	}
 
 	if (acep->who.utf8string_val) {

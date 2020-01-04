@@ -1333,10 +1333,14 @@ rfs4_op_access(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	cred_t *cr = cs->cr;
 	bslabel_t *clabel, *slabel;
 	ts_label_t *tslabel;
-	boolean_t admin_low_client;
+	boolean_t admin_low_client = B_TRUE;
 
 	DTRACE_NFSV4_2(op__access__start, struct compound_state *, cs,
 	    ACCESS4args *, args);
+
+	clabel = NULL;
+	slabel = NULL;
+	tslabel = NULL;
 
 #if 0	/* XXX allow access even if !cs->access. Eventually only pseudo fs */
 	if (cs->access == CS_ACCESS_DENIED) {
@@ -2914,8 +2918,8 @@ do_rfs4_op_lookup(char *nm, struct svc_req *req, struct compound_state *cs)
 			 */
 			struct sockaddr	*ca;
 			int		addr_type;
-			void		*ipaddr;
-			tsol_tpc_t	*tp;
+			void		*ipaddr = NULL;
+			tsol_tpc_t	*tp = NULL;
 
 			ca = (struct sockaddr *)svc_getrpccaller(
 			    req->rq_xprt)->buf;
@@ -2927,7 +2931,8 @@ do_rfs4_op_lookup(char *nm, struct svc_req *req, struct compound_state *cs)
 				ipaddr = &((struct sockaddr_in6 *)
 				    ca)->sin6_addr;
 			}
-			tp = find_tpc(ipaddr, addr_type, B_FALSE);
+			if (ipaddr != NULL)
+				tp = find_tpc(ipaddr, addr_type, B_FALSE);
 			if (tp == NULL || tp->tpc_tp.tp_doi !=
 			    l_admin_low->tsl_doi || tp->tpc_tp.host_type !=
 			    SUN_CIPSO) {
@@ -6371,7 +6376,7 @@ rfs4_createfile(OPEN4args *args, struct svc_req *req, struct compound_state *cs,
 	struct statvfs64 sb;
 	nfsstat4 status;
 	vnode_t *vp;
-	vattr_t bva, ava, iva, cva, *vap;
+	vattr_t bva, ava, iva, cva, *vap = NULL;
 	vnode_t *dvp;
 	timespec32_t *mtime;
 	char *nm = NULL;
@@ -8620,7 +8625,7 @@ finish:
 static int
 setlock(vnode_t *vp, struct flock64 *flock, int flag, cred_t *cred)
 {
-	int error;
+	int error = 0;
 	struct flock64 flk;
 	int i;
 	clock_t delaytime;
@@ -8711,7 +8716,7 @@ rfs4_do_lock(rfs4_lo_state_t *lsp, nfs_lock_type4 locktype,
 	rfs4_lockowner_t *lo = lsp->rls_locker;
 	rfs4_state_t *sp = lsp->rls_state;
 	struct flock64 flock;
-	int16_t ltype;
+	int16_t ltype = 0;
 	int flag;
 	int error;
 	sysid_t sysid;
@@ -9480,6 +9485,9 @@ rfs4_op_lockt(nfs_argop4 *argop, nfs_resop4 *resop,
 	case WRITE_LT:
 	case WRITEW_LT:
 		ltype = F_WRLCK;
+		break;
+	default:
+		ltype = 0;
 		break;
 	}
 
