@@ -556,13 +556,13 @@ pcicfg_configure(dev_info_t *devi, uint_t device, uint_t function,
 	int func;
 	dev_info_t *attach_point;
 	pci_bus_range_t pci_bus_range;
-	int rv;
+	int rv = 0;
 	int circ;
 	uint_t highest_bus, visited = 0;
 	int ari_mode = B_FALSE;
 	int max_function = PCI_MAX_FUNCTIONS;
 	int trans_device;
-	dev_info_t *new_device;
+	dev_info_t *new_device = NULL;
 	boolean_t is_pcie;
 
 	if (flags == PCICFG_FLAG_ENABLE_ARI)
@@ -4066,6 +4066,7 @@ pcicfg_probe_bridge(dev_info_t *new_child, ddi_acc_handle_t h, uint_t bus,
 	int ari_mode = B_FALSE;
 	int max_function = PCI_MAX_FUNCTIONS;
 
+	mem_base = 0;
 	io_answer = io_base = io_alen = io_size = 0;
 	pf_mem_answer = pf_mem_base = pf_mem_size = pf_mem_alen = 0;
 
