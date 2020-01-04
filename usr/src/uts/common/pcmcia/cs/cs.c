@@ -8473,7 +8473,7 @@ static int
 cs_add_windows(int aw, uint32_t bn)
 {
 	cs_window_t *cwp = cs_globals.cw;
-	cs_window_t *cw, *cwpp;
+	cs_window_t *cw, *cwpp = NULL;
 
 	if (aw <= 0)
 	    return (CS_BAD_WINDOW);
