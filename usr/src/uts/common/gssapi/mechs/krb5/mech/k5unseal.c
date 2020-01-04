@@ -86,7 +86,7 @@ kg_unseal_v1(context, minor_status, ctx, ptr, bodysize, message_buffer,
     krb5_ui_4 seqnum;
     OM_uint32 retval;
     size_t sumlen, blocksize;
-    int tmsglen;
+    int tmsglen = 0;
     krb5_keyusage sign_usage = KG_USAGE_SIGN;
 
     KRB5_LOG0(KRB5_INFO, "kg_unseal_v1() start\n");
