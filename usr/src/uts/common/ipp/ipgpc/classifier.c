@@ -368,7 +368,7 @@ bestmatch(ht_match_t *fid_table, uint16_t bestmask)
 	int oldbm = -1;
 	uint32_t temp_prec;
 	uint32_t temp_prio;
-	uint64_t best_prio;
+	uint64_t best_prio = 0;
 	uint64_t real_prio;
 	ht_match_t *item;
 

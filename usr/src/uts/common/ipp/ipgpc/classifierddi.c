@@ -385,7 +385,7 @@ static int
 ipgpc_invoke_action(ipp_action_id_t aid, ipp_packet_t *packet)
 {
 	ipgpc_class_t *out_class;
-	hrtime_t start, end;
+	hrtime_t start = 0, end = 0;
 	mblk_t *mp = NULL;
 	ip_priv_t *priv = NULL;
 	ill_t *ill = NULL;
