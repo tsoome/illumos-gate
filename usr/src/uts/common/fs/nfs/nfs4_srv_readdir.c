@@ -376,7 +376,7 @@ rfs4_op_readdir(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	vattr_t va;
 	struct dirent64 *dp;
 	rfs4_sb_encode_t dsbe, sbe;
-	int vfs_different;
+	int vfs_different = 0;
 	int rddir_data_len, rddir_result_size;
 	caddr_t rddir_data;
 	offset_t rddir_next_offset;
@@ -408,11 +408,11 @@ rfs4_op_readdir(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	uint64_t maxwrite;
 	uint_t true = TRUE;
 	uint_t false = FALSE;
-	uid_t lastuid;
-	gid_t lastgid;
+	uid_t lastuid = 0;
+	gid_t lastgid = 0;
 	int lu_set, lg_set;
 	utf8string owner, group;
-	int owner_error, group_error;
+	int owner_error = 0, group_error = 0;
 	struct sockaddr *ca;
 	char *name = NULL;
 	nfsstat4 status = NFS4_OK;

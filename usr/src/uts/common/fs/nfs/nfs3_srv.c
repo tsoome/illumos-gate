@@ -491,8 +491,8 @@ rfs3_lookup(LOOKUP3args *args, LOOKUP3res *resp, struct exportinfo *exi,
 		 */
 		if (is_system_labeled() && error == 0) {
 			int		addr_type;
-			void		*ipaddr;
-			tsol_tpc_t	*tp;
+			void		*ipaddr = NULL;
+			tsol_tpc_t	*tp = NULL;
 
 			if (ca->sa_family == AF_INET) {
 				addr_type = IPV4_VERSION;
@@ -502,7 +502,8 @@ rfs3_lookup(LOOKUP3args *args, LOOKUP3res *resp, struct exportinfo *exi,
 				ipaddr = &((struct sockaddr_in6 *)
 				    ca)->sin6_addr;
 			}
-			tp = find_tpc(ipaddr, addr_type, B_FALSE);
+			if (ipaddr != NULL)
+				tp = find_tpc(ipaddr, addr_type, B_FALSE);
 			if (tp == NULL || tp->tpc_tp.tp_doi !=
 			    l_admin_low->tsl_doi || tp->tpc_tp.host_type !=
 			    SUN_CIPSO) {
@@ -625,7 +626,7 @@ rfs3_access(ACCESS3args *args, ACCESS3res *resp, struct exportinfo *exi,
 	int checkwriteperm;
 	boolean_t dominant_label = B_FALSE;
 	boolean_t equal_label = B_FALSE;
-	boolean_t admin_low_client;
+	boolean_t admin_low_client = B_TRUE;
 
 	vap = NULL;
 
@@ -1578,7 +1579,7 @@ rfs3_create(CREATE3args *args, CREATE3res *resp, struct exportinfo *exi,
 	struct vattr dava;
 	enum vcexcl excl;
 	nfstime3 *mtime;
-	len_t reqsize;
+	len_t reqsize = 0;
 	bool_t trunc;
 	struct sockaddr *ca;
 	char *name = NULL;
@@ -2750,7 +2751,7 @@ rfs3_rename(RENAME3args *args, RENAME3res *resp, struct exportinfo *exi,
 	nfs_fh3 *fh3;
 	struct exportinfo *to_exi;
 	vnode_t *srcvp = NULL;
-	bslabel_t *clabel;
+	bslabel_t *clabel = NULL;
 	struct sockaddr *ca;
 	char *name = NULL;
 	char *toname = NULL;
@@ -2980,7 +2981,7 @@ rfs3_link(LINK3args *args, LINK3res *resp, struct exportinfo *exi,
 	struct vattr ava;
 	nfs_fh3	*fh3;
 	struct exportinfo *to_exi;
-	bslabel_t *clabel;
+	bslabel_t *clabel = NULL;
 	struct sockaddr *ca;
 	char *name = NULL;
 
