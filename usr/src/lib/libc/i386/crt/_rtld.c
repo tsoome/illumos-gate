@@ -102,10 +102,10 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 	while (ebp->eb_tag != 0) {
 		switch (ebp->eb_tag) {
 		case EB_ARGV:
-			program_name = *((char **)ebp->eb_un.eb_ptr);
+			program_name = *((char **)(uintptr_t)ebp->eb_un.eb_ptr);
 			break;
 		case EB_AUXV:
-			for (ap = (auxv_t *)ebp->eb_un.eb_ptr;
+			for (ap = (auxv_t *)(uintptr_t)ebp->eb_un.eb_ptr;
 			    ap->a_type != AT_NULL; ap++)
 				if (ap->a_type == AT_PAGESZ) {
 					page_size = ap->a_un.a_val;
@@ -136,8 +136,8 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 		PANIC(program_name);
 	if (FSTATAT(ldfd, NULL, &sb, 0) == -1)
 		PANIC(program_name);
-	ehdr = (Elf32_Ehdr *)MMAP(0, sb.st_size, PROT_READ | PROT_EXEC,
-	    MAP_SHARED, ldfd, 0);
+	ehdr = (Elf32_Ehdr *)(uintptr_t)MMAP(0, sb.st_size,
+	    PROT_READ | PROT_EXEC, MAP_SHARED, ldfd, 0);
 	if (ehdr == (Elf32_Ehdr *)-1)
 		PANIC(program_name);
 
@@ -194,11 +194,11 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 	 */
 	mlen = ROUND((lph->p_vaddr + lph->p_memsz) -
 	    ALIGN(fph->p_vaddr, page_size), page_size);
-	maddr = (caddr_t)MMAP(0, mlen, PROT_READ | PROT_EXEC,
+	maddr = (caddr_t)(uintptr_t)MMAP(0, mlen, PROT_READ | PROT_EXEC,
 	    MAP_SHARED, ldfd, 0);
 	if (maddr == (caddr_t)-1)
 		PANIC(program_name);
-	faddr = (caddr_t)ROUND(maddr, fph->p_align);
+	faddr = (caddr_t)(uintptr_t)ROUND((uintptr_t)maddr, fph->p_align);
 
 	/*
 	 * Check to see whether alignment skew was really needed.
@@ -208,11 +208,12 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 		mlen = ROUND((lph->p_vaddr + lph->p_memsz) -
 		    ALIGN(fph->p_vaddr, fph->p_align) + fph->p_align,
 		    page_size);
-		maddr = (caddr_t)MMAP(0, mlen, PROT_READ | PROT_EXEC,
+		maddr = (caddr_t)(uintptr_t)MMAP(0, mlen, PROT_READ | PROT_EXEC,
 		    MAP_SHARED, ldfd, 0);
 		if (maddr == (caddr_t)-1)
 			PANIC(program_name);
-		faddr = (caddr_t)ROUND(maddr, fph->p_align);
+		faddr = (caddr_t)(uintptr_t)
+		    ROUND((uintptr_t)maddr, fph->p_align);
 	}
 
 	/*
@@ -239,7 +240,8 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 		/*
 		 * Set address of this segment relative to our base.
 		 */
-		addr = (caddr_t)ALIGN(faddr + pptr->p_vaddr, page_size);
+		addr = (caddr_t)(uintptr_t)
+		    ALIGN((uintptr_t)faddr + pptr->p_vaddr, page_size);
 
 		/*
 		 * If this is the first program header, record our base
@@ -247,7 +249,7 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 		 */
 		if (pptr == phdr) {
 			ebp->eb_tag = EB_LDSO_BASE;
-			(ebp++)->eb_un.eb_ptr = (Elf32_Addr)addr;
+			(ebp++)->eb_un.eb_ptr = (Elf32_Addr)(uintptr_t)addr;
 		}
 
 		/*
@@ -270,7 +272,7 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 			i |= PROT_WRITE;
 		if (pptr->p_flags & PF_X)
 			i |= PROT_EXEC;
-		if ((caddr_t)MMAP((caddr_t)addr, flen, i,
+		if ((caddr_t)(uintptr_t)MMAP((caddr_t)addr, flen, i,
 		    MAP_FIXED | MAP_PRIVATE, ldfd, foff) == (caddr_t)-1)
 			PANIC(program_name);
 
@@ -281,10 +283,11 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 		 * map some more space from /dev/zero.
 		 */
 		if (pptr->p_memsz > pptr->p_filesz) {
-			foff = (int)faddr + pptr->p_vaddr + pptr->p_filesz;
-			zaddr = (caddr_t)ROUND(foff, page_size);
-			for (j = 0; j < (int)(zaddr - foff); j++)
-				*((char *)foff + j) = 0;
+			foff = (uintptr_t)faddr + pptr->p_vaddr +
+			    pptr->p_filesz;
+			zaddr = (caddr_t)(uintptr_t)ROUND(foff, page_size);
+			for (j = 0; j < (uintptr_t)(zaddr - foff); j++)
+				*((char *)(uintptr_t)foff + j) = 0;
 			j = (faddr + pptr->p_vaddr + pptr->p_memsz) - zaddr;
 			if (j > 0) {
 				if (dzfd == 0) {
@@ -292,8 +295,8 @@ __rtld(Elf32_Boot *ebp, const char *strings[], int (*funcs[])())
 					if (dzfd == -1)
 						PANIC(program_name);
 				}
-				if ((caddr_t)MMAP((caddr_t)zaddr, j, i,
-				    MAP_FIXED | MAP_PRIVATE, dzfd,
+				if ((caddr_t)(uintptr_t)MMAP((caddr_t)zaddr,
+				    j, i, MAP_FIXED | MAP_PRIVATE, dzfd,
 				    0) == (caddr_t)-1)
 					PANIC(program_name);
 			}
