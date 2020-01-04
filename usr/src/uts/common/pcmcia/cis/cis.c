@@ -326,7 +326,7 @@ cis_list_lcreate(cistpl_callout_t *cistpl_callout, cisptr_t *cisptr,
     cis_info_t *cis_info, cisparse_t *cisparse, cs_socket_t *sp)
 {
 	cistpl_t *cp, *tp = NULL;
-	cisdata_t tl, td, *dp;
+	cisdata_t tl, td, *dp = NULL;
 	int done = 0, err;
 	get_socket_t get_socket;
 

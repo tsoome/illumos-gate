@@ -807,7 +807,7 @@ pcmcia_prop_op(dev_t dev, dev_info_t *dip, dev_info_t *ch_dip,
     char *name, caddr_t valuep, int *lengthp)
 {
 	int len, proplen, which, flags;
-	caddr_t buff, propptr;
+	caddr_t buff, propptr = NULL;
 	struct pcmcia_parent_private *ppd;
 
 	len = *lengthp;
@@ -875,6 +875,8 @@ pcmcia_prop_op(dev_t dev, dev_info_t *dip, dev_info_t *ch_dip,
 		*lengthp = proplen;
 		return (DDI_PROP_SUCCESS);
 	}
+
+	buff = NULL;
 	switch (prop_op) {
 	case PROP_LEN_AND_VAL_ALLOC:
 		if (mod_flags & DDI_PROP_CANSLEEP)
@@ -5145,7 +5147,7 @@ pcmcia_intr_add_isr(dev_info_t *dip, dev_info_t *rdip,
 	 * Do we need to allocate an IRQ at this point or not?
 	 */
 	if (adapt->pca_flags & PCA_RES_NEED_IRQ) {
-		int i, irq;
+		int i, irq = -1;
 
 		/*
 		 * this adapter needs IRQ allocations

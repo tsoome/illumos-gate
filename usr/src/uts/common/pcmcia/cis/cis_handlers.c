@@ -1176,7 +1176,7 @@ cistpl_devspeed(cistpl_t *tp, cisdata_t spindex, uint32_t flags)
 	int scale = 1, first;
 	cisdata_t exspeed;
 	int exponent, mantisa;
-	uint32_t speed;
+	uint32_t speed = 0;
 
 	switch (flags) {
 	case CISTPL_DEVSPEED_TABLE:
