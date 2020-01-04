@@ -637,6 +637,7 @@ kcf_remove_mech_provider(char *mech_name, kcf_provider_desc_t *prov_desc)
 	crypto_mech_info_list_t *mil, *mil2, *next, **prev_next;
 
 	ASSERT(prov_desc->pd_prov_type != CRYPTO_LOGICAL_PROVIDER);
+	prov_mech = NULL;
 
 	/* get the KCF mech type that was assigned to the mechanism */
 	if ((mech_type = kcf_mech_hash_find(mech_name)) ==

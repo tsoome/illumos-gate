@@ -1357,6 +1357,8 @@ ibcma_ud_hdlr(void *inp, ibt_cm_ud_event_t *eventp,
 	ibt_ip_cm_info_t	info;
 	cma_chan_state_t	chan_state;
 
+	/* Assign some value to event. */
+	event = RDMA_CM_EVENT_ADDR_RESOLVED;
 	event_idp = idp = (struct rdma_cm_id *)inp;
 	chanp = (sol_cma_chan_t *)idp;
 	ibchanp = &chanp->chan_ib;
@@ -2010,11 +2012,11 @@ ibcma_rc_hdlr(void *inp, ibt_cm_event_t *eventp,
 {
 	struct rdma_cm_id	*idp, *event_idp;
 	sol_cma_chan_t		*chanp;
-	ibt_cm_status_t		status;
+	ibt_cm_status_t		status = IBT_CM_REJECT;
 	ibt_status_t		ibt_status;
 	enum rdma_cm_event_type event;
 	struct rdma_conn_param	conn_param, *paramp = &conn_param;
-	int	event_status;
+	int	event_status = 0;
 
 	SOL_OFS_DPRINTF_L5(sol_rdmacm_dbg_str, "ib_cma_rc_hdlr(%p, %p, %p, "
 	    "%p, %x)", inp, eventp, ret_args, priv_data, priv_datalen);

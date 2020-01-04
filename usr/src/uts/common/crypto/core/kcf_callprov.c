@@ -664,7 +664,7 @@ kcf_get_dual_provider(crypto_mechanism_t *mech1, crypto_key_t *key1,
 {
 	kcf_provider_desc_t *pd = NULL, *pdm1 = NULL, *pdm1m2 = NULL;
 	kcf_prov_mech_desc_t *prov_chain, *mdesc;
-	int len, gqlen = INT_MAX, dgqlen = INT_MAX;
+	int len = 0, gqlen = INT_MAX, dgqlen = INT_MAX;
 	crypto_mech_info_list_t *mil;
 	crypto_mech_type_t m2id =  mech2->cm_type;
 	kcf_mech_entry_t *me;

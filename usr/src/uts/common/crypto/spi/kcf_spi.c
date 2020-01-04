@@ -132,7 +132,7 @@ crypto_register_provider(crypto_provider_info_t *info,
     crypto_kcf_provider_handle_t *handle)
 {
 	struct modctl *mcp;
-	char *name;
+	char *name = NULL;
 	char ks_name[KSTAT_STRLEN];
 	kcf_provider_desc_t *prov_desc = NULL;
 	int ret = CRYPTO_ARGUMENTS_BAD;
