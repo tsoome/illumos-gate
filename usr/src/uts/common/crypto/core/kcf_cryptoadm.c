@@ -876,7 +876,7 @@ boolean_t
 is_mech_disabled_byname(crypto_provider_type_t prov_type, char *pd_name,
     uint_t pd_instance, crypto_mech_name_t mech_name)
 {
-	kcf_policy_desc_t *policy;
+	kcf_policy_desc_t *policy = NULL;
 	uint_t i;
 
 	ASSERT(prov_type == CRYPTO_SW_PROVIDER ||

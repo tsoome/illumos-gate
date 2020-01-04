@@ -327,7 +327,7 @@ rngprov_getbytes_nblk(uint8_t *ptr, size_t len)
 {
 	int rv, total_bytes;
 	size_t blen;
-	uchar_t *rndbuf;
+	uchar_t *rndbuf = NULL;
 	kcf_provider_desc_t *pd;
 	kcf_req_params_t params;
 	crypto_call_req_t req;

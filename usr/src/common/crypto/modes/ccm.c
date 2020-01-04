@@ -52,7 +52,7 @@ ccm_mode_encrypt_contiguous_blocks(ccm_ctx_t *ctx, char *data, size_t length,
     void (*xor_block)(uint8_t *, uint8_t *))
 {
 	size_t remainder = length;
-	size_t need;
+	size_t need = 0;
 	uint8_t *datap = (uint8_t *)data;
 	uint8_t *blockp;
 	uint8_t *lastp;
@@ -232,7 +232,7 @@ ccm_encrypt_final(ccm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 	}
 
 	mac_buf = (uint8_t *)ctx->ccm_mac_buf;
-
+	macp = NULL;
 	if (ctx->ccm_remainder_len > 0) {
 
 		/* ccm_mac_input_buf is not used for encryption */
@@ -363,7 +363,7 @@ ccm_mode_decrypt_contiguous_blocks(ccm_ctx_t *ctx, char *data, size_t length,
     void (*xor_block)(uint8_t *, uint8_t *))
 {
 	size_t remainder = length;
-	size_t need;
+	size_t need = 0;
 	uint8_t *datap = (uint8_t *)data;
 	uint8_t *blockp;
 	uint8_t *cbp;
