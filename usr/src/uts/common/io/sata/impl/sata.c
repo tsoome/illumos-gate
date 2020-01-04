@@ -1317,10 +1317,11 @@ sata_hba_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	scsi_hba_tran_t *scsi_hba_tran;
 	sata_hba_inst_t *sata_hba_inst;
 	sata_device_t sata_device;
-	sata_cport_info_t *cportinfo;
+	sata_cport_info_t *cportinfo = NULL;
 	int cport, pmport, qual;
 	int rval = SATA_SUCCESS;
 
+	cport = 0;
 	dip = sata_devt_to_devinfo(dev);
 	if (dip == NULL)
 		return (ENXIO);
@@ -2469,7 +2470,7 @@ sata_scsi_start(struct scsi_address *ap, struct scsi_pkt *pkt)
 	    (sata_hba_inst_t *)(ap->a_hba_tran->tran_hba_private);
 	sata_pkt_txlate_t *spx = (sata_pkt_txlate_t *)pkt->pkt_ha_private;
 	sata_device_t *sdevice = &spx->txlt_sata_pkt->satapkt_device;
-	sata_drive_info_t *sdinfo;
+	sata_drive_info_t *sdinfo = NULL;
 	struct buf *bp;
 	uint8_t cport, pmport;
 	boolean_t dev_gone = B_FALSE;
@@ -3135,7 +3136,7 @@ sata_scsi_sync_pkt(struct scsi_address *ap, struct scsi_pkt *pkt)
 #endif
 	int rval;
 	sata_pkt_txlate_t *spx = (sata_pkt_txlate_t *)pkt->pkt_ha_private;
-	struct buf *bp;
+	struct buf *bp = NULL;
 	int direction;
 
 	ASSERT(spx != NULL);
@@ -5611,8 +5612,8 @@ sata_txlt_ata_pass_thru(sata_pkt_txlate_t *spx)
 	sata_cmd_t *scmd = &spx->txlt_sata_pkt->satapkt_cmd;
 	struct buf *bp = spx->txlt_sata_pkt->satapkt_cmd.satacmd_bp;
 	int extend;
-	uint64_t lba;
-	uint16_t feature, sec_count;
+	uint64_t lba = 0;
+	uint16_t feature = 0, sec_count = 0;
 	int t_len, synch;
 	int rval, reason;
 	kmutex_t *cport_mutex = &(SATA_TXLT_CPORT_MUTEX(spx));
@@ -6998,7 +6999,7 @@ sata_hba_start(sata_pkt_txlate_t *spx, int *rval)
 	uint8_t pmport = SATA_TXLT_PMPORT(spx);
 	sata_hba_inst_t *sata_hba_inst = spx->txlt_sata_hba_inst;
 	sata_drive_info_t *sdinfo;
-	sata_pmult_info_t *pminfo;
+	sata_pmult_info_t *pminfo = NULL;
 	sata_pmport_info_t *pmportinfo = NULL;
 	sata_device_t *sata_device = NULL;
 	uint8_t cmd;
@@ -9009,6 +9010,7 @@ out:
 					sense_key = KEY_NO_SENSE;
 					add_sense_code =
 					    SD_SCSI_ASC_NO_ADD_SENSE;
+					add_sense_code_qual = 0;
 					break;
 				case 1:
 					sense_key = KEY_ABORTED_COMMAND;
@@ -11221,7 +11223,7 @@ sata_reprobe_port(sata_hba_inst_t *sata_hba_inst, sata_device_t *sata_device,
 	int prev_device_type = SATA_DTYPE_NONE;
 	int prev_device_settings = 0;
 	int prev_device_state = 0;
-	clock_t start_time;
+	clock_t start_time = 0;
 	int retry = B_FALSE;
 	uint8_t cport = sata_device->satadev_addr.cport;
 	int rval_probe, rval_init;
@@ -12455,7 +12457,7 @@ sata_devt_to_devinfo(dev_t dev)
 static int
 sata_probe_device(sata_hba_inst_t *sata_hba_inst, sata_device_t *sata_device)
 {
-	sata_pmport_info_t *pmportinfo;
+	sata_pmport_info_t *pmportinfo = NULL;
 	sata_drive_info_t *sdinfo;
 	sata_drive_info_t new_sdinfo;	/* local drive info struct */
 	int rval;
@@ -14098,7 +14100,7 @@ sata_set_cache_mode(sata_hba_inst_t *sata_hba_inst, sata_drive_info_t *sdinfo,
 	sata_pkt_txlate_t *spx;
 	int rval = SATA_SUCCESS;
 	int hba_rval;
-	char *infop;
+	char *infop = NULL;
 
 	ASSERT(sdinfo != NULL);
 	ASSERT(sata_hba_inst != NULL);
@@ -16839,7 +16841,7 @@ sata_fetch_smart_data(
 	sata_pkt_t *spkt;
 	sata_cmd_t *scmd;
 	sata_pkt_txlate_t *spx;
-	int rval;
+	int rval = -1;
 	dev_info_t *dip = SATA_DIP(sata_hba_inst);
 
 #if ! defined(lint)
@@ -17657,8 +17659,8 @@ sata_hba_event_notify(dev_info_t *dip, sata_device_t *sata_device, int event)
 	sata_pmult_info_t *pmultinfo;
 	sata_drive_info_t *sdinfo;
 	sata_port_stats_t *pstats;
-	sata_cport_info_t *cportinfo;
-	sata_pmport_info_t *pmportinfo;
+	sata_cport_info_t *cportinfo = NULL;
+	sata_pmport_info_t *pmportinfo = NULL;
 	int cport, pmport;
 	char buf1[SATA_EVENT_MAX_MSG_LENGTH + 1];
 	char buf2[SATA_EVENT_MAX_MSG_LENGTH + 1];
