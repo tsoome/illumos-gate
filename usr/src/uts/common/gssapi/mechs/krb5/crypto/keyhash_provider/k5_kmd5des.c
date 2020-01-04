@@ -165,8 +165,8 @@ k5_md5des_verify(krb5_context context,
     int i;
     int compathash = 0;
     krb5_octet outtmp[MD5_CKSUM_LENGTH];
-    size_t hisize;
-    krb5_data *hash_input;
+    size_t hisize = 0;
+    krb5_data *hash_input = NULL;
     krb5_data hash_output;
     krb5_keyblock newkey;
 

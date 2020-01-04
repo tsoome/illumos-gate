@@ -46,6 +46,7 @@ krb5_c_make_checksum(krb5_context context, krb5_cksumtype cksumtype,
 
     KRB5_LOG0(KRB5_INFO, "krb5_c_make_checksum() start.");
 
+    e1 = 0;
     for (i=0; i<krb5_cksumtypes_length; i++) {
 	if (krb5_cksumtypes_list[i].ctype == cksumtype)
 	    break;
