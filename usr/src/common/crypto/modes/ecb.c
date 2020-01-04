@@ -44,7 +44,7 @@ ecb_cipher_contiguous_blocks(ecb_ctx_t *ctx, char *data, size_t length,
     int (*cipher)(const void *ks, const uint8_t *pt, uint8_t *ct))
 {
 	size_t remainder = length;
-	size_t need;
+	size_t need = 0;
 	uint8_t *datap = (uint8_t *)data;
 	uint8_t *blockp;
 	uint8_t *lastp;

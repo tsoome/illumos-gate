@@ -135,7 +135,7 @@ gcm_mode_encrypt_contiguous_blocks(gcm_ctx_t *ctx, char *data, size_t length,
     void (*xor_block)(uint8_t *, uint8_t *))
 {
 	size_t remainder = length;
-	size_t need;
+	size_t need = 0;
 	uint8_t *datap = (uint8_t *)data;
 	uint8_t *blockp;
 	uint8_t *lastp;
@@ -255,7 +255,7 @@ gcm_encrypt_final(gcm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
     void (*xor_block)(uint8_t *, uint8_t *))
 {
 	uint64_t counter_mask = ntohll(0x00000000ffffffffULL);
-	uint8_t *ghash, *macp;
+	uint8_t *ghash, *macp = NULL;
 	int i, rv;
 
 	if (out->cd_length <

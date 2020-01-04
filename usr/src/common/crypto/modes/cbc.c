@@ -53,7 +53,7 @@ cbc_encrypt_contiguous_blocks(cbc_ctx_t *ctx, char *data, size_t length,
     void (*xor_block)(uint8_t *, uint8_t *))
 {
 	size_t remainder = length;
-	size_t need;
+	size_t need = 0;
 	uint8_t *datap = (uint8_t *)data;
 	uint8_t *blockp;
 	uint8_t *lastp;
@@ -190,7 +190,7 @@ cbc_decrypt_contiguous_blocks(cbc_ctx_t *ctx, char *data, size_t length,
     void (*xor_block)(uint8_t *, uint8_t *))
 {
 	size_t remainder = length;
-	size_t need;
+	size_t need = 0;
 	uint8_t *datap = (uint8_t *)data;
 	uint8_t *blockp;
 	uint8_t *lastp;

@@ -1766,8 +1766,8 @@ kcf_next_req(void *next_req_arg, int status)
 	kcf_req_params_t *params = &(next_req->kr_params);
 	kcf_areq_node_t *areq = next_req->kr_areq;
 	int error = status;
-	kcf_provider_desc_t *pd;
-	crypto_dual_data_t *ct;
+	kcf_provider_desc_t *pd = NULL;
+	crypto_dual_data_t *ct = NULL;
 
 	/* Stop the processing if an error occurred at this step */
 	if (error != CRYPTO_SUCCESS) {
@@ -1921,7 +1921,7 @@ kcf_last_req(void *last_req_arg, int status)
 
 	kcf_req_params_t *params = &(last_req->kr_params);
 	kcf_areq_node_t *areq = last_req->kr_areq;
-	crypto_dual_data_t *ct;
+	crypto_dual_data_t *ct = NULL;
 
 	switch (params->rp_opgrp) {
 	case KCF_OG_MAC: {
@@ -1938,8 +1938,11 @@ kcf_last_req(void *last_req_arg, int status)
 		break;
 	}
 	}
-	ct->dd_offset1 = last_req->kr_saveoffset;
-	ct->dd_len1 = last_req->kr_savelen;
+
+	if (ct != NULL) {
+		ct->dd_offset1 = last_req->kr_saveoffset;
+		ct->dd_len1 = last_req->kr_savelen;
+	}
 
 	/* The submitter used kcf_last_req as its callback */
 
