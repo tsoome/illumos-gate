@@ -302,6 +302,8 @@ blowfish_common_init(crypto_ctx_t *ctx, crypto_mechanism_t *mechanism,
 	case BLOWFISH_CBC_MECH_INFO_TYPE:
 		blowfish_ctx = cbc_alloc_ctx(kmflag);
 		break;
+	default:
+		return (CRYPTO_MECHANISM_PARAM_INVALID);
 	}
 	if (blowfish_ctx == NULL)
 		return (CRYPTO_HOST_MEMORY);
