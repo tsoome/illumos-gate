@@ -389,8 +389,12 @@ flowacct_del_obj(list_head_t *tophdr, list_hdr_t *hdr, uint_t mode)
 		case FLOWACCT_ITEM:
 			length = FLOWACCT_ITEM_SZ;
 			break;
+		default:
+			length = 0;
+			break;
 		}
-		kmem_free(hdr->objp, length);
+		if (length != 0)
+			kmem_free(hdr->objp, length);
 		hdr->objp = NULL;
 	}
 
