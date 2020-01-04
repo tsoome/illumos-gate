@@ -65,7 +65,7 @@ ieee80211_input(ieee80211com_t *ic, mblk_t *mp, struct ieee80211_node *in,
 	struct ieee80211_key *key;
 	uint8_t *bssid;
 	int hdrspace;
-	int len;
+	int len = 0;
 	uint16_t rxseq;
 	uint8_t dir;
 	uint8_t type;
