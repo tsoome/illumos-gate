@@ -2663,6 +2663,10 @@ fctl_post_attach(fc_ulp_module_t *mod, fc_ulp_ports_t *ulp_port,
 		case FC_CMD_POWER_UP:
 			op = "power up";
 			break;
+
+		default:
+			op = "unknown";
+			break;
 		}
 
 		if (be_chatty) {
@@ -2845,6 +2849,10 @@ fctl_post_detach(fc_ulp_module_t *mod, fc_ulp_ports_t *ulp_port,
 
 		case FC_CMD_POWER_DOWN:
 			op = "power down";
+			break;
+
+		default:
+			op = "unknown";
 			break;
 		}
 
@@ -6208,7 +6216,7 @@ fctl_lookup_pd_by_index(fc_local_port_t *port, uint32_t index)
 	int			outer;
 	int			match = 0;
 	struct pwwn_hash	*head;
-	fc_remote_port_t	*pd;
+	fc_remote_port_t	*pd = NULL;
 
 	ASSERT(MUTEX_HELD(&port->fp_mutex));
 
