@@ -1601,6 +1601,11 @@ common_dispatch(struct svc_req *req, SVCXPRT *xprt, rpcvers_t min_vers,
 			fid = FH3TOFIDP(fh3);
 			xfid = FH3TOXFIDP(fh3);
 			break;
+		default:
+			fsid = NULL;
+			fid = NULL;
+			xfid = NULL;
+			break;
 		}
 
 		/*

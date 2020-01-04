@@ -469,6 +469,7 @@ more_visible(struct exportinfo *exi, treenode_t *tree_head)
 	}
 
 	/* The outer loop traverses the supplied list. */
+	tail = NULL;
 	for (vp1 = vis_head; vp1; vp1 = next) {
 		found = 0;
 		next = vp1->vis_next;
@@ -490,7 +491,7 @@ more_visible(struct exportinfo *exi, treenode_t *tree_head)
 		}
 
 		/* If not found - add to the end of the list */
-		if (! found) {
+		if (!found) {
 			tail->vis_next = vp1;
 			vp1->vis_next = NULL;
 		}
