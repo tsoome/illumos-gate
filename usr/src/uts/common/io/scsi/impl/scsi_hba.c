@@ -3088,7 +3088,7 @@ scsi_hba_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	struct devctl_iocdata	*dcp = NULL;
 	dev_info_t		*child = NULL;
 	mdi_pathinfo_t		*path = NULL;
-	struct scsi_device	*sd;
+	struct scsi_device	*sd = NULL;
 	scsi_hba_tran_t		*tran;
 	uint_t			bus_state;
 	int			rv = 0;
@@ -5427,7 +5427,7 @@ scsi_device_configchild(dev_info_t *self, char *addr, scsi_enum_t se,
 	int		child_type;
 	dev_info_t	*dchild;
 	mdi_pathinfo_t	*pchild;
-	dev_info_t	*child;
+	dev_info_t	*child = NULL;
 	int		rval;
 
 	ASSERT(self && addr && *addr && DEVI_BUSY_OWNED(self));
@@ -7150,7 +7150,7 @@ scsi_hba_enum_lsf_of_t(struct scsi_device *sd0,
 	damap_id_t		tgtid;
 	damap_t			*tgtdam;
 	damap_t			*lundam = NULL;
-	struct scsi_hba_mte_h	*h;
+	struct scsi_hba_mte_h	*h = NULL;
 	struct scsi_hba_mte_ld	*ld;
 	int			aver;
 	scsi_lun_t		*lunp = NULL;
