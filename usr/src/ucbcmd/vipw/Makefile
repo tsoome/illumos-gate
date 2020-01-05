@@ -33,6 +33,7 @@ INC1 = $(SRC)/ucbhead
 LDLIBS =  -L$(ROOT)/usr/ucblib -R/usr/ucblib $(LDLIBS.cmd) -lucb
 
 CPPFLAGS = -I$(INC1) $(CPPFLAGS.master)
+CERRWARN += -_gcc=-Wno-builtin-declaration-mismatch
 CERRWARN += -_gcc=-Wno-implicit-function-declaration
 CERRWARN += -_gcc=-Wno-unused-variable
 
