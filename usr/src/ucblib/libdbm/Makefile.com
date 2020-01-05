@@ -36,12 +36,13 @@ ROOTLIBDIR64=	$(ROOT)/usr/ucblib/$(MACH64)
 
 LIBS = $(DYNLIB)
 
-CFLAGS	+=	$(CCVERBOSE)
+CFLAGS +=	$(CCVERBOSE)
 LDLIBS +=	-lc
 
-CPPFLAGS = -I$(SRC)/ucbhead $(CPPFLAGS.master)
+CPPFLAGS =	-I$(SRC)/ucbhead $(CPPFLAGS.master)
 
-CERRWARN += $(CNOWARN_UNINIT)
+CERRWARN +=	-_gcc=-Wno-builtin-declaration-mismatch
+CERRWARN +=	$(CNOWARN_UNINIT)
 
 .KEEP_STATE:
 
