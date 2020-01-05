@@ -96,6 +96,7 @@ LDLIBS +=	-lelf -lc
 CPPFLAGS = -D$(MACH) -I$(SRC)/ucbhead -I../inc \
 		-I../../../lib/libc/inc $(CPPFLAGS.master)
 
+CERRWARN +=	-_gcc=-Wno-builtin-declaration-mismatch
 CERRWARN +=	-_gcc=-Wno-unused-variable
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	-_gcc=-Wno-char-subscripts
