@@ -46,6 +46,8 @@ LDLIBS +=	-lc
 DEFS= -DCM_N -DCM_GT -DCM_B -DCM_D
 CPPFLAGS = $(DEFS) -I$(SRC)/ucbhead $(CPPFLAGS.master)
 
+CERRWARN +=	-_gcc=-Wno-builtin-declaration-mismatch
+
 # not linted
 SMATCH=off
 
