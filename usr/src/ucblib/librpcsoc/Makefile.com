@@ -39,18 +39,19 @@ objs/%.o pics/%.o: ../%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-LIBS = $(DYNLIB)
+LIBS= $(DYNLIB)
 
-LDLIBS += -lnsl -lsocket -lc
-CPPFLAGS += -DPORTMAP
-DYNFLAGS += $(ZINTERPOSE)
+LDLIBS +=	-lnsl -lsocket -lc
+CPPFLAGS +=	-DPORTMAP
+DYNFLAGS +=	$(ZINTERPOSE)
 
 ROOTLIBDIR=	$(ROOT)/usr/ucblib
 ROOTLIBDIR64=   $(ROOT)/usr/ucblib/$(MACH64)
 
-CPPFLAGS = -I$(SRC)/ucbhead -I../../../lib/libc/inc $(CPPFLAGS.master)
+CPPFLAGS =	-I$(SRC)/ucbhead -I../../../lib/libc/inc $(CPPFLAGS.master)
 
-CERRWARN += $(CNOWARN_UNINIT)
+CERRWARN +=	$(CNOWARN_UNINIT)
+CERRWARN +=	-_gcc=-Wno-builtin-declaration-mismatch
 
 # not linted
 SMATCH=off
@@ -62,4 +63,3 @@ lint: lintcheck
 # include library targets
 include $(SRC)/lib/Makefile.targ
 include ../../Makefile.ucbtarg
-
