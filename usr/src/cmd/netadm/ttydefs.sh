@@ -24,8 +24,6 @@
 #	  All Rights Reserved
 
 
-#ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.2	*/
-
 case "$MACH" in
   "u3b2"|"sparc"|"i386"|"ppc" )
 	echo "# VERSION=1
@@ -61,25 +59,35 @@ case "$MACH" in
 
 auto:hupcl:sane hupcl:A:9600
 
-console:9600 hupcl opost onlcr:9600::console
+console:9600 hupcl opost onlcr:9600::console1
 console1:1200 hupcl opost onlcr:1200::console2
 console2:300 hupcl opost onlcr:300::console3
 console3:2400 hupcl opost onlcr:2400::console4
 console4:4800 hupcl opost onlcr:4800::console5
-console5:19200 hupcl opost onlcr:19200::console
+console5:19200 hupcl opost onlcr:19200::console6
+console6:38400 hupcl opost onlcr:38400::console7
+console7:57600 hupcl opost onlcr:57600::console8
+console8:76800 hupcl opost onlcr:76800::console9
+console9:115200 hupcl opost onlcr:115200::console
 
 contty:9600 hupcl opost onlcr:9600 sane::contty1
 contty1:1200 hupcl opost onlcr:1200 sane::contty2
 contty2:300 hupcl opost onlcr:300 sane::contty3
 contty3:2400 hupcl opost onlcr:2400 sane::contty4
 contty4:4800 hupcl opost onlcr:4800 sane::contty5
-contty5:19200 hupcl opost onlcr:19200 sane::contty
-
+contty5:19200 hupcl opost onlcr:19200 sane::contty6
+contty6:38400 hupcl opost onlcr:38400 sane::contty7
+contty7:57600 hupcl opost onlcr:57600 sane::contty8
+contty8:76800 hupcl opost onlcr:76800 sane::contty9
+contty9:115200 hupcl opost onlcr:115200 sane::contty
 
 4800H:4800:4800 sane hupcl::9600H
 9600H:9600:9600 sane hupcl::19200H
 19200H:19200:19200 sane hupcl::38400H
-38400H:38400:38400 sane hupcl::2400H
+38400H:38400:38400 sane hupcl::57600H
+57600H:57600:57600 sane hupcl::76800H
+76800H:76800:76800 sane hupcl::115200H
+115200H:115200:115200 sane hupcl::2400H
 2400H:2400:2400 sane hupcl::1200H
 1200H:1200:1200 sane hupcl::300H
 300H:300:300 sane hupcl::4800H
@@ -89,7 +97,11 @@ contty1H:1200 opost onlcr:1200 hupcl sane::contty2H
 contty2H:300 opost onlcr:300 hupcl sane::contty3H
 contty3H:2400 opost onlcr:2400 hupcl sane::contty4H
 contty4H:4800 opost onlcr:4800 hupcl sane::contty5H
-contty5H:19200 opost onlcr:19200 hupcl sane::conttyH
+contty5H:19200 opost onlcr:19200 hupcl sane::contty6H
+contty6H:38400 opost onlcr:38400 hupcl sane::contty7H
+contty7H:57600 opost onlcr:57600 hupcl sane::contty8H
+contty8H:76800 opost onlcr:76800 hupcl sane::contty9H
+contty9H:115200 opost onlcr:115200 hupcl sane::conttyH
 " >ttydefs
 	;;
   * )
