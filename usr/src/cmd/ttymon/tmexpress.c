@@ -212,8 +212,10 @@ parse_args(int argc, char **argv, struct pmtab *pmtab)
 		    (strcmp(pmtab->p_device, "/dev/console") == 0) &&
 		    ((cn_fd = open("/dev/console", O_RDONLY)) != -1)) {
 
-			if (ioctl(cn_fd, CONS_GETTERM, &cnterm) != -1)
+			if (ioctl(cn_fd, CONS_GETTERM, &cnterm) != -1) {
 				pmtab->p_termtype = cnterm.cn_term_type;
+				pmtab->p_ttylabel = "console";
+			}
 			(void) close(cn_fd);
 		}
 	}
