@@ -1122,8 +1122,8 @@ flk_process_request(lock_descriptor_t *request)
 	}
 
 	if (!request_blocked_by_active) {
-			lock_descriptor_t *lk[1];
-			lock_descriptor_t *first_glock = NULL;
+		lock_descriptor_t *lk[1];
+		lock_descriptor_t *first_glock = NULL;
 		/*
 		 * Shall we grant this?! NO!!
 		 * What about those locks that were just granted and still
@@ -2093,12 +2093,12 @@ flk_graph_uncolor(graph_t *gp)
 
 	if (gp->mark == UINT_MAX) {
 		gp->mark = 1;
-	for (lock = ACTIVE_HEAD(gp)->l_next; lock != ACTIVE_HEAD(gp);
-	    lock = lock->l_next)
+		for (lock = ACTIVE_HEAD(gp)->l_next; lock != ACTIVE_HEAD(gp);
+		    lock = lock->l_next)
 			lock->l_color  = 0;
 
-	for (lock = SLEEPING_HEAD(gp)->l_next; lock != SLEEPING_HEAD(gp);
-	    lock = lock->l_next)
+		for (lock = SLEEPING_HEAD(gp)->l_next;
+		    lock != SLEEPING_HEAD(gp); lock = lock->l_next)
 			lock->l_color  = 0;
 	} else {
 		gp->mark++;
