@@ -120,7 +120,7 @@ aphysio(
 	bp->b_error = 0;
 	bp->b_flags = B_BUSY | B_PHYS | B_ASYNC | rw;
 	bp->b_edev = dev;
-	bp->b_dev = cmpdev(dev);
+	bp->b_dev = (o_dev_t)cmpdev(dev);
 	bp->b_lblkno = btodt(uio->uio_loffset);
 	bp->b_offset = uio->uio_loffset;
 	(void) ops->devo_getinfo(NULL, DDI_INFO_DEVT2DEVINFO,
@@ -465,7 +465,7 @@ aio_zerolen(aio_req_t *reqp)
 	bp->b_resid = 0;
 	bp->b_flags = 0;
 
-	aio_done(bp);
+	(void) aio_done(bp);
 }
 
 /*
