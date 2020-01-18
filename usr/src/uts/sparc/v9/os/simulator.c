@@ -1004,12 +1004,12 @@ simulate_unimp(struct regs *rp, caddr_t *badaddr)
 				 */
 				return (SIMU_ILLEGAL);
 			}
-				/*
-				 * Note: this case includes the 'stbar'
-				 * instruction (rs1 == 15 && i == 0).
-				 */
-				if ((ignor = (inst & 0x3fff)) != 0)
-					inst &= ~(0x3fff);
+			/*
+			 * Note: this case includes the 'stbar'
+			 * instruction (rs1 == 15 && i == 0).
+			 */
+			if ((ignor = (inst & 0x3fff)) != 0)
+				inst &= ~(0x3fff);
 			break;
 		case IOP_V8_SRA:
 		case IOP_V8_SRL:
