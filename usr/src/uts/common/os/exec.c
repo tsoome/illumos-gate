@@ -1314,8 +1314,8 @@ execmap(struct vnode *vp, caddr_t addr, size_t len, size_t zfodlen,
 			AS_LOCK_ENTER(as, RW_READER);
 			seg = as_segat(curproc->p_as, (caddr_t)end);
 			if (seg != NULL)
-				SEGOP_GETPROT(seg, (caddr_t)end, zfoddiff - 1,
-				    &zprot);
+				(void) SEGOP_GETPROT(seg, (caddr_t)end,
+				    zfoddiff - 1, &zprot);
 			AS_LOCK_EXIT(as);
 
 			if (seg != NULL && (zprot & PROT_WRITE) == 0) {
