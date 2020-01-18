@@ -1267,7 +1267,7 @@ biodone(struct buf *bp)
 	biodone_tnf_probe(bp);
 
 	if (bp->b_iodone != NULL) {
-		(*(bp->b_iodone))(bp);
+		(void) (*(bp->b_iodone))(bp);
 		return;
 	}
 	ASSERT((bp->b_flags & B_DONE) == 0);
