@@ -654,8 +654,8 @@ px_pwr_setup(dev_info_t *dip)
 		    " PME_TO_ACK intr\n");
 		goto pwr_setup_err1;
 	}
-	px_lib_msg_setmsiq(dip, PCIE_PME_ACK_MSG, px_p->px_pm_msiq_id);
-	px_lib_msg_setvalid(dip, PCIE_PME_ACK_MSG, PCIE_MSG_VALID);
+	(void) px_lib_msg_setmsiq(dip, PCIE_PME_ACK_MSG, px_p->px_pm_msiq_id);
+	(void) px_lib_msg_setvalid(dip, PCIE_PME_ACK_MSG, PCIE_MSG_VALID);
 
 	if (px_ib_update_intr_state(px_p, px_p->px_dip, hdl.ih_inum,
 	    px_msiqid_to_devino(px_p, px_p->px_pm_msiq_id), px_pwr_pil,
@@ -668,7 +668,7 @@ px_pwr_setup(dev_info_t *dip)
 	return (DDI_SUCCESS);
 
 px_pwrsetup_err_state:
-	px_lib_msg_setvalid(dip, PCIE_PME_ACK_MSG, PCIE_MSG_INVALID);
+	(void) px_lib_msg_setvalid(dip, PCIE_PME_ACK_MSG, PCIE_MSG_INVALID);
 	(void) px_rem_msiq_intr(dip, dip, &hdl, MSG_REC, PCIE_PME_ACK_MSG,
 	    px_p->px_pm_msiq_id);
 pwr_setup_err1:
@@ -698,7 +698,7 @@ px_pwr_teardown(dev_info_t *dip)
 	hdl.ih_dip = dip;
 	hdl.ih_pri = px_pwr_pil;
 
-	px_lib_msg_setvalid(dip, PCIE_PME_ACK_MSG, PCIE_MSG_INVALID);
+	(void) px_lib_msg_setvalid(dip, PCIE_PME_ACK_MSG, PCIE_MSG_INVALID);
 	(void) px_rem_msiq_intr(dip, dip, &hdl, MSG_REC, PCIE_PME_ACK_MSG,
 	    px_p->px_pm_msiq_id);
 
@@ -927,7 +927,7 @@ px_dma_allochdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_attr_t *attrp,
 
 	/* check and convert dma attributes to handle parameters */
 	if (rval = px_dma_attr2hdl(px_p, mp)) {
-		px_dma_freehdl(dip, rdip, (ddi_dma_handle_t)mp);
+		(void) px_dma_freehdl(dip, rdip, (ddi_dma_handle_t)mp);
 		*handlep = NULL;
 		return (rval);
 	}
@@ -1118,7 +1118,7 @@ px_dma_win(dev_info_t *dip, dev_info_t *rdip,
 			px_mmu_unmap_window(mmu_p, mp);
 
 			/* map_window sets dmai_mapping/size/offset */
-			px_mmu_map_window(mmu_p, mp, win);
+			(void) px_mmu_map_window(mmu_p, mp, win);
 			if ((ret = px_mmu_map_window(mmu_p,
 			    mp, win)) != DDI_SUCCESS)
 				return (ret);

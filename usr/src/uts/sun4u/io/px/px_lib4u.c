@@ -106,7 +106,7 @@ int
 px_lib_map_regs(pxu_t *pxu_p, dev_info_t *dip)
 {
 	ddi_device_acc_attr_t	attr;
-	px_reg_bank_t		reg_bank = PX_REG_CSR;
+	int			reg_bank = PX_REG_CSR;
 
 	DBG(DBG_ATTACH, dip, "px_lib_map_regs: pxu_p:0x%p, dip 0x%p\n",
 	    pxu_p, dip);
@@ -2615,9 +2615,13 @@ px_lib_hotplug_uninit(dev_info_t *dip)
 void
 px_hp_intr_redist(px_t *px_p)
 {
-	pcie_bus_t	*bus_p = PCIE_DIP2BUS(px_p->px_dip);
+	pcie_bus_t	*bus_p;
 
-	if (px_p && PCIE_IS_PCIE_HOTPLUG_ENABLED(bus_p)) {
+	if (px_p == NULL)
+		return;
+
+	bus_p = PCIE_DIP2BUS(px_p->px_dip);
+	if (PCIE_IS_PCIE_HOTPLUG_ENABLED(bus_p)) {
 		px_ib_intr_dist_en(px_p->px_dip, intr_dist_cpuid(),
 		    px_p->px_inos[PX_INTR_HOTPLUG], B_FALSE);
 	}

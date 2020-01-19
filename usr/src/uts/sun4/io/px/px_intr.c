@@ -276,7 +276,8 @@ px_msiq_intr(caddr_t arg)
 		ino_p->ino_ipil_cntr = ino_p->ino_ipil_size;
 
 		/* Read current MSIQ tail index */
-		px_lib_msiq_gettail(dip, msiq_p->msiq_id, &curr_tail_index);
+		(void) px_lib_msiq_gettail(dip, msiq_p->msiq_id,
+		    &curr_tail_index);
 		msiq_p->msiq_new_head_index = msiq_p->msiq_curr_head_index;
 
 		if (curr_tail_index < msiq_p->msiq_curr_head_index)
@@ -383,8 +384,8 @@ px_msiq_intr(caddr_t arg)
 				    msiq_rec_p->msiq_rec_rid);
 			} else {
 				/* Clear MSI state */
-				px_lib_msi_setstate(dip, (msinum_t)msg_code,
-				    PCI_MSI_STATE_IDLE);
+				(void) px_lib_msi_setstate(dip,
+				    (msinum_t)msg_code, PCI_MSI_STATE_IDLE);
 
 				ret = (*handler)(arg1, arg2);
 			}
@@ -447,7 +448,8 @@ intr_done:
 		msiq_p->msiq_new_head_index -= msiq_state_p->msiq_rec_cnt;
 
 	msiq_p->msiq_curr_head_index = msiq_p->msiq_new_head_index;
-	px_lib_msiq_sethead(dip, msiq_p->msiq_id, msiq_p->msiq_new_head_index);
+	(void) px_lib_msiq_sethead(dip, msiq_p->msiq_id,
+	    msiq_p->msiq_new_head_index);
 
 	msiq_p->msiq_new_head_index = 0;
 	msiq_p->msiq_recs2process = 0;
@@ -1247,8 +1249,9 @@ px_add_msiq_intr(dev_info_t *dip, dev_info_t *rdip,
 	/* Select cpu, saving it for sharing and removal */
 	if (ipil_list == NULL) {
 		/* Enable MSIQ */
-		px_lib_msiq_setstate(dip, *msiq_id_p, PCI_MSIQ_STATE_IDLE);
-		px_lib_msiq_setvalid(dip, *msiq_id_p, PCI_MSIQ_VALID);
+		(void) px_lib_msiq_setstate(dip, *msiq_id_p,
+		    PCI_MSIQ_STATE_IDLE);
+		(void) px_lib_msiq_setvalid(dip, *msiq_id_p, PCI_MSIQ_VALID);
 
 		if (ino_p->ino_cpuid == -1)
 			ino_p->ino_cpuid = intr_dist_cpuid();
@@ -1337,7 +1340,7 @@ px_rem_msiq_intr(dev_info_t *dip, dev_info_t *rdip,
 		px_ib_delete_ino_pil(ib_p, ipil_p);
 
 		if (ino_p->ino_ipil_size == 0)
-			px_lib_msiq_setvalid(dip,
+			(void) px_lib_msiq_setvalid(dip,
 			    px_devino_to_msiqid(px_p, ino), PCI_MSIQ_INVALID);
 	}
 

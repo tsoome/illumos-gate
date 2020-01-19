@@ -27,8 +27,6 @@
 #ifndef	_SYS_PX_CSR_H
 #define	_SYS_PX_CSR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -106,8 +104,8 @@ extern "C" {
 	((*(volatile uint64_t *)((base) + ((off) + ((index) * 8)))) & \
 	~(1ull<<(off ## _ ## bit))))
 
-#define	BIT_TST(reg, bitno)	(reg & (1ull << bitno))
-#define	BITMASK(bitno)		(1ull << bitno)
+#define	BIT_TST(reg, bitno)	(reg & (1ull << (bitno)))
+#define	BITMASK(bitno)		(1ull << (bitno))
 
 #ifdef	__cplusplus
 }

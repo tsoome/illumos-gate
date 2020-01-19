@@ -129,7 +129,7 @@ extern void px_dbg(px_debug_bit_t bit, dev_info_t *dip, char *fmt, ...);
 
 #else	/* DEBUG */
 
-#define	DBG 0 &&
+#define	DBG(...)
 
 #endif	/* DEBUG */
 

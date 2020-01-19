@@ -631,6 +631,8 @@ err:
 int
 px_dvma_win(px_t *px_p, ddi_dma_req_t *dmareq, ddi_dma_impl_t *mp)
 {
+	uint64_t nocross;
+	uint32_t count_max;
 	uint32_t redzone_sz	= PX_HAS_REDZONE(mp) ? MMU_PAGE_SIZE : 0;
 	size_t obj_sz		= mp->dmai_object.dmao_size;
 	size_t xfer_sz;
@@ -647,24 +649,24 @@ px_dvma_win(px_t *px_p, ddi_dma_req_t *dmareq, ddi_dma_impl_t *mp)
 	pg_off	= mp->dmai_roffset;
 	xfer_sz	= obj_sz + redzone_sz;
 
-	/* include redzone in nocross check */	{
-		uint64_t nocross = mp->dmai_attr.dma_attr_seg;
-		if (xfer_sz + pg_off - 1 > nocross)
-			xfer_sz = nocross - pg_off + 1;
-		if (redzone_sz && (xfer_sz <= redzone_sz)) {
-			DBG(DBG_DMA_MAP, px_p->px_dip,
-			    "nocross too small: "
-			    "%lx(%lx)+%lx+%lx < %llx\n",
-			    xfer_sz, obj_sz, pg_off, redzone_sz, nocross);
-			return (DDI_DMA_TOOBIG);
-		}
+	/* include redzone in nocross check */
+	nocross = mp->dmai_attr.dma_attr_seg;
+	if (xfer_sz + pg_off - 1 > nocross)
+		xfer_sz = nocross - pg_off + 1;
+	if (redzone_sz && (xfer_sz <= redzone_sz)) {
+		DBG(DBG_DMA_MAP, px_p->px_dip,
+		    "nocross too small: "
+		    "%lx(%lx)+%lx+%lx < %llx\n",
+		    xfer_sz, obj_sz, pg_off, redzone_sz, nocross);
+		return (DDI_DMA_TOOBIG);
 	}
 	xfer_sz -= redzone_sz;		/* restore transfer size  */
-	/* check counter max */	{
-		uint32_t count_max = mp->dmai_attr.dma_attr_count_max;
-		if (xfer_sz - 1 > count_max)
-			xfer_sz = count_max + 1;
-	}
+
+	/* check counter max */
+	count_max = mp->dmai_attr.dma_attr_count_max;
+	if (xfer_sz - 1 > count_max)
+		xfer_sz = count_max + 1;
+
 	if (xfer_sz >= obj_sz) {
 		mp->dmai_rflags &= ~DDI_DMA_PARTIAL;
 		mp->dmai_size = xfer_sz;

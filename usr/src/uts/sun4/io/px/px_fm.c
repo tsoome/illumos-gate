@@ -58,7 +58,7 @@ static int px_pcie_ptlp(dev_info_t *dip, ddi_fm_error_t *derr,
 #if defined(DEBUG)
 static void px_pcie_log(dev_info_t *dip, px_err_pcie_t *regs);
 #else	/* DEBUG */
-#define	px_pcie_log 0 &&
+#define	px_pcie_log(...)
 #endif	/* DEBUG */
 
 /*

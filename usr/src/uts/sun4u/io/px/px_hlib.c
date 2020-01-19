@@ -1515,7 +1515,7 @@ lpu_init(caddr_t csr_base, pxu_t *pxu_p)
 static void
 dlu_init(caddr_t csr_base, pxu_t *pxu_p)
 {
-uint64_t val;
+	uint64_t val;
 
 	CSR_XS(csr_base, DLU_INTERRUPT_MASK, 0ull);
 	DBG(DBG_TLU, NULL, "dlu_init - DLU_INTERRUPT_MASK: 0x%llx\n",
@@ -1859,19 +1859,19 @@ hvio_iommu_demap(devhandle_t dev_hdl, pxu_t *pxu_p, tsbid_t tsbid,
 	for (i = 0; i < pages; i++, tsb_index++) {
 		pxu_p->tsb_vaddr[tsb_index] = MMU_INVALID_TTE;
 
-			/*
-			 * Oberon will need to flush the corresponding TTEs in
-			 * Cache. We only need to flush every cache line.
-			 * Extra PIO's are expensive.
-			 */
-			if (PX_CHIP_TYPE(pxu_p) == PX_CHIP_OBERON) {
-				if ((i == (pages-1))||!((tsb_index+1) & 0x7)) {
-					CSR_XS(dev_hdl,
-					    MMU_TTE_CACHE_FLUSH_ADDRESS,
-					    (pxu_p->tsb_paddr+
-					    (tsb_index*MMU_TTE_SIZE)));
-				}
+		/*
+		 * Oberon will need to flush the corresponding TTEs in
+		 * Cache. We only need to flush every cache line.
+		 * Extra PIO's are expensive.
+		 */
+		if (PX_CHIP_TYPE(pxu_p) == PX_CHIP_OBERON) {
+			if ((i == (pages-1))||!((tsb_index+1) & 0x7)) {
+				CSR_XS(dev_hdl,
+				    MMU_TTE_CACHE_FLUSH_ADDRESS,
+				    (pxu_p->tsb_paddr+
+				    (tsb_index*MMU_TTE_SIZE)));
 			}
+		}
 	}
 
 	return (H_EOK);
@@ -3161,19 +3161,20 @@ oberon_hp_pwron(caddr_t csr_base)
 			delay(drv_usectohz(link_status_check));
 			reg = CSR_XR(csr_base, DLU_LINK_LAYER_STATUS);
 
-		if ((((reg >> DLU_LINK_LAYER_STATUS_INIT_FC_SM_STS) &
-		    DLU_LINK_LAYER_STATUS_INIT_FC_SM_STS_MASK) ==
-		    DLU_LINK_LAYER_STATUS_INIT_FC_SM_STS_FC_INIT_DONE) &&
-		    (reg & (1ull << DLU_LINK_LAYER_STATUS_DLUP_STS)) &&
-		    ((reg &
-		    DLU_LINK_LAYER_STATUS_LNK_STATE_MACH_STS_MASK) ==
-		    DLU_LINK_LAYER_STATUS_LNK_STATE_MACH_STS_DL_ACTIVE)) {
-			DBG(DBG_HP, NULL, "oberon_hp_pwron : "
-			    "link is up\n");
-			link_up = B_TRUE;
-		} else
-			link_retry = B_TRUE;
-
+			if ((((reg >> DLU_LINK_LAYER_STATUS_INIT_FC_SM_STS) &
+			    DLU_LINK_LAYER_STATUS_INIT_FC_SM_STS_MASK) ==
+			    DLU_LINK_LAYER_STATUS_INIT_FC_SM_STS_FC_INIT_DONE)
+			    &&
+			    (reg & (1ull << DLU_LINK_LAYER_STATUS_DLUP_STS)) &&
+			    ((reg &
+			    DLU_LINK_LAYER_STATUS_LNK_STATE_MACH_STS_MASK) ==
+			    DLU_LINK_LAYER_STATUS_LNK_STATE_MACH_STS_DL_ACTIVE)) {
+				DBG(DBG_HP, NULL, "oberon_hp_pwron : "
+				    "link is up\n");
+				link_up = B_TRUE;
+			} else {
+				link_retry = B_TRUE;
+			}
 		}
 		/* END CSTYLED */
 	}

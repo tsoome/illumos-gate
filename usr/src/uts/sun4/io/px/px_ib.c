@@ -134,7 +134,7 @@ px_ib_intr_enable(px_t *px_p, cpuid_t cpu_id, devino_t ino)
 	}
 
 	PX_INTR_ENABLE(px_p->px_dip, sysino, cpu_id);
-	px_lib_intr_setstate(px_p->px_dip, sysino, INTR_IDLE_STATE);
+	(void) px_lib_intr_setstate(px_p->px_dip, sysino, INTR_IDLE_STATE);
 
 	mutex_exit(&ib_p->ib_intr_lock);
 }
@@ -1150,7 +1150,7 @@ pxtool_ib_get_ino_devs(px_t *px_p, uint32_t ino, uint32_t msi_num,
 		*devs_ret = j;
 	} else if (*devs_ret > 0) {
 		(void) ddi_pathname(px_p->px_dip, pathname);
-		strcat(pathname, " (Internal)");
+		(void) strcat(pathname, " (Internal)");
 		px_fill_in_intr_devs(&devs[0],
 		    (char *)ddi_driver_name(px_p->px_dip),  pathname,
 		    ddi_get_instance(px_p->px_dip));
