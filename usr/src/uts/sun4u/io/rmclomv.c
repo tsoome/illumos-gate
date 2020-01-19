@@ -749,8 +749,8 @@ rmclomv_hdl_to_envhdl(dp_handle_t hdl, envmon_handle_t *envhdl)
 		for (i = 0; i < next->num_entries; i++) {
 			if (next->entry[i].handle == hdl) {
 				*envhdl = next->entry[i].handle_name;
-					RELEASE_CACHE
-					return;
+				RELEASE_CACHE
+				return;
 			}
 		}
 	}
@@ -1816,7 +1816,7 @@ set_val_unav(envmon_sensor_t *sensor)
 static void
 set_fan_unav(envmon_fan_t *fan)
 {
-	fan->speed = ENVMON_VAL_UNAVAILABLE;
+	fan->speed = (uint16_t)ENVMON_VAL_UNAVAILABLE;
 	fan->units[0] = '\0';
 	fan->lowthresholds.warning = ENVMON_VAL_UNAVAILABLE;
 	fan->lowthresholds.shutdown = ENVMON_VAL_UNAVAILABLE;
