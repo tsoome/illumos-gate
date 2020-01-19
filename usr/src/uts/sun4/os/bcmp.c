@@ -35,8 +35,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 
 /*
@@ -51,6 +49,6 @@ bcmp(const void *s1_arg, const void *s2_arg, size_t len)
 
 	while (len--)
 		if (*s1++ != *s2++)
-		return (1);
+			return (1);
 	return (0);
 }
