@@ -886,11 +886,11 @@ xc_dismissed(cpuset_t cpuset)
 			}
 		}
 		if (loop_cnt++ > xc_func_time_limit) {
-				if (sendmondo_in_recover) {
-					drv_usecwait(1);
-					loop_cnt = 0;
-					continue;
-				}
+			if (sendmondo_in_recover) {
+				drv_usecwait(1);
+				loop_cnt = 0;
+				continue;
+			}
 			cmn_err(CE_PANIC, "xc_dismissed() timeout");
 		}
 	}
