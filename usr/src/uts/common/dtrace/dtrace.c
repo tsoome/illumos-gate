@@ -3185,10 +3185,14 @@ dtrace_dif_variable(dtrace_mstate_t *mstate, dtrace_state_t *state, uint64_t v,
 		ASSERT(mstate->dtms_present & DTRACE_MSTATE_ARGS);
 		if (ndx >= sizeof (mstate->dtms_arg) /
 		    sizeof (mstate->dtms_arg[0])) {
-			int aframes = mstate->dtms_probe->dtpr_aframes + 2;
+			int aframes;
 			dtrace_provider_t *pv;
 			uint64_t val;
 
+			if (mstate->dtms_probe == NULL) 
+				return (0);
+
+			aframes = mstate->dtms_probe->dtpr_aframes + 2;
 			pv = mstate->dtms_probe->dtpr_provider;
 			if (pv->dtpv_pops.dtps_getargval != NULL)
 				val = pv->dtpv_pops.dtps_getargval(pv->dtpv_arg,
