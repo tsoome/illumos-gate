@@ -1469,7 +1469,7 @@ i_ddi_acc_set_fault(ddi_acc_handle_t handle)
 
 	if (!hp->ahi_fault) {
 		hp->ahi_fault = 1;
-			(*hp->ahi_fault_notify)(hp);
+		(*hp->ahi_fault_notify)(hp);
 	}
 }
 
@@ -1480,7 +1480,7 @@ i_ddi_acc_clr_fault(ddi_acc_handle_t handle)
 
 	if (hp->ahi_fault) {
 		hp->ahi_fault = 0;
-			(*hp->ahi_fault_notify)(hp);
+		(*hp->ahi_fault_notify)(hp);
 	}
 }
 
