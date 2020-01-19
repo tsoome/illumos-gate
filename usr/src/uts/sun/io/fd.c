@@ -4068,18 +4068,18 @@ fdrecover(struct fdctlr *fdc)
 	 * if there was a pci bus error, do not retry
 	 */
 
-		if (csb->csb_dcsr_rslt == 1) {
-			FDERRPRINT(FDEP_L3, FDEM_RECO,
-			    (C, "fd%d: host bus error\n", 0));
+	if (csb->csb_dcsr_rslt == 1) {
+		FDERRPRINT(FDEP_L3, FDEM_RECO,
+		    (C, "fd%d: host bus error\n", 0));
 		return (1);
-		}
+	}
 
 	/*
 	 * If there was an error with the DMA functions, do not retry
 	 */
 	if (csb->csb_dma_rslt == 1) {
-			FDERRPRINT(FDEP_L1, FDEM_RECO,
-			    (C, "fd%d: DMA interface error\n", csb->csb_unit));
+		FDERRPRINT(FDEP_L1, FDEM_RECO,
+		    (C, "fd%d: DMA interface error\n", csb->csb_unit));
 		return (1);
 	}
 
