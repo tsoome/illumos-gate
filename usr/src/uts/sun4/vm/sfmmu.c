@@ -286,7 +286,7 @@ sfmmu_map_prom_mappings(struct translation *trans_root, size_t ntrans_root)
 			 */
 			prom_panic("sfmmu_map_prom_mappings: global"
 			    " translation");
-			TTE_SET_LOFLAGS(ttep, TTE_GLB_INT, 0);
+			/* TTE_SET_LOFLAGS(ttep, TTE_GLB_INT, 0); */
 		}
 #endif
 		if (TTE_IS_LOCKED(ttep)) {
