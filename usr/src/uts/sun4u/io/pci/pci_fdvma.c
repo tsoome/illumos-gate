@@ -146,7 +146,7 @@ pci_fdvma_unload(ddi_dma_handle_t h, uint_t index, uint_t sync_flags)
 		iommu_unmap_pages(pci_p->pci_iommu_p, dvma_pg, npg);
 	}
 	if (sync_flags != -1)
-		pci_dma_sync(pci_p->pci_dip, mp->dmai_rdip, h,
+		(void) pci_dma_sync(pci_p->pci_dip, mp->dmai_rdip, h,
 			IOMMU_PTOB(index), IOMMU_PTOB(npg), sync_flags);
 	if (pci_dvma_sync_before_unmap) {
 		if (PCI_DMA_CANRELOC(mp))
@@ -170,7 +170,7 @@ pci_fdvma_sync(ddi_dma_handle_t h, uint_t index, uint_t sync_flags)
 	DEBUG5(DBG_FAST_DVMA, pci_p->pci_dip,
 		"sync index=%x flags=%x %x+%x+%x\n", index, sync_flags,
 		mp->dmai_mapping, IOMMU_PTOB(index), IOMMU_PTOB(npg));
-	pci_dma_sync(pci_p->pci_dip, mp->dmai_rdip, h, IOMMU_PTOB(index),
+	(void) pci_dma_sync(pci_p->pci_dip, mp->dmai_rdip, h, IOMMU_PTOB(index),
 		IOMMU_PTOB(npg), sync_flags);
 }
 

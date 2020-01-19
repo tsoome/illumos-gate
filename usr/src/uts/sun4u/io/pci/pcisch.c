@@ -2558,7 +2558,7 @@ pcix_ma_behind_bridge(pbm_errstate_t *pbm_err_p)
 		msg = (pbm_err_p->pbm_afsr >> XMITS_PCI_X_P_MSG_SHIFT) &
 		    XMITS_PCIX_MSG_MASK;
 		if (msg & PCIX_CLASS_BRIDGE)
-			if (msg & PCIX_BRIDGE_MASTER_ABORT) {
+			if (msg == PCIX_BRIDGE_MASTER_ABORT) {
 				return (1);
 			}
 	}
@@ -2670,7 +2670,7 @@ pci_clear_error(pci_t *pci_p, pbm_errstate_t *pbm_err_p)
 	ASSERT(MUTEX_HELD(&pbm_p->pbm_pci_p->pci_common_p->pci_fm_mutex));
 
 	if (*pbm_p->pbm_ctrl_reg & SCHIZO_PCI_CTRL_PCI_MMU_ERR) {
-		iommu_tlb_scrub(pci_p->pci_iommu_p, 1);
+		(void) iommu_tlb_scrub(pci_p->pci_iommu_p, 1);
 	}
 	pbm_p->pbm_config_header->ch_status_reg =
 	    pbm_err_p->pbm_pci.pci_cfg_stat;
@@ -2749,17 +2749,23 @@ static ecc_format_t ecc_format_tbl[] = {
 static void
 pci_format_ecc_addr(dev_info_t *dip, uint64_t *afar, ecc_region_t region)
 {
-	pci_t *pci_p = get_pci_soft_state(ddi_get_instance(dip));
-	pci_common_t *cmn_p = pci_p->pci_common_p;
-	cb_t *cb_p = pci_p->pci_cb_p;
-	int i, pci_side = 0;
-	int swap = 0;
-	uint64_t pa = cb_p->cb_base_pa;
+	pci_t *pci_p;
+	pci_common_t *cmn_p;
+	cb_t *cb_p;
+	int i, pci_side;
+	int swap;
+	uint64_t pa;
 	uint64_t flag, schizo_base, pci_csr_base;
 
+	pci_p = get_pci_soft_state(ddi_get_instance(dip));
 	if (pci_p == NULL)
 		return;
 
+	pci_side = 0;
+	swap = 0;
+	cmn_p = pci_p->pci_common_p;
+	cb_p = pci_p->pci_cb_p;
+	pa = cb_p->cb_base_pa;
 	pci_csr_base = va_to_pa(pci_p->pci_address[0]);
 
 	/*
@@ -2832,7 +2838,7 @@ cb_ereport_post(dev_info_t *dip, uint64_t ena, cb_errstate_t *cb_err)
 	ASSERT(nva);
 	ASSERT(detector);
 
-	ddi_pathname(dip, dev_path);
+	(void) ddi_pathname(dip, dev_path);
 	ptr = strrchr(dev_path, (int)',');
 
 	if (ptr)
@@ -3434,7 +3440,7 @@ pci_ecc_rem_intr(pci_t *pci_p, int inum, ecc_intr_info_t *eii_p)
 	VERIFY(rem_ivintr(mondo, pci_pil[inum]) == 0);
 
 	if (CHIP_TYPE(pci_p) == PCI_CHIP_TOMATILLO)
-		pci_tom_nbintr_op(pci_p, inum, (intrfunc)ecc_intr,
+		(void) pci_tom_nbintr_op(pci_p, inum, (intrfunc)ecc_intr,
 		    (caddr_t)eii_p, PCI_OBJ_INTR_REMOVE);
 }
 

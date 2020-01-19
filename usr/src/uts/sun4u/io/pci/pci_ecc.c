@@ -692,7 +692,7 @@ ecc_ereport_post(dev_info_t *dip, ecc_errstate_t *ecc_err)
 	ASSERT(nva);
 	ASSERT(detector);
 
-	ddi_pathname(dip, dev_path);
+	(void) ddi_pathname(dip, dev_path);
 	ptr = strrchr(dev_path, (int)',');
 
 	if (ptr)

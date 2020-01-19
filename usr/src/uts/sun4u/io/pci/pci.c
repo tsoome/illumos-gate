@@ -659,7 +659,7 @@ pci_dma_allochdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_attr_t *attrp,
 
 	/* check and convert dma attributes to handle parameters */
 	if (rval = pci_dma_attr2hdl(pci_p, mp)) {
-		pci_dma_freehdl(dip, rdip, (ddi_dma_handle_t)mp);
+		(void) pci_dma_freehdl(dip, rdip, (ddi_dma_handle_t)mp);
 		*handlep = NULL;
 		return (rval);
 	}
