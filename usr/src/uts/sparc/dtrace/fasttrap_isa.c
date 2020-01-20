@@ -705,7 +705,7 @@ fasttrap_pid_probe(struct regs *rp)
 			 * bit means something slightly different.
 			 */
 			panic("fasttrap: mishandled a branch");
-			taken = 1;		break;
+			/* taken = 1; */	break;
 		case 0x9:	/* BNE */
 			taken = ~z;		break;
 		case 0xa:	/* BG */
@@ -779,7 +779,7 @@ fasttrap_pid_probe(struct regs *rp)
 			 * bit means something slightly different.
 			 */
 			panic("fasttrap: mishandled a branch");
-			taken = (1 << fcc) & (8|4|2|1);	break;
+			/* taken = (1 << fcc) & (8|4|2|1); */	break;
 		case 0x9:	/* FBE */
 			taken = (1 << fcc) & (0|0|0|1);	break;
 		case 0xa:	/* FBUE */
