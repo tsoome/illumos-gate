@@ -3614,15 +3614,13 @@ error:
 		    dmareqp->dmar_arg, 10);
 	}
 error2:
-	if (hp) {
-		ddi_dmareq_mapout(hp->mapaddr, hp->len, hp->map_flags,
-		    hp->map_pp, hp->map_pplist);
-		if (bofi_sync_check && hp->allocaddr)
-			ddi_umem_free(hp->umem_cookie);
-		hp->mapaddr = NULL;
-		hp->allocaddr = NULL;
-		hp->origaddr = NULL;
-	}
+	ddi_dmareq_mapout(hp->mapaddr, hp->len, hp->map_flags,
+	    hp->map_pp, hp->map_pplist);
+	if (bofi_sync_check && hp->allocaddr)
+		ddi_umem_free(hp->umem_cookie);
+	hp->mapaddr = NULL;
+	hp->allocaddr = NULL;
+	hp->origaddr = NULL;
 	return (retval);
 }
 
