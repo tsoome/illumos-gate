@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -339,7 +337,7 @@ token_common(fcode_env_t *env, int headered, int visible)
 	env->table[token].flags = 0;
 	if (len) {
 		env->table[token].name = MALLOC(len+1);
-		strncpy(env->table[token].name, namebuff, len);
+		(void) strncpy(env->table[token].name, namebuff, len);
 	} else {
 		env->table[token].name = NULL;
 	}

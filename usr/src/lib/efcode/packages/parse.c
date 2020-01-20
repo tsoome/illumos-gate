@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -131,5 +129,5 @@ make_builtin_hooks(fcode_env_t *env, char *where)
 		}
 	}
 	FREE(buffer);
-	fclose(fd);
+	(void) fclose(fd);
 }
