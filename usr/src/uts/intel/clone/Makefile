@@ -53,9 +53,6 @@ ALL_TARGET	= $(BINARY) $(SRC_CONFILE)
 LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
-# needs work
-$(OBJS_DIR)/clone.o := SMOFF += all_func_returns
-
 #
 #	Default build targets.
 #

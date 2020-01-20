@@ -292,7 +292,7 @@ bad_major:
 	/*
 	 * Close the device
 	 */
-	(*rq->q_qinfo->qi_qclose)(rq, flag, crp);
+	(void) (*rq->q_qinfo->qi_qclose)(rq, flag, crp);
 
 #ifdef DEBUG
 	cmn_err(CE_NOTE, "cannot clone major number %d(%s)->%d", emaj,
