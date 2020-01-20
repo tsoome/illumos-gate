@@ -6711,13 +6711,28 @@ dtrace_action_chill(dtrace_mstate_t *mstate, hrtime_t val)
 
 	/*
 	 * Now check to see if the requested chill time would take us over
-	 * the maximum amount of time allowed in the chill interval.  (Or
-	 * worse, if the calculation itself induces overflow.)
+	 * the maximum amount of time allowed in the chill interval.
 	 */
-	if (cpu->cpu_dtrace_chilled + val > dtrace_chill_max ||
-	    cpu->cpu_dtrace_chilled + val < cpu->cpu_dtrace_chilled) {
+	if (cpu->cpu_dtrace_chilled + val > dtrace_chill_max) {
 		*flags |= CPU_DTRACE_ILLOP;
 		return;
+	}
+
+	/*
+	 * Check if cpu->cpu_dtrace_chilled + val would overflow.
+	 */
+	if (cpu->cpu_dtrace_chilled >= 0) {
+		if (LLONG_MAX - cpu->cpu_dtrace_chilled < val) {
+			/* Overflow */
+			*flags |= CPU_DTRACE_ILLOP;
+			return;
+		}
+	} else {
+		if (val < LLONG_MIN - cpu->cpu_dtrace_chilled) {
+			/* Overflow */
+			*flags |= CPU_DTRACE_ILLOP;
+			return;
+		}
 	}
 
 	while (dtrace_gethrtime() - now < val)
