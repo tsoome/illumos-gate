@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <alloca.h>
 #include <picl.h>
 #include <picltree.h>
@@ -178,7 +176,7 @@ fpt_get_name_from_hdl(fru_treehdl_t node, char **name)
 			free(label);
 			return (FRU_FAILURE);
 		}
-		snprintf(tmp, buf_size, "%s?%s=%s", tmp_name,
+		(void) snprintf(tmp, buf_size, "%s?%s=%s", tmp_name,
 			PICL_PROP_LABEL, label);
 		*name = tmp;
 	}
@@ -444,8 +442,8 @@ get_segment_node(picl_nodehdl_t handle, const char *segment,
 			(void *)&seg_node, sizeof (seg_node));
 		while (rc == PICL_SUCCESS) {
 			char name[PICL_PROPNAMELEN_MAX];
-			ptree_get_propval_by_name(seg_node, PICL_PROP_NAME,
-				name, sizeof (name));
+			(void) ptree_get_propval_by_name(seg_node,
+			    PICL_PROP_NAME, name, sizeof (name));
 			if (strcmp(segment, name) == 0) {
 				int dummy = 0;
 				int protection = 0;
@@ -501,7 +499,7 @@ add_segs_for_section(picl_nodehdl_t section, fru_strlist_t *list)
 		PICL_PROP_NUM_SEGMENTS,
 		(void *)&num_segments,
 		sizeof (num_segments))) != PICL_SUCCESS) {
-		fru_destroy_strlist(list);
+		(void) fru_destroy_strlist(list);
 		return (map_plugin_err(rc));
 	}
 
@@ -575,7 +573,7 @@ fpt_get_seg_list(fru_treehdl_t handle, fru_strlist_t *list)
 	while (err == FRU_SUCCESS) {
 		if ((err = add_segs_for_section(sect_node, &rc_list))
 				!= FRU_SUCCESS) {
-			fru_destroy_strlist(&rc_list);
+			(void) fru_destroy_strlist(&rc_list);
 			return (err);
 		}
 		err = find_next_section(sect_node, &sect_node);
@@ -624,7 +622,7 @@ fpt_get_seg_def(fru_treehdl_t handle, const char *seg_name, fru_segdef_t *def)
 	}
 
 	def->version = LIBFRU_VERSION;
-	strlcpy(def->name, seg_name, FRU_SEGNAMELEN+1);
+	(void) strlcpy(def->name, seg_name, FRU_SEGNAMELEN+1);
 	def->desc = desc;
 	def->size = size;
 	def->address = address;
@@ -805,6 +803,7 @@ fpt_get_tag_list(fru_treehdl_t handle, const char *seg_name,
 		*number = rc_num;
 		return (FRU_SUCCESS);
 	}
+	free(rc_tags);
 	return (map_plugin_err(picl_err));
 }
 
