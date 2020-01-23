@@ -78,7 +78,7 @@ ctr_new_keyblock(ctr_ctx_t *ctx,
 	}
 
 	/* generate the new keyblock */
-	cipher(ctx->ctr_keysched, (uint8_t *)ctx->ctr_cb,
+	(void) cipher(ctx->ctr_keysched, (uint8_t *)ctx->ctr_cb,
 	    (uint8_t *)ctx->ctr_keystream);
 	ctx->ctr_offset = 0;
 }
@@ -263,7 +263,7 @@ ctr_init_ctx(ctr_ctx_t *ctr_ctx, ulong_t count, uint8_t *cb,
 	ctr_ctx->ctr_lastp = (uint8_t *)&ctr_ctx->ctr_cb[0];
 
 	/* Generate the first block of the keystream */
-	cipher(ctr_ctx->ctr_keysched, (uint8_t *)ctr_ctx->ctr_cb,
+	(void) cipher(ctr_ctx->ctr_keysched, (uint8_t *)ctr_ctx->ctr_cb,
 	    (uint8_t *)ctr_ctx->ctr_keystream);
 
 	ctr_ctx->ctr_flags |= CTR_MODE;

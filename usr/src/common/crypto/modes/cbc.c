@@ -99,7 +99,7 @@ cbc_encrypt_contiguous_blocks(cbc_ctx_t *ctx, char *data, size_t length,
 			 * current clear block.
 			 */
 			xor_block(lastp, blockp);
-			encrypt(ctx->cbc_keysched, blockp, blockp);
+			(void) encrypt(ctx->cbc_keysched, blockp, blockp);
 
 			ctx->cbc_lastp = blockp;
 			lastp = blockp;
@@ -117,7 +117,7 @@ cbc_encrypt_contiguous_blocks(cbc_ctx_t *ctx, char *data, size_t length,
 			 * current clear block.
 			 */
 			xor_block(blockp, lastp);
-			encrypt(ctx->cbc_keysched, lastp, lastp);
+			(void) encrypt(ctx->cbc_keysched, lastp, lastp);
 
 			/*
 			 * CMAC doesn't output until encrypt_final
@@ -234,11 +234,11 @@ cbc_decrypt_contiguous_blocks(cbc_ctx_t *ctx, char *data, size_t length,
 		copy_block(blockp, (uint8_t *)OTHER((uint64_t *)lastp, ctx));
 
 		if (out != NULL) {
-			decrypt(ctx->cbc_keysched, blockp,
+			(void) decrypt(ctx->cbc_keysched, blockp,
 			    (uint8_t *)ctx->cbc_remainder);
 			blockp = (uint8_t *)ctx->cbc_remainder;
 		} else {
-			decrypt(ctx->cbc_keysched, blockp, blockp);
+			(void) decrypt(ctx->cbc_keysched, blockp, blockp);
 		}
 
 		/*
@@ -438,7 +438,7 @@ cmac_mode_final(cbc_ctx_t *cbc_ctx, crypto_data_t *out,
 		return (CRYPTO_INVALID_CONTEXT);
 
 	/* k_0 = E_k(0) */
-	encrypt_block(cbc_ctx->cbc_keysched, buf, buf);
+	(void) encrypt_block(cbc_ctx->cbc_keysched, buf, buf);
 
 	if (cmac_left_shift_block_by1(buf, block_size))
 		buf[block_size - 1] ^= const_rb;
@@ -447,7 +447,7 @@ cmac_mode_final(cbc_ctx_t *cbc_ctx, crypto_data_t *out,
 		/* Last block complete, so m_n = k_1 + m_n' */
 		xor_block(buf, M_last);
 		xor_block(cbc_ctx->cbc_lastp, M_last);
-		encrypt_block(cbc_ctx->cbc_keysched, M_last, M_last);
+		(void) encrypt_block(cbc_ctx->cbc_keysched, M_last, M_last);
 	} else {
 		/* Last block incomplete, so m_n = k_2 + (m_n' | 100...0_bin) */
 		if (cmac_left_shift_block_by1(buf, block_size))
@@ -457,7 +457,7 @@ cmac_mode_final(cbc_ctx_t *cbc_ctx, crypto_data_t *out,
 		bzero(M_last + length + 1, block_size - length - 1);
 		xor_block(buf, M_last);
 		xor_block(cbc_ctx->cbc_lastp, M_last);
-		encrypt_block(cbc_ctx->cbc_keysched, M_last, M_last);
+		(void) encrypt_block(cbc_ctx->cbc_keysched, M_last, M_last);
 	}
 
 	/*

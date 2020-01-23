@@ -414,7 +414,8 @@ crypto_put_output_data(uchar_t *buf, crypto_data_t *output, int len)
 {
 	switch (output->cd_format) {
 	case CRYPTO_DATA_RAW:
-		if (MAXOFF_T - output->cd_offset < (off_t)len) {
+		if (output->cd_offset > 0 &&
+		    (MAXOFF_T - output->cd_offset < (off_t)len)) {
 			return (CRYPTO_ARGUMENTS_BAD);
 		}
 		if (output->cd_raw.iov_len < len + output->cd_offset) {

@@ -103,10 +103,10 @@ ccm_mode_encrypt_contiguous_blocks(ccm_ctx_t *ctx, char *data, size_t length,
 		 * mac_buf always contain previous cipher block.
 		 */
 		xor_block(blockp, mac_buf);
-		encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
+		(void) encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
 
 		/* ccm_cb is the counter block */
-		encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb,
+		(void) encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb,
 		    (uint8_t *)ctx->ccm_tmp);
 
 		lastp = (uint8_t *)ctx->ccm_tmp;
@@ -194,7 +194,8 @@ calculate_ccm_mac(ccm_ctx_t *ctx, uint8_t *ccm_mac,
 	ctx->ccm_cb[1] = (ctx->ccm_cb[1] & ~(ctx->ccm_counter_mask)) | counter;
 
 	counterp = (uint8_t *)ctx->ccm_tmp;
-	encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb, counterp);
+	(void) encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb,
+	    counterp);
 
 	/* calculate XOR of MAC with first counter block */
 	for (i = 0; i < ctx->ccm_mac_len; i++) {
@@ -244,11 +245,12 @@ ccm_encrypt_final(ccm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 
 		/* calculate the CBC MAC */
 		xor_block(macp, mac_buf);
-		encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
+		(void) encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
 
 		/* calculate the counter mode */
 		lastp = (uint8_t *)ctx->ccm_tmp;
-		encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb, lastp);
+		(void) encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb,
+		    lastp);
 
 		/* XOR with counter block */
 		for (i = 0; i < ctx->ccm_remainder_len; i++) {
@@ -341,7 +343,8 @@ ccm_decrypt_incomplete_block(ccm_ctx_t *ctx,
 	outp = &((ctx->ccm_pt_buf)[ctx->ccm_processed_data_len]);
 
 	counterp = (uint8_t *)ctx->ccm_tmp;
-	encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb, counterp);
+	(void) encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb,
+	    counterp);
 
 	/* XOR with counter block */
 	for (i = 0; i < ctx->ccm_remainder_len; i++) {
@@ -464,7 +467,8 @@ ccm_mode_decrypt_contiguous_blocks(ccm_ctx_t *ctx, char *data, size_t length,
 
 		/* Calculate the counter mode, ccm_cb is the counter block */
 		cbp = (uint8_t *)ctx->ccm_tmp;
-		encrypt_block(ctx->ccm_keysched, (uint8_t *)ctx->ccm_cb, cbp);
+		(void) encrypt_block(ctx->ccm_keysched,
+		    (uint8_t *)ctx->ccm_cb, cbp);
 
 		/*
 		 * Increment counter.
@@ -560,7 +564,7 @@ ccm_decrypt_final(ccm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 
 		/* calculate the CBC MAC */
 		xor_block(macp, mac_buf);
-		encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
+		(void) encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
 	}
 
 	/* Calculate the CCM MAC */
@@ -796,7 +800,7 @@ ccm_init(ccm_ctx_t *ctx, unsigned char *nonce, size_t nonce_len,
 	xor_block(ivp, mac_buf);
 
 	/* encrypt the nonce */
-	encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
+	(void) encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
 
 	/* take care of the associated data, if any */
 	if (auth_data_len == 0) {
@@ -819,7 +823,7 @@ ccm_init(ccm_ctx_t *ctx, unsigned char *nonce, size_t nonce_len,
 	bcopy(auth_data, authp+encoded_a_len, processed);
 	/* xor with previous buffer */
 	xor_block(authp, mac_buf);
-	encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
+	(void) encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
 	remainder -= processed;
 	if (remainder == 0) {
 		/* a small amount of associated data, it's all done now */
@@ -843,7 +847,7 @@ ccm_init(ccm_ctx_t *ctx, unsigned char *nonce, size_t nonce_len,
 		}
 
 		xor_block(datap, mac_buf);
-		encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
+		(void) encrypt_block(ctx->ccm_keysched, mac_buf, mac_buf);
 
 	} while (remainder > 0);
 

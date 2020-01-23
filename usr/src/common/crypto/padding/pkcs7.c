@@ -99,8 +99,7 @@ pkcs7_encode(uint8_t *databuf, size_t datalen, uint8_t *padbuf,
 int
 pkcs7_decode(uint8_t *padbuf, size_t *plen)
 {
-	int	i;
-	size_t	padlen;
+	size_t	i, padlen;
 
 	/* Recover the padding value, even if padbuf has trailing nulls */
 	while (*plen > 0 && (padlen = padbuf[*plen - 1]) == 0)
@@ -110,9 +109,8 @@ pkcs7_decode(uint8_t *padbuf, size_t *plen)
 	if (padlen == 0)
 		return (CKR_ENCRYPTED_DATA_INVALID);
 
-	/* Count back from all padding bytes; lint tag is for *plen-1-i >= 0 */
-	/* LINTED E_SUSPICIOUS_COMPARISON */
-	for (i = 0; i < padlen && (*plen - 1 - i) >= 0; i++) {
+	/* Count back from all padding bytes */
+	for (i = 0; i < padlen; i++) {
 		if (padbuf[*plen - 1 - i] != (padlen & 0xff))
 			return (CKR_ENCRYPTED_DATA_INVALID);
 	}

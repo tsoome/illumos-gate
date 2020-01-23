@@ -186,7 +186,7 @@ gcm_mode_encrypt_contiguous_blocks(gcm_ctx_t *ctx, char *data, size_t length,
 		counter &= counter_mask;
 		ctx->gcm_cb[1] = (ctx->gcm_cb[1] & ~counter_mask) | counter;
 
-		encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb,
+		(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb,
 		    (uint8_t *)ctx->gcm_tmp);
 		xor_block(blockp, (uint8_t *)ctx->gcm_tmp);
 
@@ -282,7 +282,7 @@ gcm_encrypt_final(gcm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 		counter &= counter_mask;
 		ctx->gcm_cb[1] = (ctx->gcm_cb[1] & ~counter_mask) | counter;
 
-		encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb,
+		(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb,
 		    (uint8_t *)ctx->gcm_tmp);
 
 		macp = (uint8_t *)ctx->gcm_remainder;
@@ -301,9 +301,9 @@ gcm_encrypt_final(gcm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 	}
 
 	ctx->gcm_len_a_len_c[1] =
-	    htonll(CRYPTO_BYTES2BITS(ctx->gcm_processed_data_len));
+	    htonll(CRYPTO_BYTES2BITS((uint64_t)ctx->gcm_processed_data_len));
 	GHASH(ctx, ctx->gcm_len_a_len_c, ghash);
-	encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_J0,
+	(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_J0,
 	    (uint8_t *)ctx->gcm_J0);
 	xor_block((uint8_t *)ctx->gcm_J0, ghash);
 
@@ -357,7 +357,8 @@ gcm_decrypt_incomplete_block(gcm_ctx_t *ctx, size_t block_size, size_t index,
 	GHASH(ctx, ctx->gcm_tmp, ctx->gcm_ghash);
 
 	/* decrypt remaining ciphertext */
-	encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb, counterp);
+	(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb,
+	    counterp);
 
 	/* XOR with counter block */
 	for (i = 0; i < ctx->gcm_remainder_len; i++) {
@@ -452,7 +453,8 @@ gcm_decrypt_final(gcm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 		ctx->gcm_cb[1] = (ctx->gcm_cb[1] & ~counter_mask) | counter;
 
 		cbp = (uint8_t *)ctx->gcm_tmp;
-		encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb, cbp);
+		(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_cb,
+		    cbp);
 
 		/* XOR with ciphertext */
 		xor_block(cbp, blockp);
@@ -462,9 +464,9 @@ gcm_decrypt_final(gcm_ctx_t *ctx, crypto_data_t *out, size_t block_size,
 		remainder -= block_size;
 	}
 out:
-	ctx->gcm_len_a_len_c[1] = htonll(CRYPTO_BYTES2BITS(pt_len));
+	ctx->gcm_len_a_len_c[1] = htonll(CRYPTO_BYTES2BITS((uint64_t)pt_len));
 	GHASH(ctx, ctx->gcm_len_a_len_c, ghash);
-	encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_J0,
+	(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_J0,
 	    (uint8_t *)ctx->gcm_J0);
 	xor_block((uint8_t *)ctx->gcm_J0, ghash);
 
@@ -548,7 +550,7 @@ gcm_format_initial_blocks(uchar_t *iv, ulong_t iv_len,
 		} while (remainder > 0);
 
 		len_a_len_c[0] = 0;
-		len_a_len_c[1] = htonll(CRYPTO_BYTES2BITS(iv_len));
+		len_a_len_c[1] = htonll(CRYPTO_BYTES2BITS((uint64_t)iv_len));
 		GHASH(ctx, len_a_len_c, ctx->gcm_J0);
 
 		/* J0 will be used again in the final */
@@ -572,7 +574,7 @@ gcm_init(gcm_ctx_t *ctx, unsigned char *iv, size_t iv_len,
 
 	/* encrypt zero block to get subkey H */
 	bzero(ctx->gcm_H, sizeof (ctx->gcm_H));
-	encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_H,
+	(void) encrypt_block(ctx->gcm_keysched, (uint8_t *)ctx->gcm_H,
 	    (uint8_t *)ctx->gcm_H);
 
 	gcm_format_initial_blocks(iv, iv_len, ctx, block_size,
@@ -631,7 +633,7 @@ gcm_init_ctx(gcm_ctx_t *gcm_ctx, char *param, size_t block_size,
 
 		/* these values are in bits */
 		gcm_ctx->gcm_len_a_len_c[0]
-		    = htonll(CRYPTO_BYTES2BITS(gcm_param->ulAADLen));
+		    = htonll(CRYPTO_BYTES2BITS((uint64_t)gcm_param->ulAADLen));
 
 		rv = CRYPTO_SUCCESS;
 		gcm_ctx->gcm_flags |= GCM_MODE;
@@ -666,7 +668,7 @@ gmac_init_ctx(gcm_ctx_t *gcm_ctx, char *param, size_t block_size,
 
 		/* these values are in bits */
 		gcm_ctx->gcm_len_a_len_c[0]
-		    = htonll(CRYPTO_BYTES2BITS(gmac_param->ulAADLen));
+		    = htonll(CRYPTO_BYTES2BITS((uint64_t)gmac_param->ulAADLen));
 
 		rv = CRYPTO_SUCCESS;
 		gcm_ctx->gcm_flags |= GMAC_MODE;

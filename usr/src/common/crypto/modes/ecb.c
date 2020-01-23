@@ -85,7 +85,7 @@ ecb_cipher_contiguous_blocks(ecb_ctx_t *ctx, char *data, size_t length,
 		}
 
 		if (out == NULL) {
-			cipher(ctx->ecb_keysched, blockp, blockp);
+			(void) cipher(ctx->ecb_keysched, blockp, blockp);
 
 			ctx->ecb_lastp = blockp;
 			lastp = blockp;
@@ -97,7 +97,7 @@ ecb_cipher_contiguous_blocks(ecb_ctx_t *ctx, char *data, size_t length,
 				    need);
 			}
 		} else {
-			cipher(ctx->ecb_keysched, blockp, lastp);
+			(void) cipher(ctx->ecb_keysched, blockp, lastp);
 			crypto_get_ptrs(out, &iov_or_mp, &offset, &out_data_1,
 			    &out_data_1_len, &out_data_2, block_size);
 

@@ -574,7 +574,8 @@ bitrepeat(uint8_t *pattern, uint_t len_bytes, uint_t len_bits, uint8_t *dst,
 			for (i = 0; i < len_bytes; i++) {
 				if (currentbits >= 8) {
 					*current++ |= pattern[i] >> bitoffset;
-					*current |= pattern[i] << 8 - bitoffset;
+					*current |=
+					    pattern[i] << (8 - bitoffset);
 					currentbits -= 8;
 				} else {
 					*current |= pattern[i] >> bitoffset;
@@ -592,7 +593,8 @@ bitrepeat(uint8_t *pattern, uint_t len_bytes, uint_t len_bits, uint8_t *dst,
 				if (currentbits >= 8 &&
 				    current < dst + dst_len_bytes) {
 					*current++ |= pattern[i] >> bitoffset;
-					*current |= pattern[i] << 8 - bitoffset;
+					*current |=
+					    pattern[i] << (8 - bitoffset);
 					currentbits -= 8;
 					bitsleft -= 8;
 				} else {
