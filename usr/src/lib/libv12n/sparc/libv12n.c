@@ -815,7 +815,7 @@ v12n_get_ldma_system_msg(int msgtype, char **strp)
 	}
 
 done:
-	v12n_ds_unreg_svc(LDMA_NAME_SYSTEM, B_TRUE);
+	(void) v12n_ds_unreg_svc(LDMA_NAME_SYSTEM, B_TRUE);
 	v12n_ldma_msgtype = -1;
 	v12n_ldma_ctrl_hdl = DS_INVALID_HDL;
 	(void) mutex_unlock(&v12n_ldma_lock);
