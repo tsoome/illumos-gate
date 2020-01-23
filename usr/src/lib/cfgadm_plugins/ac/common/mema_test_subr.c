@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -92,7 +90,7 @@ void
 mtest_message(mtest_handle_t handle, const char *msg)
 {
 	if (handle->msgp != NULL && handle->msgp->message_routine != NULL) {
-		(*handle->msgp->message_routine)(handle->msgp->appdata_ptr,
-		    msg);
+		(void) (*handle->msgp->message_routine)(
+		    handle->msgp->appdata_ptr, msg);
 	}
 }

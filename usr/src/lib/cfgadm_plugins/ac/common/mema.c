@@ -1429,12 +1429,12 @@ cfga_help(struct cfga_msg *msgp, const char *options, cfga_flags_t flags)
 {
 
 
-	(*msgp->message_routine)(msgp->appdata_ptr, mema_help);
-	(*msgp->message_routine)(msgp->appdata_ptr, disable_opts);
-	(*msgp->message_routine)(msgp->appdata_ptr, enable_opts);
-	(*msgp->message_routine)(msgp->appdata_ptr, timeout_opts);
-	(*msgp->message_routine)(msgp->appdata_ptr, test_opts);
-	(*msgp->message_routine)(msgp->appdata_ptr, private_funcs);
+	(void) (*msgp->message_routine)(msgp->appdata_ptr, mema_help);
+	(void) (*msgp->message_routine)(msgp->appdata_ptr, disable_opts);
+	(void) (*msgp->message_routine)(msgp->appdata_ptr, enable_opts);
+	(void) (*msgp->message_routine)(msgp->appdata_ptr, timeout_opts);
+	(void) (*msgp->message_routine)(msgp->appdata_ptr, test_opts);
+	(void) (*msgp->message_routine)(msgp->appdata_ptr, private_funcs);
 
 	return (CFGA_OK);
 }

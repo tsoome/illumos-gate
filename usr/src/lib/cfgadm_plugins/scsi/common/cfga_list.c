@@ -648,7 +648,7 @@ do_stat_bus(scfga_list_t *lap, int limited_bus_stat)
 	clp->ap_status_time = (time_t)-1;
 	clp->ap_info[0] = '\0';
 
-	if (bstate.iconnect_type) {
+	if (bstate.iconnect_type[0] != '\0') {
 		/*
 		 * For SPI type, keep the existing SCFGA_BUS_TYPE.
 		 * For other types, the ap type will be scsi-'interconnct-type'.
@@ -796,7 +796,7 @@ get_hw_info(di_node_t node, cfga_list_data_t *clp, dyncomp_t type)
 	} else {
 		if ((di_driver_name(node) != NULL) &&
 		    (di_instance(node) != -1)) {
-			if (clp->ap_info == NULL) {
+			if (clp->ap_info[0] == '\0') {
 				(void) snprintf(client_inst, MAXNAMELEN - 1,
 				    "%s%d", di_driver_name(node),
 				    di_instance(node));
