@@ -658,12 +658,12 @@ disp_envc_status()
 	    "\n"
 	    "\n"));
 
-	dak_env_print_temps(system_node);
-	dak_env_print_keyswitch(system_node);
-	dak_env_print_FSP_LEDS(system_node);
-	dak_env_print_disk(system_node);
-	dak_env_print_fans(system_node);
-	dak_env_print_ps(system_node);
+	(void) dak_env_print_temps(system_node);
+	(void) dak_env_print_keyswitch(system_node);
+	(void) dak_env_print_FSP_LEDS(system_node);
+	(void) dak_env_print_disk(system_node);
+	(void) dak_env_print_fans(system_node);
+	(void) dak_env_print_ps(system_node);
 
 	(void) picl_shutdown();
 	return (0);
@@ -1196,7 +1196,7 @@ dak_env_print_temps(picl_nodehdl_t system_node)
 		    "State", state, sizeof (state));
 		if (err != PICL_SUCCESS) {
 			if (err == PICL_INVALIDHANDLE) {
-				strcpy(state, "n/a");
+				(void) strcpy(state, "n/a");
 			} else {
 				log_printf("%s\n", picl_strerror(err));
 				return (err);

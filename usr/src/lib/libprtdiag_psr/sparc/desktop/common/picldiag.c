@@ -619,12 +619,12 @@ picldiag_get_combined_label(picl_nodehdl_t nodeh, char **label, int lablen)
 		return (PICL_FAILURE);
 	if (lablen > 0) {
 		/* right justification; label = "+<string>\0" */
-		strcpy(ptr, "+");
-		strncat(ptr, ptr1 + len - lablen + 1, lablen + 1);
+		(void) strcpy(ptr, "+");
+		(void) strncat(ptr, ptr1 + len - lablen + 1, lablen + 1);
 	} else {
 		/* left justification; label = "<string>+\0" */
-		strncpy(ptr, ptr1, abs(lablen) - 1);
-		strcat(ptr, "+");
+		(void) strncpy(ptr, ptr1, abs(lablen) - 1);
+		(void) strcat(ptr, "+");
 	}
 
 	*label = ptr;
@@ -732,26 +732,26 @@ logprintf_size(uint64_t size)
 	if (size >= gbyte) {
 		residue = size % gbyte;
 		if (residue == 0)
-			snprintf(buf, sizeof (buf), "%dGB",
+			(void) snprintf(buf, sizeof (buf), "%dGB",
 			    (int)(size / gbyte));
 		else
-			snprintf(buf, sizeof (buf), "%.2fGB",
+			(void) snprintf(buf, sizeof (buf), "%.2fGB",
 			    (float)size / gbyte);
 	} else if (size >= mbyte) {
 		residue = size % mbyte;
 		if (residue == 0)
-			snprintf(buf, sizeof (buf), "%dMB",
+			(void) snprintf(buf, sizeof (buf), "%dMB",
 			    (int)(size / mbyte));
 		else
-			snprintf(buf, sizeof (buf), "%.2fMB",
+			(void) snprintf(buf, sizeof (buf), "%.2fMB",
 			    (float)size / mbyte);
 	} else {
 		residue = size % kbyte;
 		if (residue == 0)
-			snprintf(buf, sizeof (buf), "%dKB",
+			(void) snprintf(buf, sizeof (buf), "%dKB",
 			    (int)(size / kbyte));
 		else
-			snprintf(buf, sizeof (buf), "%.2fKB",
+			(void) snprintf(buf, sizeof (buf), "%.2fKB",
 			    (float)size / kbyte);
 	}
 
@@ -830,7 +830,7 @@ display_serial_number(picl_nodehdl_t plafh)
 {
 	int		print_header;
 
-	picl_walk_tree_by_class(plafh, PICL_CLASS_CHASSIS_SERIAL_NUM,
+	(void) picl_walk_tree_by_class(plafh, PICL_CLASS_CHASSIS_SERIAL_NUM,
 	    &print_header, serialnum_callback);
 	return (PICL_SUCCESS);
 }
@@ -1027,19 +1027,19 @@ add_io_card(uint32_t board, uint32_t bus_id, uint32_t slot, char *label,
 	card.board = board;
 	switch (bus_id) {
 	case SBUS_TYPE:
-		strlcpy(card.bus_type, SBUS_NAME, MAXSTRLEN);
+		(void) strlcpy(card.bus_type, SBUS_NAME, MAXSTRLEN);
 		break;
 	case PCI_TYPE:
-		strlcpy(card.bus_type, PCI_NAME, MAXSTRLEN);
+		(void) strlcpy(card.bus_type, PCI_NAME, MAXSTRLEN);
 		break;
 	case PCIEX_TYPE:
-		strlcpy(card.bus_type, PCIEX_NAME, MAXSTRLEN);
+		(void) strlcpy(card.bus_type, PCIEX_NAME, MAXSTRLEN);
 		break;
 	case UPA_TYPE:
-		strlcpy(card.bus_type, UPA_NAME, MAXSTRLEN);
+		(void) strlcpy(card.bus_type, UPA_NAME, MAXSTRLEN);
 		break;
 	default: /* won't reach here */
-		strlcpy(card.bus_type, "", MAXSTRLEN);
+		(void) strlcpy(card.bus_type, "", MAXSTRLEN);
 		break;
 	}
 	if (label == NULL)
@@ -1054,15 +1054,15 @@ add_io_card(uint32_t board, uint32_t bus_id, uint32_t slot, char *label,
 	card.model[0] = '\0';
 	card.notes[0] = '\0';
 	if (status != NULL)
-		strlcpy(card.status, status, MAXSTRLEN);
+		(void) strlcpy(card.status, status, MAXSTRLEN);
 	if (name != NULL)
-		strlcpy(card.name, name, MAXSTRLEN);
+		(void) strlcpy(card.name, name, MAXSTRLEN);
 	if (model != NULL)
-		strlcpy(card.model, model, MAXSTRLEN);
+		(void) strlcpy(card.model, model, MAXSTRLEN);
 	if (status != NULL)
-		strlcpy(card.status, status, MAXSTRLEN);
+		(void) strlcpy(card.status, status, MAXSTRLEN);
 	if (devfs_path != NULL)
-		strlcpy(card.notes, devfs_path, MAXSTRLEN);
+		(void) strlcpy(card.notes, devfs_path, MAXSTRLEN);
 
 	io_card_list = insert_io_card(io_card_list, &card);
 }
@@ -1601,7 +1601,7 @@ display_memory_config(picl_nodehdl_t plafh)
 	err = find_segments(plafh);
 
 	if ((err == PICL_SUCCESS) && (mem_banks != NULL))
-		print_bank_table();
+		(void) print_bank_table();
 
 	free_bank_list();
 
@@ -1712,7 +1712,7 @@ print_usb_devices(picl_nodehdl_t hubh, void *arg)
 		free(rootname);
 
 		do {
-			logprintf_hub_devices(chdh);
+			(void) logprintf_hub_devices(chdh);
 
 			err = picl_get_propval_by_name(chdh, PICL_PROP_PEER,
 			    &chdh, sizeof (picl_nodehdl_t));
@@ -1818,8 +1818,8 @@ add_io_leaves(picl_nodehdl_t nodeh, char *parentname, uint32_t board,
 		 */
 		err = picldiag_get_first_compatible_value(nodeh, &compatible);
 		if (err == PICL_SUCCESS) {
-			strlcat(nodename, "-", MAXSTRLEN);
-			strlcat(nodename, compatible, MAXSTRLEN);
+			(void) strlcat(nodename, "-", MAXSTRLEN);
+			(void) strlcat(nodename, compatible, MAXSTRLEN);
 			free(compatible);
 		} else if (err != PICL_PROPNOTFOUND) {
 			return (err);
@@ -1832,10 +1832,10 @@ add_io_leaves(picl_nodehdl_t nodeh, char *parentname, uint32_t board,
 			 * nodename same as binding name -
 			 * no need to display twice
 			 */
-			strlcpy(nodename, binding_name, MAXSTRLEN);
+			(void) strlcpy(nodename, binding_name, MAXSTRLEN);
 		} else {
-			strlcat(nodename, "-", MAXSTRLEN);
-			strlcat(nodename, binding_name, MAXSTRLEN);
+			(void) strlcat(nodename, "-", MAXSTRLEN);
+			(void) strlcat(nodename, binding_name, MAXSTRLEN);
 		}
 	}
 
@@ -1981,7 +1981,7 @@ sbus_callback(picl_nodehdl_t sbush, void *args)
 			status = malloc(5);
 			if (status == NULL)
 				return (PICL_FAILURE);
-			strncpy(status, "okay", 5);
+			(void) strncpy(status, "okay", 5);
 		} else if (err != PICL_SUCCESS)
 			return (err);
 
@@ -2094,7 +2094,7 @@ pci_pciex_callback(picl_nodehdl_t pcih, void *args)
 			status = malloc(5);
 			if (status == NULL)
 				return (PICL_FAILURE);
-			strncpy(status, "okay", 5);
+			(void) strncpy(status, "okay", 5);
 		} else if (err != PICL_SUCCESS)
 			return (err);
 
@@ -2235,7 +2235,7 @@ add_io_devices(picl_nodehdl_t nodeh)
 		status = malloc(5);
 		if (status == NULL)
 			return (PICL_FAILURE);
-		strncpy(status, "okay", 5);
+		(void) strncpy(status, "okay", 5);
 	} else if (err != PICL_SUCCESS)
 		return (err);
 
@@ -3078,7 +3078,7 @@ display_led_status(picl_nodehdl_t plafh)
 	int		print_header;
 
 	print_header = 0;
-	picl_walk_tree_by_class(plafh, PICL_CLASS_LED,
+	(void) picl_walk_tree_by_class(plafh, PICL_CLASS_LED,
 	    &print_header, led_callback);
 	return (PICL_SUCCESS);
 }
@@ -3167,7 +3167,7 @@ display_keyswitch(picl_nodehdl_t plafh)
 {
 	int		print_header = 0;
 
-	picl_walk_tree_by_class(plafh, PICL_CLASS_KEYSWITCH,
+	(void) picl_walk_tree_by_class(plafh, PICL_CLASS_KEYSWITCH,
 	    &print_header, keyswitch_callback);
 	return (PICL_SUCCESS);
 }
@@ -3181,12 +3181,12 @@ display_envctrl_status(picl_nodehdl_t plafh)
 	logprintf_header(dgettext(TEXT_DOMAIN, "Environmental Status"),
 	    DEFAULT_LINE_WIDTH);
 
-	display_fan_speed(plafh);
-	display_temp(plafh);
-	display_current(plafh);
-	display_voltage(plafh);
-	display_keyswitch(plafh);
-	display_led_status(plafh);
+	(void) display_fan_speed(plafh);
+	(void) display_temp(plafh);
+	(void) display_current(plafh);
+	(void) display_voltage(plafh);
+	(void) display_keyswitch(plafh);
+	(void) display_led_status(plafh);
 
 	return (PICL_SUCCESS);
 }
@@ -3252,7 +3252,7 @@ display_fru_oper_status(picl_nodehdl_t frutreeh)
 	int		print_header;
 
 	print_header = 0;
-	picl_walk_tree_by_class(frutreeh, PICL_CLASS_FRU,
+	(void) picl_walk_tree_by_class(frutreeh, PICL_CLASS_FRU,
 	    &print_header, fru_oper_status_callback);
 	return (PICL_SUCCESS);
 }

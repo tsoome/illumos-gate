@@ -667,12 +667,13 @@ lneck_env_print_ps(picl_nodehdl_t system_node)
 		if (err == PICL_SUCCESS) {
 			if ((strlen(fault_state) == 0) ||
 			    (strcmp(fault_state, "NO_FAULT") == 0)) {
-				strcpy(fault_state, "OK");
-			} else
+				(void) strcpy(fault_state, "OK");
+			} else {
 				/*
 				 * Bump up count if fault_state	 !OK
 				 */
 				ps_failure++;
+			}
 
 			log_printf(dgettext(TEXT_DOMAIN, "    [%-6s] "),
 			    fault_state);

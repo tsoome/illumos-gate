@@ -26,8 +26,6 @@
  * Littleneck Platform specific functions.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <libprtdiag.h>
 #include <sys/mc.h>
 
@@ -750,8 +748,8 @@ fill_pci_card_list(Prom_node * pci_instance, Prom_node * pci_card_node,
 				slot_name =
 					slot_name_arr[pci_card->dev_no-1];
 			}
-				if (slot_name != NULL &&
-				    strlen(slot_name) != 0) {
+			if (slot_name != NULL &&
+			    strlen(slot_name) != 0) {
 				/* Slot num is last char in string */
 				(void) snprintf(pci_card->slot_str, MAXSTRLEN,
 					"%c", slot_name[strlen(slot_name) - 1]);
@@ -769,9 +767,9 @@ fill_pci_card_list(Prom_node * pci_instance, Prom_node * pci_card_node,
 		 * Check for failed status.
 		 */
 		if (node_failed(pci_card_node))
-			strcpy(pci_card->status, "fail");
+			(void) strcpy(pci_card->status, "fail");
 		else
-			strcpy(pci_card->status, "ok");
+			(void) strcpy(pci_card->status, "ok");
 
 		/* Get the model of this pci_card */
 		value = get_prop_val(find_prop(pci_card_node, "model"));

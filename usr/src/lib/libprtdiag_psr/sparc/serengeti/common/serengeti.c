@@ -97,22 +97,22 @@
 #define	CFG_SET_FRU_NAME_NODE(str, num) \
 { \
 	char tmp_str[MAX_FRU_NAME_LEN]; \
-	sprintf(tmp_str, "/N%d", num); \
-	strncat(str, tmp_str, sizeof (tmp_str)); \
+	(void)sprintf(tmp_str, "/N%d", num); \
+	(void)strncat(str, tmp_str, sizeof (tmp_str)); \
 }
 
 #define	CFG_SET_FRU_NAME_CPU_BOARD(str, num) \
 { \
 	char tmp_str[MAX_FRU_NAME_LEN]; \
-	sprintf(tmp_str, ".%s%d", SG_HPU_TYPE_CPU_BOARD_ID, num); \
-	strncat(str, tmp_str, sizeof (tmp_str)); \
+	(void)sprintf(tmp_str, ".%s%d", SG_HPU_TYPE_CPU_BOARD_ID, num); \
+	(void)strncat(str, tmp_str, sizeof (tmp_str)); \
 }
 
 #define	CFG_SET_FRU_NAME_MODULE(str, num) \
 { \
 	char tmp_str[MAX_FRU_NAME_LEN]; \
-	sprintf(tmp_str, "%s%d", CFG_CPU, num); \
-	strncat(str, tmp_str, sizeof (tmp_str)); \
+	(void)sprintf(tmp_str, "%s%d", CFG_CPU, num); \
+	(void)strncat(str, tmp_str, sizeof (tmp_str)); \
 }
 
 extern	int	print_flag;
@@ -189,7 +189,7 @@ printfindent(int indent, char *fmt, ...)
 	va_end(ap);
 }
 #else
-#define	D_PRINTFINDENT
+#define	D_PRINTFINDENT(...)
 #endif
 
 /*
@@ -255,7 +255,7 @@ display_pci(Board_node *board)
 
 		if (strstr((char *)get_prop_val(
 		    find_prop(pci, "compatible")), XMITS_COMPATIBLE)) {
-			sprintf(card.notes, "%s", XMITS_COMPATIBLE);
+			(void) sprintf(card.notes, "%s", XMITS_COMPATIBLE);
 			/*
 			 * With XMITS 3.X and PCI-X mode, the bus speed
 			 * can be higher than 66MHZ.
@@ -270,9 +270,9 @@ display_pci(Board_node *board)
 			}
 		} else if (strstr((char *)get_prop_val(
 		    find_prop(pci, "compatible")), SCHIZO_COMPATIBLE))
-			sprintf(card.notes, "%s", SCHIZO_COMPATIBLE);
+			(void) sprintf(card.notes, "%s", SCHIZO_COMPATIBLE);
 		else
-			sprintf(card.notes, " ");
+			(void) sprintf(card.notes, " ");
 
 		/*
 		 * Get slot-name properties from parent node and
@@ -402,13 +402,14 @@ display_pci(Board_node *board)
 			 * a pci-bridge if our parent is the same as the last
 			 * pci_bridge node found above.
 			 */
-			if (type)
+			if (type) {
 				D_PRINTFINDENT(level,
 				    "*** name is [%s] - type is [%s]\n",
 				    name, type);
-			else
+			} else {
 				D_PRINTFINDENT(level,
 				    "*** name is [%s]\n", name);
+			}
 
 			if (card.dev_no != -1) {
 				/*
@@ -487,13 +488,13 @@ display_pci(Board_node *board)
 			 * Check for failed status.
 			 */
 			if (node_status(card_node, SG_FAIL))
-				strncpy(card.status, SG_FAIL,
+				(void)strncpy(card.status, SG_FAIL,
 				    sizeof (SG_FAIL));
 			else if (node_status(card_node, SG_DISABLED))
-				strncpy(card.status, SG_DISABLED,
+				(void)strncpy(card.status, SG_DISABLED,
 				    sizeof (SG_DISABLED));
 			else
-				strncpy(card.status, SG_OK,
+				(void)strncpy(card.status, SG_OK,
 				    sizeof (SG_OK));
 
 			/* Get the model of this card */
@@ -632,18 +633,19 @@ display_pci(Board_node *board)
 						card_node =
 						    child_pci_bridge_node-> \
 						    sibling;
-					if (level > 0)
-						level--;
-					} else if ((pci_bridge_node->sibling) &&
-					    (card_node->sibling == NULL)) {
-						card_node =
-						    pci_bridge_node->sibling;
-						if (level > 1)
-							level = level - 2;
-						else if (level > 0)
+						if (level > 0)
 							level--;
-					} else
-						card_node = card_node->sibling;
+						} else if ((pci_bridge_node->sibling) &&
+						    (card_node->sibling == NULL)) {
+							card_node =
+							    pci_bridge_node->sibling;
+							if (level > 1)
+								level = level - 2;
+							else if (level > 0)
+								level--;
+						} else {
+							card_node = card_node->sibling;
+						}
 				} else
 					card_node = card_node->sibling;
 			}
@@ -1065,7 +1067,8 @@ display_cpus(Board_node *board)
 			 * processed.
 			 */
 			if (strncmp(fru_prev, "", sizeof (fru_prev)) == 0) {
-				strncpy(fru_prev, fru_name, sizeof (fru_name));
+				(void)strncpy(fru_prev, fru_name,
+				    sizeof (fru_name));
 				mid_prev = *mid;
 				ecache_size_prev = ecache_size;
 				continue;
@@ -1087,12 +1090,12 @@ display_cpus(Board_node *board)
 					}
 
 					ecache_size_prev = 0;
-					strncpy(fru_prev, "",
+					(void)strncpy(fru_prev, "",
 					    sizeof (fru_prev));
 				} else {
 					mid_prev = *mid;
 					ecache_size_prev = ecache_size;
-					strncpy(fru_prev, fru_name,
+					(void)strncpy(fru_prev, fru_name,
 					    sizeof (fru_name));
 					continue;
 				}
@@ -1262,7 +1265,7 @@ serengeti_display_hw_revisions(Prom_node *root, Board_node *bdlist)
 	/*
 	 * Display SCHIZO version info
 	 */
-	display_schizo_revisions(bdlist, SG_SCHIZO_GOOD);
+	(void) display_schizo_revisions(bdlist, SG_SCHIZO_GOOD);
 
 	/*
 	 * Display sgsbbc version info
@@ -1419,13 +1422,13 @@ display_schizo_revisions(Board_node *bdlist, int mode)
 			 */
 			if ((status_a == (char *)NULL) &&
 			    ((status_b == (char *)NULL)))
-				sprintf(status, " %s      ", SG_OK);
+				(void) sprintf(status, " %s      ", SG_OK);
 			else if ((status_a == (char *)NULL) &&
 			    ((strcmp(status_b, SG_DISABLED) == 0)))
-				sprintf(status, " %s", SG_DEGRADED);
+				(void) sprintf(status, " %s", SG_DEGRADED);
 			else if ((status_b == (char *)NULL) &&
 			    ((strcmp(status_a, SG_DISABLED) == 0)))
-				sprintf(status, " %s", SG_DEGRADED);
+				(void) sprintf(status, " %s", SG_DEGRADED);
 			else
 				continue;
 
