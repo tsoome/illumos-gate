@@ -677,7 +677,7 @@ start_tls(xmpp_conn_t *conn)
 	}
 	(void) read(urand_fd, rand_buf, RAND_BUF_SIZE);
 
-	SSL_library_init_f();
+	(void) SSL_library_init_f();
 	RAND_seed_f(rand_buf, RAND_BUF_SIZE);
 
 	ssl_ctx = SSL_CTX_new_f(SSLv23_client_method_f());

@@ -606,7 +606,7 @@ fds_min_max_versions(uint16_t *min_major, uint16_t *max_major)
 	*min_major = ds_vers[0].major;
 	*max_major = *min_major;
 
-	for (i = 1; i < DS_NUM_VER; i++) {
+	for (i = 0; i < DS_NUM_VER; i++) {
 		if (ds_vers[i].major < *min_major)
 			*min_major = ds_vers[i].major;
 
@@ -862,8 +862,7 @@ ds_handle_reg_req(struct ldmsvcs_info *lsp, void *buf, size_t len)
 	/*
 	 * Service must be NULL terminated
 	 */
-	if (req->svc_id == NULL || strlen(req->svc_id) == 0 ||
-	    msg[strlen(req->svc_id)] != '\0') {
+	if (strlen(req->svc_id) == 0 || msg[strlen(req->svc_id)] != '\0') {
 		channel_close(lsp);
 		return;
 	}
@@ -1500,7 +1499,8 @@ mem_request(struct ldom_hdl *lhp, uint32_t msg_type, uint64_t pa,
 		if (respmsg->result == FMA_MEM_RESP_OK) {
 			if (respmsg->status == FMA_MEM_STAT_NOTRETIRED)
 				rc = 0;		/* is successfully unretired */
-		} if (respmsg->result == FMA_MEM_RESP_FAILURE) {
+		}
+		if (respmsg->result == FMA_MEM_RESP_FAILURE) {
 			if (respmsg->status == FMA_MEM_STAT_RETIRED)
 				rc = EAGAIN; 	/* page couldn't be locked */
 			else if (respmsg->status == FMA_MEM_STAT_NOTRETIRED)
