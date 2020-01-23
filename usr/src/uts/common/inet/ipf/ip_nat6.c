@@ -1485,12 +1485,14 @@ struct in6_addr *src, *mapdst;
 	i6addr_t dst;
 	void *ifp;
 	u_int hv;
-	ipf_stack_t *ifs = fin->fin_ifs;
+	ipf_stack_t *ifs;
 
 	if (fin != NULL)
 		ifp = fin->fin_ifp;
 	else
 		ifp = NULL;
+
+	ifs = fin->fin_ifs;
 	sport = 0;
 	dport = 0;
 	dst.in6 = *mapdst;
@@ -2352,7 +2354,8 @@ u_32_t *passp;
 			if ((fin->fin_flx & FI_ICMPQUERY) != 0) {
 				nflags = IPN_ICMPQUERY;
 				dport = icmp6->icmp6_id;	
-			} break;
+			}
+			break;
 		default :
 			break;
 		}

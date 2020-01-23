@@ -4083,8 +4083,8 @@ fr_info_t *fin;
 		 * XXX theoretically ICMP_ECHOREP and the other reply's are
 		 * ICMP query's as well, but adding them here seems strange XXX
 		 */
-		 if (!(oic->icmp6_type & ICMP6_INFOMSG_MASK))
-		    	return NULL;
+		if (!(oic->icmp6_type & ICMP6_INFOMSG_MASK))
+			return NULL;
 
 		/*
 		 * perform a lookup of the ICMP packet in the state table

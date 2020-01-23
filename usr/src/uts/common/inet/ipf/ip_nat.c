@@ -3274,12 +3274,14 @@ struct in_addr src , mapdst;
 	u_32_t dst;
 	void *ifp;
 	u_int hv;
-	ipf_stack_t *ifs = fin->fin_ifs;
+	ipf_stack_t *ifs;
 
 	if (fin != NULL)
 		ifp = fin->fin_ifp;
 	else
 		ifp = NULL;
+
+	ifs = fin->fin_ifs;
 	sport = 0;
 	dport = 0;
 	dst = mapdst.s_addr;
@@ -4237,7 +4239,8 @@ u_32_t *passp;
 			if (nat_icmpquerytype4(icmp->icmp_type)) {
 				nflags = IPN_ICMPQUERY;
 				dport = icmp->icmp_id;	
-			} break;
+			}
+			break;
 		default :
 			break;
 		}
