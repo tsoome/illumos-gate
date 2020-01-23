@@ -27,8 +27,6 @@
 #ifndef _IOBOARD_H
 #define	_IOBOARD_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <libdevinfo.h>
 #include <did.h>
 
@@ -57,7 +55,7 @@ extern int platform_iob_label(topo_mod_t *, tnode_t *, nvlist_t *, nvlist_t **);
  * di_bus_addr() for all machines that currently use this enumerator.
  */
 extern did_t *split_bus_address(topo_mod_t *, di_node_t, uint_t, uint_t,
-    int, int, int *, int *, int *);
+    uint_t, uint_t, uint_t *, uint_t *, uint_t *);
 
 #ifdef __cplusplus
 }

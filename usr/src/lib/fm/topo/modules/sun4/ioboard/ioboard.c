@@ -219,7 +219,8 @@ ioboard_declare(topo_mod_t *mod, tnode_t *parent, topo_instance_t i, void *priv)
 
 did_t *
 split_bus_address(topo_mod_t *mod, di_node_t dp, uint_t baseaddr,
-    uint_t bussep, int minbrd, int maxbrd, int *brd, int *br, int *bus)
+    uint_t bussep, uint_t minbrd, uint_t maxbrd, uint_t *brd, uint_t *br,
+    uint_t *bus)
 {
 	uint_t bc, ac;
 	char *comma;
