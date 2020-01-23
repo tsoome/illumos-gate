@@ -70,9 +70,6 @@ LINTTAGS	+= -erroff=E_ASSIGN_NARROW_CONV
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 
-# needs work
-$(OBJS_DIR)/tnf_writer.o := SMOFF += all_func_returns
-
 #
 #	Default build targets.
 #

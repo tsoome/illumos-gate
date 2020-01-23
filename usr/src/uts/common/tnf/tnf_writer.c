@@ -23,8 +23,6 @@
  *	Copyright (c) 1994, by Sun Microsytems, Inc.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifndef DEBUG
 #define	NDEBUG	1
 #endif
@@ -668,7 +666,7 @@ tnf_root_tag_1(tnf_ops_t *ops, tnf_tag_data_t *tag_data)
 
 		while (tag_p = *list_p++) {
 			if (!tag_p->tag_index) /* not written */
-				tag_p->tag_desc(ops, tag_p);
+				(void) tag_p->tag_desc(ops, tag_p);
 		}
 	}
 
@@ -815,7 +813,7 @@ tnf_tag_element_1(tnf_ops_t *ops, tnf_tag_data_t **tag_data_p,
 
 	if (aux_tag_data)
 		if (!aux_tag_data->tag_index)
-			aux_tag_data->tag_desc(ops, aux_tag_data);
+			(void) aux_tag_data->tag_desc(ops, aux_tag_data);
 
 	/* tnf_derived has derived_base == TNF_NULL */
 	if (!tag_data_p)
@@ -823,7 +821,7 @@ tnf_tag_element_1(tnf_ops_t *ops, tnf_tag_data_t **tag_data_p,
 
 	tag_data = *tag_data_p;
 	if (!tag_data->tag_index)
-		tag_data->tag_desc(ops, tag_data);
+		(void) tag_data->tag_desc(ops, tag_data);
 
 	return (tnf_ref32(ops, tag_data->tag_index, reference));
 }
@@ -886,7 +884,7 @@ tnf_tag_properties_1(tnf_ops_t		*ops,
 		tnf_tag_data_t		*tag_data)
 {
 	if (!(tag_data->tag_index))
-		tag_data->tag_desc(ops, tag_data);
+		(void) tag_data->tag_desc(ops, tag_data);
 
 	if (!tag_data_array)
 		return ((tnf_reference_t)TNF_NULL);
