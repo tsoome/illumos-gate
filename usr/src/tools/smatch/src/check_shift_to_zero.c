@@ -44,7 +44,7 @@ static void match_binop2(struct expression *expr)
 {
 	struct expression *left;
 	struct expression *tmp;
-	sval_t mask, shift;
+	sval_t value, mask, shift;
 
 	if (expr->op != SPECIAL_RIGHTSHIFT)
 		return;
@@ -58,6 +58,13 @@ static void match_binop2(struct expression *expr)
 
 	if (!get_implied_value(expr->right, &shift))
 		return;
+	/*
+	 * The LHS for expr is assumed to be (mask & value), make sure
+	 * we do have both hands.
+	 */
+	if (!get_implied_value(left->left, &value))
+		return;
+
 	if (!get_implied_value(left->right, &mask))
 		return;
 
