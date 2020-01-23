@@ -1084,7 +1084,7 @@ parse_esslist_args(const void *pr_val, uint_t pr_valsize,
 		/* If first arg is zero then return none to delete all */
 		if (arg == 0 && strnlen(piece, len) == 1 && piece[0] == '0')
 			return (0);
-		if (len > MAX_ESSLIST_ARGLEN)
+		if (len >= MAX_ESSLIST_ARGLEN)
 			len = MAX_ESSLIST_ARGLEN - 1;
 		(void) memcpy(&args[arg][0], piece, len);
 		args[arg][len] = '\0';

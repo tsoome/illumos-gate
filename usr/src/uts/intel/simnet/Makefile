@@ -57,9 +57,6 @@ LDFLAGS		+= -dy -Ndrv/dld -Nmisc/mac -Nmisc/dls -Ndrv/random
 
 CERRWARN	+= -_gcc=-Wno-switch
 
-# needs work
-$(OBJS_DIR)/simnet.o := SMOFF += index_overflow
-
 #
 #	Default build targets.
 #
