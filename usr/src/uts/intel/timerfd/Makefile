@@ -34,9 +34,6 @@ include $(UTSBASE)/intel/Makefile.intel
 
 CERRWARN	+= -_gcc=-Wno-parentheses
 
-# needs work
-SMOFF += all_func_returns
-
 #
 #	Define targets
 #

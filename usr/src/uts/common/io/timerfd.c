@@ -389,9 +389,9 @@ timerfd_ioctl(dev_t dev, int cmd, intptr_t arg, int md, cred_t *cr, int *rv)
 	return (ENOTTY);
 }
 
-/*ARGSUSED*/
 static int
-timerfd_close(dev_t dev, int flag, int otyp, cred_t *cred_p)
+timerfd_close(dev_t dev, int flag __unused, int otyp __unused,
+    cred_t *cred_p __unused)
 {
 	timerfd_state_t *state, **sp;
 	itimer_t *it;
@@ -411,7 +411,7 @@ timerfd_close(dev_t dev, int flag, int otyp, cred_t *cred_p)
 	it = &state->tfd_itimer;
 
 	if (it->it_backend != NULL)
-		it->it_backend->clk_timer_delete(it);
+		(void) it->it_backend->clk_timer_delete(it);
 
 	mutex_enter(&timerfd_lock);
 
