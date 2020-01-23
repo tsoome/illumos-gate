@@ -69,9 +69,6 @@ LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW
 
 CERRWARN	+= $(CNOWARN_UNINIT)
 
-# needs work
-$(OBJS_DIR)/llc1.o := SMOFF += no_if_block,deref_check
-
 #
 #	Default build targets.
 #

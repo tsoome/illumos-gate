@@ -628,8 +628,9 @@ llc1_lrsrv(queue_t *q)
 						break;
 					}
 				} else {
-					if (prim->info_ack.dl_current_state ==
+					if (prim->info_ack.dl_current_state !=
 					    DL_IDLE)
+						break;
 					/* address was wrong before */
 					bcopy(mp->b_rptr +
 					    prim->info_ack.dl_addr_offset,
@@ -881,17 +882,17 @@ llc1_ioctl(queue_t *q, mblk_t *mp)
 
 			    /* remove any mcast structs */
 				if (macinfo->llcp_mcast != NULL) {
-				kmem_free(macinfo->llcp_mcast,
-				    sizeof (llc_mcast_t) *
-				    llc1_device_list.llc1_multisize);
-				macinfo->llcp_mcast = NULL;
+					kmem_free(macinfo->llcp_mcast,
+					    sizeof (llc_mcast_t) *
+					    llc1_device_list.llc1_multisize);
+					macinfo->llcp_mcast = NULL;
 				}
 
 			    /* remove any kstat counters */
 				if (macinfo->llcp_kstatp != NULL)
-				llc1_uninit_kstat(macinfo);
+					llc1_uninit_kstat(macinfo);
 				if (macinfo->llcp_mb != NULL)
-				freeb(macinfo->llcp_mb);
+					freeb(macinfo->llcp_mb);
 
 				lld->llc_mac_info = NULL;
 
@@ -899,7 +900,7 @@ llc1_ioctl(queue_t *q, mblk_t *mp)
 
 			    /* finish any necessary setup */
 				if (llc1_device_list.llc1_ndevice == 0)
-				llc1_device_list.llc1_nextppa = 0;
+					llc1_device_list.llc1_nextppa = 0;
 
 				rw_exit(&llc1_device_list.llc1_rwlock);
 				return;
@@ -1416,7 +1417,7 @@ llc1_unitdata(queue_t *q, mblk_t *mp)
 		nmp = allocb(sizeof (struct llchdr)+sizeof (struct snaphdr),
 		    BPRI_MED);
 		if (nmp == NULL)
-		return (DL_UNDELIVERABLE);
+			return (DL_UNDELIVERABLE);
 		llchdr = (struct llchdr *)(nmp->b_rptr);
 		nmp->b_wptr += sizeof (struct llchdr);
 		llchdr->llc_dsap = llcp->llca_sap;
@@ -2363,7 +2364,7 @@ llc1_xid_ind_con(llc1_t *lld, llc_mac_info_t *macinfo, mblk_t *mp)
 	mblk_t *nmp;
 	dl_xid_ind_t *xid;
 	struct ether_header *hdr;
-	struct llchdr *llchdr;
+	struct llchdr *llchdr = NULL;
 	int raw;
 
 	nmp = allocb(sizeof (dl_xid_ind_t) + 2 * (macinfo->llcp_addrlen + 1),
@@ -2377,7 +2378,9 @@ llc1_xid_ind_con(llc1_t *lld, llc_mac_info_t *macinfo, mblk_t *mp)
 	} else {
 		if (mp->b_rptr == NULL)
 			return (mp);
-		llchdr = (struct llchdr *)mp->b_cont->b_rptr;
+		if (mp->b_cont != NULL)
+			llchdr = (struct llchdr *)mp->b_cont->b_rptr;
+		VERIFY(llchdr != NULL);
 	}
 
 	xid = (dl_xid_ind_t *)nmp->b_rptr;
@@ -2613,7 +2616,7 @@ llc1_test_ind_con(llc1_t *lld, llc_mac_info_t *macinfo, mblk_t *mp)
 	mblk_t *nmp;
 	dl_test_ind_t *test;
 	struct ether_header *hdr;
-	struct llchdr *llchdr;
+	struct llchdr *llchdr = NULL;
 	int raw;
 
 	nmp = allocb(sizeof (dl_test_ind_t) + 2 * (ETHERADDRL + 1), BPRI_MED);
@@ -2626,7 +2629,9 @@ llc1_test_ind_con(llc1_t *lld, llc_mac_info_t *macinfo, mblk_t *mp)
 	} else {
 		if (mp->b_rptr == NULL)
 			return (mp);
-		llchdr = (struct llchdr *)mp->b_cont->b_rptr;
+		if (mp->b_cont != NULL)
+			llchdr = (struct llchdr *)mp->b_cont->b_rptr;
+		VERIFY(llchdr != NULL);
 	}
 
 	test = (dl_test_ind_t *)nmp->b_rptr;
