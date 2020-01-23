@@ -1522,7 +1522,13 @@ bofi_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 				    (hp->hparrayp != NULL) ? "DVMA" : "DMA*");
 				bufptr += strlen(bufptr);
 				if (hp->type == BOFI_ACC_HDL) {
-					if (hp->len == INT_MAX - hp->offset)
+					off_t len;
+
+					if (hp->offset > 0)
+						len = INT_MAX - hp->offset;
+					else
+						len = 0;
+					if (hp->len == len)
 						(void) snprintf(bufptr,
 						    (size_t)(endbuf-bufptr),
 						    "reg set %d off 0x%llx\n",
@@ -3134,10 +3140,14 @@ bofi_map(dev_info_t *dip, dev_info_t *rdip,
 			*vaddrp = (caddr_t)64;
 		hp->rnumber = ((ddi_acc_hdl_t *)ap)->ah_rnumber;
 		hp->offset = offset;
-		if (len == 0)
-			hp->len = INT_MAX - offset;
-		else
-			hp->len = min(len, INT_MAX - offset);
+		if (offset > 0) {
+			if (len == 0)
+				hp->len = INT_MAX - offset;
+			else
+				hp->len = min(len, INT_MAX - offset);
+		} else {
+			hp->len = len;
+		}
 		hp->hdl.acc_handle = (ddi_acc_handle_t)ap;
 		hp->link = NULL;
 		hp->type = BOFI_ACC_HDL;
