@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * SUNW,Sun-Fire platform ioboard topology enumerator
  */
@@ -82,7 +80,7 @@ platform_iob_enum(topo_mod_t *mod, tnode_t *parent, topo_instance_t imin,
 	di_node_t devtree;
 	di_node_t pnode;
 	did_t *iobs[18][2][2];
-	int brd, br, bus, i;
+	uint_t brd, br, bus, i;
 
 	devtree = topo_mod_devinfo(mod);
 	if (devtree == DI_NODE_NIL) {
