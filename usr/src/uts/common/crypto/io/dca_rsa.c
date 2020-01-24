@@ -121,8 +121,8 @@ int dca_rsastart(crypto_ctx_t *ctx, crypto_data_t *in, crypto_data_t *out,
 	 * For decryption and verifyRecover, the output buffer should not
 	 * be less than the modulus
 	 */
-	if (out->cd_length < reqp->dr_ctx.modlen && (mode == DCA_RSA_DEC ||
-	    mode == DCA_RSA_VRFYR) &&
+	if (out->cd_length < reqp->dr_ctx.modlen &&
+	    (mode == DCA_RSA_DEC || mode == DCA_RSA_VRFYR) &&
 	    reqp->dr_ctx.ctx_cm_type == RSA_X_509_MECH_INFO_TYPE) {
 		out->cd_length = reqp->dr_ctx.modlen;
 		rv = CRYPTO_BUFFER_TOO_SMALL;
@@ -130,7 +130,7 @@ int dca_rsastart(crypto_ctx_t *ctx, crypto_data_t *in, crypto_data_t *out,
 	}
 
 	/* For decrypt and verify, the input should not be less than output */
-	if (out && len < out->cd_length) {
+	if (len < out->cd_length) {
 		if ((rv = decrypt_error_code(mode,
 		    CRYPTO_ENCRYPTED_DATA_LEN_RANGE,
 		    CRYPTO_SIGNATURE_LEN_RANGE, CRYPTO_SUCCESS)) !=
