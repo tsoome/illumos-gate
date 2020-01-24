@@ -460,8 +460,7 @@ nbssn_recv(struct nbpcb *nbp, mblk_t **mpp, int *lenp,
 
 out:
 	if (error) {
-		if (m0)
-			m_freem(m0);
+		m_freem(m0);
 		return (error);
 	}
 	if (mpp)

@@ -1311,7 +1311,8 @@ smb_nt_request_int(struct smb_ntrq *ntp)
 	if (m) {
 		md_initm(&mbparam, m);	/* do not free it! */
 		totpcount = m_fixhdr(m);
-		if (totpcount > 0x7fffffff)
+		/* totpcount > 0x7fffffff really does mean totpcount < 0 */
+		if (totpcount < 0)
 			return (EINVAL);
 	} else
 		totpcount = 0;
@@ -1319,7 +1320,8 @@ smb_nt_request_int(struct smb_ntrq *ntp)
 	if (m) {
 		md_initm(&mbdata, m);	/* do not free it! */
 		totdcount =  m_fixhdr(m);
-		if (totdcount > 0x7fffffff)
+		/* totdcount > 0x7fffffff really does mean totdcount < 0 */
+		if (totdcount < 0)
 			return (EINVAL);
 	} else
 		totdcount = 0;
