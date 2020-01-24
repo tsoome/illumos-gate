@@ -378,7 +378,7 @@ do_deferred_work(caddr_t arg /*ARGSUSED*/)
 					mutex_exit(&path->mutex);
 
 					if (sendq_handle != NULL) {
-						adapter->rsmpi_ops->
+						(void) adapter->rsmpi_ops->
 						    rsm_sendq_destroy(
 						    sendq_handle);
 					}
@@ -530,7 +530,7 @@ do_deferred_work(caddr_t arg /*ARGSUSED*/)
 			/* destroy the send queue and release the handle */
 			if (sendq_handle != NULL) {
 				adapter = path->local_adapter;
-				adapter->rsmpi_ops->rsm_sendq_destroy(
+				(void) adapter->rsmpi_ops->rsm_sendq_destroy(
 				    sendq_handle);
 			}
 
@@ -830,7 +830,7 @@ rsmka_remove_adapter(char *name, uint_t instance, void *cookie, int flags)
 	/*
 	 * unregister the handler
 	 */
-	current->rsmpi_ops->rsm_unregister_handler(current->rsmpi_handle,
+	(void) current->rsmpi_ops->rsm_unregister_handler(current->rsmpi_handle,
 	    RSM_SERVICE+current->hwaddr, rsm_srv_func,
 	    (rsm_intr_hand_arg_t)current->hdlr_argp);
 
@@ -1468,8 +1468,10 @@ rsmka_do_path_active(path_t *path, int flags)
 				mutex_exit(&path->mutex);
 
 				if (sqhdl != NULL) {
-					adapter->rsmpi_ops->rsm_sendq_destroy(
-					    sqhdl);
+					rsm_ops_t *ops;
+
+					ops = adapter->rsmpi_ops;
+					(void) ops->rsm_sendq_destroy(sqhdl);
 				}
 				mutex_enter(&path->mutex);
 			}
@@ -1703,9 +1705,13 @@ do_path_down(path_t *path, int flags)
 			    &path->mutex);
 
 		/* release the rsmpi handle */
-		if (path->sendq_token.rsmpi_sendq_handle != NULL)
-			path->local_adapter->rsmpi_ops->rsm_sendq_destroy(
+		if (path->sendq_token.rsmpi_sendq_handle != NULL) {
+			rsm_ops_t *ops;
+
+			ops = path->local_adapter->rsmpi_ops;
+			(void) ops->rsm_sendq_destroy(
 			    path->sendq_token.rsmpi_sendq_handle);
+		}
 
 		path->sendq_token.rsmpi_sendq_handle = NULL;
 

@@ -2911,10 +2911,10 @@ rsm_publish(rsmseg_t *seg, rsm_ioctlmsg_t *msg, intptr_t dataptr, int mode)
 			    "rsm_publish done: no more keys avlbl\n"));
 			return (RSMERR_INSUFFICIENT_RESOURCES);
 		}
-	} else	if BETWEEN(msg->key, RSM_RSMLIB_ID_BASE, RSM_RSMLIB_ID_END)
+	} else if BETWEEN(msg->key, RSM_RSMLIB_ID_BASE, RSM_RSMLIB_ID_END)
 		/* range reserved for internal use by base/ndi libraries */
 		segment_id = msg->key;
-	else	if (msg->key <= RSM_DLPI_ID_END)
+	else if (msg->key <= RSM_DLPI_ID_END)
 		return (RSMERR_RESERVED_SEGID);
 	else if (msg->key <= (uint_t)RSM_USER_APP_ID_BASE -1)
 		segment_id = msg->key;
@@ -3040,7 +3040,8 @@ rsm_publish(rsmseg_t *seg, rsm_ioctlmsg_t *msg, intptr_t dataptr, int mode)
 		    RSM_RESOURCE_DONTWAIT, NULL);
 
 		if (e != RSM_SUCCESS) {
-			adapter->rsmpi_ops->rsm_seg_destroy(seg->s_handle.out);
+			(void) adapter->rsmpi_ops->rsm_seg_destroy(
+			    seg->s_handle.out);
 			rsmseglock_release(seg);
 			rsmexport_rm(seg);
 			rsmacl_free(acl, acl_len);
@@ -6468,10 +6469,7 @@ rsm_connect(rsmseg_t *seg, rsm_ioctlmsg_t *msg, cred_t *cred,
 	if ((mode & DATAMODEL_MASK) == DATAMODEL_ILP32) {
 		rsm_ioctlmsg32_t msg32;
 
-		if (msg->len > UINT_MAX)
-			msg32.len = RSM_MAXSZ_PAGE_ALIGNED;
-		else
-			msg32.len = msg->len;
+		msg32.len = msg->len;
 		msg32.off = msg->off;
 		msg32.perm = msg->perm;
 		msg32.gnum = msg->gnum;
@@ -8022,11 +8020,8 @@ rsm_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 		if ((mode & DATAMODEL_MASK) == DATAMODEL_ILP32) {
 			rsm_ioctlmsg32_t msg32;
 
-			if (msg.len > UINT_MAX)
-				msg.len = RSM_MAXSZ_PAGE_ALIGNED;
-			else
-				msg32.len = (int32_t)msg.len;
-			msg32.off = (int32_t)msg.off;
+			msg32.len = msg.len;
+			msg32.off = msg.off;
 			DBG_PRINTF((category, RSM_DEBUG_VERBOSE,
 			    "rsm_ioctl done\n"));
 			if (ddi_copyout((caddr_t)&msg32, (caddr_t)arg,
@@ -9311,7 +9306,8 @@ rsm_unquiesce_exp_seg(rsmresource_t *resp)
 			segp->s_acl_len = 0;
 			segp->s_acl = NULL;
 			segp->s_acl_in = NULL;
-			adapter->rsmpi_ops->rsm_seg_destroy(segp->s_handle.out);
+			(void) adapter->rsmpi_ops->rsm_seg_destroy(
+			    segp->s_handle.out);
 			rsmseglock_release(segp);
 
 			rsmexport_rm(segp);
