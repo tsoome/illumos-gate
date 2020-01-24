@@ -761,8 +761,7 @@ rib_create_cq(rib_hca_t *hca, uint32_t cq_size, ibt_cq_handler_t cq_handler,
 fail:
 	if (cq->rib_cq_hdl)
 		(void) ibt_free_cq(cq->rib_cq_hdl);
-	if (cq)
-		kmem_free(cq, sizeof (rib_cq_t));
+	kmem_free(cq, sizeof (rib_cq_t));
 	return (error);
 }
 
@@ -1215,7 +1214,7 @@ rib_clnt_rcq_handler(ibt_cq_hdl_t cq_hdl, void *arg)
 			xid = *(uint32_t *)(uintptr_t)rwid->addr;
 
 			/* Skip xid and set the xdr position accordingly. */
-			XDR_SETPOS(xdrs, sizeof (uint32_t));
+			(void) XDR_SETPOS(xdrs, sizeof (uint32_t));
 			(void) xdr_u_int(xdrs, &vers);
 			(void) xdr_u_int(xdrs, &rdma_credit);
 			(void) xdr_u_int(xdrs, &op);
@@ -1355,7 +1354,7 @@ rib_svc_rcq_handler(ibt_cq_hdl_t cq_hdl, void *arg)
 			 */
 			xid = *(uint32_t *)(uintptr_t)s_recvp->vaddr;
 			/* Skip xid and set the xdr position accordingly. */
-			XDR_SETPOS(xdrs, sizeof (uint32_t));
+			(void) XDR_SETPOS(xdrs, sizeof (uint32_t));
 			if (!xdr_u_int(xdrs, &vers) ||
 			    !xdr_u_int(xdrs, &rdma_credit) ||
 			    !xdr_u_int(xdrs, &op)) {
@@ -1694,8 +1693,7 @@ rib_svc_create_chan(rib_hca_t *hca, caddr_t q, uint8_t port, rib_qp_t **qp)
 
 	return (RDMA_SUCCESS);
 fail:
-	if (kqp)
-		kmem_free(kqp, sizeof (rib_qp_t));
+	kmem_free(kqp, sizeof (rib_qp_t));
 
 	return (RDMA_FAILED);
 }
@@ -2060,7 +2058,7 @@ rib_disconnect_channel(CONN *conn, rib_conn_list_t *conn_list)
 		mutex_exit(&qp->send_rbufs_lock);
 
 		(void) ibt_free_channel(qp->qp_hdl);
-			qp->qp_hdl = NULL;
+		qp->qp_hdl = NULL;
 	}
 
 	ASSERT(qp->rdlist == NULL);
@@ -3920,18 +3918,16 @@ rib_rbufpool_create(rib_hca_t *hca, int ptype, int num)
 
 	return (rbp);
 fail:
-	if (bp) {
-		if (bp->buf)
-			kmem_free(bp->buf, bp->bufsize);
-		kmem_free(bp, sizeof (bufpool_t) + num*sizeof (void *));
-	}
-	if (rbp) {
-		if (rbp->mr_hdl)
-			kmem_free(rbp->mr_hdl, num*sizeof (ibt_mr_hdl_t));
-		if (rbp->mr_desc)
-			kmem_free(rbp->mr_desc, num*sizeof (ibt_mr_desc_t));
-		kmem_free(rbp, sizeof (rib_bufpool_t));
-	}
+	if (bp->buf)
+		kmem_free(bp->buf, bp->bufsize);
+	kmem_free(bp, sizeof (bufpool_t) + num*sizeof (void *));
+
+	if (rbp->mr_hdl)
+		kmem_free(rbp->mr_hdl, num*sizeof (ibt_mr_hdl_t));
+	if (rbp->mr_desc)
+		kmem_free(rbp->mr_desc, num*sizeof (ibt_mr_desc_t));
+	kmem_free(rbp, sizeof (rib_bufpool_t));
+
 	return (NULL);
 }
 
