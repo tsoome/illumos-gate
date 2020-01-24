@@ -1466,13 +1466,13 @@ trill_ctrl_input(trill_sock_t *tsock, mblk_t *mp, const uint8_t *saddr,
 	sdl->sdl_slen = sizeof (uint16_t);
 
 	DTRACE_PROBE2(trill__ctrl__input, trill_sock_t *, tsock, mblk_t *, mp);
-	(*tsock->ts_conn_upcalls->su_recv)(tsock->ts_conn_upper_handle,
+	(void) (*tsock->ts_conn_upcalls->su_recv)(tsock->ts_conn_upper_handle,
 	    mp, msgdsize(mp), 0, &error, NULL);
 
 	if (error == ENOSPC) {
 		mutex_enter(&tsock->ts_socklock);
-		(*tsock->ts_conn_upcalls->su_recv)(tsock->ts_conn_upper_handle,
-		    NULL, 0, 0, &error, NULL);
+		(void) (*tsock->ts_conn_upcalls->su_recv)(
+		    tsock->ts_conn_upper_handle, NULL, 0, 0, &error, NULL);
 		if (error == ENOSPC)
 			tsock->ts_flow_ctrld = B_TRUE;
 		mutex_exit(&tsock->ts_socklock);
