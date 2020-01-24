@@ -654,7 +654,7 @@ vr_bus_config(vr_t *vrp)
 	 * entry of the info structures. This is a generic Rhine whith no
 	 * bugs and no features.
 	 */
-	if (vrp->chip.info.name == NULL) {
+	if (*vrp->chip.info.name == '\0') {
 		bcopy((void*)&vr_chip_info[0],
 		    (void*) &vrp->chip.info,
 		    sizeof (chip_info_t));
