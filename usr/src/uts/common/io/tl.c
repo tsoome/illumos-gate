@@ -3075,6 +3075,14 @@ tl_conn_req_ser(mblk_t *mp, tl_endpt_t *tep)
 	cred_t		*cr = NULL;
 	pid_t		cpid;
 
+	/* This should not happen? */
+	if (peer_tep == NULL) {
+		tl_serializer_exit(tep);
+		tl_refrele(tep);
+		freemsg(mp);
+		return;
+	}
+
 	if (tep->te_closing) {
 		TL_UNCONNECT(tep->te_oconp);
 		tl_serializer_exit(tep);
