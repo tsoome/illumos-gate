@@ -1635,7 +1635,7 @@ catchpacket(struct bpf_d *d, uchar_t *pkt, uint_t pktlen, uint_t snaplen,
 	/*
 	 * Copy the packet data into the store buffer and update its length.
 	 */
-	(*cpfn)((uchar_t *)hp + hdrlen, pkt,
+	(void) (*cpfn)((uchar_t *)hp + hdrlen, pkt,
 	    (hp->bh_caplen = totlen - hdrlen));
 	d->bd_slen = curlen + totlen;
 
