@@ -351,7 +351,8 @@ vnic_dev_create(datalink_id_t vnic_id, datalink_id_t linkid,
 	const mac_info_t *minfop;
 	uint32_t req_hwgrp_flag = B_FALSE;
 
-	*diag = VNIC_IOC_DIAG_NONE;
+	if (diag != NULL)
+		*diag = VNIC_IOC_DIAG_NONE;
 
 	rw_enter(&vnic_lock, RW_WRITER);
 
