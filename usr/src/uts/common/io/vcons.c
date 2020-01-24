@@ -1219,8 +1219,7 @@ vt_copyin(queue_t *qp, mblk_t *mp, uint_t size)
 	cqp->cq_private = (mblk_t *)NULL;
 	mp->b_wptr = mp->b_rptr + sizeof (struct copyreq);
 	mp->b_datap->db_type = M_COPYIN;
-	if (mp->b_cont)
-		freemsg(mp->b_cont);
+	freemsg(mp->b_cont);
 	mp->b_cont = (mblk_t *)NULL;
 	qreply(qp, mp);
 }
@@ -1237,8 +1236,7 @@ vt_copyout(queue_t *qp, mblk_t *mp, mblk_t *tmp, uint_t size)
 	cqp->cq_private = (mblk_t *)NULL;
 	mp->b_wptr = mp->b_rptr + sizeof (struct copyreq);
 	mp->b_datap->db_type = M_COPYOUT;
-	if (mp->b_cont)
-		freemsg(mp->b_cont);
+	freemsg(mp->b_cont);
 	mp->b_cont = tmp;
 	qreply(qp, mp);
 }
