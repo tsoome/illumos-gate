@@ -441,14 +441,18 @@ static void
 rdsv3_ib_qp_event_handler(struct ib_event *event, void *data)
 {
 	struct rdsv3_connection *conn = data;
-	struct rdsv3_ib_connection *ic = conn->c_transport_data;
+	struct rdsv3_ib_connection *ic = NULL;
+
+	if (conn != NULL)
+		ic = conn->c_transport_data;
 
 	RDSV3_DPRINTF2("rdsv3_ib_qp_event_handler", "conn %p ic %p event %u",
 	    conn, ic, event->event);
 
 	switch (event->event) {
 	case IB_EVENT_COMM_EST:
-		(void) rdma_notify(ic->i_cm_id, IB_EVENT_COMM_EST);
+		if (ic != NULL)
+			(void) rdma_notify(ic->i_cm_id, IB_EVENT_COMM_EST);
 		break;
 	default:
 		if (conn) {

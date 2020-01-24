@@ -288,9 +288,10 @@ restart:
 			    test_bit(RDSV3_MSG_RETRANSMITTED, &rm->m_flags)) {
 				mutex_enter(&conn->c_lock);
 				if (test_and_clear_bit(RDSV3_MSG_ON_CONN,
-				    &rm->m_flags))
+				    &rm->m_flags)) {
 					list_remove_node(&rm->m_conn_item);
 					list_insert_tail(&to_be_dropped, rm);
+				}
 				mutex_exit(&conn->c_lock);
 				rdsv3_message_put(rm);
 				continue;
@@ -512,7 +513,7 @@ rdsv3_rdma_send_complete(struct rdsv3_message *rm, int status)
 		rdsv3_wake_sk_sleep(rs);
 
 		/* wake up anyone waiting in poll */
-		sk->sk_upcalls->su_recv(sk->sk_upper_handle, NULL,
+		(void) sk->sk_upcalls->su_recv(sk->sk_upper_handle, NULL,
 		    0, 0, &error, NULL);
 		if (error != 0) {
 			RDSV3_DPRINTF2("rdsv3_recv_incoming",

@@ -273,7 +273,7 @@ rdsv3_recv_incoming(struct rdsv3_connection *conn, uint32_be_t saddr,
 		__rdsv3_wake_sk_sleep(sk);
 
 		/* wake up anyone waiting in poll */
-		sk->sk_upcalls->su_recv(sk->sk_upper_handle, NULL,
+		(void) sk->sk_upcalls->su_recv(sk->sk_upper_handle, NULL,
 		    bytes, 0, &error, NULL);
 		if (error != 0) {
 			RDSV3_DPRINTF2("rdsv3_recv_incoming",
