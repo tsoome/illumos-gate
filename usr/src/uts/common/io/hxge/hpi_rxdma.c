@@ -282,7 +282,7 @@ hpi_rxdma_cfg_rdc_ring(hpi_handle_t handle, uint8_t rdc,
 	    (RBR_CFIG_A_STDADDR_MASK | RBR_CFIG_A_STDADDR_BASE_MASK));
 
 	/* The remaining 20 bits in the DMA address form the handle */
-	page_handle.bits.handle = (rdc_desc_cfg->rbr_addr >> 44) && 0xfffff;
+	page_handle.bits.handle = (rdc_desc_cfg->rbr_addr >> 44) & 0xfffff;
 
 	/*
 	 * The RBR ring size must be multiple of 64.

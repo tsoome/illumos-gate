@@ -1645,7 +1645,6 @@ hxge_unmap_txdma(p_hxge_t hxgep)
 		return;
 	}
 	tx_rings = hxgep->tx_rings;
-	tx_desc_rings = tx_rings->rings;
 	if (tx_rings == NULL) {
 		HXGE_DEBUG_MSG((hxgep, TX_CTL,
 		    "<== hxge_unmap_txdma: NULL ring pointer"));

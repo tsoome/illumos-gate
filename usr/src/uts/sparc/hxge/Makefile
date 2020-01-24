@@ -37,7 +37,6 @@ UTSBASE	= ../..
 MODULE		= hxge
 HXGE_OBJECTS =	$(HXGE_OBJS) $(HXGE_HPI_OBJS)
 OBJECTS		=  $(HXGE_OBJECTS:%=$(OBJS_DIR)/%)
-LINTS		= $(HXGE_OBJECTS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/hxge
 
@@ -57,7 +56,6 @@ CLEANFILES	+= $(MODSTUBS_O)
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
@@ -79,14 +77,6 @@ CFLAGS += -DSOLARIS
 #
 # CFLAGS += -DHXGE_DEBUG -DHPI_DEBUG
 #
-LINTFLAGS += -DSOLARIS
-#
-# STREAMS, DDI API limitations and other ON header file definitions such as ethernet.h
-# force us to turn off these lint checks.
-#
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW
-LINTTAGS	+= -erroff=E_FALSE_LOGICAL_EXPR
 
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-switch
@@ -110,12 +100,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 

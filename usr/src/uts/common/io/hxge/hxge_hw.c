@@ -109,8 +109,8 @@ hxge_hw_init_niu_common(p_hxge_t hxgep)
 uint_t
 hxge_intr(caddr_t arg1, caddr_t arg2)
 {
-	p_hxge_ldv_t		ldvp = (p_hxge_ldv_t)arg1;
-	p_hxge_t		hxgep = (p_hxge_t)arg2;
+	p_hxge_ldv_t		ldvp;
+	p_hxge_t		hxgep;
 	uint8_t			ldv;
 	hpi_handle_t		handle;
 	p_hxge_ldgv_t		ldgvp;
@@ -123,6 +123,12 @@ hxge_intr(caddr_t arg1, caddr_t arg2)
 	/*
 	 * DDI interface returns second arg as NULL
 	 */
+	ldvp = (p_hxge_ldv_t)arg1;
+	hxgep = (p_hxge_t)arg2;
+
+	if (ldvp == NULL)
+		return (DDI_INTR_UNCLAIMED);
+
 	if ((arg2 == NULL) || ((void *) ldvp->hxgep != arg2)) {
 		hxgep = ldvp->hxgep;
 	}
