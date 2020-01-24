@@ -225,11 +225,11 @@ link_start(ch_t *sa, struct pe_port_t *p)
 {
 	struct cmac *mac = p->mac;
 
-	mac->ops->reset(mac);
+	(void) mac->ops->reset(mac);
 	if (mac->ops->macaddress_set)
-		mac->ops->macaddress_set(mac, p->enaddr);
+		(void) mac->ops->macaddress_set(mac, p->enaddr);
 	(void) t1_link_start(p->phy, mac, &p->link_config);
-	mac->ops->enable(mac, MAC_DIRECTION_RX | MAC_DIRECTION_TX);
+	(void) mac->ops->enable(mac, MAC_DIRECTION_RX | MAC_DIRECTION_TX);
 }
 
 /*
@@ -625,7 +625,7 @@ error1:
 void
 pe_set_mac(ch_t *sa, unsigned char *ac_enaddr)
 {
-	sa->port[0].mac->ops->macaddress_set(sa->port[0].mac, ac_enaddr);
+	(void) sa->port[0].mac->ops->macaddress_set(sa->port[0].mac, ac_enaddr);
 }
 
 /* KLUDGE ALERT. HARD WIRED TO PORT ZERO */
@@ -660,7 +660,7 @@ pe_set_promiscuous(ch_t *sa, int flag)
 	rm.chp = sa;
 	rm.mc = sa->ch_mc;
 
-	mac->ops->set_rx_mode(mac, &rm);
+	(void) mac->ops->set_rx_mode(mac, &rm);
 	mutex_exit(&sa->ch_mc_lck);
 }
 
@@ -714,7 +714,7 @@ pe_set_mc(ch_t *sa, uint8_t *ep, int flg)
 	rm.chp = sa;
 	rm.mc = sa->ch_mc;
 
-	mac->ops->set_rx_mode(mac, &rm);
+	(void) mac->ops->set_rx_mode(mac, &rm);
 	mutex_exit(&sa->ch_mc_lck);
 
 	return (GLD_SUCCESS);

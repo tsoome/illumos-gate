@@ -163,7 +163,7 @@ link_changed(adapter_t *adapter, int port_id)
 	struct cphy *phy = adapter->port[port_id].phy;
 	struct link_config *lc = &adapter->port[port_id].link_config;
 
-	phy->ops->get_link_status(phy, &link_ok, &speed, &duplex, &fc);
+	(void) phy->ops->get_link_status(phy, &link_ok, &speed, &duplex, &fc);
 
 	lc->speed = speed < 0 ? SPEED_INVALID : speed;
 	lc->duplex = duplex < 0 ? DUPLEX_INVALID : duplex;
@@ -174,7 +174,7 @@ link_changed(adapter_t *adapter, int port_id)
 		/* Set MAC speed, duplex, and flow control to match PHY. */
 		struct cmac *mac = adapter->port[port_id].mac;
 
-		mac->ops->set_speed_duplex_fc(mac, speed, duplex, fc);
+		(void) mac->ops->set_speed_duplex_fc(mac, speed, duplex, fc);
 		lc->fc = (unsigned char)fc;
 	}
 	t1_os_link_changed(adapter, port_id, link_ok, speed, duplex, fc);
@@ -763,7 +763,7 @@ t1_seeprom_read(adapter_t *adapter, u32 addr, u32 *data)
 	u16 val;
 
 	if (addr >= EEPROMSIZE || (addr & 3))
-	return (-EINVAL);
+		return (-EINVAL);
 
 	(void) t1_os_pci_write_config_2(adapter, A_PCICFG_VPD_ADDR, (u16)addr);
 	do {
@@ -801,7 +801,7 @@ static int vpd_macaddress_get(adapter_t *adapter, int index, u8 mac_addr[])
 	chelsio_vpd_t vpd;
 
 	if (t1_eeprom_vpd_get(adapter, &vpd))
-	return (1);
+		return (1);
 	memcpy(mac_addr, vpd.mac_base_address, 5);
 	mac_addr[5] = vpd.mac_base_address[5] + index;
 	return (0);
@@ -834,27 +834,29 @@ t1_link_start(struct cphy *phy, struct cmac *mac, struct link_config *lc)
 					lc->advertising |= ADVERTISED_PAUSE;
 			}
 		}
-		phy->ops->advertise(phy, lc->advertising);
+		(void) phy->ops->advertise(phy, lc->advertising);
 
 		if (lc->autoneg == AUTONEG_DISABLE) {
 			lc->speed = lc->requested_speed;
 			lc->duplex = lc->requested_duplex;
 			lc->fc = (unsigned char)fc;
-			mac->ops->set_speed_duplex_fc(mac, lc->speed,
-						      lc->duplex, fc);
+			(void) mac->ops->set_speed_duplex_fc(mac, lc->speed,
+			    lc->duplex, fc);
 			/* Also disables autoneg */
 			phy->state = PHY_AUTONEG_RDY;
-			phy->ops->set_speed_duplex(phy, lc->speed, lc->duplex);
-			phy->ops->reset(phy, 0);
+			(void) phy->ops->set_speed_duplex(phy, lc->speed,
+			    lc->duplex);
+			(void) phy->ops->reset(phy, 0);
 		} else {
 			phy->state = PHY_AUTONEG_EN;
-			phy->ops->autoneg_enable(phy); /* also resets PHY */
+			/* also resets PHY */
+			(void) phy->ops->autoneg_enable(phy);
 		}
 	} else {
 		phy->state = PHY_AUTONEG_RDY;
-		mac->ops->set_speed_duplex_fc(mac, -1, -1, fc);
+		(void) mac->ops->set_speed_duplex_fc(mac, -1, -1, fc);
 		lc->fc = (unsigned char)fc;
-		phy->ops->reset(phy, 0);
+		(void) phy->ops->reset(phy, 0);
 	}
 	return 0;
 }
@@ -929,7 +931,7 @@ elmer0_ext_intr_handler(adapter_t *adapter)
 		if (cause & ELMER0_GP_BIT1) {	/* PMC3393 INTB */
 			struct cmac *mac = adapter->port[0].mac;
 
-			mac->ops->interrupt_handler(mac);
+			(void) mac->ops->interrupt_handler(mac);
 		}
 		if (cause & ELMER0_GP_BIT5) {	/* XPAK MOD_DETECT */
 			u32 mod_detect;
@@ -1001,9 +1003,9 @@ t1_interrupts_enable(adapter_t *adapter)
 
 	/* Enable MAC/PHY interrupts for each port. */
 	for_each_port(adapter, i) {
-		adapter->port[i].mac->ops->interrupt_enable(adapter->
+		(void) adapter->port[i].mac->ops->interrupt_enable(adapter->
 			port[i].mac);
-		adapter->port[i].phy->ops->interrupt_enable(adapter->
+		(void) adapter->port[i].phy->ops->interrupt_enable(adapter->
 			port[i].phy);
 	}
 
@@ -1042,9 +1044,9 @@ t1_interrupts_disable(adapter_t * adapter)
 
 	/* Disable MAC/PHY interrupts for each port. */
 	for_each_port(adapter, i) {
-		adapter->port[i].mac->ops->interrupt_disable(adapter->
+		(void) adapter->port[i].mac->ops->interrupt_disable(adapter->
 			port[i].mac);
-		adapter->port[i].phy->ops->interrupt_disable(adapter->
+		(void) adapter->port[i].phy->ops->interrupt_disable(adapter->
 			port[i].phy);
 	}
 
@@ -1079,9 +1081,9 @@ t1_interrupts_clear(adapter_t * adapter)
 
 	/* Clear MAC/PHY interrupts for each port. */
 	for_each_port(adapter, i) {
-		adapter->port[i].mac->ops->interrupt_clear(adapter->
+		(void) adapter->port[i].mac->ops->interrupt_clear(adapter->
 			port[i].mac);
-		adapter->port[i].phy->ops->interrupt_clear(adapter->
+		(void) adapter->port[i].phy->ops->interrupt_clear(adapter->
 			port[i].phy);
 	}
 
@@ -1459,9 +1461,9 @@ int __devinit t1_init_sw_modules(adapter_t *adapter,
 	(void) board_init(adapter, bi);
 	bi->mdio_ops->init(adapter, bi);
 	if (bi->gphy->reset)
-		bi->gphy->reset(adapter);
+		(void) bi->gphy->reset(adapter);
 	if (bi->gmac->reset)
-		bi->gmac->reset(adapter);
+		(void) bi->gmac->reset(adapter);
 
 	for_each_port(adapter, i) {
 		u8 hw_addr[6];
@@ -1488,7 +1490,7 @@ int __devinit t1_init_sw_modules(adapter_t *adapter,
 		 * exists or the one hardcoded in the MAC.
 		 */
 		if (!t1_is_asic(adapter) || bi->chip_mac == CHBT_MAC_DUMMY)
-			mac->ops->macaddress_get(mac, hw_addr);
+			(void) mac->ops->macaddress_get(mac, hw_addr);
 		else if (vpd_macaddress_get(adapter, i, hw_addr)) {
 			CH_ERR("%s: could not read MAC address from VPD ROM\n",
 				port_name(adapter, i));

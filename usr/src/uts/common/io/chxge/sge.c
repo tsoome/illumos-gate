@@ -403,7 +403,7 @@ sge_data_out(pesge* sge, int qid, mblk_t *m0,
 	spin_unlock(qlock);
 
 #ifdef SUN_KSTATS
-	if (count > MBLK_MAX)
+	if (count >= MBLK_MAX)
 		sge->intr_cnt.tx_descs[MBLK_MAX - 1]++;
 	else
 		sge->intr_cnt.tx_descs[count]++;

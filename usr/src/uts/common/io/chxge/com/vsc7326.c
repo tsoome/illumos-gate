@@ -23,8 +23,6 @@
  * Copyright (C) 2003-2005 Chelsio Communications.  All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* Driver for Vitesse VSC7326 (Schaumburg) MAC */
 
 #include "gmac.h"
@@ -107,7 +105,7 @@ static void vsc7326_full_reset(adapter_t* adapter)
 	DELAY_MS(1);
 	vsc_write(adapter, REG_SW_RESET, 0x80000001);
 	do {
-	DELAY_MS(1);
+		DELAY_MS(1);
 		vsc_read(adapter, REG_SW_RESET, &result);
 	} while (result != 0x0);
 }
