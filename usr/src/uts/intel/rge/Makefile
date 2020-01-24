@@ -61,12 +61,8 @@ LDFLAGS		+= -dy -N misc/mac -N drv/ip
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
-
-# looks like a real bug in rge_phy_update() !
-$(OBJS_DIR)/rge_chip.o := SMOFF += indenting
 
 #
 #	Default build targets.

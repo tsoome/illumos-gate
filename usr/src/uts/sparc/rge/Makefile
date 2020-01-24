@@ -66,7 +66,6 @@ LDFLAGS		+= -dy -N misc/mac -N drv/ip
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 
