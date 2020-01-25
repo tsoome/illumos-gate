@@ -675,7 +675,7 @@ opromioctl_cb(void *avp, int has_changed)
 		}
 
 		opp->oprom_size = sizeof (pnode_t);
-		*(pnode_t *)opp->oprom_array = st->current_id;
+		opp->oprom_node = st->current_id;
 
 		if (copyout(opp, (void *)arg,
 		    sizeof (pnode_t) + sizeof (uint_t)) != 0)
@@ -742,7 +742,7 @@ opromioctl_cb(void *avp, int has_changed)
 			error = EINVAL;
 			break;
 		}
-		(void) strcpy(opp->oprom_array, bpath);
+		(void) strlcpy(opp->oprom_array, bpath, valsize);
 
 #elif defined(__i386) || defined(__amd64)
 
@@ -787,7 +787,7 @@ opromioctl_cb(void *avp, int has_changed)
 			error = EINVAL;
 			break;
 		}
-		(void) strcpy(opp->oprom_array, dev_name);
+		(void) strlcpy(opp->oprom_array, dev_name, valsize);
 		if (copyout(opp, (void *)arg, sizeof (uint_t) + valsize) != 0)
 			error = EFAULT;
 

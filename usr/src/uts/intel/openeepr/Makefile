@@ -41,7 +41,6 @@ UTSBASE	= ../..
 #
 MODULE		= openeepr
 OBJECTS		= $(OPENEEPR_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(OPENEEPR_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io
 
@@ -54,23 +53,12 @@ include $(UTSBASE)/intel/Makefile.intel
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(SRC_CONFILE)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 LDFLAGS +=	-dy -Ndacf/consconfig_dacf
 
-#
-# For now, disable these lint checks; maintainers should endeavor
-# to investigate and remove these for maximum lint coverage.
-# Please do not carry these forward to new Makefiles.
-#
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
-
-# needs work
-$(OBJS_DIR)/openprom.o := SMOFF += cast_assign,strcpy_overflow
 
 #
 #	Default build targets.
@@ -84,12 +72,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 
