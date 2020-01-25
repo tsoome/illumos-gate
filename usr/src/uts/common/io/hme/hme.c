@@ -1558,10 +1558,8 @@ error_state:
 	hmefreethings(hmep);
 	hmefreebufs(hmep);
 
-	if (hmep) {
-		kmem_free((caddr_t)hmep, sizeof (*hmep));
-		ddi_set_driver_private(dip, NULL);
-	}
+	kmem_free((caddr_t)hmep, sizeof (*hmep));
+	ddi_set_driver_private(dip, NULL);
 
 	return (DDI_FAILURE);
 }
@@ -1955,7 +1953,7 @@ hme_m_propinfo(void *arg, const char *name, mac_prop_id_t num,
 			default_val = hme_ipg1;
 		} else if (strcmp(name, "_ipg2") == 0) {
 			default_val = hme_ipg2;
-		} if (strcmp(name, "_lance_mode") == 0) {
+		} else if (strcmp(name, "_lance_mode") == 0) {
 			default_val = hme_lance_mode;
 		} else {
 			return;
