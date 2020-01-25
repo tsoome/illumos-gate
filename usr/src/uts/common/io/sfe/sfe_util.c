@@ -2621,7 +2621,7 @@ next_nowait:
 
 		if (dp->nic_state >= NIC_STATE_INITIALIZED) {
 			/* notify the result of auto-negotiation to mac */
-			(*dp->gc.gc_set_media)(dp);
+			(void) (*dp->gc.gc_set_media)(dp);
 		}
 
 		if ((void *)dp->gc.gc_mii_tune_phy) {
@@ -3246,7 +3246,7 @@ gem_mac_stop(struct gem_dev *dp, uint_t flags)
 	/*
 	 * Update final statistics
 	 */
-	(*dp->gc.gc_get_stats)(dp);
+	(void) (*dp->gc.gc_get_stats)(dp);
 
 	/*
 	 * Clear all pended tx packets
@@ -4097,7 +4097,7 @@ gem_m_start(void *arg)
 
 	/* setup media mode if the link have been up */
 	if (dp->mii_state == MII_STATE_LINKUP) {
-		(dp->gc.gc_set_media)(dp);
+		(void) (dp->gc.gc_set_media)(dp);
 	}
 
 	/* setup initial rx filter */
@@ -5257,7 +5257,7 @@ err_reset:
 		dp->intr_watcher_id = 0;
 	}
 	mutex_enter(&dp->intrlock);
-	(*dp->gc.gc_reset_chip)(dp);
+	(void) (*dp->gc.gc_reset_chip)(dp);
 	dp->nic_state = NIC_STATE_STOPPED;
 	mutex_exit(&dp->intrlock);
 
