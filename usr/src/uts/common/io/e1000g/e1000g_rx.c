@@ -390,7 +390,8 @@ e1000g_get_buf(e1000g_rx_data_t *rx_data)
 
 	mutex_enter(&rx_data->freelist_lock);
 	packet = (p_rx_sw_packet_t)
-	    QUEUE_POP_HEAD(&rx_data->free_list);
+	    QUEUE_GET_HEAD(&rx_data->free_list);
+	QUEUE_REMOVE_HEAD(&rx_data->free_list);
 	if (packet != NULL) {
 		rx_data->avail_freepkt--;
 		goto end;
@@ -414,7 +415,8 @@ e1000g_get_buf(e1000g_rx_data_t *rx_data)
 	if (Adapter->rx_freelist_num < Adapter->rx_freelist_limit) {
 		(void) e1000g_increase_rx_packets(rx_data);
 		packet = (p_rx_sw_packet_t)
-		    QUEUE_POP_HEAD(&rx_data->free_list);
+		    QUEUE_GET_HEAD(&rx_data->free_list);
+		QUEUE_REMOVE_HEAD(&rx_data->free_list);
 		if (packet != NULL) {
 			rx_data->avail_freepkt--;
 		}
@@ -517,8 +519,8 @@ e1000g_receive(e1000g_rx_ring_t *rx_ring, mblk_t **tail, uint_t sz)
 		 * The mp->b_rptr is mapped to The CurrentDescriptor
 		 * Buffer Address.
 		 */
-		packet =
-		    (p_rx_sw_packet_t)QUEUE_POP_HEAD(&rx_data->recv_list);
+		packet = (p_rx_sw_packet_t)QUEUE_GET_HEAD(&rx_data->recv_list);
+		QUEUE_REMOVE_HEAD(&rx_data->recv_list);
 		ASSERT(packet != NULL);
 
 		rx_buf = packet->rx_buf;

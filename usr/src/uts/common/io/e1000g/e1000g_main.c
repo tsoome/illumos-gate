@@ -2258,7 +2258,7 @@ e1000g_reset_adapter(struct e1000g *Adapter)
 	if (e1000g_start(Adapter, B_FALSE) != DDI_SUCCESS) {
 		rw_exit(&Adapter->chip_lock);
 		e1000g_log(Adapter, CE_WARN, "Reset failed");
-			return (B_FALSE);
+		return (B_FALSE);
 	}
 
 	rw_exit(&Adapter->chip_lock);

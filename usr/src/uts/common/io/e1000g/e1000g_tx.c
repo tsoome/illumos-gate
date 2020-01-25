@@ -350,7 +350,8 @@ adjust_threshold:
 		if (desc_count > 0) {
 			mutex_enter(&tx_ring->freelist_lock);
 			packet = (p_tx_sw_packet_t)
-			    QUEUE_POP_HEAD(&tx_ring->free_list);
+			    QUEUE_GET_HEAD(&tx_ring->free_list);
+			QUEUE_REMOVE_HEAD(&tx_ring->free_list);
 			mutex_exit(&tx_ring->freelist_lock);
 
 			if (packet == NULL) {

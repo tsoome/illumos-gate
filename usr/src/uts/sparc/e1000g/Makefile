@@ -41,7 +41,6 @@ UTSBASE	= ../..
 MODULE		= e1000g
 OBJECTS		= $(E1000G_OBJS:%=$(OBJS_DIR)/%)
 OBJECTS		+= $(E1000API_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(E1000G_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/e1000g
 
@@ -54,13 +53,7 @@ include $(UTSBASE)/sparc/Makefile.sparc
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(SRC_CONFFILE)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
-
-LINTFLAGS  += \
-	-I$(UTSBASE)/common/io/e1000g \
-	-I$(UTSBASE)/common/io/e1000api
-
 
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-parentheses
@@ -69,18 +62,12 @@ CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-unused-variable
 CERRWARN	+= -_cc=-erroff=E_STATEMENT_NOT_REACHED
 
-LINTTAGS	+= -erroff=E_CONSTANT_CONDITION
+SMOFF += all_func_returns
 
 #
 #	Override defaults
 #
 INC_PATH	+= -I$(CONF_SRCDIR) -I$(UTSBASE)/common/io/e1000api
-
-
-#
-# lint pass one enforcement
-#
-CFLAGS          += $(CCVERBOSE)
 
 #
 # Turn on doubleword alignment for 64 bit registers
@@ -105,18 +92,9 @@ clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
 
-
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
-
 install:	$(INSTALL_DEPS)
 
 #
 #	Include common targets.
 #
 include $(UTSBASE)/sparc/Makefile.targ
-
