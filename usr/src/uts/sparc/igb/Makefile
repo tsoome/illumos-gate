@@ -41,7 +41,6 @@ UTSBASE	= ../..
 MODULE		= igb
 OBJECTS		= $(IGB_OBJS:%=$(OBJS_DIR)/%)
 OBJECTS		+= $(E1000API_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(IGB_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/igb
 
@@ -50,19 +49,17 @@ CONF_SRCDIR	= $(UTSBASE)/common/io/igb
 #
 include $(UTSBASE)/sparc/Makefile.sparc
 
-LINTFLAGS += \
-	-I$(UTSBASE)/common/io/igb \
-	-I$(UTSBASE)/common/io/e1000api
-
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_cc=-erroff=E_STATEMENT_NOT_REACHED
+
+# needs work
+SMOFF += all_func_returns
 
 #
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(SRC_CONFFILE)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
@@ -98,16 +95,9 @@ clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
 
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
-
 install:	$(INSTALL_DEPS)
 
 #
 #	Include common targets.
 #
 include $(UTSBASE)/sparc/Makefile.targ
-

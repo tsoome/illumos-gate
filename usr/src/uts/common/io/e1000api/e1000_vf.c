@@ -497,7 +497,7 @@ s32 e1000_promisc_set_vf(struct e1000_hw *hw, enum e1000_promisc_type type)
 		return -E1000_ERR_MAC_INIT;
 	}
 
-	 ret_val = mbx->ops.write_posted(hw, &msgbuf, 1, 0);
+	ret_val = mbx->ops.write_posted(hw, &msgbuf, 1, 0);
 
 	if (!ret_val)
 		ret_val = mbx->ops.read_posted(hw, &msgbuf, 1, 0);

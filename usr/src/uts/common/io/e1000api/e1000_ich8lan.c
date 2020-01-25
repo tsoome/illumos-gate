@@ -360,7 +360,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
 		 * that it might be trying to perform from previous
 		 * attempts to acknowledge any phy read requests.
 		 */
-		 msec_delay(50);
+		msec_delay(50);
 
 		/* fall-through */
 	case e1000_pch2lan:
