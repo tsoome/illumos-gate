@@ -2045,11 +2045,15 @@ audiocs_alloc_engine(CS_state_t *state, int num)
 void
 audiocs_free_engine(CS_engine_t *eng)
 {
-	CS_state_t	*state = eng->ce_state;
-	audio_dev_t	*adev = state->cs_adev;
+	CS_state_t	*state;
+	audio_dev_t	*adev;
 
 	if (eng == NULL)
 		return;
+
+	state = eng->ce_state;
+	adev = state->cs_adev;
+
 	if (eng->ce_engine) {
 		audio_dev_remove_engine(adev, eng->ce_engine);
 		audio_engine_free(eng->ce_engine);
