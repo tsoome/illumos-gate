@@ -869,7 +869,7 @@ usbser_attach_ports(usbser_state_t *usp)
 		 * register callbacks
 		 */
 		ds_cb.cb_arg = (caddr_t)pp;
-		USBSER_DS_REGISTER_CB(usp, i, &ds_cb);
+		(void) USBSER_DS_REGISTER_CB(usp, i, &ds_cb);
 
 		pp->port_state = USBSER_PORT_CLOSED;
 
