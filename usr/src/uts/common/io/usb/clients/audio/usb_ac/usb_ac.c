@@ -1018,10 +1018,8 @@ usb_ac_create_pm_components(dev_info_t *dip, usb_ac_state_t *uacp)
 		uacpm->acpm_pwr_states = (uint8_t)pwr_states;
 		(void) pm_raise_power(dip, 0, USB_DEV_OS_FULL_PWR);
 	} else {
-		if (uacpm) {
-			kmem_free(uacpm,  sizeof (usb_ac_power_t));
-			uacp->usb_ac_pm = NULL;
-		}
+		kmem_free(uacpm,  sizeof (usb_ac_power_t));
+		uacp->usb_ac_pm = NULL;
 		USB_DPRINTF_L2(PRINT_MASK_PM, uacp->usb_ac_log_handle,
 		    "pm not enabled");
 	}
