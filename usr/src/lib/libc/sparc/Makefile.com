@@ -1340,8 +1340,9 @@ $(STRETS:%=pics/%): $(LIBCBASE)/crt/stret.s
 	$(AS) $(ASFLAGS) -DSTRET$(@F:stret%.o=%) $(LIBCBASE)/crt/stret.s -o $@
 	$(POST_PROCESS_S_O)
 
+$(LIBCBASE)/crt/_rtbootld.s := SMOFF += check_check_deref
 $(LIBCBASE)/crt/_rtbootld.s:	$(LIBCBASE)/crt/_rtboot.s $(LIBCBASE)/crt/_rtld.c
-	$(CC) $(CPPFLAGS) $(CTF_FLAGS) -O -S $(C_PICFLAGS) \
+	$(CC) $(CPPFLAGS) $(CERRWARN) $(CTF_FLAGS) -O -S $(C_PICFLAGS) \
 	    $(LIBCBASE)/crt/_rtld.c -o $(LIBCBASE)/crt/_rtld.s
 	$(CAT) $(LIBCBASE)/crt/_rtboot.s $(LIBCBASE)/crt/_rtld.s > $@
 	$(RM) $(LIBCBASE)/crt/_rtld.s
