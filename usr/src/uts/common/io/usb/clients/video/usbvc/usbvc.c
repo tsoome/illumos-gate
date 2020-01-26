@@ -3746,9 +3746,7 @@ usbvc_vs_get_probe(usbvc_state_t *usbvcp, usbvc_stream_if_t *strm_if,
 		return (USB_FAILURE);
 	}
 	bcopy(data->b_rptr, ctrl_pc, setup.wLength);
-	if (data) {
-		freemsg(data);
-	}
+	freemsg(data);
 
 	return (USB_SUCCESS);
 }
