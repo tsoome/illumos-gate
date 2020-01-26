@@ -1107,12 +1107,12 @@ fas_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 
 		if (fas->f_quiesce_timeid) {
 			(void) untimeout(fas->f_quiesce_timeid);
-				fas->f_quiesce_timeid = 0;
+			fas->f_quiesce_timeid = 0;
 		}
 
 		if (fas->f_restart_cmd_timeid) {
 			(void) untimeout(fas->f_restart_cmd_timeid);
-				fas->f_restart_cmd_timeid = 0;
+			fas->f_restart_cmd_timeid = 0;
 		}
 
 		/* Last fas? */
