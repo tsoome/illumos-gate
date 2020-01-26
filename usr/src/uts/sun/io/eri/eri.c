@@ -879,8 +879,7 @@ attach_fail:
 
 	if (macp != NULL)
 		mac_free(macp);
-	if (erip != NULL)
-		kmem_free(erip, sizeof (*erip));
+	kmem_free(erip, sizeof (*erip));
 
 	return (DDI_FAILURE);
 }
@@ -5520,10 +5519,11 @@ eri_check_txhung(struct eri *erip)
 	boolean_t	macupdate = B_FALSE;
 
 	mutex_enter(&erip->xmitlock);
-	if (erip->flags & ERI_RUNNING)
+	if (erip->flags & ERI_RUNNING) {
 		erip->tx_completion = (uint32_t)(GET_ETXREG(tx_completion) &
 		    ETX_COMPLETION_MASK);
 		macupdate |= eri_reclaim(erip, erip->tx_completion);
+	}
 
 	/* Something needs to be sent out but it is not going out */
 	if ((erip->tcurp != erip->tnextp) &&
