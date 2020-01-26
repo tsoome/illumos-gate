@@ -1127,7 +1127,7 @@ int
 mrsas_tbolt_tran_start(struct scsi_address *ap, struct scsi_pkt *pkt)
 {
 	struct mrsas_instance	*instance = ADDR2MR(ap);
-	struct scsa_cmd		*acmd = PKT2CMD(pkt);
+	struct scsa_cmd		*acmd;
 	struct mrsas_cmd	*cmd = NULL;
 	uchar_t			cmd_done = 0;
 
@@ -1147,6 +1147,7 @@ mrsas_tbolt_tran_start(struct scsi_address *ap, struct scsi_pkt *pkt)
 		    "returning mfi_pkt and setting TRAN_BUSY\n"));
 		return (TRAN_BUSY);
 	}
+	acmd = PKT2CMD(pkt);
 	(void) mrsas_tbolt_prepare_pkt(acmd);
 
 	cmd = mrsas_tbolt_build_cmd(instance, ap, pkt, &cmd_done);
@@ -3663,7 +3664,7 @@ mrsas_tbolt_get_pd_info(struct mrsas_instance *instance,
 	if (instance->tbolt)
 		mr_sas_tbolt_build_mfi_cmd(instance, cmd);
 
-	instance->func_ptr->issue_cmd_in_sync_mode(instance, cmd);
+	(void) instance->func_ptr->issue_cmd_in_sync_mode(instance, cmd);
 
 	ddi_rep_get8(cmd->frame_dma_obj.acc_handle, (uint8_t *)pds,
 	    (uint8_t *)dcmd_dma_obj.buffer, sizeof (struct mrsas_tbolt_pd_info),

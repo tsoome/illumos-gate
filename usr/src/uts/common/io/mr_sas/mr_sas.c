@@ -1930,7 +1930,8 @@ mrsas_tran_start(struct scsi_address *ap, register struct scsi_pkt *pkt)
 	} else {
 		struct mrsas_header *hdr = &cmd->frame->hdr;
 
-		instance->func_ptr->issue_cmd_in_poll_mode(instance, cmd);
+		(void) instance->func_ptr->issue_cmd_in_poll_mode(instance,
+		    cmd);
 
 		pkt->pkt_reason		= CMD_CMPLT;
 		pkt->pkt_statistics	= 0;
@@ -2528,12 +2529,13 @@ push_pending_mfi_pkt(struct mrsas_instance *instance, struct mrsas_cmd *cmd)
 			/* Wait for specified interval	*/
 			cmd->drv_pkt_time = ddi_get16(
 			    cmd->frame_dma_obj.acc_handle, &hdr->timeout);
-			if (cmd->drv_pkt_time < debug_timeout_g)
+			if (cmd->drv_pkt_time < debug_timeout_g) {
 				cmd->drv_pkt_time = (uint16_t)debug_timeout_g;
 				con_log(CL_ANN1, (CE_CONT,
 				    "push_pending_pkt(): "
 				    "Called IO Timeout Value %x\n",
 				    cmd->drv_pkt_time));
+			}
 		}
 		if (hdr && instance->timeout_id == (timeout_id_t)-1) {
 			instance->timeout_id = timeout(io_timeout_checker,
@@ -2837,7 +2839,8 @@ mrsas_issue_pending_cmds(struct mrsas_instance *instance)
 				dev_err(instance->dip, CE_CONT,
 				    "mrsas_issue_pending_cmds(): "
 				    "SYNC_CMD == TRUE \n");
-				instance->func_ptr->issue_cmd_in_sync_mode(
+				(void)
+				    instance->func_ptr->issue_cmd_in_sync_mode(
 				    instance, cmd);
 			} else {
 				instance->func_ptr->issue_cmd(cmd, instance);
@@ -5575,13 +5578,13 @@ issue_mfi_dcmd(struct mrsas_instance *instance, struct mrsas_ioctl *ioctl,
 		dcmd_dma_obj.dma_attr.dma_attr_align = 1;
 
 		/* allocate kernel buffer for DMA */
-			if (mrsas_alloc_dma_obj(instance, &dcmd_dma_obj,
-			    (uchar_t)DDI_STRUCTURE_LE_ACC) != 1) {
-				con_log(CL_ANN,
-				    (CE_WARN, "issue_mfi_dcmd: could not "
-				    "allocate data transfer buffer."));
-				return (DDI_FAILURE);
-			}
+		if (mrsas_alloc_dma_obj(instance, &dcmd_dma_obj,
+		    (uchar_t)DDI_STRUCTURE_LE_ACC) != 1) {
+			con_log(CL_ANN,
+			    (CE_WARN, "issue_mfi_dcmd: could not "
+			    "allocate data transfer buffer."));
+			return (DDI_FAILURE);
+		}
 		(void) memset(dcmd_dma_obj.buffer, 0, xferlen);
 
 		/* If IOCTL requires DMA WRITE, do ddi_copyin IOCTL data copy */
@@ -6229,9 +6232,7 @@ handle_drv_ioctl(struct mrsas_instance *instance, struct mrsas_ioctl *ioctl,
 
 		pci_conf_buf = (uint8_t *)&pi.pciHeaderInfo;
 
-		for (i = 0; i < (sizeof (struct mrsas_pci_information) -
-		    offsetof(struct mrsas_pci_information, pciHeaderInfo));
-		    i++) {
+		for (i = 0; i < sizeof (pi.pciHeaderInfo); i++) {
 			pci_conf_buf[i] =
 			    pci_config_get8(instance->pci_handle, i);
 		}
@@ -6505,44 +6506,48 @@ display_scsi_inquiry(caddr_t scsi_inq)
 
 	len = 0;
 
-	len += snprintf(inquiry_buf + len, 265 - len, "	 Vendor: ");
+	len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+	    "	 Vendor: ");
 	for (i = 8; i < 16; i++) {
-		len += snprintf(inquiry_buf + len, 265 - len, "%c",
-		    scsi_inq[i]);
+		len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+		    "%c", scsi_inq[i]);
 	}
 
-	len += snprintf(inquiry_buf + len, 265 - len, "	 Model: ");
+	len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+	    "	 Model: ");
 
 	for (i = 16; i < 32; i++) {
-		len += snprintf(inquiry_buf + len, 265 - len, "%c",
-		    scsi_inq[i]);
+		len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+		    "%c", scsi_inq[i]);
 	}
 
-	len += snprintf(inquiry_buf + len, 265 - len, "	 Rev: ");
+	len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+	    "	 Rev: ");
 
 	for (i = 32; i < 36; i++) {
-		len += snprintf(inquiry_buf + len, 265 - len, "%c",
-		    scsi_inq[i]);
+		len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+		    "%c", scsi_inq[i]);
 	}
 
-	len += snprintf(inquiry_buf + len, 265 - len, "\n");
-
+	len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len, "\n");
 
 	i = scsi_inq[0] & 0x1f;
 
-
-	len += snprintf(inquiry_buf + len, 265 - len, "	 Type:	 %s ",
+	len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+	    "	 Type:	 %s ",
 	    i < MAX_SCSI_DEVICE_CODE ? scsi_device_types[i] :
 	    "Unknown	      ");
 
 
-	len += snprintf(inquiry_buf + len, 265 - len,
+	len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
 	    "		      ANSI SCSI revision: %02x", scsi_inq[2] & 0x07);
 
 	if ((scsi_inq[2] & 0x07) == 1 && (scsi_inq[3] & 0x0f) == 1) {
-		len += snprintf(inquiry_buf + len, 265 - len, " CCS\n");
+		len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+		    " CCS\n");
 	} else {
-		len += snprintf(inquiry_buf + len, 265 - len, "\n");
+		len += snprintf(inquiry_buf + len, sizeof (inquiry_buf) - len,
+		    "\n");
 	}
 
 	con_log(CL_DLEVEL2, (CE_CONT, inquiry_buf));
@@ -7562,13 +7567,13 @@ mrsas_parse_devname(char *devnm, int *tgt, int *lun)
 		if (ddi_strtol(tp, NULL, 0x10, &num)) {
 			return (DDI_FAILURE); /* Can declare this as constant */
 		}
-			*tgt = (int)num;
+		*tgt = (int)num;
 	}
 	if (lun && lp) {
 		if (ddi_strtol(lp, NULL, 0x10, &num)) {
 			return (DDI_FAILURE);
 		}
-			*lun = (int)num;
+		*lun = (int)num;
 	}
 	return (DDI_SUCCESS);  /* Success case */
 }

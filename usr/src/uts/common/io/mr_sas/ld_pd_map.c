@@ -384,7 +384,7 @@ MR_BuildRaidContext(struct mrsas_instance *instance,
 	} else {
 		if (start_strip == (start_row + 1) * raid->rowDataSize - 1) {
 			regStart += ref_in_start_stripe;
-		regSize = stripSize - ref_in_start_stripe;
+			regSize = stripSize - ref_in_start_stripe;
 		}
 
 		if (numRows > 2) {

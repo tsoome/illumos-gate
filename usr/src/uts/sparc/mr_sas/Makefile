@@ -38,7 +38,6 @@ UTSBASE	= ../..
 #
 MODULE		= mr_sas
 OBJECTS		= $(MR_SAS_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(MR_SAS_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/mr_sas
 
@@ -51,7 +50,6 @@ include $(UTSBASE)/sparc/Makefile.sparc
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(CONFMOD)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 # 
@@ -89,12 +87,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 
