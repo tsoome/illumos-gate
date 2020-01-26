@@ -415,11 +415,12 @@ _NOTE(SCHEME_PROTECTS_DATA("cmp_pcr_rwlock", av1394_cmp_s::cmp_pcr))
 /*
  * per-instance soft state structure
  */
+#define	AV1394_NCHANNELS	64
 typedef struct av1394_isoch_s {
 	kmutex_t		i_mutex;	/* structure mutex */
 	int			i_nopen;	/* number of opens */
 	av1394_cmp_t		i_cmp;		/* CMP information */
-	av1394_ic_t		*i_ic[64];	/* array of channels */
+	av1394_ic_t		*i_ic[AV1394_NCHANNELS]; /* array of channels */
 	av1394_as_t		i_mmap_as;	/* mmap virtual addr space */
 	ddi_softintr_t		i_softintr_id;	/* soft interrupt id */
 	uint64_t		i_softintr_ch;	/* channels to service */
