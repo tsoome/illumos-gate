@@ -2987,16 +2987,14 @@ scsa2usb_prepare_pkt(scsa2usb_state_t *scsa2usbp, struct scsi_pkt *pkt)
 	pkt->pkt_resid = 0;
 	bzero(pkt->pkt_scbp, cmd->cmd_scblen); /* Set status to good */
 
-	if (cmd) {
-		cmd->cmd_timeout = pkt->pkt_time;
-		cmd->cmd_xfercount = 0;		/* Reset the fields */
-		cmd->cmd_total_xfercount = 0;
-		cmd->cmd_lba = 0;
-		cmd->cmd_done = 0;
-		cmd->cmd_dir = 0;
-		cmd->cmd_offset = 0;
-		cmd->cmd_actual_len = cmd->cmd_cdblen;
-	}
+	cmd->cmd_timeout = pkt->pkt_time;
+	cmd->cmd_xfercount = 0;		/* Reset the fields */
+	cmd->cmd_total_xfercount = 0;
+	cmd->cmd_lba = 0;
+	cmd->cmd_done = 0;
+	cmd->cmd_dir = 0;
+	cmd->cmd_offset = 0;
+	cmd->cmd_actual_len = cmd->cmd_cdblen;
 }
 
 
