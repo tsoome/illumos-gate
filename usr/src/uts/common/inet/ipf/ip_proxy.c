@@ -589,9 +589,10 @@ nat_t *nat;
 #if !defined(_KERNEL) || defined(MENTAT) || defined(__sgi)
 		if (err != 0) {
 			short adjlen = err & 0xffff;
+			u_32_t ip_len = ip->ip_len;
 
-			s1 = LONG_SUM(ip->ip_len - adjlen);
-			s2 = LONG_SUM(ip->ip_len);
+			s1 = LONG_SUM(ip_len - adjlen);
+			s2 = LONG_SUM(ip_len);
 			CALC_SUMD(s1, s2, sd);
 			sd = (sd & 0xffff) + (sd >> 16);
 			if (!fin->fin_out ||

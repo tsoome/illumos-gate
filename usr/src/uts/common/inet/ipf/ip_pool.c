@@ -596,8 +596,8 @@ ipf_stack_t *ifs;
 	if (n == NULL)
 		return ENOENT;
 
-	ipo->ipo_head->rnh_deladdr(&n->ipn_addr, &n->ipn_mask,
-				   ipo->ipo_head);
+	(void) ipo->ipo_head->rnh_deladdr(&n->ipn_addr, &n->ipn_mask,
+	    ipo->ipo_head);
 	KFREE(n);
 
 	ifs->ifs_ipoolstat.ipls_nodes--;	
@@ -700,8 +700,8 @@ ipf_stack_t *ifs;
 	ip_pool_node_t *n;
 
 	while ((n = ipo->ipo_list) != NULL) {
-		ipo->ipo_head->rnh_deladdr(&n->ipn_addr, &n->ipn_mask,
-					   ipo->ipo_head);
+		(void) ipo->ipo_head->rnh_deladdr(&n->ipn_addr, &n->ipn_mask,
+		    ipo->ipo_head);
 
 		*n->ipn_pnext = n->ipn_next;
 		if (n->ipn_next)

@@ -2274,8 +2274,7 @@ u_32_t *passp;
 
 	fr = fin->fin_fr;
 
-	if (passp != NULL)
-		*passp = pass;
+	*passp = pass;
 
 	return fr;
 }
@@ -3535,7 +3534,7 @@ ipf_stack_t *ifs;
 			(void) frflushlist(set, unit, nfreedp, fp->fr_grp, ifs);
 		}
 
-		if (fp->fr_grhead != NULL) {
+		if (*fp->fr_grhead != '\0') {
 			fr_delgroup(fp->fr_grhead, unit, set, ifs);
 			*fp->fr_grhead = '\0';
 		}
@@ -4491,7 +4490,7 @@ ipf_stack_t *ifs;
 		return ESRCH;
 
 	if (*group != '\0') {
-	    if (!fg && !(fg = fr_findgroup(group, unit, set, NULL, ifs)))
+		if (!fg && !(fg = fr_findgroup(group, unit, set, NULL, ifs)))
 			return ESRCH;
 		fprev = &fg->fg_start;
 	}
@@ -5502,8 +5501,8 @@ ipf_stack_t *ifs;
 static INLINE int fr_updateipid(fin)
 fr_info_t *fin;
 {
-	u_short id, ido, sums;
-	u_32_t sumd, sum;
+	u_short sums;
+	u_32_t id, ido, sumd, sum;
 	ip_t *ip;
 
 	if (fin->fin_off != 0) {
@@ -6517,7 +6516,7 @@ ipftuneable_alloc(ipf_stack_t *ifs)
 #endif
 #undef TUNE_SET
 
-	ipftuneable_setdefs(ifs);
+    ipftuneable_setdefs(ifs);
 
 #ifdef _KERNEL
     (void) ipf_property_update(ipf_dev_info, ifs);

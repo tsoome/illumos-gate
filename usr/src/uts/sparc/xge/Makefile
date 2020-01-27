@@ -97,6 +97,9 @@ CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-empty-body
 CERRWARN	+= $(CNOWARN_UNINIT)
 
+# needs work
+SMOFF += allocating_enough_data
+
 #
 #
 #	Default build targets.

@@ -455,9 +455,11 @@ ippr_rpcb_decodereq(fin, nat, rs, rm, ifsrpcb)
 	rx.rx_xid = B(p++);	/* Record this message's XID. */
 
 	/* Parse out and test the RPC header. */
-	if ((B(p++) != RPCB_CALL) ||
-	    (B(p++) != RPCB_MSG_VERSION) ||
-	    (B(p++) != RPCB_PROG))
+	if (B(p++) != RPCB_CALL)
+		return(-1);
+	if (B(p++) != RPCB_MSG_VERSION)
+		return(-1);
+	if (B(p++) != RPCB_PROG)
 		return(-1);
 
 	/* Record the RPCB version and procedure. */
