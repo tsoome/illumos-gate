@@ -626,15 +626,16 @@ scsa1394_sbp2_start(scsa1394_lun_t *lp, scsa1394_cmd_t *cmd)
 
 	if ((ret == SBP2_SUCCESS) || (ret == SBP2_ECONTEXT)) {
 		return (TRAN_ACCEPT);
-	} if (task->ts_error == SBP2_TASK_ERR_BUS) {
+	}
+
+	if (task->ts_error == SBP2_TASK_ERR_BUS) {
 		if (task->ts_bus_error == CMD1394_EDEVICE_BUSY) {
 			return (TRAN_BUSY);
 		} else {
 			return (TRAN_FATAL_ERROR);
 		}
-	} else {
-		return (TRAN_FATAL_ERROR);
 	}
+	return (TRAN_FATAL_ERROR);
 }
 
 /*
