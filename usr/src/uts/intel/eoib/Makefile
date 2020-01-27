@@ -40,7 +40,6 @@ UTSBASE	= ../..
 #
 MODULE		= eoib
 OBJECTS		= $(EOIB_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(EOIB_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 
 #
@@ -52,7 +51,6 @@ include $(UTSBASE)/intel/Makefile.intel
 # Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 # Module specific debug flag
@@ -66,9 +64,6 @@ CFLAGS += $(CCVERBOSE)
 
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
-
-# needs work
-$(OBJS_DIR)/eib_ibt.o := SMOFF += deref_check
 
 #
 # Depends on misc/ibtl
@@ -87,12 +82,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 

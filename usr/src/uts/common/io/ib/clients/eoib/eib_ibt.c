@@ -188,7 +188,8 @@ eib_ibt_link_mod(eib_t *ss)
 	 */
 	ret = ibt_query_hca_ports(ss->ei_hca_hdl, ss->ei_props->ep_port_num,
 	    &pi, &num_pi, &sz_pi);
-	if ((ret != IBT_SUCCESS) || (pi->p_linkstate != IBT_PORT_ACTIVE)) {
+	if (ret != IBT_SUCCESS || (pi == NULL ||
+	    pi->p_linkstate != IBT_PORT_ACTIVE)) {
 		ibt_free_portinfo(pi, sz_pi);
 		eib_mac_link_down(ss, B_FALSE);
 		return;
