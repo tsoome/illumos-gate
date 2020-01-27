@@ -695,10 +695,7 @@ eibnx_join_solicit_mcg(eibnx_thr_info_t *info)
 	 * for the mcg and use the new one. They both should be the
 	 * same, really.
 	 */
-	if (info->ti_solicit_mcg) {
-		bcopy(&mcg_info, info->ti_solicit_mcg,
-		    sizeof (ibt_mcg_info_t));
-	}
+	bcopy(&mcg_info, info->ti_solicit_mcg, sizeof (ibt_mcg_info_t));
 
 	return (ENX_E_SUCCESS);
 }
@@ -742,10 +739,7 @@ eibnx_join_advertise_mcg(eibnx_thr_info_t *info)
 	 * for the mcg and use the new one. They both should be the
 	 * same, really.
 	 */
-	if (info->ti_advertise_mcg) {
-		bcopy(&mcg_info, info->ti_advertise_mcg,
-		    sizeof (ibt_mcg_info_t));
-	}
+	bcopy(&mcg_info, info->ti_advertise_mcg, sizeof (ibt_mcg_info_t));
 
 	/*
 	 * Since we need to receive advertisements, we'll attach our qp
