@@ -324,7 +324,8 @@ iser_ib_get_paths(ibt_ip_addr_t *local_ip, ibt_ip_addr_t *remote_ip,
 
 	(void) bzero(&ipattr, sizeof (ibt_ip_path_attr_t));
 	ipattr.ipa_dst_ip	= remote_ip;
-	ipattr.ipa_src_ip	= *local_ip;
+	if (local_ip != NULL)
+		ipattr.ipa_src_ip	= *local_ip;
 	ipattr.ipa_max_paths	= 1;
 	ipattr.ipa_ndst		= 1;
 
