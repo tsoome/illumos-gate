@@ -787,7 +787,7 @@ sol_ucma_poll(dev_t dev, short events, int anyyet, short *reventsp,
 	} else {
 		*reventsp = 0;
 	}
-	if ((*reventsp == 0 && !anyyet) || (events && POLLET)) {
+	if ((*reventsp == 0 && !anyyet) || (events & POLLET)) {
 		*phpp = filep->file_pollhead;
 	}
 	sol_ofs_uobj_put(&filep->file_uobj);
@@ -1104,7 +1104,7 @@ sol_ucma_connect(dev_t dev, void *io_buf, struct uio *uio)
 		    "invalid QPNum %x", conn_param.qp_num);
 		return (EINVAL);
 	}
-	(*uverbs_disable_uqpn_modify_fp) (conn_param.qp_num);
+	(void) (*uverbs_disable_uqpn_modify_fp) (conn_param.qp_num);
 	rdma_map_id2qphdl(chanp->chan_rdma_id, qphdl);
 	idp = chanp->chan_rdma_id;
 	if (idp->ps == RDMA_PS_TCP)
@@ -1193,7 +1193,7 @@ sol_ucma_accept(dev_t dev, void *io_buf, struct uio *uio)
 			    "invalid QPNum %x", conn_param.qp_num);
 			return (EINVAL);
 		}
-		(*uverbs_disable_uqpn_modify_fp) (conn_param.qp_num);
+		(void) (*uverbs_disable_uqpn_modify_fp) (conn_param.qp_num);
 		rdma_map_id2qphdl(chanp->chan_rdma_id, qphdl);
 		idp = chanp->chan_rdma_id;
 		if (idp->ps == RDMA_PS_TCP)
