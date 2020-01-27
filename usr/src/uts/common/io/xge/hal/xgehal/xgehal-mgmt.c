@@ -811,15 +811,15 @@ xge_hal_restore_link_led(xge_hal_device_h devh)
 	 * represents the gpio control register. In the case of Herc, LED
 	 * handling is done by beacon control register as opposed to gpio
 	 * control register in Xena. Beacon control is used only to toggle
-     * and the value written into it does not depend on the link state.
-     * It is upto the ULD to toggle the LED even number of times which 
-     * brings the LED to it's original state. 
+	 * and the value written into it does not depend on the link state.
+	 * It is upto the ULD to toggle the LED even number of times which
+	 * brings the LED to it's original state.
 	 */
 	val64 = xge_os_pio_mem_read64(hldev->pdev, hldev->regh0,
-				      &bar0->beacon_control);
-    val64 |= 0x0000800000000000ULL;
-    xge_os_pio_mem_write64(hldev->pdev, hldev->regh0,
-    		       val64, &bar0->beacon_control);
+	    &bar0->beacon_control);
+	val64 |= 0x0000800000000000ULL;
+	xge_os_pio_mem_write64(hldev->pdev, hldev->regh0,
+	    val64, &bar0->beacon_control);
 }
 
 /**
@@ -1240,7 +1240,7 @@ xge_hal_pma_loopback( xge_hal_device_h devh, int enable )
 	val64 |= XGE_HAL_MDIO_CONTROL_MMD_CTRL(XGE_HAL_MDIO_CTRL_START);
 	__hal_serial_mem_write64(hldev, val64, &bar0->mdio_control);
 
-    return XGE_HAL_OK;
+	return XGE_HAL_OK;
 }
 
 u16

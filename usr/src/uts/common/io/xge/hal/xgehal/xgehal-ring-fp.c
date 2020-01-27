@@ -191,8 +191,8 @@ xge_hal_ring_dtr_info_get(xge_hal_channel_h	channelh, xge_hal_dtr_h	dtrh,
 
 	ext_info->l3_cksum = XGE_HAL_RXD_GET_L3_CKSUM(rxdp->control_1);
 	ext_info->l4_cksum = XGE_HAL_RXD_GET_L4_CKSUM(rxdp->control_1);
-		ext_info->frame	= XGE_HAL_RXD_GET_FRAME_TYPE(rxdp->control_1);
-		ext_info->proto	= XGE_HAL_RXD_GET_FRAME_PROTO(rxdp->control_1);
+	ext_info->frame	= XGE_HAL_RXD_GET_FRAME_TYPE(rxdp->control_1);
+	ext_info->proto	= XGE_HAL_RXD_GET_FRAME_PROTO(rxdp->control_1);
 	ext_info->vlan = XGE_HAL_RXD_GET_VLAN_TAG(rxdp->control_2);
 
 	/* Herc	only, a	few	extra cycles imposed on	Xena and/or

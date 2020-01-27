@@ -86,8 +86,8 @@ __hal_fifo_mempool_item_alloc(xge_hal_mempool_h mempoolh,
 #endif
 
 	if (fifo->channel.dtr_init) {
-		fifo->channel.dtr_init(fifo, (xge_hal_dtr_h)txdp, index,
-			   fifo->channel.userdata, XGE_HAL_CHANNEL_OC_NORMAL);
+		(void) fifo->channel.dtr_init(fifo, (xge_hal_dtr_h)txdp, index,
+		    fifo->channel.userdata, XGE_HAL_CHANNEL_OC_NORMAL);
 	}
 
 	return XGE_HAL_OK;

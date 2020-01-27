@@ -505,10 +505,10 @@ __hal_device_config_check_common (xge_hal_device_config_t *new_config)
 
 	if (new_config->max_splits_trans != XGE_HAL_USE_BIOS_DEFAULT_SPLITS)  {
 		if ((new_config->max_splits_trans <
-			XGE_HAL_ONE_SPLIT_TRANSACTION) ||
+		    XGE_HAL_ONE_SPLIT_TRANSACTION) ||
 		    (new_config->max_splits_trans >
-			XGE_HAL_THIRTYTWO_SPLIT_TRANSACTION))
-		return XGE_HAL_BADCFG_MAX_SPLITS_TRANS;
+		    XGE_HAL_THIRTYTWO_SPLIT_TRANSACTION))
+			return XGE_HAL_BADCFG_MAX_SPLITS_TRANS;
 	}
 
 	if (new_config->mmrb_count != XGE_HAL_DEFAULT_BIOS_MMRB_COUNT) 

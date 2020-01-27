@@ -218,10 +218,10 @@ __hal_ring_initial_replenish(xge_hal_channel_t *channel,
 		xge_assert(status == XGE_HAL_OK);
 
 		if (channel->dtr_init) {
-		    status = channel->dtr_init(channel,
-                                        dtr, channel->reserve_length,
-                                        channel->userdata,
-					reopen);
+			status = channel->dtr_init(channel,
+			    dtr, channel->reserve_length,
+			    channel->userdata,
+			    reopen);
 			if (status != XGE_HAL_OK) {
 				xge_hal_ring_dtr_free(channel, dtr);
 				xge_hal_channel_abort(channel,

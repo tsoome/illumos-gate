@@ -155,14 +155,15 @@ __hal_mempool_grow(xge_hal_mempool_t *mempool, int num_allocate,
 
 						for (k=0; k<j; k++) {
 
-						    index =i*n_items + k;
+							index = i * n_items + k;
 
-						  (void)mempool->item_func_free(
-						     mempool, the_memblock,
-						     i, dma_object,
-						     mempool->items_arr[index],
-						     index, is_last,
-						     mempool->userdata);
+							(void)mempool->item_func_free(
+							    mempool,
+							    the_memblock,
+							    i, dma_object,
+							    mempool->items_arr[index],
+							    index, is_last,
+							    mempool->userdata);
 						}
 					}
 
@@ -372,7 +373,7 @@ __hal_mempool_destroy(xge_hal_mempool_t *mempool)
 			/* let caller to do more job on each item */
 			if (mempool->item_func_free != NULL) {
 
-				mempool->item_func_free(mempool,
+				(void) mempool->item_func_free(mempool,
 					mempool->memblocks_arr[i],
 					i, dma_object,
 					mempool->shadow_items_arr[index],

@@ -170,20 +170,20 @@ xge_hal_device_begin_irq(xge_hal_device_t *hldev, u64 *reason)
 		/* not Xframe interrupt	*/
 		hldev->stats.sw_dev_info_stats.not_xge_intr_cnt++;
 		*reason	= 0;
-			return XGE_HAL_ERR_WRONG_IRQ;
+		return XGE_HAL_ERR_WRONG_IRQ;
 	}
 
 	if (xge_os_unlikely(val64 == XGE_HAL_ALL_FOXES)) {
-				u64	adapter_status =
-						xge_os_pio_mem_read64(hldev->pdev, hldev->regh0,
-						  &isrbar0->adapter_status);
-				if (adapter_status == XGE_HAL_ALL_FOXES)  {
-					(void) xge_queue_produce(hldev->queueh,
-						 XGE_HAL_EVENT_SLOT_FREEZE,
-						 hldev,
-						 1,	 /*	critical: slot freeze */
-						 sizeof(u64),
-						 (void*)&adapter_status);
+		u64	adapter_status =
+		    xge_os_pio_mem_read64(hldev->pdev,
+		    hldev->regh0,
+		    &isrbar0->adapter_status);
+		if (adapter_status == XGE_HAL_ALL_FOXES)  {
+			(void) xge_queue_produce(hldev->queueh,
+			    XGE_HAL_EVENT_SLOT_FREEZE,
+			    hldev, 1,	 /*	critical: slot freeze */
+			    sizeof(u64),
+			    (void*)&adapter_status);
 			*reason	= 0;
 			return XGE_HAL_ERR_CRITICAL;
 		}

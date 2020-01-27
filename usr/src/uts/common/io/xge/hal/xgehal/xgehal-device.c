@@ -351,12 +351,12 @@ xge_hal_device_bcast_enable(xge_hal_device_h devh)
 
 	val64 = xge_os_pio_mem_read64(hldev->pdev, hldev->regh0,
 	&bar0->mac_cfg);
-		val64 |= XGE_HAL_MAC_RMAC_BCAST_ENABLE;
+	val64 |= XGE_HAL_MAC_RMAC_BCAST_ENABLE;
 
 	xge_os_pio_mem_write64(hldev->pdev, hldev->regh0,
 		XGE_HAL_RMAC_CFG_KEY(0x4C0D), &bar0->rmac_cfg_key);
 
-    __hal_pio_mem_write32_upper(hldev->pdev, hldev->regh0,
+	__hal_pio_mem_write32_upper(hldev->pdev, hldev->regh0,
 		(u32)(val64 >> 32), &bar0->mac_cfg);
 
 	xge_debug_device(XGE_TRACE, "mac_cfg 0x"XGE_OS_LLXFMT": broadcast %s",
@@ -1864,8 +1864,8 @@ __hal_device_rth_it_configure(xge_hal_device_t *hldev)
 	/* for starters: fill in all the buckets with rings "equally" */
 	for (bucket = 0; bucket < buckets_num; bucket++) {
 
-	    if (rnum == rmax)
-           rnum = 0;
+		if (rnum == rmax)
+			rnum = 0;
 
 		/* write data */
 		val64 = XGE_HAL_RTS_RTH_MAP_MEM_DATA_ENTRY_EN |
@@ -1888,7 +1888,7 @@ __hal_device_rth_it_configure(xge_hal_device_t *hldev)
 			return XGE_HAL_INF_MEM_STROBE_CMD_EXECUTING;
 		}
 
-        rnum++;
+		rnum++;
 	}
 
 	val64 = XGE_HAL_RTS_RTH_EN;
@@ -2367,7 +2367,7 @@ __hal_device_pci_info_get(xge_hal_device_h devh, xge_hal_pci_mode_e *pci_mode,
 				 *bus_frequency	=
 					 XGE_HAL_PCI_BUS_FREQUENCY_266MHZ;
 				 *pci_mode = XGE_HAL_PCIX_M2_133MHZ_MODE;
-				  break;
+				 break;
 			case XGE_HAL_PCIX_M1_RESERVED:
 			case XGE_HAL_PCIX_M1_66MHZ_NS:
 			case XGE_HAL_PCIX_M1_100MHZ_NS:
@@ -5444,17 +5444,17 @@ xge_hal_device_terminating(xge_hal_device_h devh)
 	xge_list_for_each(item, &hldev->fifo_channels) {
 		channel = xge_container_of(item, xge_hal_channel_t, item);
 #if defined(XGE_HAL_TX_MULTI_RESERVE)
-	xge_os_spin_lock(&channel->reserve_lock);
+		xge_os_spin_lock(&channel->reserve_lock);
 #elif defined(XGE_HAL_TX_MULTI_RESERVE_IRQ)
-	xge_os_spin_lock_irq(&channel->reserve_lock, flags);
+		xge_os_spin_lock_irq(&channel->reserve_lock, flags);
 #endif
 
-	channel->terminating = 1;
+		channel->terminating = 1;
 
 #if defined(XGE_HAL_TX_MULTI_RESERVE)
-	xge_os_spin_unlock(&channel->reserve_lock);
+		xge_os_spin_unlock(&channel->reserve_lock);
 #elif defined(XGE_HAL_TX_MULTI_RESERVE_IRQ)
-	xge_os_spin_unlock_irq(&channel->reserve_lock, flags);
+		xge_os_spin_unlock_irq(&channel->reserve_lock, flags);
 #endif
 	}
 
@@ -6534,7 +6534,7 @@ xge_hal_channel_msi_set(xge_hal_channel_h channelh, int msi, u32 msi_msg)
 		__hal_device_tti_set(fifo, channel);
 	}
 
-	 return XGE_HAL_OK;
+	return XGE_HAL_OK;
 }
 
 /**
@@ -6658,7 +6658,7 @@ xge_hal_channel_msix_set(xge_hal_channel_h channelh, int msix_idx)
 	xge_hal_pci_bar0_t *bar0 = (xge_hal_pci_bar0_t *)hldev->bar0;
 	u64 val64;
 
-	 if (channel->type == XGE_HAL_CHANNEL_TYPE_RING) {
+	if (channel->type == XGE_HAL_CHANNEL_TYPE_RING) {
 		 /* Currently Ring and RTI is one on one. */
 		int ring = channel->post_qid;
 		val64 = xge_os_pio_mem_read64(hldev->pdev, hldev->regh0,
@@ -6680,12 +6680,12 @@ xge_hal_channel_msix_set(xge_hal_channel_h channelh, int msix_idx)
 		hldev->config.fifo.queue[channel->post_qid].intr_vector =
 								msix_idx;
 	}
-	 channel->msix_idx = msix_idx;
+	channel->msix_idx = msix_idx;
 	__hal_set_msix_vals(hldev, &channel->msix_data,
 			    &channel->msix_address,
 			    channel->msix_idx);
 
-	 return XGE_HAL_OK;
+	return XGE_HAL_OK;
 }
 
 #if defined(XGE_HAL_CONFIG_LRO)
@@ -6774,8 +6774,8 @@ xge_hal_device_poll(xge_hal_device_h devh)
 	int queue_has_critical_event = 0;
 	xge_hal_device_t *hldev = (xge_hal_device_t*)devh;
 
-  xge_os_memzero(item_buf, (sizeof(xge_queue_item_t) +
-                             XGE_DEFAULT_EVENT_MAX_DATA_SIZE));  
+	xge_os_memzero(item_buf, (sizeof(xge_queue_item_t) +
+	    XGE_DEFAULT_EVENT_MAX_DATA_SIZE));
 
 _again:
 	if (!hldev->is_initialized ||
@@ -6852,7 +6852,7 @@ _again:
 				if (xge_hal_device_is_slot_freeze(hldev))
 					event_type = XGE_HAL_EVENT_SLOT_FREEZE;
 			if (g_xge_hal_driver->uld_callbacks.crit_err) {
-			    g_xge_hal_driver->uld_callbacks.crit_err(
+				g_xge_hal_driver->uld_callbacks.crit_err(
 					hldev->upper_layer_info,
 					event_type,
 					val64);

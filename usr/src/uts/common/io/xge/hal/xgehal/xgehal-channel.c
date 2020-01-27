@@ -309,21 +309,21 @@ xge_hal_channel_open(xge_hal_device_h devh,
 	*channelh = NULL;
 
 	/* find channel */
-		xge_list_for_each(item, &device->free_channels) {
-			xge_hal_channel_t *tmp;
+	xge_list_for_each(item, &device->free_channels) {
+		xge_hal_channel_t *tmp;
 
-			tmp = xge_container_of(item, xge_hal_channel_t, item);
-			if (tmp->type == attr->type &&
-			tmp->post_qid == attr->post_qid &&
-			tmp->compl_qid == attr->compl_qid) {
-				channel = tmp;
-				break;
-			}
+		tmp = xge_container_of(item, xge_hal_channel_t, item);
+		if (tmp->type == attr->type &&
+		tmp->post_qid == attr->post_qid &&
+		tmp->compl_qid == attr->compl_qid) {
+			channel = tmp;
+			break;
 		}
+	}
 
-		if (channel == NULL) {
-			return XGE_HAL_ERR_CHANNEL_NOT_FOUND;
-		}
+	if (channel == NULL) {
+		return XGE_HAL_ERR_CHANNEL_NOT_FOUND;
+	}
 
 	xge_assert((channel->type == XGE_HAL_CHANNEL_TYPE_FIFO) ||
 		(channel->type == XGE_HAL_CHANNEL_TYPE_RING));
@@ -529,16 +529,16 @@ void xge_hal_channel_close(xge_hal_channel_h channelh,
 	channel->is_open = 0;
 	channel->magic = XGE_HAL_DEAD;
 
-		/* sanity check: make sure channel is not in free list */
-		xge_list_for_each(item, &hldev->free_channels) {
-			xge_hal_channel_t *tmp;
+	/* sanity check: make sure channel is not in free list */
+	xge_list_for_each(item, &hldev->free_channels) {
+		xge_hal_channel_t *tmp;
 
-			tmp = xge_container_of(item, xge_hal_channel_t, item);
-			xge_assert(!tmp->is_open);
-			if (channel == tmp) {
-				return;
-			}
+		tmp = xge_container_of(item, xge_hal_channel_t, item);
+		xge_assert(!tmp->is_open);
+		if (channel == tmp) {
+			return;
 		}
+	}
 
 	xge_hal_channel_abort(channel, reopen);
 
@@ -569,11 +569,11 @@ void xge_hal_channel_close(xge_hal_channel_h channelh,
 
 	/* move channel back to free state list */
 	xge_list_remove(&channel->item);
-		xge_list_insert(&channel->item, &hldev->free_channels);
+	xge_list_insert(&channel->item, &hldev->free_channels);
 
-		if (xge_list_is_empty(&hldev->fifo_channels) &&
-			xge_list_is_empty(&hldev->ring_channels)) {
-			/* clear msix_idx in case of following HW reset */
-			hldev->reset_needed_after_close = 1;
-		}
+	if (xge_list_is_empty(&hldev->fifo_channels) &&
+		xge_list_is_empty(&hldev->ring_channels)) {
+		/* clear msix_idx in case of following HW reset */
+		hldev->reset_needed_after_close = 1;
+	}
 }
