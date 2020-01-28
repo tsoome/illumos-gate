@@ -552,7 +552,7 @@ bge_m_start(void *arg)
 		    (bgep->asf_pseudostop)) {
 			bgep->bge_mac_state = BGE_MAC_STARTED;
 			/* forcing a mac link update here */
-			bge_phys_check(bgep);
+			(void) bge_phys_check(bgep);
 			bgep->link_state = (bgep->param_link_up) ? LINK_STATE_UP :
 			                                           LINK_STATE_DOWN;
 			mac_link_update(bgep->mh, bgep->link_state);
@@ -3446,7 +3446,7 @@ bge_read_dash_ver(bge_t *bgep)
 
 	vlen = strlen(bgep->fw_version);
 
-	snprintf(&bgep->fw_version[vlen], BGE_FW_VER_SIZE - vlen,
+	(void) snprintf(&bgep->fw_version[vlen], BGE_FW_VER_SIZE - vlen,
 	    " %s v%d.%d.%d.%d", fwtype,
 	    (apedata & APE_FW_VERSION_MAJMSK) >> APE_FW_VERSION_MAJSFT,
 	    (apedata & APE_FW_VERSION_MINMSK) >> APE_FW_VERSION_MINSFT,
@@ -3502,8 +3502,8 @@ bge_read_bc_ver(bge_t *bgep)
 
 		major = (ver_offset & NVM_BCVER_MAJMSK) >> NVM_BCVER_MAJSFT;
 		minor = ver_offset & NVM_BCVER_MINMSK;
-		snprintf(&bgep->fw_version[dst_off], BGE_FW_VER_SIZE - dst_off,
-		    "v%d.%02d", major, minor);
+		(void) snprintf(&bgep->fw_version[dst_off],
+		    BGE_FW_VER_SIZE - dst_off, "v%d.%02d", major, minor);
 	}
 }
 
@@ -3517,13 +3517,14 @@ bge_read_fw_ver(bge_t *bgep)
 
 	if ((bgep->chipid.nvtype == BGE_NVTYPE_NONE) ||
 	    (bgep->chipid.nvtype == BGE_NVTYPE_UNKNOWN)) {
-		snprintf(bgep->fw_version, sizeof(bgep->fw_version), "sb");
+		(void) snprintf(bgep->fw_version, sizeof(bgep->fw_version),
+		    "sb");
 		return;
 	}
 
 	mutex_enter(bgep->genlock);
 
-	bge_nvmem_read32(bgep, 0, &magic);
+	(void) bge_nvmem_read32(bgep, 0, &magic);
 
 	if (magic == EEPROM_MAGIC) {
 		bge_read_bc_ver(bgep);

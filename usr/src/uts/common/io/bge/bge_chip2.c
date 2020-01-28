@@ -2543,7 +2543,7 @@ bge_ape_driver_state_change(bge_t *bgep, int mode)
 
 	event |= APE_EVENT_STATUS_DRIVER_EVNT | APE_EVENT_STATUS_STATE_CHNGE;
 
-	bge_ape_send_event(bgep, event);
+	(void) bge_ape_send_event(bgep, event);
 }
 
 #undef	BGE_DBG
@@ -4082,7 +4082,7 @@ bge_chip_reset(bge_t *bgep, boolean_t enable_dma)
 		BGE_DEBUG(("%s: fail to acquire nvram lock",
 			bgep->ifname));
 
-	bge_ape_lock(bgep, BGE_APE_LOCK_GRC);
+	(void) bge_ape_lock(bgep, BGE_APE_LOCK_GRC);
 
 #ifdef BGE_IPMI_ASF
 	if (!bgep->asf_enabled) {
@@ -4961,7 +4961,7 @@ bge_chip_start(bge_t *bgep, boolean_t reset_phys)
 		if (bge_phys_update(bgep) == DDI_FAILURE)
 			retval = DDI_FAILURE;
 		/* forcing a mac link update here */
-		bge_phys_check(bgep);
+		(void) bge_phys_check(bgep);
 		bgep->link_state = (bgep->param_link_up) ? LINK_STATE_UP :
 		                                           LINK_STATE_DOWN;
 		bge_sync_mac_modes(bgep);

@@ -54,11 +54,6 @@ ALL_TARGET	= $(BINARY)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
-# lint pass one enforcement
-#
-CFLAGS		+= $(CCVERBOSE)
-
-#
 # Turn on doubleword alignment for 64 bit registers
 #
 CFLAGS		+= -dalign
@@ -67,12 +62,6 @@ CFLAGS		+= -dalign
 # Driver depends on MAC
 #
 LDFLAGS		+= -dy -N misc/mac
-
-#
-# For now, disable these lint checks; maintainers should endeavor
-# to investigate and remove these for maximum lint coverage.
-# Please do not carry these forward to new Makefiles.
-#
 
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-switch
