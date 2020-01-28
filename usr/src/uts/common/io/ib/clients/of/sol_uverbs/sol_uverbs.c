@@ -3006,58 +3006,58 @@ sol_uverbs_ibt_to_of_device_cap_flags(ibt_hca_flags_t flags,
 
 	uint32_t of_flags = 0;
 
-	if (flags && IBT_HCA_RESIZE_CHAN)
+	if (flags & IBT_HCA_RESIZE_CHAN)
 		of_flags |= IB_DEVICE_RESIZE_MAX_WR;
 
-	if (flags && IBT_HCA_PKEY_CNTR)
+	if (flags & IBT_HCA_PKEY_CNTR)
 		of_flags |= IB_DEVICE_BAD_PKEY_CNTR;
 
-	if (flags && IBT_HCA_QKEY_CNTR)
+	if (flags & IBT_HCA_QKEY_CNTR)
 		of_flags |= IB_DEVICE_BAD_QKEY_CNTR;
 
-	if (flags && IBT_HCA_RAW_MULTICAST)
+	if (flags & IBT_HCA_RAW_MULTICAST)
 		of_flags |= IB_DEVICE_RAW_MULTI;
 
-	if (flags && IBT_HCA_AUTO_PATH_MIG)
+	if (flags & IBT_HCA_AUTO_PATH_MIG)
 		of_flags |= IB_DEVICE_AUTO_PATH_MIG;
 
-	if (flags && IBT_HCA_SQD_SQD_PORT)
+	if (flags & IBT_HCA_SQD_SQD_PORT)
 		of_flags |= IB_DEVICE_CHANGE_PHY_PORT;
 
-	if (flags && IBT_HCA_AH_PORT_CHECK)
+	if (flags & IBT_HCA_AH_PORT_CHECK)
 		of_flags |= IB_DEVICE_UD_AV_PORT_ENFORCE;
 
-	if (flags && IBT_HCA_CURRENT_QP_STATE)
+	if (flags & IBT_HCA_CURRENT_QP_STATE)
 		of_flags |= IB_DEVICE_CURR_QP_STATE_MOD;
 
-	if (flags && IBT_HCA_SHUTDOWN_PORT)
+	if (flags & IBT_HCA_SHUTDOWN_PORT)
 		of_flags |= IB_DEVICE_SHUTDOWN_PORT;
 
-	if (flags && IBT_HCA_INIT_TYPE)
+	if (flags & IBT_HCA_INIT_TYPE)
 		of_flags |= IB_DEVICE_INIT_TYPE;
 
-	if (flags && IBT_HCA_PORT_UP)
+	if (flags & IBT_HCA_PORT_UP)
 		of_flags |= IB_DEVICE_PORT_ACTIVE_EVENT;
 
-	if (flags && IBT_HCA_SI_GUID)
+	if (flags & IBT_HCA_SI_GUID)
 		of_flags |= IB_DEVICE_SYS_IMAGE_GUID;
 
-	if (flags && IBT_HCA_RNR_NAK)
+	if (flags & IBT_HCA_RNR_NAK)
 		of_flags |= IB_DEVICE_RC_RNR_NAK_GEN;
 
-	if (flags && IBT_HCA_RESIZE_SRQ)
+	if (flags & IBT_HCA_RESIZE_SRQ)
 		of_flags |= IB_DEVICE_SRQ_RESIZE;
 
-	if (flags && IBT_HCA_BASE_QUEUE_MGT)
+	if (flags & IBT_HCA_BASE_QUEUE_MGT)
 		of_flags |= IB_DEVICE_N_NOTIFY_CQ;
 
-	if (flags && IBT_HCA_ZERO_BASED_VA)
+	if (flags & IBT_HCA_ZERO_BASED_VA)
 		of_flags |= IB_DEVICE_ZERO_STAG;
 
-	if (flags && IBT_HCA_LOCAL_INVAL_FENCE)
+	if (flags & IBT_HCA_LOCAL_INVAL_FENCE)
 		of_flags |= IB_DEVICE_SEND_W_INV;
 
-	if (flags && IBT_HCA_MEM_WIN_TYPE_2B)
+	if (flags & IBT_HCA_MEM_WIN_TYPE_2B)
 		of_flags |= IB_DEVICE_MEM_WINDOW;
 
 	return (of_flags);
@@ -3069,73 +3069,73 @@ sol_uverbs_ibt_to_of_page_sz(ibt_page_sizes_t page_szs)
 
 	uint64_t of_page_sz = 0;
 
-	if (page_szs && IBT_PAGE_4K)
+	if (page_szs & IBT_PAGE_4K)
 		of_page_sz |= 1LL << 12;
 
-	if (page_szs && IBT_PAGE_8K)
+	if (page_szs & IBT_PAGE_8K)
 		of_page_sz |= 1LL << 13;
 
-	if (page_szs && IBT_PAGE_16K)
+	if (page_szs & IBT_PAGE_16K)
 		of_page_sz |= 1LL << 14;
 
-	if (page_szs && IBT_PAGE_32K)
+	if (page_szs & IBT_PAGE_32K)
 		of_page_sz |= 1LL << 15;
 
-	if (page_szs && IBT_PAGE_64K)
+	if (page_szs & IBT_PAGE_64K)
 		of_page_sz |= 1LL << 16;
 
-	if (page_szs && IBT_PAGE_128K)
+	if (page_szs & IBT_PAGE_128K)
 		of_page_sz |= 1LL << 17;
 
-	if (page_szs && IBT_PAGE_256K)
+	if (page_szs & IBT_PAGE_256K)
 		of_page_sz |= 1LL << 18;
 
-	if (page_szs && IBT_PAGE_512K)
+	if (page_szs & IBT_PAGE_512K)
 		of_page_sz |= 1LL << 19;
 
-	if (page_szs && IBT_PAGE_1M)
+	if (page_szs & IBT_PAGE_1M)
 		of_page_sz |= 1LL << 20;
 
-	if (page_szs && IBT_PAGE_2M)
+	if (page_szs & IBT_PAGE_2M)
 		of_page_sz |= 1LL << 21;
 
-	if (page_szs && IBT_PAGE_4M)
+	if (page_szs & IBT_PAGE_4M)
 		of_page_sz |= 1LL << 22;
 
-	if (page_szs && IBT_PAGE_8M)
+	if (page_szs & IBT_PAGE_8M)
 		of_page_sz |= 1LL << 23;
 
-	if (page_szs && IBT_PAGE_16M)
+	if (page_szs & IBT_PAGE_16M)
 		of_page_sz |= 1LL << 24;
 
-	if (page_szs && IBT_PAGE_32M)
+	if (page_szs & IBT_PAGE_32M)
 		of_page_sz |= 1LL << 25;
 
-	if (page_szs && IBT_PAGE_64M)
+	if (page_szs & IBT_PAGE_64M)
 		of_page_sz |= 1LL << 26;
 
-	if (page_szs && IBT_PAGE_128M)
+	if (page_szs & IBT_PAGE_128M)
 		of_page_sz |= 1LL << 27;
 
-	if (page_szs && IBT_PAGE_256M)
+	if (page_szs & IBT_PAGE_256M)
 		of_page_sz |= 1LL << 28;
 
-	if (page_szs && IBT_PAGE_512M)
+	if (page_szs & IBT_PAGE_512M)
 		of_page_sz |= 1LL << 29;
 
-	if (page_szs && IBT_PAGE_1G)
+	if (page_szs & IBT_PAGE_1G)
 		of_page_sz |= 1LL << 30;
 
-	if (page_szs && IBT_PAGE_2G)
+	if (page_szs & IBT_PAGE_2G)
 		of_page_sz |= 1LL << 31;
 
-	if (page_szs && IBT_PAGE_4G)
+	if (page_szs & IBT_PAGE_4G)
 		of_page_sz |= 1LL << 32;
 
-	if (page_szs && IBT_PAGE_8G)
+	if (page_szs & IBT_PAGE_8G)
 		of_page_sz |= 1LL << 33;
 
-	if (page_szs && IBT_PAGE_16G)
+	if (page_szs & IBT_PAGE_16G)
 		of_page_sz |= 1LL << 34;
 
 	return (of_page_sz);

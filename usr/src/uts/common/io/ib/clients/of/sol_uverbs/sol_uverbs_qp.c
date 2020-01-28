@@ -285,8 +285,7 @@ uverbs_modify_qp_is_ok(enum ib_qp_state cur_state,
 	SOL_OFS_DPRINTF_L5(sol_uverbs_dbg_str, "modify_qp_is_ok"
 	    "(%x, %x, %x, %x)", cur_state, next_state, type, mask);
 
-	if (cur_state  < 0 || cur_state  > IB_QPS_ERR ||
-	    next_state < 0 || next_state > IB_QPS_ERR) {
+	if (cur_state > IB_QPS_ERR || next_state > IB_QPS_ERR) {
 		SOL_OFS_DPRINTF_L2(sol_uverbs_dbg_str,
 		    "modify_qp_is_ok: bad state, cur %d, next %d",
 		    cur_state, next_state);
@@ -1692,7 +1691,7 @@ uverbs_query_copy_info(struct ib_uverbs_query_qp_resp *dest,
 			break;
 	}
 
-	if ((src->qp_flags & IBT_ALL_SIGNALED) == IBT_ALL_SIGNALED) {
+	if (src->qp_flags == IBT_CEP_NO_FLAGS) {
 		dest->sq_sig_all = 1;
 	}
 }
