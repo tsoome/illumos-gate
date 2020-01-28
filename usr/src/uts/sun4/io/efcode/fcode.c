@@ -924,7 +924,7 @@ fc_set_fcode_error(dev_t dev, intptr_t arg, int mode, cred_t *credp, int *rvalp)
 		return (EFAULT);
 	}
 
-	if (!FC_ERROR_VALID(status)) {
+	if (!(FC_ERROR_VALID(status))) {
 		FC_DEBUG1(1, CE_CONT, "fc_ioctl: fc_set_fcode_error "
 		    "invalid error code specified %i\n", status);
 		return (EINVAL);
