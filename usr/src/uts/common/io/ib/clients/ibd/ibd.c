@@ -7431,7 +7431,7 @@ ibd_rc_large_copy:
 	return (B_TRUE);
 
 ibd_send_fail:
-	if (node && mp)
+	if (node)
 		ibd_free_lsohdr(node, mp);
 
 	if (dofree)

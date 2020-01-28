@@ -197,7 +197,7 @@ extern "C" {
 void debug_print(int l, char *fmt, ...);
 #define	DPRINT		debug_print
 #else
-#define	DPRINT		0 &&
+#define	DPRINT(...)
 #endif
 
 /*
