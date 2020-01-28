@@ -1574,7 +1574,7 @@ socal_ioctl(dev_t dev,
 		    sizeof (la_els_rls_reply_t)) == -1) {
 			kmem_free((void *)rls_pl,
 			    sizeof (la_els_rls_reply_t));
-		return (EFAULT);
+			return (EFAULT);
 		}
 		dest = (rls_pl->mbz[0] << 16) + (rls_pl->mbz[1] << 8) +
 		    rls_pl->mbz[2];
@@ -1584,12 +1584,12 @@ socal_ioctl(dev_t dev,
 		mutex_exit(&socalp->ioctl_mtx);
 
 		if (retval == FCAL_SUCCESS) {
-		if (copyout((caddr_t)rls_pl, (caddr_t)arg,
-		    sizeof (la_els_rls_reply_t)) == -1) {
-			kmem_free((void *)rls_pl,
-			    sizeof (la_els_rls_reply_t));
-			return (EFAULT);
-		}
+			if (copyout((caddr_t)rls_pl, (caddr_t)arg,
+			    sizeof (la_els_rls_reply_t)) == -1) {
+				kmem_free((void *)rls_pl,
+				    sizeof (la_els_rls_reply_t));
+				return (EFAULT);
+			}
 		}
 		kmem_free((void *)rls_pl, sizeof (la_els_rls_reply_t));
 		break;
@@ -1919,7 +1919,7 @@ socal_cqalloc_init(socal_state_t *socalp, uint32_t index)
 		    &cqp->skc_acchandle) != DDI_SUCCESS) {
 			socal_disp_err(socalp, CE_WARN, "driver.4030",
 			    "!alloc of dma space failed");
-				goto fail;
+			goto fail;
 		}
 
 		if (real_len < (cq_size + SOCAL_CQ_ALIGN)) {
@@ -1973,7 +1973,7 @@ socal_cqalloc_init(socal_state_t *socalp, uint32_t index)
 		    &cqp->skc_acchandle) != DDI_SUCCESS) {
 			socal_disp_err(socalp, CE_WARN, "driver.4060",
 			    "!alloc of dma space failed");
-				goto fail;
+			goto fail;
 		}
 
 		if (real_len < (cq_size + SOCAL_CQ_ALIGN)) {
@@ -2662,36 +2662,39 @@ socal_cq_enque(socal_state_t *socalp, socal_port_t *port_statep, cqe_t *cqe,
 	do {
 
 		if (kcq->skc_full) {
-		/*
-		 * If soc's queue full, then we wait for an interrupt
-		 * telling us we are not full.
-		 */
+			/*
+			 * If soc's queue full, then we wait for an interrupt
+			 * telling us we are not full.
+			 */
 
 			if (to_queue) {
-			to_queue->fcal_pkt_next = NULL;
-			if (!kcq->skc_overflowh) {
-				DEBUGF(2, (CE_CONT,
-				    "socal%d: cq_enque: request "
-				    "que %d is full\n",
-				    instance, rqix));
-				kcq->skc_overflowh = to_queue;
-				socalp->socal_stats.qfulls++;
-			} else
-				kcq->skc_overflowt->fcal_pkt_next = to_queue;
-			kcq->skc_overflowt = to_queue;
+				to_queue->fcal_pkt_next = NULL;
+				if (!kcq->skc_overflowh) {
+					DEBUGF(2, (CE_CONT,
+					    "socal%d: cq_enque: request "
+					    "que %d is full\n",
+					    instance, rqix));
+					kcq->skc_overflowh = to_queue;
+					socalp->socal_stats.qfulls++;
+				} else {
+					kcq->skc_overflowt->fcal_pkt_next =
+					    to_queue;
+				}
+				kcq->skc_overflowt = to_queue;
 
-			mutex_enter(&socalp->k_imr_mtx);
-			socalp->socal_rp->socal_imr =
-			    (socalp->socal_k_imr |= bitmask);
-			mutex_exit(&socalp->k_imr_mtx);
-			to_queue->fcal_cmd_state |= FCAL_CMD_IN_TRANSPORT;
-			if (!mtxheld)
-				mutex_exit(&kcq->skc_mtx);
-			return (FCAL_TRANSPORT_SUCCESS);
+				mutex_enter(&socalp->k_imr_mtx);
+				socalp->socal_rp->socal_imr =
+				    (socalp->socal_k_imr |= bitmask);
+				mutex_exit(&socalp->k_imr_mtx);
+				to_queue->fcal_cmd_state |=
+				    FCAL_CMD_IN_TRANSPORT;
+				if (!mtxheld)
+					mutex_exit(&kcq->skc_mtx);
+				return (FCAL_TRANSPORT_SUCCESS);
 			}
 
 			if (!mtxheld)
-			mutex_exit(&kcq->skc_mtx);
+				mutex_exit(&kcq->skc_mtx);
 			return (FCAL_TRANSPORT_QFULL);
 		}
 
@@ -2941,12 +2944,11 @@ socal_force_lip(void *ssp, uint_t port, uint_t polled, uint_t lip_req)
 		mutex_enter(&port_statep->sp_mtx);
 		if ((port_statep->sp_status & PORT_ONLINE_LOOP) &&
 		    (port_statep->sp_unsol_cb->statec_cb != NULL)) {
-				mutex_exit(&port_statep->sp_mtx);
-				(*port_statep->sp_unsol_cb->statec_cb)
-				    (port_statep->sp_unsol_cb->arg,
-				    FCAL_STATUS_LOOP_ONLINE);
+			mutex_exit(&port_statep->sp_mtx);
+			(*port_statep->sp_unsol_cb->statec_cb)
+			    (port_statep->sp_unsol_cb->arg,
+			    FCAL_STATUS_LOOP_ONLINE);
 			return (FCAL_SUCCESS);
-
 		} else
 			mutex_exit(&port_statep->sp_mtx);
 	}
@@ -3651,12 +3653,12 @@ socal_intr_unsolicited(socal_state_t *socalp, uint32_t urq)
 
 			i = index_in;
 			if (kcqv->skc_out > index_in)
-			i += kcq->skc_last_index + 1;
+				i += kcq->skc_last_index + 1;
 
-		/*
-		 * If we think the continuation entries haven't yet
-		 * arrived, try once more before giving up
-		 */
+			/*
+			 * If we think the continuation entries haven't yet
+			 * arrived, try once more before giving up
+			 */
 			if (i < t_index) {
 
 			socalreg->socal_csr.w =
@@ -3794,22 +3796,25 @@ socal_intr_unsolicited(socal_state_t *socalp, uint32_t urq)
 				status = 1;
 				for (cblist = port_statep->sp_unsol_cb; cblist;
 				    cblist = cblist->next) {
-				if (cblist->data_cb &&
-				    (cblist->type ==
-				    srp->sr_fc_frame_hdr.type)) {
-					mutex_exit(&port_statep->sp_mtx);
-					mutex_exit(&kcq->skc_mtx);
-					cblist->data_cb(cblist->arg,
-					    (cqe_t *)cqe, (caddr_t)cqe_cont);
-					mutex_enter(&kcq->skc_mtx);
-					mutex_enter(&port_statep->sp_mtx);
-					status = 0;
-				}
+					if (cblist->data_cb &&
+					    (cblist->type ==
+					    srp->sr_fc_frame_hdr.type)) {
+						mutex_exit(
+						    &port_statep->sp_mtx);
+						mutex_exit(&kcq->skc_mtx);
+						cblist->data_cb(cblist->arg,
+						    (cqe_t *)cqe,
+						    (caddr_t)cqe_cont);
+						mutex_enter(&kcq->skc_mtx);
+						mutex_enter(
+						    &port_statep->sp_mtx);
+						status = 0;
+					}
 				}
 				mutex_exit(&port_statep->sp_mtx);
 
 				if (status == 0)
-				break;
+					break;
 
 				(void) sprintf(buf,
 				    "!unknown FC-4 command: 0x%x",
@@ -4471,7 +4476,7 @@ socal_els_alloc(socal_state_t *socalp, uint32_t port, uint32_t dest,
 	if (rsp_size) {
 		if (ddi_dma_alloc_handle(socalp->dip, &socal_dma_attr,
 		    DDI_DMA_DONTWAIT, NULL, &rhandle) != DDI_SUCCESS)
-		goto fail;
+			goto fail;
 
 		privp->rsp_handle = rhandle;
 		if (ddi_dma_mem_alloc(rhandle, rsp_size, &socal_acc_attr,
@@ -4481,18 +4486,18 @@ socal_els_alloc(socal_state_t *socalp, uint32_t port, uint32_t dest,
 		privp->rsp = rsp;
 		privp->rsp_acchandle = racchandle;
 		if (real_len < rsp_size)
-		goto fail;
+			goto fail;
 
 		if (ddi_dma_addr_bind_handle(rhandle, (struct as *)NULL,
 		    rsp, rsp_size,
 		    DDI_DMA_READ | DDI_DMA_CONSISTENT,
 		    DDI_DMA_DONTWAIT, NULL, &rcookie, &ccount)
 		    != DDI_DMA_MAPPED)
-		goto fail;
+			goto fail;
 
 		rsp_bound = 1;
 		if (ccount != 1)
-		goto fail;
+			goto fail;
 	}
 
 	srp = (soc_request_t *)&fcalpkt->fcal_socal_request;
@@ -4617,7 +4622,7 @@ socal_lbf_alloc(socal_state_t *socalp, uint32_t port,
 	if (rsp_size) {
 		if (ddi_dma_alloc_handle(socalp->dip, &socal_dma_attr,
 		    DDI_DMA_DONTWAIT, NULL, &rhandle) != DDI_SUCCESS)
-		goto fail;
+			goto fail;
 
 		privp->rsp_handle = rhandle;
 		if (ddi_dma_mem_alloc(rhandle, rsp_size, &socal_acc_attr,
@@ -4628,7 +4633,7 @@ socal_lbf_alloc(socal_state_t *socalp, uint32_t port,
 		privp->rsp = rsp;
 		privp->rsp_acchandle = racchandle;
 		if (real_len < rsp_size)
-		goto fail;
+			goto fail;
 
 		if (ddi_dma_addr_bind_handle(rhandle, (struct as *)NULL,
 		    rsp, rsp_size,
@@ -4639,7 +4644,7 @@ socal_lbf_alloc(socal_state_t *socalp, uint32_t port,
 
 		rsp_bound = 1;
 		if (ccount != 1)
-		goto fail;
+			goto fail;
 	}
 
 	srp = (soc_request_t *)&fcalpkt->fcal_socal_request;
