@@ -539,7 +539,7 @@ pci_pwr_resume(dev_info_t *dip, pci_pwr_t *pwr_p)
 	 */
 	if (PM_CAPABLE(pwr_p)) {
 		pwr_p->current_lvl = pci_pwr_current_lvl(pwr_p);
-		pm_power_has_changed(dip, PCI_PM_COMP_0,
+		(void) pm_power_has_changed(dip, PCI_PM_COMP_0,
 		    pwr_p->current_lvl);
 	}
 

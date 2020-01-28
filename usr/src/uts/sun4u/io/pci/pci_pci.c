@@ -336,6 +336,8 @@ ppb_info(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg, void **result)
 	ppb_devstate_t	*ppb_p = (ppb_devstate_t *)ddi_get_soft_state(ppb_state,
 	    instance);
 
+	if (ppb_p == NULL)
+		return (DDI_FAILURE);
 
 	if (ppb_p->parent_bus != PCIE_PCIECAP_DEV_TYPE_PCIE_DEV)
 		return (pcihp_info(dip, cmd, arg, result));
@@ -349,8 +351,6 @@ ppb_info(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg, void **result)
 		return (DDI_SUCCESS);
 
 	case DDI_INFO_DEVT2DEVINFO:
-		if (ppb_p == NULL)
-			return (DDI_FAILURE);
 		*result = (void *)ppb_p->dip;
 		return (DDI_SUCCESS);
 	}
