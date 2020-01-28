@@ -1868,9 +1868,7 @@ validated:	if (cmlb_partinfo(un->un_dklbhandle,
 			    "dkblock(bp) is %llu\n", bn);
 
 			i = 0;
-			if (bn < 0) {
-				i = -1;
-			} else if (bn >= lblocks) {
+			if (bn >= lblocks) {
 				/*
 				 * For proper comparison, file system block
 				 * number has to be scaled to actual CD
