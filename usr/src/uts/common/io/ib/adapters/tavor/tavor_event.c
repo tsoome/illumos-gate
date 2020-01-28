@@ -746,7 +746,7 @@ tavor_eq_poll(tavor_state_t *state, tavor_eqhdl_t eq)
 			 * caller.
 			 */
 			if (ddi_in_panic() == 0) {
-				eqfunction(state, eq, eqe);
+				(void) eqfunction(state, eq, eqe);
 			}
 
 			/* Reset entry to hardware ownership */

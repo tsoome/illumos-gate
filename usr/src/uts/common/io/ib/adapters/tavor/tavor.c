@@ -3079,7 +3079,7 @@ tavor_pci_capability_vpd(tavor_state_t *state, ddi_acc_handle_t hdl,
 	if (vpd.vpd_char[vpd_str_id] == 0x82) {
 		/* get the product name */
 		name_length = (uint8_t)vpd.vpd_char[vpd_str_id + 1];
-		if (name_length > sizeof (state->ts_hca_name)) {
+		if (name_length >= sizeof (state->ts_hca_name)) {
 			cmn_err(CE_NOTE, "!VPD name too large (0x%x)\n",
 			    name_length);
 			goto out;
@@ -3094,6 +3094,12 @@ tavor_pci_capability_vpd(tavor_state_t *state, ddi_acc_handle_t hdl,
 		/*
 		 * Verify read-only tag and Part Number keyword.
 		 */
+		if (vpd_ro_desc >= sizeof (vpd.vpd_char) ||
+		    vpd_ro_pn_desc + 2 >= sizeof (vpd.vpd_char)) {
+			cmn_err(CE_NOTE, "!VPD Part Number not found\n");
+			goto out;
+		}
+
 		if (vpd.vpd_char[vpd_ro_desc] != 0x90 ||
 		    (vpd.vpd_char[vpd_ro_pn_desc] != 'P' &&
 		    vpd.vpd_char[vpd_ro_pn_desc + 1] != 'N')) {
@@ -3102,7 +3108,7 @@ tavor_pci_capability_vpd(tavor_state_t *state, ddi_acc_handle_t hdl,
 		}
 
 		pn_length = (uint8_t)vpd.vpd_char[vpd_ro_pn_desc + 2];
-		if (pn_length > sizeof (state->ts_hca_pn)) {
+		if (pn_length >= sizeof (state->ts_hca_pn)) {
 			cmn_err(CE_NOTE, "!VPD part number too large (0x%x)\n",
 			    name_length);
 			goto out;
