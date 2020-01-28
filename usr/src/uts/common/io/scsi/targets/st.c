@@ -1624,7 +1624,7 @@ st_doattach(struct scsi_device *devp, int (*canwait)())
 		 * that are connected or capable if connecting to this logical
 		 * unit.
 		 */
-		if (devp->sd_inq->inq_dtype ==
+		if (devp->sd_inq != NULL && devp->sd_inq->inq_dtype ==
 		    (DTYPE_SEQUENTIAL | DPQ_POSSIBLE)) {
 			ST_DEBUG(devp->sd_dev, st_label, SCSI_DEBUG,
 			    "probe exists\n");
@@ -1860,7 +1860,8 @@ st_known_tape_type(struct scsi_tape *un)
 	 */
 	if (ST_INQUIRY->inq_len == 0 ||
 	    (bcmp("\0\0\0\0\0\0\0\0", ST_INQUIRY->inq_vid, 8) == 0)) {
-		(void) strcpy((char *)ST_INQUIRY->inq_vid, ST_MT02_NAME);
+		bcopy(ST_MT02_NAME, ST_INQUIRY->inq_vid, 8);
+		bcopy(ST_MT02_NAME + 8, ST_INQUIRY->inq_pid, 16);
 	}
 
 	if (un->un_dp_size == 0) {
@@ -5146,11 +5147,11 @@ check_commands:
 	case MTIOCGETDRIVETYPE:
 		{
 #ifdef _MULTI_DATAMODEL
-		/*
-		 * For use when a 32 bit app makes a call into a
-		 * 64 bit ioctl
-		 */
-		struct mtdrivetype_request32	mtdtrq32;
+			/*
+			 * For use when a 32 bit app makes a call into a
+			 * 64 bit ioctl
+			 */
+			struct mtdrivetype_request32	mtdtrq32;
 #endif /* _MULTI_DATAMODEL */
 
 			/*
@@ -5165,36 +5166,38 @@ check_commands:
 			    "st_ioctl: MTIOCGETDRIVETYPE\n");
 
 #ifdef _MULTI_DATAMODEL
-		switch (ddi_model_convert_from(flag & FMODELS)) {
-		case DDI_MODEL_ILP32:
-		{
-			if (ddi_copyin((void *)arg, &mtdtrq32,
-			    sizeof (struct mtdrivetype_request32), flag)) {
-				rval = EFAULT;
+			switch (ddi_model_convert_from(flag & FMODELS)) {
+			case DDI_MODEL_ILP32:
+			{
+				if (ddi_copyin((void *)arg, &mtdtrq32,
+				    sizeof (struct mtdrivetype_request32),
+				    flag)) {
+					rval = EFAULT;
+					break;
+				}
+				mtdtrq.size = mtdtrq32.size;
+				mtdtrq.mtdtp = (struct  mtdrivetype *)
+				    (uintptr_t)mtdtrq32.mtdtp;
+				ST_DEBUG4(ST_DEVINFO, st_label, SCSI_DEBUG,
+				    "st_ioctl: size 0x%x\n", mtdtrq.size);
 				break;
 			}
-			mtdtrq.size = mtdtrq32.size;
-			mtdtrq.mtdtp =
-			    (struct  mtdrivetype *)(uintptr_t)mtdtrq32.mtdtp;
-			ST_DEBUG4(ST_DEVINFO, st_label, SCSI_DEBUG,
-			    "st_ioctl: size 0x%x\n", mtdtrq.size);
-			break;
-		}
-		case DDI_MODEL_NONE:
+			case DDI_MODEL_NONE:
+				if (ddi_copyin((void *)arg, &mtdtrq,
+				    sizeof (struct mtdrivetype_request),
+				    flag)) {
+					rval = EFAULT;
+					break;
+				}
+				break;
+			}
+
+#else /* ! _MULTI_DATAMODEL */
 			if (ddi_copyin((void *)arg, &mtdtrq,
 			    sizeof (struct mtdrivetype_request), flag)) {
 				rval = EFAULT;
 				break;
 			}
-			break;
-		}
-
-#else /* ! _MULTI_DATAMODEL */
-		if (ddi_copyin((void *)arg, &mtdtrq,
-		    sizeof (struct mtdrivetype_request), flag)) {
-			rval = EFAULT;
-			break;
-		}
 #endif /* _MULTI_DATAMODEL */
 
 			/*
@@ -6887,9 +6890,7 @@ st_done_and_mutex_exit(struct scsi_tape *un, struct buf *bp)
 		    "st_done_and_mutex_exit(async): freeing pkt\n");
 		st_print_cdb(ST_DEVINFO, st_label, CE_NOTE,
 		    "CDB sent with B_ASYNC",  (caddr_t)cmd);
-		if (pkt) {
-			scsi_destroy_pkt(pkt);
-		}
+		scsi_destroy_pkt(pkt);
 		un->un_sbuf_busy = 0;
 		cv_signal(&un->un_sbuf_cv);
 		mutex_exit(ST_MUTEX);
@@ -6923,9 +6924,7 @@ st_done_and_mutex_exit(struct scsi_tape *un, struct buf *bp)
 	ST_DEBUG6(ST_DEVINFO, st_label, SCSI_DEBUG,
 	    "st_done_and_mutex_exit: freeing pkt\n");
 
-	if (pkt) {
-		scsi_destroy_pkt(pkt);
-	}
+	scsi_destroy_pkt(pkt);
 
 	biodone(bp);
 
@@ -9180,7 +9179,7 @@ st_intr_restart(void *arg)
 			if (pkti->privatelen == sizeof (recov_info) &&
 			    un->un_unit_attention_flags &&
 			    bp != un->un_recov_buf) {
-			un->un_unit_attention_flags = 0;
+				un->un_unit_attention_flags = 0;
 				ST_RECOV(ST_DEVINFO, st_label, CE_WARN,
 				    "Command Recovery called on busy resend\n");
 				if (st_command_recovery(un, BP_PKT(bp),

@@ -206,7 +206,7 @@ extern unsigned char bcd_to_byte[256];
 
 #define	cmpdev(x) \
 	(o_dev_t)((((x) >> L_BITSMINOR) > O_MAXMAJ || \
-	    ((x) & L_MAXMIN) > O_MAXMIN) ? NODEV : \
+	    ((x) & L_MAXMIN) > O_MAXMIN) ? (o_dev_t)NODEV : \
 	    ((((x) >> L_BITSMINOR) << O_BITSMINOR) | ((x) & O_MAXMIN)))
 
 /* convert to new (SVR4) dev format */
