@@ -420,7 +420,7 @@ daplka_ibt_free_srq(daplka_srq_resource_t *, ibt_srq_hdl_t);
 	if (--(rp)->header.rs_refcnt == 0) {			\
 		ASSERT((rp)->header.rs_free != NULL);		\
 		mutex_exit(&(rp)->header.rs_reflock);		\
-		(rp)->header.rs_free((daplka_resource_t *)rp);	\
+		(void) (rp)->header.rs_free((daplka_resource_t *)rp);	\
 	} else {						\
 		mutex_exit(&(rp)->header.rs_reflock);		\
 	}							\
@@ -6689,15 +6689,13 @@ cleanup:;
 	/*
 	 * release our slot in the backlog array
 	 */
-	if (conn != NULL) {
-		mutex_enter(&spp->sp_lock);
-		ASSERT(conn->spcp_state == DAPLKA_SPCP_PENDING);
-		ASSERT(conn->spcp_sid == event->cm_session_id);
-		conn->spcp_state = DAPLKA_SPCP_INIT;
-		conn->spcp_req_len = 0;
-		conn->spcp_sid = NULL;
-		mutex_exit(&spp->sp_lock);
-	}
+	mutex_enter(&spp->sp_lock);
+	ASSERT(conn->spcp_state == DAPLKA_SPCP_PENDING);
+	ASSERT(conn->spcp_sid == event->cm_session_id);
+	conn->spcp_state = DAPLKA_SPCP_INIT;
+	conn->spcp_req_len = 0;
+	conn->spcp_sid = NULL;
+	mutex_exit(&spp->sp_lock);
 	return (cm_status);
 }
 
