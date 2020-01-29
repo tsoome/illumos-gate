@@ -32,6 +32,9 @@ CERRWARN += -_gcc=-Wno-clobbered
 CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-extra
 
+# "missing type for func"
+SMATCH=off
+
 LDLIBS += -lcurses
 
 MAPFILES =	../mapfile-intf $(MAPFILE.NGB)
