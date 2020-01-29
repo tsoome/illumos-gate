@@ -1561,7 +1561,7 @@ int		al_pa;
 
 			/* Get the port WWN from the IB, page 1 */
 			if ((status = l_get_envsen_page(fd, (uchar_t *)&page1,
-				sizeof (page1), 1, 0)) != NULL) {
+			    sizeof (page1), 1, 0)) != 0) {
 				(void) close(fd);
 				g_destroy_data(result);
 				(void) g_destroy_data(dev_name);
@@ -1606,7 +1606,7 @@ int		al_pa;
 				(char *)inq.inq_box_name,
 				sizeof (inq.inq_box_name));
 			/* make sure null terminated */
-			l2->b_name[sizeof (l2->b_name) - 1] = NULL;
+			l2->b_name[sizeof (l2->b_name) - 1] = '\0';
 
 			/*
 			 * Now get the port WWN for the port
@@ -1807,7 +1807,7 @@ load_flds_if_enc_disk(char *phys_path, struct path_struct **path_struct)
 	L_state		*l_state = NULL;
 
 	if ((path_struct == NULL) || (*path_struct == NULL) ||
-				(phys_path == NULL) || (*phys_path == NULL)) {
+	    (phys_path == '\0') || (*phys_path == '\0')) {
 		return (L_INVALID_PATH_FORMAT);
 	}
 
@@ -2073,7 +2073,7 @@ WWN_list	*wwn_list, *wwn_list_ptr;
 	if (((char_ptr = strstr(tmp_name, ",")) != NULL) &&
 		((*(char_ptr + 1) == 'f') || (*(char_ptr + 1) == 'r') ||
 		    (*(char_ptr + 1) == 's'))) {
-		*char_ptr = NULL; /* make just box name */
+		*char_ptr = '\0'; /* make just box name */
 		found_comma = 1;
 	}
 	/* Find path to IB */
@@ -2374,10 +2374,10 @@ int	size, new_size, status;
 int
 l_get_envsen(char *path_phys, uchar_t *buf, int size, int verbose)
 {
-int		fd, rval;
-uchar_t		*page_list_ptr, page_code, *local_buf_ptr = buf;
-Rec_diag_hdr	*hdr = (struct rec_diag_hdr *)(void *)buf;
-ushort_t	num_pages;
+	int		fd, rval;
+	uchar_t		*page_list_ptr, page_code, *local_buf_ptr = buf;
+	Rec_diag_hdr	*hdr = (struct rec_diag_hdr *)(void *)buf;
+	ushort_t	num_pages;
 
 	if ((path_phys == NULL) || (buf == NULL)) {
 		return (L_INVALID_PATH_FORMAT);
@@ -2398,7 +2398,7 @@ ushort_t	num_pages;
 
 	/* Get page 0 */
 	if ((rval = l_get_envsen_page(fd, local_buf_ptr,
-		size, page_code, verbose)) != NULL) {
+		size, page_code, verbose)) != 0) {
 		(void) close(fd);
 		return (rval);
 	}
@@ -2447,7 +2447,7 @@ ushort_t	num_pages;
 		page_code = *page_list_ptr;
 
 		if ((rval = l_get_envsen_page(fd, local_buf_ptr,
-			size, page_code, verbose)) != NULL) {
+			size, page_code, verbose)) != 0) {
 			(void) close(fd);
 			return (rval);
 		}
@@ -2500,7 +2500,7 @@ struct		stat sbuf;
 	}
 
 	/* Initialize */
-	*path_a = *path_b = NULL;
+	*path_a = *path_b = '\0';
 	l_disk_state->g_disk_state.num_blocks = 0;
 
 	/* Get paths. */
@@ -2699,7 +2699,7 @@ Read_reserv	read_reserv_buf;
 		MSGSTR(9048, "  Checking for Persistent "
 			"Reservations:"));
 		if (l_disk_state->g_disk_state.persistent_reserv_flag) {
-		    if (l_disk_state->g_disk_state.persistent_active != NULL) {
+		    if (l_disk_state->g_disk_state.persistent_active != 0) {
 			(void) fprintf(stdout, MSGSTR(39, "Active"));
 		    } else {
 			(void) fprintf(stdout, MSGSTR(9049, "Registered"));
@@ -3717,7 +3717,7 @@ hrtime_t	start_time, end_time;
 						if ((strcmp(seslist->dev_path,
 							path) != 0) &&
 							!port_a_flag) {
-							*path = NULL;
+							*path = '\0';
 							(void) strcpy(path,
 							seslist->dev_path);
 							if (err =
@@ -3742,7 +3742,7 @@ hrtime_t	start_time, end_time;
 						}
 						if ((strcmp(seslist->dev_path,
 						path) != 0) && port_a_flag) {
-							*path = NULL;
+							*path = '\0';
 							(void) strcpy(path,
 							seslist->dev_path);
 							if (err =

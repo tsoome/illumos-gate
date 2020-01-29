@@ -242,12 +242,12 @@ get_pathlist(char *dev_path, sv_iocdata_t *ioc, int *num_paths_to_copy)
 	int	pathlist_retry_count = 0;
 
 	if (strncmp(dev_path, SCSI_VHCI,
-			strlen(SCSI_VHCI)) != NULL) {
+	    strlen(SCSI_VHCI)) != 0) {
 		if ((physical_path = g_get_physical_name(dev_path)) == NULL) {
 			return (L_INVALID_PATH);
 		}
 		if (strncmp(physical_path, SCSI_VHCI,
-				strlen(SCSI_VHCI)) != NULL) {
+		    strlen(SCSI_VHCI)) != 0) {
 			free(physical_path);
 			return (L_INVALID_PATH);
 		}
@@ -265,7 +265,7 @@ get_pathlist(char *dev_path, sv_iocdata_t *ioc, int *num_paths_to_copy)
 	delimiter = strrchr(physical_path, ':');
 	/* if we didn't find the ':' fine, else truncate */
 	if (delimiter != NULL) {
-		*delimiter = NULL;
+		*delimiter = '\0';
 	}
 
 	/*

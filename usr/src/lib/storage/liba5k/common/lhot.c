@@ -296,9 +296,9 @@ int
 l_chk_null_wwn(Path_struct *path_struct, char *ses_path,
 				L_state *l_state, int verbose)
 {
-char		*ptr, boxname[MAXPATHLEN];
-char		node_wwn_s[WWN_SIZE * 2 + 1];
-Box_list	*boxlist;
+	char		*ptr, boxname[MAXPATHLEN];
+	char		node_wwn_s[WWN_SIZE * 2 + 1];
+	Box_list	*boxlist;
 
 
 	if ((path_struct == NULL) || (ses_path == NULL) ||
@@ -313,12 +313,12 @@ Box_list	*boxlist;
 	 * The only way to address null wwn disk
 	 * is using the box,{f/r}<slot#> format.
 	 */
-/* add support for new {f/r/s}<slot#> support for DPM */
+	/* add support for new {f/r/s}<slot#> support for DPM */
 	(void) strcpy(boxname, path_struct->argv);
 	if (((ptr = strstr(boxname, ",")) != NULL) &&
 	    ((*(ptr + 1) == 'f') || (*(ptr + 1) == 'r') ||
 	    (*(ptr + 1) == 's'))) {
-		*ptr = NULL;
+		*ptr = '\0';
 	} else {
 		return (0);
 	}
@@ -332,7 +332,7 @@ Box_list	*boxlist;
 		return (L_NO_ENCL_LIST_FOUND);
 	}
 
-	*ses_path = NULL;
+	*ses_path = '\0';
 
 	/*
 	 * The following method is safer to get an ses path
@@ -866,10 +866,10 @@ L_state		*l_state = NULL;
 void
 l_get_drive_name(char *drive_name, int slot, int f_flag, char *box_name)
 {
-int	    enc_type = 0;
-L_inquiry   inq;
-char	    *physpath;
-Path_struct *p_pathstruct;
+	int	    enc_type = 0;
+	L_inquiry   inq;
+	char	    *physpath;
+	Path_struct *p_pathstruct;
 
 	if ((drive_name == NULL) || (box_name == NULL)) {
 		return;
@@ -885,7 +885,7 @@ Path_struct *p_pathstruct;
 	free(p_pathstruct);
 	switch (enc_type) {
 	case DAK_ENC_TYPE:
-	    if (f_flag != NULL) {
+	    if (f_flag != 0) {
 		(void) sprintf(drive_name, MSGSTR(8502,
 			"Drive in \"%s\" slot %d"), box_name, slot);
 	    } else {
@@ -895,7 +895,7 @@ Path_struct *p_pathstruct;
 	    }
 	    break;
 	default:
-	    if (f_flag != NULL) {
+	    if (f_flag != 0) {
 		(void) sprintf(drive_name, MSGSTR(8500,
 		    "Drive in \"%s\" front slot %d"), box_name, slot);
 	    } else {

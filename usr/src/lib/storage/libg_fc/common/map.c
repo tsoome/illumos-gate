@@ -4452,7 +4452,7 @@ get_multipath(char *devpath, struct dlist **multipath_list,
 		return (L_NULL_WWN_LIST);
 	}
 
-	for (*node_wwn_s = NULL, wwn_list_ptr = wwn_list;
+	for (*node_wwn_s = '\0', wwn_list_ptr = wwn_list;
 	    wwn_list_ptr != NULL;
 	    wwn_list_ptr = wwn_list_ptr->wwn_next) {
 
@@ -4471,7 +4471,7 @@ get_multipath(char *devpath, struct dlist **multipath_list,
 		}
 	}
 
-	if (*node_wwn_s == NULL) {
+	if (*node_wwn_s == '\0') {
 		H_DPRINTF("node_wwn_s is NULL!\n");
 		return (L_NO_NODE_WWN_IN_WWNLIST);
 	}
