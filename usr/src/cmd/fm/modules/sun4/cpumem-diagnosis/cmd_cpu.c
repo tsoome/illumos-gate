@@ -93,7 +93,7 @@ static void cpu_buf_write(fmd_hdl_t *, cmd_cpu_t *);
 const char *
 cmd_cpu_type2name(fmd_hdl_t *hdl, cmd_cpu_type_t type)
 {
-	if (type < 1 || type > sizeof (cpu_names) / sizeof (char *))
+	if (type < 1 || type >= sizeof (cpu_names) / sizeof (char *))
 		fmd_hdl_abort(hdl, "illegal CPU type %d\n", type);
 
 	return (cpu_names[type]);

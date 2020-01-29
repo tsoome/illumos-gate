@@ -532,7 +532,8 @@ gen_data_for_ecc(uint64_t *tag_data, uint64_t *data_for_ecc_gen,
 				    (((state[1] >> i) & 1) << bit_position);
 				bit_position++;
 				data_for_ecc_gen[1] |=
-				    (((state[3] >> i) & 1) << bit_position);
+				    (((uint64_t)(state[3] >> i) & 1) <<
+				    bit_position);
 				bit_position++;
 			}
 			/*
@@ -558,7 +559,8 @@ gen_data_for_ecc(uint64_t *tag_data, uint64_t *data_for_ecc_gen,
 				    (((state[0] >> i) & 1) << bit_position);
 				bit_position++;
 				data_for_ecc_gen[0] |=
-				    (((state[2] >> i) & 1) << bit_position);
+				    (((uint64_t)(state[2] >> i) & 1) <<
+				    bit_position);
 				bit_position++;
 			}
 			/*
