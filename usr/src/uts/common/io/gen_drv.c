@@ -702,7 +702,8 @@ gen_detach(dev_info_t *devi, ddi_detach_cmd_t cmd)
 
 		for (i = 0; i < NUMEVENTS; i++) {
 			if (dstatep->gen_cb_ids[i]) {
-		(void) ddi_remove_event_handler(dstatep->gen_cb_ids[i]);
+				(void) ddi_remove_event_handler(
+				    dstatep->gen_cb_ids[i]);
 				dstatep->gen_cb_ids[i] = NULL;
 			}
 		}
@@ -904,10 +905,10 @@ gen_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp, int *rvalp)
 
 	instance = MINOR_TO_INST(getminor(dev));
 	dstatep = ddi_get_soft_state(dstates, instance);
-	nodename = dstatep->nodename;
 
 	if (dstatep == NULL)
 		return (ENXIO);
+	nodename = dstatep->nodename;
 
 	/*
 	 * read devctl ioctl data
