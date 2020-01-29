@@ -733,7 +733,7 @@ validate(struct dk_geom *geom, struct extvtoc *vtoc)
 fmthard: Partition %d specifies the full disk and is not equal\n\
 full size of disk.  The full disk capacity is %llu sectors.\n", i, fullsz);
 #if defined(sparc)
-			exit(1);
+				exit(1);
 #endif
 			}
 		}
