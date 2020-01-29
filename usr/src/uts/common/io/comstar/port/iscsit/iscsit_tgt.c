@@ -870,9 +870,10 @@ iscsit_tgt_create(it_tgt_t *cfg_tgt)
 	result->target_stmf_lport_registered = 0;
 	/* Use pointer arithmetic to find scsi_devid_desc_t */
 	result->target_devid = (scsi_devid_desc_t *)(result + 1);
-	(void) strcpy((char *)result->target_devid->ident, cfg_tgt->tgt_name);
 	result->target_devid->ident_length =
 	    strnlen(cfg_tgt->tgt_name, MAX_ISCSI_NODENAMELEN);
+	bcopy(cfg_tgt->tgt_name, result->target_devid->ident,
+	    result->target_devid->ident_length);
 	result->target_devid->protocol_id = PROTOCOL_iSCSI;
 	result->target_devid->piv = 1;
 	result->target_devid->code_set = CODE_SET_ASCII;
