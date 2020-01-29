@@ -21091,7 +21091,7 @@ sd_send_scsi_PERSISTENT_RESERVE_OUT(sd_ssc_t *ssc, uchar_t usr_cmd,
 	union scsi_cdb		cdb;
 	struct uscsi_cmd	ucmd_buf;
 	int			status;
-	uchar_t			data_len = sizeof (sd_prout_t);
+	uint16_t		data_len = sizeof (sd_prout_t);
 	sd_prout_t		*prp;
 	struct sd_lun		*un;
 
