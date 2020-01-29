@@ -2557,7 +2557,7 @@ hermon_create_fmr_pool(hermon_state_t *state, hermon_pdhdl_t pd,
 	int		sleep;
 	int		i;
 
-	sleep = (fmr_attr->fmr_flags & IBT_MR_SLEEP) ? HERMON_SLEEP :
+	sleep = (fmr_attr->fmr_flags == IBT_MR_SLEEP) ? HERMON_SLEEP :
 	    HERMON_NOSLEEP;
 	if ((sleep == HERMON_SLEEP) &&
 	    (sleep != HERMON_SLEEPFLAG_FOR_CONTEXT())) {

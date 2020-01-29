@@ -340,7 +340,7 @@ hermon_cfg_profile_init_phase2(hermon_state_t *state)
 
 	/* while we're at it, calculate the index of the kernel uar page */
 	/* either the reserved uar's or 128, whichever is smaller */
-	state->hs_kernel_uar_index = (devlim->num_rsvd_uar > 128) ?
+	state->hs_kernel_uar_index = (devlim->num_rsvd_uar > 0) ?
 	    devlim->num_rsvd_uar : 128;
 
 	cp->cp_log_max_pkeytbl	= port->log_max_pkey;

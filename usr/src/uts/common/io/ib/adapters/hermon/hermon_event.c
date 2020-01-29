@@ -564,7 +564,7 @@ hermon_eq_poll(hermon_state_t *state, hermon_eqhdl_t eq)
 			 * caller.
 			 */
 			if (ddi_in_panic() == 0) {
-				eqfunction(state, eq, eqe);
+				(void) eqfunction(state, eq, eqe);
 			}
 
 			/* Reset to hardware ownership is implicit */

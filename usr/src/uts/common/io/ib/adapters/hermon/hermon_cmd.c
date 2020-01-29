@@ -3590,7 +3590,7 @@ hermon_config_int_mod(hermon_state_t *state, uint_t min_delay, uint_t vector)
 	bzero((void *)&cmd, sizeof (hermon_cmd_post_t));
 
 	/* Setup and post Hermon "CONFIG_INT_MOD" command */
-	inparm = (((uint64_t)min_delay & 0xFFFF) << 48) ||
+	inparm = (((uint64_t)min_delay & 0xFFFF) << 48) |
 	    (((uint64_t)vector & 0xFFFF) << 32);
 
 	cmd.cp_inparm	= inparm;

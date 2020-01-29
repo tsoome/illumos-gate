@@ -461,7 +461,7 @@ hermon_mr_alloc_fmr(hermon_state_t *state, hermon_pdhdl_t pd,
 	 * current thread context (i.e. if we are currently in the interrupt
 	 * context, then we shouldn't be attempting to sleep).
 	 */
-	sleep = (fmr_pool->fmr_flags & IBT_MR_SLEEP) ? HERMON_SLEEP :
+	sleep = (fmr_pool->fmr_flags == IBT_MR_SLEEP) ? HERMON_SLEEP :
 	    HERMON_NOSLEEP;
 	if ((sleep == HERMON_SLEEP) &&
 	    (sleep != HERMON_SLEEPFLAG_FOR_CONTEXT())) {
