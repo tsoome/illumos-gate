@@ -234,7 +234,7 @@ srpt_stp_stop_srp(srpt_target_port_t *tgt)
 		if (ioc->ioc_profile.ioc_service_entries == 0) {
 			SRPT_DPRINTF_L3("stp_stop_srp, no services active"
 			    " unregister IOC profile");
-			srpt_ctxt->sc_ibdma_ops.ibdma_unregister(
+			(void) srpt_ctxt->sc_ibdma_ops.ibdma_unregister(
 			    ioc->ioc_ibdma_hdl);
 			ioc->ioc_ibdma_hdl = NULL;
 		} else {
