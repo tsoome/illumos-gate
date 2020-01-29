@@ -1144,8 +1144,7 @@ rel_tpc:
 	/*LINTED*/
 	TPC_RELE(tp);
 out:
-	if (mntzone)
-		zone_rele(mntzone);
+	zone_rele(mntzone);
 	label_rele(zlabel);
 	return (retv);
 }
