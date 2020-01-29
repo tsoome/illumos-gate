@@ -870,7 +870,7 @@ fcoei_fill_els_fpkt_resp(fcoe_frame_t *frm, fcoei_exchange_t *xch, int size)
 			    ~EPORT_FLAG_IS_DIRECT_P2P;
 			FCOE_SET_DEFAULT_OUI(src_addr);
 			bcopy(frm->frm_hdr->hdr_d_id, src_addr + 3, 3);
-			frm->frm_eport->eport_set_mac_address(
+			(void) frm->frm_eport->eport_set_mac_address(
 			    frm->frm_eport, src_addr, 1);
 		} else {
 			/*

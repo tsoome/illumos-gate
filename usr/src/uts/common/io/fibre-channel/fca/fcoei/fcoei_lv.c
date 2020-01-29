@@ -213,7 +213,8 @@ fcoei_unbind_port(void *fca_handle)
 	fcoei_soft_state_t *ss = (fcoei_soft_state_t *)fca_handle;
 
 	atomic_and_32(&ss->ss_flags, ~SS_FLAG_LV_BOUND);
-	ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_OFFLINE, NULL);
+	(void) ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_OFFLINE,
+	    NULL);
 	FCOEI_LOG(__FUNCTION__, "Exit fcoei_unbind_port: %p", ss);
 }
 
@@ -513,7 +514,8 @@ fcoei_reset(void * fca_handle, uint32_t cmd)
 		 */
 		fcoei_logo_peer(ss);
 		delay(FCOE_SEC2TICK(1) / 10);
-		ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_OFFLINE, 0);
+		(void) ss->ss_eport->eport_ctl(ss->ss_eport,
+		    FCOE_CMD_PORT_OFFLINE, 0);
 		fcoei_port_event(ss->ss_eport, FCOE_NOTIFY_EPORT_LINK_DOWN);
 
 		/*
@@ -815,7 +817,8 @@ fcoei_port_enabled(void *arg)
 {
 	fcoei_soft_state_t	*ss  = (fcoei_soft_state_t *)arg;
 
-	ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_ONLINE, NULL);
+	(void) ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_ONLINE,
+	    NULL);
 }
 
 
@@ -1992,7 +1995,7 @@ fcoei_process_event_reset(fcoei_event_t *ae)
 	/*
 	 * Notify LV that the link is up now
 	 */
-	ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_ONLINE, 0);
+	(void) ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_ONLINE, 0);
 }
 
 /*
