@@ -2722,7 +2722,7 @@ fcip_handle_farp_request(struct fcip *fptr, la_els_farp_t *fcmd)
 	/*
 	 * Attempt a PLOGI again
 	 */
-	if (fcmd->resp_flags & FARP_INIT_P_LOGI) {
+	if (fcmd->resp_flags == FARP_INIT_P_LOGI) {
 		if (fcip_do_plogi(fptr, frp) != FC_SUCCESS) {
 			/*
 			 * Login to the remote port failed. There is no
@@ -6218,7 +6218,7 @@ fcip_do_farp(struct fcip *fptr, la_wwn_t *pwwn, char *ip_addr,
 
 	bdestp = fcip_get_dest(fptr, &broadcast_wwn);
 
-	if (bdestp == NULL) {
+	if (bdestp == NULL || bdestp->fcipd_rtable == NULL) {
 		return (fdestp);
 	}
 
@@ -6233,12 +6233,6 @@ fcip_do_farp(struct fcip *fptr, la_wwn_t *pwwn, char *ip_addr,
 	ether_to_wwn(&fcip_arpbroadcast_addr, &broadcast_wwn);
 
 	mutex_enter(&bdestp->fcipd_mutex);
-	if (bdestp->fcipd_rtable == NULL) {
-		mutex_exit(&bdestp->fcipd_mutex);
-		fcip_ipkt_free(fcip_pkt);
-		return (fdestp);
-	}
-
 	fcip_pkt->fcip_pkt_dest = bdestp;
 	fc_pkt->pkt_fca_device = bdestp->fcipd_fca_dev;
 
@@ -7220,7 +7214,7 @@ fcip_timeout(void *arg)
 			fptr->fcip_flags |= FCIP_LINK_DOWN;
 		}
 	}
-	if (!fptr->fcip_flags & FCIP_RTE_REMOVING) {
+	if ((fptr->fcip_flags & FCIP_RTE_REMOVING) != FCIP_RTE_REMOVING) {
 		dispatch_rte_removal = 1;
 	}
 	mutex_exit(&fptr->fcip_mutex);
