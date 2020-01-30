@@ -680,7 +680,7 @@ tpm_get_ordinal_duration(tpm_state_t *tpm, uint8_t ordinal)
 	/* Default and failure case for IFX */
 	/* Is it a TSC_ORDINAL? */
 	if (ordinal & TSC_ORDINAL_MASK) {
-		if (ordinal > TSC_ORDINAL_MAX) {
+		if (ordinal >= TSC_ORDINAL_MAX) {
 #ifdef DEBUG
 			cmn_err(CE_WARN,
 			    "!%s: tsc ordinal: %d exceeds MAX: %d",
@@ -690,7 +690,7 @@ tpm_get_ordinal_duration(tpm_state_t *tpm, uint8_t ordinal)
 		}
 		index = tsc_ords_duration[ordinal];
 	} else {
-		if (ordinal > TPM_ORDINAL_MAX) {
+		if (ordinal >= TPM_ORDINAL_MAX) {
 #ifdef DEBUG
 			cmn_err(CE_WARN,
 			    "!%s: ordinal %d exceeds MAX: %d",
