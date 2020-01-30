@@ -2576,7 +2576,7 @@ vdc_terminate_ldc(vdc_t *vdc, vdc_server_t *srvr)
 	if (srvr->state & VDC_LDC_INIT) {
 		DMSG(vdc, 0, "[%d] ldc_fini()\n", instance);
 		(void) ldc_fini(srvr->ldc_handle);
-		srvr->ldc_handle = NULL;
+		srvr->ldc_handle = 0;
 	}
 
 	srvr->state &= ~(VDC_LDC_INIT | VDC_LDC_CB | VDC_LDC_OPEN);
@@ -2682,7 +2682,7 @@ vdc_init_descriptor_ring(vdc_t *vdc)
 
 		status = ldc_mem_dring_create(vdc->dring_len,
 		    vdc->dring_entry_size, &vdc->dring_hdl);
-		if ((vdc->dring_hdl == NULL) || (status != 0)) {
+		if ((vdc->dring_hdl == 0) || (status != 0)) {
 			DMSG(vdc, 0, "[%d] Descriptor ring creation failed",
 			    vdc->instance);
 			return (status);
@@ -2773,7 +2773,7 @@ static void
 vdc_destroy_descriptor_ring(vdc_t *vdc)
 {
 	vdc_local_desc_t	*ldep = NULL;	/* Local Dring Entry Pointer */
-	ldc_mem_handle_t	mhdl = NULL;
+	ldc_mem_handle_t	mhdl = 0;
 	ldc_mem_info_t		minfo;
 	int			status = -1;
 	int			i;	/* loop */
@@ -2790,7 +2790,7 @@ vdc_destroy_descriptor_ring(vdc_t *vdc)
 			ldep = &vdc->local_dring[i];
 			mhdl = ldep->desc_mhdl;
 
-			if (mhdl == NULL)
+			if (mhdl == 0)
 				continue;
 
 			if ((status = ldc_mem_info(mhdl, &minfo)) != 0) {
@@ -2803,7 +2803,7 @@ vdc_destroy_descriptor_ring(vdc_t *vdc)
 				 * is not valid. Clear it out so that
 				 * no one tries to use it.
 				 */
-				ldep->desc_mhdl = NULL;
+				ldep->desc_mhdl = 0;
 				continue;
 			}
 
@@ -2813,7 +2813,7 @@ vdc_destroy_descriptor_ring(vdc_t *vdc)
 
 			(void) ldc_mem_free_handle(mhdl);
 
-			ldep->desc_mhdl = NULL;
+			ldep->desc_mhdl = 0;
 		}
 		vdc->initialized &= ~VDC_DRING_ENTRY;
 	}
@@ -2841,7 +2841,7 @@ vdc_destroy_descriptor_ring(vdc_t *vdc)
 		DMSG(vdc, 0, "[%d] Destroying DRing\n", vdc->instance);
 		status = ldc_mem_dring_destroy(vdc->dring_hdl);
 		if (status == 0) {
-			vdc->dring_hdl = NULL;
+			vdc->dring_hdl = 0;
 			bzero(&vdc->dring_mem_info, sizeof (ldc_mem_info_t));
 			vdc->initialized &= ~VDC_DRING_INIT;
 		} else {
@@ -7578,9 +7578,10 @@ vd_process_ioctl(dev_t dev, int cmd, caddr_t arg, int mode, int *rvalp)
 				vdc->dkio_flush_pending--;
 				mutex_exit(&vdc->lock);
 				kmem_free(dkarg, sizeof (vdc_dk_arg_t));
+				return (ENOMEM);
 			}
 
-			return (rv == NULL ? ENOMEM : 0);
+			return (0);
 		}
 	}
 
