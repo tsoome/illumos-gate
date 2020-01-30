@@ -1897,7 +1897,7 @@ vd_flush_write(vd_t *vd)
 		status = VOP_FSYNC(vd->file_vnode, FSYNC, kcred, NULL);
 	} else {
 		status = ldi_ioctl(vd->ldi_handle[0], DKIOCFLUSHWRITECACHE,
-		    NULL, vd->open_flags | FKIOCTL, kcred, &rval);
+		    (intptr_t)NULL, vd->open_flags | FKIOCTL, kcred, &rval);
 	}
 
 	return (status);
@@ -3688,7 +3688,12 @@ vd_ioctl(vd_task_t *task)
 			break;
 		}
 	}
-	ASSERT(i < nioctls);	/* because "operation" already validated */
+
+	if (i == nioctls) {
+		VERIFY(i < nioctls);/* because "operation" already validated */
+		/* NOTREACHED */
+		return (0);
+	}
 
 	if (!(vd->open_flags & FWRITE) && ioctl[i].write) {
 		PR0("%s fails because backend is opened read-only",
@@ -3890,7 +3895,7 @@ vd_get_access(vd_task_t *task)
 	}
 
 	request->status = ldi_ioctl(vd->ldi_handle[request->slice], MHIOCSTATUS,
-	    NULL, (vd->open_flags | FKIOCTL), kcred, &rval);
+	    (intptr_t)NULL, (vd->open_flags | FKIOCTL), kcred, &rval);
 
 	if (request->status != 0)
 		return (0);
@@ -3935,8 +3940,8 @@ vd_set_access(vd_task_t *task)
 	if (flags == VD_ACCESS_SET_CLEAR) {
 		PR0("Performing VD_OP_SET_ACCESS (CLEAR)");
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCRELEASE, NULL, (vd->open_flags | FKIOCTL), kcred,
-		    &rval);
+		    MHIOCRELEASE, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		if (request->status == 0)
 			vd->ownership = B_FALSE;
 		return (0);
@@ -3962,7 +3967,8 @@ vd_set_access(vd_task_t *task)
 		 */
 		PR0("Performing VD_OP_SET_ACCESS (EXCLUSIVE|PREEMPT|PRESERVE)");
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCTKOWN, NULL, (vd->open_flags | FKIOCTL), kcred, &rval);
+		    MHIOCTKOWN, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		break;
 
 	case VD_ACCESS_SET_PRESERVE:
@@ -3977,12 +3983,13 @@ vd_set_access(vd_task_t *task)
 		 */
 		PR0("Performing VD_OP_SET_ACCESS (EXCLUSIVE|PRESERVE)");
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCQRESERVE, NULL, (vd->open_flags | FKIOCTL), kcred,
-		    &rval);
+		    MHIOCQRESERVE, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		if (request->status != 0)
 			break;
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCTKOWN, NULL, (vd->open_flags | FKIOCTL), kcred, &rval);
+		    MHIOCTKOWN, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		break;
 
 	case VD_ACCESS_SET_PREEMPT:
@@ -3994,8 +4001,8 @@ vd_set_access(vd_task_t *task)
 		 */
 		PR0("Performing VD_OP_SET_ACCESS (EXCLUSIVE|PREEMPT)");
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCQRESERVE, NULL, (vd->open_flags | FKIOCTL), kcred,
-		    &rval);
+		    MHIOCQRESERVE, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		if (request->status == 0)
 			break;
 
@@ -4004,16 +4011,16 @@ vd_set_access(vd_task_t *task)
 
 		/* try again even if the reset has failed */
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCQRESERVE, NULL, (vd->open_flags | FKIOCTL), kcred,
-		    &rval);
+		    MHIOCQRESERVE, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		break;
 
 	case 0:
 		/* Flag EXCLUSIVE only. Just issue a SCSI reservation */
 		PR0("Performing VD_OP_SET_ACCESS (EXCLUSIVE)");
 		request->status = ldi_ioctl(vd->ldi_handle[request->slice],
-		    MHIOCQRESERVE, NULL, (vd->open_flags | FKIOCTL), kcred,
-		    &rval);
+		    MHIOCQRESERVE, (intptr_t)NULL, (vd->open_flags | FKIOCTL),
+		    kcred, &rval);
 		break;
 	}
 
@@ -4034,7 +4041,7 @@ vd_reset_access(vd_t *vd)
 		return;
 
 	PR0("Releasing disk ownership");
-	status = ldi_ioctl(vd->ldi_handle[0], MHIOCRELEASE, NULL,
+	status = ldi_ioctl(vd->ldi_handle[0], MHIOCRELEASE, (intptr_t)NULL,
 	    (vd->open_flags | FKIOCTL), kcred, &rval);
 
 	/*
@@ -4059,7 +4066,7 @@ vd_reset_access(vd_t *vd)
 		PR0("Fail to reset disk, error %d", status);
 
 	/* whatever the result of the reset is, we try the release again */
-	status = ldi_ioctl(vd->ldi_handle[0], MHIOCRELEASE, NULL,
+	status = ldi_ioctl(vd->ldi_handle[0], MHIOCRELEASE, (intptr_t)NULL,
 	    (vd->open_flags | FKIOCTL), kcred, &rval);
 
 	if (status == 0 || status == EACCES) {
@@ -4081,7 +4088,7 @@ vd_reset_access(vd_t *vd)
 	if (vd_reset_access_failure == A_REBOOT) {
 		cmn_err(CE_WARN, VD_RESET_ACCESS_FAILURE_MSG
 		    ", rebooting the system", vd->device_path);
-		(void) uadmin(A_SHUTDOWN, AD_BOOT, NULL);
+		(void) uadmin(A_SHUTDOWN, AD_BOOT, (uintptr_t)NULL);
 	} else if (vd_reset_access_failure == A_DUMP) {
 		panic(VD_RESET_ACCESS_FAILURE_MSG, vd->device_path);
 	}
@@ -5415,7 +5422,7 @@ vds_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 		kmem_free(vds->ispecp->specp, sizeof (vds_prop_template));
 		kmem_free(vds->ispecp, sizeof (mdeg_node_spec_t));
 		vds->ispecp = NULL;
-		vds->mdeg = NULL;
+		vds->mdeg = 0;
 	}
 
 	vds_driver_types_free(vds);
@@ -6059,7 +6066,7 @@ vd_setup_disk_image(vd_t *vd)
 	 */
 	PR1("creating devid for %s", backend_path);
 
-	if (ddi_devid_init(vd->vds->dip, DEVID_FAB, NULL, 0,
+	if (ddi_devid_init(vd->vds->dip, DEVID_FAB, 0, 0,
 	    &vd->dskimg_devid) != DDI_SUCCESS) {
 		PR0("fail to create devid for %s", backend_path);
 		vd->dskimg_devid = NULL;
