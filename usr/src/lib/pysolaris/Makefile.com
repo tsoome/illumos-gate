@@ -49,8 +49,6 @@ CERRWARN +=	-_gcc=-Wno-unused-variable
 CPPFLAGS +=	\
 	-I$(ADJUNCT_PROTO)/usr/include/python$(PYVER)$(PYSUFFIX)
 
-all:
-
 .KEEP_STATE:
 
 $(ROOTLIBDIR)/%: %

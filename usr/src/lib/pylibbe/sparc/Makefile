@@ -21,8 +21,13 @@
 
 #
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright 2018 OmniOS Community Edition (OmniOSce) Association.
 #
+
+PYVER = $(PYTHON_VERSION)
+PYSUFFIX = $(PYTHON_SUFFIX)
 
 include ../Makefile.com
 
-install: all $(ROOTLIBS)
+all: $(PYOBJS) $(LIBS)
+install: all $(ROOTLIBS) $(ROOTPYBEFILES)

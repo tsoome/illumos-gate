@@ -30,4 +30,5 @@ PYSUFFIX = $(PYTHON_SUFFIX)
 include ../Makefile.com
 include ../../Makefile.lib.64
 
+all: $(LIBS)
 install: all $(ROOTLIBS64)

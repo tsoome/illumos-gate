@@ -51,8 +51,4 @@ NATIVE_LIBS +=	libpython$(PYVER)$(PYSUFFIX).so
 
 all install := LDLIBS += -lpython$(PYVER)$(PYSUFFIX)
 
-all: $(PYOBJS) $(LIBS)
-
-install: all $(ROOTPYBEFILES)
-
 include ../../Makefile.targ
