@@ -223,9 +223,9 @@ if (vccdbg & 0x04)	\
 
 #else
 
-#define	D1
-#define	D2
-#define	DWARN
+#define	D1(...)
+#define	D2(...)
+#define	DWARN(...)
 
 #endif
 
@@ -2217,7 +2217,7 @@ i_vcc_md_remove_port(md_t *mdp, mde_cookie_t mdep, vcc_t *vccp)
 		return (MDEG_FAILURE);
 	}
 
-	if ((portno >= VCC_MAX_PORTS) || (portno < 0)) {
+	if (portno >= VCC_MAX_PORTS) {
 		cmn_err(CE_CONT, "i_vcc_md_remove_port@%ld invalid port no\n",
 		    portno);
 		return (MDEG_FAILURE);
