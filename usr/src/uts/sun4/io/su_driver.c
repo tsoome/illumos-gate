@@ -709,8 +709,7 @@ asyattach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		 * create the minor device for this node.
 		 */
 		if (ddi_create_minor_node(devi, "ssp", S_IFCHR,
-		    asy->asy_unit | RSC_DEVICE, DDI_PSEUDO, NULL)
-		    == DDI_FAILURE) {
+		    asy->asy_unit | RSC_DEVICE, DDI_PSEUDO, 0) == DDI_FAILURE) {
 			cmn_err(CE_WARN,
 			    "%s%d: Failed to create node rsc-console",
 			    ddi_get_name(devi), ddi_get_instance(devi));
@@ -732,7 +731,7 @@ asyattach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		 * serial instances.
 		 */
 		if (ddi_create_minor_node(devi, "lom-console", S_IFCHR,
-		    instance, DDI_NT_SERIAL_LOMCON, NULL) == DDI_FAILURE) {
+		    instance, DDI_NT_SERIAL_LOMCON, 0) == DDI_FAILURE) {
 			cmn_err(CE_WARN,
 			    "%s%d: Failed to create node lom-console",
 			    ddi_get_name(devi), ddi_get_instance(devi));
@@ -750,8 +749,7 @@ asyattach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		 * create the minor device for this node.
 		 */
 		if (ddi_create_minor_node(devi, "sspctl", S_IFCHR,
-		    asy->asy_unit | RSC_DEVICE, DDI_PSEUDO, NULL)
-		    == DDI_FAILURE) {
+		    asy->asy_unit | RSC_DEVICE, DDI_PSEUDO, 0) == DDI_FAILURE) {
 			cmn_err(CE_WARN, "%s%d: Failed to create rsc-control",
 			    ddi_get_name(devi), ddi_get_instance(devi));
 			goto error;
@@ -797,14 +795,14 @@ asyattach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		/* serial-port */
 		(void) sprintf(name, "%c", (instance+'a'));
 		if (ddi_create_minor_node(devi, name, S_IFCHR, instance,
-		    DDI_NT_SERIAL_MB, NULL) == DDI_FAILURE) {
+		    DDI_NT_SERIAL_MB, 0) == DDI_FAILURE) {
 			goto error;
 		}
 		state = MINORNODE;
 		/* serial-port:dailout */
 		(void) sprintf(name, "%c,cu", (instance+'a'));
 		if (ddi_create_minor_node(devi, name, S_IFCHR, instance|OUTLINE,
-		    DDI_NT_SERIAL_MB_DO, NULL) == DDI_FAILURE) {
+		    DDI_NT_SERIAL_MB_DO, 0) == DDI_FAILURE) {
 			goto error;
 		}
 		/* Property for ignoring DCD */
