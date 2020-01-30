@@ -1321,7 +1321,7 @@ zsa_wput(queue_t *q, mblk_t *mp)
 				freemsg(mp->b_cont);
 				mp->b_cont = NULL;
 			}
-			if (za->za_pps == NULL) {
+			if (za->za_pps == 0) {
 				mp->b_datap->db_type = M_IOCNAK;
 				iocp->ioc_error = ENXIO;
 				ZSA_QREPLY(q, mp);
