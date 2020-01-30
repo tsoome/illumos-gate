@@ -1416,7 +1416,7 @@ oberon_set_cb(dev_info_t *dip, uint64_t val)
 	 * register array.
 	 */
 	for (ubc_id = 0; ubc_id < OBERON_UBC_ID_MAX; ubc_id++) {
-		if (px_oberon_ubc_scratch_regs[ubc_id] != NULL)
+		if (px_oberon_ubc_scratch_regs[ubc_id] != 0)
 			return;
 	}
 
@@ -1559,7 +1559,7 @@ px_lib_clr_errs(px_t *px_p, dev_info_t *rdip, uint64_t addr)
 		}
 	}
 
-	(void) px_rp_en_q(px_p, bdf, addr_low, NULL);
+	(void) px_rp_en_q(px_p, bdf, addr_low, 0);
 
 	/*
 	 * XXX - Current code scans the fabric for all px_tool accesses.

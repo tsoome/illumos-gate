@@ -407,7 +407,7 @@ px_init_child(px_t *px_p, dev_info_t *child)
 	pci_regspec_t	*pci_rp;
 	char		name[10];
 	int		i, no_config;
-	intptr_t	ppd = NULL;
+	intptr_t	ppd = (intptr_t)NULL;
 
 	/*
 	 * The following is a special case for pcimem nodes.

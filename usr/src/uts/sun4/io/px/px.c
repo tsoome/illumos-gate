@@ -226,7 +226,7 @@ px_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	px_t		*px_p;	/* per bus state pointer */
 	int		instance = DIP_TO_INST(dip);
 	int		ret = DDI_SUCCESS;
-	devhandle_t	dev_hdl = NULL;
+	devhandle_t	dev_hdl = 0;
 	pcie_hp_regops_t regops;
 	pcie_bus_t	*bus_p;
 
@@ -521,7 +521,7 @@ px_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 		mutex_exit(&px_p->px_mutex);
 		mutex_destroy(&px_p->px_mutex);
 
-		px_p->px_dev_hdl = NULL;
+		px_p->px_dev_hdl = 0;
 		ddi_soft_state_free(px_state_p, instance);
 
 		return (DDI_SUCCESS);
