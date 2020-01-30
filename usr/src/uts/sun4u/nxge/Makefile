@@ -40,7 +40,6 @@ UTSBASE	= ../..
 MODULE		= nxge
 NXGE_OBJECTS =	$(NXGE_OBJS) $(NXGE_NPI_OBJS)
 OBJECTS		=  $(NXGE_OBJECTS:%=$(OBJS_DIR)/%)
-LINTS		= $(NXGE_OBJECTS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_PSM_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/nxge
 
@@ -60,7 +59,6 @@ CLEANFILES	+= $(MODSTUBS_O)
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
@@ -80,13 +78,6 @@ INC_PATH	+= -I$(UTSBASE)/common/sys/nxge
 #
 CFLAGS += -DSOLARIS
 #
-LINTFLAGS += -DSOLARIS
-#
-# STREAMS, DDI API limitations and other ON header file definitions such as ethernet.h
-# force us to turn off these lint checks.
-#
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW
 
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-parentheses
@@ -111,12 +102,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 
