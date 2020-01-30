@@ -26,4 +26,5 @@ $(ROOTLIBDIR)/$(DYNLIB) := FILEMODE= 755
 $(ROOTLIBS):
 	$(INS.file) $(DYNLIB)
 
+all: $(LIBS)
 install: all $(ROOTLIBS)
