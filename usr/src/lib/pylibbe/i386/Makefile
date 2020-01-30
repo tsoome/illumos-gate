@@ -29,4 +29,5 @@ PYSUFFIX = $(PYTHON_SUFFIX)
 
 include ../Makefile.com
 
-install: all $(ROOTLIBS)
+all: $(PYOBJS) $(LIBS)
+install: all $(ROOTLIBS) $(ROOTPYBEFILES)
