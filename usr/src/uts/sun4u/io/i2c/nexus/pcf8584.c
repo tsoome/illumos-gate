@@ -289,7 +289,7 @@ pcf8584_dodetach(dev_info_t *dip)
 
 	if ((i2c->pcf8584_attachflags & IMUTEX) != 0) {
 		mutex_destroy(&i2c->pcf8584_imutex);
-			cv_destroy(&i2c->pcf8584_icv);
+		cv_destroy(&i2c->pcf8584_icv);
 	}
 	if ((i2c->pcf8584_attachflags & SETUP_REGS) != 0) {
 		pcf8584_free_regs(i2c);
