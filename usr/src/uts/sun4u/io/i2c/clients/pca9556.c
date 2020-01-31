@@ -328,7 +328,7 @@ pca9556_attach(dev_info_t *dip)
 		}
 
 		if (ddi_create_minor_node(dip, name, S_IFCHR, minor,
-		    PCA9556_NODE_TYPE, NULL) == DDI_FAILURE) {
+		    PCA9556_NODE_TYPE, 0) == DDI_FAILURE) {
 			cmn_err(CE_WARN, "%s: failed to create node for %s",
 			    pcap->pca9556_name, name);
 			pca9556_detach(dip);
