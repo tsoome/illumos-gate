@@ -27,8 +27,6 @@
 #ifndef	_TODM5819_H
 #define	_TODM5819_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -40,7 +38,7 @@ extern  volatile uint8_t *v_rtc_data_reg;
 #include <sys/promif.h>
 #define	DPRINTF if (m5819_debug_flags) prom_printf
 #else
-#define	DPRINTF
+#define	DPRINTF(...)
 #endif	/* DEBUG */
 
 #define	M5819_ADDR_REG		*(volatile uint8_t *)v_rtc_addr_reg

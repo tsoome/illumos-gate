@@ -24,8 +24,6 @@
 # Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 #	This makefile drives the production of todmostek kernel module.
 #
 #	sun4u implementation architecture dependent
@@ -41,7 +39,6 @@ UTSBASE	= ../..
 #
 MODULE		= todmostek
 OBJECTS		= $(TODMOSTEK_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(TODMOSTEK_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_PSM_TOD_DIR)/$(MODULE)
 
 #
@@ -53,13 +50,7 @@ include $(UTSBASE)/sun4u/Makefile.sun4u
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
-
-#
-# lint pass one enforcement
-#
-CFLAGS += $(CCVERBOSE)
 
 #
 #	Default build targets.
@@ -74,16 +65,9 @@ clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
 
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
-
 install:	$(INSTALL_DEPS)
 
 #
 #	Include common targets.
 #
 include $(UTSBASE)/sun4u/Makefile.targ
-
