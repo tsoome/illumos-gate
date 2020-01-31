@@ -3811,7 +3811,7 @@ fail:
 			sf->sf_device_count--;
 			ASSERT(sf->sf_device_count >= 0);
 			if (sf->sf_device_count == 0)
-			sf_finish_init(sf, privp->lip_cnt);
+				sf_finish_init(sf, privp->lip_cnt);
 		}
 		mutex_exit(&sf->sf_mutex);
 	}
@@ -5495,7 +5495,7 @@ sf_cmd_callback(struct fcal_packet *fpkt)
 				bep = (struct fcp_rsp_info *)
 				    (&rsp->fcp_response_len + 1);
 				if (bep->rsp_code != FCP_NO_FAILURE) {
-						pkt->pkt_reason = CMD_TRAN_ERR;
+					pkt->pkt_reason = CMD_TRAN_ERR;
 					tgt_id = pkt->pkt_address.a_target;
 					switch (bep->rsp_code) {
 					case FCP_CMND_INVALID:
@@ -6343,12 +6343,12 @@ sf_els_timeout(struct sf *sf, struct sf_els_hdr *privp)
 		 * are not very interesting, so we take socal core only
 		 * if the timeout is *not* for a IB or host.
 		 */
-		if (sf_core && (sf_core & SF_CORE_ELS_TIMEOUT) &&
+		if ((sf_core & SF_CORE_ELS_TIMEOUT) &&
 		    ((sf_alpa_to_switch[privp->dest_nport_id] &
-		    0x0d) != 0x0d) && ((privp->dest_nport_id != 1) ||
-		    (privp->dest_nport_id != 2) ||
-		    (privp->dest_nport_id != 4) ||
-		    (privp->dest_nport_id != 8) ||
+		    0x0d) != 0x0d) && ((privp->dest_nport_id != 1) &&
+		    (privp->dest_nport_id != 2) &&
+		    (privp->dest_nport_id != 4) &&
+		    (privp->dest_nport_id != 8) &&
 		    (privp->dest_nport_id != 0xf))) {
 			sf_token = (int *)(uintptr_t)fpkt->fcal_socal_request.\
 			    sr_soc_hdr.sh_request_token;
@@ -7111,21 +7111,20 @@ sf_bus_post_event(dev_info_t *dip, dev_info_t *rdip,
     ddi_eventcookie_t eventid, void *impldata)
 {
 	ddi_eventcookie_t remove_cookie, cookie;
+	struct sf *sf;
+
+	sf = ddi_get_soft_state(sf_state, ddi_get_instance(dip));
+	if (sf == NULL) {
+		/* no sf instance for this device */
+		return (NDI_FAILURE);
+	}
 
 	/* is this a remove event ?? */
-	struct sf *sf = ddi_get_soft_state(sf_state, ddi_get_instance(dip));
 	remove_cookie = ndi_event_tag_to_cookie(sf->sf_event_hdl,
 	    SF_EVENT_TAG_REMOVE);
 
 	if (remove_cookie == eventid) {
 		struct sf_target *target;
-
-		/* handle remove event */
-
-		if (sf == NULL) {
-			/* no sf instance for this device */
-			return (NDI_FAILURE);
-		}
 
 		/* get the target for this event */
 		if ((target = sf_get_target_from_dip(sf, rdip)) != NULL) {
