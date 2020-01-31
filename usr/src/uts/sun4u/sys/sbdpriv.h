@@ -27,8 +27,6 @@
 #ifndef _SYS_SBDPRIV_H
 #define	_SYS_SBDPRIV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -212,18 +210,23 @@ extern int	plat_max_mem_units_per_board();
 #define	SBD_DEVICE_TRANSITION(sb, nt, un, st) \
 { \
 	int	_ostate, _nstate; \
-	_ostate = (int)((sb)->sb_dev[NIX(nt)][un].u_common.sbdev_state); \
-	_nstate = (int)(st); \
-	PR_STATE("BOARD %d (%s.%d) STATE: %s(%d) -> %s(%d)\n", \
-		(sb)->sb_num, \
-		sbd_ct_str[nt], (un), \
-		sbd_state_str[_ostate], _ostate, \
-		sbd_state_str[_nstate], _nstate); \
-	(void) drv_getparm(TIME, \
-	(void *)&(sb)->sb_dev[NIX(nt)][un].u_common.sbdev_time); \
-	(sb)->sb_dev[NIX(nt)][un].u_common.sbdev_state = (st); \
-	(sb)->sb_dev[NIX(nt)][un].u_common.sbdev_ostate = ostate_cvt(st); \
-	send_event = 1; \
+	int	idx = NIX(nt); \
+	if (idx < SBD_MAXNUM_NT) { \
+		_ostate = (int) \
+		    ((sb)->sb_dev[idx][un].u_common.sbdev_state); \
+		_nstate = (int)(st); \
+		PR_STATE("BOARD %d (%s.%d) STATE: %s(%d) -> %s(%d)\n", \
+			(sb)->sb_num, \
+			sbd_ct_str[nt], (un), \
+			sbd_state_str[_ostate], _ostate, \
+			sbd_state_str[_nstate], _nstate); \
+		(void) drv_getparm(TIME, \
+		(void *)&(sb)->sb_dev[idx][un].u_common.sbdev_time); \
+		(sb)->sb_dev[idx][un].u_common.sbdev_state = (st); \
+		(sb)->sb_dev[idx][un].u_common.sbdev_ostate = \
+		    ostate_cvt(st); \
+		send_event = 1; \
+	} \
 }
 #define	SBD_BOARD_TRANSITION(sb, st) \
 { \
@@ -238,11 +241,15 @@ extern int	plat_max_mem_units_per_board();
 #else /* DEBUG */
 #define	SBD_DEVICE_TRANSITION(sb, nt, un, st) \
 { \
-	(sb)->sb_dev[NIX(nt)][un].u_common.sbdev_state = (st); \
-	(sb)->sb_dev[NIX(nt)][un].u_common.sbdev_ostate = ostate_cvt(st); \
-	(void) drv_getparm(TIME, \
-		(void *)&(sb)->sb_dev[NIX(nt)][un].u_common.sbdev_time); \
-	send_event = 1; \
+	int	idx = NIX(nt); \
+	if (idx < SBD_MAXNUM_NT) { \
+		(sb)->sb_dev[idx][un].u_common.sbdev_state = (st); \
+		(sb)->sb_dev[idx][un].u_common.sbdev_ostate = \
+		    ostate_cvt(st); \
+		(void) drv_getparm(TIME, \
+		    (void *)&(sb)->sb_dev[idx][un].u_common.sbdev_time); \
+		send_event = 1; \
+	} \
 }
 #define	SBD_BOARD_TRANSITION(sb, st) \
 		((sb)->sb_pstate = (sb)->sb_state, (sb)->sb_state = (st),  \

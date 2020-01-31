@@ -68,12 +68,10 @@ extern void sbd_inject_err(int error, sbderror_t *ep, int Errno, int ecode,
 
 #define	SBD_INJECT_ERR	sbd_inject_err
 
-
-
 #else	/* SBD_DEBUG_ERRS */
 
-#define	SBD_INJECT_ERR
-#define	PR_ERR_ALL		if (0) printf
+#define	SBD_INJECT_ERR(...)
+#define	PR_ERR_ALL(...)
 #define	SBD_DBG_CODE	PR_ERR_ALL
 #define	SBD_DBG_ALL	PR_ERR_ALL
 
@@ -81,8 +79,8 @@ extern void sbd_inject_err(int error, sbderror_t *ep, int Errno, int ecode,
 
 #else	/* DEBUG */
 
-#define	SBD_INJECT_ERR
-#define	PR_ERR_ALL		if (0) printf
+#define	SBD_INJECT_ERR(...)
+#define	PR_ERR_ALL(...)
 #define	PR_ERR_ERRNO		PR_ERR_ALL
 #define	PR_ERR_ECODE		PR_ERR_ALL
 #define	PR_ERR_RSC		PR_ERR_ALL

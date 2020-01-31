@@ -2051,7 +2051,7 @@ sbd_probe_board(sbd_handle_t *hp)
 	mutex_exit(&sbp->sb_flags_mutex);
 
 	SBD_INJECT_ERR(SBD_PROBE_BOARD_PSEUDO_ERR, hp->h_err, EIO,
-		ESGT_PROBE, NULL);
+	    ESGT_PROBE, NULL);
 
 	sbd_release_sbdp_handle(hdp);
 
@@ -2083,7 +2083,7 @@ sbd_deprobe_board(sbd_handle_t *hp)
 	mutex_exit(&sbp->sb_flags_mutex);
 
 	SBD_INJECT_ERR(SBD_DEPROBE_BOARD_PSEUDO_ERR, hp->h_err, EIO,
-		ESGT_DEPROBE, NULL);
+	    ESGT_DEPROBE, NULL);
 
 	sbd_release_sbdp_handle(hdp);
 	return (rv);
@@ -3141,7 +3141,7 @@ sbd_post_attach_devlist(sbd_handle_t *hp, sbd_devlist_t *devlist,
 
 		SBD_DEV_SET_ATTACHED(sbp, nodetype, unit);
 		SBD_DEVICE_TRANSITION(sbp, nodetype, unit,
-						SBD_STATE_CONFIGURED);
+		    SBD_STATE_CONFIGURED);
 	}
 	sbd_release_sbdp_handle(hdp);
 
@@ -3194,7 +3194,7 @@ sbd_post_attach_devlist(sbd_handle_t *hp, sbd_devlist_t *devlist,
 		break;
 	}
 
-	if (max_units && devlist) {
+	if (max_units) {
 		int	i;
 
 		for (i = 0; i < max_units; i++) {
@@ -3495,7 +3495,7 @@ sbd_post_release_devlist(sbd_handle_t *hp, sbd_devlist_t *devlist,
 			SBD_GET_ERR(SBD_HD2ERR(hp)));
 	}
 
-	if (max_units && devlist) {
+	if (max_units) {
 		int	i;
 
 		for (i = 0; i < max_units; i++) {
@@ -3791,7 +3791,7 @@ sbd_post_detach_devlist(sbd_handle_t *hp, sbd_devlist_t *devlist,
 		SBD_DEV_CLR_RELEASED(sbp, nodetype, unit);
 		SBD_DEV_CLR_UNREFERENCED(sbp, nodetype, unit);
 		SBD_DEVICE_TRANSITION(sbp, nodetype, unit,
-						SBD_STATE_UNCONFIGURED);
+		    SBD_STATE_UNCONFIGURED);
 	}
 	sbd_release_sbdp_handle(hdp);
 
@@ -3817,7 +3817,7 @@ sbd_post_detach_devlist(sbd_handle_t *hp, sbd_devlist_t *devlist,
 			SBD_GET_ERR(HD2MACHERR(hp)));
 	}
 
-	if (max_units && devlist) {
+	if (max_units) {
 		int	i;
 
 		for (i = 0; i < max_units; i++) {
@@ -3929,8 +3929,9 @@ sbd_check_unit_attached(sbd_board_t *sbp, dev_info_t *dip, int unit,
 	/*
 	 * Save the error that sbdp sent us and report it
 	 */
-	if (rv == -1)
+	if (rv == -1) {
 		SBD_GET_PERR(hdp->h_err, ep);
+	}
 
 	sbd_release_sbdp_handle(hdp);
 

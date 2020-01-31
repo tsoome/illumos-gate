@@ -375,9 +375,9 @@ sbd_pre_release_cpu(sbd_handle_t *hp, sbd_devlist_t *devlist, int devnum)
 		unit = sbdp_get_unit_num(hdp, dip);
 		if (unit < 0) {
 			if (hp->h_flags & SBD_IOCTL_FLAG_FORCE) {
-			cmn_err(CE_WARN,
-				"sbd:%s: failed to get unit (cpu %d)",
-				f, cpuid);
+				cmn_err(CE_WARN,
+				    "sbd:%s: failed to get unit (cpu %d)",
+				    f, cpuid);
 				continue;
 			} else {
 				SBD_GET_PERR(hdp->h_err, SBD_HD2ERR(hp));
@@ -446,9 +446,7 @@ sbd_pre_release_cpu(sbd_handle_t *hp, sbd_devlist_t *devlist, int devnum)
 	}
 
 	SBD_INJECT_ERR(SBD_OFFLINE_CPU_PSEUDO_ERR,
-		hp->h_err, EIO,
-		ESBD_OFFLINE,
-		sbp->sb_cpupath[devnum - 1]);
+	    hp->h_err, EIO, ESBD_OFFLINE, sbp->sb_cpupath[devnum - 1]);
 
 	sbd_release_sbdp_handle(hdp);
 
@@ -492,9 +490,9 @@ sbd_pre_attach_cpu(sbd_handle_t *hp, sbd_devlist_t *devlist, int devnum)
 		unit = sbdp_get_unit_num(hdp, dip);
 		if (unit < 0) {
 			if (hp->h_flags & SBD_IOCTL_FLAG_FORCE) {
-			cmn_err(CE_WARN,
-				"sbd:%s: failed to get unit (cpu %d)",
-				f, cpuid);
+				cmn_err(CE_WARN,
+				    "sbd:%s: failed to get unit (cpu %d)",
+				    f, cpuid);
 				continue;
 			} else {
 				SBD_GET_PERR(hdp->h_err, SBD_HD2ERR(hp));
@@ -585,9 +583,7 @@ sbd_post_attach_cpu(sbd_handle_t *hp, sbd_devlist_t *devlist, int devnum)
 				break;
 			}
 			SBD_INJECT_ERR(SBD_POWERON_CPU_PSEUDO_ERR,
-			    ep, EIO,
-			    ESBD_CPUSTOP,
-			    sbp->sb_cpupath[i]);
+			    ep, EIO, ESBD_CPUSTOP, sbp->sb_cpupath[i]);
 			PR_CPU("%s: cpu %d powered ON\n", f, cpuid);
 		}
 

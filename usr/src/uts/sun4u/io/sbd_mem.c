@@ -442,11 +442,12 @@ sbd_post_detach_mem(sbd_handle_t *hp, sbd_devlist_t devlist[], int devnum)
 		dip = devlist[d].dv_dip;
 		unit = sbdp_get_unit_num(hdp, dip);
 		if (unit == -1) {
-			if (hp->h_flags & SBD_IOCTL_FLAG_FORCE)
+			if (hp->h_flags & SBD_IOCTL_FLAG_FORCE) {
 				continue;
-			else {
-				if (rv != -1)
+			} else {
+				if (rv != -1) {
 					SBD_GET_PERR(hdp->h_err, ep);
+				}
 				break;
 			}
 		}
@@ -781,8 +782,11 @@ sbd_mem_cleanup(sbd_mem_unit_t *s_mp, sbd_mem_unit_t *t_mp, sbderror_t *ep)
 				SBD_STATE_CONFIGURED);
 		}
 
-/* hack for test scripts.  *** remove before code finalized *** */
-sbd_last_target = sbp->sb_num;
+		/*
+		 * hack for test scripts.
+		 *  *** remove before code finalized ***
+		 */
+		sbd_last_target = sbp->sb_num;
 	}
 
 	/*
@@ -2055,8 +2059,9 @@ sbd_move_memory(sbd_handle_t *hp, sbd_board_t *s_bp, sbd_board_t *t_bp)
 	hdp = sbd_get_sbdp_handle(s_bp, hp);
 
 	ret = sbdp_move_memory(hdp, t_bp->sb_num);
-	if (ret != 0)
+	if (ret != 0) {
 		SBD_GET_PERR(hdp->h_err, ep);
+	}
 
 	sbd_release_sbdp_handle(hdp);
 
