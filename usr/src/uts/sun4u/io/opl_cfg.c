@@ -2383,7 +2383,10 @@ opl_probe_leaf(opl_probe_t *probe)
 	parent = ddi_root_node();
 	board_cfg = &opl_boards[board];
 
-	ASSERT(OPL_VALID_CHANNEL(channel));
+	if (!OPL_VALID_CHANNEL(channel)) {
+		ASSERT(OPL_VALID_CHANNEL(channel));
+		return (-1);
+	}
 	ASSERT(OPL_VALID_LEAF(leaf));
 
 	if (channel == OPL_CMU_CHANNEL) {
