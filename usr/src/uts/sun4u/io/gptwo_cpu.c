@@ -609,8 +609,8 @@ set_cpu_us3_props(dev_info_t *new_child, struct bca *bcp)
 	 */
 	dimms = 0;
 
-	while ((pcd->sprd_ecache_dimm_label[dimms] != NULL) &&
-	    (dimms < MAX_DIMMS_PER_PORT))
+	while ((dimms < MAX_DIMMS_PER_PORT) &&
+	    (pcd->sprd_ecache_dimm_label[dimms] != NULL))
 		dimms++;
 
 	if (dimms) {
@@ -827,8 +827,8 @@ set_cpu_us4_props(dev_info_t *new_child, struct bca *bcp)
 	 */
 	dimms = 0;
 
-	while ((pcd->sprd_ecache_dimm_label[dimms] != NULL) &&
-	    (dimms < MAX_DIMMS_PER_PORT))
+	while ((dimms < MAX_DIMMS_PER_PORT) &&
+	    (pcd->sprd_ecache_dimm_label[dimms] != NULL))
 		dimms++;
 
 	if (dimms) {
@@ -974,8 +974,8 @@ set_mc_props(dev_info_t *new_child, void *arg, uint_t flags)
 	 */
 	banks = 0;
 
-	while ((pcd->sprd_bank_rsv[banks] != NULL) &&
-	    (banks < MAX_BANKS_PER_PORT))
+	while ((banks < MAX_BANKS_PER_PORT) &&
+	    (pcd->sprd_bank_rsv[banks] != NULL))
 		banks++;
 
 	if (banks) {
@@ -988,8 +988,8 @@ set_mc_props(dev_info_t *new_child, void *arg, uint_t flags)
 	 */
 	dimms = 0;
 
-	while ((pcd->sprd_dimm[dimms] != NULL) &&
-	    (dimms < MAX_DIMMS_PER_PORT))
+	while ((dimms < MAX_DIMMS_PER_PORT) &&
+	    (pcd->sprd_dimm[dimms] != NULL))
 		dimms++;
 
 	if (dimms) {
