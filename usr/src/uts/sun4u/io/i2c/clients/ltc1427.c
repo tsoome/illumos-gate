@@ -228,7 +228,7 @@ ltc1427_ioctl(dev_t dev, int cmd, intptr_t arg, int mode,
 	i2c_transfer_t		*i2c_tran_pointer;
 	int32_t			fan_speed;
 
-	if (arg == NULL) {
+	if (arg == (intptr_t)NULL) {
 		D2CMN_ERR((CE_WARN, "LTC1427: ioctl: arg passed in to ioctl "
 		    "= NULL\n"));
 		err = EINVAL;
@@ -358,7 +358,7 @@ ltc1427_do_attach(dev_info_t *dip)
 	    "%s%d", ddi_node_name(dip), instance);
 
 	if (ddi_create_minor_node(dip, "ltc1427", S_IFCHR, instance,
-	    "ddi_i2c:adio",	NULL) == DDI_FAILURE) {
+	    "ddi_i2c:adio", 0) == DDI_FAILURE) {
 		cmn_err(CE_WARN, "%s ddi_create_minor_node failed for "
 		    "%s\n", unitp->ltc1427_name, "ltc1427");
 		ddi_soft_state_free(ltc1427soft_statep, instance);
