@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/sysmacros.h>
@@ -105,12 +103,10 @@ load_platform_drivers(void)
 	dip = e_ddi_hold_devi_by_path(TACO_ISA_PATHNAME, 0);
 	if (dip == NULL) {
 		cmn_err(CE_PANIC, "Could not install the ISA driver\n");
-		return;
 	}
 
 	if (pci_config_setup(dip, &isa_handle) != DDI_SUCCESS) {
 		cmn_err(CE_PANIC, "Could not get the config space of ISA\n");
-		return;
 	}
 }
 
