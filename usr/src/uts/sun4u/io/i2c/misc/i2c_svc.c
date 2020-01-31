@@ -155,8 +155,8 @@ i2c_transfer(i2c_client_hdl_t hdl, i2c_transfer_t *i2c_tran)
 	}
 
 	if (CHDL(hdl)->chdl_nexus_reg->i2c_nexus_transfer != NULL) {
-		(*CHDL(hdl)->chdl_nexus_reg->i2c_nexus_transfer)
-				(CHDL(hdl)->chdl_dip, i2c_tran);
+		(void) (*CHDL(hdl)->chdl_nexus_reg->i2c_nexus_transfer)
+		    (CHDL(hdl)->chdl_dip, i2c_tran);
 
 		return (i2c_tran->i2c_result);
 	} else {
