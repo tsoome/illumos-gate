@@ -672,7 +672,7 @@ void
 pciehpc_reg_put8(pcie_hp_ctrl_t *ctrl_p, uint_t off, uint8_t val)
 {
 	if (ctrl_p->hc_regops.put != NULL) {
-		ctrl_p->hc_regops.put(ctrl_p->hc_regops.cookie,
+		(void) ctrl_p->hc_regops.put(ctrl_p->hc_regops.cookie,
 		    (off_t)off, (uint_t)val);
 	} else {
 		pcie_bus_t	*bus_p = PCIE_DIP2BUS(ctrl_p->hc_dip);
@@ -685,7 +685,7 @@ void
 pciehpc_reg_put16(pcie_hp_ctrl_t *ctrl_p, uint_t off, uint16_t val)
 {
 	if (ctrl_p->hc_regops.put != NULL) {
-		ctrl_p->hc_regops.put(ctrl_p->hc_regops.cookie,
+		(void) ctrl_p->hc_regops.put(ctrl_p->hc_regops.cookie,
 		    (off_t)off, (uint_t)val);
 	} else {
 		pcie_bus_t	*bus_p = PCIE_DIP2BUS(ctrl_p->hc_dip);
@@ -698,7 +698,7 @@ void
 pciehpc_reg_put32(pcie_hp_ctrl_t *ctrl_p, uint_t off, uint32_t val)
 {
 	if (ctrl_p->hc_regops.put != NULL) {
-		ctrl_p->hc_regops.put(ctrl_p->hc_regops.cookie,
+		(void) ctrl_p->hc_regops.put(ctrl_p->hc_regops.cookie,
 		    (off_t)off, (uint_t)val);
 	} else {
 		pcie_bus_t	*bus_p = PCIE_DIP2BUS(ctrl_p->hc_dip);
