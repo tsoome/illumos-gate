@@ -27,8 +27,6 @@
 #ifndef	_TODDS1287_H
 #define	_TODDS1287_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -40,7 +38,7 @@ extern  volatile uint8_t *v_rtc_data_reg;
 #include <sys/promif.h>
 #define	DPRINTF if (ds1287_debug_flags) prom_printf
 #else
-#define	DPRINTF
+#define	DPRINTF(...)
 #endif	/* DEBUG */
 
 #define	DS1287_ADDR_REG		*(volatile uint8_t *)v_rtc_addr_reg
