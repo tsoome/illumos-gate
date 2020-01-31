@@ -425,7 +425,7 @@ sbbc_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	(void) sprintf(name, "sbbc%d", instance);
 
 	if (ddi_create_minor_node(dip, name, S_IFCHR, instance, NULL,
-	    NULL) == DDI_FAILURE) {
+	    0) == DDI_FAILURE) {
 		ddi_remove_minor_node(dip, NULL);
 		goto failed;
 	}
@@ -690,7 +690,7 @@ sbbc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip, ddi_intr_op_t intr_op,
 	childintr->status = SBBC_INTR_STATE_DISABLE;
 
 	for (i = 0; i < MAX_SBBC_DEVICES; i++) {
-		if (sbbcsoftp->child_intr[i] == 0) {
+		if (sbbcsoftp->child_intr[i] == NULL) {
 			sbbcsoftp->child_intr[i] = childintr;
 			break;
 		}
@@ -705,7 +705,8 @@ sbbc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip, ddi_intr_op_t intr_op,
 		cmn_err(CE_WARN, "sbbc%d: failed to add intr for %s",
 		    instance, ddi_get_name(rdip));
 		kmem_free(childintr, sizeof (struct sbbc_child_intr));
-		sbbcsoftp->child_intr[i] = NULL;
+		if (i < MAX_SBBC_DEVICES)
+			sbbcsoftp->child_intr[i] = NULL;
 	}
 
 	/*
@@ -1144,7 +1145,7 @@ sbbc_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 			return (EINVAL);
 		}
 
-		if (arg == NULL) {
+		if (arg == (intptr_t)NULL) {
 			return (ENXIO);
 		}
 
@@ -1184,7 +1185,7 @@ sbbc_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 			return (EINVAL);
 		}
 
-		if (arg == NULL) {
+		if (arg == (intptr_t)NULL) {
 			return (ENXIO);
 		}
 
