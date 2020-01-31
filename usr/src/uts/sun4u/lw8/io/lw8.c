@@ -971,7 +971,7 @@ lw8_setled(lom_set_led_t *set_ledp)
 			continue;
 		for (j = 0; j < MAX_LEDS_PER_FRU; j++) {
 			lip = &fru_led_table[i].led_info[j];
-			if (lip->id == NULL)
+			if (*lip->id == '\0')
 				continue;
 			if (strncmp(set_ledp->id, lip->id, MAX_ID_LEN) != 0)
 				continue;
@@ -1020,7 +1020,7 @@ lw8_getled(lom_get_led_t *get_ledp)
 		}
 		for (j = 0; j < MAX_LEDS_PER_FRU; j++) {
 			lip = &fru_led_table[i].led_info[j];
-			if (lip->id == NULL)
+			if (*lip->id == '\0')
 				continue;
 			if (strncmp(get_ledp->id, lip->id, MAX_ID_LEN) != 0)
 				continue;

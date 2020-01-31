@@ -45,12 +45,8 @@ install		:=	TARGET= install
 install_h	:=	TARGET= install_h
 clean		:=	TARGET= clean
 clobber		:=	TARGET= clobber
-lint		:=	TARGET= lint
-lintlib		:=	TARGET= lintlib
-modlintlib	:=	TARGET= modlintlib
 modlist		:=	TARGET= modlist
 modlist		:=	NO_STATE= -K $$MODSTATE$$$$
-clean.lint	:=	TARGET= clean.lint
 check		:=	TARGET= check
 
 #
@@ -58,11 +54,7 @@ check		:=	TARGET= check
 #
 .KEEP_STATE:
 
-def all clean clean.lint clobber modlist: $(LW8_KMODS)
-
-lintlib:	unix
-
-modlintlib:	$(LW8_KMODS)
+def all clean clobber modlist: $(LW8_KMODS)
 
 IMPLEMENTED_PLATFORM	= SUNW,Netra-T12
 LINKS2DESTDIR	= ../../SUNW,Sun-Fire/kernel
@@ -93,15 +85,6 @@ $(LW8_KMODS): FRC
 
 install_h check:	FRC
 	@cd sys; pwd; $(MAKE) $(TARGET)
-
-
-lint:		modlintlib
-
-LINT_LIBS	 = $(LINT_LIB) \
-		   -L$(LW8_LINT_LIB_DIR) \
-		   -L$(LINT_LIB_DIR) $(LINT_KMODS:%=-l%) \
-		       $(CLOSED_LINT_KMODS:%=-l%) \
-		   -L$(SPARC_LIB_DIR) $(SPARC_LINTS:%=-l%)
 
 $(LW8_PLAT_LINKS_2): $(ROOT_LW8_MOD_DIR)
 	$(RM) $@; $(SYMLINK) $(LINKS2DESTDIR)/$(@F) $@

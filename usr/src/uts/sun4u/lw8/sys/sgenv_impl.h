@@ -269,9 +269,9 @@ extern uint_t	sgenv_debug;
 #define	DCMN_ERR_EVENT		if (0) _DCMN_ERR
 #define	DCMN_ERR_CACHE		if (0) _DCMN_ERR
 #define	DCMN_ERR_THREAD		if (0) _DCMN_ERR
-#define	SGENV_PRINT_MBOX_MSG
-#define	SGENV_PRINT_ENV_INFO
-#define	SGENV_PRINT_POLL_INFO
+#define	SGENV_PRINT_MBOX_MSG(...)
+#define	SGENV_PRINT_ENV_INFO(...)
+#define	SGENV_PRINT_POLL_INFO(...)
 #endif
 
 #ifdef	__cplusplus

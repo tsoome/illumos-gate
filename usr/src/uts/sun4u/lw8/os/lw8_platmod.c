@@ -77,7 +77,7 @@ static int sg_debug = 0;
 #ifdef DEBUG
 #define	DCMNERR if (sg_debug) cmn_err
 #else
-#define	DCMNERR
+#define	DCMNERR(...)
 #endif
 
 int (*p2get_mem_unum)(int, uint64_t, char *, int, int *);
