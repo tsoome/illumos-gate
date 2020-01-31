@@ -191,10 +191,10 @@ max1617_do_attach(dev_info_t *dip)
 	    MAX1617_FCN_TO_MINOR(MAX1617_CPU_TEMP);
 
 	if (ddi_create_minor_node(dip, minor_name, S_IFCHR,
-	    minor_number, MAX1617_NODE_TYPE, NULL) == DDI_FAILURE) {
+	    minor_number, MAX1617_NODE_TYPE, 0) == DDI_FAILURE) {
 		cmn_err(CE_WARN, "%s ddi_create_minor_node failed for minor "
 		    " name '%s'", unitp->max1617_name, minor_name);
-			ddi_soft_state_free(max1617_soft_statep, instance);
+		ddi_soft_state_free(max1617_soft_statep, instance);
 
 		return (DDI_FAILURE);
 	}
@@ -204,7 +204,7 @@ max1617_do_attach(dev_info_t *dip)
 	    MAX1617_FCN_TO_MINOR(MAX1617_AMB_TEMP);
 
 	if (ddi_create_minor_node(dip, minor_name, S_IFCHR,
-	    minor_number, MAX1617_NODE_TYPE, NULL) == DDI_FAILURE) {
+	    minor_number, MAX1617_NODE_TYPE, 0) == DDI_FAILURE) {
 		cmn_err(CE_WARN, "%s ddi_create_minor_node failed for %s",
 		    unitp->max1617_name, minor_name);
 		ddi_remove_minor_node(dip, NULL);
