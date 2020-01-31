@@ -437,7 +437,7 @@ cpr_check_spec_statefile(void)
 	ASSERT(cprconfig.cf_type == CFT_SPEC ||
 	    cprconfig.cf_type == CFT_ZVOL);
 
-	if (cprconfig.cf_devfs == NULL)
+	if (*cprconfig.cf_devfs == '\0')
 		return (ENXIO);
 
 	return (cpr_verify_statefile_path());
@@ -607,9 +607,6 @@ cpr_statefile_ok(vnode_t *vp, int alloc_retry)
 	 * number of pages short for swapping.
 	 */
 	STAT->cs_nosw_pages = k_anoninfo.ani_mem_resv;
-	if (STAT->cs_nosw_pages < 0)
-		STAT->cs_nosw_pages = 0;
-
 	str = "cpr_statefile_ok:";
 
 	CPR_DEBUG(CPR_DEBUG9, "Phys swap: max=%lu resv=%lu\n",

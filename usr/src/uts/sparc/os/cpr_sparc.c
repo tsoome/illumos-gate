@@ -436,7 +436,7 @@ cpr_next_component(char **path)
 		obuf[len] = '\0';
 		*path += len + 1;	/* Position beyond the slash. */
 	} else {
-		(void) strcpy(obuf, *path);
+		(void) strlcpy(obuf, *path, sizeof (obuf));
 		*path += len;		/* Position at the terminal NULL. */
 	}
 
