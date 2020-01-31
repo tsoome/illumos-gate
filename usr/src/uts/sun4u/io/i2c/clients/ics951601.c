@@ -270,7 +270,7 @@ ics951601_attach(dev_info_t *dip)
 
 
 	if (ddi_create_minor_node(dip, icsp->ics951601_name, S_IFCHR,
-	    instance, ICS951601_NODE_TYPE, NULL) == DDI_FAILURE) {
+	    instance, ICS951601_NODE_TYPE, 0) == DDI_FAILURE) {
 		cmn_err(CE_WARN, "%s ddi_create_minor_node failed",
 		    icsp->ics951601_name);
 		goto ATTACH_ERR;
