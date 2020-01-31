@@ -44,7 +44,7 @@
 static int todsg_debug = 0;
 #define	DCMNERR if (todsg_debug) cmn_err
 #else
-#define	DCMNERR
+#define	DCMNERR(...)
 #endif /* DEBUG */
 
 #define	OFFSET(base, field)	((char *)&base.field - (char *)&base)
