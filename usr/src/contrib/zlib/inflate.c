@@ -1410,7 +1410,7 @@ int ZEXPORT inflateSync(z_streamp strm)
             state->bits -= 8;
         }
         state->have = 0;
-        syncsearch(&(state->have), buf, len);
+        (void) syncsearch(&(state->have), buf, len);
     }
 
     /* search available input */
@@ -1422,7 +1422,7 @@ int ZEXPORT inflateSync(z_streamp strm)
     /* return no joy or set up to restart inflate() on a new block */
     if (state->have != 4) return Z_DATA_ERROR;
     in = strm->total_in;  out = strm->total_out;
-    inflateReset(strm);
+    (void) inflateReset(strm);
     strm->total_in = in;  strm->total_out = out;
     state->mode = TYPE;
     return Z_OK;

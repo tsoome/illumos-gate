@@ -335,7 +335,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
         s->pending_buf == Z_NULL) {
         s->status = FINISH_STATE;
         strm->msg = ERR_MSG(Z_MEM_ERROR);
-        deflateEnd (strm);
+        (void) deflateEnd (strm);
         return Z_MEM_ERROR;
     }
     s->d_buf = overlay + s->lit_bufsize/sizeof(ush);
@@ -1134,7 +1134,7 @@ int ZEXPORT deflateCopy (dest, source)
 
     if (ds->window == Z_NULL || ds->prev == Z_NULL || ds->head == Z_NULL ||
         ds->pending_buf == Z_NULL) {
-        deflateEnd (dest);
+        (void) deflateEnd (dest);
         return Z_MEM_ERROR;
     }
     /* following zmemcpy do not work for 16-bit MSDOS */
@@ -1721,7 +1721,7 @@ local block_state deflate_stored(s, flush)
          * the check value.
          */
         if (len) {
-            read_buf(s->strm, s->strm->next_out, len);
+            (void) read_buf(s->strm, s->strm->next_out, len);
             s->strm->next_out += len;
             s->strm->avail_out -= len;
             s->strm->total_out += len;
@@ -1784,7 +1784,7 @@ local block_state deflate_stored(s, flush)
     if (have > s->strm->avail_in)
         have = s->strm->avail_in;
     if (have) {
-        read_buf(s->strm, s->window + s->strstart, have);
+        (void) read_buf(s->strm, s->window + s->strstart, have);
         s->strstart += have;
     }
     if (s->high_water < s->strstart)
