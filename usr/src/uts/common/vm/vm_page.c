@@ -6403,7 +6403,10 @@ page_capture_add_hash(page_t *pp, uint_t szc, uint_t flags, void *datap)
 		}
 	}
 
-	ASSERT(cb_index != PC_NUM_CALLBACKS);
+	if (cb_index == PC_NUM_CALLBACKS) {
+		ASSERT(cb_index != PC_NUM_CALLBACKS);
+		return;
+	}
 
 	rw_enter(&pc_cb[cb_index].cb_rwlock, RW_READER);
 	if (pc_cb[cb_index].cb_active) {
@@ -6761,7 +6764,10 @@ page_capture_take_action(page_t *pp, uint_t flags, void *datap)
 			break;
 		}
 	}
-	ASSERT(cb_index < PC_NUM_CALLBACKS);
+	if (cb_index == PC_NUM_CALLBACKS) {
+		ASSERT(cb_index < PC_NUM_CALLBACKS);
+		return (-1);
+	}
 
 	/*
 	 * Remove the entry from the page_capture hash, but don't free it yet

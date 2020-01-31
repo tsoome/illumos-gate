@@ -27,8 +27,6 @@
 #ifndef _SBDP_PRIV_H
 #define	_SBDP_PRIV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -65,16 +63,16 @@ extern uint_t sbdp_debug;
 
 #else /* DEBUG */
 
-#define	SBDP_DBG_ALL
-#define	SBDP_DBG_STATE
-#define	SBDP_DBG_QR
-#define	SBDP_DBG_CPU
-#define	SBDP_DBG_MEM
-#define	SBDP_DBG_IO
-#define	SBDP_DBG_MBOX
-#define	SBDP_DBG_ERR
-#define	SBDP_DBG_MISC
-#define	SBDP_DBG_FUNC
+#define	SBDP_DBG_ALL(...)
+#define	SBDP_DBG_STATE(...)
+#define	SBDP_DBG_QR(...)
+#define	SBDP_DBG_CPU(...)
+#define	SBDP_DBG_MEM(...)
+#define	SBDP_DBG_IO(...)
+#define	SBDP_DBG_MBOX(...)
+#define	SBDP_DBG_ERR(...)
+#define	SBDP_DBG_MISC(...)
+#define	SBDP_DBG_FUNC(...)
 #endif /* DEBUG */
 
 #define	PORTID_BAD	-1

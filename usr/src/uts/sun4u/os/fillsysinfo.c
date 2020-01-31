@@ -463,7 +463,6 @@ fill_cpu(pnode_t node)
 	if (cpuid < 0 || cpuid >= NCPU) {
 		cmn_err(CE_PANIC, "cpu node %x: cpuid %d out of range", node,
 		    cpuid);
-		return;
 	}
 
 	cpunode = &cpunodes[cpuid];
@@ -687,7 +686,6 @@ fill_cpu_ddi(dev_info_t *dip)
 	if (cpuid < 0 || cpuid >= NCPU) {
 		cmn_err(CE_PANIC, "cpu dip %p: cpuid %d out of range",
 		    (void *)dip, cpuid);
-		return;
 	}
 
 	cpunode = &cpunodes[cpuid];

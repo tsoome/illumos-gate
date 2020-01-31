@@ -712,7 +712,7 @@ sbdp_resume(sbdp_sr_handle_t *srh)
 		 */
 		if (SR_CHECK_FLAG(srh, SR_FLAG_WATCHDOG)) {
 			mutex_enter(&tod_lock);
-			tod_ops.tod_set_watchdog_timer(
+			(void) tod_ops.tod_set_watchdog_timer(
 			    saved_watchdog_seconds);
 			mutex_exit(&tod_lock);
 		}

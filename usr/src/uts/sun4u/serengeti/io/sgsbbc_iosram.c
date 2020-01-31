@@ -288,10 +288,7 @@ tunnel_init(sbbc_softstate_t *softsp, tunnel_t *new_tunnel)
 		}
 	}
 
-
-	if (toc != NULL) {
-		ddi_regs_map_free(&toc_handle);
-	}
+	ddi_regs_map_free(&toc_handle);
 
 	/*
 	 * Set up the 'interrupt reason' SRAM pointers

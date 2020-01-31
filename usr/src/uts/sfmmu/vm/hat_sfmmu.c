@@ -7902,7 +7902,7 @@ sfmmu_uvatopfn(caddr_t vaddr, struct hat *sfmmup, tte_t *ttep)
 	}
 	while (ism_blkp != NULL && ism_hatid == NULL) {
 		ism_map = ism_blkp->iblk_maps;
-		for (i = 0; ism_map[i].imap_ismhat && i < ISM_MAP_SLOTS; i++) {
+		for (i = 0; i < ISM_MAP_SLOTS && ism_map[i].imap_ismhat; i++) {
 			if (vaddr >= ism_start(ism_map[i]) &&
 			    vaddr < ism_end(ism_map[i])) {
 				sfmmup = ism_hatid = ism_map[i].imap_ismhat;
@@ -8306,7 +8306,7 @@ ism_tsb_entries(sfmmu_t *sfmmup, int szc)
 
 	for (; ism_blkp != NULL; ism_blkp = ism_blkp->iblk_next) {
 		ism_map = ism_blkp->iblk_maps;
-		for (j = 0; ism_map[j].imap_ismhat && j < ISM_MAP_SLOTS; j++) {
+		for (j = 0; j < ISM_MAP_SLOTS && ism_map[j].imap_ismhat; j++) {
 			rid = ism_map[j].imap_rid;
 			ASSERT(rid == SFMMU_INVALID_ISMRID ||
 			    rid < sfmmup->sfmmu_srdp->srd_next_ismrid);
@@ -15305,7 +15305,7 @@ sfmmu_ism_hatflags(sfmmu_t *sfmmup, int addflag)
 	ism_blkp = sfmmup->sfmmu_iblk;
 	while (ism_blkp != NULL) {
 		ism_map = ism_blkp->iblk_maps;
-		for (i = 0; ism_map[i].imap_ismhat && i < ISM_MAP_SLOTS; i++) {
+		for (i = 0; i < ISM_MAP_SLOTS && ism_map[i].imap_ismhat; i++) {
 			rid = ism_map[i].imap_rid;
 			if (rid == SFMMU_INVALID_ISMRID) {
 				continue;

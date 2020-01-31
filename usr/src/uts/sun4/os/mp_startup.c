@@ -663,8 +663,6 @@ slave_startup(void)
 	 * Now we are done with the startup thread, so free it up.
 	 */
 	thread_exit();
-	cmn_err(CE_PANIC, "slave_startup: cannot return");
-	/*NOTREACHED*/
 }
 
 extern struct cpu	*cpu[NCPU];	/* pointers to all CPUs */

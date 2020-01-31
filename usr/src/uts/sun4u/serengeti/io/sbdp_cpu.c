@@ -672,7 +672,7 @@ sbdp_cpu_stop_self(uint64_t pa)
 
 	for (src = (uint_t *)sbdp_shutdown_asm, dst = (uint_t *)bbsram_addr;
 	    src < (uint_t *)sbdp_shutdown_asm_end; src++, dst++)
-	*dst = *src;
+		*dst = *src;
 
 	bbsram_func = (void (*)())bbsram_addr;
 	sht.size = (uint32_t)cpunodes[cpuid].ecache_size << 1;

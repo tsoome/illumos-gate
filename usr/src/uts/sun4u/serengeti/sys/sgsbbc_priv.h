@@ -27,8 +27,6 @@
 #ifndef	_SYS_SGSBBC_PRIV_H
 #define	_SYS_SGSBBC_PRIV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -118,10 +116,10 @@ extern uint_t sgsbbc_debug;
 	if (sgsbbc_debug & SGSBBC_DBG_MASK_EVENT) cmn_err
 
 #else	/* DEBUG */
-#define	SGSBBC_DBG_ALL
-#define	SGSBBC_DBG_MBOX
-#define	SGSBBC_DBG_INTR
-#define	SGSBBC_DBG_EVENT
+#define	SGSBBC_DBG_ALL(...)
+#define	SGSBBC_DBG_MBOX(...)
+#define	SGSBBC_DBG_INTR(...)
+#define	SGSBBC_DBG_EVENT(...)
 
 #endif	/* DEBUG */
 

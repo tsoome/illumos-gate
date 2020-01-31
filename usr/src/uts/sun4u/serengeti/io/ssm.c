@@ -410,7 +410,7 @@ ssm_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		    (uint_t *)&ssm_event_state, &ssm_event_lock);
 
 		if (rv == EINVAL)
-		event_initialized = 1;
+			event_initialized = 1;
 	}
 
 	/*

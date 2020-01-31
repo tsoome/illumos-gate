@@ -824,7 +824,7 @@ cpu_pause(int index)
 		 * hotplugging CPU's).
 		 */
 		if (cpi->cp_func != NULL)
-			(*cpi->cp_func)((void *)lindex);
+			(void) (*cpi->cp_func)((void *)lindex);
 
 		mach_cpu_pause(safe);
 
@@ -2169,7 +2169,7 @@ cpu_state_change_notify(int id, cpu_setup_t what)
 
 	for (i = 0; i < NCPU_SETUPS; i++) {
 		if (cpu_setups[i].func != NULL) {
-			cpu_setups[i].func(what, id, cpu_setups[i].arg);
+			(void) cpu_setups[i].func(what, id, cpu_setups[i].arg);
 		}
 	}
 }
@@ -2192,7 +2192,7 @@ cpu_state_change_hooks(int id, cpu_setup_t what, cpu_setup_t undo)
 			if (retval) {
 				for (i--; i >= 0; i--) {
 					if (cpu_setups[i].func != NULL)
-						cpu_setups[i].func(undo,
+						(void) cpu_setups[i].func(undo,
 						    id, cpu_setups[i].arg);
 				}
 				break;

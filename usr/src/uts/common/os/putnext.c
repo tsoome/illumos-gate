@@ -271,7 +271,7 @@ putnext(queue_t *qp, mblk_t *mp)
 	if (!queued) {
 		STR_FTEVENT_MSG(mp, fqp, FTEV_PUTNEXT, mp->b_rptr -
 		    mp->b_datap->db_base);
-		(*putproc)(qp, mp);
+		(void) (*putproc)(qp, mp);
 		ASSERT(MUTEX_NOT_HELD(SQLOCK(sq)));
 		ASSERT(MUTEX_NOT_HELD(QLOCK(qp)));
 	} else {
@@ -284,7 +284,7 @@ putnext(queue_t *qp, mblk_t *mp)
 			mutex_exit(QLOCK(qp));
 			STR_FTEVENT_MSG(mp, fqp, FTEV_PUTNEXT, mp->b_rptr -
 			    mp->b_datap->db_base);
-			(*putproc)(qp, mp);
+			(void) (*putproc)(qp, mp);
 			ASSERT(MUTEX_NOT_HELD(SQLOCK(sq)));
 		} else {
 			/*
@@ -538,7 +538,7 @@ put(queue_t *qp, mblk_t *mp)
 	if (!queued) {
 		STR_FTEVENT_MSG(mp, fqp, FTEV_PUTNEXT, mp->b_rptr -
 		    mp->b_datap->db_base);
-		(*putproc)(qp, mp);
+		(void) (*putproc)(qp, mp);
 		ASSERT(MUTEX_NOT_HELD(SQLOCK(sq)));
 		ASSERT(MUTEX_NOT_HELD(QLOCK(qp)));
 	} else {
@@ -551,7 +551,7 @@ put(queue_t *qp, mblk_t *mp)
 			mutex_exit(QLOCK(qp));
 			STR_FTEVENT_MSG(mp, fqp, FTEV_PUTNEXT, mp->b_rptr -
 			    mp->b_datap->db_base);
-			(*putproc)(qp, mp);
+			(void) (*putproc)(qp, mp);
 			ASSERT(MUTEX_NOT_HELD(SQLOCK(sq)));
 		} else {
 			/*

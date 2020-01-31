@@ -868,7 +868,7 @@ plat_ecc_capability_sc_set(uint32_t cap)
 
 	if (!plat_ecc_cap_sc_set_cnt && (cap & PLAT_ECC_CAPABILITY_DIMM_SID))
 		if (p2init_sid_cache)
-			p2init_sid_cache();
+			(void) p2init_sid_cache();
 
 	plat_ecc_cap_sc_set_cnt++;
 }

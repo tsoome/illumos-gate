@@ -885,14 +885,15 @@ cpupart_unbind_threads(cpupart_t *pp, boolean_t unbind_all)
 	kthread_t *t;
 	proc_t	*p;
 	int	err = 0;
-	psetid_t psid = pp->cp_id;
-
-	ASSERT(pool_lock_held());
-	ASSERT(MUTEX_HELD(&cpu_lock));
+	psetid_t psid;
 
 	if (pp == NULL || pp == &cp_default) {
 		return (EINVAL);
 	}
+
+	psid = pp->cp_id;
+	ASSERT(pool_lock_held());
+	ASSERT(MUTEX_HELD(&cpu_lock));
 
 	/*
 	 * Pre-allocate enough buffers for FSS for all active projects and

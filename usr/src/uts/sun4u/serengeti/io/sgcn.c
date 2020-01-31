@@ -801,17 +801,15 @@ sgcn_data_in_handler(caddr_t arg)
 		}
 
 		/* put console input onto stream */
-		if (sgcn_state->sgcn_readq) {
-			if ((mp = allocb(len, BPRI_MED)) == (mblk_t *)NULL) {
-				sgcn_input_dropped += len;
-				cmn_err(CE_WARN,
-				    "sgcn_data_in_handler(): allocb failed"
-				    " (console input dropped.)");
-			} else {
-				bcopy(buf, mp->b_wptr, len);
-				mp->b_wptr += len;
-				putnext(sgcn_state->sgcn_readq, mp);
-			}
+		if ((mp = allocb(len, BPRI_MED)) == (mblk_t *)NULL) {
+			sgcn_input_dropped += len;
+			cmn_err(CE_WARN,
+			    "sgcn_data_in_handler(): allocb failed"
+			    " (console input dropped.)");
+		} else {
+			bcopy(buf, mp->b_wptr, len);
+			mp->b_wptr += len;
+			putnext(sgcn_state->sgcn_readq, mp);
 		}
 	}
 
