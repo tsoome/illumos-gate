@@ -27,8 +27,6 @@
 #ifndef	_TODBQ4802_H
 #define	_TODBQ4802_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -39,7 +37,7 @@ extern  char	*v_rtc_addr_reg;
 #include <sys/promif.h>
 #define	DPRINTF if (bq4802_debug_flags) prom_printf
 #else
-#define	DPRINTF
+#define	DPRINTF(...)
 #endif	/* DEBUG */
 
 #define	BQ4802_DATA_REG(x)	(*(volatile uint8_t *)(v_rtc_addr_reg + x))
