@@ -247,6 +247,7 @@ stmf_session_prepare_report_lun_data(stmf_lun_map_t *sm)
 	stmf_xfer_data_t *xd;
 	uint16_t nluns, ent;
 	uint32_t alloc_size, data_size;
+	uint8_t *buf;
 	int i;
 
 	nluns = sm->lm_nluns;
@@ -272,12 +273,13 @@ stmf_session_prepare_report_lun_data(stmf_lun_map_t *sm)
 
 	ent = 0;
 
+	buf = (uint8_t *)xd + sizeof (stmf_xfer_data_t) - 4;
 	for (i = 0; ((i < sm->lm_nentries) && (ent < nluns)); i++) {
 		if (sm->lm_plus[i] == NULL)
 			continue;
 		/* Fill in the entry */
-		xd->buf[8 + (ent << 3) + 1] = (uchar_t)i;
-		xd->buf[8 + (ent << 3) + 0] = ((uchar_t)(i >> 8));
+		buf[8 + (ent << 3) + 1] = (uchar_t)i;
+		buf[8 + (ent << 3) + 0] = ((uchar_t)(i >> 8));
 		ent++;
 	}
 
@@ -746,7 +748,7 @@ stmf_merge_ve_map(stmf_lun_map_t *src, stmf_lun_map_t *dst,
 			bcopy(dst->lm_plus, p,
 			    dst->lm_nentries * sizeof (void *));
 		}
-		if (mf & (MERGE_FLAG_RETURN_NEW_MAP == 0))
+		if ((mf & MERGE_FLAG_RETURN_NEW_MAP) == 0)
 			kmem_free(dst->lm_plus,
 			    dst->lm_nentries * sizeof (void *));
 		(*pp_ret_map)->lm_plus = p;

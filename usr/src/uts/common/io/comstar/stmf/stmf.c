@@ -1597,8 +1597,8 @@ stmf_ic_lu_reg(stmf_ic_reg_dereg_lun_msg_t *msg, uint32_t type)
 		    ilp->ilp_lp->lp_name) == 0) {
 			lp = ilp->ilp_lp;
 			mutex_exit(&stmf_state.stmf_lock);
-			lp->lp_proxy_msg(msg->icrl_lun_id, msg->icrl_cb_arg,
-			    msg->icrl_cb_arg_len, type);
+			(void) lp->lp_proxy_msg(msg->icrl_lun_id,
+			    msg->icrl_cb_arg, msg->icrl_cb_arg_len, type);
 			return (STMF_SUCCESS);
 		}
 	}
@@ -1620,7 +1620,7 @@ stmf_ic_lu_dereg(stmf_ic_reg_dereg_lun_msg_t *msg)
 		    ilp->ilp_lp->lp_name) == 0) {
 			lp = ilp->ilp_lp;
 			mutex_exit(&stmf_state.stmf_lock);
-			lp->lp_proxy_msg(msg->icrl_lun_id, NULL, 0,
+			(void) lp->lp_proxy_msg(msg->icrl_lun_id, NULL, 0,
 			    STMF_MSG_LU_DEREGISTER);
 			return (STMF_SUCCESS);
 		}
@@ -2474,7 +2474,8 @@ stmf_load_ppd_ioctl(stmf_ppioctl_data_t *ppi, uint64_t *ppi_token,
 			return (ENOMEM);
 		}
 		ppd->ppd_alloc_size = s;
-		(void) strcpy(ppd->ppd_name, ppi->ppi_name);
+		(void) strlcpy(ppd->ppd_name, ppi->ppi_name,
+		    sizeof (ppd->ppd_name));
 
 		/* See if this provider already exists */
 		if (ppi->ppi_lu_provider) {
@@ -3667,7 +3668,7 @@ stmf_destroy_kstat_rport(stmf_i_remote_port_t *irport)
 		    i < STMF_RPORT_INFO_LIMIT; i++, knp++) {
 			ptr = KSTAT_NAMED_STR_PTR(knp);
 			if (ptr != NULL)
-			kmem_free(ptr, KSTAT_NAMED_STR_BUFLEN(knp));
+				kmem_free(ptr, KSTAT_NAMED_STR_BUFLEN(knp));
 		}
 		kmem_free(ks_info, sizeof (*ks_info));
 	}
@@ -3869,7 +3870,7 @@ stmf_remove_rport_info(stmf_scsi_session_t *ss,
 	mutex_enter(irport->irport_kstat_info->ks_lock);
 	knp = KSTAT_NAMED_PTR(irport->irport_kstat_info);
 	for (i = 0; i < STMF_KSTAT_RPORT_DATAMAX; i++, knp++) {
-		if ((knp->name != NULL) && (strcmp(knp->name, prop_name) == 0))
+		if (strcmp(knp->name, prop_name) == 0)
 			break;
 	}
 
@@ -4067,7 +4068,7 @@ stmf_release_itl_handle(stmf_lu_t *lu, stmf_itl_data_t *itl)
 	ASSERT((*itlpp) != NULL);
 	*itlpp = itl->itl_next;
 	mutex_exit(&ilu->ilu_task_lock);
-	lu->lu_abort(lu, STMF_LU_ITL_HANDLE_REMOVED, itl->itl_handle,
+	(void) lu->lu_abort(lu, STMF_LU_ITL_HANDLE_REMOVED, itl->itl_handle,
 	    (uint32_t)itl->itl_hdlrm_reason);
 
 	kmem_free(itl, sizeof (*itl));
@@ -5050,7 +5051,6 @@ stmf_data_xfer_done(scsi_task_t *task, stmf_data_buf_t *dbuf, uint32_t iof)
 		ilport->ilport_unexpected_comp++;
 		cmn_err(CE_PANIC, "Unexpected xfer completion task %p dbuf %p",
 		    (void *)task, (void *)dbuf);
-		return;
 	}
 
 	mutex_enter(&itask->itask_mutex);
@@ -5266,12 +5266,10 @@ stmf_task_lu_done(scsi_task_t *task)
 	    ITASK_KNOWN_TO_TGT_PORT | ITASK_IN_WORKER_QUEUE |
 	    ITASK_BEING_ABORTED)) == 0) {
 		stmf_task_free(task);
-		return;
 	} else {
 		cmn_err(CE_PANIC, "stmf_lu_done should be the last stage but "
 		    " the task is still not done, task = %p", (void *)task);
 	}
-	mutex_exit(&itask->itask_mutex);
 }
 
 void
