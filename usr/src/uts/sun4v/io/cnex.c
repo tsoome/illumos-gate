@@ -163,10 +163,10 @@ if (cnexdbg & 0x08)	\
 
 #else
 
-#define	D1
-#define	D2
-#define	DWARN
-#define	DERR
+#define	D1(...)
+#define	D2(...)
+#define	DWARN(...)
+#define	DERR(...)
 
 #endif
 
