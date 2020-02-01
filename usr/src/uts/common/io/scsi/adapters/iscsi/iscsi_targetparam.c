@@ -145,7 +145,7 @@ uchar_t *iscsi_targetparam_get_name(uint32_t oid) {
 	curr_entry = iscsi_targetparam_get_next_entry(NULL);
 	while (curr_entry != NULL) {
 		if (curr_entry->target_oid == oid) {
-		iscsi_targetparam_unlock_list();
+			iscsi_targetparam_unlock_list();
 			return (curr_entry->target_name);
 		}
 		curr_entry = iscsi_targetparam_get_next_entry(curr_entry);
@@ -205,8 +205,9 @@ iscsi_targetparam_remove_target(uint32_t oid) {
  *
  */
 iscsi_targetparam_entry_t *
-iscsi_targetparam_get_next_entry(iscsi_targetparam_entry_t *ref_entry) {
-    iscsi_targetparam_entry_t *entry;
+iscsi_targetparam_get_next_entry(iscsi_targetparam_entry_t *ref_entry)
+{
+	iscsi_targetparam_entry_t *entry;
 
 	if (ref_entry == NULL) {
 		entry = iscsi_targets.target_list;

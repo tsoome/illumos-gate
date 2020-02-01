@@ -737,6 +737,42 @@ iscsi_set_param(iscsi_login_params_t *params, iscsi_param_set_t *ipsp)
 	return (rtn);
 }
 
+static boolean_t
+iscsi_check_login(iscsi_hba_t *ihp)
+{
+	char *name;
+	boolean_t rval = B_TRUE;
+	iscsi_chap_props_t *chap;
+
+	chap = kmem_zalloc(sizeof (iscsi_chap_props_t), KM_SLEEP);
+	if (persistent_chap_get(name, chap)) {
+		rval = persistent_chap_clear(name);
+		if (rval == B_TRUE) {
+			/*
+			 * Update CHAP user name only if the
+			 * original username was set to the
+			 * initiator node name.  Otherwise
+			 * leave it the way it is.
+			 */
+			int userSize;
+
+			userSize = sizeof (chap->c_user);
+			if (strncmp((char *)chap->c_user, name,
+			    sizeof (chap->c_user)) == 0) {
+				bzero(chap->c_user, userSize);
+				bcopy(ihp->hba_name, chap->c_user,
+				    strlen((char *)ihp->hba_name));
+				chap->c_user_len =
+				    strlen((char *)ihp->hba_name);
+
+			}
+			rval = persistent_chap_set((char *)ihp->hba_name, chap);
+		}
+	}
+	kmem_free(chap, sizeof (iscsi_chap_props_t));
+	return (rval);
+}
+
 int
 iscsi_set_params(iscsi_param_set_t *ils, iscsi_hba_t *ihp, boolean_t persist)
 {
@@ -789,44 +825,8 @@ iscsi_set_params(iscsi_param_set_t *ils, iscsi_hba_t *ihp, boolean_t persist)
 				kmem_free(pp, sizeof (persistent_param_t));
 
 				/* check chap params */
-				chap = kmem_zalloc(sizeof (iscsi_chap_props_t),
-				    KM_SLEEP);
-				if (persistent_chap_get(name, chap)) {
-					rval = persistent_chap_clear(name);
-					if (rval == B_TRUE) {
-					/*
-					 * Update CHAP user name only if the
-					 * original username was set to the
-					 * initiator node name.  Otherwise
-					 * leave it the way it is.
-					 */
-						int userSize;
-						userSize =
-						    sizeof (chap->c_user);
-						if (strncmp((char *)
-						    chap->c_user, name,
-						    sizeof (chap->c_user))
-						    == 0) {
-							bzero(chap->c_user,
-							    userSize);
-							bcopy((char *)
-							    ihp->hba_name,
-							    chap->c_user,
-							    strlen((char *)
-							    ihp->hba_name));
-							chap->c_user_len =
-							    strlen((char *)
-							    ihp->hba_name);
-
-					}
-					rval = persistent_chap_set(
-					    (char *)ihp->hba_name, chap);
-					}
-					if (rval == B_FALSE) {
-						rtn = EFAULT;
-					}
-				}
-				kmem_free(chap, sizeof (iscsi_chap_props_t));
+				if (iscsi_check_login(ihp) == B_FALSE)
+					rtn = EFAULT;
 
 				/* check authentication params */
 				auth = kmem_zalloc(sizeof (iscsi_auth_props_t),

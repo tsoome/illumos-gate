@@ -1534,7 +1534,7 @@ void
 
 	if (rval != 0) {
 		/* Flag value 2 indicates both cantsend and cantrecv */
-		iscsi_net->shutdown(so, 2);
+		(void) iscsi_net->shutdown(so, 2);
 		iscsi_net->close(so);
 		return (NULL);
 	}
@@ -3173,7 +3173,7 @@ find_local_portal(iscsi_addr_t *isns_server_addr,
 			return (B_FALSE);
 		}
 
-		iscsi_net->getsockname(so,
+		(void) iscsi_net->getsockname(so,
 		    (struct sockaddr *)&t_addr, &t_addrlen);
 		if (t_addrlen > sizeof (local_conn_prop)) {
 			iscsi_net->close(so);
@@ -3328,7 +3328,7 @@ esi_scn_thr_cleanup()
 			/*
 			 * Shutdown and close the listening socket.
 			 */
-			iscsi_net->shutdown(instance_listening_so, 2);
+			(void) iscsi_net->shutdown(instance_listening_so, 2);
 			iscsi_net->close(instance_listening_so);
 			instance_listening_so = NULL;
 		}

@@ -800,12 +800,8 @@ iscsi_sess_set_auth(iscsi_sess_t *isp)
 			isp->sess_auth.bidirectional_auth = 0;
 		}
 
-		if (auth != NULL) {
-			kmem_free(auth, sizeof (iscsi_auth_props_t));
-		}
-		if (chap != NULL) {
-			kmem_free(chap, sizeof (iscsi_chap_props_t));
-		}
+		kmem_free(auth, sizeof (iscsi_auth_props_t));
+		kmem_free(chap, sizeof (iscsi_chap_props_t));
 	} else {
 		/*
 		 * This session is boot session. We will use the CHAP and
