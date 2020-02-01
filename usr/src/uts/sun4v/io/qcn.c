@@ -415,8 +415,8 @@ qcn_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 			return (DDI_FAILURE);
 		}
 
-	mutex_init(&qcn_state->qcn_hi_lock, NULL, MUTEX_DRIVER,
-	    (void *)(uintptr_t)(qcn_state->qcn_intr_pri));
+		mutex_init(&qcn_state->qcn_hi_lock, NULL, MUTEX_DRIVER,
+		    (void *)(uintptr_t)(qcn_state->qcn_intr_pri));
 	}
 
 	mutex_init(&qcn_state->qcn_lock, NULL, MUTEX_DRIVER, NULL);
