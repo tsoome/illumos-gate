@@ -357,7 +357,7 @@ niumxtool_get_intr(dev_info_t *dip, void *arg, int mode)
 
 	ih_dip = niumxds_p->niumx_ihtable[iget_p->ino].ih_dip;
 
-	ddi_pathname(ih_dip, pathname);
+	(void) ddi_pathname(ih_dip, pathname);
 
 	niumxtool_fill_in_intr_devs(&iget_p->dev[0],
 	    (char *)ddi_driver_name(ih_dip),  pathname,
@@ -449,7 +449,7 @@ niumxtool_set_intr(dev_info_t *dip, void *arg, int mode)
 	iset.msi = (uint32_t)-1;
 
 	/* Validate input argument. */
-	if (iset.ino > NIUMX_MAX_INTRS) {
+	if (iset.ino >= NIUMX_MAX_INTRS) {
 		iset.status = PCITOOL_INVALID_INO;
 		rval = EINVAL;
 		goto done_set_intr;

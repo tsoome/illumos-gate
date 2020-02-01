@@ -48,7 +48,7 @@ typedef enum {	/* same sequence as niumx_debug_sym[] */
 #define	DBG niumx_dbg
 extern void niumx_dbg(niumx_debug_bit_t bit, dev_info_t *dip, char *fmt, ...);
 #else
-#define	DBG 0 &&
+#define	DBG(...)
 #endif	/* DEBUG */
 
 typedef uint64_t niudevhandle_t;
