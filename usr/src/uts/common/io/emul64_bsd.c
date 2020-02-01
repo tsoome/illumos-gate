@@ -350,7 +350,7 @@ bsd_scsi_inq_page83(struct scsi_pkt *pkt, uchar_t pqdtype)
 	sp->cmd_addr[17] = uint_to_byte0(instance);
 	sp->cmd_addr[18] = uint_to_byte1(TGT(sp));
 	sp->cmd_addr[19] = uint_to_byte0(TGT(sp));
-	sp->cmd_addr[20] = uint_to_byte1(LUN(sp));
+	sp->cmd_addr[20] = 0;
 	sp->cmd_addr[21] = uint_to_byte0(LUN(sp));
 
 	pkt->pkt_resid = sp->cmd_count - 22;
@@ -435,80 +435,80 @@ bsd_scsi_io(struct scsi_pkt *pkt)
 
 	switch (cdb->scc_cmd) {
 	case SCMD_READ:
-			lblkno = (uint32_t)GETG0ADDR(cdb);
-			nblks = GETG0COUNT(cdb);
-			pkt->pkt_resid = bsd_readblks(sp->cmd_emul64,
-			    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
-			    lblkno, nblks, sp->cmd_addr);
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_io: "
-				    "read g0 blk=%lld (0x%llx) nblks=%d\n",
-				    emul64_name, lblkno, lblkno, nblks);
-			}
+		lblkno = (uint32_t)GETG0ADDR(cdb);
+		nblks = GETG0COUNT(cdb);
+		pkt->pkt_resid = bsd_readblks(sp->cmd_emul64,
+		    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
+		    lblkno, nblks, sp->cmd_addr);
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_io: "
+			    "read g0 blk=%lld (0x%llx) nblks=%d\n",
+			    emul64_name, lblkno, lblkno, nblks);
+		}
 		break;
 	case SCMD_WRITE:
-			lblkno = (uint32_t)GETG0ADDR(cdb);
-			nblks = GETG0COUNT(cdb);
-			pkt->pkt_resid = bsd_writeblks(sp->cmd_emul64,
-			    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
-			    lblkno, nblks, sp->cmd_addr);
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_io: "
-				    "write g0 blk=%lld (0x%llx) nblks=%d\n",
-				    emul64_name, lblkno, lblkno, nblks);
-			}
+		lblkno = (uint32_t)GETG0ADDR(cdb);
+		nblks = GETG0COUNT(cdb);
+		pkt->pkt_resid = bsd_writeblks(sp->cmd_emul64,
+		    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
+		    lblkno, nblks, sp->cmd_addr);
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_io: "
+			    "write g0 blk=%lld (0x%llx) nblks=%d\n",
+			    emul64_name, lblkno, lblkno, nblks);
+		}
 		break;
 	case SCMD_READ_G1:
-			lblkno = (uint32_t)GETG1ADDR(cdb);
-			nblks = GETG1COUNT(cdb);
-			pkt->pkt_resid = bsd_readblks(sp->cmd_emul64,
-			    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
-			    lblkno, nblks, sp->cmd_addr);
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_io: "
-				    "read g1 blk=%lld (0x%llx) nblks=%d\n",
-				    emul64_name, lblkno, lblkno, nblks);
-			}
+		lblkno = (uint32_t)GETG1ADDR(cdb);
+		nblks = GETG1COUNT(cdb);
+		pkt->pkt_resid = bsd_readblks(sp->cmd_emul64,
+		    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
+		    lblkno, nblks, sp->cmd_addr);
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_io: "
+			    "read g1 blk=%lld (0x%llx) nblks=%d\n",
+			    emul64_name, lblkno, lblkno, nblks);
+		}
 		break;
 	case SCMD_WRITE_G1:
-			lblkno = (uint32_t)GETG1ADDR(cdb);
-			nblks = GETG1COUNT(cdb);
-			pkt->pkt_resid = bsd_writeblks(sp->cmd_emul64,
-			    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
-			    lblkno, nblks, sp->cmd_addr);
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_io: "
-				    "write g1 blk=%lld (0x%llx) nblks=%d\n",
-				    emul64_name, lblkno, lblkno, nblks);
-			}
+		lblkno = (uint32_t)GETG1ADDR(cdb);
+		nblks = GETG1COUNT(cdb);
+		pkt->pkt_resid = bsd_writeblks(sp->cmd_emul64,
+		    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
+		    lblkno, nblks, sp->cmd_addr);
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_io: "
+			    "write g1 blk=%lld (0x%llx) nblks=%d\n",
+			    emul64_name, lblkno, lblkno, nblks);
+		}
 		break;
 	case SCMD_READ_G4:
-			lblkno = GETG4ADDR(cdb);
-			lblkno <<= 32;
-			lblkno |= (uint32_t)GETG4ADDRTL(cdb);
-			nblks = GETG4COUNT(cdb);
-			pkt->pkt_resid = bsd_readblks(sp->cmd_emul64,
-			    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
-			    lblkno, nblks, sp->cmd_addr);
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_io: "
-				    "read g4 blk=%lld (0x%llx) nblks=%d\n",
-				    emul64_name, lblkno, lblkno, nblks);
-			}
+		lblkno = GETG4ADDR(cdb);
+		lblkno <<= 32;
+		lblkno |= (uint32_t)GETG4ADDRTL(cdb);
+		nblks = GETG4COUNT(cdb);
+		pkt->pkt_resid = bsd_readblks(sp->cmd_emul64,
+		    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
+		    lblkno, nblks, sp->cmd_addr);
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_io: "
+			    "read g4 blk=%lld (0x%llx) nblks=%d\n",
+			    emul64_name, lblkno, lblkno, nblks);
+		}
 		break;
 	case SCMD_WRITE_G4:
-			lblkno = GETG4ADDR(cdb);
-			lblkno <<= 32;
-			lblkno |= (uint32_t)GETG4ADDRTL(cdb);
-			nblks = GETG4COUNT(cdb);
-			pkt->pkt_resid = bsd_writeblks(sp->cmd_emul64,
-			    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
-			    lblkno, nblks, sp->cmd_addr);
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_io: "
-				    "write g4 blk=%lld (0x%llx) nblks=%d\n",
-				    emul64_name, lblkno, lblkno, nblks);
-			}
+		lblkno = GETG4ADDR(cdb);
+		lblkno <<= 32;
+		lblkno |= (uint32_t)GETG4ADDRTL(cdb);
+		nblks = GETG4COUNT(cdb);
+		pkt->pkt_resid = bsd_writeblks(sp->cmd_emul64,
+		    pkt->pkt_address.a_target, pkt->pkt_address.a_lun,
+		    lblkno, nblks, sp->cmd_addr);
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_io: "
+			    "write g4 blk=%lld (0x%llx) nblks=%d\n",
+			    emul64_name, lblkno, lblkno, nblks);
+		}
 		break;
 	default:
 		cmn_err(CE_WARN, "%s: bsd_scsi_io: unhandled I/O: 0x%x",
@@ -570,24 +570,24 @@ bsd_scsi_mode_sense(struct scsi_pkt *pkt)
 
 	switch (cdb->scc_cmd) {
 	case SCMD_MODE_SENSE:
-			page_code = cdb->cdb_opaque[2] & 0x3f;
-			page_control = (cdb->cdb_opaque[2] >> 6) & 0x03;
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_mode_sense: "
-				    "page=0x%x control=0x%x nbytes=%d\n",
-				    emul64_name, page_code, page_control,
-				    GETG0COUNT(cdb));
-			}
+		page_code = cdb->cdb_opaque[2] & 0x3f;
+		page_control = (cdb->cdb_opaque[2] >> 6) & 0x03;
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_mode_sense: "
+			    "page=0x%x control=0x%x nbytes=%d\n",
+			    emul64_name, page_code, page_control,
+			    GETG0COUNT(cdb));
+		}
 		break;
 	case SCMD_MODE_SENSE_G1:
-			page_code = cdb->cdb_opaque[2] & 0x3f;
-			page_control = (cdb->cdb_opaque[2] >> 6) & 0x03;
-			if (emul64debug) {
-				cmn_err(CE_CONT, "%s: bsd_scsi_mode_sense: "
-				    "page=0x%x control=0x%x nbytes=%d\n",
-				    emul64_name, page_code, page_control,
-				    GETG1COUNT(cdb));
-			}
+		page_code = cdb->cdb_opaque[2] & 0x3f;
+		page_control = (cdb->cdb_opaque[2] >> 6) & 0x03;
+		if (emul64debug) {
+			cmn_err(CE_CONT, "%s: bsd_scsi_mode_sense: "
+			    "page=0x%x control=0x%x nbytes=%d\n",
+			    emul64_name, page_code, page_control,
+			    GETG1COUNT(cdb));
+		}
 		break;
 	default:
 		cmn_err(CE_CONT, "%s: bsd_scsi_mode_sense: "
