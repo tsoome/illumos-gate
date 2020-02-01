@@ -207,7 +207,7 @@ typedef struct fcoet_exchange {
 
 	stmf_data_buf_t		**xch_dbufs;
 	uint8_t			xch_dbuf_num;
-	uint8_t			xch_sequence_no;
+	uint16_t		xch_sequence_no;
 	uint8_t			xch_ref;
 
 	int			 xch_left_data_size;

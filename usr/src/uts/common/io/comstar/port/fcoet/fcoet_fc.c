@@ -304,7 +304,7 @@ fcoet_xfer_scsi_data(fct_cmd_t *cmd, stmf_data_buf_t *dbuf, uint32_t ioflags)
 		FFM_S_ID(cmd->cmd_lportid, frm);
 		FFM_D_ID(cmd->cmd_rportid, frm);
 		FFM_SEQ_CNT(xch->xch_sequence_no, frm);
-		atomic_inc_8(&xch->xch_sequence_no);
+		atomic_inc_16(&xch->xch_sequence_no);
 		FFM_PARAM(offset, frm);
 		offset += data_size;
 		left_size -= data_size;
@@ -917,7 +917,7 @@ fcoet_disable_port(fcoet_soft_state_t *ss)
 	FCOET_EXT_LOG(ss->ss_alias, "port is being disabled-%p", ss);
 	/* Call fcoe function to offline the port */
 	status = fcoet_logo_fabric(ss);
-	ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_OFFLINE, 0);
+	(void) ss->ss_eport->eport_ctl(ss->ss_eport, FCOE_CMD_PORT_OFFLINE, 0);
 	atomic_or_32(&ss->ss_flags, SS_FLAG_PORT_DISABLED);
 	return (status);
 }

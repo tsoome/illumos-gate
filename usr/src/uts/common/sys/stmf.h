@@ -147,7 +147,7 @@ typedef struct scsi_task {
 	uint32_t	task_resid;
 	uint8_t		task_status_ctrl;	/* See def. for status ctrl */
 	uint8_t		task_scsi_status;
-	uint16_t	task_sense_length;
+	uint32_t	task_sense_length;
 	uint8_t		*task_sense_data;
 
 	/* Misc. task data */

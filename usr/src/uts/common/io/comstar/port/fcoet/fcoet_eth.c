@@ -1171,7 +1171,7 @@ fcoet_process_sol_flogi_rsp(fcoe_frame_t *frm)
 				bcopy((char *)frm->frm_hdr-22,
 				    frm->frm_eport->eport_efh_dst,
 				    ETHERADDRL);
-				frm->frm_eport->eport_set_mac_address(
+				(void) frm->frm_eport->eport_set_mac_address(
 				    frm->frm_eport, src_addr, B_TRUE);
 				xch->xch_ss->ss_link_info.port_topology =
 				    PORT_TOPOLOGY_FABRIC_PT_TO_PT;
