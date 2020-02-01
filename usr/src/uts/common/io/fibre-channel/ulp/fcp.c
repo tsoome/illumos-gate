@@ -804,7 +804,7 @@ extern dev_info_t	*scsi_vhci_dip;
 #ifdef DEBUG
 #define	FCP_DTRACE	fc_trace_debug
 #else
-#define	FCP_DTRACE
+#define	FCP_DTRACE(...)
 #endif
 
 #define	FCP_TRACE	fc_trace_debug
@@ -2729,7 +2729,7 @@ fcp_send_scsi_ioctl(struct fcp_scsi_cmd *fscsi)
 			}
 		}
 
-		if (fscsi->scsi_bufstatus == STATUS_GOOD && (ptgt != NULL) &&
+		if (fscsi->scsi_bufstatus == STATUS_GOOD &&
 		    (reconfig_lun || (scsi_cdb->scc_cmd == SCMD_REPORT_LUN))) {
 			if (reconfig_lun == FALSE) {
 				reconfig_status =
@@ -7502,9 +7502,8 @@ fcp_handle_inquiry(fc_packet_t *fpkt, struct fcp_ipkt *icmd)
 	if (!pptr->port_notify) {
 		if (bcmp(plun->lun_inq.inq_pid, pid, strlen(pid)) == 0) {
 			uint32_t cmd = 0;
-			cmd = ((cmd & 0xFF | FC_NOTIFY_THROTTLE) |
-			    ((cmd & 0xFFFFFF00 >> 8) |
-			    FCP_SVE_THROTTLE << 8));
+
+			cmd = FC_NOTIFY_THROTTLE | (FCP_SVE_THROTTLE << 8);
 			pptr->port_notify = 1;
 			mutex_exit(&pptr->port_mutex);
 			(void) fc_ulp_port_notify(pptr->port_fp_handle, cmd);
@@ -15324,12 +15323,7 @@ fcp_print_error(fc_packet_t *fpkt)
 				    sizeof (struct scsi_extended_sense));
 			}
 
-			if (sense_ptr->es_key < NUM_SENSE_KEYS +
-			    NUM_IMPL_SENSE_KEYS) {
-				sense_key = sense_keys[sense_ptr->es_key];
-			} else {
-				sense_key = "Undefined";
-			}
+			sense_key = sense_keys[sense_ptr->es_key];
 
 			asc = sense_ptr->es_add_code;
 			ascq = sense_ptr->es_qual_code;
