@@ -431,7 +431,7 @@ ds_ldc_fini(ds_port_t *port)
 	}
 
 	port->ldc.id = (uint64_t)-1;
-	port->ldc.hdl = NULL;
+	port->ldc.hdl = 0;
 	port->ldc.state = 0;
 
 	return (rv);

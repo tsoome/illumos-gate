@@ -554,8 +554,8 @@ void ds_dump_msg(void *buf, size_t len);
 #define	DS_DUMP_MSG(flags, buf, len)
 #define	DS_DUMP_LDC_MSG(buf, len)
 
-#define	DS_BADHDL1			NULL
-#define	DS_BADHDL2			NULL
+#define	DS_BADHDL1			(ds_svc_hdl_t)0
+#define	DS_BADHDL2			(ds_svc_hdl_t)0
 
 #endif /* DEBUG */
 
