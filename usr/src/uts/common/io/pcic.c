@@ -1621,7 +1621,7 @@ isa_exit1:
 	kmem_free(pcic->pc_intr_htblp, pcic->pc_numsockets *
 	    sizeof (ddi_intr_handle_t));
 	kmem_free(pcic, sizeof (pcicdev_t));
-		return (DDI_FAILURE);
+	return (DDI_FAILURE);
 
 pci_exit2:
 	mutex_destroy(&pcic->intr_lock);
@@ -1735,7 +1735,8 @@ pcic_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 				 */
 				if (!pcic_do_pcmcia_sr && pcic_do_removal &&
 				    pcic->pc_callback) {
-					PC_CALLBACK(pcic->dip, pcic->pc_cb_arg,
+					(void) PC_CALLBACK(pcic->dip,
+					    pcic->pc_cb_arg,
 					    PCE_CARD_REMOVAL,
 					    pcic->pc_sockets[i].pcs_socket);
 				}
@@ -2371,7 +2372,8 @@ pcic_intr(caddr_t arg1, caddr_t arg2)
 			sockp->pcs_state ^= SBM_RDYBSY;
 			if (card_type == IF_MEMORY && value & PCIC_RD_DETECT) {
 				sockp->pcs_flags |= PCS_READY;
-				PC_CALLBACK(pcic->dip, x, PCE_CARD_READY, i);
+				(void) PC_CALLBACK(pcic->dip, x,
+				    PCE_CARD_READY, i);
 			}
 
 			/* Battery Warn Detect */
@@ -2379,7 +2381,7 @@ pcic_intr(caddr_t arg1, caddr_t arg2)
 			    value & PCIC_BW_DETECT &&
 			    !(sockp->pcs_state & SBM_BVD2)) {
 				sockp->pcs_state |= SBM_BVD2;
-				PC_CALLBACK(pcic->dip, x,
+				(void) PC_CALLBACK(pcic->dip, x,
 				    PCE_CARD_BATTERY_WARN, i);
 			}
 
@@ -2392,17 +2394,15 @@ pcic_intr(caddr_t arg1, caddr_t arg2)
 				if (card_type == IF_MEMORY &&
 				    !(sockp->pcs_state & SBM_BVD1)) {
 					sockp->pcs_state |= SBM_BVD1;
-					PC_CALLBACK(pcic->dip, x,
-					    PCE_CARD_BATTERY_DEAD,
-					    i);
+					(void) PC_CALLBACK(pcic->dip, x,
+					    PCE_CARD_BATTERY_DEAD, i);
 				} else {
 					/*
 					 * information in pin replacement
 					 * register if one is available
 					 */
-					PC_CALLBACK(pcic->dip, x,
-					    PCE_CARD_STATUS_CHANGE,
-					    i);
+					(void) PC_CALLBACK(pcic->dip, x,
+					    PCE_CARD_STATUS_CHANGE, i);
 				} /* IF_MEMORY */
 			} /* PCIC_BD_DETECT */
 		} /* if pcic_change */
@@ -3272,13 +3272,12 @@ pcic_set_window(dev_info_t *dip, set_window_t *window)
 				cmn_err(CE_WARN, "pcmcia_map_reg()"
 				    "failed\n");
 
-					res.ra_addr_lo = winp->pcw_base;
-					res.ra_len = winp->pcw_len;
-					(void) pcmcia_free_io(winp->res_dip,
-					    &res);
+				res.ra_addr_lo = winp->pcw_base;
+				res.ra_len = winp->pcw_len;
+				(void) pcmcia_free_io(winp->res_dip, &res);
 
-					mutex_exit(&pcic->pc_lock);
-					return (BAD_WINDOW);
+				mutex_exit(&pcic->pc_lock);
+				return (BAD_WINDOW);
 			}
 
 			window->handle = winp->pcw_handle;
@@ -4738,7 +4737,7 @@ pcic_set_interrupt(dev_info_t *dip, set_irq_handler_t *handler)
 			pcic->irq_current = pcic->irq_top;
 		} else {
 			while (pcic->irq_current->next != NULL)
-			pcic->irq_current = pcic->irq_current->next;
+				pcic->irq_current = pcic->irq_current->next;
 			pcic->irq_current->next = intr;
 			pcic->irq_current = pcic->irq_current->next;
 		}
@@ -5521,7 +5520,7 @@ pcic_handle_cd_change(pcicdev_t *pcic, pcic_socket_t *sockp, uint8_t status)
 						    DDI_DEV_T_NONE,
 						    pcic->dip, PCM_DEVICETYPE,
 						    "pccard");
-						PC_CALLBACK(pcic->dip,
+						(void) PC_CALLBACK(pcic->dip,
 						    pcic->pc_cb_arg,
 						    PCE_CARD_INSERT,
 						    sockp->pcs_socket);
@@ -5600,46 +5599,46 @@ pcic_handle_cd_change(pcicdev_t *pcic, pcic_socket_t *sockp, uint8_t status)
 			} else {
 				pcic_putb(pcic, sockp->pcs_socket,
 				    PCIC_POWER_CONTROL, 0);
-			(void) pcic_getb(pcic, sockp->pcs_socket,
-			    PCIC_POWER_CONTROL);
-		}
-#ifdef PCIC_DEBUG
-		pcic_err(pcic->dip, 8, "Card removed\n");
-#endif
-		sockp->pcs_flags &= ~PCS_CARD_PRESENT;
-
-		if (sockp->pcs_flags & PCS_CARD_IS16BIT) {
-			sockp->pcs_flags &= ~PCS_CARD_IS16BIT;
-			if (pcic_do_removal && pcic->pc_callback) {
-				PC_CALLBACK(pcic->dip, pcic->pc_cb_arg,
-				    PCE_CARD_REMOVAL, sockp->pcs_socket);
+				(void) pcic_getb(pcic, sockp->pcs_socket,
+				    PCIC_POWER_CONTROL);
 			}
-		}
-		if (sockp->pcs_flags & PCS_CARD_ISCARDBUS) {
-			sockp->pcs_flags &= ~PCS_CARD_ISCARDBUS;
-			sockp->pcs_flags |= PCS_CARD_CBREM;
-		}
-		sockp->pcs_flags |= PCS_CARD_REMOVED;
+#ifdef PCIC_DEBUG
+			pcic_err(pcic->dip, 8, "Card removed\n");
+#endif
+			sockp->pcs_flags &= ~PCS_CARD_PRESENT;
 
-		do_debounce = B_TRUE;
+			if (sockp->pcs_flags & PCS_CARD_IS16BIT) {
+				sockp->pcs_flags &= ~PCS_CARD_IS16BIT;
+				if (pcic_do_removal && pcic->pc_callback) {
+					(void) PC_CALLBACK(pcic->dip, pcic->pc_cb_arg,
+					    PCE_CARD_REMOVAL, sockp->pcs_socket);
+				}
+			}
+			if (sockp->pcs_flags & PCS_CARD_ISCARDBUS) {
+				sockp->pcs_flags &= ~PCS_CARD_ISCARDBUS;
+				sockp->pcs_flags |= PCS_CARD_CBREM;
+			}
+			sockp->pcs_flags |= PCS_CARD_REMOVED;
+
+			do_debounce = B_TRUE;
 		}
 		if (debounce && (sockp->pcs_flags & PCS_CARD_REMOVED)) {
 			if (sockp->pcs_flags & PCS_CARD_CBREM) {
-		/*
-		 * Ensure that we do the unloading in the
-		 * debounce handler, that way we're not doing
-		 * nasty things in an interrupt handler. e.g.
-		 * a USB device will wait for data which will
-		 * obviously never come because we've
-		 * unplugged the device, but the wait will
-		 * wait forever because no interrupts can
-		 * come in...
-		 */
+				/*
+				 * Ensure that we do the unloading in the
+				 * debounce handler, that way we're not doing
+				 * nasty things in an interrupt handler. e.g.
+				 * a USB device will wait for data which will
+				 * obviously never come because we've
+				 * unplugged the device, but the wait will
+				 * wait forever because no interrupts can
+				 * come in...
+				 */
 #ifdef CARDBUS
-			pcic_unload_cardbus(pcic, sockp);
-			/* pcic_dump_all(pcic); */
+				pcic_unload_cardbus(pcic, sockp);
+				/* pcic_dump_all(pcic); */
 #endif
-			sockp->pcs_flags &= ~PCS_CARD_CBREM;
+				sockp->pcs_flags &= ~PCS_CARD_CBREM;
 			}
 			sockp->pcs_flags &= ~PCS_CARD_REMOVED;
 		}
