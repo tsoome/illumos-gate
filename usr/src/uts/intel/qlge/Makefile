@@ -38,7 +38,6 @@ ARCHDIR:sh = cd ..; basename `pwd`
 #
 MODULE		= qlge
 OBJECTS		= $(QLGE_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(QLGE_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 
 #
@@ -50,7 +49,6 @@ include ../Makefile.$(ARCHDIR)
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 #
@@ -67,9 +65,6 @@ C99LMODE=	-Xc99=%all
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 
-# needs work
-$(OBJS_DIR)/qlge.o := SMOFF += deref_check
-
 #
 #	Default build targets.
 #
@@ -82,12 +77,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 

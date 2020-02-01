@@ -7673,7 +7673,7 @@ ql_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	}
 
 	/* if failed to attach */
-	if ((cmd == DDI_ATTACH) && (rval != DDI_SUCCESS) && (qlge != NULL)) {
+	if ((cmd == DDI_ATTACH) && (rval != DDI_SUCCESS)) {
 		cmn_err(CE_WARN, "qlge driver attach failed, sequence %x",
 		    qlge->sequence);
 		ql_free_resources(qlge);
