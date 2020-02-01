@@ -134,8 +134,8 @@ extern int iospc_debug;
 #define	IOSPC_DBG1 if (iospc_debug >= 1) printf
 #define	IOSPC_DBG2 if (iospc_debug >= 2) printf
 #else
-#define	IOSPC_DBG1 0 &&
-#define	IOSPC_DBG2 0 &&
+#define	IOSPC_DBG1(...)
+#define	IOSPC_DBG2(...)
 #endif	/* DEBUG */
 
 /* Function definitions exported among different modules. */

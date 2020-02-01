@@ -650,7 +650,8 @@ iospc_kstat_detach(iospc_t *iospc_p)
 		grp_p = *grp_pp;
 		if (iospc_p->iospc_ksinfo_p[i] != NULL) {
 
-			grp_p->access_fini(iospc_p, iospc_p->iospc_ksinfo_p[i]);
+			(void) grp_p->access_fini(iospc_p,
+			   iospc_p->iospc_ksinfo_p[i]);
 
 			if (iospc_p->iospc_ksinfo_p[i]->cntr_ksp != NULL)
 				kstat_delete(
