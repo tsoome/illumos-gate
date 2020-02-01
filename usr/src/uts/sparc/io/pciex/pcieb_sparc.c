@@ -167,7 +167,7 @@ pcieb_plat_ctlops(dev_info_t *rdip, ddi_ctl_enum_t ctlop, void *arg)
 void
 pcieb_plat_initchild(dev_info_t *child)
 {
-	intptr_t ppd = NULL;
+	intptr_t ppd = (intptr_t)NULL;
 	/*
 	 * XXX set ppd to 1 to disable iommu BDF protection on SPARC.
 	 * It relies on unused parent private data for PCI devices.

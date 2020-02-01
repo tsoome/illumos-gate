@@ -39,7 +39,6 @@ UTSBASE	= ../..
 #
 MODULE		= pcieb		
 OBJECTS		= $(PCIEB_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(PCIEB_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/pciex/
 
@@ -52,13 +51,7 @@ include $(UTSBASE)/sparc/Makefile.sparc
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(SRC_CONFFILE)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
-
-#
-# lint pass one enforcement
-#
-CFLAGS += $(CCVERBOSE)
 
 #
 # Turn on doubleword alignment for 64 bit registers
@@ -76,14 +69,6 @@ CPPFLAGS += -DPX_PLX
 #
 LDFLAGS += -dy -Nmisc/pcie
 
-#
-# For now, disable these lint checks; maintainers should endeavor
-# to investigate and remove these for maximum lint coverage.
-# Please do not carry these forward to new Makefiles.
-#
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-LINTTAGS	+= -erroff=E_STATIC_UNUSED
-
 CERRWARN	+= -_gcc=-Wno-unused-value
 CERRWARN	+= -_gcc=-Wno-unused-variable
 
@@ -99,12 +84,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 
