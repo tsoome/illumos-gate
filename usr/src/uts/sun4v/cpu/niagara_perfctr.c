@@ -608,7 +608,7 @@ ni_create_picN_kstat(char *mod_name, int pic, int pic_sel_shift,
 
 	(void) sprintf(pic_name, "pic%d", pic);
 	if ((picN_ksp = kstat_create(mod_name, inst, pic_name,
-	    "bus", KSTAT_TYPE_NAMED, num_ev, NULL)) == NULL) {
+	    "bus", KSTAT_TYPE_NAMED, num_ev, 0)) == NULL) {
 		cmn_err(CE_WARN, "%s %s : kstat create failed",
 		    mod_name, pic_name);
 
