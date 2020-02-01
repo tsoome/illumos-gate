@@ -831,11 +831,9 @@ done:
 	if (ds_cap_send(ds_vio_handle, res, res_len) != 0)
 		DR_DBG_IO("ds_send failed\n");
 
-	if (res) {
-		DR_DBG_KMEM("%s: free addr %p size %ld\n",
-		    __func__, (void *)res, res_len);
-		kmem_free(res, res_len);
-	}
+	DR_DBG_KMEM("%s: free addr %p size %ld\n",
+	    __func__, (void *)res, res_len);
+	kmem_free(res, res_len);
 }
 
 static void
