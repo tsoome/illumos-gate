@@ -531,6 +531,9 @@ mptsas_get_physdisk_settings(mptsas_t *mpt, mptsas_raidvol_t *raidvol,
 			if (raidvol->m_disknum[i] == physdisknum)
 				break;
 		}
+		if (i == MPTSAS_MAX_DISKS_IN_VOL)
+			return (DDI_FAILURE);
+
 		raidvol->m_devhdl[i] = devhdl;
 
 		switch (state) {

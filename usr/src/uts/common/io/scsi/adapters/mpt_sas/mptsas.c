@@ -1579,109 +1579,108 @@ fail:
 	mptsas_log(mpt, CE_WARN, "attach failed");
 	mptsas_fm_ereport(mpt, DDI_FM_DEVICE_NO_RESPONSE);
 	ddi_fm_service_impact(mpt->m_dip, DDI_SERVICE_LOST);
-	if (mpt) {
-		/* deallocate in reverse order */
-		if (added_watchdog) {
-			mptsas_list_del(mpt);
-			mutex_enter(&mptsas_global_mutex);
+	/* deallocate in reverse order */
+	if (added_watchdog) {
+		mptsas_list_del(mpt);
+		mutex_enter(&mptsas_global_mutex);
 
-			if (mptsas_timeout_id && (mptsas_head == NULL)) {
-				timeout_id_t tid = mptsas_timeout_id;
-				mptsas_timeouts_enabled = 0;
-				mptsas_timeout_id = 0;
-				mutex_exit(&mptsas_global_mutex);
-				(void) untimeout(tid);
-				mutex_enter(&mptsas_global_mutex);
-			}
+		if (mptsas_timeout_id && (mptsas_head == NULL)) {
+			timeout_id_t tid = mptsas_timeout_id;
+			mptsas_timeouts_enabled = 0;
+			mptsas_timeout_id = 0;
 			mutex_exit(&mptsas_global_mutex);
+			(void) untimeout(tid);
+			mutex_enter(&mptsas_global_mutex);
 		}
-
-		mptsas_cache_destroy(mpt);
-
-		if (smp_attach_setup) {
-			mptsas_smp_teardown(mpt);
-		}
-		if (enc_attach_setup) {
-			mptsas_enc_teardown(mpt);
-		}
-		if (hba_attach_setup) {
-			mptsas_hba_teardown(mpt);
-		}
-
-		if (mpt->m_tmp_targets)
-			refhash_destroy(mpt->m_tmp_targets);
-		if (mpt->m_targets)
-			refhash_destroy(mpt->m_targets);
-		if (mpt->m_smp_targets)
-			refhash_destroy(mpt->m_smp_targets);
-
-		if (mpt->m_active) {
-			mptsas_free_active_slots(mpt);
-		}
-		if (intr_added) {
-			mptsas_unregister_intrs(mpt);
-		}
-
-		if (doneq_thread_create) {
-			mutex_enter(&mpt->m_doneq_mutex);
-			doneq_thread_num = mpt->m_doneq_thread_n;
-			for (j = 0; j < mpt->m_doneq_thread_n; j++) {
-				mutex_enter(&mpt->m_doneq_thread_id[j].mutex);
-				mpt->m_doneq_thread_id[j].flag &=
-				    (~MPTSAS_DONEQ_THREAD_ACTIVE);
-				cv_signal(&mpt->m_doneq_thread_id[j].cv);
-				mutex_exit(&mpt->m_doneq_thread_id[j].mutex);
-			}
-			while (mpt->m_doneq_thread_n) {
-				cv_wait(&mpt->m_doneq_thread_cv,
-				    &mpt->m_doneq_mutex);
-			}
-			for (j = 0; j < doneq_thread_num; j++) {
-				cv_destroy(&mpt->m_doneq_thread_id[j].cv);
-				mutex_destroy(&mpt->m_doneq_thread_id[j].mutex);
-			}
-			kmem_free(mpt->m_doneq_thread_id,
-			    sizeof (mptsas_doneq_thread_list_t)
-			    * doneq_thread_num);
-			mutex_exit(&mpt->m_doneq_mutex);
-			cv_destroy(&mpt->m_doneq_thread_cv);
-			mutex_destroy(&mpt->m_doneq_mutex);
-		}
-		if (event_taskq_create) {
-			ddi_taskq_destroy(mpt->m_event_taskq);
-		}
-		if (dr_taskq_create) {
-			ddi_taskq_destroy(mpt->m_dr_taskq);
-		}
-		if (mutex_init_done) {
-			mutex_destroy(&mpt->m_tx_waitq_mutex);
-			mutex_destroy(&mpt->m_passthru_mutex);
-			mutex_destroy(&mpt->m_mutex);
-			for (i = 0; i < MPTSAS_MAX_PHYS; i++) {
-				mutex_destroy(
-				    &mpt->m_phy_info[i].smhba_info.phy_mutex);
-			}
-			cv_destroy(&mpt->m_cv);
-			cv_destroy(&mpt->m_passthru_cv);
-			cv_destroy(&mpt->m_fw_cv);
-			cv_destroy(&mpt->m_config_cv);
-			cv_destroy(&mpt->m_fw_diag_cv);
-			cv_destroy(&mpt->m_extreq_sense_refcount_cv);
-		}
-
-		if (map_setup) {
-			mptsas_cfg_fini(mpt);
-		}
-		if (config_setup) {
-			mptsas_config_space_fini(mpt);
-		}
-		mptsas_free_handshake_msg(mpt);
-		mptsas_hba_fini(mpt);
-
-		mptsas_fm_fini(mpt);
-		ddi_soft_state_free(mptsas_state, instance);
-		ddi_prop_remove_all(dip);
+		mutex_exit(&mptsas_global_mutex);
 	}
+
+	mptsas_cache_destroy(mpt);
+
+	if (smp_attach_setup) {
+		mptsas_smp_teardown(mpt);
+	}
+	if (enc_attach_setup) {
+		mptsas_enc_teardown(mpt);
+	}
+	if (hba_attach_setup) {
+		mptsas_hba_teardown(mpt);
+	}
+
+	if (mpt->m_tmp_targets)
+		refhash_destroy(mpt->m_tmp_targets);
+	if (mpt->m_targets)
+		refhash_destroy(mpt->m_targets);
+	if (mpt->m_smp_targets)
+		refhash_destroy(mpt->m_smp_targets);
+
+	if (mpt->m_active) {
+		mptsas_free_active_slots(mpt);
+	}
+	if (intr_added) {
+		mptsas_unregister_intrs(mpt);
+	}
+
+	if (doneq_thread_create) {
+		mutex_enter(&mpt->m_doneq_mutex);
+		doneq_thread_num = mpt->m_doneq_thread_n;
+		for (j = 0; j < mpt->m_doneq_thread_n; j++) {
+			mutex_enter(&mpt->m_doneq_thread_id[j].mutex);
+			mpt->m_doneq_thread_id[j].flag &=
+			    (~MPTSAS_DONEQ_THREAD_ACTIVE);
+			cv_signal(&mpt->m_doneq_thread_id[j].cv);
+			mutex_exit(&mpt->m_doneq_thread_id[j].mutex);
+		}
+		while (mpt->m_doneq_thread_n) {
+			cv_wait(&mpt->m_doneq_thread_cv,
+			    &mpt->m_doneq_mutex);
+		}
+		for (j = 0; j < doneq_thread_num; j++) {
+			cv_destroy(&mpt->m_doneq_thread_id[j].cv);
+			mutex_destroy(&mpt->m_doneq_thread_id[j].mutex);
+		}
+		kmem_free(mpt->m_doneq_thread_id,
+		    sizeof (mptsas_doneq_thread_list_t)
+		    * doneq_thread_num);
+		mutex_exit(&mpt->m_doneq_mutex);
+		cv_destroy(&mpt->m_doneq_thread_cv);
+		mutex_destroy(&mpt->m_doneq_mutex);
+	}
+	if (event_taskq_create) {
+		ddi_taskq_destroy(mpt->m_event_taskq);
+	}
+	if (dr_taskq_create) {
+		ddi_taskq_destroy(mpt->m_dr_taskq);
+	}
+	if (mutex_init_done) {
+		mutex_destroy(&mpt->m_tx_waitq_mutex);
+		mutex_destroy(&mpt->m_passthru_mutex);
+		mutex_destroy(&mpt->m_mutex);
+		for (i = 0; i < MPTSAS_MAX_PHYS; i++) {
+			mutex_destroy(
+			    &mpt->m_phy_info[i].smhba_info.phy_mutex);
+		}
+		cv_destroy(&mpt->m_cv);
+		cv_destroy(&mpt->m_passthru_cv);
+		cv_destroy(&mpt->m_fw_cv);
+		cv_destroy(&mpt->m_config_cv);
+		cv_destroy(&mpt->m_fw_diag_cv);
+		cv_destroy(&mpt->m_extreq_sense_refcount_cv);
+	}
+
+	if (map_setup) {
+		mptsas_cfg_fini(mpt);
+	}
+	if (config_setup) {
+		mptsas_config_space_fini(mpt);
+	}
+	mptsas_free_handshake_msg(mpt);
+	mptsas_hba_fini(mpt);
+
+	mptsas_fm_fini(mpt);
+	ddi_soft_state_free(mptsas_state, instance);
+	ddi_prop_remove_all(dip);
+
 	return (DDI_FAILURE);
 }
 
