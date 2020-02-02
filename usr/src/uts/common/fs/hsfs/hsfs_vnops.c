@@ -728,7 +728,7 @@ hsfs_getpage_ra(struct vnode *vp, u_offset_t off, struct seg *seg,
 	uint_t	count;
 	uint_t	io_end;
 	uint_t	which_chunk_lbn;
-	uint_t	offset_lbn;
+	uint64_t	offset_lbn;
 	uint_t	offset_extra;
 	offset_t	offset_bytes;
 	uint_t	remaining_bytes;
@@ -1013,7 +1013,7 @@ hsfs_getapage(struct vnode *vp, u_offset_t off, size_t len, uint_t *protp,
 	uint_t	count;
 	uint_t	io_end;
 	uint_t	which_chunk_lbn;
-	uint_t	offset_lbn;
+	uint64_t	offset_lbn;
 	uint_t	offset_extra;
 	offset_t	offset_bytes;
 	uint_t	remaining_bytes;
@@ -1744,7 +1744,7 @@ static int
 hsfs_seek(struct vnode *vp, offset_t ooff, offset_t *noffp,
     caller_context_t *ct)
 {
-	return ((*noffp < 0 || *noffp > MAXOFFSET_T) ? EINVAL : 0);
+	return (*noffp < 0 ? EINVAL : 0);
 }
 
 /* ARGSUSED */
