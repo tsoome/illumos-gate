@@ -35,7 +35,6 @@ UTSBASE	= ../..
 #
 MODULE		= fp
 OBJECTS		= $(FP_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(FP_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR     = $(UTSBASE)/intel/io/fibre-channel/impl/
 
@@ -50,7 +49,6 @@ include $(UTSBASE)/intel/Makefile.intel
 #
 #ALL_TARGET	= $(BINARY) $(CONFMOD) $(ITUMOD)
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
@@ -63,19 +61,8 @@ INCS 		+= -I$(SRC)/uts/common/
 #
 LDFLAGS		+= -dy -Ndrv/fcp -Nmisc/fctl -Nmisc/scsi
 
-#
-#	Lint tags
-#
-LINTTAGS	+= -erroff=E_ASSIGN_NARROW_CONV
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-LINTTAGS	+= -erroff=E_SUSPICIOUS_COMPARISON
-LINTTAGS	+= -erroff=E_STATIC_UNUSED
-
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-unused-function
-
-# needs work
-$(OBJS_DIR)/fp.o := SMOFF += all_func_returns,deref_check
 
 #
 #	Default build targets.
@@ -89,12 +76,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 

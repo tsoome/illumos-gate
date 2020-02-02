@@ -10342,9 +10342,7 @@ fp_fabric_online(fc_local_port_t *port, job_request_t *job)
 		}
 	}
 
-	if (ns_cmd) {
-		fctl_free_ns_cmd(ns_cmd);
-	}
+	fctl_free_ns_cmd(ns_cmd);
 
 	listlen = 0;
 	changelist = NULL;
@@ -10728,7 +10726,7 @@ fp_unsol_cb(opaque_t port_handle, fc_unsol_buf_t *buf, uint32_t type)
 
 		mutex_exit(&port->fp_mutex);
 
-		port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+		(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 		    1, &buf->ub_token);
 
 		return;
@@ -10762,7 +10760,7 @@ fp_unsol_cb(opaque_t port_handle, fc_unsol_buf_t *buf, uint32_t type)
 		}
 		mutex_exit(&port->fp_mutex);
 
-		port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+		(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 		    1, &buf->ub_token);
 
 		FP_TRACE(FP_NHEAD1(3, 0),
@@ -10789,7 +10787,7 @@ fp_unsol_cb(opaque_t port_handle, fc_unsol_buf_t *buf, uint32_t type)
 					    ~FP_SOFT_IN_UNSOL_CB;
 				}
 				mutex_exit(&port->fp_mutex);
-				port->fp_fca_tran->fca_ub_release(
+				(void) port->fp_fca_tran->fca_ub_release(
 				    port->fp_fca_handle, 1, &buf->ub_token);
 
 				return;
@@ -10889,7 +10887,7 @@ fp_unsol_cb(opaque_t port_handle, fc_unsol_buf_t *buf, uint32_t type)
 			port->fp_soft_state &= ~FP_SOFT_IN_UNSOL_CB;
 		}
 		mutex_exit(&port->fp_mutex);
-		port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+		(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 		    1, &buf->ub_token);
 
 		return;
@@ -10952,7 +10950,7 @@ fp_unsol_cb(opaque_t port_handle, fc_unsol_buf_t *buf, uint32_t type)
 		}
 
 		mutex_exit(&port->fp_mutex);
-		port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+		(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 		    1, &buf->ub_token);
 
 		return;
@@ -11151,7 +11149,7 @@ fp_handle_unsol_buf(fc_local_port_t *port, fc_unsol_buf_t *buf,
 		port->fp_soft_state &= ~FP_SOFT_IN_UNSOL_CB;
 	}
 	mutex_exit(&port->fp_mutex);
-	port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+	(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 	    1, &buf->ub_token);
 }
 
@@ -12531,7 +12529,7 @@ fp_fillout_old_map_held(fc_portmap_t *map, fc_remote_port_t *pd, uchar_t flag)
 	    " removed the PD=%p from DID and PWWN tables",
 	    port, pd->pd_port_id.port_id, pd);
 
-	if ((!flag) && port && initiator && is_switch) {
+	if ((!flag) && initiator && is_switch) {
 		(void) fctl_add_orphan_held(port, pd);
 	}
 	fctl_copy_portmap_held(map, pd);
@@ -12571,7 +12569,7 @@ fp_fillout_old_map(fc_portmap_t *map, fc_remote_port_t *pd, uchar_t flag)
 	mutex_exit(&port->fp_mutex);
 
 	ASSERT(port != NULL);
-	if ((!flag) && port && initiator && is_switch) {
+	if ((!flag) && initiator && is_switch) {
 		(void) fctl_add_orphan(port, pd, KM_NOSLEEP);
 	}
 	fctl_copy_portmap(map, pd);
