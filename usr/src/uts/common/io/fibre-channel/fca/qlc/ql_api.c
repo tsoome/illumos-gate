@@ -1270,11 +1270,6 @@ ql_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 		 */
 		ha->n_port = (ql_n_port_info_t *)
 		    kmem_zalloc(sizeof (ql_n_port_info_t), KM_SLEEP);
-		if (ha->n_port == NULL) {
-			cmn_err(CE_WARN, "%s(%d): Failed to create N Port info",
-			    QL_NAME, instance);
-			goto attach_failed;
-		}
 
 		progress |= QL_N_PORT_INFO_CREATED;
 
@@ -4853,7 +4848,7 @@ ql_cmd_setup(opaque_t fca_handle, fc_packet_t *pkt, int *rval)
 	/*
 	 * Minimum branch conditional; Change it with care.
 	 */
-	if (((pkt->pkt_data_acc != NULL) & (*rval == DDI_SUCCESS) &
+	if (((pkt->pkt_data_acc != NULL) && (*rval == DDI_SUCCESS) &&
 	    (pkt->pkt_datalen != 0)) != 0) {
 		QL_CLEAR_DMA_HANDLE(pkt->pkt_data_dma);
 		*rval = ddi_check_dma_handle(pkt->pkt_data_dma);
@@ -5140,9 +5135,9 @@ ql_p2p_plogi(ql_adapter_state_t *ha, fc_packet_t *pkt)
 					val++;
 					*hndl = val;
 				}
-			EL(ha, "rval=%xh, id=%d, n_port_handle =%xh, "
-			    "master state=%x\n", rval, id, tq->loop_id,
-			    tq->master_state);
+				EL(ha, "rval=%xh, id=%d, n_port_handle =%xh, "
+				    "master state=%x\n", rval, id, tq->loop_id,
+				    tq->master_state);
 			}
 
 		}
@@ -5265,21 +5260,12 @@ ql_els_flogi(ql_adapter_state_t *ha, fc_packet_t *pkt)
 		acc.common_service.e_d_tov = 0x7d0;
 		if (accept) {
 			/* Use the saved N_Port WWNN and WWPN */
-			if (ha->n_port != NULL) {
-				bcopy((void *)&ha->n_port->port_name[0],
-				    (void *)&acc.nport_ww_name.raw_wwn[0], 8);
-				bcopy((void *)&ha->n_port->node_name[0],
-				    (void *)&acc.node_ww_name.raw_wwn[0], 8);
-				/* mark service options invalid */
-				class3_param->class_valid_svc_opt = 0x0800;
-			} else {
-				EL(ha, "ha->n_port is NULL\n");
-				/* Build RJT. */
-				acc.ls_code.ls_code = LA_ELS_RJT;
-
-				pkt->pkt_state = FC_PKT_TRAN_ERROR;
-				pkt->pkt_reason = FC_REASON_NO_CONNECTION;
-			}
+			bcopy((void *)&ha->n_port->port_name[0],
+			    (void *)&acc.nport_ww_name.raw_wwn[0], 8);
+			bcopy((void *)&ha->n_port->node_name[0],
+			    (void *)&acc.node_ww_name.raw_wwn[0], 8);
+			/* mark service options invalid */
+			class3_param->class_valid_svc_opt = 0x0800;
 		} else {
 			bcopy((void *)&tq->port_name[0],
 			    (void *)&acc.nport_ww_name.raw_wwn[0], 8);
@@ -7100,7 +7086,7 @@ ql_task_mgmt(ql_adapter_state_t *ha, ql_tgt_t *tq, fc_packet_t *pkt,
 	QL_PRINT_3(CE_CONT, "(%d): started\n", ha->instance);
 
 	fcpr = (fcp_rsp_t *)pkt->pkt_resp;
-	rsp = (struct fcp_rsp_info *)pkt->pkt_resp + sizeof (fcp_rsp_t);
+	rsp = (struct fcp_rsp_info *)(pkt->pkt_resp + sizeof (fcp_rsp_t));
 
 	bzero(fcpr, pkt->pkt_rsplen);
 

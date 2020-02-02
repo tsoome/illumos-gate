@@ -3844,12 +3844,10 @@ ql_serdes_param(ql_adapter_state_t *ha, ql_mbx_data_t *mr)
 	rval = ql_mailbox_command(ha, mcp);
 
 	/* Return mailbox data. */
-	if (mr != NULL) {
-		mr->mb[0] = mcp->mb[0];
-		mr->mb[2] = mcp->mb[2];
-		mr->mb[3] = mcp->mb[3];
-		mr->mb[4] = mcp->mb[4];
-	}
+	mr->mb[0] = mcp->mb[0];
+	mr->mb[2] = mcp->mb[2];
+	mr->mb[3] = mcp->mb[3];
+	mr->mb[4] = mcp->mb[4];
 
 	if (rval != QL_SUCCESS) {
 		EL(ha, "failed=%xh\n", rval);
@@ -4328,9 +4326,7 @@ ql_idc_request(ql_adapter_state_t *ha, ql_mbx_data_t *mr)
 	rval = ql_mailbox_command(ha, mcp);
 
 	if (rval == QL_SUCCESS) {
-		if (mr != NULL) {
-			mr->mb[2] = mcp->mb[2];
-		}
+		mr->mb[2] = mcp->mb[2];
 		QL_PRINT_3(CE_CONT, "(%d): done\n", ha->instance);
 	} else {
 		EL(ha, "status=%xh, mbx2=%xh\n", rval, mcp->mb[2]);

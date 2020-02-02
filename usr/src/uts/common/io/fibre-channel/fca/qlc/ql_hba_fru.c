@@ -479,7 +479,7 @@ ql_populate_hba_fru_details(ql_adapter_state_t *ha,
 	 *	<driver_name>(<instance>,<vp index>)
 	 */
 	vlen = (strlen(utsname.nodename) > FCHBA_SYMB_NAME_LEN ?
-	    FCHBA_SYMB_NAME_LEN : strlen(utsname.nodename));
+	    FCHBA_SYMB_NAME_LEN  - 1 : strlen(utsname.nodename));
 	(void) snprintf((int8_t *)attrs->sym_node_name, vlen, "%s",
 	    utsname.nodename);
 

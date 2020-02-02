@@ -1902,8 +1902,8 @@ ql_status_entry(ql_adapter_state_t *ha, sts_entry_t *pkt,
 		/*
 		 * Fast path to good SCSI I/O completion
 		 */
-		if ((comp_status == CS_COMPLETE) &
-		    (!pkt->scsi_status_l) &
+		if ((comp_status == CS_COMPLETE) &&
+		    (!pkt->scsi_status_l) &&
 		    (!(pkt->scsi_status_h & FCP_RSP_MASK))) {
 			/* Set completed status. */
 			sp->flags |= SRB_ISP_COMPLETED;
@@ -2016,8 +2016,8 @@ ql_24xx_status_entry(ql_adapter_state_t *ha, sts_24xx_entry_t *pkt,
 		/*
 		 * Fast path to good SCSI I/O completion
 		 */
-		if ((comp_status == CS_COMPLETE) &
-		    (!pkt->scsi_status_l) &
+		if ((comp_status == CS_COMPLETE) &&
+		    (!pkt->scsi_status_l) &&
 		    (!(pkt->scsi_status_h & FCP_RSP_MASK))) {
 			/* Set completed status. */
 			sp->flags |= SRB_ISP_COMPLETED;
@@ -3323,7 +3323,7 @@ ql_els_passthru_entry(ql_adapter_state_t *ha, els_passthru_entry_rsp_t *rsp,
 				if (CFG_IST(ha, CFG_CTRL_24258081)) {
 					tq->flags |= TQF_IIDMA_NEEDED;
 				}
-			srb->pkt->pkt_state = FC_PKT_SUCCESS;
+				srb->pkt->pkt_state = FC_PKT_SUCCESS;
 			}
 		}
 		/* invoke the callback */

@@ -3480,7 +3480,7 @@ ql_diagnostic_loopback(ql_adapter_state_t *ha, EXT_IOCTL *cmd, int mode)
 		plbrsp.CrcErrorCount = mr.mb[1];
 		plbrsp.DisparityErrorCount = mr.mb[2];
 		plbrsp.FrameLengthErrorCount = mr.mb[3];
-		plbrsp.IterationCountLastError = (mr.mb[19] >> 16) | mr.mb[18];
+		plbrsp.IterationCountLastError = (mr.mb[19] << 16) | mr.mb[18];
 	}
 
 	rval = ddi_copyout((void *)&plbrsp,
@@ -8553,7 +8553,8 @@ ql_get_vp_cnt_id(ql_adapter_state_t *ha, EXT_IOCTL *cmd, int mode)
 		ptmp_vp->VpCnt++;
 		ptmp_vp->VpId[id] = vha->vp_index;
 		(void) ddi_pathname(vha->dip, name);
-		(void) strcpy((char *)ptmp_vp->vp_path[id], name);
+		(void) strlcpy((char *)ptmp_vp->vp_path[id], name,
+		    sizeof (ptmp_vp->vp_path[id]));
 		ptmp_vp->VpDrvInst[id] = (int32_t)vha->instance;
 		id++;
 		vha = vha->vp_next;
