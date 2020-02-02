@@ -679,7 +679,7 @@ hook_stack_notify_register(netstackid_t stackid, hook_notify_fn_t callback,
 		SLIST_FOREACH(hfi, &hks->hks_familylist, hfi_entry) {
 			if (hfi->hfi_condemned || hfi->hfi_shutdown)
 				continue;
-			callback(HN_REGISTER, arg, buffer, NULL,
+			(void) callback(HN_REGISTER, arg, buffer, NULL,
 			    hfi->hfi_family.hf_name);
 		}
 	}
@@ -749,7 +749,7 @@ hook_stack_notify_unregister(netstackid_t stackid, hook_notify_fn_t callback)
 		    hks->hks_netstackid);
 
 		SLIST_FOREACH(hfi, &hks->hks_familylist, hfi_entry) {
-			callback(HN_UNREGISTER, arg, buffer, NULL,
+			(void) callback(HN_UNREGISTER, arg, buffer, NULL,
 			    hfi->hfi_family.hf_name);
 		}
 	} else {
@@ -1206,7 +1206,7 @@ hook_family_notify_register(hook_family_int_t *hfi,
 
 	if (error == 0 && canrun) {
 		SLIST_FOREACH(hei, &hfi->hfi_head, hei_entry) {
-			callback(HN_REGISTER, arg,
+			(void) callback(HN_REGISTER, arg,
 			    hfi->hfi_family.hf_name, NULL,
 			    hei->hei_event->he_name);
 		}
@@ -1282,7 +1282,7 @@ hook_family_notify_unregister(hook_family_int_t *hfi,
 
 	if (canrun) {
 		SLIST_FOREACH(hei, &hfi->hfi_head, hei_entry) {
-			callback(HN_UNREGISTER, arg,
+			(void) callback(HN_UNREGISTER, arg,
 			    hfi->hfi_family.hf_name, NULL,
 			    hei->hei_event->he_name);
 		}
@@ -1746,7 +1746,7 @@ hook_event_notify_register(hook_family_int_t *hfi, char *event,
 
 	if (error == 0 && canrun) {
 		TAILQ_FOREACH(h, &hei->hei_head, hi_entry) {
-			callback(HN_REGISTER, arg,
+			(void) callback(HN_REGISTER, arg,
 			    hfi->hfi_family.hf_name, hei->hei_event->he_name,
 			    h->hi_hook.h_name);
 		}
@@ -1823,7 +1823,7 @@ hook_event_notify_unregister(hook_family_int_t *hfi, char *event,
 
 	if (canrun) {
 		TAILQ_FOREACH(h, &hei->hei_head, hi_entry) {
-			callback(HN_UNREGISTER, arg,
+			(void) callback(HN_UNREGISTER, arg,
 			    hfi->hfi_family.hf_name, hei->hei_event->he_name,
 			    h->hi_hook.h_name);
 		}
@@ -2576,6 +2576,6 @@ hook_notify_run(hook_notify_head_t *head, char *family, char *event,
 	hook_notify_t *hn;
 
 	TAILQ_FOREACH(hn, head, hn_entry) {
-		(*hn->hn_func)(cmd, hn->hn_arg, family, event, name);
+		(void) (*hn->hn_func)(cmd, hn->hn_arg, family, event, name);
 	}
 }
