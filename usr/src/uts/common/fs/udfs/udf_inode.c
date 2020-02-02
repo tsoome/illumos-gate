@@ -1088,12 +1088,12 @@ tryagain:
 		VN_RELE_LOCKED(vp);
 		mutex_exit(&vp->v_lock);
 
-	mutex_enter(&ip->i_tlock);
+		mutex_enter(&ip->i_tlock);
 		mutex_enter(&udf_ifree_lock);
 		ud_add_to_free_list(ip, UD_BEGIN);
 		mutex_exit(&udf_ifree_lock);
-	ip->i_flag &= IMODTIME;
-	mutex_exit(&ip->i_tlock);
+		ip->i_flag &= IMODTIME;
+		mutex_exit(&ip->i_tlock);
 		rw_exit(&ip->i_contents);
 	} else {
 		mutex_exit(&ud_nino_lock);

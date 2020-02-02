@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/t_lock.h>
 #include <sys/param.h>
@@ -1251,7 +1249,8 @@ int32_t
 ud_zero_it(struct ud_inode *ip, uint32_t start_block, uint32_t block_count)
 {
 	struct udf_vfs *udf_vfsp;
-	uint32_t bno, dummy;
+	uint64_t bno;
+	uint32_t dummy;
 	int32_t error;
 	struct buf *bp;
 

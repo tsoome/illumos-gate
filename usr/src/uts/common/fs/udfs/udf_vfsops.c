@@ -1040,7 +1040,7 @@ ud_validate_and_fill_superblock(dev_t dev, int32_t bsize, uint32_t avd_loc)
 	bp = udf_vfsp->udf_vds;
 	bp->b_edev = dev;
 	bp->b_dev = cmpdev(dev);
-	bp->b_blkno = vds_loc << shift;
+	bp->b_blkno = ((uint64_t)vds_loc) << shift;
 	bp->b_bcount = udf_vfsp->udf_mvds_len;
 	bcopy(secbp->b_un.b_addr, bp->b_un.b_addr, udf_vfsp->udf_mvds_len);
 	secbp->b_flags |= B_STALE | B_AGE;
@@ -1397,7 +1397,7 @@ loop_end:
 	bp = udf_vfsp->udf_iseq;
 	bp->b_edev = dev;
 	bp->b_dev = cmpdev(dev);
-	bp->b_blkno = udf_vfsp->udf_iseq_loc << shift;
+	bp->b_blkno = ((uint64_t)udf_vfsp->udf_iseq_loc) << shift;
 	bp->b_bcount = udf_vfsp->udf_iseq_len;
 	bcopy(secbp->b_un.b_addr, bp->b_un.b_addr, udf_vfsp->udf_iseq_len);
 	secbp->b_flags |= B_STALE | B_AGE;
@@ -1629,7 +1629,7 @@ ud_get_last_block(dev_t dev, daddr_t *blkno)
 		return (error);
 	}
 
-	if (dki_info.dki_partition > V_NUMPAR) {
+	if (dki_info.dki_partition >= V_NUMPAR) {
 		return (EINVAL);
 	}
 

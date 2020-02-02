@@ -1192,10 +1192,8 @@ ud_dircheckpath(int32_t blkno,
 		if (parent_icb_loc == udf_vfsp->udf_root_blkno) {
 			break;
 		}
-		if (fbp != NULL) {
-			fbrelse(fbp, S_OTHER);
-			fbp = NULL;
-		}
+		fbrelse(fbp, S_OTHER);
+		fbp = NULL;
 		if (ip != target) {
 			rw_exit(&ip->i_rwlock);
 			VN_RELE(ITOV(ip));

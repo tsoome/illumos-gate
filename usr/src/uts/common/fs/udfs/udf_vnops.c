@@ -1596,7 +1596,7 @@ udf_rwunlock(struct vnode *vp, int32_t write_lock, caller_context_t *ctp)
 static int32_t
 udf_seek(struct vnode *vp, offset_t ooff, offset_t *noffp, caller_context_t *ct)
 {
-	return ((*noffp < 0 || *noffp > MAXOFFSET_T) ? EINVAL : 0);
+	return (*noffp < 0 ? EINVAL : 0);
 }
 
 static int32_t
@@ -2053,8 +2053,7 @@ udf_map(
 		goto end;
 	}
 
-	if ((off < (offset_t)0) ||
-	    ((off + len) < (offset_t)0)) {
+	if ((off < 0) || ((offset_t)(off + len) < 0)) {
 		error = EINVAL;
 		goto end;
 	}
@@ -2993,7 +2992,7 @@ ud_rdip(struct ud_inode *ip, struct uio *uio, int32_t ioflag, cred_t *cr)
 		return (EIO);
 	}
 
-	if (uio->uio_loffset > MAXOFFSET_T) {
+	if (uio->uio_loffset < 0) {
 		return (0);
 	}
 

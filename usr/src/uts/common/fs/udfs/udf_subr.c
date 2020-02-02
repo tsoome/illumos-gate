@@ -1214,10 +1214,10 @@ ud_verify_tag_and_desc(struct tag *tag, uint16_t id, uint32_t blockno,
 		fid = (struct file_id *)tag;
 		fidlen = FID_LEN(fid);
 		if (fidlen > desc_len) {
-			cmn_err(CE_NOTE,
-	"Invalid FID_LEN(0x%x). Greater than expected(0x%x) blockno 0x%x\n",
+			cmn_err(CE_NOTE, "Invalid FID_LEN(0x%x). "
+			    "Greater than expected(0x%x) blockno 0x%x\n",
 			    fidlen, desc_len, blockno);
-				return (1);
+			return (1);
 		}
 	}
 	if (verify_desc == 0)
