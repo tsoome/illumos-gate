@@ -1849,8 +1849,8 @@ out:
 		*offp = io_off;
 	if (lenp)
 		*lenp = io_len;
-		PC_DPRINTF4(4, "pcfs_putapage: vp=%p pp=%p off=%lld len=%lu\n",
-		    (void *)vp, (void *)pp, io_off, io_len);
+	PC_DPRINTF4(4, "pcfs_putapage: vp=%p pp=%p off=%lld len=%lu\n",
+	    (void *)vp, (void *)pp, io_off, io_len);
 	if (err) {
 		PC_DPRINTF1(1, "pcfs_putapage err=%d", err);
 	}
@@ -1914,10 +1914,7 @@ pcfs_seek(
 {
 	if (*noffp < 0)
 		return (EINVAL);
-	else if (*noffp > MAXOFFSET_T)
-		return (EINVAL);
-	else
-		return (0);
+	return (0);
 }
 
 /* ARGSUSED */

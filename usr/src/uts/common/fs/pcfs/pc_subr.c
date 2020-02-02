@@ -262,9 +262,7 @@ pc_valid_lfn_char(char c)
 	const char *cp;
 	int n;
 
-	static const char invaltab[] = {
-		"/\\:*?<>|\""
-	};
+	static const char invaltab[] = "/\\:*?<>|\"";
 
 	cp = invaltab;
 	n = sizeof (invaltab) - 1;
@@ -278,7 +276,7 @@ pc_valid_lfn_char(char c)
 int
 pc_valid_long_fn(char *namep, int utf8)
 {
-	char *tmp;
+	unsigned char *tmp;
 	int len, error;
 	char *prohibited[13] = {
 		"/", "\\", ":", "*", "?", "<", ">", "|", "\"", YEN, LRO, RLO,
@@ -295,7 +293,8 @@ pc_valid_long_fn(char *namep, int utf8)
 			return (0);
 	} else {
 		/* UTF-16 */
-		for (tmp = namep; (*tmp != '\0') || (*(tmp+1) != '\0');
+		for (tmp = (unsigned char *)namep;
+		    (*tmp != '\0') || (*(tmp+1) != '\0');
 		    tmp += 2) {
 			if ((*(tmp+1) == '\0') && !pc_valid_lfn_char(*tmp))
 				return (0);
@@ -312,7 +311,8 @@ pc_valid_long_fn(char *namep, int utf8)
 			if ((*(tmp+1) == '\x20') && (*tmp == '\x2e'))
 				return (0);
 		}
-		if ((tmp - namep) > (PCMAXNAMLEN * sizeof (uint16_t)))
+		if ((tmp - (unsigned char *)namep) >
+		    (PCMAXNAMLEN * sizeof (uint16_t)))
 			return (0);
 	}
 	return (1);
