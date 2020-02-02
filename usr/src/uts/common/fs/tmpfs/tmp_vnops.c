@@ -2189,8 +2189,7 @@ tmp_map(
 	if (vp->v_flag & VNOMAP)
 		return (ENOSYS);
 
-	if (off < 0 || (offset_t)(off + len) < 0 ||
-	    off > MAXOFF_T || (off + len) > MAXOFF_T)
+	if (off < 0 || (offset_t)(off + len) < 0)
 		return (ENXIO);
 
 	if (vp->v_type != VREG)
@@ -2338,7 +2337,7 @@ tmp_space(
 	if (cmd != F_FREESP)
 		return (EINVAL);
 	if ((error = convoff(vp, bfp, 0, (offset_t)offset)) == 0) {
-		if ((bfp->l_start > MAXOFF_T) || (bfp->l_len > MAXOFF_T))
+		if ((bfp->l_start < 0) || (bfp->l_len < 0))
 			return (EFBIG);
 		error = tmp_freesp(vp, bfp, flag);
 
@@ -2356,7 +2355,7 @@ tmp_seek(
 	offset_t *noffp,
 	caller_context_t *ct)
 {
-	return ((*noffp < 0 || *noffp > MAXOFFSET_T) ? EINVAL : 0);
+	return (*noffp < 0 ? EINVAL : 0);
 }
 
 /* ARGSUSED2 */
