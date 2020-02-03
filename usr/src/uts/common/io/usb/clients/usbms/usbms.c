@@ -1493,16 +1493,17 @@ usbms_rput(queue_t *q, mblk_t *mp)
 {
 	usbms_state_t *usbmsp = q->q_ptr;
 	mblk_t	*tmp_mp;
-	ushort_t limit = (usbmsp->usbms_idf).tlen;
+	ushort_t limit;
 
-	/* Maintain the original mp */
-	tmp_mp = mp;
-
-	if (usbmsp == 0) {
+	if (usbmsp == NULL) {
 		freemsg(mp);	/* nobody's listening */
 
 		return (0);
 	}
+
+	/* Maintain the original mp */
+	tmp_mp = mp;
+	limit = usbmsp->usbms_idf.tlen;
 
 	switch (mp->b_datap->db_type) {
 
