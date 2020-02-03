@@ -247,6 +247,8 @@ objfs_statvfs(vfs_t *vfsp, statvfs64_t *sp)
 	dev32_t d32;
 	int total = objfs_nobjs();
 
+	if (total < 0)
+		total = 0;
 	bzero(sp, sizeof (*sp));
 	sp->f_bsize = DEV_BSIZE;
 	sp->f_frsize = DEV_BSIZE;
