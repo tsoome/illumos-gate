@@ -518,7 +518,7 @@ port_fop_trimpfplist(vnode_t *vp)
 		 * that may be trying to reactivate this entry.
 		 */
 		if (mutex_tryenter(&pfcp->pfc_lock)) {
-			if (pfp && !(pfp->pfop_flags & PORT_FOP_ACTIVE) &&
+			if (!(pfp->pfop_flags & PORT_FOP_ACTIVE) &&
 			    !(pfp->pfop_flags & PORT_FOP_KEV_ONQ)) {
 				port_fop_listremove(pvp, pfp);
 				pfp->pfop_flags |= PORT_FOP_REMOVING;
@@ -1328,8 +1328,8 @@ port_associate_fop(port_t *pp, int source, uintptr_t object, int events,
 	 * link, allowing one to use /proc/[pid]/fd/[fd] for PORT_SOURCE_FILE
 	 * and avoid spurious FILE_RENAME_FROM/FILE_RENAME_TO events.
 	 */
-	if (dvp != NULL && dvp->v_vfsp != vp->v_vfsp &&
-	    !(orig->v_type == VPROC && vp != NULL && vp->v_type != VPROC)) {
+	if (dvp != NULL && vp != NULL && dvp->v_vfsp != vp->v_vfsp &&
+	    !(orig->v_type == VPROC && vp->v_type != VPROC)) {
 		VN_RELE(dvp);
 		dvp = NULL;
 	}
