@@ -946,13 +946,14 @@ fss_newpri(fssproc_t *fssproc, boolean_t quanta_up)
 	ASSERT(THREAD_LOCK_HELD(tp));
 
 	fssproj = FSSPROC2FSSPROJ(fssproc);
-	fsszone = FSSPROJ2FSSZONE(fssproj);
-	if (fssproj == NULL)
+	if (fssproj == NULL) {
 		/*
 		 * No need to change priority of exited threads.
 		 */
 		return;
+	}
 
+	fsszone = FSSPROJ2FSSZONE(fssproj);
 	fsspset = FSSPROJ2FSSPSET(fssproj);
 	disp_lock_enter_high(&fsspset->fssps_displock);
 
