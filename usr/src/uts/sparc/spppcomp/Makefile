@@ -41,7 +41,6 @@ UTSBASE	= ../..
 #
 MODULE		= spppcomp
 OBJECTS		= $(SPPPCOMP_OBJS:%=$(OBJS_DIR)/%)
-LINTS           = $(SPPPCOMP_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(USR_STRMOD_DIR)/$(MODULE)
 
 #
@@ -53,7 +52,6 @@ include $(UTSBASE)/sparc/Makefile.sparc
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET     = $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 #
@@ -65,7 +63,6 @@ CPPFLAGS	+= -DINTERNAL_BUILD -DSOL2 -DMUX_FRAME
 #	Additional compiler definitions
 # 
 INC_PATH	+= -I$(UTSBASE)/common/io/ppp/common
-CFLAGS		+= $(CCVERBOSE)
 
 #
 # Define dependency on sppp
@@ -76,15 +73,6 @@ CLEANLINTFILES  += $(LINT64_FILES)
 
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
-
-#
-# For now, disable these lint checks; maintainers should endeavor
-# to investigate and remove these for maximum lint coverage.
-# Please do not carry these forward to new Makefiles.
-#
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW
-LINTTAGS	+= -erroff=E_ASSIGN_NARROW_CONV
 
 #
 #	Default build targets.
@@ -99,16 +87,7 @@ clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
 
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS) lint64
-
-clean.lint:	$(CLEAN_LINT_DEPS)
-
 install:	$(INSTALL_DEPS)
-
-$(LINTS_DIR)/%.ln:		$(UTSBASE)/common/io/ppp/spppcomp/%.c
-	@($(LHEAD) $(LINT.c) $< $(LTAIL))
 
 $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/ppp/spppcomp/%.c
 	$(COMPILE.c) -o $@ $<

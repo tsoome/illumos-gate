@@ -3241,41 +3241,41 @@ _tr_flush_block(s, buf, stored_len, eof)
 #ifdef FORCE_STORED
 #define	FRC_STR_COND	buf != (char *)0	/* force stored block */
 #else
-			/* 4: two words for the lengths */
+		/* 4: two words for the lengths */
 #define	FRC_STR_COND	stored_len+4 <= opt_lenb && buf != (char *)0
 #endif
-		if (FRC_STR_COND) {
+	if (FRC_STR_COND) {
 #undef FRC_STR_COND
-			/*
-			 * The test buf != NULL is only necessary if
-			 * LIT_BUFSIZE > WSIZE.  Otherwise we can't
-			 * have processed more than WSIZE input bytes
-			 * since the last block flush, because
-			 * compression would have been successful. If
-			 * LIT_BUFSIZE <= WSIZE, it is never too late
-			 * to transform a block into a stored block.
-			 */
-			_tr_stored_block(s, buf, stored_len, eof);
+		/*
+		 * The test buf != NULL is only necessary if
+		 * LIT_BUFSIZE > WSIZE.  Otherwise we can't
+		 * have processed more than WSIZE input bytes
+		 * since the last block flush, because
+		 * compression would have been successful. If
+		 * LIT_BUFSIZE <= WSIZE, it is never too late
+		 * to transform a block into a stored block.
+		 */
+		_tr_stored_block(s, buf, stored_len, eof);
 #ifdef FORCE_STATIC
 #define	FRC_STAT_COND	static_lenb >= 0 /* force static trees */
 #else
 #define	FRC_STAT_COND	static_lenb == opt_lenb
 #endif
-		} else if (FRC_STAT_COND) {
+	} else if (FRC_STAT_COND) {
 #undef FRC_STAT_COND
-			send_bits(s, (STATIC_TREES<<1)+eof, 3);
-			compress_block(s, (ct_data *)static_ltree,
-			    (ct_data *)static_dtree);
-			s->compressed_len += 3 + s->static_len;	/* PPP */
-		} else {
-			send_bits(s, (DYN_TREES<<1)+eof, 3);
-			send_all_trees(s, s->l_desc.max_code+1,
-			    s->d_desc.max_code+1,
-			    max_blindex+1);
-			compress_block(s, (ct_data *)s->dyn_ltree,
-			    (ct_data *)s->dyn_dtree);
-			s->compressed_len += 3 + s->opt_len;	/* PPP */
-		}
+		send_bits(s, (STATIC_TREES<<1)+eof, 3);
+		compress_block(s, (ct_data *)static_ltree,
+		    (ct_data *)static_dtree);
+		s->compressed_len += 3 + s->static_len;	/* PPP */
+	} else {
+		send_bits(s, (DYN_TREES<<1)+eof, 3);
+		send_all_trees(s, s->l_desc.max_code+1,
+		    s->d_desc.max_code+1,
+		    max_blindex+1);
+		compress_block(s, (ct_data *)s->dyn_ltree,
+		    (ct_data *)s->dyn_dtree);
+		s->compressed_len += 3 + s->opt_len;	/* PPP */
+	}
 #ifdef DEBUG_ZLIB
 	Assert(s->compressed_len == s->bits_sent, "bad compressed size");
 #endif
