@@ -397,8 +397,7 @@ svc_cots_krecv(SVCXPRT *clone_xprt, mblk_t *mp, struct rpc_msg *msg)
 	return (TRUE);
 
 bad:
-	if (mp)
-		freemsg(mp);
+	freemsg(mp);
 
 	RSSTAT_INCR(stats, rsbadcalls);
 	TRACE_1(TR_FAC_KRPC, TR_SVC_COTS_KRECV_END,
@@ -516,7 +515,8 @@ svc_cots_ksend(SVCXPRT *clone_xprt, struct rpc_msg *msg)
 		 */
 		mp->b_rptr += (MSG_OFFSET + RM_HDR_SIZE);
 
-		XDR_SETPOS(xdrs, (uint_t)(mp->b_rptr - mp->b_datap->db_base));
+		(void) XDR_SETPOS(xdrs,
+		    (uint_t)(mp->b_rptr - mp->b_datap->db_base));
 		ASSERT(mp->b_wptr == mp->b_rptr);
 
 		msg->rm_xid = clone_xprt->xp_xid;
@@ -552,7 +552,7 @@ out:
 	 */
 	if (xdrs->x_public) {
 		/* LINTED pointer alignment */
-		(**((int (**)())xdrs->x_public))(xdrs->x_public);
+		(void) (**((int (**)())xdrs->x_public))(xdrs->x_public);
 	}
 
 	TRACE_1(TR_FAC_KRPC, TR_SVC_COTS_KSEND_END,
@@ -664,7 +664,7 @@ svc_cots_kgetres(SVCXPRT *clone_xprt, int size)
 	 */
 	mp->b_rptr += (MSG_OFFSET + RM_HDR_SIZE);
 
-	XDR_SETPOS(xdrs, (uint_t)(mp->b_rptr - mp->b_datap->db_base));
+	(void) XDR_SETPOS(xdrs, (uint_t)(mp->b_rptr - mp->b_datap->db_base));
 	ASSERT(mp->b_wptr == mp->b_rptr);
 
 	/*

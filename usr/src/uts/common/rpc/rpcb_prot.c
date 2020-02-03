@@ -85,10 +85,10 @@ xdr_rpcb_rmtcallargs(XDR *xdrs, struct rpcb_rmtcallargs *objp)
 		return (FALSE);
 	position = XDR_GETPOS(xdrs);
 	objp->arglen = position - argposition;
-	XDR_SETPOS(xdrs, lenposition);
+	(void) XDR_SETPOS(xdrs, lenposition);
 	if (!xdr_u_int(xdrs, &(objp->arglen)))
 		return (FALSE);
-	XDR_SETPOS(xdrs, position);
+	(void) XDR_SETPOS(xdrs, position);
 	return (TRUE);
 }
 

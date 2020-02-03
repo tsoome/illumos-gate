@@ -359,7 +359,7 @@ clnt_compose_rpcmsg(CLIENT *h, rpcproc_t procnum,
 		(*(uint32_t *)(rpcmsg->addr)) = p->cku_xid;
 
 		/* Skip the preserialized stuff. */
-		XDR_SETPOS(xdrs, CKU_HDRSIZE);
+		(void) XDR_SETPOS(xdrs, CKU_HDRSIZE);
 
 		/* Serialize dynamic stuff into the output buffer. */
 		if ((!XDR_PUTINT32(xdrs, (int32_t *)&procnum)) ||
@@ -373,7 +373,7 @@ clnt_compose_rpcmsg(CLIENT *h, rpcproc_t procnum,
 		uint32_t *uproc = (uint32_t *)&p->cku_rpchdr[CKU_HDRSIZE];
 		IXDR_PUT_U_INT32(uproc, procnum);
 		(*(uint32_t *)(&p->cku_rpchdr[0])) = p->cku_xid;
-		XDR_SETPOS(xdrs, 0);
+		(void) XDR_SETPOS(xdrs, 0);
 
 		/* Serialize the procedure number and the arguments. */
 		if (!AUTH_WRAP(h->cl_auth, (caddr_t)p->cku_rpchdr,
@@ -420,7 +420,7 @@ clnt_compose_rdma_header(CONN *conn, CLIENT *h, rdma_buf_t *clmsg,
 	xdrmem_create(*xdrs, clmsg->addr, clmsg->len, XDR_ENCODE);
 
 	(*(uint32_t *)clmsg->addr) = p->cku_xid;
-	XDR_SETPOS(*xdrs, sizeof (uint32_t));
+	(void) XDR_SETPOS(*xdrs, sizeof (uint32_t));
 	(void) xdr_u_int(*xdrs, &vers);
 	(void) xdr_u_int(*xdrs, &rdma_credit);
 	(void) xdr_u_int(*xdrs, op);
@@ -441,14 +441,14 @@ clnt_setup_rlist(CONN *conn, XDR *xdrs, XDR *call_xdrp)
 	struct clist *rclp;
 	int32_t xdr_flag = XDR_RDMA_RLIST_REG;
 
-	XDR_CONTROL(call_xdrp, XDR_RDMA_GET_RLIST, &rclp);
+	(void) XDR_CONTROL(call_xdrp, XDR_RDMA_GET_RLIST, &rclp);
 
 	if (rclp != NULL) {
 		status = clist_register(conn, rclp, CLIST_REG_SOURCE);
 		if (status != RDMA_SUCCESS) {
 			return (CLNT_RDMA_FAIL);
 		}
-		XDR_CONTROL(call_xdrp, XDR_RDMA_SET_FLAGS, &xdr_flag);
+		(void) XDR_CONTROL(call_xdrp, XDR_RDMA_SET_FLAGS, &xdr_flag);
 	}
 	(void) xdr_do_clist(xdrs, &rclp);
 
@@ -469,7 +469,7 @@ clnt_setup_wlist(CONN *conn, XDR *xdrs, XDR *call_xdrp, rdma_buf_t *rndbuf)
 	int wlen, rndlen;
 	int32_t xdr_flag = XDR_RDMA_WLIST_REG;
 
-	XDR_CONTROL(call_xdrp, XDR_RDMA_GET_WLIST, &wlist);
+	(void) XDR_CONTROL(call_xdrp, XDR_RDMA_GET_WLIST, &wlist);
 
 	if (wlist != NULL) {
 		/*
@@ -509,7 +509,7 @@ clnt_setup_wlist(CONN *conn, XDR *xdrs, XDR *call_xdrp, rdma_buf_t *rndbuf)
 			bzero(rndbuf, sizeof (rdma_buf_t));
 			return (CLNT_RDMA_FAIL);
 		}
-		XDR_CONTROL(call_xdrp, XDR_RDMA_SET_FLAGS, &xdr_flag);
+		(void) XDR_CONTROL(call_xdrp, XDR_RDMA_SET_FLAGS, &xdr_flag);
 	}
 
 	if (!xdr_encode_wlist(xdrs, wlist)) {
@@ -771,7 +771,8 @@ call_again:
 			rdma_buf_free(conn, &rpcmsg);
 			XDR_DESTROY(call_xdrp);
 		} else {
-			XDR_CONTROL(call_xdrp, XDR_RDMA_GET_CHUNK_LEN, &rcil);
+			(void) XDR_CONTROL(call_xdrp, XDR_RDMA_GET_CHUNK_LEN,
+			    &rcil);
 		}
 	}
 
@@ -828,7 +829,7 @@ call_again:
 	 * First pull the RDMA READ chunk list from the XDR private
 	 * area to keep it handy.
 	 */
-	XDR_CONTROL(call_xdrp, XDR_RDMA_GET_RLIST, &cl);
+	(void) XDR_CONTROL(call_xdrp, XDR_RDMA_GET_RLIST, &cl);
 
 	if (gss_i_or_p) {
 		long_reply_len = rcil.rcil_len + rcil.rcil_len_alt;
@@ -1014,7 +1015,7 @@ call_again:
 	 * in the rpc rdma message).
 	 * Skip xid and set the xdr position accordingly.
 	 */
-	XDR_SETPOS(rdmahdr_i_xdrs, sizeof (uint32_t));
+	(void) XDR_SETPOS(rdmahdr_i_xdrs, sizeof (uint32_t));
 	(void) xdr_u_int(rdmahdr_i_xdrs, &vers);
 	(void) xdr_u_int(rdmahdr_i_xdrs, &rdma_credit);
 	(void) xdr_u_int(rdmahdr_i_xdrs, &op);
@@ -1049,7 +1050,8 @@ call_again:
 		goto done;
 
 	if (wlist_exists_reply) {
-		XDR_CONTROL(reply_xdrp, XDR_RDMA_SET_WLIST, cl_rpcreply_wlist);
+		(void) XDR_CONTROL(reply_xdrp, XDR_RDMA_SET_WLIST,
+		    cl_rpcreply_wlist);
 	}
 
 	reply_msg.rm_direction = REPLY;
@@ -1186,7 +1188,7 @@ done:
 		clist_free(cl_recvlist);
 	}
 
-	RDMA_REL_CONN(conn);
+	(void) RDMA_REL_CONN(conn);
 
 	if (try_call_again)
 		goto call_again;

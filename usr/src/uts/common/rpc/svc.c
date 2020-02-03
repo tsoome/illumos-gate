@@ -1114,7 +1114,7 @@ svcerr_noproc(const SVCXPRT *clone_xprt)
 	rply.acpted_rply.ar_verf = clone_xprt->xp_verf;
 	rply.acpted_rply.ar_stat = PROC_UNAVAIL;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -1135,7 +1135,7 @@ svcerr_decode(const SVCXPRT *clone_xprt)
 	rply.acpted_rply.ar_verf = clone_xprt->xp_verf;
 	rply.acpted_rply.ar_stat = GARBAGE_ARGS;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -1151,7 +1151,7 @@ svcerr_systemerr(const SVCXPRT *clone_xprt)
 	rply.acpted_rply.ar_verf = clone_xprt->xp_verf;
 	rply.acpted_rply.ar_stat = SYSTEM_ERR;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -1167,7 +1167,7 @@ svcerr_auth(const SVCXPRT *clone_xprt, const enum auth_stat why)
 	rply.rjcted_rply.rj_stat = AUTH_ERROR;
 	rply.rjcted_rply.rj_why = why;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -1192,7 +1192,7 @@ svcerr_badcred(const SVCXPRT *clone_xprt)
 	rply.rjcted_rply.rj_stat = AUTH_ERROR;
 	rply.rjcted_rply.rj_why = AUTH_BADCRED;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -1213,7 +1213,7 @@ svcerr_noprog(const SVCXPRT *clone_xprt)
 	rply.acpted_rply.ar_verf = clone_xprt->xp_verf;
 	rply.acpted_rply.ar_stat = PROG_UNAVAIL;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -1237,7 +1237,7 @@ svcerr_progvers(const SVCXPRT *clone_xprt,
 	rply.acpted_rply.ar_vers.low = low_vers;
 	rply.acpted_rply.ar_vers.high = high_vers;
 	SVC_FREERES((SVCXPRT *)clone_xprt);
-	SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
+	(void) SVC_REPLY((SVCXPRT *)clone_xprt, &rply);
 }
 
 /*
@@ -2762,7 +2762,7 @@ rdma_stop(rdma_xprt_group_t *rdma_xprts)
 			mp->b_next = (mblk_t *)0;
 
 			RDMA_BUF_FREE(rdp->conn, &rdp->rpcmsg);
-			RDMA_REL_CONN(rdp->conn);
+			(void) RDMA_REL_CONN(rdp->conn);
 			freemsg(mp);
 		}
 		mutex_enter(&pool->p_req_lock);

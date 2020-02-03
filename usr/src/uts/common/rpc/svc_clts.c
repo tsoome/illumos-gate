@@ -610,7 +610,7 @@ out:
 	 */
 	if (xdrs->x_public) {
 		/* LINTED pointer alignment */
-		(**((int (**)())xdrs->x_public))(xdrs->x_public);
+		(void) (**((int (**)())xdrs->x_public))(xdrs->x_public);
 	}
 
 	TRACE_1(TR_FAC_KRPC, TR_SVC_CLTS_KSEND_END,

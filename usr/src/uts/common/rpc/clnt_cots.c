@@ -1071,7 +1071,8 @@ call_again:
 		bcopy(p->cku_rpchdr, mp->b_rptr, WIRE_HDR_SIZE);
 
 		/* Use XDR_SETPOS() to set the b_wptr to past the RPC header. */
-		XDR_SETPOS(xdrs, (uint_t)(mp->b_rptr - mp->b_datap->db_base +
+		(void) XDR_SETPOS(xdrs,
+		    (uint_t)(mp->b_rptr - mp->b_datap->db_base +
 		    WIRE_HDR_SIZE));
 
 		ASSERT((mp->b_wptr - mp->b_rptr) == WIRE_HDR_SIZE);
@@ -1094,7 +1095,8 @@ call_again:
 		(*(uint32_t *)(&p->cku_rpchdr[0])) = p->cku_xid;
 
 		/* Use XDR_SETPOS() to set the b_wptr. */
-		XDR_SETPOS(xdrs, (uint_t)(mp->b_rptr - mp->b_datap->db_base));
+		(void) XDR_SETPOS(xdrs,
+		    (uint_t)(mp->b_rptr - mp->b_datap->db_base));
 
 		/* Serialize the procedure number and the arguments. */
 		if (!AUTH_WRAP(h->cl_auth, p->cku_rpchdr, WIRE_HDR_SIZE+4,
@@ -3439,7 +3441,7 @@ clnt_dispatch_notifyall(queue_t *q, int32_t msg_type, int32_t reason)
 							have_connmgr_lock = 0;
 							if (clnt_stop_idle !=
 							    NULL)
-							(*clnt_stop_idle)(q);
+								(*clnt_stop_idle)(q);
 							break;
 						}
 						cm_entry->x_closing = TRUE;

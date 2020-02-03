@@ -529,7 +529,7 @@ call_again:
 			(*(uint32_t *)(mp->b_rptr)) = p->cku_xid;
 
 			/* Skip the preserialized stuff. */
-			XDR_SETPOS(xdrs, CKU_HDRSIZE);
+			(void) XDR_SETPOS(xdrs, CKU_HDRSIZE);
 
 			/* Serialize dynamic stuff into the output buffer. */
 			if ((!XDR_PUTINT32(xdrs, (int32_t *)&procnum)) ||
@@ -547,7 +547,7 @@ call_again:
 			IXDR_PUT_U_INT32(uproc, procnum);
 
 			(*(uint32_t *)(&p->cku_rpchdr[0])) = p->cku_xid;
-			XDR_SETPOS(xdrs, 0);
+			(void) XDR_SETPOS(xdrs, 0);
 
 			/* Serialize the procedure number and the arguments. */
 			if (!AUTH_WRAP(h->cl_auth, (caddr_t)p->cku_rpchdr,

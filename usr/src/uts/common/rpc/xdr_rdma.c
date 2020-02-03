@@ -1549,7 +1549,7 @@ xdrrdma_read_a_chunk(XDR *xdrs, CONN **conn)
 	if (len) {
 		rclp->w.c_saddr =
 		    (uint64)(uintptr_t)rclp->w.c_saddr + len;
-			rclp->c_len = rclp->c_len - len;
+		rclp->c_len = rclp->c_len - len;
 	}
 
 	status = xdrrdma_read_from_client(rclp, conn, rclp->c_len);

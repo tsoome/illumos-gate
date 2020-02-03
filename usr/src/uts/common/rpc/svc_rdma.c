@@ -404,7 +404,7 @@ svc_rdma_kclone_destroy(SVCXPRT *clone_xprt)
 		clist_free(cdrp->cl_reply);
 		cdrp->cl_reply = NULL;
 	}
-	RDMA_REL_CONN(cdrp->conn);
+	(void) RDMA_REL_CONN(cdrp->conn);
 
 	cdrp->cloned = 0;
 }
@@ -473,7 +473,7 @@ svc_rdma_krecv(SVCXPRT *clone_xprt, mblk_t *mp, struct rpc_msg *msg)
 	xdrs = &clone_xprt->xp_xdrin;
 	xdrmem_create(xdrs, rdp->rpcmsg.addr, rdp->rpcmsg.len, XDR_DECODE);
 	xid = *(uint32_t *)rdp->rpcmsg.addr;
-	XDR_SETPOS(xdrs, sizeof (uint32_t));
+	(void) XDR_SETPOS(xdrs, sizeof (uint32_t));
 
 	if (! xdr_u_int(xdrs, &vers) ||
 	    ! xdr_u_int(xdrs, &rdma_credit) ||
@@ -576,7 +576,7 @@ svc_rdma_krecv(SVCXPRT *clone_xprt, mblk_t *mp, struct rpc_msg *msg)
 		if (cl != NULL) {
 			int32_t flg = XDR_RDMA_RLIST_REG;
 
-			XDR_CONTROL(xdrs, XDR_RDMA_SET_FLAGS, &flg);
+			(void) XDR_CONTROL(xdrs, XDR_RDMA_SET_FLAGS, &flg);
 			xdrs->x_ops = &xdrrdmablk_ops;
 		}
 	}
@@ -584,8 +584,8 @@ svc_rdma_krecv(SVCXPRT *clone_xprt, mblk_t *mp, struct rpc_msg *msg)
 	if (crdp->cl_wlist) {
 		int32_t flg = XDR_RDMA_WLIST_REG;
 
-		XDR_CONTROL(xdrs, XDR_RDMA_SET_WLIST, crdp->cl_wlist);
-		XDR_CONTROL(xdrs, XDR_RDMA_SET_FLAGS, &flg);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_SET_WLIST, crdp->cl_wlist);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_SET_FLAGS, &flg);
 	}
 
 	if (! xdr_callmsg(xdrs, msg)) {
@@ -633,7 +633,7 @@ xdr_err:
 
 badrpc_call:
 	RDMA_BUF_FREE(conn, &rdp->rpcmsg);
-	RDMA_REL_CONN(conn);
+	(void) RDMA_REL_CONN(conn);
 	freeb(mp);
 	RSSTAT_INCR(rsbadcalls);
 	return (FALSE);
@@ -980,7 +980,7 @@ svc_rdma_ksend(SVCXPRT * clone_xprt, struct rpc_msg *msg)
 	xdrmem_create(&xdrs_rhdr, rbuf_resp.addr, rbuf_resp.len, XDR_ENCODE);
 	(*(uint32_t *)rbuf_resp.addr) = msg->rm_xid;
 	/* Skip xid and set the xdr position accordingly. */
-	XDR_SETPOS(&xdrs_rhdr, sizeof (uint32_t));
+	(void) XDR_SETPOS(&xdrs_rhdr, sizeof (uint32_t));
 	if (!xdr_u_int(&xdrs_rhdr, &vers) ||
 	    !xdr_u_int(&xdrs_rhdr, &rdma_credit) ||
 	    !xdr_u_int(&xdrs_rhdr, &rdma_response_op)) {
@@ -1057,7 +1057,8 @@ out:
 	 */
 	if (xdrs_rpc->x_public) {
 		/* LINTED pointer alignment */
-		(**((int (**)()) xdrs_rpc->x_public)) (xdrs_rpc->x_public);
+		(void) (**((int (**)())
+		    xdrs_rpc->x_public))(xdrs_rpc->x_public);
 	}
 
 	if (xdrs_rhdr.x_ops != NULL) {
@@ -1115,7 +1116,7 @@ svc_rdma_kfreeargs(SVCXPRT *clone_xprt, xdrproc_t xdr_args,
 		clist_free(crdp->cl_reply);
 		crdp->cl_reply = NULL;
 	}
-	RDMA_REL_CONN(crdp->conn);
+	(void) RDMA_REL_CONN(crdp->conn);
 
 	return (retval);
 }
