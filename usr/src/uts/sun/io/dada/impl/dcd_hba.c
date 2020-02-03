@@ -346,7 +346,7 @@ dcd_hba_pkt_alloc(
 	    cmdlen + tgtlen +hbalen + statuslen;
 
 	hba_pkt = kmem_zalloc(pktlen,
-	    (callback = SLEEP_FUNC) ? KM_SLEEP: KM_NOSLEEP);
+	    (callback == SLEEP_FUNC) ? KM_SLEEP: KM_NOSLEEP);
 
 	if (hba_pkt == NULL) {
 		ASSERT(callback == NULL_FUNC);
