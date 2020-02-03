@@ -4088,7 +4088,7 @@ again:
 		vaddr = pwp->wp_vaddr;
 		if (pwp->wp_oprot == 0 &&
 		    (seg = as_segat(as, vaddr)) != NULL) {
-			SEGOP_GETPROT(seg, vaddr, 0, &prot);
+			(void) SEGOP_GETPROT(seg, vaddr, 0, &prot);
 			pwp->wp_oprot = (uchar_t)prot;
 			pwp->wp_prot = (uchar_t)prot;
 		}
@@ -4294,7 +4294,7 @@ refill:
 		 * INCORE cleverly has different semantics than GETPROT:
 		 * it returns info on pages up to but NOT including addr + len.
 		 */
-		SEGOP_INCORE(seg, addr, len, pagev->pg_incore);
+		(void) SEGOP_INCORE(seg, addr, len, pagev->pg_incore);
 		pn = pagev->pg_pnbase;
 
 		do {
@@ -4322,7 +4322,7 @@ refill:
 	 * first byte of the page just past the end of what we want.
 	 */
 out:
-	SEGOP_GETPROT(seg, saddr, len - 1, pagev->pg_protv);
+	(void) SEGOP_GETPROT(seg, saddr, len - 1, pagev->pg_protv);
 	return (addr);
 }
 
@@ -4781,7 +4781,8 @@ prgetxmap(proc_t *p, list_t *iolhead)
 				    PAGESHIFT;
 				parr = kmem_zalloc(npages, KM_SLEEP);
 
-				SEGOP_INCORE(seg, saddr, naddr - saddr, parr);
+				(void) SEGOP_INCORE(seg, saddr, naddr - saddr,
+				    parr);
 
 				for (pagenum = 0; pagenum < npages; pagenum++) {
 					if (parr[pagenum] & SEG_PAGE_INCORE)
@@ -4982,7 +4983,8 @@ prgetxmap32(proc_t *p, list_t *iolhead)
 				    PAGESHIFT;
 				parr = kmem_zalloc(npages, KM_SLEEP);
 
-				SEGOP_INCORE(seg, saddr, naddr - saddr, parr);
+				(void) SEGOP_INCORE(seg, saddr, naddr - saddr,
+				    parr);
 
 				for (pagenum = 0; pagenum < npages; pagenum++) {
 					if (parr[pagenum] & SEG_PAGE_INCORE)

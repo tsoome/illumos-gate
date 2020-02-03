@@ -2048,7 +2048,7 @@ retry:
 	clwp->lwp_eosys = NORMALRETURN;
 	ct = lwptot(clwp);
 	ct->t_clfuncs = t->t_clfuncs;
-	CL_FORK(t, ct, bufp);
+	(void) CL_FORK(t, ct, bufp);
 	ct->t_cid = t->t_cid;
 	ct->t_proc_flag |= TP_PRSTOP;
 	/*
