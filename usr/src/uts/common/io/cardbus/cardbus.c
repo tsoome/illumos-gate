@@ -423,7 +423,7 @@ cardbus_attach(dev_info_t *dip, cb_nexus_cb_t *nex_ops)
 		cmn_err(CE_WARN,
 		    "%s%d: cardbus instance already initialized!\n",
 		    ddi_driver_name(dip), ddi_get_instance(dip));
-			mutex_exit(&cardbus_list_mutex);
+		mutex_exit(&cardbus_list_mutex);
 		return (DDI_FAILURE);
 	}
 

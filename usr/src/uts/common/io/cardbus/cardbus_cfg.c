@@ -28,8 +28,6 @@
  * From "@(#)pcicfg.c   1.31    99/06/18 SMI"
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Cardbus configurator
  */
@@ -350,7 +348,7 @@ cardbus_configure(cbus_t *cbp)
 	 */
 	if (ndi_devi_set_nodename(attach_point,
 	    "hp_attachment", 0) != NDI_SUCCESS) {
-	    cardbus_err(cbp->cb_dip, 1,
+		cardbus_err(cbp->cb_dip, 1,
 		    "Failed to set nodename for attachment node\n");
 		(void) ndi_devi_free(attach_point);
 		return (PCICFG_FAILURE);
@@ -932,8 +930,7 @@ cardbus_bridge_assign(dev_info_t *dip, void *hdl)
 					    "[0x%02x]\n",
 					    pci_config_get32(handle, offset),
 						offset);
-					    pci_config_put32(handle,
-						offset + 4, 0);
+					pci_config_put32(handle, offset + 4, 0);
 					cardbus_err(dip, 8,
 					    "REGISTER (64)HI [0x%x] ----> "
 					    "[0x%02x]\n",

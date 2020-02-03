@@ -1043,7 +1043,7 @@ cardbus_open(dev_t *devp, int flags, int otyp, cred_t *credp)
 	 * Make sure the open is for the right file type.
 	 */
 	if (otyp != OTYP_CHR)
-	return (EINVAL);
+		return (EINVAL);
 
 	/*
 	 * Get the soft state structure for the 'devctl' device.
