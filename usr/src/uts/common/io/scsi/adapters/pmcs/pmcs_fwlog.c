@@ -978,29 +978,29 @@ pmcs_dump_gsm(pmcs_hw_t *pwp, caddr_t buf, uint32_t size_left)
 
 	n += snprintf(&buf[n], (size_left - n), "\nDump Ring Buffer Pointers:\n"
 	    " -----------------\n");
-		gsm_addr = RING_BUF_PTR_ACC_BASE + RING_BUF_PTR_OFF;
-		if (pmcs_shift_axil(pwp, gsm_addr) == B_TRUE) {
-			gsm_addr &= GSM_BASE_MASK;
-			ddi_rep_get32(pwp->gsm_acc_handle, local_buf,
-			    &pwp->gsm_regs[gsm_addr >> 2],
-			    RING_BUF_PTR_SIZE >> 2, DDI_DEV_AUTOINCR);
-			n += pmcs_dump_binary(pwp, local_buf, 0,
-			    RING_BUF_PTR_SIZE >> 2, &buf[n], size_left - n);
-		}
+	gsm_addr = RING_BUF_PTR_ACC_BASE + RING_BUF_PTR_OFF;
+	if (pmcs_shift_axil(pwp, gsm_addr) == B_TRUE) {
+		gsm_addr &= GSM_BASE_MASK;
+		ddi_rep_get32(pwp->gsm_acc_handle, local_buf,
+		    &pwp->gsm_regs[gsm_addr >> 2],
+		    RING_BUF_PTR_SIZE >> 2, DDI_DEV_AUTOINCR);
+		n += pmcs_dump_binary(pwp, local_buf, 0,
+		    RING_BUF_PTR_SIZE >> 2, &buf[n], size_left - n);
+	}
 	n += snprintf(&buf[n], (size_left - n), "\n-----------------\n"
 	    "Dump Ring Buffer Pointers end \n");
 
 	n += snprintf(&buf[n], (size_left - n), "\nDump Ring Buffer Access: \n"
 	    " -----------------\n");
-		gsm_addr = RING_BUF_PTR_ACC_BASE + RING_BUF_ACC_OFF;
-		if (pmcs_shift_axil(pwp, gsm_addr) == B_TRUE) {
-			gsm_addr &= GSM_BASE_MASK;
-			ddi_rep_get32(pwp->gsm_acc_handle, local_buf,
-			    &pwp->gsm_regs[gsm_addr >> 2],
-			    RING_BUF_ACC_SIZE >> 2, DDI_DEV_AUTOINCR);
-			n += pmcs_dump_binary(pwp, local_buf, 0,
-			    RING_BUF_ACC_SIZE >> 2, &buf[n], size_left - n);
-		}
+	gsm_addr = RING_BUF_PTR_ACC_BASE + RING_BUF_ACC_OFF;
+	if (pmcs_shift_axil(pwp, gsm_addr) == B_TRUE) {
+		gsm_addr &= GSM_BASE_MASK;
+		ddi_rep_get32(pwp->gsm_acc_handle, local_buf,
+		    &pwp->gsm_regs[gsm_addr >> 2],
+		    RING_BUF_ACC_SIZE >> 2, DDI_DEV_AUTOINCR);
+		n += pmcs_dump_binary(pwp, local_buf, 0,
+		    RING_BUF_ACC_SIZE >> 2, &buf[n], size_left - n);
+	}
 	n += snprintf(&buf[n], (size_left - n), "\n-----------------\n"
 	    "Dump Ring Buffer Access end \n");
 

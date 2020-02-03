@@ -32,7 +32,6 @@ UTSBASE   = ../../../../src/uts
 #
 MODULE		= pmcs
 OBJECTS		= $(PMCS_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(PMCS_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/io/scsi/adapters/pmcs
 
@@ -45,7 +44,6 @@ LDFLAGS += -dy -Nmisc/scsi
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(CONFMOD)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
@@ -68,9 +66,6 @@ CERRWARN	+= -_gcc=-Wno-unused-value
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-parentheses
 
-# needs work
-SMATCH=off
-
 #
 #	Default build targets.
 #
@@ -83,12 +78,6 @@ def:		$(DEF_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 

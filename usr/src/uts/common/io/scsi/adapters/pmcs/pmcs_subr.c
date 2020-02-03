@@ -2852,7 +2852,7 @@ pmcs_report_observations(pmcs_hw_t *pwp)
 			 * removed from our list (unconfigured).
 			 * Set our value to '0'.
 			 */
-			(void) snprintf(ap, 1, "%s", "0");
+			(void) snprintf(ap, PMCS_MAX_UA_SIZE, "%s", "0");
 		} else {
 			/* Otherwise, set it to remote phy's wwn */
 			pmcs_lock_phy(pptr);
@@ -4669,7 +4669,7 @@ pmcs_expander_content_discover(pmcs_hw_t *pwp, pmcs_phy_t *expander,
 		 * use that for the SAS Address for this device.
 		 */
 		if (expander->tolerates_sas2 && pptr->dtype == SATA &&
-		    (roff[SAS_ATTACHED_NAME_OFFSET] >> 8) == NAA_IEEE_REG) {
+		    (roff[SAS_ATTACHED_NAME_OFFSET] >> 4) == NAA_IEEE_REG) {
 			(void) memcpy(pptr->sas_address,
 			    &roff[SAS_ATTACHED_NAME_OFFSET], 8);
 		} else {
