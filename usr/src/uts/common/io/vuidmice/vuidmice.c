@@ -353,10 +353,8 @@ vuidmice_wput(queue_t *const qp, mblk_t *mp)
 			}
 
 			/* return buffer to pool ASAP */
-			if (mp->b_cont) {
-				freemsg(mp->b_cont);
-				mp->b_cont = NULL;
-			}
+			freemsg(mp->b_cont);
+			mp->b_cont = NULL;
 
 			qreply(qp, mp);
 			return (0);
