@@ -971,209 +971,223 @@ timodrproc(queue_t *q, mblk_t *mp)
 		break;
 
 		case T_INFO_ACK: {
-		struct T_info_ack *tia = (struct T_info_ack *)pptr;
+			struct T_info_ack *tia = (struct T_info_ack *)pptr;
 
-		/* Restore db_type - recover() might have changed it */
-		mp->b_datap->db_type = M_PCPROTO;
+			/* Restore db_type - recover() might have changed it */
+			mp->b_datap->db_type = M_PCPROTO;
 
-		if (blen < sizeof (*tia)) {
-			putnext(q, mp);
-			break;
-		}
-
-		tilog("timodrproc: Got T_INFO_ACK, flags = %x\n",
-		    tp->tim_flags);
-
-		timodprocessinfo(q, tp, tia);
-
-		TILOG("timodrproc: flags = %x\n", tp->tim_flags);
-		if ((tp->tim_flags & WAITIOCACK) != 0) {
-			size_t	expected_ack_size;
-			ssize_t	deficit;
-			int	ioc_cmd;
-			struct T_capability_ack *tcap;
-
-			/*
-			 * The only case when T_INFO_ACK may be received back
-			 * when we are waiting for ioctl to complete is when
-			 * this ioctl sent T_INFO_REQ down.
-			 */
-			if (!(tp->tim_flags & WAIT_IOCINFOACK)) {
+			if (blen < sizeof (*tia)) {
 				putnext(q, mp);
 				break;
 			}
-			ASSERT(tp->tim_iocsave != NULL);
 
-			iocbp = (struct iocblk *)tp->tim_iocsave->b_rptr;
-			ioc_cmd = iocbp->ioc_cmd;
+			tilog("timodrproc: Got T_INFO_ACK, flags = %x\n",
+			    tp->tim_flags);
 
-			/*
-			 * Was it sent from TI_CAPABILITY emulation?
-			 */
-			if (ioc_cmd == TI_CAPABILITY) {
-				struct T_info_ack	saved_info;
+			timodprocessinfo(q, tp, tia);
+
+			TILOG("timodrproc: flags = %x\n", tp->tim_flags);
+			if ((tp->tim_flags & WAITIOCACK) != 0) {
+				size_t	expected_ack_size;
+				ssize_t	deficit;
+				int	ioc_cmd;
+				struct T_capability_ack *tcap;
 
 				/*
-				 * Perform sanity checks. The only case when we
-				 * send T_INFO_REQ from TI_CAPABILITY is when
-				 * timod emulates T_CAPABILITY_REQ and CAP_bits1
-				 * has TC1_INFO set.
+				 * The only case when T_INFO_ACK may be
+				 * received back when we are waiting for
+				 * ioctl to complete is when
+				 * this ioctl sent T_INFO_REQ down.
 				 */
-				if ((tp->tim_flags &
-				    (TI_CAP_RECVD | CAP_WANTS_INFO)) !=
-				    (TI_CAP_RECVD | CAP_WANTS_INFO)) {
+				if (!(tp->tim_flags & WAIT_IOCINFOACK)) {
+					putnext(q, mp);
+					break;
+				}
+				ASSERT(tp->tim_iocsave != NULL);
+
+				iocbp = (struct iocblk *)
+				    tp->tim_iocsave->b_rptr;
+				ioc_cmd = iocbp->ioc_cmd;
+
+				/*
+				 * Was it sent from TI_CAPABILITY emulation?
+				 */
+				if (ioc_cmd == TI_CAPABILITY) {
+					struct T_info_ack	saved_info;
+
+					/*
+					 * Perform sanity checks. The only
+					 * case when we send T_INFO_REQ from
+					 * TI_CAPABILITY is when timod emulates
+					 * T_CAPABILITY_REQ and CAP_bits1
+					 * has TC1_INFO set.
+					 */
+					if ((tp->tim_flags &
+					    (TI_CAP_RECVD | CAP_WANTS_INFO)) !=
+					    (TI_CAP_RECVD | CAP_WANTS_INFO)) {
+						putnext(q, mp);
+						break;
+					}
+
+					TILOG("timodrproc: emulating "
+					    "TI_CAPABILITY/info\n", 0);
+
+					/*
+					 * Save info & reuse mp for
+					 * T_CAPABILITY_ACK.
+					 */
+					saved_info = *tia;
+
+					mp = tpi_ack_alloc(mp,
+					    sizeof (struct T_capability_ack),
+					    M_PCPROTO, T_CAPABILITY_ACK);
+
+					if (mp == NULL) {
+						tilog("timodrproc: realloc "
+						    "failed, no recovery "
+						    "attempted\n", 0);
+						return (1);
+					}
+
+					/*
+					 * Copy T_INFO information into
+					 * T_CAPABILITY_ACK
+					 */
+					tcap = (struct T_capability_ack *)
+					    mp->b_rptr;
+					tcap->CAP_bits1 = TC1_INFO;
+					tcap->INFO_ack = saved_info;
+					tp->tim_flags &= ~(WAITIOCACK |
+					    WAIT_IOCINFOACK | TI_CAP_RECVD |
+					    CAP_WANTS_INFO);
+					tim_ioctl_send_reply(q,
+					    tp->tim_iocsave, mp);
+					tp->tim_iocsave = NULL;
+					tp->tim_saved_prim = -1;
+					break;
+				}
+
+				/*
+				 * The code for TI_SYNC/TI_GETINFO is left here
+				 * only for backward compatibility with
+				 * staticaly linked old applications.
+				 * New TLI/XTI code should use TI_CAPABILITY
+				 * for getting transport info and should
+				 * not use TI_GETINFO/TI_SYNC for this purpose.
+				 */
+
+				/*
+				 * make sure the message sent back is the size
+				 * of the "expected ack"
+				 * For TI_GETINFO, expected ack size is
+				 *	sizeof (T_info_ack)
+				 * For TI_SYNC, expected ack size is
+				 *	sizeof (struct ti_sync_ack);
+				 */
+				if (ioc_cmd != TI_GETINFO &&
+				    ioc_cmd != TI_SYNC) {
 					putnext(q, mp);
 					break;
 				}
 
-				TILOG("timodrproc: emulating TI_CAPABILITY/"
-				    "info\n", 0);
-
-				/* Save info & reuse mp for T_CAPABILITY_ACK */
-				saved_info = *tia;
-
-				mp = tpi_ack_alloc(mp,
-				    sizeof (struct T_capability_ack),
-				    M_PCPROTO, T_CAPABILITY_ACK);
-
-				if (mp == NULL) {
-					tilog("timodrproc: realloc failed, "
-					    "no recovery attempted\n", 0);
-					return (1);
+				expected_ack_size =
+				    sizeof (struct T_info_ack); /* TI_GETINFO */
+				if (iocbp->ioc_cmd == TI_SYNC) {
+					expected_ack_size = 2 *
+					    sizeof (uint32_t) +
+					    sizeof (struct ti_sync_ack);
 				}
+				deficit = expected_ack_size - blen;
 
+				if (deficit != 0) {
+					if (mp->b_datap->db_lim - mp->b_wptr <
+					    deficit) {
+						mblk_t *tmp;
+
+						tmp = allocb(expected_ack_size,
+						    BPRI_HI);
+						if (tmp == NULL) {
+							ASSERT(MBLKSIZE(mp) >=
+							    sizeof (struct T_error_ack));
+
+							tilog("timodrproc: allocb failed no recovery attempt\n", 0);
+
+							mp->b_rptr = mp->b_datap->db_base;
+							pptr = (union T_primitives *)mp->b_rptr;
+							pptr->error_ack.ERROR_prim = T_INFO_REQ;
+							pptr->error_ack.TLI_error = TSYSERR;
+							pptr->error_ack.UNIX_error = EAGAIN;
+							pptr->error_ack.PRIM_type = T_ERROR_ACK;
+							mp->b_datap->db_type = M_PCPROTO;
+							tim_send_ioc_error_ack(q, tp, mp);
+							break;
+						} else {
+							bcopy(mp->b_rptr, tmp->b_rptr, blen);
+							tmp->b_wptr += blen;
+							pptr = (union T_primitives *)tmp->b_rptr;
+							freemsg(mp);
+							mp = tmp;
+						}
+					}
+				}
 				/*
-				 * Copy T_INFO information into T_CAPABILITY_ACK
+				 * We now have "mp" which has enough space for
+				 * an appropriate ack and contains struct
+				 * T_info_ack that the transport provider
+				 * returned. We now stuff it with more stuff
+				 * to fullfill TI_SYNC ioctl needs, as necessary
 				 */
-				tcap = (struct T_capability_ack *)mp->b_rptr;
-				tcap->CAP_bits1 = TC1_INFO;
-				tcap->INFO_ack = saved_info;
-				tp->tim_flags &= ~(WAITIOCACK |
-				    WAIT_IOCINFOACK | TI_CAP_RECVD |
-				    CAP_WANTS_INFO);
+				if (iocbp->ioc_cmd == TI_SYNC) {
+					/*
+					 * Assumes struct T_info_ack is first
+					 * embedded type in struct ti_sync_ack
+					 * so it is automatically there.
+					 */
+					struct ti_sync_ack *tsap =
+					    (struct ti_sync_ack *)mp->b_rptr;
+
+					/*
+					 * tsap->tsa_qlen needs to be set only
+					 * if TSRF_QLEN_REQ flag is set, but for
+					 * compatibility with statically linked
+					 * applications it is set here
+					 * regardless of the flag since old
+					 * XTI library expected it to be set.
+					 */
+					tsap->tsa_qlen = tp->tim_backlog;
+					/* intialize clear */
+					tsap->tsa_flags = 0x0;
+					if (tp->tim_flags & PEEK_RDQ_EXPIND) {
+						/*
+						 * Request to peek for EXPIND in
+						 * rcvbuf.
+						 */
+						if (ti_expind_on_rdqueues(q)) {
+							/*
+							 * Expedited data is
+							 * queued on the stream
+							 * read side
+							 */
+							tsap->tsa_flags |=
+							    TSAF_EXP_QUEUED;
+						}
+						tp->tim_flags &=
+						    ~PEEK_RDQ_EXPIND;
+					}
+					mp->b_wptr += 2*sizeof (uint32_t);
+				}
 				tim_ioctl_send_reply(q, tp->tim_iocsave, mp);
 				tp->tim_iocsave = NULL;
 				tp->tim_saved_prim = -1;
+				tp->tim_flags &=
+				    ~(WAITIOCACK | WAIT_IOCINFOACK |
+				    TI_CAP_RECVD | CAP_WANTS_INFO);
 				break;
 			}
 
-			/*
-			 * The code for TI_SYNC/TI_GETINFO is left here only for
-			 * backward compatibility with staticaly linked old
-			 * applications. New TLI/XTI code should use
-			 * TI_CAPABILITY for getting transport info and should
-			 * not use TI_GETINFO/TI_SYNC for this purpose.
-			 */
-
-			/*
-			 * make sure the message sent back is the size of
-			 * the "expected ack"
-			 * For TI_GETINFO, expected ack size is
-			 *	sizeof (T_info_ack)
-			 * For TI_SYNC, expected ack size is
-			 *	sizeof (struct ti_sync_ack);
-			 */
-			if (ioc_cmd != TI_GETINFO && ioc_cmd != TI_SYNC) {
-				putnext(q, mp);
-				break;
-			}
-
-			expected_ack_size =
-			    sizeof (struct T_info_ack); /* TI_GETINFO */
-			if (iocbp->ioc_cmd == TI_SYNC) {
-				expected_ack_size = 2 * sizeof (uint32_t) +
-				    sizeof (struct ti_sync_ack);
-			}
-			deficit = expected_ack_size - blen;
-
-			if (deficit != 0) {
-				if (mp->b_datap->db_lim - mp->b_wptr <
-				    deficit) {
-					mblk_t *tmp = allocb(expected_ack_size,
-					    BPRI_HI);
-					if (tmp == NULL) {
-						ASSERT(MBLKSIZE(mp) >=
-						    sizeof (struct T_error_ack));
-
-						tilog("timodrproc: allocb failed no "
-						    "recovery attempt\n", 0);
-
-						mp->b_rptr = mp->b_datap->db_base;
-						pptr = (union T_primitives *)
-						    mp->b_rptr;
-						pptr->error_ack.ERROR_prim = T_INFO_REQ;
-						pptr->error_ack.TLI_error = TSYSERR;
-						pptr->error_ack.UNIX_error = EAGAIN;
-						pptr->error_ack.PRIM_type = T_ERROR_ACK;
-						mp->b_datap->db_type = M_PCPROTO;
-						tim_send_ioc_error_ack(q, tp, mp);
-						break;
-					} else {
-						bcopy(mp->b_rptr, tmp->b_rptr, blen);
-						tmp->b_wptr += blen;
-						pptr = (union T_primitives *)
-						    tmp->b_rptr;
-						freemsg(mp);
-						mp = tmp;
-					}
-				}
-			}
-			/*
-			 * We now have "mp" which has enough space for an
-			 * appropriate ack and contains struct T_info_ack
-			 * that the transport provider returned. We now
-			 * stuff it with more stuff to fullfill
-			 * TI_SYNC ioctl needs, as necessary
-			 */
-			if (iocbp->ioc_cmd == TI_SYNC) {
-				/*
-				 * Assumes struct T_info_ack is first embedded
-				 * type in struct ti_sync_ack so it is
-				 * automatically there.
-				 */
-				struct ti_sync_ack *tsap =
-				    (struct ti_sync_ack *)mp->b_rptr;
-
-				/*
-				 * tsap->tsa_qlen needs to be set only if
-				 * TSRF_QLEN_REQ flag is set, but for
-				 * compatibility with statically linked
-				 * applications it is set here regardless of the
-				 * flag since old XTI library expected it to be
-				 * set.
-				 */
-				tsap->tsa_qlen = tp->tim_backlog;
-				tsap->tsa_flags = 0x0; /* intialize clear */
-				if (tp->tim_flags & PEEK_RDQ_EXPIND) {
-					/*
-					 * Request to peek for EXPIND in
-					 * rcvbuf.
-					 */
-					if (ti_expind_on_rdqueues(q)) {
-						/*
-						 * Expedited data is
-						 * queued on the stream
-						 * read side
-						 */
-						tsap->tsa_flags |=
-						    TSAF_EXP_QUEUED;
-					}
-					tp->tim_flags &=
-					    ~PEEK_RDQ_EXPIND;
-				}
-				mp->b_wptr += 2*sizeof (uint32_t);
-			}
-			tim_ioctl_send_reply(q, tp->tim_iocsave, mp);
-			tp->tim_iocsave = NULL;
-			tp->tim_saved_prim = -1;
-			tp->tim_flags &= ~(WAITIOCACK | WAIT_IOCINFOACK |
-			    TI_CAP_RECVD | CAP_WANTS_INFO);
+			putnext(q, mp);
 			break;
 		}
-	    }
-
-	    putnext(q, mp);
-	    break;
 
 	    case T_ADDR_ACK:
 		tilog("timodrproc: Got T_ADDR_ACK\n", 0);
@@ -1313,8 +1327,8 @@ timodrproc(queue_t *q, mblk_t *mp)
 			tim_send_reply(q, mp, tp, T_CAPABILITY_REQ);
 		}
 		break;
-	    }
-	    break;
+		}
+		break;
 
 	case M_FLUSH:
 
@@ -1966,7 +1980,7 @@ getname:
 			}
 			if (auditing)
 				audit_sock(T_UNITDATA_REQ, q, mp, TIMOD_ID);
-		if (!bcanputnext(q, mp->b_band)) {
+			if (!bcanputnext(q, mp->b_band)) {
 				(void) putbq(q, mp);
 				return (1);
 			}
@@ -2020,8 +2034,8 @@ getname:
 				tp->tim_flags |= CONNWAIT;
 			if (auditing)
 				audit_sock(T_CONN_REQ, q, mp, TIMOD_ID);
-		putnext(q, mp);
-		break;
+			putnext(q, mp);
+			break;
 		}
 
 		case O_T_CONN_RES:
