@@ -347,6 +347,8 @@ ctfs_statvfs(vfs_t *vfsp, statvfs64_t *sp)
 	sp->f_frsize = DEV_BSIZE;
 	for (i = 0, total = 0; i < ct_ntypes; i++)
 		total += contract_type_count(ct_types[i]);
+	if (total < 0)
+		total = 0;
 	sp->f_files = total;
 	sp->f_favail = sp->f_ffree = INT_MAX - total;
 	(void) cmpldev(&d32, vfsp->vfs_dev);
