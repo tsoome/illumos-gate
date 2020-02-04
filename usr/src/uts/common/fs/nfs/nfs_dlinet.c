@@ -2114,10 +2114,10 @@ myxdr_rmtcall_args(XDR *xdrs, struct rmtcallargs *cap)
 			return (FALSE);
 		position = XDR_GETPOS(xdrs);
 		cap->arglen = (uint_t)position - (uint_t)argposition;
-		XDR_SETPOS(xdrs, lenposition);
+		(void) XDR_SETPOS(xdrs, lenposition);
 		if (!xdr_u_int(xdrs, &cap->arglen))
 			return (FALSE);
-		XDR_SETPOS(xdrs, position);
+		(void) XDR_SETPOS(xdrs, position);
 		return (TRUE);
 	}
 	return (FALSE);
