@@ -869,7 +869,7 @@ extern	void	sbupdate(struct vfs *);
 extern	int	ufs_ialloc(struct inode *, ino_t, mode_t, struct inode **,
     cred_t *);
 extern	void	ufs_ifree(struct inode *, ino_t, mode_t);
-extern	void	free(struct inode *, daddr_t, off_t, int);
+extern	void	ufs_free_blk(struct inode *, daddr_t, off_t, int);
 extern	int	alloc(struct inode *, daddr_t, int, daddr_t *, cred_t *);
 extern	int	realloccg(struct inode *, daddr_t, daddr_t, int, int,
     daddr_t *, cred_t *);

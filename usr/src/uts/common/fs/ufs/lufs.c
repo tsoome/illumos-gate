@@ -618,9 +618,9 @@ lufs_free(struct ufsvfs *ufsvfsp)
 		fno = logbtofrag(fs, ep->pbno);
 		nfno = dbtofsb(fs, ep->nbno);
 		for (j = 0; j < nfno; j += fs->fs_frag, fno += fs->fs_frag)
-			free(ip, fno, fs->fs_bsize, 0);
+			ufs_free_blk(ip, fno, fs->fs_bsize, 0);
 	}
-	free(ip, logbtofrag(fs, logbno), fs->fs_bsize, 0);
+	ufs_free_blk(ip, logbtofrag(fs, logbno), fs->fs_bsize, 0);
 	brelse(bp);
 	bp = NULL;
 
@@ -747,7 +747,7 @@ lufs_alloc(struct ufsvfs *ufsvfsp, struct fiolog *flp, size_t minb, cred_t *cr)
 			nep = ep + 1;
 			if ((caddr_t)(nep + 1) >
 			    (bp->b_un.b_addr + fs->fs_bsize)) {
-				free(ip, fno, fs->fs_bsize, 0);
+				ufs_free_blk(ip, fno, fs->fs_bsize, 0);
 				break;
 			}
 			nep->lbno = ep->lbno + ep->nbno;
@@ -834,10 +834,8 @@ errout:
 		fs->fs_logbno = logbno;
 		(void) lufs_free(ufsvfsp);
 	}
-	if (ip) {
-		rw_exit(&ip->i_contents);
-		ufs_free_inode(ip);
-	}
+	rw_exit(&ip->i_contents);
+	ufs_free_inode(ip);
 	return (error);
 }
 

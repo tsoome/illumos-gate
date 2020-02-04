@@ -432,7 +432,8 @@ bmap_write(struct inode	*ip, u_offset_t	off, int size,
 			}
 
 			if (nb != ob) {
-				(void) free(ip, ob, (off_t)osize, metaflag);
+				(void) ufs_free_blk(ip, ob, (off_t)osize,
+				    metaflag);
 			}
 		}
 	}
@@ -533,10 +534,10 @@ bmap_write(struct inode	*ip, u_offset_t	off, int size,
 				    (uint_t)nsize, S_OTHER, &fbp);
 				if (err) {
 					if (nb != ob) {
-						(void) free(ip, nb,
+						(void) ufs_free_blk(ip, nb,
 						    (off_t)nsize, metaflag);
 					} else {
-						(void) free(ip,
+						(void) ufs_free_blk(ip,
 						    ob + numfrags(fs, osize),
 						    (off_t)(nsize - osize),
 						    metaflag);
@@ -576,7 +577,8 @@ bmap_write(struct inode	*ip, u_offset_t	off, int size,
 			}
 
 			if (nb != ob)
-				(void) free(ip, ob, (off_t)osize, metaflag);
+				(void) ufs_free_blk(ip, ob, (off_t)osize,
+				    metaflag);
 		}
 gotit:
 		return (0);
@@ -1163,8 +1165,8 @@ ufs_undo_allocation(
 
 	if (!error_updating_pointers) {
 		for (i = 0; i < block_count; i++) {
-			free(ip, table[i].this_block, table[i].block_size,
-			    table[i].usage_flags);
+			ufs_free_blk(ip, table[i].this_block,
+			    table[i].block_size, table[i].usage_flags);
 		}
 	}
 }

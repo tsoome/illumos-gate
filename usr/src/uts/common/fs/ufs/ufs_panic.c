@@ -779,7 +779,7 @@ real_panic_v(ufs_failure_t *f, const char *fmt, va_list adx)
 	if (!f && fmt)
 		vcmn_err(seriousness, fmt, adx);
 	else
-		cmn_err(seriousness, f && f->uf_panic_str? f->uf_panic_str:
+		cmn_err(seriousness, f && *f->uf_panic_str? f->uf_panic_str:
 		    "real_panic: <unknown panic?>");
 
 	if (f) {
@@ -1154,7 +1154,7 @@ rescan_q:
 		}
 
 		if (s->ud_sfp)
-			(*s->ud_sfp)(f, UFA_FOUND, f->uf_s);
+			(void) (*s->ud_sfp)(f, UFA_FOUND, f->uf_s);
 
 		ASSERT(terminal_state(f->uf_s) || f->uf_retry != 0);
 
@@ -2359,12 +2359,13 @@ fs_name(ufs_failure_t *f)
 	}
 
 	if (MUTEX_HELD(f->uf_vfs_lockp)) {
-		if (f->uf_bp != f->uf_ufsvfsp->vfs_bufp) {
+		if (f->uf_ufsvfsp && f->uf_bp != f->uf_ufsvfsp->vfs_bufp) {
 			HIDEOUS((": vfs_bufp mutated from 0x%p to 0x%p\n",
 			    (void *)f->uf_bp, (void *)f->uf_ufsvfsp->vfs_bufp));
 			return ((char *)mutated_vfs_bufp);
 		}
-		if (f->uf_fs != f->uf_ufsvfsp->vfs_fs) {
+		if (f->uf_ufsvfsp && f->uf_bp &&
+		    f->uf_fs != f->uf_ufsvfsp->vfs_fs) {
 			HIDEOUS((": vfs_bufp mutated from 0x%p to 0x%p\n",
 			    (void *)f->uf_fs, (void *)f->uf_ufsvfsp->vfs_fs));
 			return ((char *)mutated_vfs_fs);

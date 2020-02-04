@@ -272,12 +272,10 @@ ufs_trans_push_inode(ufsvfs_t *ufsvfsp, delta_t dtyp, ino_t ino)
 	 * unmounted).
 	 */
 	if (ufsvfsp)
-		rw_enter(&ufsvfsp->vfs_dqrwlock, RW_READER);
-
+		return (ENOENT);
+	rw_enter(&ufsvfsp->vfs_dqrwlock, RW_READER);
 	error = ufs_iget(ufsvfsp->vfs_vfs, ino, &ip, kcred);
-
-	if (ufsvfsp)
-		rw_exit(&ufsvfsp->vfs_dqrwlock);
+	rw_exit(&ufsvfsp->vfs_dqrwlock);
 	if (error)
 		return (ENOENT);
 

@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/sysmacros.h>
@@ -184,7 +182,7 @@ ufs_rdwr_data(
 
 		if ((flags & B_ASYNC) == 0) {
 			error = biowait(bp);
-			fdb_iodone(bp);
+			(void) fdb_iodone(bp);
 		}
 
 		DEBUGF((CE_CONT, "?loop ufs_rdwr_data.. off %llx len %lx\n",
@@ -371,7 +369,7 @@ ufs_alloc_data(
 
 					if ((flags & B_ASYNC) == 0) {
 						error = biowait(bp);
-						fdb_iodone(bp);
+						(void) fdb_iodone(bp);
 						if (error) {
 							break;
 						}
@@ -443,7 +441,7 @@ ufs_alloc_data(
 
 					if ((flags & B_ASYNC) == 0) {
 						error = biowait(bp);
-						fdb_iodone(bp);
+						(void) fdb_iodone(bp);
 						if (error) {
 							break;
 						}

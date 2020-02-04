@@ -36,9 +36,6 @@
  * contributors.
  */
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Quota system calls.
  */
@@ -107,8 +104,7 @@ quotactl(struct vnode *vp, intptr_t arg, int flag, struct cred *cr)
 	}
 #endif /* _SYSCALL32_IMPL */
 
-	if (quot.uid < 0)
-		quot.uid = crgetruid(cr);
+	quot.uid = crgetruid(cr);
 	if (quot.op == Q_SYNC && vp == NULL) {
 		ufsvfsp = NULL;
 	} else if (quot.op != Q_ALLSYNC) {

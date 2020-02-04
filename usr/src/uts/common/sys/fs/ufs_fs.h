@@ -39,8 +39,6 @@
 #ifndef	_SYS_FS_UFS_FS_H
 #define	_SYS_FS_UFS_FS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/isa_defs.h>
 #include <sys/types32.h>
 #include <sys/t_lock.h>		/* for kmutex_t */
@@ -124,8 +122,8 @@ extern "C" {
 #define	UFS_MAXOFFSET_T	MAXOFF_T
 #define	UFS_FILESIZE_BITS	32
 #else
-#define	UFS_MAXOFFSET_T	((1LL << NBBY * sizeof (daddr32_t) + DEV_BSHIFT - 1) \
-							- 1)
+#define	UFS_MAXOFFSET_T	\
+	((1LL << (NBBY * sizeof (daddr32_t) + DEV_BSHIFT - 1)) - 1)
 #define	UFS_FILESIZE_BITS	41
 #endif /* _LONGLONG_TYPE */
 

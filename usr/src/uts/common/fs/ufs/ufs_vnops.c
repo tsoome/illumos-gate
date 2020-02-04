@@ -1302,7 +1302,7 @@ rdip(struct inode *ip, struct uio *uio, int ioflag, cred_t *cr)
 		return (EIO);
 	}
 
-	if (uio->uio_loffset > UFS_MAXOFFSET_T) {
+	if (uio->uio_loffset < 0) {
 		error = 0;
 		goto out;
 	}
@@ -4008,7 +4008,7 @@ ufs_symlink(struct vnode *dvp, char *linkname, struct vattr *vap, char *target,
 		return (EINVAL);
 
 again:
-	ip = (struct inode *)NULL;
+	ip = NULL;
 	vap->va_type = VLNK;
 	vap->va_rdev = 0;
 
@@ -4129,7 +4129,7 @@ again:
 	 */
 
 remove:
-	if (error && (ip != NULL)) {
+	if (error) {
 		rw_enter(&ip->i_contents, RW_WRITER);
 		ip->i_nlink--;
 		ip->i_flag |= ICHG;
@@ -4307,7 +4307,7 @@ ufs_rwunlock(struct vnode *vp, int write_lock, caller_context_t *ctp)
 static int
 ufs_seek(struct vnode *vp, offset_t ooff, offset_t *noffp, caller_context_t *ct)
 {
-	return ((*noffp < 0 || *noffp > MAXOFFSET_T) ? EINVAL : 0);
+	return (*noffp < 0 ? EINVAL : 0);
 }
 
 /* ARGSUSED */
@@ -6021,18 +6021,24 @@ ufs_dump(vnode_t *vp, caddr_t addr, offset_t ldbn, offset_t dblks,
     caller_context_t *ct)
 {
 	u_offset_t	file_size;
-	struct inode    *ip = VTOI(vp);
-	struct fs	*fs = ip->i_fs;
+	struct inode    *ip;
+	struct fs	*fs;
 	daddr_t		dbn, lfsbn;
-	int		disk_blks = fs->fs_bsize >> DEV_BSHIFT;
-	int		error = 0;
+	int		disk_blks;
+	int		error;
 	int		ndbs, nfsbs;
 
 	/*
 	 * forced unmount case
 	 */
+	ip = VTOI(vp);
 	if (ip->i_ufsvfs == NULL)
 		return (EIO);
+
+	fs = ip->i_fs;
+	disk_blks = fs->fs_bsize >> DEV_BSHIFT;
+	error = 0;
+
 	/*
 	 * Validate the inode that it has not been modified since
 	 * the dump structure is allocated.
@@ -6226,8 +6232,10 @@ ufs_dumpctl(vnode_t *vp, int action, offset_t *blkp, caller_context_t *ct)
 		 * is equivalent to:  (index * fs_bsize) / DEV_BSIZE
 		 */
 		if (n == ncontig) {
-			i = (dblk - dump_info->dblk) - ncontig;
-			*blkp = i << (fs->fs_bshift - DEV_BSHIFT);
+			offset_t index;
+
+			index = (dblk - dump_info->dblk) - ncontig;
+			*blkp = index << (fs->fs_bshift - DEV_BSHIFT);
 		} else
 			return (EFAULT);
 	}

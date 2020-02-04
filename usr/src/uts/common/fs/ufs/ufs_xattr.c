@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/t_lock.h>
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -98,7 +96,7 @@ ufs_xattr_getattrdir(
 			error = ufs_xattrmkdir(ip, sip, 1, cr);
 		} else {
 			error = ENOENT;
-				goto out;
+			goto out;
 		}
 
 	} else if (flags & CREATE_XATTR_DIR) {

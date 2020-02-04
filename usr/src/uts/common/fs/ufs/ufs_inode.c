@@ -1124,9 +1124,11 @@ indirtrunc(struct inode *ip, daddr_t bn, daddr_t lastbn, int level, int flags)
 		if (level > SINGLE) {
 			blocksreleased +=
 			    indirtrunc(ip, nb, (daddr_t)-1, level - 1, flags);
-			free(ip, nb, (off_t)fs->fs_bsize, flags | I_IBLK);
-		} else
-			free(ip, nb, (off_t)fs->fs_bsize, flags);
+			ufs_free_blk(ip, nb, (off_t)fs->fs_bsize,
+			    flags | I_IBLK);
+		} else {
+			ufs_free_blk(ip, nb, (off_t)fs->fs_bsize, flags);
+		}
 		blocksreleased += nblocks;
 	}
 	flags &= ~I_CHEAP;
@@ -1426,7 +1428,7 @@ ufs_itrunc(struct inode *oip, u_offset_t length, int flags, cred_t *cr)
 			    indirtrunc(ip, bn, lastiblock[level], level, flags);
 			if (lastiblock[level] < 0) {
 				ip->i_ib[level] = 0;
-				free(ip, bn, (off_t)fs->fs_bsize,
+				ufs_free_blk(ip, bn, (off_t)fs->fs_bsize,
 				    flags | I_IBLK);
 				blocksreleased += nblocks;
 			}
@@ -1444,7 +1446,7 @@ ufs_itrunc(struct inode *oip, u_offset_t length, int flags, cred_t *cr)
 			continue;
 		ip->i_db[i] = 0;
 		bsize = (off_t)blksize(fs, ip, i);
-		free(ip, bn, bsize, flags);
+		ufs_free_blk(ip, bn, bsize, flags);
 		blocksreleased += btodb(bsize);
 	}
 	if (lastblock < 0)
@@ -1476,7 +1478,7 @@ ufs_itrunc(struct inode *oip, u_offset_t length, int flags, cred_t *cr)
 			 * required for the storage we're keeping.
 			 */
 			bn += numfrags(fs, newspace);
-			free(ip, bn, oldspace - newspace, flags);
+			ufs_free_blk(ip, bn, oldspace - newspace, flags);
 			blocksreleased += btodb(oldspace - newspace);
 		}
 	}

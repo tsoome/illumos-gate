@@ -248,7 +248,7 @@ realloccg(struct inode *ip, daddr_t bprev, daddr_t bpref, int osize,
 	if (bno > 0) {
 		*bnp = bno;
 		if (nsize < request)
-			(void) free(ip, bno + numfrags(fs, nsize),
+			(void) ufs_free_blk(ip, bno + numfrags(fs, nsize),
 			    (off_t)(request - nsize), I_NOCANCEL);
 		return (0);
 	}
@@ -620,7 +620,7 @@ blkpref(struct inode *ip, daddr_t lbn, int indx, daddr32_t *bap)
  * block reassembly is checked.
  */
 void
-free(struct inode *ip, daddr_t bno, off_t size, int flags)
+ufs_free_blk(struct inode *ip, daddr_t bno, off_t size, int flags)
 {
 	struct fs *fs = ip->i_fs;
 	struct ufsvfs *ufsvfsp = ip->i_ufsvfs;
@@ -1815,7 +1815,7 @@ exit:
 			 * re-allocated).
 			 */
 			if (db_undo[i] != ip->i_db[i] && db_undo[i] == 0) {
-				free(ip, ip->i_db[i], fs->fs_bsize, 0);
+				ufs_free_blk(ip, ip->i_db[i], fs->fs_bsize, 0);
 				ip->i_db[i] = 0;
 			}
 		}
@@ -1828,7 +1828,7 @@ exit:
 				cmn_err(CE_PANIC, "ufs_allocsp(): failed to "
 				    "undo allocation of block %ld",
 				    undo->offset);
-			free(ip, undo->blk, fs->fs_bsize, I_IBLK);
+			ufs_free_blk(ip, undo->blk, fs->fs_bsize, I_IBLK);
 			ib_undo = undo->next;
 			kmem_free(undo, sizeof (struct allocsp_undo));
 		}

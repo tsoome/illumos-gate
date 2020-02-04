@@ -192,16 +192,13 @@ errout:
 	/*
 	 * free the file struct and fd
 	 */
-	if (fpio) {
-		setf(STRUCT_FGET(fio, fio_fd), NULL);
-		unfalloc(fpio);
-	}
+	setf(STRUCT_FGET(fio, fio_fd), NULL);
+	unfalloc(fpio);
 
 	/*
 	 * release the hold on the inode
 	 */
-	if (ipio)
-		VN_RELE(ITOV(ipio));
+	VN_RELE(ITOV(ipio));
 	return (error);
 }
 

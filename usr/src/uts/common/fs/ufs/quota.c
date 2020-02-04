@@ -427,16 +427,11 @@ dqupdate(dqp)
 		 * quota routines to get called) are the same inode.
 		 */
 		rw_enter(&qip->i_contents, RW_WRITER);
-		/*
-		 * refuse to push if offset would be illegal
-		 */
-		if (dqoff(dqp->dq_uid) >= 0) {
-			(void) ufs_rdwri(UIO_WRITE, FWRITE, qip,
-					(caddr_t)&dqp->dq_dqb,
-					sizeof (struct dqblk),
-					dqoff(dqp->dq_uid), UIO_SYSSPACE,
-					(int *)NULL, kcred);
-		}
+		(void) ufs_rdwri(UIO_WRITE, FWRITE, qip,
+				(caddr_t)&dqp->dq_dqb,
+				sizeof (struct dqblk),
+				dqoff(dqp->dq_uid), UIO_SYSSPACE,
+				(int *)NULL, kcred);
 		rw_exit(&qip->i_contents);
 	}
 
