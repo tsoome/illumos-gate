@@ -1215,9 +1215,9 @@ pcihp_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 						    pci_dev,
 						    HPC_EVENT_SLOT_BLUE_LED_ON);
 						delay(pcihp_cpci_led_blink);
-					pcihp_hs_csr_op(pcihp_p,
-					    pci_dev,
-					    HPC_EVENT_SLOT_BLUE_LED_OFF);
+						pcihp_hs_csr_op(pcihp_p,
+						    pci_dev,
+						    HPC_EVENT_SLOT_BLUE_LED_OFF);
 						delay(pcihp_cpci_led_blink);
 					}
 					rv = 0;
@@ -2499,7 +2499,7 @@ pcihp_event_handler(caddr_t slot_arg, uint_t event_mask)
 			ctrl.dip = NULL;
 			ctrl.pci_dev = pci_dev;
 			ctrl.op = PCIHP_ONLINE;
-				(void) pcihp_get_board_type(slotinfop);
+			(void) pcihp_get_board_type(slotinfop);
 
 			ndi_devi_enter(pcihp_p->dip, &circular_count);
 			ddi_walk_devs(ddi_get_child(pcihp_p->dip),
@@ -2614,18 +2614,23 @@ pcihp_event_handler(caddr_t slot_arg, uint_t event_mask)
 				if (pcicfg_unconfigure(pcihp_p->dip, pci_dev,
 				    PCICFG_ALL_FUNC, 0) == PCICFG_SUCCESS) {
 
-				/* Resources freed. Turn LED on. Clear EXT. */
-				if (slotinfop->slot_type & HPC_SLOT_TYPE_CPCI) {
-					if (pcihp_cpci_blue_led)
+					/*
+					 * Resources freed. Turn LED on.
+					 * Clear EXT.
+					 */
+					if (slotinfop->slot_type &
+					    HPC_SLOT_TYPE_CPCI) {
+						if (pcihp_cpci_blue_led)
+							pcihp_hs_csr_op(pcihp_p,
+							    pci_dev,
+							    HPC_EVENT_SLOT_BLUE_LED_ON);
 						pcihp_hs_csr_op(pcihp_p,
 						    pci_dev,
-						    HPC_EVENT_SLOT_BLUE_LED_ON);
-					pcihp_hs_csr_op(pcihp_p, pci_dev,
-					    HPC_EVENT_SLOT_UNCONFIGURE);
-					slotinfop->hs_csr_location = 0;
-					slotinfop->slot_flags &=
-					    ~PCIHP_SLOT_DEV_NON_HOTPLUG;
-				}
+						    HPC_EVENT_SLOT_UNCONFIGURE);
+						slotinfop->hs_csr_location = 0;
+						slotinfop->slot_flags &=
+						    ~PCIHP_SLOT_DEV_NON_HOTPLUG;
+					}
 					slotinfop->ostate =
 					    AP_OSTATE_UNCONFIGURED;
 					slotinfop->condition = AP_COND_UNKNOWN;
@@ -2660,10 +2665,9 @@ pcihp_event_handler(caddr_t slot_arg, uint_t event_mask)
 					rv = HPC_ERR_FAILED;
 				}
 			}
-		}
 
 		/* +++ HOOK for RCM to report this hotplug event? +++ */
-
+		}
 		break;
 
 	case HPC_EVENT_SLOT_REMOVAL:
