@@ -890,7 +890,7 @@ hpc_slot_event_dispatcher(hpc_bus_entry_t *busp)
 		busp->bus_slot_event_list_head = eventp->next;
 		hpc_free_event_entry(eventp);
 		mutex_exit(&busp->bus_mutex);
-		func(arg, event);
+		(void) func(arg, event);
 		mutex_enter(&busp->bus_mutex);
 
 		if (busp->bus_thread_exit)
