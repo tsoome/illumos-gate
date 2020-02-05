@@ -1216,11 +1216,9 @@ door_server_dispatch(door_client_t *ct, door_node_t *dp)
 	uint_t ndesc = 0;
 	uint_t ncopied = 0;
 
-	if (ct != NULL) {
-		datap = ct->d_args.data_ptr;
-		datasize = ct->d_args.data_size;
-		ndesc = ct->d_args.desc_num;
-	}
+	datap = ct->d_args.data_ptr;
+	datasize = ct->d_args.data_size;
+	ndesc = ct->d_args.desc_num;
 
 	descsize = ndesc * sizeof (door_desc_t);
 
