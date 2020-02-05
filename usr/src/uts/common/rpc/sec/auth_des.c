@@ -138,7 +138,7 @@ authdes_create(char *servername, uint_t window, struct netbuf *syncaddr,
 	ad->ad_servernamelen = (uint_t)strlen(servername);
 	ad->ad_servername = mem_alloc(ad->ad_servernamelen + 1);
 
-	if (auth == NULL || ad == NULL || ad->ad_fullname == NULL ||
+	if (auth == NULL || ad->ad_fullname == NULL ||
 	    ad->ad_servername == NULL) {
 		cmn_err(CE_NOTE, "authdes_create: out of memory");
 		error = ENOMEM;
