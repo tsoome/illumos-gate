@@ -1257,8 +1257,6 @@ kgss_delete_sec_context_wrapped(void *private,
 			gssd_ctx_id_t *context_handle,
 			gss_buffer_t output_token,
 			OM_uint32 gssd_context_verifier)
-
-
 {
 	CLIENT *clnt;
 
@@ -1296,8 +1294,7 @@ kgss_delete_sec_context_wrapped(void *private,
 
 		if (minor_status != NULL)
 			*minor_status = DEFAULT_MINOR_STAT;
-		if (context_handle != NULL)
-			*context_handle = 0;
+		*context_handle = 0;
 		if (output_token != NULL)
 			output_token->length = 0;
 
@@ -1518,13 +1515,14 @@ const gss_buffer_t	interprocess_token;
 gss_ctx_id_t		context_handle;
 
 {
-OM_uint32 status;
-struct kgss_ctx	*kctx;
+	OM_uint32 status;
+	struct kgss_ctx	*kctx;
 
-size_t		length;
-char		*p;
-gss_buffer_desc token;
-gss_ctx_id_t	internal_ctx_id;
+	size_t		length;
+	char		*p;
+	gss_buffer_desc token;
+	gss_ctx_id_t	internal_ctx_id;
+
 	kctx = (struct kgss_ctx *)context_handle;
 
 	if (kctx->gssd_ctx != GSSD_NO_CONTEXT) {
@@ -2048,8 +2046,7 @@ kgss_display_status(minor_status,
 
 	/* call the remote procedure */
 
-	if (message_context != NULL)
-		*message_context = 0;
+	*message_context = 0;
 	if (status_string != NULL) {
 		status_string->length = 0;
 		status_string->value = NULL;
@@ -2077,8 +2074,7 @@ kgss_display_status(minor_status,
 	if (res.status == GSS_S_COMPLETE) {
 		if (minor_status != NULL)
 			*minor_status = res.minor_status;
-		if (message_context != NULL)
-			*message_context = res.message_context;
+		*message_context = res.message_context;
 		if (status_string != NULL) {
 			status_string->length =
 				(size_t)res.status_string.GSS_BUFFER_T_len;
