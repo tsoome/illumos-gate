@@ -206,10 +206,11 @@ t_krcvudata(TIUSER *tiptr, struct t_kunitdata *unitdata, int *type, int *uderr)
 				break;
 			}
 			if (bp->b_wptr != bp->b_rptr) {
-			    if (!IS_P2ALIGNED(bp->b_rptr, sizeof (uint32_t)))
+				if (!IS_P2ALIGNED(bp->b_rptr,
+				    sizeof (uint32_t)))
 					if (!pullupmsg(bp, MBLKL(bp))) {
-						KTLILOG(1,
-					"t_krcvudata:  pullupmsg failed\n", 0);
+						KTLILOG(1, "t_krcvudata: "
+						    "pullupmsg failed\n", 0);
 						error = EIO;
 						freemsg(bp);
 						break;
