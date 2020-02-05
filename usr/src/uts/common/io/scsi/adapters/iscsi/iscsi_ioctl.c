@@ -738,9 +738,8 @@ iscsi_set_param(iscsi_login_params_t *params, iscsi_param_set_t *ipsp)
 }
 
 static boolean_t
-iscsi_check_login(iscsi_hba_t *ihp)
+iscsi_check_login(char *name, iscsi_hba_t *ihp)
 {
-	char *name;
 	boolean_t rval = B_TRUE;
 	iscsi_chap_props_t *chap;
 
@@ -825,7 +824,7 @@ iscsi_set_params(iscsi_param_set_t *ils, iscsi_hba_t *ihp, boolean_t persist)
 				kmem_free(pp, sizeof (persistent_param_t));
 
 				/* check chap params */
-				if (iscsi_check_login(ihp) == B_FALSE)
+				if (iscsi_check_login(name, ihp) == B_FALSE)
 					rtn = EFAULT;
 
 				/* check authentication params */

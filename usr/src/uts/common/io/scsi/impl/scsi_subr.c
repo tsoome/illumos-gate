@@ -1184,7 +1184,7 @@ scsi_generic_errmsg(struct scsi_device *devp, char *label, int severity,
 		bzero(buf, SCSI_ERRMSG_BUF_LEN);
 		if ((fru_code != 0) &&
 		    (decode_fru != NULL)) {
-			(*decode_fru)(devp, buf, SCSI_ERRMSG_BUF_LEN,
+			(void) (*decode_fru)(devp, buf, SCSI_ERRMSG_BUF_LEN,
 			    fru_code);
 			if (buf[0] != '\0') {
 				bzero(buf1, SCSI_ERRMSG_BUF_LEN);
