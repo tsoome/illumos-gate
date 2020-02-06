@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma	ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * s1394_bus_reset.c
  *    1394 Services Layer Bus Reset Routines
@@ -886,21 +884,23 @@ s1394_match_tree_nodes(s1394_hal_t *hal)
 	while (hal->hal_queue_front != hal->hal_queue_back) {
 		tmp = (s1394_node_t *)s1394_hal_queue_remove(hal);
 
-	    /* Mark both old and new nodes as "visited" */
-	    SET_NODE_VISITED(tmp);
-	    SET_NODE_VISITED(tmp->old_node);
-	    tmp->old_node->cur_node = tmp;
+		/* Mark both old and new nodes as "visited" */
+		SET_NODE_VISITED(tmp);
+		SET_NODE_VISITED(tmp->old_node);
+		tmp->old_node->cur_node = tmp;
 
-	    /* Mark old and new nodes as "matched" */
-	    SET_NODE_MATCHED(tmp);
-	    SET_NODE_MATCHED(tmp->old_node);
-	    s1394_copy_cfgrom(tmp, tmp->old_node);
+		/* Mark old and new nodes as "matched" */
+		SET_NODE_MATCHED(tmp);
+		SET_NODE_MATCHED(tmp->old_node);
+		s1394_copy_cfgrom(tmp, tmp->old_node);
 
-	    /* s1394_copy_cfgrom() clears "matched" for some cases... */
-	    if ((tmp->cfgrom != NULL && CONFIG_ROM_GEN(tmp->cfgrom) <= 1) ||
-		NODE_MATCHED(tmp) == B_TRUE) {
-		/* Move the target list over to the new node and update */
-		/* the node info. */
+		/* s1394_copy_cfgrom() clears "matched" for some cases... */
+		if ((tmp->cfgrom != NULL && CONFIG_ROM_GEN(tmp->cfgrom) <= 1) ||
+		    NODE_MATCHED(tmp) == B_TRUE) {
+			/*
+			 * Move the target list over to the new node and
+			 * update the node info.
+			 */
 			s1394_target_t *t;
 
 			rw_enter(&hal->target_list_rwlock, RW_WRITER);

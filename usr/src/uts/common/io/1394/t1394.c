@@ -2753,8 +2753,8 @@ t1394_start_isoch_cec(t1394_handle_t t1394_hdl,
 			    member_curr->isoch_cec_evts.start_target;
 			ret = start_callback(t1394_isoch_cec_hdl,
 			    member_curr->isoch_cec_evts_arg);
-		if (ret != DDI_SUCCESS)
-			err = B_TRUE;
+			if (ret != DDI_SUCCESS)
+				err = B_TRUE;
 		}
 		member_curr = member_curr->cec_mem_prev;
 	}
