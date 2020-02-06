@@ -1924,7 +1924,7 @@ _mii_reset(mii_handle_t mh)
 		if (ph == mh->m_phy)
 			continue;
 
-		ph->phy_stop(ph);
+		(void) ph->phy_stop(ph);
 	}
 
 	ph = mh->m_phy;
