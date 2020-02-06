@@ -1994,7 +1994,8 @@ mac_set_group_state(mac_group_t *grp, mac_group_state_t state)
 
 		if (grp->mrg_type == MAC_RING_TYPE_RX &&
 		    GROUP_INTR_DISABLE_FUNC(grp) != NULL) {
-			GROUP_INTR_DISABLE_FUNC(grp)(GROUP_INTR_HANDLE(grp));
+			(void) GROUP_INTR_DISABLE_FUNC(grp)(
+			    GROUP_INTR_HANDLE(grp));
 		}
 		break;
 
@@ -2007,7 +2008,8 @@ mac_set_group_state(mac_group_t *grp, mac_group_state_t state)
 
 		if (grp->mrg_type == MAC_RING_TYPE_RX &&
 		    GROUP_INTR_ENABLE_FUNC(grp) != NULL) {
-			GROUP_INTR_ENABLE_FUNC(grp)(GROUP_INTR_HANDLE(grp));
+			(void) GROUP_INTR_ENABLE_FUNC(grp)(
+			    GROUP_INTR_HANDLE(grp));
 		}
 		/* The ring is not available for reservations any more */
 		break;
@@ -2813,7 +2815,7 @@ mac_promisc_refresh(mac_handle_t mh, mac_setpromisc_t refresh, void *arg)
 	/*
 	 * Call the refresh function with the current promiscuity.
 	 */
-	refresh(arg, (mip->mi_devpromisc != 0));
+	(void) refresh(arg, (mip->mi_devpromisc != 0));
 }
 
 /*
@@ -6726,7 +6728,8 @@ i_mac_group_allocate_rings(mac_impl_t *mip, mac_ring_type_t ring_type,
 
 	/* add group to share */
 	if (share != 0)
-		mip->mi_share_capab.ms_sadd(share, new_group->mrg_driver);
+		(void) mip->mi_share_capab.ms_sadd(share,
+		    new_group->mrg_driver);
 
 bail:
 	/* free temporary array of rings */
@@ -7128,7 +7131,7 @@ mac_release_rx_group(mac_client_impl_t *mcip, mac_group_t *group)
 
 	/* remove group from share */
 	if (mcip->mci_share != 0) {
-		mip->mi_share_capab.ms_sremove(mcip->mci_share,
+		(void) mip->mi_share_capab.ms_sremove(mcip->mci_share,
 		    group->mrg_driver);
 	}
 
@@ -7608,7 +7611,7 @@ mac_release_tx_group(mac_client_impl_t *mcip, mac_group_t *grp)
 		}
 	}
 	if (share != 0)
-		mip->mi_share_capab.ms_sremove(share, grp->mrg_driver);
+		(void) mip->mi_share_capab.ms_sremove(share, grp->mrg_driver);
 
 	/* move the ring back to the pool */
 	if (mip->mi_tx_group_type == MAC_GROUP_TYPE_DYNAMIC) {

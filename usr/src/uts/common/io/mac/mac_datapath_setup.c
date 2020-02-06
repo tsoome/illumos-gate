@@ -1852,7 +1852,8 @@ mac_srs_fanout_modify(mac_client_impl_t *mcip, mac_direct_rx_t rx_func,
 		    cpuid);
 		softring = mac_rx_srs->srs_tcp_soft_rings[i];
 		if (softring->s_ring_rx_arg2 != NULL) {
-			mcip->mci_resource_bind((void *)mcip->mci_resource_arg,
+			(void) mcip->mci_resource_bind(
+			    (void *)mcip->mci_resource_arg,
 			    softring->s_ring_rx_arg2, cpuid);
 		}
 	}

@@ -639,7 +639,7 @@ mac_bcast_refresh(mac_impl_t *mip, mac_multicst_t refresh_fn, void *arg,
 		 * refresh.
 		 */
 		next = grp->mma_next;
-		refresh_fn(arg, add, grp->mma_addr);
+		(void) refresh_fn(arg, add, grp->mma_addr);
 	}
 }
 
@@ -672,6 +672,6 @@ mac_client_bcast_refresh(mac_client_impl_t *mcip, mac_multicst_t refresh_fn,
 		 * refresh.
 		 */
 		next = grp->mma_next;
-		refresh_fn(arg, add, grp->mma_addr);
+		(void) refresh_fn(arg, add, grp->mma_addr);
 	}
 }

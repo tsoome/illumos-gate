@@ -424,7 +424,7 @@ mac_rx_ring_stat_get(void *handle, uint_t stat)
 	 * assert ring->mr_stat != NULL here.
 	 */
 	if (ring->mr_stat != NULL)
-		ring->mr_stat(ring->mr_driver, stat, &val);
+		(void) ring->mr_stat(ring->mr_driver, stat, &val);
 
 	return (val);
 }
@@ -465,7 +465,7 @@ mac_tx_ring_stat_get(void *handle, uint_t stat)
 	 * assert ring->mr_stat != NULL here.
 	 */
 	if (ring->mr_stat != NULL)
-		ring->mr_stat(ring->mr_driver, stat, &val);
+		(void) ring->mr_stat(ring->mr_driver, stat, &val);
 
 	return (val);
 }

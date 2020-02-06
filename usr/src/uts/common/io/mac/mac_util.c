@@ -241,7 +241,10 @@ mac_fix_cksum(mblk_t *mp_chain)
 				    IP_UDP_CSUM_COMP : IP_TCP_CSUM_COMP);
 				cksum = IP_CSUM(mp, IP_SIMPLE_HDR_LENGTH +
 				    offset, cksum);
-				*(up) = (uint16_t)(cksum ? cksum : ~cksum);
+				if (cksum != 0)
+					*(up) = (uint16_t)cksum;
+				else
+					*(up) = (uint16_t)~cksum;
 
 				/*
 				 * Flag the packet so that it appears
