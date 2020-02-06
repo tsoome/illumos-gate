@@ -1532,8 +1532,32 @@ ib_modify_qp_is_ok(enum ib_qp_state cur_state, enum ib_qp_state next_state,
 {
 	enum ib_qp_attr_mask req_param, opt_param;
 
-	if (cur_state  < 0 || cur_state  > IB_QPS_ERR ||
-	    next_state < 0 || next_state > IB_QPS_ERR) {
+	switch (cur_state) {
+	case IB_QPS_RESET:
+	case IB_QPS_INIT:
+	case IB_QPS_RTR:
+	case IB_QPS_RTS:
+	case IB_QPS_SQD:
+	case IB_QPS_SQE:
+	case IB_QPS_ERR:
+		break;
+	default:
+		SOL_OFS_DPRINTF_L2(sol_kverbs_dbg_str,
+		    "ib_modify_qp_is_ok: cur_state: %d, next_state: %d, "
+		    "qp_type: %d, attr_mask: 0x%x => invalid state(1)",
+		    cur_state, next_state, type, mask);
+		return (0);
+	}
+	switch (next_state) {
+	case IB_QPS_RESET:
+	case IB_QPS_INIT:
+	case IB_QPS_RTR:
+	case IB_QPS_RTS:
+	case IB_QPS_SQD:
+	case IB_QPS_SQE:
+	case IB_QPS_ERR:
+		break;
+	default:
 		SOL_OFS_DPRINTF_L2(sol_kverbs_dbg_str,
 		    "ib_modify_qp_is_ok: cur_state: %d, next_state: %d, "
 		    "qp_type: %d, attr_mask: 0x%x => invalid state(1)",

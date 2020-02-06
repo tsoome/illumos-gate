@@ -1963,9 +1963,8 @@ cma_free_listen_list(struct rdma_cm_id *idp)
 			sol_cma_release_device(
 			    (struct rdma_cm_id *)ep_chanp);
 			mutex_exit(&ep_chanp->chan_mutex);
-			if (ep_chanp->chan_listenp)
-				kmem_free(ep_chanp->chan_listenp,
-				    sizeof (sol_cma_listen_info_t));
+			kmem_free(ep_chanp->chan_listenp,
+			    sizeof (sol_cma_listen_info_t));
 
 			mutex_destroy(&ep_chanp->chan_mutex);
 			cv_destroy(&ep_chanp->chan_destroy_cv);
