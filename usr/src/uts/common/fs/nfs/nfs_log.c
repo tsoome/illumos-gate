@@ -1294,7 +1294,7 @@ create_buffer_header(caddr_t *loghdr, size_t *reclen, size_t *freesize)
 	 * Reset with final size of the encoded data
 	 */
 	final_size = xdr_getpos(&xdrs);
-	xdr_setpos(&xdrs, 0);
+	(void) xdr_setpos(&xdrs, 0);
 	(void) xdr_u_int(&xdrs, &final_size);
 
 	*reclen = (size_t)final_size;
@@ -1739,7 +1739,7 @@ nfslog_write_record(struct exportinfo *exi, struct svc_req *req,
 				 * beginning.
 				 */
 				final_size = xdr_getpos(&xdrs);
-				xdr_setpos(&xdrs, 0);
+				(void) xdr_setpos(&xdrs, 0);
 				(void) xdr_u_int(&xdrs, &final_size);
 		} else {
 			/* Oops, the encode failed so we need to free memory */

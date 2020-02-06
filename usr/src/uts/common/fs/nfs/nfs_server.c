@@ -2398,7 +2398,9 @@ checkauth4(struct compound_state *cs, struct svc_req *req)
 				    exi->exi_export.ex_anon,
 				    exi->exi_export.ex_anon);
 			(void) crsetgroups(cr, 0, NULL);
-		} if (access & NFSAUTH_GROUPS) {
+		}
+
+		if (access & NFSAUTH_GROUPS) {
 			(void) crsetgroups(cr, ngids, gids);
 		}
 

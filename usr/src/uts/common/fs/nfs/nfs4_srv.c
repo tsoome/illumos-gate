@@ -2953,8 +2953,7 @@ err_out:
 	}
 
 	if (!is_newvp) {
-		if (cs->vp)
-			VN_RELE(cs->vp);
+		VN_RELE(cs->vp);
 		cs->vp = vp;
 	} else if (oldvp)
 		VN_RELE(oldvp);

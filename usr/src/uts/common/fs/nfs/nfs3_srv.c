@@ -4245,8 +4245,6 @@ sattr3_to_vattr(sattr3 *sap, struct vattr *vap)
 		vap->va_mask |= AT_GID;
 	}
 	if (sap->size.set_it) {
-		if (sap->size.size > (size3)((u_longlong_t)-1))
-			return (EINVAL);
 		vap->va_size = sap->size.size;
 		vap->va_mask |= AT_SIZE;
 	}
