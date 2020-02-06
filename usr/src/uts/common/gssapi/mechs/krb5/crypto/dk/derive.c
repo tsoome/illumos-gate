@@ -310,12 +310,12 @@ krb5_derive_key(context, enc, inkey, outkey, in_constant)
     /* loop encrypting the blocks until enough key bytes are generated */
     n = 0;
     while (n < keybytes) {
-      ret = (*(enc->encrypt))(context, inkey, 0, &inblock, &outblock);
+	ret = (*(enc->encrypt))(context, inkey, 0, &inblock, &outblock);
 
-      if (ret) {
-	KRB5_LOG(KRB5_INFO, "krb5_derive_key() encrypt error: %d", ret);
-	goto cleanup;
-      }
+	if (ret) {
+	    KRB5_LOG(KRB5_INFO, "krb5_derive_key() encrypt error: %d", ret);
+	    goto cleanup;
+	}
 
 	if ((keybytes - n) <= outblock.length) {
 	    (void) memcpy(rawkey+n, outblock.data, (keybytes - n));

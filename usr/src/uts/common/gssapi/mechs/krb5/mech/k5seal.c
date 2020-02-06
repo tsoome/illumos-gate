@@ -256,7 +256,7 @@ make_seal_token_v1 (krb5_context context,
       cksum.length = cksum_size;
       cksum.contents = md5cksum.contents + 16 - cksum.length;
 
-     (void) memcpy(ptr+14, cksum.contents, cksum.length);
+      (void) memcpy(ptr+14, cksum.contents, cksum.length);
       break;
 
     case SGN_ALG_HMAC_SHA1_DES3_KD:
@@ -454,7 +454,7 @@ kg_seal(minor_status, context_handle, conf_req_flag, qop_req,
 	*conf_state = conf_req_flag;
 
     *minor_status = 0;
-   if (ctx->endtime < now) {
+    if (ctx->endtime < now) {
 	(void) gss_release_buffer(minor_status, output_message_buffer);
 	KRB5_LOG(KRB5_ERR, "kg_seal() end, error GSS_S_CONTEXT_EXPIRED "
 		"ctx->endtime = %d\n", ctx->endtime);

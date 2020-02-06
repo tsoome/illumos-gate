@@ -152,8 +152,8 @@ kg_unseal_v1(context, minor_status, ctx, ptr, bodysize, message_buffer,
     case SGN_ALG_HMAC_MD5:
 	cksum_len = 8;
 	if (toktype != KG_TOK_SEAL_MSG)
-	  sign_usage = 15;
-	    break;
+		sign_usage = 15;
+	break;
     case SGN_ALG_3:
 	cksum_len = 16;
 	break;
@@ -167,26 +167,24 @@ kg_unseal_v1(context, minor_status, ctx, ptr, bodysize, message_buffer,
     }
 
 #ifdef _KERNEL
-	/*
-	 * Because the ARCFOUR code bypasses the standard
-	 * crypto interfaces, we must make sure the kernel
-	 * crypto framework mechanism types are properly
-	 * initialized here.
-	 */
-	context->kef_cipher_mt = get_cipher_mech_type(context,
+    /*
+     * Because the ARCFOUR code bypasses the standard
+     * crypto interfaces, we must make sure the kernel
+     * crypto framework mechanism types are properly
+     * initialized here.
+     */
+    context->kef_cipher_mt = get_cipher_mech_type(context,
 					ctx->seq);
-	context->kef_hash_mt = get_hash_mech_type(context,
+    context->kef_hash_mt = get_hash_mech_type(context,
 					ctx->seq);
-	if ((code = init_key_kef(context->kef_cipher_mt,
-				ctx->seq))) {
-		*minor_status = code;
-		return (GSS_S_FAILURE);
-	}
-	if ((code = init_key_kef(context->kef_cipher_mt,
-			ctx->enc))) {
-		*minor_status = code;
-		return (GSS_S_FAILURE);
-	}
+    if ((code = init_key_kef(context->kef_cipher_mt, ctx->seq))) {
+	*minor_status = code;
+	return (GSS_S_FAILURE);
+    }
+    if ((code = init_key_kef(context->kef_cipher_mt, ctx->enc))) {
+	*minor_status = code;
+	return (GSS_S_FAILURE);
+    }
 #endif /* _KERNEL */
 
     /* get the token parameters */

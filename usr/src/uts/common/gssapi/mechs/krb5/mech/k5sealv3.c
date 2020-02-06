@@ -523,15 +523,15 @@ gss_krb5int_unseal_token_v3(krb5_context *contextptr,
 	    (void) memcpy(message_buffer->value,
 		plain.data, message_buffer->length);
 
-		/*
-		 * Solaris Kerberos: Restore the original token.
-		 * This allows the token to be detected as a duplicate if it
-		 * is passed in to gss_unwrap() again.
-		 */
-		if (!rotate_left(ptr, bodysize-ec, bodysize - ec - 16))
-			goto no_mem;
-		store_16_be(ec, ptr+4);
-		store_16_be(rrc, ptr+6);
+	    /*
+	     * Solaris Kerberos: Restore the original token.
+	     * This allows the token to be detected as a duplicate if it
+	     * is passed in to gss_unwrap() again.
+	     */
+	    if (!rotate_left(ptr, bodysize-ec, bodysize - ec - 16))
+		goto no_mem;
+	    store_16_be(ec, ptr+4);
+	    store_16_be(rrc, ptr+6);
 	}
 	err = g_order_check(&ctx->seqstate, seqnum);
 	*minor_status = 0;
