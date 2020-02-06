@@ -5003,7 +5003,7 @@ arc_adjust_cb_check(void *arg, zthr_t *zthr)
 	 * accurate information is needed.
 	 */
 	if (arc_ksp != NULL)
-		arc_ksp->ks_update(arc_ksp, KSTAT_READ);
+		(void) arc_ksp->ks_update(arc_ksp, KSTAT_READ);
 
 	/*
 	 * We have to rely on arc_get_data_impl() to tell us when to adjust,

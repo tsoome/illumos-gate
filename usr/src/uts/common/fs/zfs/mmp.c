@@ -685,7 +685,7 @@ mmp_thread(void *arg)
 
 	/* Outstanding writes are allowed to complete. */
 	if (mmp->mmp_zio_root)
-		zio_wait(mmp->mmp_zio_root);
+		(void) zio_wait(mmp->mmp_zio_root);
 
 	mmp->mmp_zio_root = NULL;
 	mmp_thread_exit(mmp, &mmp->mmp_thread, &cpr);

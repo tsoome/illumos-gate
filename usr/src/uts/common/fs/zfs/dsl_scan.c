@@ -1456,7 +1456,7 @@ scan_prefetch_ctx_create(dsl_scan_t *scn, dnode_phys_t *dnp, void *tag)
 
 	spc = kmem_alloc(sizeof (scan_prefetch_ctx_t), KM_SLEEP);
 	zfs_refcount_create(&spc->spc_refcnt);
-	zfs_refcount_add(&spc->spc_refcnt, tag);
+	(void) zfs_refcount_add(&spc->spc_refcnt, tag);
 	spc->spc_scn = scn;
 	if (dnp != NULL) {
 		spc->spc_datablkszsec = dnp->dn_datablkszsec;
@@ -1474,7 +1474,7 @@ scan_prefetch_ctx_create(dsl_scan_t *scn, dnode_phys_t *dnp, void *tag)
 static void
 scan_prefetch_ctx_add_ref(scan_prefetch_ctx_t *spc, void *tag)
 {
-	zfs_refcount_add(&spc->spc_refcnt, tag);
+	(void) zfs_refcount_add(&spc->spc_refcnt, tag);
 }
 
 static boolean_t
@@ -1948,7 +1948,7 @@ dsl_scan_visitbp(blkptr_t *bp, const zbookmark_phys_t *zb,
 		goto out;
 	}
 
-	scan_funcs[scn->scn_phys.scn_func](dp, bp, zb);
+	(void) scan_funcs[scn->scn_phys.scn_func](dp, bp, zb);
 
 out:
 	kmem_free(bp_toread, sizeof (blkptr_t));
@@ -2477,7 +2477,8 @@ dsl_scan_ddt_entry(dsl_scan_t *scn, enum zio_checksum checksum,
 		ddt_bp_create(checksum, ddk, ddp, &bp);
 
 		scn->scn_visited_this_txg++;
-		scan_funcs[scn->scn_phys.scn_func](scn->scn_dp, &bp, &zb);
+		(void) scan_funcs[scn->scn_phys.scn_func](scn->scn_dp,
+		    &bp, &zb);
 	}
 }
 

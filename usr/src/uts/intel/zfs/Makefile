@@ -43,8 +43,6 @@ ARCHDIR:sh = cd ..; basename `pwd`
 #
 MODULE		= zfs
 OBJECTS		= $(ZFS_OBJS:%=$(OBJS_DIR)/%) $(LUA_OBJS:%=$(OBJS_DIR)/%)
-# LUA_OBJS are intentionally omitted from LINTS
-LINTS		= $(ZFS_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 ROOTLINK	= $(ROOT_FS_DIR)/$(MODULE)
 CONF_SRCDIR	= $(UTSBASE)/common/fs/zfs
@@ -58,7 +56,6 @@ include ../Makefile.$(ARCHDIR)
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(SRC_CONFILE)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOTLINK) $(ROOT_CONFFILE)
 
 #
@@ -76,18 +73,6 @@ INC_PATH	+= -I$(UTSBASE)/i86pc
 
 C99LMODE=	-Xc99=%all
 
-#
-# For now, disable these lint checks; maintainers should endeavor
-# to investigate and remove these for maximum lint coverage.
-# Please do not carry these forward to new Makefiles.
-#
-LINTTAGS	+= -erroff=E_SUSPICIOUS_COMPARISON
-LINTTAGS	+= -erroff=E_BAD_PTR_CAST_ALIGN
-LINTTAGS	+= -erroff=E_SUPPRESSION_DIRECTIVE_UNUSED
-LINTTAGS	+= -erroff=E_STATIC_UNUSED
-LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW
-LINTTAGS	+= -erroff=E_ASSIGN_NARROW_CONV
-
 CERRWARN	+= -_gcc=-Wno-type-limits
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= -_gcc=-Wno-parentheses
@@ -95,16 +80,23 @@ CERRWARN	+= -_gcc=-Wno-unused-variable
 CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-unused-label
 
-# needs work
-SMOFF += all_func_returns,indenting
-$(OBJS_DIR)/llex.o := SMOFF += index_overflow
-$(OBJS_DIR)/metaslab.o := SMOFF += no_if_block
-$(OBJS_DIR)/zfs_vnops.o := SMOFF += signed
-# needs work
-$(OBJS_DIR)/zvol.o := SMOFF += deref_check,signed
-
-# false positive
-$(OBJS_DIR)/zfs_ctldir.o := SMOFF += strcpy_overflow
+# lua code
+$(OBJS_DIR)/lgc.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lparser.o := SMOFF += all_func_returns
+$(OBJS_DIR)/llex.o := SMOFF += all_func_returns,index_overflow
+$(OBJS_DIR)/lcode.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lstrlib.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lbaselib.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lbitlib.o := SMOFF += all_func_returns
+$(OBJS_DIR)/ltablib.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lundump.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lfunc.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lstate.o := SMOFF += all_func_returns
+$(OBJS_DIR)/ldebug.o := SMOFF += all_func_returns,indenting
+$(OBJS_DIR)/ldo.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lauxlib.o := SMOFF += all_func_returns
+$(OBJS_DIR)/lcorolib.o := SMOFF += all_func_returns
+$(OBJS_DIR)/ltable.o := SMOFF += all_func_returns
 
 #
 #	Default build targets.
@@ -118,12 +110,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 

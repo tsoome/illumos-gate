@@ -1026,7 +1026,7 @@ zfs_write(vnode_t *vp, uio_t *uio, int ioflag, cred_t *cr, caller_context_t *ct)
 				xuio_stat_wbuf_copied();
 			} else {
 				ASSERT(xuio || tx_bytes == max_blksz);
-				dmu_assign_arcbuf_by_dbuf(
+				(void) dmu_assign_arcbuf_by_dbuf(
 				    sa_get_db(zp->z_sa_hdl), woff, abuf, tx);
 			}
 			ASSERT(tx_bytes <= uio->uio_resid);
@@ -4841,7 +4841,7 @@ zfs_seek(vnode_t *vp, offset_t ooff, offset_t *noffp,
 {
 	if (vp->v_type == VDIR)
 		return (0);
-	return ((*noffp < 0 || *noffp > MAXOFFSET_T) ? EINVAL : 0);
+	return (*noffp < 0 ? EINVAL : 0);
 }
 
 /*

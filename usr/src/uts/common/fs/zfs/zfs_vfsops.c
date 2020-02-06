@@ -813,7 +813,7 @@ zfs_userspace_one(zfsvfs_t *zfsvfs, zfs_userquota_prop_t type,
 
 	if (type == ZFS_PROP_USEROBJUSED || type == ZFS_PROP_GROUPOBJUSED ||
 	    type == ZFS_PROP_PROJECTOBJUSED) {
-		strncpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN);
+		(void) strncpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN);
 		offset = DMU_OBJACCT_PREFIX_LEN;
 	}
 
@@ -1543,7 +1543,7 @@ zfs_statfs_project(zfsvfs_t *zfsvfs, znode_t *zp, struct statvfs64 *statp,
 	uint64_t used;
 	int err;
 
-	strlcpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN + 1);
+	(void) strlcpy(buf, DMU_OBJACCT_PREFIX, DMU_OBJACCT_PREFIX_LEN + 1);
 	err = id_to_fuidstr(zfsvfs, NULL, zp->z_projid, buf + offset, B_FALSE);
 	if (err)
 		return (err);

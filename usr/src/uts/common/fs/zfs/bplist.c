@@ -69,7 +69,7 @@ bplist_iterate(bplist_t *bpl, bplist_itor_t *func, void *arg, dmu_tx_t *tx)
 		bplist_iterate_last_removed = bpe;
 		list_remove(&bpl->bpl_list, bpe);
 		mutex_exit(&bpl->bpl_lock);
-		func(arg, &bpe->bpe_blk, tx);
+		(void) func(arg, &bpe->bpe_blk, tx);
 		kmem_free(bpe, sizeof (*bpe));
 		mutex_enter(&bpl->bpl_lock);
 	}
