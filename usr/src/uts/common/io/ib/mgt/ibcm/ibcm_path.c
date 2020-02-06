@@ -833,8 +833,7 @@ path_error:
 	if (slistp)
 		ibtl_cm_free_active_plist(slistp);
 
-	if (dinfo)
-		kmem_free(dinfo, len);
+	kmem_free(dinfo, len);
 
 path_error2:
 	if ((retval != IBT_SUCCESS) && (retval != IBT_INSUFF_DATA))
@@ -877,7 +876,7 @@ path_error2:
 	len = (sizeof (ib_gid_t) * p_arg->attr.pa_num_dgids) +
 	    sizeof (ibcm_path_tqargs_t);
 
-	if (p_arg && len)
+	if (len)
 		kmem_free(p_arg, len);
 
 	IBTF_DPRINTF_L2(cmlog, "ibcm_process_get_paths: done: status %d, "
@@ -3910,8 +3909,7 @@ ippath_error3:
 	ibcm_dec_hca_acc_cnt(hcap);
 
 ippath_error2:
-	if (dinfo && len)
-		kmem_free(dinfo, len);
+	kmem_free(dinfo, len);
 
 ippath_error1:
 	if (sl)
@@ -3972,7 +3970,7 @@ ippath_error:
 		    tmp_src_ip_p);
 
 		len = p_arg->len;
-		if (p_arg && len)
+		if (len)
 			kmem_free(p_arg, len);
 	} else {
 		mutex_enter(&p_arg->ip_lock);

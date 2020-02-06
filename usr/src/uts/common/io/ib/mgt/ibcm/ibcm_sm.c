@@ -5914,17 +5914,6 @@ ibcm_verify_req_gids_and_svcid(ibcm_state_data_t *statep,
 		ibt_ari_ip_t	ari_ip;
 		boolean_t	rdma_rej_mad = B_FALSE;
 
-		if (cm_req_msgp->req_private_data == NULL) {
-			mutex_exit(&ibcm_svc_info_lock);
-
-			IBTF_DPRINTF_L2(cmlog, "ibcm_verify_req_gids_and_svcid:"
-			    " RDMA CM IP REQ Priv Data is NULL");
-
-			/* Send a REJ with CONSUMER REJ */
-			ibcm_post_rej_mad(statep, IBT_CM_CONSUMER,
-			    IBT_CM_FAILURE_REQ, NULL, 0);
-			return (IBCM_FAILURE);
-		}
 		ip_data = (ibcm_ip_pvtdata_t *)cm_req_msgp->req_private_data;
 
 		bzero(&ari_ip, sizeof (ibt_ari_ip_t));
@@ -8518,7 +8507,7 @@ ibcm_cep_state_apr(ibcm_state_data_t *statep, ibcm_lap_msg_t *lap_msg,
 		}
 
 		/* initialize the ap status */
-		statep->cm_handler(statep->state_cm_private, &event,
+		(void) statep->cm_handler(statep->state_cm_private, &event,
 		    NULL, apr_msg->apr_private_data, IBT_APR_PRIV_DATA_SZ);
 	}
 	mutex_enter(&statep->state_mutex);
@@ -8711,8 +8700,8 @@ ibcm_sync_lapr_idle(ibcm_state_data_t *statep)
 			event.cm_event.apr.apr_status = IBT_CM_AP_ABORT;
 
 			/* Call the cm handler */
-			statep->cm_handler(statep->state_cm_private, &event,
-			    NULL, NULL, 0);
+			(void) statep->cm_handler(statep->state_cm_private,
+			    &event, NULL, NULL, 0);
 			IBTF_DPRINTF_L3(cmlog, "ibcm_sync_lapr_idle:"
 			    "non-blocked wait");
 		}

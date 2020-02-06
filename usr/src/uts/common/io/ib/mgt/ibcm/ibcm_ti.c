@@ -1839,8 +1839,7 @@ ibcm_local_cm_handler(void *priv, ibt_cm_ud_event_t *event,
 		    len);
 
 		/* Free memory allocated for local handler's private data. */
-		if (handler_priv != NULL)
-			kmem_free(handler_priv, sizeof (*handler_priv));
+		kmem_free(handler_priv, sizeof (*handler_priv));
 
 		break;
 	default:
