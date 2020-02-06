@@ -4937,7 +4937,7 @@ fctl_ulp_unsol_cb(fc_local_port_t *port, fc_unsol_buf_t *buf, uchar_t type)
 			port->fp_soft_state &= ~FP_SOFT_IN_UNSOL_CB;
 		}
 		mutex_exit(&port->fp_mutex);
-		port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+		(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 		    1, &buf->ub_token);
 		return;
 	}
@@ -4989,7 +4989,7 @@ fctl_ulp_unsol_cb(fc_local_port_t *port, fc_unsol_buf_t *buf, uchar_t type)
 			port->fp_soft_state &= ~FP_SOFT_IN_UNSOL_CB;
 		}
 		mutex_exit(&port->fp_mutex);
-		port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
+		(void) port->fp_fca_tran->fca_ub_release(port->fp_fca_handle,
 		    1, &buf->ub_token);
 
 	} else {
@@ -6050,7 +6050,7 @@ fc_trace_debug(fc_trace_logq_t *logq, caddr_t name, int dflag, int dlevel,
 	}
 	(void) snprintf(buf + cnt, FC_MAX_TRACE_BUF_LEN + 3 - cnt, "\n");
 
-	if (logq && (dlevel & FC_TRACE_LOG_BUF) != 0) {
+	if ((dlevel & FC_TRACE_LOG_BUF) != 0) {
 		fc_trace_logmsg(logq, buf, dlevel);
 	}
 
