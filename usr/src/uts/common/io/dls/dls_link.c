@@ -664,7 +664,7 @@ i_dls_link_destroy(dls_link_t *dlp)
 	 * Free the structure back to the cache.
 	 */
 	if (dlp->dl_mnh != NULL)
-		mac_notify_remove(dlp->dl_mnh, B_TRUE);
+		(void) mac_notify_remove(dlp->dl_mnh, B_TRUE);
 
 	if (dlp->dl_mch != NULL)
 		mac_client_close(dlp->dl_mch, 0);
