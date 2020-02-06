@@ -1043,7 +1043,7 @@ consconfig_virtual_console_vp(cons_state_t *sp)
 		cmn_err(CE_WARN, "consconfig_virtual_console_vp: "
 		    "unable to find serial virtual console device %s",
 		    virtual_cons_path);
-			return;
+		return;
 	}
 
 	(void) e_ddi_hold_devi_by_dev(vsconsvp->v_rdev, 0);
