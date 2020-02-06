@@ -261,7 +261,7 @@ crypto_update_uio(void *ctx, crypto_data_t *input, crypto_data_t *output,
 		cur_len = MIN(uiop->uio_iov[vec_idx].iov_len -
 		    offset, length);
 
-		(cipher)(ctx, uiop->uio_iov[vec_idx].iov_base + offset,
+		(void) (cipher)(ctx, uiop->uio_iov[vec_idx].iov_base + offset,
 		    cur_len, (input == output) ? NULL : output);
 
 		length -= cur_len;
@@ -317,7 +317,7 @@ crypto_update_mp(void *ctx, crypto_data_t *input, crypto_data_t *output,
 	 */
 	while (mp != NULL && length > 0) {
 		cur_len = MIN(MBLKL(mp) - offset, length);
-		(cipher)(ctx, (char *)(mp->b_rptr + offset), cur_len,
+		(void) (cipher)(ctx, (char *)(mp->b_rptr + offset), cur_len,
 		    (input == output) ? NULL : output);
 
 		length -= cur_len;
