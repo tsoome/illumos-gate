@@ -1103,7 +1103,7 @@ ibt_check_failure(ibt_status_t status, uint64_t *reserved_p)
 	IBTF_DPRINTF_L3(ibtf, "ibt_check_failure(%X)", status);
 
 	if ((status & IBTL_ENA_MASK) == IBTL_ENA_POSSIBLE) {
-		type = status & ~IBTL_ENA_POSSIBLE >> IBTL_TYPE_SHIFT;
+		type = (status & ~IBTL_ENA_POSSIBLE) >> IBTL_TYPE_SHIFT;
 
 		/* XXX Need more work here... */
 		if (reserved_p != NULL)
