@@ -1595,10 +1595,8 @@ update_servinfo4(servinfo4_t *svp, fs_location4 *fsp,
 	secdata = kmem_alloc(sizeof (*secdata), KM_SLEEP);
 	*secdata = *svp->sv_secdata;
 	secdata->data = NULL;
-	if (svp->sv_secdata) {
-		sec_clnt_freeinfo(svp->sv_secdata);
-		svp->sv_secdata = NULL;
-	}
+	sec_clnt_freeinfo(svp->sv_secdata);
+	svp->sv_secdata = NULL;
 	svp->sv_secdata = secdata;
 }
 
@@ -2956,7 +2954,6 @@ nfs4_mountroot(vfs_t *vfsp, whymountroot_t why)
 	struct servinfo4 *svp;
 	int error;
 	int vfsflags;
-	size_t size;
 	char *root_path;
 	struct pathname pn;
 	char *name;
@@ -3049,8 +3046,7 @@ nfs4_mountroot(vfs_t *vfsp, whymountroot_t why)
 	rtvp = NULL;
 
 	error = nfs4rootvp(&rtvp, vfsp, svp, args.flags, cr, global_zone);
-
-	if (error) {
+	if (error != 0 || rtvp == NULL) {
 		crfree(cr);
 		pn_free(&pn);
 		sv4_free(svp);
@@ -3085,10 +3081,8 @@ nfs4_mountroot(vfs_t *vfsp, whymountroot_t why)
 	vfs_add(NULL, vfsp, vfsflags);
 	vfs_unlock(vfsp);
 
-	size = strlen(svp->sv_hostname);
-	(void) strcpy(rootfs.bo_name, svp->sv_hostname);
-	rootfs.bo_name[size] = ':';
-	(void) strcpy(&rootfs.bo_name[size + 1], root_path);
+	(void) snprintf(rootfs.bo_name, sizeof (rootfs.bo_name),
+	    "%s:%s", svp->sv_hostname, root_path);
 
 	pn_free(&pn);
 

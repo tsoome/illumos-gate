@@ -4314,7 +4314,7 @@ nfs_map(vnode_t *vp, offset_t off, struct as *as, caddr_t *addrp,
 	if (off > MAXOFF32_T)
 		return (EFBIG);
 
-	if (off < 0 || off + len < 0)
+	if (off < 0 || (off > 0 && len > MAXOFFSET_T - off))
 		return (ENXIO);
 
 	if (vp->v_type != VREG)

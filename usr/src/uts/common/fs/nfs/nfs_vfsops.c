@@ -1663,7 +1663,6 @@ nfs_mountroot(vfs_t *vfsp, whymountroot_t why)
 	struct servinfo *svp;
 	int error;
 	int vfsflags;
-	size_t size;
 	char *root_path;
 	struct pathname pn;
 	char *name;
@@ -1764,10 +1763,8 @@ nfs_mountroot(vfs_t *vfsp, whymountroot_t why)
 	vfs_add(NULL, vfsp, vfsflags);
 	vfs_unlock(vfsp);
 
-	size = strlen(svp->sv_hostname);
-	(void) strcpy(rootfs.bo_name, svp->sv_hostname);
-	rootfs.bo_name[size] = ':';
-	(void) strcpy(&rootfs.bo_name[size + 1], root_path);
+	(void) snprintf(rootfs.bo_name, sizeof (rootfs.bo_name),
+	    "%s:%s", svp->sv_hostname, root_path);
 
 	pn_free(&pn);
 

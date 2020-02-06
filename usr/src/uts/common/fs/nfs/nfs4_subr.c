@@ -119,7 +119,7 @@ static int rddir4_cache_compar(const void *, const void *);
 static void rddir4_cache_free(rddir4_cache_impl *);
 static rddir4_cache *rddir4_cache_alloc(int);
 static void rddir4_cache_hold(rddir4_cache *);
-static int try_failover(enum clnt_stat);
+static int try_failover(int);
 
 static int nfs4_readdir_cache_hits = 0;
 static int nfs4_readdir_cache_waits = 0;
@@ -967,7 +967,8 @@ top:
 		return (error);
 	}
 	(void) CLNT_CONTROL(cp->ch_client, CLSET_PROGRESS, NULL);
-	auth_destroy(cp->ch_client->cl_auth);
+	if (cp->ch_client->cl_auth != NULL)
+		auth_destroy(cp->ch_client->cl_auth);
 
 	/*
 	 * Get an auth handle.
@@ -3032,7 +3033,7 @@ nfs4_try_failover(nfs4_error_t *ep)
  * based on the clnt_stat and return the error number if it is.
  */
 static int
-try_failover(enum clnt_stat rpc_status)
+try_failover(int rpc_status)
 {
 	int err = 0;
 

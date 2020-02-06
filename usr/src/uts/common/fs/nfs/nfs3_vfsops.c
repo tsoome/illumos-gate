@@ -370,12 +370,12 @@ nfs3_copyin(char *data, int datalen, struct nfs_args *nargs, nfs_fhandle *fh)
 	if (flags & NFSMNT_HOSTNAME) {
 		error = copyinstr(STRUCT_FGETP(args, hostname), netname,
 		    sizeof (netname), &hlen);
-	if (error)
-		goto errout;
-	nargs->hostname = kmem_zalloc(hlen, KM_SLEEP);
-	(void) strcpy(nargs->hostname, netname);
+		if (error)
+			goto errout;
+		nargs->hostname = kmem_zalloc(hlen, KM_SLEEP);
+		(void) strcpy(nargs->hostname, netname);
 	} else {
-	nargs->hostname = NULL;
+		nargs->hostname = NULL;
 	}
 
 
@@ -1658,7 +1658,6 @@ nfs3_mountroot(vfs_t *vfsp, whymountroot_t why)
 	struct servinfo *svp;
 	int error;
 	int vfsflags;
-	size_t size;
 	char *root_path;
 	struct pathname pn;
 	char *name;
@@ -1762,10 +1761,8 @@ nfs3_mountroot(vfs_t *vfsp, whymountroot_t why)
 	vfs_add(NULL, vfsp, vfsflags);
 	vfs_unlock(vfsp);
 
-	size = strlen(svp->sv_hostname);
-	(void) strcpy(rootfs.bo_name, svp->sv_hostname);
-	rootfs.bo_name[size] = ':';
-	(void) strcpy(&rootfs.bo_name[size + 1], root_path);
+	(void) snprintf(rootfs.bo_name, sizeof (rootfs.bo_name),
+	    "%s:%s", svp->sv_hostname, root_path);
 
 	pn_free(&pn);
 

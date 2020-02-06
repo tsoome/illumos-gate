@@ -1014,7 +1014,7 @@ access_mask_check(nfsace4 *ace4p, int mask_bit, int isserver, int isowner)
 			err_allow = ACL_WRITE_ATTRS_WRITER_ERR_ALLOW;
 		} else {
 			if ((ace4p->access_mask & mask_bit) &&
-			    (ace4p->type & ACE4_ACCESS_ALLOWED_ACE_TYPE)) {
+			    (ace4p->type == ACE4_ACCESS_ALLOWED_ACE_TYPE)) {
 				return (ENOTSUP);
 			}
 			return (0);

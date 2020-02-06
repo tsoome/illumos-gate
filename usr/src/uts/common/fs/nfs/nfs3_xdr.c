@@ -468,8 +468,7 @@ xdr_nfs_fh3_server(XDR *xdrs, nfs_fh3 *objp)
 	case XDR_DECODE:
 		return (xdr_decode_nfs_fh3(xdrs, objp));
 	case XDR_FREE:
-		if (objp->fh3_u.data != NULL)
-			bzero(objp->fh3_u.data, sizeof (objp->fh3_u.data));
+		bzero(objp->fh3_u.data, sizeof (objp->fh3_u.data));
 		return (TRUE);
 	}
 	return (FALSE);
@@ -1216,7 +1215,7 @@ xdr_READLINK3args(XDR *xdrs,  READLINK3args *objp)
 	    xdrs->x_op == XDR_ENCODE) {
 		rci.rci_type = RCI_REPLY_CHUNK;
 		rci.rci_len = MAXPATHLEN;
-		XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 	}
 	if (!xdr_nfs_fh3(xdrs, (nfs_fh3 *)objp))
 		return (FALSE);
@@ -1427,7 +1426,7 @@ xdr_READ3vres(XDR *xdrs, READ3vres *objp)
 	if (xdrs->x_ops == &xdrrdma_ops) {
 		struct clist *cl;
 
-		XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
 
 		if (cl) {
 			if (!xdr_u_int(xdrs, &ocount)) {
@@ -1544,7 +1543,7 @@ xdr_READ3uiores(XDR *xdrs, READ3uiores *objp)
 	if (xdrs->x_ops == &xdrrdma_ops) {
 		struct clist *cl;
 
-		XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
 
 		objp->wlist = cl;
 
@@ -1994,7 +1993,7 @@ xdr_READDIR3args(XDR *xdrs, READDIR3args *objp)
 	    xdrs->x_op == XDR_ENCODE) {
 		rci.rci_type = RCI_REPLY_CHUNK;
 		rci.rci_len = objp->count;
-		XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 	}
 
 	if (!xdr_u_longlong_t(xdrs, &objp->cookie))
@@ -2263,7 +2262,7 @@ xdr_READDIRPLUS3args(XDR *xdrs, READDIRPLUS3args *objp)
 	    xdrs->x_op == XDR_ENCODE) {
 		rci.rci_type = RCI_REPLY_CHUNK;
 		rci.rci_len = objp->maxcount;
-		XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 	}
 
 	if (!xdr_u_longlong_t(xdrs, &objp->cookie))

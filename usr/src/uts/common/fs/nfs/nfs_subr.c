@@ -1354,28 +1354,30 @@ failoverretry:
 				mi->mi_flags &= ~MI_PRINTED;
 				mutex_exit(&mi->mi_lock);
 #ifdef DEBUG
-			if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
-				zprintf(zoneid, "NFS%d server %s ok\n",
-				    mi->mi_vers, svp->sv_hostname);
+				if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
+					zprintf(zoneid, "NFS%d server %s ok\n",
+					    mi->mi_vers, svp->sv_hostname);
 #else
-			if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
-				zprintf(zoneid, "NFS server %s ok\n",
-				    svp->sv_hostname);
+				if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
+					zprintf(zoneid, "NFS server %s ok\n",
+					    svp->sv_hostname);
 #endif
 			} else
 				mutex_exit(&mi->mi_lock);
 		}
 
 		if (*douprintf == 0) {
-			if (!(mi->mi_flags & MI_NOPRINT))
+			if (!(mi->mi_flags & MI_NOPRINT)) {
 #ifdef DEBUG
 				if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
 					uprintf("NFS%d server %s ok\n",
 					    mi->mi_vers, svp->sv_hostname);
 #else
-			if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
-				uprintf("NFS server %s ok\n", svp->sv_hostname);
+				if (!(mi->mi_vfsp->vfs_flag & VFS_UNMOUNTED))
+					uprintf("NFS server %s ok\n",
+					    svp->sv_hostname);
 #endif
+			}
 			*douprintf = 1;
 		}
 	}
@@ -5207,8 +5209,7 @@ nfs_mount_label_policy(vfs_t *vfsp, struct netbuf *addr,
 rel_tpc:
 	TPC_RELE(tp);
 out:
-	if (mntzone)
-		zone_rele(mntzone);
+	zone_rele(mntzone);
 	label_rele(zlabel);
 	return (retv);
 }

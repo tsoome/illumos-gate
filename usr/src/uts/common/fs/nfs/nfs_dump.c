@@ -247,7 +247,8 @@ nd_send_data(TIUSER *tiptr, caddr_t addr, int offset, XDR *xdrp, uint32_t *xidp)
 		call_msg.rm_call.cb_vers = nfsdump_version;
 
 		if (!(dumpbuf = kmem_alloc(ptob(1), KM_NOSLEEP))) {
-		cmn_err(CE_WARN, "\tnfs_dump: cannot allocate dump buffer");
+			cmn_err(CE_WARN,
+			    "\tnfs_dump: cannot allocate dump buffer");
 			return (ENOMEM);
 		}
 	}

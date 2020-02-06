@@ -1739,7 +1739,7 @@ nfs3_readlink(vnode_t *vp, struct uio *uiop, cred_t *cr, caller_context_t *ct)
 		error = uiomove(res.resok.data, len, UIO_READ, uiop);
 		if (nfs3_do_symlink_cache && rp->r_symlink.contents == NULL) {
 			mutex_enter(&rp->r_statelock);
-				if (rp->r_symlink.contents == NULL) {
+			if (rp->r_symlink.contents == NULL) {
 				rp->r_symlink.contents = res.resok.data;
 				rp->r_symlink.len = len;
 				rp->r_symlink.size = MAXPATHLEN;
@@ -5225,7 +5225,7 @@ nfs3_map(vnode_t *vp, offset_t off, struct as *as, caddr_t *addrp,
 	if (vp->v_flag & VNOMAP)
 		return (ENOSYS);
 
-	if (off < 0 || off + len < 0)
+	if (off < 0 || (off > 0 && len > MAXOFFSET_T - off))
 		return (ENXIO);
 
 	if (vp->v_type != VREG)

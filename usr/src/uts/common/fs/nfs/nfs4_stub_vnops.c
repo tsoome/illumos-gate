@@ -889,7 +889,7 @@ done:
 		mutex_exit(&net->net_tree_lock);
 	}
 
-	if (!error && (newvpp == NULL || *newvpp == NULL))
+	if (!error && *newvpp == NULL)
 		error = ENOSYS;
 
 	return (error);

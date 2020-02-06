@@ -894,7 +894,8 @@ nfs4open_otw(vnode_t *dvp, char *file_name, struct vattr *in_va,
 		 * front.  This avoids having to an access check later after
 		 * we've already done start_op, which could deadlock.
 		 */
-		if (VTOR4(vpi)->r_deleg_type != OPEN_DELEGATE_NONE) {
+		if (vpi != NULL &&
+		    VTOR4(vpi)->r_deleg_type != OPEN_DELEGATE_NONE) {
 			if (open_flag & FREAD &&
 			    nfs4_access(vpi, VREAD, 0, cr, NULL) == 0)
 				acc |= VREAD;
@@ -2807,7 +2808,7 @@ nfs4_write(vnode_t *vp, struct uio *uiop, int ioflag, cred_t *cr,
 
 	offset = uiop->uio_loffset + uiop->uio_resid;
 
-	if (uiop->uio_loffset < (offset_t)0 || offset < 0)
+	if (uiop->uio_loffset < 0)
 		return (EINVAL);
 
 	if (limit == RLIM64_INFINITY || limit > MAXOFFSET_T)
@@ -7762,7 +7763,7 @@ nfs4rename(vnode_t *odvp, char *onm, vnode_t *ndvp, char *nnm, cred_t *cr,
 	 * it is active (open).
 	 */
 	error = nfs4lookup(ndvp, nnm, &nvp, cr, 0);
-	if (!error) {
+	if (error == 0) {
 		int	isactive;
 
 		ASSERT(nfs4_consistent_type(nvp));
@@ -10458,7 +10459,7 @@ nfs4_map(vnode_t *vp, offset_t off, struct as *as, caddr_t *addrp,
 	if (vp->v_flag & VNOMAP)
 		return (ENOSYS);
 
-	if (off < 0 || (off + len) < 0)
+	if (off < 0 || (off > 0 && len > MAXOFFSET_T - off))
 		return (ENXIO);
 
 	if (vp->v_type != VREG)
@@ -12490,7 +12491,7 @@ nfs4_create_getsecattr_return(vsecattr_t *filled_vsap, vsecattr_t *vsap,
 		 * If the caller only asked for the ace count (VSA_ACECNT)
 		 * don't give them the full acl (VSA_ACE), free it.
 		 */
-		if (!orig_mask & VSA_ACE) {
+		if ((orig_mask & VSA_ACE) == 0) {
 			if (vsap->vsa_aclentp != NULL) {
 				kmem_free(vsap->vsa_aclentp,
 				    vsap->vsa_aclcnt * sizeof (ace_t));
@@ -12512,7 +12513,7 @@ nfs4_create_getsecattr_return(vsecattr_t *filled_vsap, vsecattr_t *vsap,
 		 * and/or the default acl count (VSA_DFACLCNT) don't give them
 		 * the acl (VSA_ACL) or default acl (VSA_DFACL), free it.
 		 */
-		if (!orig_mask & VSA_ACL) {
+		if ((orig_mask & VSA_ACL) == 0) {
 			if (vsap->vsa_aclentp != NULL) {
 				kmem_free(vsap->vsa_aclentp,
 				    vsap->vsa_aclcnt * sizeof (aclent_t));
@@ -12520,7 +12521,7 @@ nfs4_create_getsecattr_return(vsecattr_t *filled_vsap, vsecattr_t *vsap,
 			}
 		}
 
-		if (!orig_mask & VSA_DFACL) {
+		if ((orig_mask & VSA_DFACL) == 0) {
 			if (vsap->vsa_dfaclentp != NULL) {
 				kmem_free(vsap->vsa_dfaclentp,
 				    vsap->vsa_dfaclcnt * sizeof (aclent_t));

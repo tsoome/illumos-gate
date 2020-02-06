@@ -3499,7 +3499,7 @@ xdr_READ4res_clnt(XDR *xdrs, READ4res *objp, READ4args *aobjp)
 		if (xdrs->x_ops == &xdrrdma_ops) {
 			struct clist *cl;
 
-			XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
+			(void) XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
 
 			objp->wlist = cl;
 
@@ -3585,7 +3585,7 @@ xdr_READ4res_clnt(XDR *xdrs, READ4res *objp, READ4args *aobjp)
 	if (xdrs->x_ops == &xdrrdma_ops) {
 		struct clist *cl;
 
-		XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
 
 		objp->wlist = cl;
 
@@ -3634,7 +3634,7 @@ xdr_READDIR4args(XDR *xdrs, READDIR4args *objp)
 	    xdrs->x_op == XDR_ENCODE) {
 		rci.rci_type = RCI_REPLY_CHUNK;
 		rci.rci_len = objp->maxcount;
-		XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 	}
 
 	if (!xdr_u_longlong_t(xdrs, (u_longlong_t *)&objp->cookie))
@@ -3682,7 +3682,7 @@ xdr_READDIR4res(XDR *xdrs, READDIR4res *objp)
 	 * If it is enabled, disable it temporarily for this op,
 	 * then re-enable.
 	 */
-	XDR_CONTROL(xdrs, XDR_RDMA_GET_FLAGS, &flags);
+	(void) XDR_CONTROL(xdrs, XDR_RDMA_GET_FLAGS, &flags);
 
 	if (!(flags & XDR_RDMA_CHUNK))
 		return (xdr_opaque(xdrs, (char *)mp->b_rptr, objp->data_len));
@@ -4133,7 +4133,7 @@ xdr_nfs_argop4(XDR *xdrs, nfs_argop4 *objp)
 		    FATTR4_ACL_MASK)) {
 			rci.rci_type = RCI_REPLY_CHUNK;
 			rci.rci_len = objp->nfs_argop4_u.opgetattr.mi->mi_tsize;
-			XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+			(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 
 			DTRACE_PROBE1(xdr__i__argop4__getattr, int,
 			    rci.rci_len);
@@ -4224,7 +4224,7 @@ xdr_nfs_argop4(XDR *xdrs, nfs_argop4 *objp)
 		    xdrs->x_op == XDR_ENCODE) {
 			rci.rci_type = RCI_REPLY_CHUNK;
 			rci.rci_len = MAXPATHLEN;
-			XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+			(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 		}
 		return (TRUE);
 	case OP_RENAME:
@@ -4986,7 +4986,7 @@ xdr_COMPOUND4args_clnt(XDR *xdrs, COMPOUND4args_clnt *objp)
 	if (xdrs->x_ops == &xdrrdma_ops || xdrs->x_ops == xops) {
 		rci.rci_type = RCI_REPLY_CHUNK;
 		rci.rci_len = MAXPATHLEN * 2;
-		XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 	}
 
 	return (xdr_array(xdrs, (char **)&objp->array,

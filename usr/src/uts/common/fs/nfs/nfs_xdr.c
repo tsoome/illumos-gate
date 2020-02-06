@@ -158,10 +158,11 @@ xdr_writeargs(XDR *xdrs, struct nfswriteargs *wa)
 					    &wa->wa_count,
 					    &wa->wa_conn,
 					    NFS_MAXDATA) == TRUE)
-					return (xdrrdma_read_from_client(
-					    wa->wa_rlist,
-					    &wa->wa_conn,
-					    wa->wa_count));
+						return (
+						    xdrrdma_read_from_client(
+						    wa->wa_rlist,
+						    &wa->wa_conn,
+						    wa->wa_count));
 
 					wa->wa_rlist = NULL;
 					wa->wa_conn = NULL;
@@ -197,11 +198,12 @@ xdr_writeargs(XDR *xdrs, struct nfswriteargs *wa)
 					    &wa->wa_count,
 					    &wa->wa_conn,
 					    NFS_MAXDATA) == TRUE)
-					return (xdrrdma_read_from_client(
-					    wa->wa_rlist,
-					    &wa->wa_conn,
-					    wa->wa_count));
-
+						return (
+						    xdrrdma_read_from_client(
+						    wa->wa_rlist,
+						    &wa->wa_conn,
+						    wa->wa_count));
+	
 					wa->wa_rlist = NULL;
 					wa->wa_conn = NULL;
 				}
@@ -365,7 +367,7 @@ xdr_readlink(XDR *xdrs, fhandle_t *fh)
 		    xdrs->x_op == XDR_ENCODE) {
 			rci.rci_type = RCI_REPLY_CHUNK;
 			rci.rci_len = MAXPATHLEN;
-			XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+			(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 		}
 
 		return (TRUE);
@@ -507,7 +509,7 @@ xdr_rrok(XDR *xdrs, struct nfsrrok *rrok)
 			struct clist *cl;
 			uint32_t count;
 
-			XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
+			(void) XDR_CONTROL(xdrs, XDR_RDMA_GET_WLIST, &cl);
 
 			if (cl) {
 				if (!xdr_u_int(xdrs, &count))
@@ -685,7 +687,7 @@ xdr_rddirargs(XDR *xdrs, struct nfsrddirargs *rda)
 	    xdrs->x_op == XDR_ENCODE) {
 		rci.rci_type = RCI_REPLY_CHUNK;
 		rci.rci_len = rda->rda_count;
-		XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
+		(void) XDR_CONTROL(xdrs, XDR_RDMA_ADD_CHUNK, &rci);
 	}
 
 	if (ptr != NULL) {
