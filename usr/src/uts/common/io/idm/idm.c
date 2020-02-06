@@ -1606,7 +1606,7 @@ idm_task_abort_one(idm_conn_t *ic, idm_task_t *idt, idm_abort_type_t abort_type)
 			/* Call transport to release any resources */
 			idt->idt_state = TASK_SUSPENDING;
 			mutex_exit(&idt->idt_mutex);
-			ic->ic_transport_ops->it_free_task_rsrc(idt);
+			(void) ic->ic_transport_ops->it_free_task_rsrc(idt);
 
 			/*
 			 * Wait for outstanding references.  When all
@@ -1620,7 +1620,7 @@ idm_task_abort_one(idm_conn_t *ic, idm_task_t *idt, idm_abort_type_t abort_type)
 		case AT_TASK_MGMT_ABORT:
 			idt->idt_state = TASK_ABORTING;
 			mutex_exit(&idt->idt_mutex);
-			ic->ic_transport_ops->it_free_task_rsrc(idt);
+			(void) ic->ic_transport_ops->it_free_task_rsrc(idt);
 
 			/*
 			 * Wait for outstanding references.  When all

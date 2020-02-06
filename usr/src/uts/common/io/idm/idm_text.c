@@ -1574,7 +1574,7 @@ idm_pdu_list_to_nvlist(list_t *pdu_list, nvlist_t **nvlist,
 		    (!(lh->flags & ISCSI_FLAG_LOGIN_CONTINUE) &&
 		    (next_pdu == NULL)));
 
-		if ((lh->flags & ISCSI_FLAG_LOGIN_CONTINUE) &
+		if ((lh->flags & ISCSI_FLAG_LOGIN_CONTINUE) &&
 		    (textbuflen != 0)) {
 			/*
 			 * Key-value pair is split over two PDU's.  We
