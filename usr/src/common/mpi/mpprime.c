@@ -47,8 +47,6 @@
  * Sun elects to use this software under the MPL license.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mpi-priv.h"
 #include "mpprime.h"
 #include "mplogic.h"
@@ -70,7 +68,7 @@ static int
 foo_rand()
 {
 	int r;
-	random_get_pseudo_bytes((uchar_t *)&r, sizeof (r));
+	(void) random_get_pseudo_bytes((uchar_t *)&r, sizeof (r));
 	return (r);
 }
 #endif

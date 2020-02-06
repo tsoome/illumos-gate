@@ -43,8 +43,6 @@
  * Sun elects to use this software under the MPL license.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/systm.h>
 #include <sys/param.h>
@@ -136,8 +134,8 @@ gf_populate_params(ECCurveName name, ECFieldType field_type, ECParams *params,
     genenc[0] = '0';
     genenc[1] = '4';
     genenc[2] = '\0';
-    strcat(genenc, curveParams->genx);
-    strcat(genenc, curveParams->geny);
+    (void) strcat(genenc, curveParams->genx);
+    (void) strcat(genenc, curveParams->geny);
     CHECK_OK(hexString2SECItem(NULL, &params->base, genenc, kmflag));
     CHECK_OK(hexString2SECItem(NULL, &params->order, 
     	curveParams->order, kmflag));
@@ -582,7 +580,8 @@ EC_DecodeParams(const SECItem *encodedParams, ECParams **ecparams, int kmflag)
     SECStatus rv = SECFailure;
 
     /* Initialize an arena for the ECParams structure */
-    if (!(arena = PORT_NewArena(NSS_FREEBL_DEFAULT_CHUNKSIZE)))
+    arena = PORT_NewArena(NSS_FREEBL_DEFAULT_CHUNKSIZE);
+    if (arena == NULL)
 	return SECFailure;
 
     params = (ECParams *)PORT_ArenaZAlloc(NULL, sizeof(ECParams), kmflag);
@@ -592,7 +591,7 @@ EC_DecodeParams(const SECItem *encodedParams, ECParams **ecparams, int kmflag)
     }
 
     /* Copy the encoded params */
-    SECITEM_AllocItem(arena, &(params->DEREncoding), encodedParams->len,
+    (void) SECITEM_AllocItem(arena, &(params->DEREncoding), encodedParams->len,
 	kmflag);
     memcpy(params->DEREncoding.data, encodedParams->data, encodedParams->len);
 

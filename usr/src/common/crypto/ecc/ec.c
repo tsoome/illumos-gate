@@ -128,46 +128,46 @@ ec_points_mul(const ECParams *params, const mp_int *k1, const mp_int *k2,
 	}
 #endif
 
-	/* NOTE: We only support uncompressed points for now */
-	len = (params->fieldID.size + 7) >> 3;
-	if (pointP != NULL) {
-		if ((pointP->data[0] != EC_POINT_FORM_UNCOMPRESSED) ||
-			(pointP->len != (2 * len + 1))) {
-			return SECFailure;
-		};
+    /* NOTE: We only support uncompressed points for now */
+    len = (params->fieldID.size + 7) >> 3;
+    if (pointP != NULL) {
+	if ((pointP->data[0] != EC_POINT_FORM_UNCOMPRESSED) ||
+	    (pointP->len != (2 * len + 1))) {
+		return SECFailure;
 	}
+    }
 
-	MP_DIGITS(&Px) = 0;
-	MP_DIGITS(&Py) = 0;
-	MP_DIGITS(&Qx) = 0;
-	MP_DIGITS(&Qy) = 0;
-	MP_DIGITS(&Gx) = 0;
-	MP_DIGITS(&Gy) = 0;
-	MP_DIGITS(&order) = 0;
-	MP_DIGITS(&irreducible) = 0;
-	MP_DIGITS(&a) = 0;
-	MP_DIGITS(&b) = 0;
-	CHECK_MPI_OK( mp_init(&Px, kmflag) );
-	CHECK_MPI_OK( mp_init(&Py, kmflag) );
-	CHECK_MPI_OK( mp_init(&Qx, kmflag) );
-	CHECK_MPI_OK( mp_init(&Qy, kmflag) );
-	CHECK_MPI_OK( mp_init(&Gx, kmflag) );
-	CHECK_MPI_OK( mp_init(&Gy, kmflag) );
-	CHECK_MPI_OK( mp_init(&order, kmflag) );
-	CHECK_MPI_OK( mp_init(&irreducible, kmflag) );
-	CHECK_MPI_OK( mp_init(&a, kmflag) );
-	CHECK_MPI_OK( mp_init(&b, kmflag) );
+    MP_DIGITS(&Px) = 0;
+    MP_DIGITS(&Py) = 0;
+    MP_DIGITS(&Qx) = 0;
+    MP_DIGITS(&Qy) = 0;
+    MP_DIGITS(&Gx) = 0;
+    MP_DIGITS(&Gy) = 0;
+    MP_DIGITS(&order) = 0;
+    MP_DIGITS(&irreducible) = 0;
+    MP_DIGITS(&a) = 0;
+    MP_DIGITS(&b) = 0;
+    CHECK_MPI_OK( mp_init(&Px, kmflag) );
+    CHECK_MPI_OK( mp_init(&Py, kmflag) );
+    CHECK_MPI_OK( mp_init(&Qx, kmflag) );
+    CHECK_MPI_OK( mp_init(&Qy, kmflag) );
+    CHECK_MPI_OK( mp_init(&Gx, kmflag) );
+    CHECK_MPI_OK( mp_init(&Gy, kmflag) );
+    CHECK_MPI_OK( mp_init(&order, kmflag) );
+    CHECK_MPI_OK( mp_init(&irreducible, kmflag) );
+    CHECK_MPI_OK( mp_init(&a, kmflag) );
+    CHECK_MPI_OK( mp_init(&b, kmflag) );
 
-	if ((k2 != NULL) && (pointP != NULL)) {
-		/* Initialize Px and Py */
-		CHECK_MPI_OK( mp_read_unsigned_octets(&Px, pointP->data + 1, (mp_size) len) );
-		CHECK_MPI_OK( mp_read_unsigned_octets(&Py, pointP->data + 1 + len, (mp_size) len) );
-	}
+    if ((k2 != NULL) && (pointP != NULL)) {
+	/* Initialize Px and Py */
+	CHECK_MPI_OK( mp_read_unsigned_octets(&Px, pointP->data + 1, (mp_size) len) );
+	CHECK_MPI_OK( mp_read_unsigned_octets(&Py, pointP->data + 1 + len, (mp_size) len) );
+    }
 
-	/* construct from named params, if possible */
-	if (params->name != ECCurve_noName) {
-		group = ECGroup_fromName(params->name, kmflag);
-	}
+    /* construct from named params, if possible */
+    if (params->name != ECCurve_noName) {
+	group = ECGroup_fromName(params->name, kmflag);
+    }
 
 #if 0 /* currently don't support non-named curves */
 	if (group == NULL) {
@@ -193,13 +193,13 @@ ec_points_mul(const ECParams *params, const mp_int *k1, const mp_int *k2,
 		}
 	}
 #endif
-	if (group == NULL)
-		goto cleanup;
+    if (group == NULL)
+	goto cleanup;
 
-	if ((k2 != NULL) && (pointP != NULL)) {
-		CHECK_MPI_OK( ECPoints_mul(group, k1, k2, &Px, &Py, &Qx, &Qy) );
-	} else {
-		CHECK_MPI_OK( ECPoints_mul(group, k1, NULL, NULL, NULL, &Qx, &Qy) );
+    if ((k2 != NULL) && (pointP != NULL)) {
+	CHECK_MPI_OK( ECPoints_mul(group, k1, k2, &Px, &Py, &Qx, &Qy) );
+    } else {
+	CHECK_MPI_OK( ECPoints_mul(group, k1, NULL, NULL, NULL, &Qx, &Qy) );
     }
 
     /* Construct the SECItem representation of point Q */
@@ -264,7 +264,8 @@ int printf();
     }
 
     /* Initialize an arena for the EC key. */
-    if (!(arena = PORT_NewArena(NSS_FREEBL_DEFAULT_CHUNKSIZE)))
+    arena = PORT_NewArena(NSS_FREEBL_DEFAULT_CHUNKSIZE);
+    if (arena == NULL)
 	return SECFailure;
 
     key = (ECPrivateKey *)PORT_ArenaZAlloc(arena, sizeof(ECPrivateKey),
@@ -275,7 +276,7 @@ int printf();
     }
 
     /* Set the version number (SEC 1 section C.4 says it should be 1) */
-    SECITEM_AllocItem(arena, &key->version, 1, kmflag);
+    (void) SECITEM_AllocItem(arena, &key->version, 1, kmflag);
     key->version.data[0] = 1;
 
     /* Copy all of the fields from the ECParams argument to the
@@ -313,9 +314,9 @@ int printf();
 	&ecParams->curveOID, kmflag));
 
     len = (ecParams->fieldID.size + 7) >> 3;
-    SECITEM_AllocItem(arena, &key->publicValue, 2*len + 1, kmflag);
+    (void) SECITEM_AllocItem(arena, &key->publicValue, 2*len + 1, kmflag);
     len = ecParams->order.len;
-    SECITEM_AllocItem(arena, &key->privateValue, len, kmflag);
+    (void) SECITEM_AllocItem(arena, &key->privateValue, len, kmflag);
 
     /* Copy private key */
     if (privKeyLen >= len) {
@@ -601,7 +602,7 @@ ECDH_Derive(SECItem  *publicValue,
     /* Allocate memory for the derived secret and copy
      * the x co-ordinate of pointQ into it.
      */
-    SECITEM_AllocItem(NULL, derivedSecret, len, kmflag);
+    (void) SECITEM_AllocItem(NULL, derivedSecret, len, kmflag);
     memcpy(derivedSecret->data, pointQ.data + 1, len);
 
     rv = SECSuccess;
@@ -746,7 +747,7 @@ ECDSA_SignDigestWithSeed(ECPrivateKey *key, SECItem *signature,
      * to the length of n in bits. 
      * (see SEC 1 "Elliptic Curve Digit Signature Algorithm" section 4.1.*/
     if (digest->len*8 > ecParams->fieldID.size) {
-	mpl_rsh(&s,&s,digest->len*8 - ecParams->fieldID.size);
+	(void) mpl_rsh(&s,&s,digest->len*8 - ecParams->fieldID.size);
     }
 
 #if EC_DEBUG
@@ -1100,7 +1101,7 @@ EC_CopyParams(PRArenaPool *arena, ECParams *dstParams,
 	&srcParams->order, 0));
     CHECK_SEC_OK(SECITEM_CopyItem(arena, &dstParams->DEREncoding,
 	&srcParams->DEREncoding, 0));
-	dstParams->name = srcParams->name;
+    dstParams->name = srcParams->name;
     CHECK_SEC_OK(SECITEM_CopyItem(arena, &dstParams->curveOID,
  	&srcParams->curveOID, 0));
     dstParams->cofactor = srcParams->cofactor;

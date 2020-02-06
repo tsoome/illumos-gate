@@ -443,7 +443,7 @@ mp_err mp_add_d(const mp_int *a, mp_digit d, mp_int *b)
     if((res = s_mp_sub_d(&tmp, d)) != MP_OKAY)
       goto CLEANUP;
   } else {
-    mp_neg(&tmp, &tmp);
+    (void) mp_neg(&tmp, &tmp);
 
     DIGIT(&tmp, 0) = d - DIGIT(&tmp, 0);
   }
@@ -487,7 +487,7 @@ mp_err mp_sub_d(const mp_int *a, mp_digit d, mp_int *b)
     if((res = s_mp_sub_d(&tmp, d)) != MP_OKAY)
       goto CLEANUP;
   } else {
-    mp_neg(&tmp, &tmp);
+    (void) mp_neg(&tmp, &tmp);
 
     DIGIT(&tmp, 0) = d - DIGIT(&tmp, 0);
     SIGN(&tmp) = NEG;
@@ -584,7 +584,7 @@ mp_err mp_div_d(const mp_int *a, mp_digit d, mp_int *q, mp_digit *r)
     rem = DIGIT(a, 0) & mask;
 
     if(q) {
-      mp_copy(a, q);
+      (void) mp_copy(a, q);
       s_mp_div_2d(q, pow);
     }
 
@@ -978,7 +978,7 @@ mp_err   mp_sqr(const mp_int *a, mp_int *sqr)
     MP_DIGIT(sqr, MP_USED(sqr)-1) = 0; /* above loop stopped short of this. */
 
     /* now sqr *= 2 */
-    s_mp_mul_2(sqr);
+    (void) s_mp_mul_2(sqr);
   } else {
     MP_DIGIT(sqr, 1) = 0;
   }
@@ -1353,13 +1353,13 @@ mp_err mp_sqrt(const mp_int *a, mp_int *b)
 
   for(;;) {
     /* t = (x * x) - a */
-    mp_copy(&x, &t);      /* can't fail, t is big enough for original x */
+    (void) mp_copy(&x, &t);     /* can't fail, t is big enough for original x */
     if((res = mp_sqr(&t, &t)) != MP_OKAY ||
        (res = mp_sub(&t, a, &t)) != MP_OKAY)
       goto CLEANUP;
 
     /* t = t / 2x       */
-    s_mp_mul_2(&x);
+    (void) s_mp_mul_2(&x);
     if((res = mp_div(&t, &x, &t, NULL)) != MP_OKAY)
       goto CLEANUP;
     s_mp_div_2(&x);
@@ -1375,7 +1375,7 @@ mp_err mp_sqrt(const mp_int *a, mp_int *b)
   }
 
   /* Copy result to output parameter */
-  mp_sub_d(&x, 1, &x);
+  (void) mp_sub_d(&x, 1, &x);
   s_mp_exch(&x, b);
 
  CLEANUP:
@@ -1527,8 +1527,8 @@ mp_err s_mp_exptmod(const mp_int *a, const mp_int *b, const mp_int *m, mp_int *c
   mp_set(&s, 1);
 
   /* mu = b^2k / m */
-  s_mp_add_d(&mu, 1); 
-  s_mp_lshd(&mu, 2 * USED(m));
+  (void) s_mp_add_d(&mu, 1); 
+  (void) s_mp_lshd(&mu, 2 * USED(m));
   if((res = mp_div(&mu, m, &mu, NULL)) != MP_OKAY)
     goto CLEANUP;
 
@@ -1739,7 +1739,8 @@ int    mp_cmp_int(const mp_int *a, long z, int kmflag)
 
   ARGCHK(a != NULL, MP_EQ);
   
-  mp_init(&tmp, kmflag); mp_set_int(&tmp, z);
+  (void) mp_init(&tmp, kmflag);
+  (void) mp_set_int(&tmp, z);
   out = mp_cmp(a, &tmp);
   mp_clear(&tmp);
 
@@ -1865,7 +1866,7 @@ mp_err mp_gcd(mp_int *a, mp_int *b, mp_int *c)
       break;
   }
 
-  s_mp_2expt(&v, k);       /* v = 2^k   */
+  (void) s_mp_2expt(&v, k);       /* v = 2^k   */
   res = mp_mul(&u, &v, c); /* c = u * v */
 
  CLEANUP:
@@ -1959,10 +1960,10 @@ mp_err mp_xgcd(const mp_int *a, const mp_int *b, mp_int *g, mp_int *x, mp_int *y
   clean[++last] = &D;
   MP_CHECKOK( mp_init_copy(&xc, a) );
   clean[++last] = &xc;
-  mp_abs(&xc, &xc);
+  (void) mp_abs(&xc, &xc);
   MP_CHECKOK( mp_init_copy(&yc, b) );
   clean[++last] = &yc;
-  mp_abs(&yc, &yc);
+  (void) mp_abs(&yc, &yc);
 
   mp_set(&gx, 1);
 
@@ -1976,8 +1977,8 @@ mp_err mp_xgcd(const mp_int *a, const mp_int *b, mp_int *g, mp_int *x, mp_int *y
     MP_CHECKOK( s_mp_mul_2d(&gx,n) );
   }
 
-  mp_copy(&xc, &u);
-  mp_copy(&yc, &v);
+  (void) mp_copy(&xc, &u);
+  (void) mp_copy(&yc, &v);
   mp_set(&A, 1); mp_set(&D, 1);
 
   /* Loop through binary GCD algorithm */
@@ -4298,7 +4299,7 @@ mp_err   s_mp_div(mp_int *rem, 	/* i: dividend, o: remainder */
       break;
 
     /* See what that multiplies out to                   */
-    mp_copy(div, &t);
+    (void) mp_copy(div, &t);
     MP_CHECKOK( s_mp_mul_d(&t, (mp_digit)q_msd) );
 
     /* 
@@ -4310,7 +4311,7 @@ mp_err   s_mp_div(mp_int *rem, 	/* i: dividend, o: remainder */
      */
     for (i = 4; s_mp_cmp(&t, &part) > 0 && i > 0; --i) {
       --q_msd;
-      s_mp_sub(&t, div);	/* t -= div */
+      (void) s_mp_sub(&t, div);	/* t -= div */
     }
     if (i < 0) {
       res = MP_RANGE;
@@ -4392,14 +4393,14 @@ mp_err   s_mp_reduce(mp_int *x, const mp_int *m, const mp_int *mu)
     return res;
 
   s_mp_rshd(&q, USED(m) - 1);  /* q1 = x / b^(k-1)  */
-  s_mp_mul(&q, mu);            /* q2 = q1 * mu      */
+  (void) s_mp_mul(&q, mu);     /* q2 = q1 * mu      */
   s_mp_rshd(&q, USED(m) + 1);  /* q3 = q2 / b^(k+1) */
 
   /* x = x mod b^(k+1), quick (no division) */
   s_mp_mod_2d(x, DIGIT_BIT * (USED(m) + 1));
 
   /* q = q * m mod b^(k+1), quick (no division) */
-  s_mp_mul(&q, m);
+  (void) s_mp_mul(&q, m);
   s_mp_mod_2d(&q, DIGIT_BIT * (USED(m) + 1));
 
   /* x = x - q */

@@ -302,18 +302,18 @@ ec_GFp_pt_mul_jm_wNAF(const mp_int *n, const mp_int *px, const mp_int *py,
 #endif
 
 	/* Compute 5NAF */
-	ec_compute_wNAF(naf, orderBitSize, n, 5);
+	(void) ec_compute_wNAF(naf, orderBitSize, n, 5);
 
 	/* wNAF method */
 	for (i = orderBitSize; i >= 0; i--) {
 		/* R = 2R */
-		ec_GFp_pt_dbl_jm(rx, ry, &rz, &raz4, rx, ry, &rz, 
-					     &raz4, scratch, group);
+		(void) ec_GFp_pt_dbl_jm(rx, ry, &rz, &raz4, rx, ry, &rz, 
+		     &raz4, scratch, group);
 		if (naf[i] != 0) {
-			ec_GFp_pt_add_jm_aff(rx, ry, &rz, &raz4,
-								 &precomp[(naf[i] + 15) / 2][0],
-								 &precomp[(naf[i] + 15) / 2][1], rx, ry,
-								 &rz, &raz4, scratch, group);
+			(void) ec_GFp_pt_add_jm_aff(rx, ry, &rz, &raz4,
+			    &precomp[(naf[i] + 15) / 2][0],
+			    &precomp[(naf[i] + 15) / 2][1], rx, ry,
+			    &rz, &raz4, scratch, group);
 		}
 	}
 

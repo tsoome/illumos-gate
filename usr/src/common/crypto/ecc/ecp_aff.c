@@ -47,8 +47,6 @@
  * Sun elects to use this software under the MPL license.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "ecp.h"
 #include "mplogic.h"
 #ifndef _KERNEL
@@ -326,11 +324,11 @@ ec_GFp_validate_point(const mp_int *px, const mp_int *py, const ECGroup *group)
 	}
     /* 3: Verify that publicValue is on the curve. */
 	if (group->meth->field_enc) {
-		group->meth->field_enc(px, &pxt, group->meth);
-		group->meth->field_enc(py, &pyt, group->meth);
+		(void) group->meth->field_enc(px, &pxt, group->meth);
+		(void) group->meth->field_enc(py, &pyt, group->meth);
 	} else {
-		mp_copy(px, &pxt);
-		mp_copy(py, &pyt);
+		(void) mp_copy(px, &pxt);
+		(void) mp_copy(py, &pyt);
 	}
 	/* left-hand side: y^2  */
 	MP_CHECKOK( group->meth->field_sqr(&pyt, &accl, group->meth) );

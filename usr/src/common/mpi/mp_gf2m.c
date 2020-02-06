@@ -321,7 +321,7 @@ mp_bmul(const mp_int *a, const mp_int *b, mp_int *c)
     /* Outer loop:  Digits of b */
     a_used = MP_USED(a);
     b_used = MP_USED(b);
-	MP_USED(c) = a_used + b_used;
+    MP_USED(c) = a_used + b_used;
     for (ib = 1; ib < b_used; ib++) {
         b_i = *pb++;
 
@@ -468,7 +468,7 @@ mp_bsqrmod(const mp_int *a, const unsigned int p[], mp_int *r)
     pa = MP_DIGITS(a);
     pr = MP_DIGITS(r);
     a_used = MP_USED(a);
-	MP_USED(r) = 2 * a_used;
+    MP_USED(r) = 2 * a_used;
 
     for (ia = 0; ia < a_used; ia++) {
         a_i = *pa++;

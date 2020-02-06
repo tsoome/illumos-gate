@@ -322,7 +322,7 @@ ec_GFp_add_3(const mp_int *a, const mp_int *b, mp_int *r,
 
 	/* Do quick 'subract' if we've gone over 
 	 * (add the 2's complement of the curve field) */
-	 a2 = MP_DIGIT(&meth->irr,2);
+	a2 = MP_DIGIT(&meth->irr,2);
 	if (carry ||  r2 >  a2 ||
 		((r2 == a2) && mp_cmp(r,&meth->irr) != MP_LT)) {
 		a1 = MP_DIGIT(&meth->irr,1);
@@ -418,7 +418,7 @@ ec_GFp_add_4(const mp_int *a, const mp_int *b, mp_int *r,
 
 	/* Do quick 'subract' if we've gone over 
 	 * (add the 2's complement of the curve field) */
-	 a3 = MP_DIGIT(&meth->irr,3);
+	a3 = MP_DIGIT(&meth->irr,3);
 	if (carry ||  r3 >  a3 ||
 		((r3 == a3) && mp_cmp(r,&meth->irr) != MP_LT)) {
 		a2 = MP_DIGIT(&meth->irr,2);
@@ -512,7 +512,7 @@ ec_GFp_add_5(const mp_int *a, const mp_int *b, mp_int *r,
 
 	/* Do quick 'subract' if we've gone over 
 	 * (add the 2's complement of the curve field) */
-	 a4 = MP_DIGIT(&meth->irr,4);
+	a4 = MP_DIGIT(&meth->irr,4);
 	if (carry ||  r4 >  a4 ||
 		((r4 == a4) && mp_cmp(r,&meth->irr) != MP_LT)) {
 		a3 = MP_DIGIT(&meth->irr,3);

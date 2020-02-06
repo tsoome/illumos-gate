@@ -42,8 +42,6 @@
  * Sun elects to use this software under the MPL license.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "ec2.h"
 #include "mplogic.h"
 #include "mp_gf2m.h"
@@ -313,11 +311,11 @@ ec_GF2m_validate_point(const mp_int *px, const mp_int *py, const ECGroup *group)
 	}
     /* 3: Verify that publicValue is on the curve. */
 	if (group->meth->field_enc) {
-		group->meth->field_enc(px, &pxt, group->meth);
-		group->meth->field_enc(py, &pyt, group->meth);
+		(void) group->meth->field_enc(px, &pxt, group->meth);
+		(void) group->meth->field_enc(py, &pyt, group->meth);
 	} else {
-		mp_copy(px, &pxt);
-		mp_copy(py, &pyt);
+		(void) mp_copy(px, &pxt);
+		(void) mp_copy(py, &pyt);
 	}
 	/* left-hand side: y^2 + x*y  */
 	MP_CHECKOK( group->meth->field_sqr(&pyt, &accl, group->meth) );
