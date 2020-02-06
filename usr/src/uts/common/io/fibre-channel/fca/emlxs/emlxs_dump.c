@@ -86,9 +86,7 @@ emlxs_menlo_set_mode(
 
 done:
 
-	if (cmd_buf) {
-		kmem_free(cmd_buf, sizeof (menlo_set_cmd_t));
-	}
+	kmem_free(cmd_buf, sizeof (menlo_set_cmd_t));
 
 	if (rsp_buf) {
 		kmem_free(rsp_buf, 4);
@@ -149,9 +147,7 @@ emlxs_menlo_reset(
 
 done:
 
-	if (cmd_buf) {
-		kmem_free(cmd_buf, sizeof (menlo_reset_cmd_t));
-	}
+	kmem_free(cmd_buf, sizeof (menlo_reset_cmd_t));
 
 	if (rsp_buf) {
 		kmem_free(rsp_buf, 4);
@@ -211,9 +207,7 @@ emlxs_menlo_get_cfg(
 
 done:
 
-	if (cmd_buf) {
-		kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
-	}
+	kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
 
 	return (rval);
 
@@ -268,9 +262,7 @@ emlxs_menlo_get_logcfg(
 
 done:
 
-	if (cmd_buf) {
-		kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
-	}
+	kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
 
 	return (rval);
 
@@ -325,9 +317,7 @@ emlxs_menlo_get_log(
 
 done:
 
-	if (cmd_buf) {
-		kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
-	}
+	kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
 
 	return (rval);
 
@@ -381,9 +371,7 @@ emlxs_menlo_get_paniclog(
 
 done:
 
-	if (cmd_buf) {
-		kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
-	}
+	kmem_free(cmd_buf, sizeof (menlo_get_cmd_t));
 
 	return (rval);
 

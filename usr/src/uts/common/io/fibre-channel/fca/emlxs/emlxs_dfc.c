@@ -1836,15 +1836,18 @@ emlxs_fcio_get_dev_list(emlxs_port_t *port, fcio_t *fcio, int32_t mode)
 				port_dev->dev_did.priv_lilp_posit = 0;
 				port_dev->dev_hard_addr.hard_addr = 0;
 
-		if (hba->topology == TOPOLOGY_LOOP) {
-			for (j = 1; j < port->alpa_map[0]; j++) {
-				if (nlp->nlp_DID == port->alpa_map[j]) {
-					port_dev->dev_did.priv_lilp_posit = j-1;
-					goto done;
+				if (hba->topology == TOPOLOGY_LOOP) {
+					for (j = 1; j < port->alpa_map[0];
+					    j++) {
+						if (nlp->nlp_DID ==
+						    port->alpa_map[j]) {
+							port_dev->dev_did.priv_lilp_posit = j-1;
+							goto done;
+						}
+					}
+					port_dev->dev_hard_addr.hard_addr =
+					    nlp->nlp_DID;
 				}
-			}
-			port_dev->dev_hard_addr.hard_addr = nlp->nlp_DID;
-		}
 
 				bcopy((caddr_t)&nlp->nlp_portname,
 				    (caddr_t)&port_dev->dev_pwwn, 8);
@@ -1914,15 +1917,18 @@ emlxs_fcio_get_dev_list(emlxs_port_t *port, fcio_t *fcio, int32_t mode)
 				port_dev->dev_did.priv_lilp_posit = 0;
 				port_dev->dev_hard_addr.hard_addr = 0;
 
-		if (hba->topology == TOPOLOGY_LOOP) {
-			for (j = 1; j < port->alpa_map[0]; j++) {
-				if (nlp->nlp_DID == port->alpa_map[j]) {
-					port_dev->dev_did.priv_lilp_posit = j-1;
-					goto done;
+				if (hba->topology == TOPOLOGY_LOOP) {
+					for (j = 1; j < port->alpa_map[0];
+					    j++) {
+						if (nlp->nlp_DID ==
+						    port->alpa_map[j]) {
+							port_dev->dev_did.priv_lilp_posit = j - 1;
+							goto done;
+						}
+					}
+					port_dev->dev_hard_addr.hard_addr =
+					    nlp->nlp_DID;
 				}
-			}
-			port_dev->dev_hard_addr.hard_addr = nlp->nlp_DID;
-		}
 
 				bcopy((caddr_t)&nlp->nlp_portname,
 				    (caddr_t)&port_dev->dev_pwwn, 8);
@@ -4450,14 +4456,14 @@ emlxs_set_hba_mode(emlxs_hba_t *hba, uint32_t mode)
 				(void) emlxs_offline(hba, 0);
 
 				/* Reset with restart */
-				EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
+				(void) EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
 
 				mutex_enter(&EMLXS_PORT_LOCK);
 			} else if (hba->state < FC_INIT_START) {
 				mutex_exit(&EMLXS_PORT_LOCK);
 
 				/* Reset with restart */
-				EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
+				(void) EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
 
 				mutex_enter(&EMLXS_PORT_LOCK);
 			}
@@ -4472,14 +4478,14 @@ emlxs_set_hba_mode(emlxs_hba_t *hba, uint32_t mode)
 				(void) emlxs_offline(hba, 0);
 
 				/* Reset with no restart */
-				EMLXS_SLI_HBA_RESET(hba, 0, 0, 0);
+				(void) EMLXS_SLI_HBA_RESET(hba, 0, 0, 0);
 
 				mutex_enter(&EMLXS_PORT_LOCK);
 			} else if (hba->state != FC_WARM_START) {
 				mutex_exit(&EMLXS_PORT_LOCK);
 
 				/* Reset with no restart */
-				EMLXS_SLI_HBA_RESET(hba, 0, 0, 0);
+				(void) EMLXS_SLI_HBA_RESET(hba, 0, 0, 0);
 
 				mutex_enter(&EMLXS_PORT_LOCK);
 			}
@@ -4558,14 +4564,14 @@ emlxs_set_hba_mode(emlxs_hba_t *hba, uint32_t mode)
 				(void) emlxs_offline(hba, 0);
 
 				/* Reset with restart */
-				EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
+				(void) EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
 
 				mutex_enter(&EMLXS_PORT_LOCK);
 			} else if (hba->state < FC_INIT_START) {
 				mutex_exit(&EMLXS_PORT_LOCK);
 
 				/* Reset with restart */
-				EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
+				(void) EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
 
 				mutex_enter(&EMLXS_PORT_LOCK);
 			}
@@ -8237,8 +8243,7 @@ emlxs_dfc_set_menlo_loopback(emlxs_hba_t *hba)
 	uint32_t rval = 0;
 	menlo_cmd_t *cmd;
 
-	mbq = (MAILBOXQ *)kmem_zalloc(sizeof (MAILBOXQ),
-	    KM_SLEEP);
+	mbq = (MAILBOXQ *)kmem_zalloc(sizeof (MAILBOXQ), KM_SLEEP);
 
 	mb = (MAILBOX *)mbq;
 
@@ -8401,9 +8406,7 @@ emlxs_dfc_set_menlo_loopback(emlxs_hba_t *hba)
 
 done:
 	/* Free allocated mbox memory */
-	if (mbq) {
-		kmem_free(mbq, sizeof (MAILBOXQ));
-	}
+	kmem_free(mbq, sizeof (MAILBOXQ));
 	if (pkt) {
 		emlxs_pkt_free(pkt);
 	}
@@ -8509,8 +8512,7 @@ emlxs_dfc_reset_menlo(emlxs_hba_t *hba)
 	uint32_t mbxstatus;
 	uint32_t rval = 0;
 
-	mbq = (MAILBOXQ *)kmem_zalloc(sizeof (MAILBOXQ),
-	    KM_SLEEP);
+	mbq = (MAILBOXQ *)kmem_zalloc(sizeof (MAILBOXQ), KM_SLEEP);
 
 	mb = (MAILBOX *)mbq;
 
@@ -8536,9 +8538,7 @@ emlxs_dfc_reset_menlo(emlxs_hba_t *hba)
 	}
 done:
 	/* Free allocated mbox memory */
-	if (mbq) {
-		kmem_free(mbq, sizeof (MAILBOXQ));
-	}
+	kmem_free(mbq, sizeof (MAILBOXQ));
 	return (rval);
 }
 

@@ -2874,9 +2874,10 @@ uint32_t evt)
 
 	if (ncval->hash_id == AUTH_MD5) {
 		if (ncval->cval_len != LE_SWAP32(MD5_LEN)) {
-		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-		    "rcv_auth_msg_auth_negotiate_cmpl_wait4next:0x%x.%x!=%x",
-		    ndlp->nlp_DID, ncval->cval_len, LE_SWAP32(MD5_LEN));
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_auth_msg_auth_negotiate_cmpl_wait4next:"
+			    "0x%x.%x!=%x", ndlp->nlp_DID, ncval->cval_len,
+			    LE_SWAP32(MD5_LEN));
 
 			ReasonCode = AUTHRJT_FAILURE;
 			ReasonCodeExplanation = AUTHEXP_BAD_PAYLOAD;
@@ -2891,9 +2892,10 @@ uint32_t evt)
 
 	} else if (ncval->hash_id == AUTH_SHA1) {
 		if (ncval->cval_len != LE_SWAP32(SHA1_LEN)) {
-		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-		    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x %x!=%x",
-		    ndlp->nlp_DID, ncval->cval_len, LE_SWAP32(MD5_LEN));
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: "
+			    "0x%x %x!=%x", ndlp->nlp_DID, ncval->cval_len,
+			    LE_SWAP32(MD5_LEN));
 
 			ReasonCode = AUTHRJT_FAILURE;
 			ReasonCodeExplanation = AUTHEXP_BAD_PAYLOAD;
@@ -2907,9 +2909,9 @@ uint32_t evt)
 		arg2len = SHA1_LEN;
 
 	} else {
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-	    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x %x",
-	    ndlp->nlp_DID, ncval->hash_id);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+		    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x %x",
+		    ndlp->nlp_DID, ncval->hash_id);
 
 		ReasonCode = AUTHRJT_FAILURE;
 		ReasonCodeExplanation = AUTHEXP_BAD_PAYLOAD;
@@ -2947,9 +2949,10 @@ uint32_t evt)
 	case GROUP_NULL:
 		/* null DHCHAP only */
 		if (LE_SWAP32(dhvallen) != 0) {
-		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-		    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x %x %x",
-		    ndlp->nlp_DID, ncval->dhgp_id, LE_SWAP32(dhvallen));
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: "
+			    "0x%x %x %x",
+			    ndlp->nlp_DID, ncval->dhgp_id, LE_SWAP32(dhvallen));
 
 			ReasonCode = AUTHRJT_FAILURE;
 			ReasonCodeExplanation = AUTHEXP_BAD_PAYLOAD;
@@ -2967,9 +2970,9 @@ uint32_t evt)
 		dhval = (uint8_t *)kmem_zalloc(LE_SWAP32(dhvallen),
 		    KM_NOSLEEP);
 		if (dhval == NULL) {
-		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-		    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x %x %x",
-		    ndlp->nlp_DID, ncval->dhgp_id, dhval);
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: "
+			    "0x%x %x %x", ndlp->nlp_DID, ncval->dhgp_id, dhval);
 
 			ReasonCode = AUTHRJT_LOGIC_ERR;
 			ReasonCodeExplanation = AUTHEXP_RESTART_AUTH;
@@ -3046,9 +3049,9 @@ uint32_t evt)
 	if (emlxs_issue_dhchap_reply(port, ndlp, 0, arg5, dhval,
 	    LE_SWAP32(dhvallen),
 	    random_number, arg2len)) {
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-	    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x.failed.",
-	    ndlp->nlp_DID);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+		    "rcv_auth_msg_auth_negotiate_cmpl_wait4next: 0x%x.failed.",
+		    ndlp->nlp_DID);
 
 		kmem_free(dhval, LE_SWAP32(dhvallen));
 		ReasonCode = AUTHRJT_LOGIC_ERR;
@@ -3244,9 +3247,9 @@ uint32_t evt)
 		ReasonCode = auth_rjt->ReasonCode;
 		ReasonCodeExplanation = auth_rjt->ReasonCodeExplanation;
 
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-	    "rcv_auth_msg_dhchap_reply_cmpl_wait4next: 0x%x.(%x,%x)",
-	    ndlp->nlp_DID, ReasonCode, ReasonCodeExplanation);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+		    "rcv_auth_msg_dhchap_reply_cmpl_wait4next: 0x%x.(%x,%x)",
+		    ndlp->nlp_DID, ReasonCode, ReasonCodeExplanation);
 
 		switch (ReasonCode) {
 		case AUTHRJT_LOGIC_ERR:
@@ -3299,17 +3302,17 @@ uint32_t evt)
 		/* Verify the tran_id */
 		tran_id = dh_success->tran_id;
 
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-	    "rcv_auth_msg_dhchap_reply_cmpl_wait4next: 0x%x 0x%x 0x%x 0x%x",
-	    ndlp->nlp_DID, LE_SWAP32(tran_id),
-	    node_dhc->nlp_auth_tranid_rsp,
-	    node_dhc->nlp_auth_tranid_ini);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+		    "rcv_auth_msg_dhchap_reply_cmpl_wait4next: "
+		    "0x%x 0x%x 0x%x 0x%x", ndlp->nlp_DID, LE_SWAP32(tran_id),
+		    node_dhc->nlp_auth_tranid_rsp,
+		    node_dhc->nlp_auth_tranid_ini);
 
 		if (LE_SWAP32(tran_id) != node_dhc->nlp_auth_tranid_rsp) {
-		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-		    "rcv_auth_msg_dhchap_reply_cmpl_wait4next:0x%x %x!=%x",
-		    ndlp->nlp_DID, LE_SWAP32(tran_id),
-		    node_dhc->nlp_auth_tranid_rsp);
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_auth_msg_dhchap_reply_cmpl_wait4next:"
+			    "0x%x %x!=%x", ndlp->nlp_DID, LE_SWAP32(tran_id),
+			    node_dhc->nlp_auth_tranid_rsp);
 
 			ReasonCode = AUTHRJT_FAILURE;
 			ReasonCodeExplanation = AUTHEXP_BAD_PAYLOAD;
@@ -3640,8 +3643,9 @@ uint32_t evt)
 
 	/* Start the fc_authrsp_timeout timer */
 	if (node_dhc->nlp_authrsp_tmo == 0) {
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-	    "cmpl_auth_msg_dhchap_challenge_issue: Starting authrsp timer.");
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+		    "cmpl_auth_msg_dhchap_challenge_issue: "
+		    "Starting authrsp timer.");
 
 		node_dhc->nlp_authrsp_tmo = DRV_TIME +
 		    node_dhc->auth_cfg.authentication_timeout;
@@ -3727,9 +3731,10 @@ uint32_t evt)
 
 	if (LE_SWAP32(tran_id) != node_dhc->nlp_auth_tranid_ini) {
 
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-	    "rcv_auth_msg_dhchap_challenge_cmpl_wait4next:0x%x 0x%x 0x%x",
-	    ndlp->nlp_DID, tran_id, node_dhc->nlp_auth_tranid_ini);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+		    "rcv_auth_msg_dhchap_challenge_cmpl_wait4next:"
+		    "0x%x 0x%x 0x%x", ndlp->nlp_DID, tran_id,
+		    node_dhc->nlp_auth_tranid_ini);
 
 		ReasonCode = AUTHRJT_FAILURE;
 		ReasonCodeExplanation = AUTHEXP_BAD_PROTOCOL;
@@ -3751,9 +3756,9 @@ uint32_t evt)
 		ReasonCode = rjt->ReasonCode;
 		ReasonCodeExplanation = rjt->ReasonCodeExplanation;
 
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-	    "rcv_a_msg_dhch_chall_cmpl_wait4next:RJT rcved:0x%x 0x%x",
-	    ReasonCode, ReasonCodeExplanation);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+		    "rcv_a_msg_dhch_chall_cmpl_wait4next:RJT rcved:0x%x 0x%x",
+		    ReasonCode, ReasonCodeExplanation);
 
 		switch (ReasonCode) {
 		case AUTHRJT_LOGIC_ERR:
@@ -3846,9 +3851,10 @@ uint32_t evt)
 			node_dhc->nlp_auth_bidir = 0;
 		}
 
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-	    "rcv_a_m_dhchap_challenge_cmpl_wait4next:Reply:%x %lx %x %x %x\n",
-	    ndlp->nlp_DID, *(uint32_t *)rsp, rsp_len, dhval_len, cval_len);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+		    "rcv_a_m_dhchap_challenge_cmpl_wait4next:Reply:"
+		    "%x %lx %x %x %x\n", ndlp->nlp_DID, *(uint32_t *)rsp,
+		    rsp_len, dhval_len, cval_len);
 
 		/* Verify the response based on the hash func, dhgp_id etc. */
 		/*
@@ -3875,8 +3881,9 @@ uint32_t evt)
 		}
 		if (bcmp((void *) rsp, (void *)hash_val, rsp_len)) {
 			/* not identical */
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-	    "rcv_auth_msg_dhchap_challenge_cmpl_wait4next: Not authted(1).");
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_auth_msg_dhchap_challenge_cmpl_wait4next: "
+			    "Not authted(1).");
 
 			ReasonCode = AUTHRJT_FAILURE;
 			ReasonCodeExplanation = AUTHEXP_AUTH_FAILED;
@@ -4212,9 +4219,10 @@ uint32_t evt)
 		ReasonCode = auth_rjt->ReasonCode;
 		ReasonCodeExplanation = auth_rjt->ReasonCodeExplanation;
 
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-	    "rcv_a_m_dhch_success_cmpl_wait4next:REJECT rvd. 0x%x 0x%x 0x%x",
-	    ndlp->nlp_DID, ReasonCode, ReasonCodeExplanation);
+		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+		    "rcv_a_m_dhch_success_cmpl_wait4next:REJECT rvd. "
+		    "0x%x 0x%x 0x%x", ndlp->nlp_DID, ReasonCode,
+		    ReasonCodeExplanation);
 
 		switch (ReasonCode) {
 		case AUTHRJT_LOGIC_ERR:
@@ -4264,9 +4272,10 @@ uint32_t evt)
 	} else if (dh_success->auth_msg_code == DHCHAP_SUCCESS) {
 		if (LE_SWAP32(dh_success->tran_id) !=
 		    node_dhc->nlp_auth_tranid_ini) {
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-	    "rcv_a_m_dhch_success_cmpl_wait4next: 0x%x 0x%lx, 0x%lx",
-	    ndlp->nlp_DID, dh_success->tran_id, node_dhc->nlp_auth_tranid_ini);
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+			    "rcv_a_m_dhch_success_cmpl_wait4next: "
+			    "0x%x 0x%lx, 0x%lx", ndlp->nlp_DID,
+			    dh_success->tran_id, node_dhc->nlp_auth_tranid_ini);
 
 			ReasonCode = AUTHRJT_FAILURE;
 			ReasonCodeExplanation = AUTHEXP_BAD_PROTOCOL;
@@ -4964,8 +4973,8 @@ emlxs_port_t *port,
 		 */
 		if (node_dhc->nlp_reauth_status ==
 		    NLP_HOST_REAUTH_IN_PROGRESS) {
-		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
-		    "rcv_auth_msg_unmapped_node: Ht reauth inprgress.");
+			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_detail_msg,
+			    "rcv_auth_msg_unmapped_node: Ht reauth inprgress.");
 
 			ReasonCode = AUTHRJT_LOGIC_ERR;
 			ReasonCodeExplanation = AUTHEXP_AUTHTRAN_STARTED;
@@ -6442,8 +6451,8 @@ emlxs_hash_verification(
 			hash_val = (uint32_t *)kmem_zalloc(hash_size,
 			    KM_NOSLEEP);
 			if (hash_val == NULL) {
-			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-			    "hash_vf: val alloc failed (Non-NULL dh)");
+				EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+				    "hash_vf: val alloc failed (Non-NULL dh)");
 
 				return (NULL);
 			} else {
@@ -6668,8 +6677,8 @@ emlxs_hash_get_R2(
 			hash_val = (uint32_t *)kmem_alloc(hash_size,
 			    KM_NOSLEEP);
 			if (hash_val == NULL) {
-			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-			    "hash_get_R2: hash_val MD5 alloc failed.");
+				EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+				    "hash_get_R2: hash_val MD5 alloc failed.");
 
 				return (NULL);
 			} else {
@@ -6698,8 +6707,8 @@ emlxs_hash_get_R2(
 			hash_val = (uint32_t *)kmem_alloc(hash_size,
 			    KM_NOSLEEP);
 			if (hash_val == NULL) {
-			EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
-			    "hash_get_R2: hash_val SHA1 alloc failed.");
+				EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fcsp_error_msg,
+				    "hash_get_R2: hash_val SHA1 alloc failed.");
 
 				return (NULL);
 			} else {
@@ -8859,10 +8868,10 @@ emlxs_auth_key_parse(
 			} else if ((c1 >= 'A') && (c1 <= 'F')) {
 				sum = ((c1 - 'A' + 10) << 4);
 			} else {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_attach_debug_msg,
-			    "Cfg err: Invalid lpwd found. %d %c",
-			    j, c1);
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_attach_debug_msg,
+				    "Cfg err: Invalid lpwd found. %d %c",
+				    j, c1);
 				errors++;
 			}
 
@@ -8874,10 +8883,10 @@ emlxs_auth_key_parse(
 			} else if ((c1 >= 'A') && (c1 <= 'F')) {
 				sum |= (c1 - 'A' + 10);
 			} else {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_attach_debug_msg,
-			    "Cfg err: Invalid lpwd found. %d %c",
-			    j, c1);
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_attach_debug_msg,
+				    "Cfg err: Invalid lpwd found. %d %c",
+				    j, c1);
 				errors++;
 			}
 
@@ -8958,10 +8967,10 @@ emlxs_auth_key_parse(
 			} else if ((c1 >= 'A') && (c1 <= 'F')) {
 				sum = ((c1 - 'A' + 10) << 4);
 			} else {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_attach_debug_msg,
-			    "Cfg err: Invalid rpwd found. %d %c",
-			    j, c1);
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_attach_debug_msg,
+				    "Cfg err: Invalid rpwd found. %d %c",
+				    j, c1);
 				errors++;
 			}
 
@@ -8973,10 +8982,10 @@ emlxs_auth_key_parse(
 			} else if ((c1 >= 'A') && (c1 <= 'F')) {
 				sum |= (c1 - 'A' + 10);
 			} else {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_attach_debug_msg,
-			    "Cfg err: Invalid rpwd found. %d %c",
-			    j, c1);
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_attach_debug_msg,
+				    "Cfg err: Invalid rpwd found. %d %c",
+				    j, c1);
 				errors++;
 			}
 
@@ -9520,9 +9529,10 @@ emlxs_dhc_set_auth_key(emlxs_hba_t *hba, dfc_auth_password_t *dfc_pwd)
 			    bcmp(dfc_pwd->lpw.password,
 			    auth_key->local_password,
 			    dfc_pwd->lpw.length)) {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_dfc_error_msg,
-			    "dhc_set_auth_key: Invalid local password.");
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_dfc_error_msg,
+				    "dhc_set_auth_key: "
+				    "Invalid local password.");
 
 				mutex_exit(&hba->auth_lock);
 
@@ -9541,9 +9551,9 @@ emlxs_dhc_set_auth_key(emlxs_hba_t *hba, dfc_auth_password_t *dfc_pwd)
 			    (bcmp(dfc_pwd->lpw_new.password,
 			    auth_key->remote_password,
 			    dfc_pwd->lpw_new.length) == 0)) {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_dfc_error_msg,
-			    "dhc_set_auth_key: nlpwd==crpwd");
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_dfc_error_msg,
+				    "dhc_set_auth_key: nlpwd==crpwd");
 
 				mutex_exit(&hba->auth_lock);
 
@@ -9574,9 +9584,10 @@ emlxs_dhc_set_auth_key(emlxs_hba_t *hba, dfc_auth_password_t *dfc_pwd)
 			    bcmp(dfc_pwd->rpw.password,
 			    auth_key->remote_password,
 			    dfc_pwd->rpw.length)) {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_dfc_error_msg,
-			    "dhc_set_auth_key: Invalid remote password.");
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_dfc_error_msg,
+				    "dhc_set_auth_key: "
+				    "Invalid remote password.");
 
 				mutex_exit(&hba->auth_lock);
 
@@ -9595,9 +9606,9 @@ emlxs_dhc_set_auth_key(emlxs_hba_t *hba, dfc_auth_password_t *dfc_pwd)
 			    (bcmp(dfc_pwd->rpw_new.password,
 			    auth_key->local_password,
 			    dfc_pwd->rpw_new.length) == 0)) {
-			EMLXS_MSGF(EMLXS_CONTEXT,
-			    &emlxs_dfc_error_msg,
-			    "dhc_set_auth_key: nrpwd==clpwd");
+				EMLXS_MSGF(EMLXS_CONTEXT,
+				    &emlxs_dfc_error_msg,
+				    "dhc_set_auth_key: nrpwd==clpwd");
 
 				mutex_exit(&hba->auth_lock);
 

@@ -2343,7 +2343,7 @@ emlxs_shutdown_thread(emlxs_hba_t *hba, void *arg1, void *arg2)
 		 * Dump is not defined for SLI4, so just
 		 * reset the HBA for now.
 		 */
-		EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
+		(void) EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
 
 	} else {
 		if (hba->flag & FC_OVERTEMP_EVENT) {

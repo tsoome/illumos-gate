@@ -5790,7 +5790,6 @@ emlxs_fcoe_fcftab_read_mbcmpl(emlxs_hba_t *hba, MAILBOXQ *mbq)
 	fcfrec = &fcf->params.response.fcf_entry[0];
 
 #ifdef EMLXS_BIG_ENDIAN
-{
 	uint32_t *iptr;
 	uint32_t i;
 	uint8_t  j;
@@ -5813,7 +5812,6 @@ emlxs_fcoe_fcftab_read_mbcmpl(emlxs_hba_t *hba, MAILBOXQ *mbq)
 	j = fcfrec->fc_map[0];
 	fcfrec->fc_map[0] = fcfrec->fc_map[2];
 	fcfrec->fc_map[2] = j;
-}
 #endif /* EMLXS_BIG_ENDIAN */
 
 	event_tag = fcf->params.response.event_tag;
@@ -13040,8 +13038,8 @@ emlxs_vpi_logi_cmpl_action(emlxs_port_t *port, VPIobj_t *vpip, uint32_t evt,
 			uint32_t new_topo;
 
 			/* Check for topology change (0=loop 1=fabric) */
-			old_topo = ((port->prev_did && 0xFFFF00) == 0)? 0:1;
-			new_topo = ((port->did && 0xFFFF00) == 0)? 0:1;
+			old_topo = ((port->prev_did & 0xFFFF00) == 0)? 0:1;
+			new_topo = ((port->did & 0xFFFF00) == 0)? 0:1;
 
 			if (old_topo != new_topo) {
 				new_config = 1;

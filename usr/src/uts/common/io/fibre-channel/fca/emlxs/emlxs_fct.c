@@ -1604,7 +1604,7 @@ emlxs_fct_port_shutdown(emlxs_port_t *port)
 	port->fct_flags |= FCT_STATE_NOT_ACKED;
 
 	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fct_detail_msg, "fct_port_shutdown");
-	MODSYM(fct_port_shutdown) (fct_port, STMF_RFLAG_STAY_OFFLINED,
+	(void) MODSYM(fct_port_shutdown) (fct_port, STMF_RFLAG_STAY_OFFLINED,
 	    DRIVER_NAME" shutdown");
 
 	i = 0;
@@ -1636,7 +1636,7 @@ emlxs_fct_port_initialize(emlxs_port_t *port)
 
 	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_fct_detail_msg,
 	    "fct_port_initialize");
-	MODSYM(fct_port_initialize) (fct_port, STMF_RFLAG_STAY_OFFLINED,
+	(void) MODSYM(fct_port_initialize) (fct_port, STMF_RFLAG_STAY_OFFLINED,
 	    DRIVER_NAME" initialize");
 
 	i = 0;

@@ -65,7 +65,7 @@ extern "C" {
 #ifdef EMLXS_DBG
 #define	EMLXS_DEBUGF		emlxs_msg_printf
 #else	/* EMLXS_DBG */
-#define	EMLXS_DEBUGF
+#define	EMLXS_DEBUGF(...)
 #endif	/* EMLXS_DBG */
 
 #define	MAX_LOG_INFO_LENGTH	96

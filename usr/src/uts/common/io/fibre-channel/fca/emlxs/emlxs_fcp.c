@@ -353,87 +353,91 @@ emlxs_handle_fcp_event(emlxs_hba_t *hba, CHANNEL *cp, IOCBQ *iocbq)
 			}
 
 #ifdef FCP_UNDERRUN_PATCH1
-if (cfg[CFG_ENABLE_PATCH].current & FCP_UNDERRUN_PATCH1) {
-			/*
-			 * If status is not good and no data was
-			 * actually transferred, then we must fix
-			 * the issue
-			 */
-			if ((scsi_status != SCSI_STAT_GOOD) && (data_rx == 0)) {
-				fix_it = 1;
+			if (cfg[CFG_ENABLE_PATCH].current &
+			    FCP_UNDERRUN_PATCH1) {
+				/*
+				 * If status is not good and no data was
+				 * actually transferred, then we must fix
+				 * the issue
+				 */
+				if ((scsi_status != SCSI_STAT_GOOD) &&
+				    (data_rx == 0)) {
+					fix_it = 1;
 
-				EMLXS_MSGF(EMLXS_CONTEXT,
-				    &emlxs_fcp_completion_error_msg,
-				    "Underrun(1). Fixed. "
-				    "did=0x%06x sbp=%p cmd=%02x "
-				    "dl=%d,%d rx=%d rsp=%d",
-				    did, sbp, scsi_opcode,
-				    pkt->pkt_datalen, scsi_dl,
-				    (pkt->pkt_datalen -
-				    pkt->pkt_data_resid),
-				    rsp_data_resid);
-
+					EMLXS_MSGF(EMLXS_CONTEXT,
+					    &emlxs_fcp_completion_error_msg,
+					    "Underrun(1). Fixed. "
+					    "did=0x%06x sbp=%p cmd=%02x "
+					    "dl=%d,%d rx=%d rsp=%d",
+					    did, sbp, scsi_opcode,
+					    pkt->pkt_datalen, scsi_dl,
+					    (pkt->pkt_datalen -
+					    pkt->pkt_data_resid),
+					    rsp_data_resid);
+				}
 			}
-}
 #endif /* FCP_UNDERRUN_PATCH1 */
 
 
 #ifdef FCP_UNDERRUN_PATCH2
-if (cfg[CFG_ENABLE_PATCH].current & FCP_UNDERRUN_PATCH2) {
-			if (scsi_status == SCSI_STAT_GOOD) {
-				emlxs_msg_t	*msg;
+			if (cfg[CFG_ENABLE_PATCH].current &
+			    FCP_UNDERRUN_PATCH2) {
+				if (scsi_status == SCSI_STAT_GOOD) {
+					emlxs_msg_t	*msg;
 
-				msg = &emlxs_fcp_completion_error_msg;
-				/*
-				 * If status is good and this is an
-				 * inquiry request and the amount of
-				 * data
-				 */
-				/*
-				 * requested <= data received, then we
-				 * must fix the issue.
-				 */
+					msg = &emlxs_fcp_completion_error_msg;
+					/*
+					 * If status is good and this is an
+					 * inquiry request and the amount of
+					 * data
+					 */
+					/*
+					 * requested <= data received, then we
+					 * must fix the issue.
+					 */
 
-				if ((scsi_opcode == SCSI_INQUIRY) &&
-				    (pkt->pkt_datalen >= data_rx) &&
-				    (scsi_dl <= data_rx)) {
-					fix_it = 1;
+					if ((scsi_opcode == SCSI_INQUIRY) &&
+					    (pkt->pkt_datalen >= data_rx) &&
+					    (scsi_dl <= data_rx)) {
+						fix_it = 1;
 
-					EMLXS_MSGF(EMLXS_CONTEXT, msg,
-					    "Underrun(2). Fixed. "
-					    "did=0x%06x sbp=%p "
-					    "cmd=%02x dl=%d,%d "
-					    "rx=%d rsp=%d",
-					    did, sbp, scsi_opcode,
-					    pkt->pkt_datalen, scsi_dl,
-					    data_rx, rsp_data_resid);
+						EMLXS_MSGF(EMLXS_CONTEXT, msg,
+						    "Underrun(2). Fixed. "
+						    "did=0x%06x sbp=%p "
+						    "cmd=%02x dl=%d,%d "
+						    "rx=%d rsp=%d",
+						    did, sbp, scsi_opcode,
+						    pkt->pkt_datalen, scsi_dl,
+						    data_rx, rsp_data_resid);
 
-				}
+					} else if ((scsi_opcode ==
+					    SCSI_INQUIRY) &&
+					    (pkt->pkt_datalen >= 128) &&
+					    (scsi_dl >= 128) &&
+					    (data_rx == 128)) {
 
-				/*
-				 * If status is good and this is an
-				 * inquiry request and the amount of
-				 * data requested >= 128 bytes, but
-				 * only 128 bytes were received,
-				 * then we must fix the issue.
-				 */
-				else if ((scsi_opcode == SCSI_INQUIRY) &&
-				    (pkt->pkt_datalen >= 128) &&
-				    (scsi_dl >= 128) && (data_rx == 128)) {
-					fix_it = 1;
+						/*
+						 * If status is good and this
+						 * is an inquiry request and
+						 * the amount of data requested
+						 * >= 128 bytes, but only 128
+						 * bytes were received,
+						 * then we must fix the issue.
+						 */
+						fix_it = 1;
 
-					EMLXS_MSGF(EMLXS_CONTEXT, msg,
-					    "Underrun(3). Fixed. "
-					    "did=0x%06x sbp=%p "
-					    "cmd=%02x dl=%d,%d "
-					    "rx=%d rsp=%d",
-					    did, sbp, scsi_opcode,
-					    pkt->pkt_datalen, scsi_dl,
-					    data_rx, rsp_data_resid);
+						EMLXS_MSGF(EMLXS_CONTEXT, msg,
+						    "Underrun(3). Fixed. "
+						    "did=0x%06x sbp=%p "
+						    "cmd=%02x dl=%d,%d "
+						    "rx=%d rsp=%d",
+						    did, sbp, scsi_opcode,
+						    pkt->pkt_datalen, scsi_dl,
+						    data_rx, rsp_data_resid);
 
+					}
 				}
 			}
-}
 #endif /* FCP_UNDERRUN_PATCH2 */
 
 			/*
@@ -506,7 +510,8 @@ if (cfg[CFG_ENABLE_PATCH].current & FCP_UNDERRUN_PATCH2) {
 			scsi_dl = pkt->pkt_datalen;
 
 #ifdef FCP_UNDERRUN_PATCH1
-if (cfg[CFG_ENABLE_PATCH].current & FCP_UNDERRUN_PATCH1) {
+			if (cfg[CFG_ENABLE_PATCH].current &
+			    FCP_UNDERRUN_PATCH1) {
 			/*
 			 * If status is not good and no data was
 			 * actually transferred, then we must fix
@@ -2046,7 +2051,7 @@ emlxs_power_down(emlxs_hba_t *hba)
 	if ((rval = emlxs_offline(hba, 0))) {
 		return (rval);
 	}
-	EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
+	(void) EMLXS_SLI_HBA_RESET(hba, 1, 1, 0);
 
 
 #ifdef FMA_SUPPORT

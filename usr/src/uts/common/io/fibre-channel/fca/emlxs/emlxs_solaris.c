@@ -1130,7 +1130,7 @@ _init(void)
 #endif /* MODSYM_SUPPORT */
 
 	/* Setup devops for SFS */
-	MODSYM(fc_fca_init)(&emlxs_ops);
+	(void) MODSYM(fc_fca_init)(&emlxs_ops);
 
 	if ((ret = mod_install(&emlxs_modlinkage)) != 0) {
 		(void) ddi_soft_state_fini(&emlxs_soft_state);
@@ -2843,7 +2843,7 @@ emlxs_fca_ub_alloc(opaque_t fca_port_handle, uint64_t tokens[], uint32_t size,
 	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_sfs_debug_msg,
 	    "fca_ub_alloc: size=%x count=%d type=%x", size, *count, type);
 
-	if (count && (*count > EMLXS_MAX_UBUFS)) {
+	if (*count > EMLXS_MAX_UBUFS) {
 		EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_attach_msg,
 		    "fca_ub_alloc failed: Too many unsolicted buffers "
 		    "requested. count=%x", *count);
@@ -5817,14 +5817,14 @@ emlxs_power(dev_info_t *dip, int32_t comp, int32_t level)
 
 	ddiinst = ddi_get_instance(dip);
 	hba = ddi_get_soft_state(emlxs_soft_state, ddiinst);
-	port = &PPORT;
-
-	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_sfs_debug_msg,
-	    "fca_power: comp=%x level=%x", comp, level);
 
 	if (hba == NULL || comp != EMLXS_PM_ADAPTER) {
 		return (DDI_FAILURE);
 	}
+	port = &PPORT;
+
+	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_sfs_debug_msg,
+	    "fca_power: comp=%x level=%x", comp, level);
 
 	mutex_enter(&EMLXS_PM_LOCK);
 
@@ -5927,11 +5927,9 @@ emlxs_quiesce(dev_info_t *dip)
 
 	ddiinst = ddi_get_instance(dip);
 	hba = ddi_get_soft_state(emlxs_soft_state, ddiinst);
-	port = &PPORT;
-
-	if (hba == NULL || port == NULL) {
+	if (hba == NULL)
 		return (DDI_FAILURE);
-	}
+	port = &PPORT;
 
 	/* The fourth arg 1 indicates the call is from quiesce */
 	if (EMLXS_SLI_HBA_RESET(hba, 1, 1, 1) == 0) {
@@ -6811,7 +6809,7 @@ emlxs_fca_detach(emlxs_hba_t *hba)
 	}
 
 	if ((void *)MODSYM(fc_fca_detach) != NULL) {
-		MODSYM(fc_fca_detach)(hba->dip);
+		(void) MODSYM(fc_fca_detach)(hba->dip);
 	}
 
 	/* Disable INI mode for all ports */
@@ -10856,7 +10854,7 @@ emlxs_swap_fcp_pkt(emlxs_buf_t *sbp)
 	 * Swap first 2 words of FCP CMND payload.
 	 */
 	lunp = (uint16_t *)&cmd->fcpLunMsl;
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < sizeof (cmd->fcpLunMsl) / sizeof (*lunp); i++) {
 		lunp[i] = LE_SWAP16(lunp[i]);
 	}
 

@@ -1290,7 +1290,6 @@ emlxs_timer_check_pools(emlxs_hba_t *hba)
 	}
 
 #ifdef SFCT_SUPPORT
-{
 	uint32_t j;
 	emlxs_port_t *port;
 
@@ -1310,7 +1309,6 @@ emlxs_timer_check_pools(emlxs_hba_t *hba)
 			}
 		}
 	}
-}
 #endif /* SFCT_SUPPORT */
 
 	return;

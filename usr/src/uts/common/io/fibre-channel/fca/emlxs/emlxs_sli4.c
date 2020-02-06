@@ -1417,11 +1417,9 @@ done:
 	 * The leadville driver will now handle the FLOGI at the driver level
 	 */
 
-	if (mbq) {
-		(void) kmem_free((uint8_t *)mbq, sizeof (MAILBOXQ));
-		mbq = NULL;
-		mb = NULL;
-	}
+	(void) kmem_free((uint8_t *)mbq, sizeof (MAILBOXQ));
+	mbq = NULL;
+	mb = NULL;
 	return (0);
 
 failed4:
@@ -3377,7 +3375,7 @@ emlxs_sli4_issue_bootstrap(emlxs_hba_t *hba, MAILBOX *mb, uint32_t tmo)
 		EMLXS_MPDATA_SYNC(hba->sli.sli4.bootstrapmb.dma_handle, 0,
 		    MAILBOX_CMD_SLI4_BSIZE, DDI_DMA_SYNC_FORDEV);
 		emlxs_data_dump(port, "MBOX CMD", iptr, 18, 0);
-	} else {
+	} else if (mp != NULL) {
 		/*
 		 * If this is not embedded, the bootstrap mailbox area
 		 * MUST contain a SGE pointer to a larger area for the
@@ -3431,7 +3429,7 @@ emlxs_sli4_issue_bootstrap(emlxs_hba_t *hba, MAILBOX *mb, uint32_t tmo)
 
 		emlxs_data_dump(port, "MBOX CMP", iptr, 18, 0);
 
-	} else {
+	} else if (mp != NULL) {
 		EMLXS_MPDATA_SYNC(hba->sli.sli4.bootstrapmb.dma_handle, 0,
 		    EMLXS_BOOTSTRAP_MB_SIZE + MBOX_EXTENSION_SIZE,
 		    DDI_DMA_SYNC_FORKERNEL);

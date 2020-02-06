@@ -83,12 +83,6 @@ CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= $(CNOWARN_UNINIT)
 
-# needs work
-SMOFF += indenting,deref_check,all_func_returns,index_overflow
-
-# seems definitely wrong
-$(OBJS_DIR)/emlxs_fcf.o := SMOFF += logical_instead_of_bitwise
-
 #
 #	Default build targets.
 #
