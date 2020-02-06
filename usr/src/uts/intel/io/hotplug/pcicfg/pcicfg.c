@@ -1742,12 +1742,6 @@ pcicfg_bridge_assign(dev_info_t *dip, void *hdl)
 
 	entry->error = PCICFG_SUCCESS;
 
-	if (entry == NULL) {
-		DEBUG0("Failed to get entry\n");
-		entry->error = PCICFG_FAILURE;
-		return (DDI_WALK_TERMINATE);
-	}
-
 	if (pcicfg_config_setup(dip, &handle) != DDI_SUCCESS) {
 		DEBUG0("Failed to map config space!\n");
 		entry->error = PCICFG_FAILURE;
