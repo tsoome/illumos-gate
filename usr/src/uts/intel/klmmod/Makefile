@@ -36,7 +36,6 @@ UTSBASE	= ../..
 #
 MODULE		= klmmod
 OBJECTS		= $(KLMMOD_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(KLMMOD_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(ROOT_MISC_DIR)/$(MODULE)
 
 #
@@ -48,7 +47,6 @@ include $(UTSBASE)/intel/Makefile.intel
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 #
@@ -62,9 +60,6 @@ LDFLAGS		+= -M $(UTSBASE)/common/klm/mapfile-mod
 #
 CERRWARN	+= -_gcc=-Wno-switch
 
-# needs work
-$(OBJS_DIR)/nlm_service.o := SMOFF += signed_integer_overflow_check
-
 #
 #	Default build targets.
 #
@@ -77,12 +72,6 @@ all:		$(ALL_DEPS)
 clean:		$(CLEAN_DEPS)
 
 clobber:	$(CLOBBER_DEPS)
-
-lint:		$(LINT_DEPS)
-
-modlintlib:	$(MODLINTLIB_DEPS)
-
-clean.lint:	$(CLEAN_LINT_DEPS)
 
 install:	$(INSTALL_DEPS)
 
