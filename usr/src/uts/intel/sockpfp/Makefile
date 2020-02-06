@@ -34,7 +34,6 @@ UTSBASE	= ../..
 #
 MODULE		= sockpfp
 OBJECTS		= $(PFP_SOCK_MOD_OBJS:%=$(OBJS_DIR)/%)
-LINTS		= $(PFP_SOCK_MOD_OBJS:%.o=$(LINTS_DIR)/%.ln)
 ROOTMODULE	= $(USR_SOCK_DIR)/$(MODULE)
 
 #
@@ -46,29 +45,13 @@ include $(UTSBASE)/intel/Makefile.intel
 #	Define targets
 #
 ALL_TARGET	= $(BINARY)
-LINT_TARGET	= $(MODULE).lint
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
-
-#
-# lint pass one enforcement and OS version
-#
-CFLAGS += $(CCVERBOSE)
 
 LDFLAGS += -dy -Nfs/sockfs -Nmisc/dls -Nmisc/mac -Ndrv/bpf -Ndrv/ip
 INC_PATH += -I$(UTSBASE)/common/inet/sockmods -I$(UTSBASE)/common/io/bpf
 
-#
-# For now, disable these lint checks; maintainers should endeavor
-# to investigate and remove these for maximum lint coverage.
-# Please do not carry these forward to new Makefiles.
-#
-LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW -erroff=E_BAD_PTR_CAST_ALIGN
-
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-unused-label
-
-# needs work
-SMOFF += all_func_returns
 
 #
 #	Default build targets.

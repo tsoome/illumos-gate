@@ -551,7 +551,7 @@ pfp_packet(void *arg, mac_resource_handle_t mrh, mblk_t *mp, boolean_t flag)
 
 	(void) gethrestime(&ps->ps_timestamp);
 
-	ps->ps_upcalls->su_recv(ps->ps_upper, mp0, hdr.mhi_pktsize, 0,
+	(void) ps->ps_upcalls->su_recv(ps->ps_upper, mp0, hdr.mhi_pktsize, 0,
 	    &error, NULL);
 
 	if (error == 0) {
@@ -560,7 +560,7 @@ pfp_packet(void *arg, mac_resource_handle_t mrh, mblk_t *mp, boolean_t flag)
 	} else {
 		mutex_enter(&ps->ps_lock);
 		if (error == ENOSPC) {
-			ps->ps_upcalls->su_recv(ps->ps_upper, NULL, 0, 0,
+			(void) ps->ps_upcalls->su_recv(ps->ps_upper, NULL, 0, 0,
 			    &error, NULL);
 			if (error == ENOSPC)
 				ps->ps_flow_ctrld = B_TRUE;
