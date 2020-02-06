@@ -4106,16 +4106,16 @@ cmlb_dkio_get_extvtoc(struct cmlb_lun *cl, caddr_t arg, int flag,
 	 */
 
 #ifdef _LP64
-		if (ddi_copyout(&user_vtoc, (void *)arg,
-		    sizeof (struct extvtoc), flag)) {
-			return (EFAULT);
-		}
+	if (ddi_copyout(&user_vtoc, (void *)arg,
+	    sizeof (struct extvtoc), flag)) {
+		return (EFAULT);
+	}
 #else
-		vtoc32tovtoc(user_vtoc, ext_vtoc);
-		if (ddi_copyout(&ext_vtoc, (void *)arg,
-		    sizeof (struct extvtoc), flag)) {
-			return (EFAULT);
-		}
+	vtoc32tovtoc(user_vtoc, ext_vtoc);
+	if (ddi_copyout(&ext_vtoc, (void *)arg,
+	    sizeof (struct extvtoc), flag)) {
+		return (EFAULT);
+	}
 #endif
 
 #elif defined(_SUNOS_VTOC_16)
@@ -5438,9 +5438,6 @@ cmlb_update_fdisk_and_vtoc(struct cmlb_lun *cl, void *tg_cookie)
 			cl->cl_f_geometry_is_valid = B_TRUE;
 			goto no_solaris_partition;
 		}
-	} else if (capacity < 0) {
-		ASSERT(mutex_owned(CMLB_MUTEX(cl)));
-		return (EINVAL);
 	}
 
 	/*
