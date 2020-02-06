@@ -1965,13 +1965,13 @@ freetriev6nodes(node_t **inNode)
 			/* free leaf node and pop the stack */
 			kmem_cache_free(trie_node_cache, anode);
 			anode = s[sp];
+			if (anode == NULL) {
+				return;
+			}
 			if (prev_link[sp--] == 0) {
 				anode->zero = NULL;
 			} else {
 				anode->one = NULL;
-			}
-			if (anode == NULL) {
-				return;
 			}
 		}
 	}
