@@ -231,13 +231,6 @@ ibmf_unregister(ibmf_handle_t *ibmf_handlep, uint_t flags)
 	char		errmsg[128];
 	int		secs;
 
-	clientp = (ibmf_client_t *)*ibmf_handlep;
-
-	IBMF_TRACE_2(IBMF_TNF_DEBUG, DPRINT_L4, ibmf_unregister_start,
-	    IBMF_TNF_TRACE, "", "ibmf_unregister() enter, "
-	    "ibmf_handlep = %p, flags = 0x%x\n",
-	    tnf_opaque, ibmf_handle, *ibmf_handlep, tnf_uint, flags, flags);
-
 	/* check for null ibmf_handlep */
 	if (ibmf_handlep == NULL) {
 		(void) sprintf(errmsg,
@@ -246,6 +239,13 @@ ibmf_unregister(ibmf_handle_t *ibmf_handlep, uint_t flags)
 		status = IBMF_INVALID_ARG;
 		goto bail;
 	}
+
+	clientp = (ibmf_client_t *)*ibmf_handlep;
+
+	IBMF_TRACE_2(IBMF_TNF_DEBUG, DPRINT_L4, ibmf_unregister_start,
+	    IBMF_TNF_TRACE, "", "ibmf_unregister() enter, "
+	    "ibmf_handlep = %p, flags = 0x%x\n",
+	    tnf_opaque, ibmf_handle, *ibmf_handlep, tnf_uint, flags, flags);
 
 	/* validate ibmf_handlep */
 	if (ibmf_i_is_ibmf_handle_valid(*ibmf_handlep) != IBMF_SUCCESS) {
@@ -1382,18 +1382,12 @@ int
 ibmf_free_qp(ibmf_handle_t ibmf_handle, ibmf_qp_handle_t *ibmf_qp_handle,
     uint_t flags)
 {
-	ibmf_client_t	*clientp = (ibmf_client_t *)ibmf_handle;
-	ibmf_alt_qp_t	*qp_ctx = (ibmf_alt_qp_t *)*ibmf_qp_handle;
+	ibmf_client_t	*clientp;
+	ibmf_alt_qp_t	*qp_ctx;
 	uint_t		modify_flags;
 	boolean_t	error = B_FALSE;
 	int		status = IBMF_SUCCESS;
 	char		errmsg[128];
-
-	IBMF_TRACE_2(IBMF_TNF_DEBUG, DPRINT_L4, ibmf_free_qp_start,
-	    IBMF_TNF_TRACE, "", "ibmf_free_qp() enter, "
-	    "ibmf_handlep = %p, ibmf_qp_handle = %p\n",
-	    tnf_opaque, ibmf_handle, ibmf_handle,
-	    tnf_opaque, ibmf_qp_handle, *ibmf_qp_handle);
 
 	/* check for null args */
 	if ((ibmf_handle == NULL) || (ibmf_qp_handle == NULL)) {
@@ -1403,6 +1397,15 @@ ibmf_free_qp(ibmf_handle_t ibmf_handle, ibmf_qp_handle_t *ibmf_qp_handle,
 		status = IBMF_INVALID_ARG;
 		goto bail;
 	}
+
+	clientp = (ibmf_client_t *)ibmf_handle;
+	qp_ctx = (ibmf_alt_qp_t *)*ibmf_qp_handle;
+
+	IBMF_TRACE_2(IBMF_TNF_DEBUG, DPRINT_L4, ibmf_free_qp_start,
+	    IBMF_TNF_TRACE, "", "ibmf_free_qp() enter, "
+	    "ibmf_handlep = %p, ibmf_qp_handle = %p\n",
+	    tnf_opaque, ibmf_handle, ibmf_handle,
+	    tnf_opaque, ibmf_qp_handle, *ibmf_qp_handle);
 
 	/* validate ibmf_handle */
 	if (ibmf_i_is_ibmf_handle_valid(ibmf_handle) != IBMF_SUCCESS) {

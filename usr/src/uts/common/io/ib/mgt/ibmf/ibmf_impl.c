@@ -2411,7 +2411,7 @@ ibmf_i_alloc_qp(ibmf_client_t *clientp, ib_pkey_t p_key, ib_qkey_t q_key,
 
 	/* allocate QP context memory */
 	qp_ctx = (ibmf_alt_qp_t *)kmem_zalloc(sizeof (ibmf_alt_qp_t),
-	    (flags & IBMF_ALLOC_SLEEP) ? KM_SLEEP : KM_NOSLEEP);
+	    (flags == IBMF_ALLOC_SLEEP) ? KM_SLEEP : KM_NOSLEEP);
 	if (qp_ctx == NULL) {
 		(void) sprintf(errmsg, "failed to kmem_zalloc qp ctx");
 		error = B_TRUE;
@@ -2508,7 +2508,7 @@ ibmf_i_alloc_qp(ibmf_client_t *clientp, ib_pkey_t p_key, ib_qkey_t q_key,
 
 	*ibmf_qp_handlep = (ibmf_qp_handle_t)qp_ctx;
 
-	if (flags & IBMF_ALLOC_SLEEP)
+	if (flags == IBMF_ALLOC_SLEEP)
 		blocking = 1;
 	else
 		blocking = 0;

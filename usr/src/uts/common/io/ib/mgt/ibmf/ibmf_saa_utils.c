@@ -482,8 +482,7 @@ static void ibmf_saa_multipath_record_parse_buffer(uchar_t *buffer,
 	char			gid_str[20];
 	uint16_t		num_gids;
 
-	sa_multipath_record_t	*multipath_record =
-	    (sa_multipath_record_t *)record;
+	sa_multipath_record_t	*multipath_record = record;
 
 	ibmf_utils_unpack_data("l2c2s14c", buffer,
 	    IBMF_SAA_MULTIPATH_RECORD_SIZE, multipath_record,
@@ -495,7 +494,8 @@ static void ibmf_saa_multipath_record_parse_buffer(uchar_t *buffer,
 
 	ibmf_utils_unpack_data(gid_str, buffer + IBMF_SAA_MULTIPATH_RECORD_SIZE,
 	    sizeof (ib_gid_t) * num_gids,
-	    multipath_record + sizeof (sa_multipath_record_t),
+	    (void *)((uintptr_t)multipath_record +
+	    sizeof (sa_multipath_record_t)),
 	    sizeof (ib_gid_t) * num_gids);
 
 }
