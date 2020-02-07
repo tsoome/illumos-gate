@@ -67,8 +67,6 @@ CPPFLAGS += 	-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(INCS)
 CSTD =	$(CSTD_GNU99)
 CERRWARN +=	$(CNOWARN_UNINIT)
 
-LINTFLAGS += -erroff=E_BAD_PTR_CAST_ALIGN
-
 .KEEP_STATE:
 
 all: $(PROG) 
@@ -81,14 +79,11 @@ install: all .WAIT $(ROOTCMD) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
 check: $(CHKMANIFEST)
 
-lint: lint_SRCS
-
 clean:
-	$(RM) $(PROG) $(OBJS) $(LINT_FILES)
+	$(RM) $(PROG) $(OBJS)
 
 include ../Makefile.targ
 
 %.o: $(COMMONBASE)/mdesc/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
-

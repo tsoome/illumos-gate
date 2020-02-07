@@ -115,19 +115,19 @@ ldma_sys_get_sysinfo(ds_ver_t *ver, ldma_message_header_t *request,
 
 	data = LDMA_HDR2DATA(reply);
 
-	(void) strcpy(data, name.sysname);
+	(void) strlcpy(data, name.sysname, syslen);
 	data += syslen;
 
-	(void) strcpy(data, name.nodename);
+	(void) strlcpy(data, name.nodename, nodlen);
 	data += nodlen;
 
-	(void) strcpy(data, name.release);
+	(void) strlcpy(data, name.release, rellen);
 	data += rellen;
 
-	(void) strcpy(data, name.version);
+	(void) strlcpy(data, name.version, verlen);
 	data += verlen;
 
-	(void) strcpy(data, name.machine);
+	(void) strlcpy(data, name.machine, maclen);
 
 	LDMA_DBG("GET_SYSINFO: return info=%u, {%s, %s, %s, %s, %s}", rlen,
 	    name.sysname, name.nodename, name.release, name.version,
