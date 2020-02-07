@@ -36,10 +36,6 @@ SRCS=		$(PROG:%=%.c)
 
 OBJS=		$(SRCS:%.c=%.o)
 
-LINT_SRCS=	$(SRCS)
-LINT_FILES=	$(LINT_SRCS:%.c=%.ln)
-
-
 include ../../../Makefile.cmd
 include ../../../../Makefile.psm
 
@@ -52,9 +48,6 @@ $(USRPSMPROG) :=	FILEMODE =	0755
 # FLAGS:
 #
 CPPFLAGS=	-I$(USR_PSM_INCL_DIR) -I$(SRC)/uts/sun4u/opl $(CPPFLAGS.master)
-
-LINT_FLAGS=	-c -Nlevel=4 -Ncheck
-
 
 #
 # LIBRARIES:
@@ -75,12 +68,8 @@ $(PROG): $(OBJS)
 
 install: all .WAIT $(USRPSMPROG)
 
-lint:
-	$(LINT) $(LINT_FLAGS) $(CPPFLAGS) $(LINT_SRCS)
-
 clean:
-	$(RM) $(PROG) $(OBJS) *.po $(LINT_FILES)
-
+	$(RM) $(PROG) $(OBJS) *.po
 
 include ../../../Makefile.targ
 include ../../../../Makefile.psm.targ

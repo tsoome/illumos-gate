@@ -19,9 +19,6 @@
 #
 # CDDL HEADER END
 #
-#
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 2000 by Sun Microsystems, Inc.
 # All rights reserved.
 #
@@ -34,11 +31,10 @@ all :=		TARGET= all
 install :=	TARGET= install
 clean :=	TARGET= clean
 clobber :=	TARGET= clobber
-lint :=		TARGET= lint
 
 .KEEP_STATE:
 
-all install lint clean clobber: $(SUBDIRS)
+all install clean clobber: $(SUBDIRS)
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

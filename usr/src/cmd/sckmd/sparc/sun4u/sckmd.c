@@ -314,7 +314,7 @@ process_sckm_req(int fd, sckm_ioctl_getreq_t *msg)
 	if (write(keysock, pfkey_msg, msg_len) != msg_len) {
 		sckmd_log(LOG_ERR, "PF_KEY write failed\n");
 		reply.status = SCKM_IOCTL_STAT_ERR_OTHER;
-		close(keysock);
+		(void) close(keysock);
 		return (send_sckm_status(fd, &reply));
 	}
 
@@ -329,7 +329,7 @@ process_sckm_req(int fd, sckm_ioctl_getreq_t *msg)
 		reply.status = SCKM_IOCTL_STAT_SUCCESS;
 	}
 
-	close(keysock);
+	(void) close(keysock);
 	return (send_sckm_status(fd, &reply));
 }
 
@@ -596,7 +596,7 @@ sckmd_log(int priority, char *fmt, ...)
 	}
 
 	va_start(vap, fmt);
-	vsnprintf(err, SCKMD_ERR_MSG_SIZE, fmt, vap);
+	(void) vsnprintf(err, SCKMD_ERR_MSG_SIZE, fmt, vap);
 	va_end(vap);
 
 	/* send message to stderr if in standalone mode */

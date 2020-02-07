@@ -18,9 +18,6 @@
 #
 # CDDL HEADER END
 #
-#
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
@@ -41,11 +38,10 @@ all :=			TARGET= all
 install :=		TARGET= install
 clean :=		TARGET= clean
 clobber :=		TARGET= clobber
-lint :=			TARGET= lint
 
 .KEEP_STATE:
 
-all lint clean clobber: $(SUBDIRS)
+all clean clobber: $(SUBDIRS)
 
 install: $(SUBDIRS) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
