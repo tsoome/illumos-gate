@@ -1073,10 +1073,10 @@ bytedump_get(int fd, int cmd, pcitool_reg_t *prg_p,
 	 * Do this by reading big as little and vs.
 	 */
 #if (NATIVE_ENDIAN == PCITOOL_ACC_ATTR_ENDN_BIG)
-		local_prg.acc_attr =
-		    (PCITOOL_ACC_IS_BIG_ENDIAN(local_prg.acc_attr) ?
-		    (local_prg.acc_attr & ~PCITOOL_ACC_ATTR_ENDN_BIG) :
-		    (local_prg.acc_attr | PCITOOL_ACC_ATTR_ENDN_BIG));
+	local_prg.acc_attr =
+	    (PCITOOL_ACC_IS_BIG_ENDIAN(local_prg.acc_attr) ?
+	    (local_prg.acc_attr & ~PCITOOL_ACC_ATTR_ENDN_BIG) :
+	    (local_prg.acc_attr | PCITOOL_ACC_ATTR_ENDN_BIG));
 #endif
 
 	/*
