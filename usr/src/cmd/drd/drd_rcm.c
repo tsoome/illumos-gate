@@ -129,7 +129,7 @@ drd_rcm_fini(void)
 	drd_dbg("drd_rcm_fini...");
 
 	if (rcm_hdl != NULL)
-		rcm_free_handle(rcm_hdl);
+		(void) rcm_free_handle(rcm_hdl);
 
 	return (0);
 }
@@ -268,7 +268,7 @@ drd_rcm_online_cpu_notify(drctl_rsrc_t *rsrcs, int nrsrc)
 		return (0);
 	}
 
-	rcm_notify_online_list(rcm_hdl, rlist, 0, &rinfo);
+	(void) rcm_notify_online_list(rcm_hdl, rlist, 0, &rinfo);
 	if (rv != RCM_SUCCESS) {
 		drd_info("rcm_notify_online_list failed: %d", rv);
 		rcm_free_info(rinfo);
@@ -525,7 +525,7 @@ done:
 	for (idx = 0; rlist[idx] != NULL; idx++) {
 
 		state = 0;
-		rcm_get_rsrcstate(rcm_hdl, rlist[idx], &state);
+		(void) rcm_get_rsrcstate(rcm_hdl, rlist[idx], &state);
 
 		/* find the resource of interest */
 		rsrc = cpu_rsrcstr_to_rsrc(rlist[idx], rsrcs, nrsrc);
@@ -607,7 +607,7 @@ drd_rcm_restore_cpu_notify(drctl_rsrc_t *rsrcs, int nrsrc)
 
 	for (idx = 0, ridx = 0; full_rlist[idx] != NULL; idx++) {
 		state = 0;
-		rcm_get_rsrcstate(rcm_hdl, full_rlist[idx], &state);
+		(void) rcm_get_rsrcstate(rcm_hdl, full_rlist[idx], &state);
 		if (state != RCM_STATE_ONLINE) {
 			rlist[ridx] = full_rlist[idx];
 			ridx++;
@@ -1004,7 +1004,7 @@ dump_cpu_rlist(char **rlist)
 
 	for (idx = 0; rlist[idx] != NULL; idx++) {
 		state = 0;
-		rcm_get_rsrcstate(rcm_hdl, rlist[idx], &state);
+		(void) rcm_get_rsrcstate(rcm_hdl, rlist[idx], &state);
 		drd_dbg("  rlist[%d]: rsrc=%s, state=%-2d (%s)", idx,
 		    rlist[idx], state, rcm_state_str[state]);
 	}
@@ -1068,7 +1068,7 @@ drd_rcm_io_unconfig_request(drctl_rsrc_t *rsrc, int nrsrc)
 	if ((rv = rcm_request_offline(rcm_hdl, dev, 0, &rinfo)) == RCM_SUCCESS)
 		rsrc->status = DRCTL_STATUS_ALLOW;
 	else {
-		rcm_notify_online(rcm_hdl, dev, 0, NULL);
+		(void) rcm_notify_online(rcm_hdl, dev, 0, NULL);
 		rsrc->status = DRCTL_STATUS_DENY;
 		rsrc->offset = (uintptr_t)rcm_info_table(rinfo);
 

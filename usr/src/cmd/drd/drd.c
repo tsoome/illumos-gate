@@ -128,7 +128,7 @@ main(int argc, char **argv)
 
 	/* loop forever */
 	for (;;) {
-		pause();
+		(void) pause();
 	}
 
 	/*NOTREACHED*/
@@ -235,20 +235,20 @@ drd_init_door_server(boolean_t standalone)
 	 */
 
 	/* create the door file */
-	unlink(DRD_DOOR_FILE);
+	(void) unlink(DRD_DOOR_FILE);
 	if ((dbg_fd = creat(DRD_DOOR_FILE, 0644)) == -1) {
 		drd_err("failed to create door file '%s': %s",
 		    DRD_DOOR_FILE, strerror(errno));
 		(void) door_revoke(door_fd);
 		return (-1);
 	}
-	close(dbg_fd);
+	(void) close(dbg_fd);
 
 	/* attach the door file to the door descriptor */
 	if (fattach(door_fd, DRD_DOOR_FILE) == -1) {
 		drd_err("failed to fattach door file '%s': %s",
 		    DRD_DOOR_FILE, strerror(errno));
-		unlink(DRD_DOOR_FILE);
+		(void) unlink(DRD_DOOR_FILE);
 		(void) door_revoke(door_fd);
 		return (-1);
 	}
@@ -366,51 +366,51 @@ drd_door_server(void *cookie, char *argp, size_t arg_sz, door_desc_t *dp,
 	/* pass off to backend for processing */
 	switch (msg->cmd) {
 	case DRCTL_CPU_CONFIG_REQUEST:
-		(*drd_backend->cpu_config_request)(rsrcs, nrsrc);
+		(void) (*drd_backend->cpu_config_request)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_CPU_CONFIG_NOTIFY:
-		(*drd_backend->cpu_config_notify)(rsrcs, nrsrc);
+		(void) (*drd_backend->cpu_config_notify)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_CPU_UNCONFIG_REQUEST:
-		(*drd_backend->cpu_unconfig_request)(rsrcs, nrsrc);
+		(void) (*drd_backend->cpu_unconfig_request)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_CPU_UNCONFIG_NOTIFY:
-		(*drd_backend->cpu_unconfig_notify)(rsrcs, nrsrc);
+		(void) (*drd_backend->cpu_unconfig_notify)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_MEM_CONFIG_REQUEST:
-		(*drd_backend->mem_config_request)(rsrcs, nrsrc);
+		(void) (*drd_backend->mem_config_request)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_MEM_CONFIG_NOTIFY:
-		(*drd_backend->mem_config_notify)(rsrcs, nrsrc);
+		(void) (*drd_backend->mem_config_notify)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_MEM_UNCONFIG_REQUEST:
-		(*drd_backend->mem_unconfig_request)(rsrcs, nrsrc);
+		(void) (*drd_backend->mem_unconfig_request)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_MEM_UNCONFIG_NOTIFY:
-		(*drd_backend->mem_unconfig_notify)(rsrcs, nrsrc);
+		(void) (*drd_backend->mem_unconfig_notify)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_IO_CONFIG_REQUEST:
-		(*drd_backend->io_config_request)(rsrcs, nrsrc);
+		(void) (*drd_backend->io_config_request)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_IO_CONFIG_NOTIFY:
-		(*drd_backend->io_config_notify)(rsrcs, nrsrc);
+		(void) (*drd_backend->io_config_notify)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_IO_UNCONFIG_REQUEST:
-		(*drd_backend->io_unconfig_request)(rsrcs, nrsrc);
+		(void) (*drd_backend->io_unconfig_request)(rsrcs, nrsrc);
 		break;
 
 	case DRCTL_IO_UNCONFIG_NOTIFY:
-		(*drd_backend->io_unconfig_notify)(rsrcs, nrsrc);
+		(void) (*drd_backend->io_unconfig_notify)(rsrcs, nrsrc);
 		break;
 
 	default:

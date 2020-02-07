@@ -47,9 +47,6 @@ HDRS=		drd.h
 
 OBJS=		$(SRCS:%.c=%.o)
 
-LINT_SRCS=	$(SRCS)
-LINT_FILES=	$(LINT_SRCS:%.c=%.ln)
-
 ROOTCMDDIR=		$(ROOTLIB)/ldoms
 ROOTMANIFESTDIR=	$(ROOTSVCPLATFORMSUN4V)
 $(ROOTMANIFEST)		:= FILEMODE= 444
@@ -58,8 +55,6 @@ $(ROOTMANIFEST)		:= FILEMODE= 444
 # FLAGS:
 #
 CPPFLAGS= 	-I$(SRC)/uts/sun4v $(CPPFLAGS.master) -D_REENTRANT
-
-LINT_FLAGS=	-c -Nlevel=4 -Ncheck 
 
 XGETFLAGS +=	-a -s -x $(PROG).xcl
 
@@ -86,11 +81,8 @@ install: all .WAIT $(ROOTCMD) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
 check:	$(CHKMANIFEST)
 
-lint:
-	$(LINT) $(LINT_FLAGS) $(CPPFLAGS) $(LINT_SRCS)
-
 clean:
-	$(RM) $(PROG) $(OBJS) $(LINT_FILES)
+	$(RM) $(PROG) $(OBJS)
 
 include ../Makefile.targ
 include ../../Makefile.psm.targ
