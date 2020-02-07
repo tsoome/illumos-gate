@@ -22,8 +22,6 @@
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-#
 # cmd/scadm/sparc/mpxu/Makefile
 #
 # Platform specific Makefile for the scadm command.
@@ -45,7 +43,6 @@ CFLAGS		+= -R /usr/platform/$(PLATFORM)/lib
 
 LDLIBS		+= -L$(ROOT)/usr/platform/$(PLATFORM)/lib
 LDLIBS		+= -lrsc -lcurses
-LINTFLAGS	+= -u
 
 .KEEP_STATE:
 

@@ -22,8 +22,6 @@
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-#
 # cmd/scadm/Makefile.targ
 #
 
@@ -38,9 +36,6 @@ $(PROG): $(OBJS)
 clean:
 	-$(RM) $(OBJS)
 	-$(RM) $(LINT_OBJS)
-
-lint: $(LINT_OBJS)
-	$(LINT.c) $(LINT_OBJS)
 
 $(POFILE):	$(POFILES)
 	$(RM)	$@

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * date.c: support for the scadm date option (change/display service
  * processor date)
@@ -33,6 +31,7 @@
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <locale.h>
 #include <langinfo.h>

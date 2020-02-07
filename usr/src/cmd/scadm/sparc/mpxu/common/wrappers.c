@@ -24,14 +24,13 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * wrappers.c: utility for scadm command processing functions
  */
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <time.h>  /* required by rsc.h */
 

@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * download.c: support to the scadm download option (download service
  * processor firmware)
@@ -32,6 +30,7 @@
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>  /* required by rsc.h */
 
@@ -191,7 +190,7 @@ ADM_Process_download(int argc, char *argv[])
 	rscp_send_bpmsg(&Message);
 
 	/* Cleanup */
-	rscp_unregister_bpmsg_cb(ADM_Callback);
+	(void) rscp_unregister_bpmsg_cb(ADM_Callback);
 	(void) smq_destroy(&ADM_bpMsgQueue);
 	(void) fclose(FilePtr);
 

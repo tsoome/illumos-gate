@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * send_file.c: to support firmware download (get fw S-records from the
  * user-specified file and send S-records string down to the service processor
@@ -33,6 +31,7 @@
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 

@@ -65,8 +65,6 @@ OBJS		+= $(KARCHOBJS)
 
 SRCS		= $(OBJS:%.o=%.c)
 
-LINT_OBJS	= $(OBJS:%.o=%.ln)
-
 POFILE		= scadm_$(PLATFORM).po
 POFILES		= $(OBJS:%.o=%.po)
 
@@ -95,12 +93,6 @@ $(LINKED_SBIN_DIRS): $(LINKED_DIRS)
 
 %.o:	$(SRCDIR)/common/%.c
 	$(COMPILE.c) -o $@ $<
-
-%.ln:	common/%.c
-	$(LINT.c) -c $@ $<
-
-%.ln:	$(SRCDIR)/common/%.c
-	$(LINT.c) -c $@ $<
 
 %.po:   common/%.c
 	$(COMPILE.cpp) $<  > $<.i

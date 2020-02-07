@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * modem_setup.c: support for the scadm modem_setup option (access to the
  * service processor modem - if present)
@@ -36,6 +34,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>  /* required by librsc.h */
 #include <unistd.h>
@@ -47,8 +46,8 @@
 extern char *ADM_Get_Var(char *Variable);
 
 static void ADM_Send_Char(char  C);
-static void ADM_Modem_Listen();
-static void cleanup();
+static void ADM_Modem_Listen(void);
+static void cleanup(int);
 
 
 typedef enum {ST_RESET, ST_IDLE, ST_TILDA} ADM_state_t;
@@ -59,7 +58,7 @@ static pthread_t modemListen;
 
 
 void
-ADM_Process_modem_setup()
+ADM_Process_modem_setup(void)
 {
 	rscp_msg_t	msg;
 	struct timespec	timeout;
@@ -115,9 +114,9 @@ ADM_Process_modem_setup()
 	Input = 0;
 	State = ST_RESET;
 	winOn = 1;
-	initscr();
-	noecho();
-	printw("\n%s\n\n", string);
+	(void) initscr();
+	(void) noecho();
+	(void) printw("\n%s\n\n", string);
 
 	while (exitLoop) {
 		while ((Input = getch()) == ERR);
@@ -159,7 +158,7 @@ ADM_Process_modem_setup()
 				ADM_Send_Char((char)Input);
 		}
 	}
-	endwin();
+	(void) endwin();
 	winOn = 0;
 
 	/* Terminate Thread */
@@ -184,7 +183,7 @@ ADM_Process_modem_setup()
 	}
 	ADM_Free(&msg);
 
-	pthread_join(modemListen, NULL);
+	(void) pthread_join(modemListen, NULL);
 
 }
 
@@ -205,7 +204,7 @@ ADM_Send_Char(char C)
 		(void) fprintf(stderr, "\n%s\n\n",
 		    gettext("scadm: Unable to send modem data to SC"));
 		if (winOn)
-			endwin();
+			(void) endwin();
 		ADM_Continue = 0;
 		exit(-1);
 	}
@@ -213,7 +212,7 @@ ADM_Send_Char(char C)
 
 
 static void
-ADM_Modem_Listen()
+ADM_Modem_Listen(void)
 {
 	rscp_msg_t	Message;
 	struct timespec	Timeout;
@@ -241,14 +240,14 @@ ADM_Modem_Listen()
 
 
 static void
-cleanup()
+cleanup(int arg __unused)
 {
 	rscp_msg_t	msg;
 	struct timespec	timeout;
 
 
 	if (winOn)
-		endwin();
+		(void) endwin();
 
 	/* Terminate Thread */
 	ADM_Continue = 0;
@@ -269,7 +268,7 @@ cleanup()
 	}
 	ADM_Free(&msg);
 
-	pthread_join(modemListen, NULL);
+	(void) pthread_join(modemListen, NULL);
 
 	exit(-1);
 }

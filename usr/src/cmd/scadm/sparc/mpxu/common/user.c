@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * user.c: support for the scadm useradd, userdel, usershow, userpassword,
  * userperm options (administration of service processor users)
@@ -34,6 +32,7 @@
 #include <libintl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <termios.h>
 #include <time.h>  /* required by librsc.h */

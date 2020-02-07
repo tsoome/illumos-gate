@@ -24,14 +24,13 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * to support the scadm rscreset option (reset the service processor)
  */
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>  /* required by rsc.h */
 

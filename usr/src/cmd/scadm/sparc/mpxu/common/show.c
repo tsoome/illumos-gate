@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * show.c: support for scadm show <variable> option (to show the value of
  * a service processor NV variable)
@@ -33,6 +31,7 @@
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>  /* required by librsc.h */
 

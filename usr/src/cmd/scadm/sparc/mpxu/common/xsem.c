@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * xsem.c: to provide a semaphore system (used by the smq routines)
  *
@@ -44,8 +42,8 @@ xsem_init(xsem_t *sem, int pshared, unsigned int value)
 	if (pshared != 0)
 		return (-1);
 
-	pthread_mutex_init(&sem->semMutex, NULL);
-	pthread_cond_init(&sem->semCV, NULL);
+	(void) pthread_mutex_init(&sem->semMutex, NULL);
+	(void) pthread_cond_init(&sem->semCV, NULL);
 	sem->semaphore = value;
 
 	return (0);
@@ -54,19 +52,19 @@ xsem_init(xsem_t *sem, int pshared, unsigned int value)
 void
 xsem_destroy(xsem_t *sem)
 {
-	pthread_mutex_destroy(&sem->semMutex);
-	pthread_cond_destroy(&sem->semCV);
+	(void) pthread_mutex_destroy(&sem->semMutex);
+	(void) pthread_cond_destroy(&sem->semCV);
 	sem->semaphore = 0;
 }
 
 int
 xsem_wait(xsem_t *sem)
 {
-	pthread_mutex_lock(&sem->semMutex);
+	(void) pthread_mutex_lock(&sem->semMutex);
 
 	if (sem->semaphore < 0) {
 		sem->semaphore = 0;
-		pthread_mutex_unlock(&sem->semMutex);
+		(void) pthread_mutex_unlock(&sem->semMutex);
 		return (XSEM_ERROR);
 	}
 
@@ -74,17 +72,17 @@ xsem_wait(xsem_t *sem)
 		sem->semaphore--;
 	} else {
 		while (sem->semaphore == 0)
-			pthread_cond_wait(&sem->semCV, &sem->semMutex);
+			(void) pthread_cond_wait(&sem->semCV, &sem->semMutex);
 
 		if (sem->semaphore != 0) {
 			sem->semaphore--;
 		} else {
-			pthread_mutex_unlock(&sem->semMutex);
+			(void) pthread_mutex_unlock(&sem->semMutex);
 			return (XSEM_ERROR);
 		}
 	}
 
-	pthread_mutex_unlock(&sem->semMutex);
+	(void) pthread_mutex_unlock(&sem->semMutex);
 	return (0);
 }
 
@@ -92,22 +90,22 @@ xsem_wait(xsem_t *sem)
 int
 xsem_trywait(xsem_t *sem)
 {
-	pthread_mutex_lock(&sem->semMutex);
+	(void) pthread_mutex_lock(&sem->semMutex);
 
 	if (sem->semaphore < 0) {
 		sem->semaphore = 0;
-		pthread_mutex_unlock(&sem->semMutex);
+		(void) pthread_mutex_unlock(&sem->semMutex);
 		return (XSEM_ERROR);
 	}
 
 	if (sem->semaphore == 0) {
-		pthread_mutex_unlock(&sem->semMutex);
+		(void) pthread_mutex_unlock(&sem->semMutex);
 		return (XSEM_EBUSY);
 	} else {
 		sem->semaphore--;
 	}
 
-	pthread_mutex_unlock(&sem->semMutex);
+	(void) pthread_mutex_unlock(&sem->semMutex);
 	return (0);
 }
 
@@ -115,10 +113,10 @@ xsem_trywait(xsem_t *sem)
 int
 xsem_post(xsem_t *sem)
 {
-	pthread_mutex_lock(&sem->semMutex);
+	(void) pthread_mutex_lock(&sem->semMutex);
 	sem->semaphore++;
-	pthread_cond_signal(&sem->semCV);
-	pthread_mutex_unlock(&sem->semMutex);
+	(void) pthread_cond_signal(&sem->semCV);
+	(void) pthread_mutex_unlock(&sem->semMutex);
 
 	return (0);
 }
@@ -141,11 +139,11 @@ xsem_xwait(xsem_t *sem, int timeout, timestruc_t *mytime)
 	if (timeout == 0)
 		return (xsem_wait(sem));
 	else {
-		pthread_mutex_lock(&sem->semMutex);
+		(void) pthread_mutex_lock(&sem->semMutex);
 
 		if (sem->semaphore < 0) {
 			sem->semaphore = 0;
-			pthread_mutex_unlock(&sem->semMutex);
+			(void) pthread_mutex_unlock(&sem->semMutex);
 			return (XSEM_ERROR);
 		}
 
@@ -167,17 +165,17 @@ xsem_xwait(xsem_t *sem, int timeout, timestruc_t *mytime)
 			 */
 
 			if (status != 0) {
-				pthread_mutex_unlock(&sem->semMutex);
+				(void) pthread_mutex_unlock(&sem->semMutex);
 				return (XSEM_ETIME);
 			} else if (sem->semaphore != 0) {
 				sem->semaphore--;
 			} else {
-				pthread_mutex_unlock(&sem->semMutex);
+				(void) pthread_mutex_unlock(&sem->semMutex);
 				return (XSEM_ERROR);
 			}
 		}
 
-		pthread_mutex_unlock(&sem->semMutex);
+		(void) pthread_mutex_unlock(&sem->semMutex);
 	}
 
 	return (0);

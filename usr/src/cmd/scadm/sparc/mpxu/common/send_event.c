@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * send_event.c: support for the scadm send_event option (send an event message
  * to the service processor)
@@ -33,6 +31,7 @@
 
 #include <libintl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>  /* required by librsc.h */
 
