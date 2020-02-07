@@ -641,7 +641,7 @@ print_field(const uint8_t *field, const fru_regdef_t *def)
 			for (i = 0; i < def->payloadLen; i++) {
 				if ((i == 4) || (i == 6) ||
 				    (i == 8) || (i == 10))
-				output("-");
+					output("-");
 				output("%2.2x", field[i]);
 			}
 			break;
