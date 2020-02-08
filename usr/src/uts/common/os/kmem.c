@@ -5365,10 +5365,8 @@ kmem_cache_scan(kmem_cache_t *cp)
 		kmd->kmd_scans++;
 		slabs_found = kmem_move_buffers(cp, kmem_reclaim_scan_range,
 		    kmem_reclaim_max_slabs, 0);
-		if (slabs_found >= 0) {
-			kmd->kmd_slabs_sought += kmem_reclaim_max_slabs;
-			kmd->kmd_slabs_found += slabs_found;
-		}
+		kmd->kmd_slabs_sought += kmem_reclaim_max_slabs;
+		kmd->kmd_slabs_found += slabs_found;
 
 		if (++kmd->kmd_tries >= kmem_reclaim_scan_range) {
 			kmd->kmd_tries = 0;

@@ -902,8 +902,9 @@ dirfindvp(vnode_t *vrootp, vnode_t *dvp, vnode_t *tvp, cred_t *cr, char *dbuf,
 		    NULL, NULL, NULL);
 		if (error == 0) {
 			if (vnode_match(tvp, cmpvp, cr)) {
-				(void) strcpy(dp->d_name, ".zfs");
 				dp->d_reclen = strlen(".zfs");
+				(void) strlcpy(dp->d_name, ".zfs",
+				    dp->d_reclen + 1);
 				dp->d_off = 2;
 				dp->d_ino = 1;
 				*rdp = dp;

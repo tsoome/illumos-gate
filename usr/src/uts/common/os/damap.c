@@ -1086,7 +1086,7 @@ dam_addr_deactivate(dam_t *mapp, id_t addrid)
 	/*
 	 * call the unconfiguration callback
 	 */
-	(*mapp->dam_unconfig_cb)(mapp->dam_config_arg, mapp, addrid);
+	(void) (*mapp->dam_unconfig_cb)(mapp->dam_config_arg, mapp, addrid);
 	dam_deact_cleanup(mapp, addrid, addrstr, DAMAP_DEACT_RSN_GONE);
 }
 

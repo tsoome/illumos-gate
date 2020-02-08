@@ -177,7 +177,8 @@ clock_highres_timer_settime(itimer_t *it, int flags,
 	 *
 	 * The actual arithmetic manipulation is left up to reader.
 	 */
-	if (cyctime.cyt_when > INT64_MAX - cyctime.cyt_interval) {
+	if (cyctime.cyt_interval > 0 &&
+	    cyctime.cyt_when > INT64_MAX - cyctime.cyt_interval) {
 		mutex_exit(&cpu_lock);
 		return (EOVERFLOW);
 	}

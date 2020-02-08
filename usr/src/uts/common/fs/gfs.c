@@ -1111,9 +1111,7 @@ gfs_vop_map(vnode_t *vp, offset_t off, struct as *as, caddr_t *addrp,
 #endif
 	if (vp->v_flag & VNOMAP)
 		return (ENOTSUP);
-	if (off > MAXOFF_T)
-		return (EFBIG);
-	if ((long)off < 0 || (long)(off + len) < 0)
+	if (off < 0 || (long)(off + len) < 0)
 		return (EINVAL);
 	if (vp->v_type != VREG)
 		return (ENODEV);

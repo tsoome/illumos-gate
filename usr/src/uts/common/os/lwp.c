@@ -1917,7 +1917,7 @@ retry:
 
 	ct->t_unpark = t->t_unpark;
 	ct->t_clfuncs = t->t_clfuncs;
-	CL_FORK(t, ct, bufp);
+	(void) CL_FORK(t, ct, bufp);
 	ct->t_cid = t->t_cid;	/* after data allocated so prgetpsinfo works */
 	mutex_exit(&p->p_lock);
 
