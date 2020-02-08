@@ -1813,7 +1813,7 @@ etm_send_ds_msg(fmd_hdl_t *fmd_hdl, boolean_t ckpt_remove, etm_iosvc_t *iosvc,
 	    msg_ele->msg_size)) != 0) {
 		fmd_hdl_debug(fmd_hdl, "info: ds_send_msg rc %d xid %d\n",
 		    rc, evhdrp->ev_pp.pp_xid);
-			return (-EAGAIN);
+		return (-EAGAIN);
 	}
 
 	/*
@@ -3183,8 +3183,8 @@ etm_async_event_handler(void *arg)
 						    "error: can't find iosvc "
 						    "for async evnt %d\n",
 						    async_e.event_type);
-					(void) pthread_mutex_unlock(
-					    &iosvc_list_lock);
+						(void) pthread_mutex_unlock(
+						    &iosvc_list_lock);
 						break;
 					}
 
@@ -3197,7 +3197,7 @@ etm_async_event_handler(void *arg)
 					 * the ldom name and the msg Q
 					 * remains in iosvc_list
 					 */
-					if (iosvc->ldom_name != '\0')
+					if (*iosvc->ldom_name != '\0')
 						fmd_hdl_debug(fmd_hdl,
 						    "info: iosvc  w/ ldom_name "
 						    "%s \n", iosvc->ldom_name);
@@ -4298,7 +4298,7 @@ _fmd_fini(fmd_hdl_t *hdl)
 		ldom_fini(etm_lhp);
 	}
 	if (etm_ds_fini) {
-		(*etm_ds_fini)();
+		(void) (*etm_ds_fini)();
 		(void) dlclose(etm_dl_hdl);
 	}
 

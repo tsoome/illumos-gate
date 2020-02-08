@@ -192,8 +192,7 @@ cmd_opl_ue_cpu(fmd_hdl_t *hdl, fmd_event_t *ep,
 		if (cpu->cpu_cpuid == main_cpuid) {
 			if (cc->cc_cp != NULL &&
 			    fmd_case_solved(hdl, cc->cc_cp)) {
-				if (cpu_list != NULL)
-					opl_cpulist_free(hdl, cpu_list);
+				opl_cpulist_free(hdl, cpu_list);
 				return (CMD_EVD_REDUND);
 			}
 
@@ -232,8 +231,7 @@ cmd_opl_ue_cpu(fmd_hdl_t *hdl, fmd_event_t *ep,
 		}
 	}
 	fmd_case_solve(hdl, cc->cc_cp);
-	if (cpu_list != NULL)
-		opl_cpulist_free(hdl, cpu_list);
+	opl_cpulist_free(hdl, cpu_list);
 	return (CMD_EVD_OK);
 }
 

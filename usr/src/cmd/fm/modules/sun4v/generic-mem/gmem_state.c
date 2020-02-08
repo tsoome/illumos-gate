@@ -130,7 +130,7 @@ gmem_state_restore(fmd_hdl_t *hdl)
 		fmd_buf_read(hdl, cp, fmd_case_uuid(hdl, cp), &ptr,
 		    sizeof (gmem_case_ptr_t));
 
-		if (ptr.ptr_type == 0 || ptr.ptr_type >
+		if (ptr.ptr_type == 0 || ptr.ptr_type >=
 		    sizeof (gmem_case_restorers) /
 		    sizeof (gmem_case_restorer_f *))
 			return (gmem_set_errno(EINVAL));
