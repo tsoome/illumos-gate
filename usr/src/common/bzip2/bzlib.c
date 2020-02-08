@@ -362,23 +362,33 @@ void add_pair_to_block ( EState* s )
    s->inUse[s->state_in_ch] = True;
    switch (s->state_in_len) {
       case 1:
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
          break;
       case 2:
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
          break;
       case 3:
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
          break;
       default:
          s->inUse[s->state_in_len-4] = True;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
-         s->block[s->nblock] = (UChar)ch; s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
+         s->block[s->nblock] = (UChar)ch;
+         s->nblock++;
          s->block[s->nblock] = ((UChar)(s->state_in_len-4));
          s->nblock++;
          break;
