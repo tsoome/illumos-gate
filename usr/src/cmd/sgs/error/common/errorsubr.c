@@ -101,10 +101,11 @@ int
 position(char *string, char ch)
 {
 	int	i;
-	if (string)
-	for (i = 1; *string; string++, i++) {
-		if (*string == ch)
-			return (i);
+	if (string) {
+		for (i = 1; *string; string++, i++) {
+			if (*string == ch)
+				return (i);
+		}
 	}
 	return (-1);
 }
@@ -116,13 +117,14 @@ substitute(char *string, char chold, char chnew)
 {
 	char	*cp = string;
 
-	if (cp)
-	while (*cp) {
-		if (*cp == chold) {
-			*cp = chnew;
-			break;
+	if (cp) {
+		while (*cp) {
+			if (*cp == chold) {
+				*cp = chnew;
+				break;
+			}
+			cp++;
 		}
-		cp++;
 	}
 	return (string);
 }

@@ -82,7 +82,7 @@ ask_db(dbp, file)
 	if ((libname = malloc(liblen + 1)) == 0)
 		return (NULL);
 	(void) strncpy(libname, n, liblen);
-	libname[liblen] = NULL;
+	libname[liblen] = 0;
 
 	if (strncmp(MSG_ORIG(MSG_FIL_DOTSODOT), (n + liblen),
 	    MSG_FIL_DOTSODOT_SIZE))
@@ -245,7 +245,7 @@ find_so(const char *ds)
 			 */
 			index = hash(cp, cplen, m);
 			ep = &(dbp->db_hash[index]);
-			if (ep->dbe_lop == NULL) {
+			if (ep->dbe_lop == 0) {
 				ep->dbe_lop = (long)get_lo(dbp, cp,
 				    cplen, m, to_min);
 				/* LINTED */
@@ -278,7 +278,7 @@ find_so(const char *ds)
 						    dp->d_name);
 					break;
 				}
-				if (ep->dbe_next == NULL) {
+				if (ep->dbe_next == 0) {
 					ep->dbe_next = RELPTR(dbp,
 					    calloc(sizeof (struct dbe), 1));
 					/* LINTED */

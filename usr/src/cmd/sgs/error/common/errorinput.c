@@ -25,8 +25,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -315,7 +313,7 @@ Errorclass
 lint0(void)
 {
 	char	**nwordv;
-		char	*line, *file;
+	char	*line, *file;
 	/*
 	 *	Attempt a match for the new lint style normal compiler
 	 *	error messages, of the form

@@ -422,7 +422,7 @@ oktotouch(char *filename)
 	extern		char	*suffixlist;
 	char	*src;
 	char	*pat;
-			char	*osrc;
+	char	*osrc;
 
 	pat = suffixlist;
 	if (pat == 0)
