@@ -108,17 +108,15 @@ LINTFILES		= $(LINTFILES_$(MDBTGT))
 # building with an LFS python, we attempt to use -isystem when it's
 # available.
 #
-PYCPPFLAGS		= -_gcc=-isystem -_gcc=$(ADJUNCT_PROTO)/usr/include/python$(PYTHON_VERSION)
-PYCPPFLAGS		+= -_cc=-I$(ADJUNCT_PROTO)/usr/include/python$(PYTHON_VERSION)
-PYLNFLAGS		= -I$(ADJUNCT_PROTO)/usr/include/python$(PYTHON_VERSION)
+PYCPPFLAGS		= -_gcc=-isystem -_gcc=$(ADJUNCT_PROTO)/usr/include/python$(PYVER)$(PYSUFFIX)
+PYCPPFLAGS		+= -_cc=-I$(ADJUNCT_PROTO)/usr/include/python$(PYVER)$(PYSUFFIX)
+PYLNFLAGS		= -I$(ADJUNCT_PROTO)/usr/include/python$(PYVER)$(PYSUFFIX)
 
 kvm_TGTFLAGS		= -D_KERNEL
 proc_TGTFLAGS		= -D_USER
 
 CSTD			= $(CSTD_GNU99)
 
-CFLAGS			+= $(CCVERBOSE)
-CFLAGS64		+= $(CCVERBOSE)
 CPPFLAGS		+= $($(MDBTGT)_TGTFLAGS) -I../../../common
 LDFLAGS			+= $(ZTEXT)
 LDFLAGS64		+= $(ZTEXT)
