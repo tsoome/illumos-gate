@@ -25,11 +25,10 @@
 
 include ../../Makefile.common
 
-MODULES = \
-	$(COMMON_MODULES_PROC) \
-	$(COMMON_MODULES_KVM) \
-	intr \
-	ssd
+MODULES = $(COMMON_MODULES_PROC)
+MODULES += $(COMMON_MODULES_PROC_64BIT)
+MODULES += $(COMMON_MODULES_KVM)
+MODULES += intr ssd
 
 #
 # a "$(MODULES): kmdb" rule would seem to do the trick but, for some reason,
