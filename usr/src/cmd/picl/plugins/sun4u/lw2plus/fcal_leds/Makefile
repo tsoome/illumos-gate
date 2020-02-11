@@ -57,15 +57,14 @@ CPPFLAGS +=	-D_REENTRANT
 RUNTIMEROOT =
 PICLPLATDYN =	$(RUNTIMEROOT)/usr/platform/\$$PLATFORM/lib/picl/plugins
 PICLARCHDYN =	$(RUNTIMEROOT)/usr/platform/sun4u/lib/picl/plugins
-PICLGENDYN =	$(RUNTIMEROOT)/usr/lib/picl/plugins
 
-DYNFLAGS +=	-R$(PICLPLATDYN):$(PICLARCHDYN):$(PICLGENDYN)
+DYNFLAGS +=	-R$(PICLPLATDYN):$(PICLARCHDYN)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/piclevent
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/frutree
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/memcfg
-LDLIBS +=	-lpicltree -lpicldevtree -lpiclfrutree -lnvpair
+LDLIBS +=	-lpicltree
 LDLIBS +=	-ldevinfo -lc
 
 .KEEP_STATE:
@@ -102,8 +101,6 @@ $(LIBLINKS):	FRC
 # include library targets
 include $(SRC)/lib/Makefile.targ
 include	$(SRC)/cmd/picl/plugins/Makefile.targ
-
-lint:
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
