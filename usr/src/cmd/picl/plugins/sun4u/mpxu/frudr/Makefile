@@ -75,10 +75,8 @@ CPPFLAGS +=	-I$(SRC)/uts/sun4u/mpxu
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/ -I$(SRC)/uts/common/
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/sys/i2c/clients
 
-CFLAGS +=	$(CCVERBOSE)
-
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins
-DYNFLAGS +=	-R/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
+DYNFLAGS +=	-R/usr/platform/sun4u/lib/picl/plugins
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/lib/picld_pluginutil/$(MACH)
 LDLIBS +=	-L$(DEVTREE_SRC_DIR)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
@@ -89,8 +87,7 @@ LDLIBS +=	-L$(SRC)/cmd/picl/plugins/sun4u/envmon
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/frutree
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins
 LDLIBS +=	-lc -ldevinfo -ldevice
-LDLIBS +=	-lpicltree -lpicld_pluginutil -lnvpair -lkstat
-LDLIBS +=	-lpiclevent -lpiclenvmon -lpiclfrutree
+LDLIBS +=	-lpicltree -lpicld_pluginutil -lnvpair
 
 .KEEP_STATE:
 
@@ -155,8 +152,6 @@ $(USR_PLAT_PLUGINS_DYNLIBS): $(PLAT_PLUGINS_DIRS)
 $(USR_PLAT_PLUGINS_LIBLINKS): $(PLAT_PLUGINS_DIRS)
 	$(RM) -r $@ ;\
 	$(SYMLINK) $(MPXU_DYNLIB_DIR)/$(DYNLIB) $@
-
-lint:
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
