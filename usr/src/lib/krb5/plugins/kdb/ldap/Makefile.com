@@ -40,7 +40,6 @@ OBJECTS= $(LDAP_OBJS)
 include $(SRC)/lib/krb5/Makefile.lib
 
 LIBS=		$(DYNLIB)
-SRCS=	$(LDAP_OBJS:%.o=../%.c)
 
 include $(SRC)/lib/gss_mechs/mech_krb5/Makefile.mech_krb5
 
@@ -60,7 +59,6 @@ CPPFLAGS +=	-DHAVE_CONFIG_H \
 		-DKRB5_DEPRECATED=1 -DKRB5_PRIVATE=1 \
 		-DUSE_KADM5_API_VERSION=2
 
-CFLAGS +=	$(CCVERBOSE)
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	-_gcc=-Wno-unused-function
 
