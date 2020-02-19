@@ -49,15 +49,12 @@ CPPFLAGS +=	-I$(SRC)/cmd/picl/plugins/sun4u/psvc/psvcobj
 CPPFLAGS +=	-D_REENTRANT
 
 ZDEFS  =
-CFLAGS +=	$(CCVERBOSE)
 LDLIBS +=	-L$(ROOT)/usr/lib
 LDLIBS +=	-L$(SRC)/lib/libpicl/$(MACH) -L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/sun4u/psvc/psvcobj
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/sun4u/psvc/psvcplugin
 DYNFLAGS +=	-R$(DYNFLAGS_PLAT):$(DYNFLAGS_SUN4U):$(DYNFLAGS_COM)
-
-LDLIBS +=	-lpicltree -lpsvcobj -lpsvcplugin
-LDLIBS +=	-lc -ldevice -lcfgadm
+LDLIBS +=	-lpicltree -lpsvcobj -lpsvcplugin -ldevice -lc
 
 .KEEP_STATE:
 
@@ -102,8 +99,6 @@ $(USR_PSM_LIB_DIR)/%: % $(USR_PSM_LIB_DIR)
 	$(INS.file) ;\
 	$(RM) -r $(USR_PSM_LIB_DIR)/libpsvcpolicy_psr.so; \
 	$(SYMLINK) ./libpsvcpolicy_psr.so$(VERS) $(USR_PSM_LIB_DIR)/libpsvcpolicy_psr.so
-
-lint :
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

@@ -61,7 +61,7 @@ LDLIBS +=       -L$(DEVTREE_SRC_DIR)
 LDLIBS +=	-L$(SRC)/lib/libptree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins
-LDLIBS +=	-lc -lpicldevtree -lpicltree -lnvpair
+LDLIBS +=	-lpicltree -lnvpair -lc
 
 .KEEP_STATE:
 
@@ -92,8 +92,6 @@ $(LIBLINKS):	FRC
 # include library targets
 include $(SRC)/lib/Makefile.targ
 include $(SRC)/cmd/picl/plugins/Makefile.targ
-
-lint :
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

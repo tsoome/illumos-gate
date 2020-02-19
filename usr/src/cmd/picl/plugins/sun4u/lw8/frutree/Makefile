@@ -51,14 +51,12 @@ LIBS =		$(DYNLIB)
 ROOTLIBDIR	= $(ROOT_PLAT_PLUGINDIR)
 
 CPPFLAGS +=	-D_SGFRU
-CFLAGS +=	$(CCVERBOSE)
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
 LDLIBS +=	-L$(DEVTREE_SRC_DIR)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins
-LDLIBS +=	-lc -lpicldevtree -lpiclmemcfg
-LDLIBS +=	-lpicltree -lnvpair -lkstat -ldevice
+LDLIBS +=	-lpicltree -lnvpair -lkstat -ldevice -lc
 
 .KEEP_STATE:
 
@@ -89,8 +87,6 @@ $(LIBLINKS):	FRC
 # include library targets
 include $(SRC)/lib/Makefile.targ
 include	$(SRC)/cmd/picl/plugins/Makefile.targ
-
-lint:
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

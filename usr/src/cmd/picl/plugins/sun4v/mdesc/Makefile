@@ -62,12 +62,10 @@ CPPFLAGS +=	-I$(SRC)/common/mdesc
 CPPFLAGS +=	-I$(SRC)/uts/common/sys
 CPPFLAGS +=	-D_REENTRANT
 
-CFLAGS +=	$(CCVERBOSE)
 LDLIBS +=	-L$(SRC)/lib/libpicl/$(MACH) -L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins -L$(ROOT)/usr/lib/sparcv9
 DYNFLAGS +=	-R$(DYNFLAGS_COM)
-
-LDLIBS +=	-lc -lpicltree -ldevinfo -lpicldevtree -lcfgadm -lnvpair
+LDLIBS +=	-lpicltree -ldevinfo -lcfgadm -lnvpair -lc
 
 .KEEP_STATE:
 
@@ -81,7 +79,5 @@ $(LIBLINKS):	FRC
 # include library targets
 include $(SRC)/cmd/picl/plugins/Makefile.targ
 include $(SRC)/lib/Makefile.targ
-
-lint :
 
 FRC:

@@ -63,17 +63,17 @@ CPPFLAGS +=	-I$(SRC)/uts/common/sys
 CPPFLAGS +=	-I$(SRC)/lib/libpri/common
 CPPFLAGS +=	-D_REENTRANT
 
-CFLAGS +=	$(CCVERBOSE)
 LDLIBS +=	-L$(SRC)/lib/libpicl/$(MACH) -L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins -L$(ROOT)/usr/lib/sparcv9
 LDLIBS +=	-L$(ROOT)/usr/lib/libpri
 LDLIBS +=	-L$(ROOT_PLATFORM)/lib -L$(ROOT_PLATFORM)/lib/picl/plugins
 
-LDLIBS +=	-lc -lpicl -lpicltree -lpicldevtree -lpri
+LDLIBS +=	-lc -lpicl -lpicltree -lpri
 
 # No interfaces from libsnmpplugin.so directly used here, but we need the
 # snmp plugin to load and init before libpriplugin.so.
 #
+ZGUIDANCE =	-zguidance=nounused
 LDLIBS +=	-lsnmpplugin
 
 #DYNFLAGS +=	-R$(DYNFLAGS_COM)
@@ -93,7 +93,5 @@ $(LIBLINKS):	FRC
 # include library targets
 include $(SRC)/cmd/picl/plugins/Makefile.targ
 include $(SRC)/lib/Makefile.targ
-
-lint :
 
 FRC:

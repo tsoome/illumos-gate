@@ -53,14 +53,12 @@ ROOTCONF=       $(CONF:%=$(ROOTLIBDIR)/%)
 $(ROOTCONF)	:= FILEMODE = 0644
 INFOS=          envmodel.info
 
-CFLAGS +=	$(CCVERBOSE)
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=       -L$(SRC)/cmd/picl/plugins/lib/picld_pluginutil/$(MACH)
-LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins -lpicldevtree -lpicltree
-LDLIBS +=       -lpicld_pluginutil
-LDLIBS +=	-ldevinfo -lc
+LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins
+LDLIBS +=	-lpicltree -lpicld_pluginutil -ldevinfo -lc
 
 .KEEP_STATE:
 
@@ -94,15 +92,12 @@ _msg:	$(MSGDOMAIN) $(POFILE)
 $(MSGDOMAIN):
 	$(INS.dir)
 
-
 $(LIBLINKS):	FRC
 	$(RM) $@; $(SYMLINK) $(DYNLIB) $@
 
 # include library targets
 include $(SRC)/lib/Makefile.targ
 include	$(SRC)/cmd/picl/plugins/Makefile.targ
-
-lint:
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

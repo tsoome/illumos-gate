@@ -59,7 +59,7 @@ DEVTREE_SRC_DIR = $(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=       -L$(DEVTREE_SRC_DIR)
 LDLIBS +=       -L$(ROOT)/usr/lib/picl/plugins
 LDLIBS +=	-L$(SRC)/lib/libptree/$(MACH)
-LDLIBS +=       -lc -lpicltree -lpicldevtree
+LDLIBS +=       -lpicltree -lc
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
 
 .KEEP_STATE:
@@ -92,8 +92,6 @@ $(LIBLINKS):	FRC
 # include library targets
 include $(SRC)/cmd/picl/plugins/Makefile.targ
 include $(SRC)/lib/Makefile.targ
-
-lint :
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
