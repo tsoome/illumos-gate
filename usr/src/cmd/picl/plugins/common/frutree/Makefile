@@ -44,7 +44,7 @@ CLOBBERFILES += $(LIBLINKS)
 
 CPPFLAGS +=	-I../devtree
 CPPFLAGS +=	-I$(SRC)/cmd/picl/plugins/lib/picld_pluginutil
-CFLAGS +=	$(CCVERBOSE) $(C_PICFLAGS)
+CFLAGS +=	$(C_PICFLAGS)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/lib/picld_pluginutil/$(MACH)
 LDLIBS +=	-L../devtree
@@ -53,7 +53,6 @@ LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins
 LDLIBS +=	-lc -lpicltree -lpicld_pluginutil
 $(SPARC_BLD)LDLIBS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins
 $(SPARC_BLD)LDLIBS +=	-R/usr/platform/sun4u/lib/picl/plugins
-$(SPARC_BLD)LDLIBS +=	-R/usr/lib/picl/plugins
 
 .KEEP_STATE:
 
