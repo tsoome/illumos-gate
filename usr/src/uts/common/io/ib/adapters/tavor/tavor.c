@@ -3460,12 +3460,13 @@ tavor_intr_disable(tavor_state_t *state)
 			    PCI_MSI_64BIT_MASKBITS : PCI_MSI_32BIT_MASK;
 
 			/* Clear all inums in MSI */
-			PCI_CAP_PUT32(pci_cfg_hdl, 0, caps_ctrl, offset, 0);
+			(void) PCI_CAP_PUT32(pci_cfg_hdl, 0, caps_ctrl,
+			    offset, 0);
 		}
 
 		/* Disable MSI interrupts */
 		msi_ctrl &= ~PCI_MSI_ENABLE_BIT;
-		PCI_CAP_PUT16(pci_cfg_hdl, 0, caps_ctrl, PCI_MSI_CTRL,
+		(void) PCI_CAP_PUT16(pci_cfg_hdl, 0, caps_ctrl, PCI_MSI_CTRL,
 		    msi_ctrl);
 
 	} else {
