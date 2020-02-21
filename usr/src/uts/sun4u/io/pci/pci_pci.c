@@ -1403,8 +1403,8 @@ ppb_pwr(dev_info_t *dip, int component, int lvl)
 		}
 	}
 
-	PCI_CAP_PUT16(ppb->ppb_conf_hdl, 0, ppb->ppb_pm_cap_ptr, PCI_PMCSR,
-	    pmcsr);
+	(void) PCI_CAP_PUT16(ppb->ppb_conf_hdl, 0, ppb->ppb_pm_cap_ptr,
+	    PCI_PMCSR, pmcsr);
 
 	/*
 	 * No bus transactions should occur without waiting for

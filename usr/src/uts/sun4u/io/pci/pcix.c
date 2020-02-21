@@ -76,7 +76,7 @@ pcix_set_cmd_reg(dev_info_t *child, uint16_t value)
 	DEBUG1(DBG_INIT_CLD, child, "pcix_set_cmd_reg: PCI-X CMD Register "
 	    "(After) %x\n", pcix_cmd);
 
-	PCI_CAP_PUT16(handle, 0, pcix_cap_ptr, 2, pcix_cmd);
+	(void) PCI_CAP_PUT16(handle, 0, pcix_cap_ptr, 2, pcix_cmd);
 
 teardown:
 	pci_config_teardown(&handle);
