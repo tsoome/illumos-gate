@@ -577,7 +577,7 @@ pcicfg_get_nslots(dev_info_t *dip, ddi_acc_handle_t handle)
 	    &cap_ptr)) == DDI_SUCCESS) {
 		uint32_t config;
 
-		PCI_CAP_PUT8(handle, 0, cap_ptr, PCI_HP_DWORD_SELECT_OFF,
+		(void) PCI_CAP_PUT8(handle, 0, cap_ptr, PCI_HP_DWORD_SELECT_OFF,
 		    PCI_HP_SLOT_CONFIGURATION_REG);
 		config = PCI_CAP_GET32(handle, 0, cap_ptr,
 		    PCI_HP_DWORD_DATA_OFF);
@@ -3983,7 +3983,7 @@ pcicfg_disable_bridge_probe_err(dev_info_t *dip, ddi_acc_handle_t h,
 		    PCIE_DEVCTL_CE_REPORTING_EN |
 		    PCIE_DEVCTL_NFE_REPORTING_EN |
 		    PCIE_DEVCTL_FE_REPORTING_EN);
-		PCI_CAP_PUT16(h, 0, cap_ptr, PCIE_DEVCTL, devctl);
+		(void) PCI_CAP_PUT16(h, 0, cap_ptr, PCIE_DEVCTL, devctl);
 	}
 }
 
