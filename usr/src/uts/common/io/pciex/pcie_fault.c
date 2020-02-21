@@ -542,12 +542,12 @@ pf_pcix_regs_gather(pf_data_t *pfd_p, pcie_bus_t *bus_p)
 			 * read-only so we make sure we do not write to it.
 			 */
 			if (!PCIE_IS_PCIE_BDG(bus_p)) {
-				PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_ECC_STATUS,
-				    0);
+				(void) PCIX_CAP_PUT(32, bus_p,
+				    PCI_PCIX_BDG_ECC_STATUS, 0);
 				pf_pcix_ecc_regs_gather(
 				    PCIX_BDG_ECC_REG(pfd_p, 0), bus_p, B_TRUE);
-				PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_ECC_STATUS,
-				    1);
+				(void) PCIX_CAP_PUT(32, bus_p,
+				    PCI_PCIX_BDG_ECC_STATUS, 1);
 			}
 			pf_pcix_ecc_regs_gather(PCIX_BDG_ECC_REG(pfd_p, 0),
 			    bus_p, B_TRUE);
@@ -702,10 +702,10 @@ pf_pcix_regs_clear(pf_data_t *pfd_p, pcie_bus_t *bus_p)
 
 		pcix_bdg_regs = PCIX_BDG_ERR_REG(pfd_p);
 
-		PCIX_CAP_PUT(16, bus_p, PCI_PCIX_SEC_STATUS,
+		(void) PCIX_CAP_PUT(16, bus_p, PCI_PCIX_SEC_STATUS,
 		    pcix_bdg_regs->pcix_bdg_sec_stat);
 
-		PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_STATUS,
+		(void) PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_STATUS,
 		    pcix_bdg_regs->pcix_bdg_stat);
 
 		if (PCIX_ECC_VERSION_CHECK(bus_p)) {
@@ -718,24 +718,25 @@ pf_pcix_regs_clear(pf_data_t *pfd_p, pcie_bus_t *bus_p)
 			 */
 			if (!PCIE_IS_PCIE_BDG(bus_p)) {
 				pcix_bdg_ecc_regs = PCIX_BDG_ECC_REG(pfd_p, 0);
-				PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_ECC_STATUS,
+				(void) PCIX_CAP_PUT(32, bus_p,
+				    PCI_PCIX_BDG_ECC_STATUS,
 				    pcix_bdg_ecc_regs->pcix_ecc_ctlstat);
 
 			}
 			pcix_bdg_ecc_regs = PCIX_BDG_ECC_REG(pfd_p, 1);
-			PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_ECC_STATUS,
+			(void) PCIX_CAP_PUT(32, bus_p, PCI_PCIX_BDG_ECC_STATUS,
 			    pcix_bdg_ecc_regs->pcix_ecc_ctlstat);
 		}
 	} else {
 		pf_pcix_err_regs_t *pcix_regs = PCIX_ERR_REG(pfd_p);
 
-		PCIX_CAP_PUT(32, bus_p, PCI_PCIX_STATUS,
+		(void) PCIX_CAP_PUT(32, bus_p, PCI_PCIX_STATUS,
 		    pcix_regs->pcix_status);
 
 		if (PCIX_ECC_VERSION_CHECK(bus_p)) {
 			pf_pcix_ecc_regs_t *pcix_ecc_regs = PCIX_ECC_REG(pfd_p);
 
-			PCIX_CAP_PUT(32, bus_p, PCI_PCIX_ECC_STATUS,
+			(void) PCIX_CAP_PUT(32, bus_p, PCI_PCIX_ECC_STATUS,
 			    pcix_ecc_regs->pcix_ecc_ctlstat);
 		}
 	}
@@ -747,7 +748,7 @@ pf_pcie_regs_clear(pf_data_t *pfd_p, pcie_bus_t *bus_p)
 	pf_pcie_err_regs_t *pcie_regs = PCIE_ERR_REG(pfd_p);
 	pf_pcie_adv_err_regs_t *pcie_adv_regs = PCIE_ADV_REG(pfd_p);
 
-	PCIE_CAP_PUT(16, bus_p, PCIE_DEVSTS, pcie_regs->pcie_err_status);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVSTS, pcie_regs->pcie_err_status);
 
 	if (PCIE_IS_BDG(bus_p) && PCIE_IS_PCIX(bus_p))
 		pf_pcix_regs_clear(pfd_p, bus_p);
@@ -755,17 +756,17 @@ pf_pcie_regs_clear(pf_data_t *pfd_p, pcie_bus_t *bus_p)
 	if (!PCIE_HAS_AER(bus_p))
 		return;
 
-	PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_STS,
+	(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_STS,
 	    pcie_adv_regs->pcie_ue_status);
 
-	PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_STS,
+	(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_STS,
 	    pcie_adv_regs->pcie_ce_status);
 
 	if (PCIE_IS_PCIE_BDG(bus_p)) {
 		pf_pcie_adv_bdg_err_regs_t *pcie_bdg_regs =
 		    PCIE_ADV_BDG_REG(pfd_p);
 
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_STS,
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_STS,
 		    pcie_bdg_regs->pcie_sue_status);
 	}
 
@@ -778,7 +779,7 @@ pf_pcie_regs_clear(pf_data_t *pfd_p, pcie_bus_t *bus_p)
 
 		pcie_rp_regs = PCIE_ADV_RP_REG(pfd_p);
 
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_RE_STS,
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_RE_STS,
 		    pcie_rp_regs->pcie_rp_err_status);
 	}
 }

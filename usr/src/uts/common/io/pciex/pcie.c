@@ -753,7 +753,7 @@ pcie_initchild(dev_info_t *cdip)
 		    PCIE_DEVCTL_MAX_PAYLOAD_MASK)) |
 		    (pcie_devctl_default & ~(PCIE_DEVCTL_MAX_READ_REQ_MASK |
 		    PCIE_DEVCTL_MAX_PAYLOAD_MASK));
-		PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, tmp16);
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, tmp16);
 		PCIE_DBG_CAP(cdip, bus_p, "DEVCTL", 16, PCIE_DEVCTL, reg16);
 
 		/* Enable PCIe errors */
@@ -1859,7 +1859,7 @@ pcie_enable_errors(dev_info_t *dip)
 		    PCIE_DEVCTL_MAX_PAYLOAD_MASK)) |
 		    (pcie_base_err_default & (~PCIE_DEVCTL_CE_REPORTING_EN));
 
-		PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, tmp16);
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, tmp16);
 		PCIE_DBG_CAP(dip, bus_p, "DEVCTL", 16, PCIE_DEVCTL, reg16);
 	}
 
@@ -1871,7 +1871,7 @@ pcie_enable_errors(dev_info_t *dip)
 		tmp16 = pcie_serr_disable_flag ?
 		    (pcie_root_ctrl_default & ~PCIE_ROOT_SYS_ERR) :
 		    pcie_root_ctrl_default;
-		PCIE_CAP_PUT(16, bus_p, PCIE_ROOTCTL, tmp16);
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_ROOTCTL, tmp16);
 		PCIE_DBG_CAP(dip, bus_p, "ROOT DEVCTL", 16, PCIE_ROOTCTL,
 		    reg16);
 	}
@@ -1887,7 +1887,7 @@ pcie_enable_errors(dev_info_t *dip)
 	    PCI_CAP_EINVAL32) {
 		tmp32 = pcie_aer_uce_severity;
 
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_SERV, tmp32);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_SERV, tmp32);
 		PCIE_DBG_AER(dip, bus_p, "AER UCE SEV", 32, PCIE_AER_UCE_SERV,
 		    reg32);
 	}
@@ -1897,7 +1897,7 @@ pcie_enable_errors(dev_info_t *dip)
 	    PCI_CAP_EINVAL32) {
 		tmp32 = pcie_aer_uce_mask;
 
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_MASK, tmp32);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_MASK, tmp32);
 		PCIE_DBG_AER(dip, bus_p, "AER UCE MASK", 32, PCIE_AER_UCE_MASK,
 		    reg32);
 	}
@@ -1906,7 +1906,7 @@ pcie_enable_errors(dev_info_t *dip)
 	if ((reg32 = PCIE_AER_GET(32, bus_p, PCIE_AER_CTL)) !=
 	    PCI_CAP_EINVAL32) {
 		tmp32 = reg32 | pcie_ecrc_value;
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_CTL, tmp32);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_CTL, tmp32);
 		PCIE_DBG_AER(dip, bus_p, "AER CTL", 32, PCIE_AER_CTL, reg32);
 	}
 
@@ -1919,14 +1919,15 @@ pcie_enable_errors(dev_info_t *dip)
 	    PCI_CAP_EINVAL32) {
 		tmp32 = pcie_aer_suce_severity;
 
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_SERV, tmp32);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_SERV, tmp32);
 		PCIE_DBG_AER(dip, bus_p, "AER SUCE SEV", 32, PCIE_AER_SUCE_SERV,
 		    reg32);
 	}
 
 	if ((reg32 = PCIE_AER_GET(32, bus_p, PCIE_AER_SUCE_MASK)) !=
 	    PCI_CAP_EINVAL32) {
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_MASK, pcie_aer_suce_mask);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_MASK,
+		    pcie_aer_suce_mask);
 		PCIE_DBG_AER(dip, bus_p, "AER SUCE MASK", 32,
 		    PCIE_AER_SUCE_MASK, reg32);
 	}
@@ -1940,7 +1941,7 @@ root:
 
 	if ((reg16 = PCIE_AER_GET(16, bus_p, PCIE_AER_RE_CMD)) !=
 	    PCI_CAP_EINVAL16) {
-		PCIE_AER_PUT(16, bus_p, PCIE_AER_RE_CMD,
+		(void) PCIE_AER_PUT(16, bus_p, PCIE_AER_RE_CMD,
 		    pcie_root_error_cmd_default);
 		PCIE_DBG_AER(dip, bus_p, "AER Root Err Cmd", 16,
 		    PCIE_AER_RE_CMD, reg16);
@@ -1980,23 +1981,24 @@ pcie_enable_ce(dev_info_t *dip)
 
 	if (PCIE_HAS_AER(bus_p)) {
 		/* Enable AER CE */
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_MASK, tmp_pcie_aer_ce_mask);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_MASK,
+		    tmp_pcie_aer_ce_mask);
 		PCIE_DBG_AER(dip, bus_p, "AER CE MASK", 32, PCIE_AER_CE_MASK,
 		    0);
 
 		/* Clear any pending AER CE errors */
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_STS, -1);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_STS, -1);
 	}
 
 	/* clear any pending CE errors */
 	if ((device_sts = PCIE_CAP_GET(16, bus_p, PCIE_DEVSTS)) !=
 	    PCI_CAP_EINVAL16)
-		PCIE_CAP_PUT(16, bus_p, PCIE_DEVSTS,
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVSTS,
 		    device_sts & (~PCIE_DEVSTS_CE_DETECTED));
 
 	/* Enable CE reporting */
 	device_ctl = PCIE_CAP_GET(16, bus_p, PCIE_DEVCTL);
-	PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL,
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL,
 	    (device_ctl & (~PCIE_DEVCTL_ERR_MASK)) | pcie_base_err_default);
 	PCIE_DBG_CAP(dip, bus_p, "DEVCTL", 16, PCIE_DEVCTL, device_ctl);
 
@@ -2019,7 +2021,7 @@ pcie_disable_errors(dev_info_t *dip)
 	 */
 	device_ctl = PCIE_CAP_GET(16, bus_p, PCIE_DEVCTL);
 	device_ctl &= ~PCIE_DEVCTL_ERR_MASK;
-	PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, device_ctl);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, device_ctl);
 
 	/*
 	 * Disable PCI-Express Advanced Error Handling if Exists
@@ -2028,10 +2030,10 @@ pcie_disable_errors(dev_info_t *dip)
 		goto root;
 
 	/* Disable Uncorrectable errors */
-	PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_MASK, PCIE_AER_UCE_BITS);
+	(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_UCE_MASK, PCIE_AER_UCE_BITS);
 
 	/* Disable Correctable errors */
-	PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_MASK, PCIE_AER_CE_BITS);
+	(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_CE_MASK, PCIE_AER_CE_BITS);
 
 	/* Disable ECRC generation and checking */
 	if ((aer_reg = PCIE_AER_GET(32, bus_p, PCIE_AER_CTL)) !=
@@ -2039,7 +2041,7 @@ pcie_disable_errors(dev_info_t *dip)
 		aer_reg &= ~(PCIE_AER_CTL_ECRC_GEN_ENA |
 		    PCIE_AER_CTL_ECRC_CHECK_ENA);
 
-		PCIE_AER_PUT(32, bus_p, PCIE_AER_CTL, aer_reg);
+		(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_CTL, aer_reg);
 	}
 	/*
 	 * Disable Secondary Uncorrectable errors if this is a bridge
@@ -2047,7 +2049,7 @@ pcie_disable_errors(dev_info_t *dip)
 	if (!PCIE_IS_PCIE_BDG(bus_p))
 		goto root;
 
-	PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_MASK, PCIE_AER_SUCE_BITS);
+	(void) PCIE_AER_PUT(32, bus_p, PCIE_AER_SUCE_MASK, PCIE_AER_SUCE_BITS);
 
 root:
 	/*
@@ -2059,7 +2061,7 @@ root:
 	if (!pcie_serr_disable_flag) {
 		device_ctl = PCIE_CAP_GET(16, bus_p, PCIE_ROOTCTL);
 		device_ctl &= ~PCIE_ROOT_SYS_ERR;
-		PCIE_CAP_PUT(16, bus_p, PCIE_ROOTCTL, device_ctl);
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_ROOTCTL, device_ctl);
 	}
 
 	if (!PCIE_HAS_AER(bus_p))
@@ -2068,7 +2070,7 @@ root:
 	if ((device_ctl = PCIE_CAP_GET(16, bus_p, PCIE_AER_RE_CMD)) !=
 	    PCI_CAP_EINVAL16) {
 		device_ctl &= ~pcie_root_error_cmd_default;
-		PCIE_CAP_PUT(16, bus_p, PCIE_AER_RE_CMD, device_ctl);
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_AER_RE_CMD, device_ctl);
 	}
 }
 
@@ -2287,7 +2289,7 @@ pcie_initchild_mps(dev_info_t *cdip)
 			    (PCIE_DEVCTL_MAX_READ_REQ_MASK |
 			    PCIE_DEVCTL_MAX_PAYLOAD_MASK));
 
-			PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, dev_ctrl);
+			(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, dev_ctrl);
 			return (DDI_SUCCESS);
 		}
 
@@ -2318,7 +2320,7 @@ pcie_initchild_mps(dev_info_t *cdip)
 		dev_ctrl |= ((device_mrrs << PCIE_DEVCTL_MAX_READ_REQ_SHIFT) |
 		    device_mps << PCIE_DEVCTL_MAX_PAYLOAD_SHIFT);
 
-		PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, dev_ctrl);
+		(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL, dev_ctrl);
 
 		bus_p->bus_mps = device_mps;
 	}
@@ -2660,7 +2662,7 @@ pcie_ari_enable(dev_info_t *dip)
 
 	devctl2 = PCIE_CAP_GET(16, bus_p, PCIE_DEVCTL2);
 	devctl2 |= PCIE_DEVCTL2_ARI_FORWARD_EN;
-	PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL2, devctl2);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL2, devctl2);
 
 	PCIE_DBG("pcie_ari_enable: dip=%p: writing 0x%x to DevCtl2\n",
 	    dip, devctl2);
@@ -2681,7 +2683,7 @@ pcie_ari_disable(dev_info_t *dip)
 
 	devctl2 = PCIE_CAP_GET(16, bus_p, PCIE_DEVCTL2);
 	devctl2 &= ~PCIE_DEVCTL2_ARI_FORWARD_EN;
-	PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL2, devctl2);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_DEVCTL2, devctl2);
 
 	PCIE_DBG("pcie_ari_disable: dip=%p: writing 0x%x to DevCtl2\n",
 	    dip, devctl2);
@@ -2924,7 +2926,7 @@ pcie_link_bw_enable(dev_info_t *dip)
 	linkctl = PCIE_CAP_GET(16, bus_p, PCIE_LINKCTL);
 	linkctl |= PCIE_LINKCTL_LINK_BW_INTR_EN;
 	linkctl |= PCIE_LINKCTL_LINK_AUTO_BW_INTR_EN;
-	PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL, linkctl);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL, linkctl);
 
 	bus_p->bus_lbw_pbuf = kmem_zalloc(MAXPATHLEN, KM_SLEEP);
 	bus_p->bus_lbw_cbuf = kmem_zalloc(MAXPATHLEN, KM_SLEEP);
@@ -2953,7 +2955,7 @@ pcie_link_bw_disable(dev_info_t *dip)
 	linkctl = PCIE_CAP_GET(16, bus_p, PCIE_LINKCTL);
 	linkctl &= ~PCIE_LINKCTL_LINK_BW_INTR_EN;
 	linkctl &= ~PCIE_LINKCTL_LINK_AUTO_BW_INTR_EN;
-	PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL, linkctl);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL, linkctl);
 
 	bus_p->bus_lbw_state &= ~PCIE_LBW_S_ENABLED;
 	kmem_free(bus_p->bus_lbw_pbuf, MAXPATHLEN);
@@ -3119,7 +3121,7 @@ pcie_link_bw_intr(dev_info_t *dip)
 	}
 	mutex_exit(&bus_p->bus_lbw_mutex);
 
-	PCIE_CAP_PUT(16, bus_p, PCIE_LINKSTS, flags);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_LINKSTS, flags);
 	return (DDI_INTR_CLAIMED);
 }
 
@@ -3161,7 +3163,7 @@ pcie_link_set_target(dev_info_t *dip, pcie_link_speed_t speed)
 	ctl2 = PCIE_CAP_GET(16, bus_p, PCIE_LINKCTL2);
 	ctl2 &= ~PCIE_LINKCTL2_TARGET_SPEED_MASK;
 	ctl2 |= rval;
-	PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL2, ctl2);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL2, ctl2);
 	mutex_exit(&bus_p->bus_speed_mutex);
 
 	/*
@@ -3203,7 +3205,7 @@ pcie_link_retrain(dev_info_t *dip)
 
 	ctl = PCIE_CAP_GET(16, bus_p, PCIE_LINKCTL);
 	ctl |= PCIE_LINKCTL_RETRAIN_LINK;
-	PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL, ctl);
+	(void) PCIE_CAP_PUT(16, bus_p, PCIE_LINKCTL, ctl);
 
 	/*
 	 * Wait again to see if it clears before returning to the user.
