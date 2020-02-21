@@ -4809,7 +4809,7 @@ hermon_intr_disable(hermon_state_t *state)
 
 		/* Disable MSI-X interrupts */
 		msix_ctrl &= ~PCI_MSIX_ENABLE_BIT;
-		PCI_CAP_PUT16(pci_cfg_hdl, 0, caps_ctrl, PCI_MSIX_CTRL,
+		(void) PCI_CAP_PUT16(pci_cfg_hdl, 0, caps_ctrl, PCI_MSIX_CTRL,
 		    msix_ctrl);
 
 	} else {
