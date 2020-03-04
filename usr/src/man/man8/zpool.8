@@ -28,7 +28,7 @@
 .\" Copyright (c) 2012 Cyril Plisko. All Rights Reserved.
 .\" Copyright 2024 OmniOS Community Edition (OmniOSce) Association.
 .\"
-.Dd May 13, 2024
+.Dd December 24, 2024
 .Dt ZPOOL 8
 .Os
 .Sh NAME
@@ -171,7 +171,7 @@
 .Ar pool Ns ...
 .Nm
 .Cm trim
-.Op Fl d
+.Op Fl dw
 .Op Fl r Ar rate
 .Op Fl c | Fl s
 .Ar pool
@@ -2252,7 +2252,7 @@ Otherwise, it will only sync the specified
 .It Xo
 .Nm
 .Cm trim
-.Op Fl d
+.Op Fl dw
 .Op Fl r Ar rate
 .Op Fl c | Fl s
 .Ar pool
@@ -2294,6 +2294,8 @@ trimmed, the command will fail and no suspension will occur on any device.
 Trimming can then be resumed by running
 .Nm zpool Cm trim
 with no flags on the relevant target devices.
+.It Fl w -wait
+Wait until the devices are done being trimmed before returning.
 .El
 .It Xo
 .Nm
