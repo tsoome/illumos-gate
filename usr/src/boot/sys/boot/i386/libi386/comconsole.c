@@ -77,7 +77,7 @@ static void	comc_probe(struct console *);
 static int	comc_init(struct console *, int);
 static void	comc_putchar(struct console *, int);
 static int	comc_getchar(struct console *);
-static int	comc_getspeed(struct serial *);
+int		comc_getspeed(int);
 static int	comc_ischar(struct console *);
 static int	comc_ioctl(struct console *, int, void *);
 static uint32_t comc_parse_pcidev(const char *);
@@ -193,7 +193,7 @@ comc_probe(struct console *cp)
 	cons = getenv("console");
 	if ((cons != NULL && strcmp(cons, cp->c_name) == 0) ||
 	    getenv("boot_multicons") != NULL) {
-		port->speed = comc_getspeed(port);
+		port->speed = comc_getspeed(port->ioaddr);
 	}
 
 	snprintf(name, sizeof (name), "%s-mode", cp->c_name);
@@ -635,21 +635,21 @@ comc_setup(struct console *cp)
 	return (true);
 }
 
-static int
-comc_getspeed(struct serial *sp)
+int
+comc_getspeed(int ioaddr)
 {
 	uint_t	divisor;
 	uchar_t	dlbh;
 	uchar_t	dlbl;
 	uchar_t	cfcr;
 
-	cfcr = inb(sp->ioaddr + com_cfcr);
-	outb(sp->ioaddr + com_cfcr, CFCR_DLAB | cfcr);
+	cfcr = inb(ioaddr + com_cfcr);
+	outb(ioaddr + com_cfcr, CFCR_DLAB | cfcr);
 
-	dlbl = inb(sp->ioaddr + com_dlbl);
-	dlbh = inb(sp->ioaddr + com_dlbh);
+	dlbl = inb(ioaddr + com_dlbl);
+	dlbh = inb(ioaddr + com_dlbh);
 
-	outb(sp->ioaddr + com_cfcr, cfcr);
+	outb(ioaddr + com_cfcr, cfcr);
 
 	divisor = dlbh << 8 | dlbl;
 
