@@ -1038,12 +1038,27 @@ command_lsefi(int argc __unused, char *argv[] __unused)
 	for (i = 0; i < (bufsz / sizeof (EFI_HANDLE)); i++) {
 		UINTN nproto = 0;
 		EFI_GUID **protocols = NULL;
+		EFI_DEVICE_PATH *dp;
+		CHAR16 *text;
 
 		handle = buffer[i];
 		printf("Handle %p", handle);
 		if (pager_output("\n"))
 			break;
-		/* device path */
+
+		ret = 0;
+		dp = efi_lookup_devpath(handle);
+		if (dp != NULL) {
+			text = efi_devpath_name(dp);
+			if (text != NULL) {
+				printf("  %S", text);
+				efi_free_devpath_name(text);
+				ret = pager_output("\n");
+			}
+			efi_close_devpath(handle);
+		}
+		if (ret != 0)
+			break;
 
 		status = BS->ProtocolsPerHandle(handle, &protocols, &nproto);
 		if (EFI_ERROR(status)) {
