@@ -1266,6 +1266,7 @@ typedef enum zfs_ioc {
 	ZFS_IOC_REDACT,				/* 0x5a50 */
 	ZFS_IOC_GET_BOOKMARK_PROPS,		/* 0x5a51 */
 	ZFS_IOC_WAIT,				/* 0x5a52 */
+	ZFS_IOC_WAIT_FS,			/* 0x5a53 */
 
 	/*
 	 * Per-platform (Optional) - 8/128 numbers reserved.
@@ -1330,6 +1331,11 @@ typedef enum {
 	ZPOOL_WAIT_TRIM,
 	ZPOOL_WAIT_NUM_ACTIVITIES
 } zpool_wait_activity_t;
+
+typedef enum {
+	ZFS_WAIT_DELETEQ,
+	ZFS_WAIT_NUM_ACTIVITIES
+} zfs_wait_activity_t;
 
 /* supported encryption algorithms */
 enum zio_encrypt {
@@ -1401,6 +1407,12 @@ enum zio_encrypt {
 #define	ZPOOL_WAIT_ACTIVITY		"wait_activity"
 #define	ZPOOL_WAIT_TAG			"wait_tag"
 #define	ZPOOL_WAIT_WAITED		"wait_waited"
+
+/*
+ * The following are names used when invoking ZFS_IOC_WAIT_FS.
+ */
+#define	ZFS_WAIT_ACTIVITY		"wait_activity"
+#define	ZFS_WAIT_WAITED			"wait_waited"
 
 /*
  * Flags for ZFS_IOC_VDEV_SET_STATE

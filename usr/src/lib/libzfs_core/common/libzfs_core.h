@@ -123,6 +123,7 @@ int lzc_get_bootenv(const char *, nvlist_t **);
 
 int lzc_wait(const char *, zpool_wait_activity_t, boolean_t *);
 int lzc_wait_tag(const char *, zpool_wait_activity_t, uint64_t, boolean_t *);
+int lzc_wait_fs(const char *, zfs_wait_activity_t, boolean_t *);
 
 #ifdef	__cplusplus
 }

@@ -1373,6 +1373,13 @@ file \
 file \
     path=opt/zfs-tests/tests/functional/cli_root/zfs_upgrade/zfs_upgrade_007_neg \
     mode=0555
+dir  path=opt/zfs-tests/tests/functional/cli_root/zfs_wait
+file path=opt/zfs-tests/tests/functional/cli_root/zfs_wait/cleanup mode=0555
+file path=opt/zfs-tests/tests/functional/cli_root/zfs_wait/setup mode=0555
+file path=opt/zfs-tests/tests/functional/cli_root/zfs_wait/zfs_wait.kshlib \
+    mode=0444
+file path=opt/zfs-tests/tests/functional/cli_root/zfs_wait/zfs_wait_deleteq \
+    mode=0555
 dir  path=opt/zfs-tests/tests/functional/cli_root/zpool
 file path=opt/zfs-tests/tests/functional/cli_root/zpool/cleanup mode=0555
 file path=opt/zfs-tests/tests/functional/cli_root/zpool/setup mode=0555

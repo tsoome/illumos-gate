@@ -29,6 +29,7 @@
 .\" Copyright 2019 Joyent, Inc.
 .\" Copyright (c) 2018 Datto Inc.
 .\" Copyright 2023 RackTop Systems, Inc.
+.\" Copyright 2024 MNX Cloud, Inc.
 .\"
 .Dd November 03, 2023
 .Dt ZFS 8
@@ -324,6 +325,10 @@
 .Op Fl o Sy keylocation Ns = Ns Ar value
 .Op Fl o Sy keyformat Ns = Ns Ar value
 .Op Fl o Sy pbkdf2iters Ns = Ns Ar value
+.Ar filesystem
+.Nm
+.Cm wait
+.Op Fl t Ar activity Ns Oo , Ns Ar activity Ns Oc Ns ...
 .Ar filesystem
 .Sh DESCRIPTION
 The
@@ -4476,6 +4481,31 @@ and
 .Sy pbkdf2iters
 after the dataset has been created.
 .El
+.It Xo
+.Nm
+.Cm wait
+.Op Fl t Ar activity Ns Oo , Ns Ar activity Ns Oc Ns ...
+.Ar fs
+.Xc
+Waits until all background activity of the given types has ceased in the given
+filesystem.
+The activity could cease because it has completed or because the filesystem has
+been destroyed or unmounted.
+If no activities are specified, the command waits until background activity of
+every type listed below has ceased.
+If there is no activity of the given types in progress, the command returns
+immediately.
+.Pp
+These are the possible values for
+.Ar activity ,
+along with what each one waits for:
+.Bd -literal
+        deleteq       The filesystem's internal delete queue to empty
+.Ed
+.Pp
+Note that the internal delete queue does not finish draining until
+all large files have had time to be fully destroyed and all open file
+handles to unlinked files are closed.
 .El
 .Sh EXIT STATUS
 The

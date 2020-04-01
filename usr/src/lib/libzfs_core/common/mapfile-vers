@@ -38,6 +38,12 @@
 
 $mapfile_version 2
 
+SYMBOL_VERSION ILLUMOS_0.10 {
+	global:
+
+	lzc_wait_fs;
+} ILLUMOS_0.9;
+
 SYMBOL_VERSION ILLUMOS_0.9 {
 	global:
 
