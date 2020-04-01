@@ -70,6 +70,7 @@
 #include <sys/sunddi.h>
 #include <sys/dnlc.h>
 #include <sys/dmu_objset.h>
+#include <sys/dsl_dir.h>
 #include <sys/spa_boot.h>
 #include <sys/vdev_impl.h>
 #include "zfs_comutil.h"
@@ -1272,6 +1273,8 @@ zfsvfs_setup(zfsvfs_t *zfsvfs, boolean_t mounting)
 			zfsvfs->z_vfs->vfs_flag &= ~VFS_RDONLY;
 		} else {
 			zfs_unlinked_drain(zfsvfs);
+			dsl_dir_t *dd = zfsvfs->z_os->os_dsl_dataset->ds_dir;
+			dd->dd_activity_cancelled = B_FALSE;
 		}
 
 		/*
@@ -2256,6 +2259,8 @@ zfsvfs_teardown(zfsvfs_t *zfsvfs, boolean_t unmounting)
 	    !(zfsvfs->z_vfs->vfs_flag & VFS_RDONLY))
 		txg_wait_synced(dmu_objset_pool(zfsvfs->z_os), 0);
 	dmu_objset_evict_dbufs(zfsvfs->z_os);
+	dsl_dir_t *dd = zfsvfs->z_os->os_dsl_dataset->ds_dir;
+	dsl_dir_cancel_waiters(dd);
 
 	return (0);
 }
@@ -2505,6 +2510,7 @@ zfs_resume_fs(zfsvfs_t *zfsvfs, dsl_dataset_t *ds)
 	if (err != 0)
 		goto bail;
 
+	ds->ds_dir->dd_activity_cancelled = B_FALSE;
 	VERIFY(zfsvfs_setup(zfsvfs, B_FALSE) == 0);
 
 	zfs_set_fuid_feature(zfsvfs);

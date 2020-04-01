@@ -217,6 +217,7 @@ $endif
 						  SIZE = addrsize[12];
 						};
 					};
+	zfs_wait_status;
 	zfs_zpl_version_map;
 	zpool_add;
 	zpool_checkpoint;
