@@ -47,8 +47,6 @@ ROOTMODULE	= $(ROOT_STRMOD_DIR)/$(MODULE)
 #
 include $(UTSBASE)/sparc/Makefile.sparc
 
-
-
 #
 # depends on misc/usba
 #
@@ -65,7 +63,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 

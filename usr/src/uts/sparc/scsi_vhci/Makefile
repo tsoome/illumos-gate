@@ -47,6 +47,7 @@ CONF_SRCDIR	= $(UTSBASE)/common/io/scsi/adapters/scsi_vhci
 #
 include $(UTSBASE)/sparc/Makefile.sparc
 
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-unused-label

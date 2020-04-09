@@ -62,7 +62,7 @@ C99LMODE=	-Xc99=%all
 # For now, disable these warnings; maintainers should endeavor
 # to investigate and remove these for maximum coverage.
 #
-
+SMATCH=off
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= -_gcc=-Wno-unused-variable

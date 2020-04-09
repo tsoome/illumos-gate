@@ -63,6 +63,7 @@ CLEANFILES      += $(DRMACH_OFFSETS_H) $(DRMACH_OFFSETS_OUT)
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS += $(CCVERBOSE)
+SMATCH=off
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += -_gcc=-Wno-unused-function
 CERRWARN += $(CNOWARN_UNINIT)

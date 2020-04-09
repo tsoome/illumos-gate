@@ -109,7 +109,7 @@ CFLAGS += -dalign
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-char-subscripts

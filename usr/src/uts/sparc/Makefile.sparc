@@ -41,6 +41,7 @@
 DEF_BUILDS	= $(DEF_BUILDS64)
 ALL_BUILDS	= $(ALL_BUILDS64)
 
+SMATCH=off
 #
 #	Everybody needs to know how to build modstubs.o and to locate unix.o.
 #	Note that unix.o must currently be selected from among the possible

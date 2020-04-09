@@ -63,7 +63,7 @@ INC_PATH        += -I$(SRC)/common/hdcrc
 LDFLAGS += -dy -N"misc/scsi" -N"fs/sockfs" -N"sys/doorfs" -N"misc/md5" -Nmisc/ksocket
 LDFLAGS += -N"misc/idm"
 
-
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-parentheses

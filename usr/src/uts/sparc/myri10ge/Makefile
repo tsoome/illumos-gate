@@ -52,6 +52,7 @@ INSTALL_TARGET  = $(BINARY) $(ROOTMODULE)
 #
 # Overrides
 #
+SMATCH=off
 
 #COPTIMIZE = -xO4
 

@@ -66,6 +66,7 @@ DEF_BUILDS	= $(DEF_BUILDSONLY64)
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS += $(CCVERBOSE)
+SMATCH=off
 CERRWARN += -_gcc=-Wno-char-subscripts
 
 #

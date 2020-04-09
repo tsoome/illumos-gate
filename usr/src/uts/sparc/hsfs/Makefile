@@ -57,6 +57,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 #	Overrides.
 #
 CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 
 #
 # Define dependency on specfs

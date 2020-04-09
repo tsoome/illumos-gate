@@ -62,6 +62,7 @@ ALL_TARGET	= $(SYM_MOD)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 CFLAGS += $(CCVERBOSE)
+SMATCH=off
 
 #
 #	Default build targets.

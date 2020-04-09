@@ -49,6 +49,7 @@ LDFLAGS += -dy -Nmisc/scsi
 #
 ALL_TARGET	= $(BINARY) $(CONFMOD)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
+SMATCH=off
 
 #
 #	Include common rules.

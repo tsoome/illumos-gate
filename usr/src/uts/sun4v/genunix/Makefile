@@ -85,7 +85,7 @@ $(PATCH_BUILD)IPCTF_TARGET =
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-unused-variable
 CERRWARN	+= -_gcc=-Wno-unused-value

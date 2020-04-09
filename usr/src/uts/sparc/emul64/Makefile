@@ -45,13 +45,15 @@ CONF_SRCDIR	= $(UTSBASE)/common/io
 include $(UTSBASE)/sparc/Makefile.sparc
 
 CLOBBERFILES	+= $(MODULE)
-CFLAGS		+= $(CCVERBOSE)
 
 #
 #	Define targets
 #
 ALL_TARGET	= $(BINARY) $(SRC_CONFFILE)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
+
+#
+SMATCH=off
 
 #
 # Define dependency on scsi
@@ -63,7 +65,6 @@ LDFLAGS         += -dy -N misc/scsi
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= $(CNOWARN_UNINIT)
 

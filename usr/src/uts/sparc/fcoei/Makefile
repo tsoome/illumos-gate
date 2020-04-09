@@ -56,6 +56,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 LDFLAGS		+= -dy -Nmisc/fctl -Ndrv/fcoe
 INC_PATH	+= -I$(UTSBASE)/common/io/fibre-channel/fca/fcoei
 
+SMATCH=off
 #
 #	Default build targets.
 #

@@ -43,6 +43,7 @@ PORTFS_OBJS	+= port.o port_vnops.o port_fd.o port_fop.o
 MODULE		= portfs
 OBJECTS		= $(PORTFS_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_SYS_DIR)/$(MODULE)
+SMATCH=off
 
 #
 #	Include common rules.
