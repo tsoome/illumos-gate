@@ -42,6 +42,7 @@ UTSBASE   = ../..
 MODULE		= cardbus
 OBJECTS		= $(CARDBUS_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_MISC_DIR)/$(MODULE)
+SMATCH=off
 
 #
 #	Include common rules.

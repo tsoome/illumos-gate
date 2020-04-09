@@ -60,6 +60,7 @@ LDFLAGS		+= -dy -Ndrv/stmf -Nmisc/ibtl -Nmisc/ibcm
 
 C99LMODE=	-Xc99=%all
 
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-unused-label
 
 #

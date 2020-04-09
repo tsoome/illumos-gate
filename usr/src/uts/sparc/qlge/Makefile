@@ -61,6 +61,7 @@ LDFLAGS		+= -dy -Nmisc/mac -Ndrv/ip
 
 C99LMODE=	-Xc99=%all
 
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 

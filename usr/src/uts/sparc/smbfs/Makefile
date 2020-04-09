@@ -70,6 +70,7 @@ LDFLAGS         += -dy -Ndrv/nsmb
 #
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
+SMATCH=off
 
 #
 #	Default build targets.

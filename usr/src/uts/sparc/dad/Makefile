@@ -59,6 +59,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 #	Overrides.
 #
 CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 LDFLAGS         += -dy -Nmisc/dada  -Nmisc/cmlb
 
 #

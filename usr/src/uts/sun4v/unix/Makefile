@@ -96,13 +96,14 @@ CLOBBERFILES	= $(CLEANFILES) $(UNIX_BIN)
 
 # Turn on doubleword alignment for 64 bit counter timer registers
 CFLAGS += -dalign
+#
+SMATCH=off
 
 #
 # For now, disable these warnings; maintainers should endeavor
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-char-subscripts

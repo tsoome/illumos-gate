@@ -59,6 +59,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 #	Overrides.
 #
 CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 
 #
 # For now, disable these warnings; maintainers should endeavor

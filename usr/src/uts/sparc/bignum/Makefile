@@ -51,6 +51,7 @@ include $(UTSBASE)/sparc/Makefile.sparc
 #
 ALL_TARGET	= $(BINARY)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
+SMATCH=off
 
 #
 # Linkage dependencies

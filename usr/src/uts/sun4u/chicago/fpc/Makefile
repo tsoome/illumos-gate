@@ -84,7 +84,6 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE) \
 #
 INC_PATH	+= -I$(UTSBASE)/sun4/io/fpc
 
-
 #
 # Turn on doubleword alignment for 64 bit registers
 #
@@ -95,7 +94,7 @@ CFLAGS += -dalign
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-unused-variable
 
 #

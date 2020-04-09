@@ -33,6 +33,7 @@
 #
 #	Machine type (implementation architecture):
 #
+SMATCH=off
 PLATFORM	 = sun4u
 PROMIF		 = ieee1275
 PSMBASE		 = $(UTSBASE)/../psm
