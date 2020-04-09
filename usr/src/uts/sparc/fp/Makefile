@@ -67,6 +67,7 @@ LDFLAGS		+= -dy -Nmisc/fctl -Ndrv/fcp -Nmisc/scsi
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
+SMATCH=off
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-unused-function
 

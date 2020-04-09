@@ -38,6 +38,7 @@ UTSBASE = ../..
 MODULE		= ac97
 OBJECTS		= $(AC97_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_MISC_DIR)/$(MODULE)
+SMATCH=off
 
 #
 #	Include common rules.

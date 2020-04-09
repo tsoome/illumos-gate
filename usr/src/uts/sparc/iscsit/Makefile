@@ -60,6 +60,7 @@ LDFLAGS		+= -dy -Ndrv/stmf -Nmisc/idm -Nfs/sockfs -Nmisc/md5 -Nmisc/ksocket
 
 C99LMODE=	-Xc99=%all
 
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-unused-label

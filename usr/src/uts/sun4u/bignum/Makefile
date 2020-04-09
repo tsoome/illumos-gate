@@ -57,6 +57,7 @@ LDFLAGS += -dy -Nmisc/kcf
 
 CFLAGS		+= -I$(CRYPTODIR) -I$(COM1_DIR)
 CFLAGS		+= -DUMUL64
+SMATCH=off
 CERRWARN	+= -_gcc=-Wno-unused-function
 
 #

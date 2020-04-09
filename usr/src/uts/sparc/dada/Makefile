@@ -53,6 +53,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 #	Overrides.
 #
 CFLAGS		+= $(CCVERBOSE)
+SMATCH=off
 
 #
 #	Default build targets.

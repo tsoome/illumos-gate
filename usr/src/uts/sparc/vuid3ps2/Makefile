@@ -55,6 +55,7 @@ CERRWARN	+= -_gcc=-Wno-parentheses
 #
 ALL_TARGET	= $(BINARY)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
+SMATCH=off
 
 #
 #	Overrides.
