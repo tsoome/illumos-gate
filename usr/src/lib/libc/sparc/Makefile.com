@@ -1127,6 +1127,8 @@ CERRWARN += -_gcc=-Wno-unused-function
 CERRWARN += -_gcc=-Wno-address
 SMATCH=off
 
+pics/_Q_set_except.o := CERRWARN += -_gcc=-Wno-unused-but-set-variable
+
 # Setting THREAD_DEBUG = -DTHREAD_DEBUG (make THREAD_DEBUG=-DTHREAD_DEBUG ...)
 # enables ASSERT() checking in the threads portion of the library.
 # This is automatically enabled for DEBUG builds, not for non-debug builds.
