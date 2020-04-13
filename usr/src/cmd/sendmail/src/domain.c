@@ -211,9 +211,9 @@ getmxrr(host, mxhosts, mxprefs, droplocalhost, rcode, tryfallback, pttl)
 	bool tryfallback;
 	int *pttl;
 {
-	register unsigned char *eom, *cp;
-	register int i, j, n;
-	int nmx = 0;
+	unsigned char *eom, *cp;
+	int n;
+	unsigned i, j, nmx = 0;
 	register char *bp;
 	HEADER *hp;
 	querybuf answer;
