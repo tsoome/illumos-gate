@@ -25,6 +25,8 @@
 #
 
 PROG = halt
+OBJS = halt.o
+SRCS = $(OBJS:%.o=%.c)
 
 include ../Makefile.cmd
 
@@ -48,8 +50,6 @@ CPPFLAGS += -I../../lib/libzpool/common
 CPPFLAGS += -I../../lib/libscf/inc
 CPPFLAGS += -I../../uts/common/fs/zfs
 
-CERRWARN += -_gcc=-Wno-unused-label
-
 LDLIBS += -lbsm -lscf -lzfs -lgen
 LDLIBS_i386 +=	-lbe
 LDLIBS +=	$(LDLIBS_$(MACH))
@@ -60,11 +60,13 @@ all     :=	TARGET = all
 install :=	TARGET = install
 clean   :=	TARGET = clean
 clobber :=	TARGET = clobber
-lint    :=	TARGET = lint
-lint	:=	LINTFLAGS += -u
 
 
 all: $(PROG)
+
+$(PROG):	$(OBJS)
+	$(LINK.c) $(OBJS) -o $@ $(LDLIBS)
+	$(POST_PROCESS)
 
 install: all $(ROOTUSRSBINPROG) $(ROOTLINKS) $(ROOTSYMLINKS) $(SUBDIRS)
 
@@ -82,8 +84,6 @@ $(SUBDIRS):	FRC
 clean:
 
 clobber: $(SUBDIRS)
-
-lint:	lint_PROG
 
 check: $(CHKMANIFEST)
 
