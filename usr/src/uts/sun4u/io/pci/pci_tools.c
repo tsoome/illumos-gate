@@ -193,7 +193,7 @@ pcitool_phys_poke(pci_t *pci_p, boolean_t type, size_t size,
 	uint64_t paddr, uint64_t value)
 {
 	on_trap_data_t otd;
-	int err = DDI_SUCCESS;
+	volatile int err = DDI_SUCCESS;
 	peek_poke_value_t poke_value;
 
 	pbm_t *pbm_p = pci_p->pci_pbm_p;
