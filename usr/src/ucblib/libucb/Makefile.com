@@ -89,8 +89,6 @@ SRCS=		$(PORTGENOBJS:%.o=../port/gen/%.c) \
 
 LIBS = $(DYNLIB)
 
-CFLAGS	+=	$(CCVERBOSE)
-CFLAGS64 +=	$(CCVERBOSE)
 LDLIBS +=	-lelf -lc
 
 CPPFLAGS = -D$(MACH) -I$(SRC)/ucbhead -I../inc \
@@ -100,6 +98,7 @@ CERRWARN +=	-_gcc=-Wno-unused-variable
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	-_gcc=-Wno-char-subscripts
 CERRWARN +=	-_gcc=-Wno-uninitialized
+CERRWARN +=	-_gcc=-Wno-clobbered
 
 # not linted
 SMATCH=off
