@@ -641,8 +641,8 @@ do_gcc(cw_ictx_t *ctx)
 	 * ABI requires 8-byte alignment; unfortunately we have a number of
 	 * pieces of buggy code that doesn't conform to the ABI.  This
 	 * flag makes gcc work more like Studio with -xmemalign=4.
-	 */
 	newae(ctx->i_ae, "-mno-integer-ldd-std");
+	 */
 #endif
 
 	/*
