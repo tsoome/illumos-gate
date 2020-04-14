@@ -255,6 +255,9 @@ SRCS_mvec = \
 	../common/vz_log_.c \
 	../common/vz_pow_.c
 
+pics/__vcos.o := sparcv9_COPTFLAG = -xO0
+pics/__vsincos.o := sparcv9_COPTFLAG = -xO0
+
 .KEEP_STATE:
 
 all:	$(LIBS)
