@@ -53,7 +53,6 @@ LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins
 LDLIBS +=	-lc -lpicltree -lpicld_pluginutil
 $(SPARC_BLD)LDLIBS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins
 $(SPARC_BLD)LDLIBS +=	-R/usr/platform/sun4u/lib/picl/plugins
-$(SPARC_BLD)LDLIBS +=	-R/usr/lib/picl/plugins
 
 .KEEP_STATE:
 
