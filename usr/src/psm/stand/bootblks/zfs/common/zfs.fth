@@ -77,6 +77,29 @@ new-device
    /buf-len  instance buffer:  bootprop-buf
    : bootprop$  ( -- prop$ )  bootprop-buf cscount  ;
 
+   \ fletcher4 native
+   : fletcher4 ( zcp buf size -- zcp )
+      /l /				( size / sizeof (int) )
+      over +				( zcp buf buf+size )
+      0 0 0 0 >r >r >r >r
+      begin
+         2dup x< while
+         swap				( zcp buf+size buf )
+         dup l@ r> +			( zcp buf+size buf a+buf[0] )
+         dup r> +			( zcp buf+size buf a b+a )
+         dup r> +			( zcp buf+size buf a b c+a )
+         dup r> +			( zcp buf+size buf a b c d+a )
+         >r >r >r >r			( zcp buf+size buf )
+         la1+
+         swap				( zcp buf buf+size )
+      repeat
+      2drop dup				( zcp zcp )
+      r> over +!			\ zcp.zc_word[0] = a
+      cell+ r> over +!			\ zcp.zc_word[1] = b
+      cell+ r> over +!			\ zcp.zc_word[2] = c
+      cell+ r> swap +!			\ zcp.zc_word[3] = d
+   ;
+
    \ decompression
    \
    \ uts/common/os/compress.c has a definitive theory of operation comment
