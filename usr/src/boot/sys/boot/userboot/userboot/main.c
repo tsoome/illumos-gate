@@ -30,6 +30,7 @@
 #include <string.h>
 #include <setjmp.h>
 #include <sys/disk.h>
+#include <sys/zfs_bootenv.h>
 
 #include "bootstrap.h"
 #include "disk.h"
@@ -207,6 +208,16 @@ loader_main(struct loader_callbacks *cb, void *arg, int version, int ndisks)
 	exit(0);
 }
 
+static void
+set_currdev(const char *devname)
+{
+
+	(void)env_setenv("currdev", EV_VOLATILE, devname,
+	    userboot_setcurrdev, env_nounset);
+	(void)env_setenv("loaddev", EV_VOLATILE, devname,
+	    env_noset, env_nounset);
+}
+
 /*
  * Set the 'current device' by (if possible) recovering the boot device as 
  * supplied by the initial bootstrap.
@@ -217,9 +228,10 @@ extract_currdev(void)
 	struct disk_devdesc dev;
 	struct devdesc *dd;
 	struct zfs_devdesc zdev;
+	char *buf;
 
 	if (userboot_zfs_found) {
-	
+
 		/* Leave the pool/root guid's unassigned */
 		bzero(&zdev, sizeof(zdev));
 		zdev.dd.d_dev = &zfs_dev;
@@ -246,10 +258,17 @@ extract_currdev(void)
 		dd = &dev.dd;
 	}
 
-	(void)env_setenv("currdev", EV_VOLATILE, userboot_fmtdev(dd),
-	    userboot_setcurrdev, env_nounset);
-	(void)env_setenv("loaddev", EV_VOLATILE, userboot_fmtdev(dd),
-	    env_noset, env_nounset);
+	set_currdev(userboot_fmtdev(dd));
+
+	buf = malloc(VDEV_PAD_SIZE);
+	if (buf != NULL) {
+		if (zfs_get_bootonce(dd, OS_BOOTONCE, buf,
+		    VDEV_PAD_SIZE) == 0) {
+			printf("zfs bootonce: %s\n", buf);
+			set_currdev(buf);
+		}
+		free(buf);
+	}
 }
 
 static void

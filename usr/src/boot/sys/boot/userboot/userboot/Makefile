@@ -89,6 +89,7 @@ CPPFLAGS +=	-DBOOT_FORTH -I$(SRC)/common/ficl -I../../libficl
 CPPFLAGS +=	-I$(SRC)/common/pnglite
 CPPFLAGS +=	-I..
 CPPFLAGS +=	-I. -I$(SRC)/uts/common
+CPPFLAGS +=	-I. -I$(SRC)/uts/common/fs/zfs
 
 NEWVERSWHAT=	"User boot 4th" $(MACHINE_CPUARCH)
 VERSION_FILE=	version
