@@ -219,13 +219,21 @@ extract_currdev(void)
 	struct zfs_devdesc zdev;
 
 	if (userboot_zfs_found) {
-	
+		char *buf;
+
 		/* Leave the pool/root guid's unassigned */
 		bzero(&zdev, sizeof(zdev));
 		zdev.dd.d_dev = &zfs_dev;
 		
 		(void)zfs_fmtdev(&zdev);
 		dd = &zdev.dd;
+		buf = malloc(8 * 1024);
+		if (buf != NULL) {
+			if (zfs_nextboot(dd, buf, 8 * 1024) == 0) {
+				printf("zfs_nextboot: %s\n", buf);
+			}
+			free(buf);
+		}
 	} else if (userboot_disk_maxunit > 0) {
 		dev.dd.d_dev = &userboot_disk;
 		dev.dd.d_unit = 0;
