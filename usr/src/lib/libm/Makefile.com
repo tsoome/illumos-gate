@@ -307,6 +307,14 @@ QOBJS		= \
 		tanhl.o \
 		tanl.o
 
+pics/__fex_sparc.o :=	CERRWARN += -_gcc=-Wno-unused-but-set-variable
+pics/asinl.o :=		CERRWARN += -_gcc=-Wno-unused-but-set-variable
+pics/asinhl.o :=	CERRWARN += -_gcc=-Wno-unused-but-set-variable
+pics/ilogbl.o :=	CERRWARN += -_gcc=-Wno-unused-but-set-variable
+pics/j0l.o :=		CERRWARN += -_gcc=-Wno-unused-but-set-variable
+pics/nextafterl.o :=	CERRWARN += -_gcc=-Wno-unused-but-set-variable
+pics/tanhl.o :=		CERRWARN += -_gcc=-Wno-unused-but-set-variable
+
 #
 # LSARC/2003/658 adds isnanf
 #
