@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -104,7 +102,7 @@ invmake(char *invname, char *invpost, FILE *infile)
 	unsigned char	*s;
 	long	num;
 	int	i;
-	long	fileindex;
+	long	fileindex = 0;
 	unsigned postsize = POSTINC * sizeof (POSTING);
 	unsigned long	*intptr;
 	char	line[LINEMAX];
@@ -359,6 +357,7 @@ invnewterm(void)
 		ENTRY		e;
 	} iteminfo;
 
+	gooditems = 0;
 	totterm++;
 #if STATS
 	/* keep zipfian info on the distribution */
@@ -960,6 +959,8 @@ boolfile(INVCONTROL *invcntl, long *num, int bool)
 	POSTING *newsetp, *set1p;
 	long	newsetc, set1c, set2c;
 
+	newitem = NULL;
+	newsetp = NULL;
 	entryptr = (ENTRY *) (invcntl->logblk + 12) + invcntl->keypnt;
 	ptr = invcntl->logblk + entryptr->offset;
 	ptr2 = ((unsigned long *)ptr) +
