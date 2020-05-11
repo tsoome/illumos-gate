@@ -299,6 +299,7 @@ filter(int pipein, int pipeout)
 	 * path to the workspace.
 	 */
 	wspace = getenv("CODEMGR_WS");
+	wspace_len = 0;
 	if (wspace != NULL)
 		wspace_len = strlen(wspace);
 
