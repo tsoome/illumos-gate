@@ -80,7 +80,7 @@ size_t
 _elf_outsync(int fd, char *p, size_t sz, unsigned int flag)
 {
 	if (flag != 0) {
-		int	err;
+		int	err = 0;
 
 		if ((fd = msync(p, sz, MS_ASYNC)) == -1)
 			err = errno;

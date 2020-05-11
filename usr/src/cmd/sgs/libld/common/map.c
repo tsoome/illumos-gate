@@ -1224,7 +1224,7 @@ ld_map_parse_v1(Mapfile *mf)
 	 * We now parse the mapfile until the gettoken routine returns EOF.
 	 */
 	while ((tok = ld_map_gettoken(mf, TK_F_EOFOK, &tkv)) != TK_EOF) {
-		Xword	ndx;
+		Xword	ndx = 0;
 
 		/*
 		 * At this point we are at the beginning of a line, and the

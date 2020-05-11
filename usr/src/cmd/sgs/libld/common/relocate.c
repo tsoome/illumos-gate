@@ -622,6 +622,7 @@ ld_reloc_enter(Ofl_desc *ofl, Rel_cache *rcp, Rel_desc *rdesc, Word flags)
 	 * one for the clone. Save the pointer, because the struct copy
 	 * below will crush it.
 	 */
+	auxp = NULL;
 	if (rdesc->rel_aux != NULL) {
 		if (!ld_add_rel_aux(ofl, arsp))
 			return (NULL);

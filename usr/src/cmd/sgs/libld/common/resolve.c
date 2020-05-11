@@ -888,7 +888,7 @@ sym_twotent(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
 	/* END CSTYLED */
 
 		const char	*emsg = MSG_INTL(MSG_SYM_DEFTAKEN);
-		const char	*file;
+		const char	*file = NULL;
 		Xword		salign;
 		Xword		balign;
 		uint_t		alignscompliment;

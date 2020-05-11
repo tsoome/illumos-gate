@@ -1299,10 +1299,10 @@ cdir_process(Mapfile *mf)
 	};
 
 	cdir_match_t	*mdptr;
-	char		*tail;
+	char		*tail = NULL;
 	int		expr_eval;	/* Result of evaluating ARG_T_EXPR */
 	Mapfile		arg_mf;
-	cdir_level_t	*level;
+	cdir_level_t	*level = NULL;
 	int		pass, parent_pass;	/* Currently accepting input */
 
 restart:

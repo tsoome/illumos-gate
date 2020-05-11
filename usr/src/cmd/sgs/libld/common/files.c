@@ -817,7 +817,7 @@ process_cap(Ofl_desc *ofl, Ifl_desc *ifl, Is_desc *cisp)
 	Objcapset	ocapset = { 0 };
 	Cap_desc	*cdp;
 	Cap		*data, *cdata;
-	char		*strs;
+	char		*strs = NULL;
 	Word		ndx, cnum;
 	int		objcapndx, descapndx, symcapndx;
 	int		nulls, capstrs = 0;
@@ -1173,7 +1173,7 @@ process_capinfo(Ofl_desc *ofl, Ifl_desc *ifl, Is_desc *isp)
 		return (0);
 
 	for (cndx = 1, capinfo++; cndx < capinfonum; cndx++, capinfo++) {
-		Sym_desc	*sdp, *lsdp;
+		Sym_desc	*sdp, *lsdp = NULL;
 		Word		lndx;
 		uchar_t		gndx;
 
@@ -1826,7 +1826,7 @@ static Uts_desc		*uts = NULL;
 static char *
 expand(const char *parent, const char *name, char **next)
 {
-	char		_name[PATH_MAX], *nptr, *_next;
+	char		_name[PATH_MAX], *nptr, *_next = NULL;
 	const char	*optr;
 	size_t		nrem = PATH_MAX - 1;
 	int		expanded = 0, _expanded, isaflag = 0;

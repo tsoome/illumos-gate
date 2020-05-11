@@ -148,7 +148,7 @@ gettoken_eq(Mapfile *mf, attr_fmt_t eq_type, const char *lhs)
 {
 	Token		tok;
 	ld_map_tkval_t	tkv;
-	const char	*err;
+	const char	*err = NULL;
 	Conv_inv_buf_t	inv_buf;
 
 	switch (tok = ld_map_gettoken(mf, 0, &tkv)) {
@@ -2299,7 +2299,7 @@ dir_segment_inner(Mapfile *mf, const char *dir_name, Word seg_type,
 	ld_map_tkval_t	tkv;
 	Sg_desc		*sgp;
 	Boolean		new_segment;
-	Xword		ndx;
+	Xword		ndx = 0;
 	avl_index_t	where;
 
 	/* segment_name */

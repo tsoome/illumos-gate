@@ -27,7 +27,6 @@
  *	Copyright (c) 1998 by Sun Microsystems, Inc.
  *	All rights reserved.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI" 	/* SVr4.0 1.2	*/
 
 #include	<ctype.h>
 #include	<stdlib.h>
@@ -340,11 +339,10 @@ char *c;
  * Returns the number of characters processed from c.
  */
 int
-demangle_doargs(sptr,c)
-String **sptr;
-char *c;
+demangle_doargs(String **sptr, char *c)
 {
-	int i,n = 0;
+	int i = 0, n = 0;
+
 	here.pos = 0;
 
 	*sptr = app_String(*sptr,MSG_ORIG(MSG_STR_OPENPAR));
@@ -355,7 +353,7 @@ char *c;
 		    MSG_ORIG(MSG_STR_SPACE) : MSG_ORIG(MSG_STR_COMMA));
 	}
 
-	if(i < 0)
+	if (i < 0)
 		return -1;
 
 	*sptr = app_String(trunc_String(*sptr, 1), MSG_ORIG(MSG_STR_CLOSEPAR));
