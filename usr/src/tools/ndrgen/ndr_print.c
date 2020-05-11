@@ -202,7 +202,7 @@ print_field_attr(ndr_node_t *np)
 	ndr_node_t	*arg;
 	char		*name;
 	char		*operator;
-	long		value;
+	long		value = 0;
 
 	arg = np->n_a_arg;
 	if (arg->label != IDENTIFIER)
