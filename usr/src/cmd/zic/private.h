@@ -6,8 +6,6 @@
 #ifndef	_PRIVATE_H
 #define	_PRIVATE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file is in the public domain, so clarified as of
  * June 5, 1996 by Arthur David Olson (arthur_david_olson@nih.gov).
@@ -81,12 +79,7 @@ const char	*scheck(const char *string, const char *format);
  */
 
 #ifndef INITIALIZE
-#ifdef lint
 #define	INITIALIZE(x)	((x) = 0)
-#endif /* defined lint */
-#ifndef lint
-#define	INITIALIZE(x)
-#endif /* !defined lint */
 #endif /* !defined INITIALIZE */
 
 #ifdef	__cplusplus
