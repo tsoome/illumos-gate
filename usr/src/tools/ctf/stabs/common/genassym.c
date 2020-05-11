@@ -159,6 +159,7 @@ ga_process_name(char *line)
 	ctf_id_t curtype;
 	ssize_t sz, shift;
 
+	sz = 0;
 	if (ga_parse_name(line, &curname, &sizedef, &shdef) < 0)
 		return (parse_warn("Couldn't parse name"));
 
