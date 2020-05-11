@@ -175,16 +175,17 @@ update_osym(Ofl_desc *ofl)
 	Os_desc		*osp, *iosp = NULL, *fosp = NULL;
 	Is_desc		*isc;
 	Ifl_desc	*ifl;
-	Word		bssndx, etext_ndx, edata_ndx = 0, end_ndx, start_ndx;
+	Word		bssndx = 0, etext_ndx = 0, edata_ndx = 0, end_ndx = 0;
+	Word		start_ndx = 0;
 	Word		end_abs = 0, etext_abs = 0, edata_abs;
-	Word		tlsbssndx = 0, parexpnndx;
+	Word		tlsbssndx = 0, parexpnndx = 0;
 #if	defined(_ELF64)
 	Word		lbssndx = 0;
 	Addr		lbssaddr = 0;
 #endif
-	Addr		bssaddr, etext = 0, edata = 0, end = 0, start = 0;
+	Addr		bssaddr = 0, etext = 0, edata = 0, end = 0, start = 0;
 	Addr		tlsbssaddr = 0;
-	Addr		parexpnbase, parexpnaddr;
+	Addr		parexpnbase = 0, parexpnaddr = 0;
 	int		start_set = 0;
 	Sym		_sym = {0}, *sym, *symtab = NULL;
 	Sym		*dynsym = NULL, *ldynsym = NULL;
@@ -212,14 +213,14 @@ update_osym(Ofl_desc *ofl)
 	Str_tbl		*shstrtab;
 	Str_tbl		*strtab;
 	Str_tbl		*dynstr;
-	Word		*hashtab;	/* hash table pointer */
-	Word		*hashbkt;	/* hash table bucket pointer */
-	Word		*hashchain;	/* hash table chain pointer */
+	Word		*hashtab;		/* hash table pointer */
+	Word		*hashbkt = NULL;	/* hash table bucket pointer */
+	Word		*hashchain = NULL;		/* hash table chain pointer */
 	Wk_desc		*wkp;
 	Alist		*weak = NULL;
 	ofl_flag_t	flags = ofl->ofl_flags;
 	Versym		*versym;
-	Gottable	*gottable;	/* used for display got debugging */
+	Gottable	*gottable = NULL; /* used for display got debugging */
 					/*	information */
 	Syminfo		*syminfo;
 	Sym_s_list	*sorted_syms;	/* table to hold sorted symbols */
@@ -439,18 +440,15 @@ update_osym(Ofl_desc *ofl)
 			 * Find the section index for our special symbols.
 			 */
 			if (sgp == tsgp) {
-				/* LINTED */
 				etext_ndx = elf_ndxscn(osp->os_scn);
 			} else if (dsgp == sgp) {
 				if (osp->os_shdr->sh_type != SHT_NOBITS) {
-					/* LINTED */
 					edata_ndx = elf_ndxscn(osp->os_scn);
 				}
 			}
 
 			if (start_set == 0) {
 				start = sgp->sg_phdr.p_vaddr;
-				/* LINTED */
 				start_ndx = elf_ndxscn(osp->os_scn);
 				start_set++;
 			}
@@ -1178,7 +1176,7 @@ update_osym(Ofl_desc *ofl)
 	for (ssndx = 0; ssndx < (ofl->ofl_elimcnt + ofl->ofl_scopecnt +
 	    ofl->ofl_globcnt); ssndx++) {
 		const char	*name;
-		Sym		*sym;
+		Sym		*sym = NULL;
 		Sym_aux		*sap;
 		Half		spec;
 		int		local = 0, dynlocal = 0, enter_in_symtab;
@@ -1515,7 +1513,6 @@ update_osym(Ofl_desc *ofl)
 					hashval =
 					    sap->sa_hash % ofl->ofl_hashbkts;
 
-					/* LINTED */
 					if (_hashndx = hashbkt[hashval]) {
 						while (hashchain[_hashndx]) {
 							_hashndx =
@@ -1739,7 +1736,6 @@ update_osym(Ofl_desc *ofl)
 				if (flags & FLG_OF_DYNAMIC) {
 					sym->st_value = ofl->
 					    ofl_osdynamic->os_shdr->sh_addr;
-					/* LINTED */
 					sectndx = elf_ndxscn(
 					    ofl->ofl_osdynamic->os_scn);
 					sdp->sd_flags &= ~FLG_SY_SPECSEC;
@@ -1749,7 +1745,6 @@ update_osym(Ofl_desc *ofl)
 				if (ofl->ofl_osplt) {
 					sym->st_value = ofl->
 					    ofl_osplt->os_shdr->sh_addr;
-					/* LINTED */
 					sectndx = elf_ndxscn(
 					    ofl->ofl_osplt->os_scn);
 					sdp->sd_flags &= ~FLG_SY_SPECSEC;
@@ -1763,7 +1758,6 @@ update_osym(Ofl_desc *ofl)
 				 */
 				sym->st_value += ofl->
 				    ofl_osgot->os_shdr->sh_addr;
-				/* LINTED */
 				sectndx = elf_ndxscn(ofl->
 				    ofl_osgot->os_scn);
 				sdp->sd_flags &= ~FLG_SY_SPECSEC;
@@ -1871,7 +1865,6 @@ update_osym(Ofl_desc *ofl)
 				_dynshndx[_symndx] = sectndx;
 				_dynsym[_symndx].st_shndx = SHN_XINDEX;
 			} else {
-				/* LINTED */
 				_dynsym[_symndx].st_shndx = (Half)sectndx;
 			}
 		}
@@ -3083,7 +3076,7 @@ update_move(Ofl_desc *ofl)
 {
 	Word		ndx = 0;
 	ofl_flag_t	flags = ofl->ofl_flags;
-	Move		*omvp;
+	Move		*omvp = NULL;
 	Aliste		idx1;
 	Sym_desc	*sdp;
 
@@ -3631,7 +3624,7 @@ translate_link(Ofl_desc *ofl, Os_desc *osp, Word link, const char *msg)
 uintptr_t
 ld_update_outfile(Ofl_desc *ofl)
 {
-	Addr		size, etext, vaddr;
+	Addr		size = 0, etext, vaddr;
 	Sg_desc		*sgp;
 	Sg_desc		*dtracesgp = NULL, *capsgp = NULL, *intpsgp = NULL;
 	Os_desc		*osp;
@@ -3805,7 +3798,7 @@ ld_update_outfile(Ofl_desc *ofl)
 		if (phdr->p_type == PT_TLS) {
 			Os_desc		*tlsosp;
 			Shdr		*lastfileshdr = NULL;
-			Shdr		*firstshdr = NULL, *lastshdr;
+			Shdr		*firstshdr = NULL, *lastshdr = NULL;
 			Aliste		idx;
 
 			if (ofl->ofl_ostlsseg == NULL)

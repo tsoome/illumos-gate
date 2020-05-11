@@ -94,7 +94,7 @@ static Elf_Void *
 arsym(Byte *off, size_t sz, size_t *e, int is64)
 {
 	char		*endstr = (char *)off + sz;
-	register char	*str;
+	char		*str = NULL;
 	Byte		*endoff;
 	Elf_Void	*oas;
 	size_t		eltsize = is64 ? 8 : 4;

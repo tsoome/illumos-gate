@@ -1304,6 +1304,7 @@ ld_do_activerelocs(Ofl_desc *ofl)
 			Gotndx	*gnp;
 			Gotref	gref;
 
+			gref = GOT_REF_GENERIC;
 			if (arsp->rel_flags & FLG_REL_STLS)
 				gref = GOT_REF_TLSIE;
 			else if (arsp->rel_flags & FLG_REL_DTLS)

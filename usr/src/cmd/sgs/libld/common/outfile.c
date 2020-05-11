@@ -216,7 +216,7 @@ pad_outfile(Ofl_desc *ofl)
 	 */
 	for (APLIST_TRAVERSE(ofl->ofl_segs, idx1, sgp)) {
 		Phdr	*phdr = &(sgp->sg_phdr);
-		Os_desc	*osp;
+		Os_desc	*osp = NULL;
 		Aliste	idx2;
 
 		/*

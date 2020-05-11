@@ -77,7 +77,7 @@ process_member(Ar_mem *amp, const char *name, Sym_desc *sdp, Ofl_desc *ofl)
 	 */
 	if (amp->am_syms == NULL) {
 		Elf_Scn		*scn = NULL;
-		Shdr		*shdr;
+		Shdr		*shdr = NULL;
 		Elf_Data	*data;
 
 		while (scn = elf_nextscn(amp->am_elf, scn)) {

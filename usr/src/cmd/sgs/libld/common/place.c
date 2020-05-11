@@ -732,7 +732,7 @@ Os_desc *
 ld_place_section(Ofl_desc *ofl, Is_desc *isp, Place_path_info *path_info,
     int ident, const char *alt_os_name)
 {
-	Ent_desc	*enp;
+	Ent_desc	*enp = NULL;
 	Sg_desc		*sgp;
 	Os_desc		*osp;
 	Aliste		idx1, iidx;

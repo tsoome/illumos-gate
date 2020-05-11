@@ -73,7 +73,7 @@ void
 Dbg_support_action(Lm_list *lml, const char *obj, const char *func,
     Support_ndx ndx, const char *name)
 {
-	const char	*str;
+	const char	*str = NULL;
 
 	if (DBG_NOTCLASS(DBG_C_SUPPORT))
 		return;

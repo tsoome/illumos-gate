@@ -850,6 +850,7 @@ sym_undef_entry(Ofl_desc *ofl, Sym_desc *sdp, Type type, ofl_flag_t ofl_flag,
 	Ifl_desc	*ifl = sdp->sd_file;
 	Sym_aux		*sap = sdp->sd_aux;
 
+	name2 = name3 = NULL;
 	if (*undef_state == 0)
 		ld_eprintf(ofl, ERR_NONE, MSG_INTL(MSG_SYM_FMT_UNDEF),
 		    MSG_INTL(MSG_SYM_UNDEF_ITM_11),
