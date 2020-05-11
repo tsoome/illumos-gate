@@ -1197,6 +1197,7 @@ roff_expand(struct roff *r, struct buf *buf, int ln, int pos, char newesc)
 
 	/* Search forward for comments. */
 
+	sign = ' ';
 	done = 0;
 	start = buf->buf + pos;
 	for (stesc = buf->buf + pos; *stesc != '\0'; stesc++) {
