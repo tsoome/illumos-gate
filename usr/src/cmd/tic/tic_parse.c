@@ -524,7 +524,7 @@ void
 dump_structure(short Booleans[], short Numbers[], short Strings[])
 {
 	struct stat64	statbuf;
-	FILE		*fp;
+	FILE		*fp = NULL;
 	char		name_list[1024];
 	char		*first_name, *other_names, *cur_name;
 	char		filename[128 + 2 + 1];
@@ -584,7 +584,7 @@ dump_structure(short Booleans[], short Numbers[], short Strings[])
 #endif /* NOCANCELCOMPAT */
 		change_cancellations(Booleans);
 
-	if (!check_only) {
+	if (fp != NULL) {
 		if (write_object(fp, Booleans, Numbers, Strings) < 0) {
 			syserr_abort("Error writing %s/%s", destination,
 			    filename);
