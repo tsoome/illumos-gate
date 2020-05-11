@@ -598,7 +598,7 @@ dump_structure(short Booleans[], short Numbers[], short Strings[])
 #endif /* NOCANCELCOMPAT */
 		change_cancellations(Booleans);
 
-	if (!check_only) {
+	if (fp != NULL) {
 		if (write_object(fp, Booleans, Numbers, Strings) < 0) {
 			syserr_abort("Error writing %s/%s", destination,
 			    filename);
