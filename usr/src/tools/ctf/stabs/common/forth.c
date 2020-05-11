@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * In this mode, we generate forthdebug macros as requested by the input
  * template, the format of which is given below.
@@ -296,6 +294,7 @@ fth_process_line(char *line)
 	int nblank = 0;
 	int n;
 
+	name = NULL;
 	if (strlen(line) == 0) {
 		if (fth_section_end() < 0)
 			return (-1);
