@@ -31,7 +31,11 @@
 #include <xen/public/io/console.h>
 #include <sys/mach_mmu.h>
 
+#if defined(_BOOT)
 shared_info_t *HYPERVISOR_shared_info;
+#else
+shared_info_t *HYPERVISOR_shared_info;
+#endif
 void *HYPERVISOR_console_page;
 
 #if defined(_BOOT)
