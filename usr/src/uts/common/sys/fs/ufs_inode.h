@@ -518,7 +518,7 @@ extern int		vttoif_tab[];
  * (Note that UFS's concept of time only keeps 32 bits of seconds
  * in the on-disk format).
  */
-struct timeval32 iuniqtime;
+extern struct timeval32 iuniqtime;
 extern kmutex_t ufs_iuniqtime_lock;
 
 #define	ITIMES_NOLOCK(ip) ufs_itimes_nolock(ip)

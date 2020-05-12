@@ -107,6 +107,7 @@ union ihead *ihead;	/* inode LRU cache, Chris Maltby */
 kmutex_t *ih_lock;	/* protect inode cache hash table */
 static int ino_hashlen = 4;	/* desired average hash chain length */
 int inohsz;		/* number of buckets in the hash table */
+struct timeval32 iuniqtime;
 
 kmutex_t	ufs_scan_lock;	/* stop racing multiple ufs_scan_inodes() */
 kmutex_t	ufs_iuniqtime_lock; /* protect iuniqtime */
