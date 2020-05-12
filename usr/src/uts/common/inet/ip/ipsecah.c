@@ -3033,6 +3033,7 @@ ah_process_ip_options_v4(mblk_t *mp, ipsa_t *assoc, int *length_to_skip,
 #define	V_HLEN	(v_hlen_tos_len & 0xFF)
 #endif
 
+	option_length = 0;
 	oipha = (ipha_t *)mp->b_rptr;
 	v_hlen_tos_len = ((uint32_t *)oipha)[0];
 
