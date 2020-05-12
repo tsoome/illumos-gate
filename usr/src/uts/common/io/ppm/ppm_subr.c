@@ -994,8 +994,10 @@ ppm_stoi(char *ss, uint_t *val)
 	int  hex_ = 0, base = D_BASE;
 	int  digit;
 
-	if ((cp = strchr(ss, '=')) == NULL)
-		return (*val = (uint_t)-1);
+	if ((cp = strchr(ss, '=')) == NULL) {
+		*val = UINT_MAX;
+		return (-1);
+	}
 
 	cp++;
 	if ((*cp == '0') && (*++cp == 'x')) {
@@ -1064,10 +1066,11 @@ ppm_convert(char *symbol, uint_t *val)
 	char *s;
 	struct ppm_confdefs *pcfp;
 
+	*val = UINT_MAX;
 	if ((s = strchr(symbol, '=')) == NULL) {
 		cmn_err(CE_WARN, "ppm_convert: token \"%s\" syntax error in "
 		    "ppm.conf file", symbol);
-		return (*val = (uint_t)-1);
+		return (-1);
 	}
 	s++;
 
@@ -1078,7 +1081,7 @@ ppm_convert(char *symbol, uint_t *val)
 
 	cmn_err(CE_WARN, "ppm_convert: Unrecognizable token \"%s\" "
 	    "in ppm.conf file", symbol);
-	return (*val = (uint_t)-1);
+	return (-1);
 }
 
 
