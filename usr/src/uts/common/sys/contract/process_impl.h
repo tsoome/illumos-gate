@@ -72,8 +72,8 @@ struct cont_process {
 /*
  * Kernel APIs
  */
-ctmpl_process_t *sys_process_tmpl;
-ct_type_t *process_type;
+extern ctmpl_process_t *sys_process_tmpl;
+extern ct_type_t *process_type;
 
 struct proc;
 void contract_process_init(void);
