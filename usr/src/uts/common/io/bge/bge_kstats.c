@@ -695,10 +695,10 @@ bge_m_stat(void *arg, uint_t stat, uint64_t *val)
 	}
 
 	bstp = NULL;
+	pstats = bgep->pstats;
 	if (bgep->chipid.statistic_type == BGE_STAT_BLK)
 		bstp = DMA_VPTR(bgep->statistics);
 	else {
-		pstats = bgep->pstats;
 		pstats->ifHCOutOctets +=
 		    bge_reg_get32(bgep, STAT_IFHCOUT_OCTETS_REG);
 		pstats->etherStatsCollisions +=
