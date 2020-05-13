@@ -1385,7 +1385,8 @@ sol_uverbs_modify_qp(uverbs_uctxt_uobj_t *uctxt, char *buf,
 	if (cmd.attr_mask & IB_QP_CUR_STATE) {
 		cur_state = cmd.cur_qp_state;
 	} else {
-		cur_state = IBT_TO_OFA_QP_STATE(qp_query_attr.qp_info.qp_state);
+		cur_state = (enum ib_qp_state)
+		    IBT_TO_OFA_QP_STATE(qp_query_attr.qp_info.qp_state);
 	}
 
 	new_state = cmd.attr_mask & IB_QP_STATE ? cmd.qp_state : cur_state;
