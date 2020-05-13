@@ -1872,6 +1872,8 @@ usbvc_free_stream_descr(usbvc_state_t *usbvcp)
 			fmt_cnt = in_hdr->descr->bNumFormats;
 		} else if (out_hdr) {
 			fmt_cnt = out_hdr->descr->bNumFormats;
+		} else {
+			fmt_cnt = 0;
 		}
 
 		USB_DPRINTF_L3(PRINT_MASK_CLOSE,
