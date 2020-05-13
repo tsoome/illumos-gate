@@ -146,7 +146,7 @@ static lm_status_t BnxeRssDisable(um_device_t * pUM)
         BnxeFmErrorReport(pUM, DDI_FM_DEVICE_INVAL_STATE);
     }
 
-    return (rc == LM_STATUS_SUCCESS) ? B_TRUE : B_FALSE;
+    return (rc);
 }
 
 
