@@ -627,7 +627,7 @@ typedef union _nge_rx_def {
  * Low 32 bit unicast address
  */
 #define	NGE_UNI_ADDR0		0x0a8
-union {
+typedef union _nge_uni_addr0 {
 	uint32_t	addr_val;
 	struct {
 		uint32_t	addr;
@@ -655,12 +655,12 @@ typedef union _nge_uni_addr1 {
  * Low 32 bit multicast address
  */
 #define	NGE_MUL_ADDR0		0x0b0
-union {
+typedef union _nge_mul_addr0 {
 	uint32_t	addr_val;
 	struct {
 		uint32_t	addr;
 	}addr_bits;
-}nge_mul_addr0;
+} nge_mul_addr0;
 
 /*
  * High 32 bit multicast address
@@ -672,13 +672,13 @@ typedef union _nge_mul_addr1 {
 		uint32_t	addr:16;
 		uint32_t	resv16_31:16;
 	}addr_bits;
-}nge_mul_addr1;
+} nge_mul_addr1;
 
 /*
  * Low 32 bit multicast mask
  */
 #define	NGE_MUL_MASK		0x0b8
-union {
+typedef union _nge_mul_mask0 {
 	uint32_t	mask_val;
 	struct {
 		uint32_t	mask;
@@ -689,7 +689,7 @@ union {
  * High 32 bit multicast mask
  */
 #define	NGE_MUL_MASK1		0x0bc
-union {
+typedef union _nge_mul_mask1 {
 	uint32_t	mask_val;
 	struct {
 		uint32_t	mask:16;
@@ -800,7 +800,7 @@ typedef union _nge_rx_poll {
  * Transmit polling count
  */
 #define	NGE_TX_PCNT		0x114
-union {
+typedef union _nge_tx_pcnt {
 	uint32_t	cnt_val;
 	struct {
 		uint32_t	pcnt:32;
@@ -811,7 +811,7 @@ union {
  * Receive polling count
  */
 #define	NGE_RX_PCNT		0x118
-union {
+typedef union _nge_rx_pcnt {
 	uint32_t	cnt_val;
 	struct {
 		uint32_t	pcnt:32;
@@ -823,7 +823,7 @@ union {
  * Current tx's descriptor address
  */
 #define	NGE_TX_CUR_DADR		0x11c
-union {
+typedef union _nge_tx_cur_addr {
 	uint32_t	addr_val;
 	struct {
 		uint32_t	resv0_2:3;
@@ -835,7 +835,7 @@ union {
  * Current rx's descriptor address
  */
 #define	NGE_RX_CUR_DADR		0x120
-union {
+typedef union _nge_rx_cur_addr {
 	uint32_t	addr_val;
 	struct {
 		uint32_t	resv0_2:3;
@@ -847,7 +847,7 @@ union {
  * Current tx's data buffer address
  */
 #define	NGE_TX_CUR_PRD0		0x124
-union {
+typedef union _nge_tx_cur_prd0 {
 	uint32_t	prd0_val;
 	struct {
 		uint32_t	prd0:32;
@@ -858,7 +858,7 @@ union {
  * Current tx's data buffer status
  */
 #define	NGE_TX_CUR_PRD1		0x128
-union {
+typedef union _nge_tx_cur_prd1 {
 	uint32_t	prd1_val;
 	struct {
 		uint32_t	rebytes:16;
@@ -870,12 +870,12 @@ union {
  * Current rx's data buffer address
  */
 #define	NGE_RX_CUR_PRD0		0x12c
-union {
+typedef union _nge_rx_cur_prd0 {
 	uint32_t	prd0_val;
 	struct {
 		uint32_t	prd0:32;
 	}prd0_bits;
-}nge_rx_cur_prd0;
+} nge_rx_cur_prd0;
 
 /*
  * Current rx's data buffer status
@@ -886,18 +886,18 @@ union {
  * Next tx's descriptor address
  */
 #define	NGE_TX_NXT_DADR		0x134
-union {
+typedef union _nge_tx_nxt_dadr {
 	uint32_t	dadr_val;
 	struct {
 		uint32_t	addr:32;
 	}addr_bits;
-}nge_tx_nxt_dadr;
+} nge_tx_nxt_dadr;
 
 /*
  * Next rx's descriptor address
  */
 #define	NGE_RX_NXT_DADR		0x138
-union {
+typedef union _nge_rx_nxt_dadr {
 	uint32_t	dadr_val;
 	struct {
 		uint32_t	addr:32;
