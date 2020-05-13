@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * _F_cplx_lr_div_rx(a, w) returns a / w computed by the textbook
  * formula without regard to exceptions or special cases.
@@ -43,11 +41,14 @@ _F_cplx_lr_div_rx(float a, float _Complex w)
 {
 	float _Complex	v;
 	long double	c, d, r;
+	float		*p;
 
 	c = ((float *)&w)[0];
 	d = ((float *)&w)[1];
 	r = a / (c * c + d * d);
-	((float *)&v)[0] = (float)(r * c);
-	((float *)&v)[1] = (float)(r * -d);
+
+	p = (float *)&v;
+	p[0] = (float)(r * c);
+	p[1] = (float)(r * -d);
 	return (v);
 }

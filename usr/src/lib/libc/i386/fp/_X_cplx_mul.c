@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * _X_cplx_mul(z, w) returns z * w with infinities handled according
  * to C99.
@@ -86,6 +84,7 @@ _X_cplx_mul(long double _Complex z, long double _Complex w)
 	long double _Complex	v;
 	long double		a, b, c, d, x, y;
 	int			recalc, i, j;
+	long double		*p;
 
 	/*
 	 * The following is equivalent to
@@ -137,7 +136,8 @@ _X_cplx_mul(long double _Complex z, long double _Complex w)
 	 *
 	 *  return x + I * y;
 	 */
-	((long double *)&v)[0] = x;
-	((long double *)&v)[1] = y;
+	p = (long double *)&v;
+	p[0] = x;
+	p[1] = y;
 	return (v);
 }

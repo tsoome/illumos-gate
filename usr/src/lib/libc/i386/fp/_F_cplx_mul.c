@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * _F_cplx_mul(z, w) returns z * w with infinities handled according
  * to C99.
@@ -83,6 +81,7 @@ _F_cplx_mul(float _Complex z, float _Complex w)
 	float		a, b, c, d;
 	long double	x, y;
 	int		recalc, i, j;
+	float		*p;
 
 	/*
 	 * The following is equivalent to
@@ -134,7 +133,8 @@ _F_cplx_mul(float _Complex z, float _Complex w)
 	 *
 	 *  return x + I * y;
 	 */
-	((float *)&v)[0] = (float)x;
-	((float *)&v)[1] = (float)y;
+	p = (float *)&v;
+	p[0] = (float)x;
+	p[1] = (float)y;
 	return (v);
 }
