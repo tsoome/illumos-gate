@@ -79,13 +79,13 @@ typedef struct mhioc_inkeys {
 } mhioc_inkeys_t;
 
 #if defined(_SYSCALL32)
-struct mhioc_key_list32 {
+typedef struct mhioc_key_list32 {
 	uint32_t		listsize;
 	uint32_t		listlen;
 	caddr32_t		list;
 } mhioc_key_list32_t;
 
-struct mhioc_inkeys32 {
+typedef struct mhioc_inkeys32 {
 	uint32_t		generation;
 	caddr32_t		li;
 } mhioc_inkeys32_t;
@@ -110,7 +110,7 @@ typedef struct mhioc_inresvs {
 } mhioc_inresvs_t;
 
 #if defined(_SYSCALL32)
-struct mhioc_resv_desc_list32 {
+typedef struct mhioc_resv_desc_list32 {
 	uint32_t		listsize;
 	uint32_t		listlen;
 	caddr32_t		list;
