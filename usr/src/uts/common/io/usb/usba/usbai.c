@@ -78,6 +78,8 @@ static char *usba_debug_buf = NULL;	/* The debug buf */
 static char *usba_buf_sptr, *usba_buf_eptr;
 static hrtime_t usba_last_timestamp;	/* last time stamp in trace */
 
+usb_dev_cap_t usb_cap;
+
 /* USBA framework initializations */
 void
 usba_usbai_initialization()

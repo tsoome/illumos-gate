@@ -445,7 +445,7 @@ typedef struct usb_dev_cap {
 	usb_dev_driver_callback_t	usba_dev_driver_cb;
 } usb_dev_cap_t;
 
-usb_dev_cap_t usb_cap;
+extern usb_dev_cap_t usb_cap;
 _NOTE(SCHEME_PROTECTS_DATA("unique device capture data", usb_cap))
 
 #ifdef __cplusplus
