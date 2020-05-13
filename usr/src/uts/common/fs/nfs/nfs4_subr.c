@@ -1583,7 +1583,7 @@ rfs4call(mntinfo4_t *mi, COMPOUND4args_clnt *argsp, COMPOUND4res_clnt *resp,
     cred_t *cr, int *doqueue, int flags, nfs4_error_t *ep)
 {
 	int i, error;
-	enum clnt_stat rpc_status = NFS4_OK;
+	enum clnt_stat rpc_status = RPC_SUCCESS;
 	int num_resops;
 	struct nfs4_clnt *nfscl;
 
