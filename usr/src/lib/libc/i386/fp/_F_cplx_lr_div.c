@@ -41,13 +41,16 @@ _F_cplx_lr_div(float _Complex z, float _Complex w)
 {
 	float _Complex	v = 0;
 	long double	a, b, c, d, r;
+	float		*p;
 
 	a = ((float *)&z)[0];
 	b = ((float *)&z)[1];
 	c = ((float *)&w)[0];
 	d = ((float *)&w)[1];
 	r = 1.0f / (c * c + d * d);
-	((float *)&v)[0] = (float)((a * c + b * d) * r);
-	((float *)&v)[1] = (float)((b * c - a * d) * r);
+
+	p = (float *)&v;
+	p[0] = (float)((a * c + b * d) * r);
+	p[1] = (float)((b * c - a * d) * r);
 	return (v);
 }

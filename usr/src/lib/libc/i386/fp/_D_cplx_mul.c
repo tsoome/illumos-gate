@@ -82,6 +82,7 @@ _D_cplx_mul(double _Complex z, double _Complex w)
 	double		a, b, c, d;
 	long double	x, y;
 	int		recalc, i, j;
+	double		*p;
 
 	/*
 	 * The following is equivalent to
@@ -137,9 +138,8 @@ _D_cplx_mul(double _Complex z, double _Complex w)
 	 *
 	 *  return x + I * y;
 	 */
-	/* LINTED alignment */
-	((double *)&v)[0] = (double)x;
-	/* LINTED alignment */
-	((double *)&v)[1] = (double)y;
+	p = (double *)&v;
+	p[0] = (double)x;
+	p[1] = (double)y;
 	return (v);
 }

@@ -84,6 +84,7 @@ _X_cplx_mul(long double _Complex z, long double _Complex w)
 	long double _Complex	v = 0;
 	long double		a, b, c, d, x, y;
 	int			recalc, i, j;
+	long double		*p;
 
 	/*
 	 * The following is equivalent to
@@ -135,7 +136,8 @@ _X_cplx_mul(long double _Complex z, long double _Complex w)
 	 *
 	 *  return x + I * y;
 	 */
-	((long double *)&v)[0] = x;
-	((long double *)&v)[1] = y;
+	p = (long double *)&v;
+	p[0] = x;
+	p[1] = y;
 	return (v);
 }

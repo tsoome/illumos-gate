@@ -41,11 +41,14 @@ _X_cplx_lr_div_rx(long double a, long double _Complex w)
 {
 	long double _Complex	v = 0;
 	long double		c, d, r;
+	long double		*p;
 
 	c = ((long double *)&w)[0];
 	d = ((long double *)&w)[1];
 	r = a / (c * c + d * d);
-	((long double *)&v)[0] = r * c;
-	((long double *)&v)[1] = r * -d;
+
+	p = (long double *)&v;
+	p[0] = r * c;
+	p[1] = r * -d;
 	return (v);
 }

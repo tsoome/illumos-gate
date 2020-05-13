@@ -41,15 +41,18 @@ _D_cplx_lr_div_rx(double a, double _Complex w)
 {
 	double _Complex	v = 0;
 	long double	c, d, r;
+	double *p;
 
-	/* LINTED alignment */
 	c = ((double *)&w)[0];
-	/* LINTED alignment */
 	d = ((double *)&w)[1];
 	r = a / (c * c + d * d);
-	/* LINTED alignment */
-	((double *)&v)[0] = (double)(r * c);
-	/* LINTED alignment */
-	((double *)&v)[1] = (double)(r * -d);
+
+	/*
+	 * For some reason, gcc 10 does not like direct assignment
+	 * to v like done above with w.
+	 */
+	p = (double *)&v;
+	p[0] = (double)(r * c);
+	p[1] = (double)(r * -d);
 	return (v);
 }
