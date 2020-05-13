@@ -376,7 +376,7 @@ mq_open(const char *path, int oflag, /* mode_t mode, mq_attr *attr */ ...)
 	va_list		ap;
 	mode_t		mode = 0;
 	struct mq_attr	*attr = NULL;
-	int		fd;
+	int		fd = -1;
 	int		err;
 	int		cr_flag = 0;
 	int		locked = 0;
@@ -385,9 +385,9 @@ mq_open(const char *path, int oflag, /* mode_t mode, mq_attr *attr */ ...)
 	ssize_t		maxmsg;
 	uint64_t	temp;
 	void		*ptr;
-	mqdes_t		*mqdp;
-	mqhdr_t		*mqhp;
-	struct mq_dn	*mqdnp;
+	mqdes_t		*mqdp = NULL;
+	mqhdr_t		*mqhp = NULL;
+	struct mq_dn	*mqdnp = NULL;
 
 	if (__pos4obj_check(path) == -1)
 		return ((mqd_t)-1);
@@ -414,6 +414,8 @@ mq_open(const char *path, int oflag, /* mode_t mode, mq_attr *attr */ ...)
 	(void) __close_nc(fd);
 
 	/* Try to open/create data file */
+	maxmsg = MQ_MAXMSG;
+	msgsize = MQ_MAXSIZE;
 	if (cr_flag) {
 		cr_flag = PFILE_CREATE;
 		if (attr == NULL) {
@@ -555,7 +557,7 @@ out:
 	if ((cr_flag & PFILE_CREATE) != 0)
 		(void) __pos4obj_unlink(path, MQ_PERM_TYPE);
 	if ((cr_flag & ALLOC_MEM) != 0)
-		free((void *)mqdp);
+		free(mqdp);
 	if ((cr_flag & DFILE_MMAP) != 0)
 		(void) munmap((caddr_t)mqhp, (size_t)total_size);
 	if ((cr_flag & MQDNP_MMAP) != 0)
@@ -933,15 +935,15 @@ mq_notify(mqd_t mqdes, const struct sigevent *sigevp)
 {
 	mqdes_t *mqdp = (mqdes_t *)mqdes;
 	mqhdr_t *mqhp;
-	thread_communication_data_t *tcdp;
+	thread_communication_data_t *tcdp = NULL;
 	siginfo_t mq_siginfo;
 	struct sigevent sigevent;
 	struct stat64 statb;
 	port_notify_t *pn;
-	void *userval;
+	void *userval = NULL;
 	int rval = -1;
 	int ntype;
-	int port;
+	int port = -1;
 	int error;
 
 	if (!mq_is_valid(mqdp)) {

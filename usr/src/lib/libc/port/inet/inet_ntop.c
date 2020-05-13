@@ -116,8 +116,9 @@ inet_ntop6(const uchar_t *src, char *dst, socklen_t size)
 	(void) memset(words, '\0', sizeof (words));
 	for (i = 0; i < IN6ADDRSZ; i++)
 		words[i / 2] |= (src[i] << ((1 - (i % 2)) << 3));
-	best.base = -1;
 	cur.base = -1;
+	cur.len = 0;
+	best = cur;
 	for (i = 0; i < (IN6ADDRSZ / INT16SZ); i++) {
 		if (words[i] == 0) {
 			if (cur.base == -1)

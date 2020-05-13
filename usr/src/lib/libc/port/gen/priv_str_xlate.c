@@ -178,7 +178,7 @@ __priv_set_to_str(
 	char *res, *resp;
 	int i;
 	char neg = separator == '!' ? '-' : '!';
-	priv_set_t *zone;
+	priv_set_t *zone = NULL;
 	boolean_t all;
 	boolean_t use_libc_data = (d == NULL);
 

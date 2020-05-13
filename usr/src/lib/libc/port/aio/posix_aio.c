@@ -253,6 +253,7 @@ lio_listio(int mode, aiocb_t *_RESTRICT_KYWD const *_RESTRICT_KYWD list,
 			 * submit an AIO request with flags AIO_NO_KAIO
 			 * to avoid the kaio() syscall in _aio_rw()
 			 */
+			rw = -1;
 			switch (aiocbp->aio_lio_opcode) {
 			case LIO_READ:
 				rw = AIOAREAD;
@@ -261,8 +262,12 @@ lio_listio(int mode, aiocb_t *_RESTRICT_KYWD const *_RESTRICT_KYWD list,
 				rw = AIOAWRITE;
 				break;
 			}
-			error = _aio_rw(aiocbp, head, &__nextworker_rw, rw,
-			    (AIO_NO_KAIO | AIO_NO_DUPS));
+			if (rw != -1) {
+				error = _aio_rw(aiocbp, head, &__nextworker_rw,
+				    rw, (AIO_NO_KAIO | AIO_NO_DUPS));
+			} else {
+				error = EINVAL;
+			}
 			if (error == 0)
 				aio_ufs++;
 			else {
@@ -367,6 +372,7 @@ __aio_suspend(void **list, int nent, const timespec_t *timo, int largefile)
 		return (-1);
 	}
 
+	hrtstart = gethrtime();
 	if (timo) {
 		if (timo->tv_sec < 0 || timo->tv_nsec < 0 ||
 		    timo->tv_nsec >= NANOSEC) {
@@ -376,7 +382,6 @@ __aio_suspend(void **list, int nent, const timespec_t *timo, int largefile)
 		/* Initialize start time if time monitoring desired */
 		if (timo->tv_sec > 0 || timo->tv_nsec > 0) {
 			timedwait = AIO_TIMEOUT_WAIT;
-			hrtstart = gethrtime();
 		} else {
 			/* content of timeout = 0 : polling */
 			timedwait = AIO_TIMEOUT_POLL;
@@ -386,9 +391,10 @@ __aio_suspend(void **list, int nent, const timespec_t *timo, int largefile)
 		timedwait = AIO_TIMEOUT_INDEF;
 	}
 
+	listp = (aiocb_t **)list;
 #if !defined(_LP64)
+	listp64 = (aiocb64_t **)list;
 	if (largefile) {
-		listp64 = (aiocb64_t **)list;
 		for (i = 0; i < nent; i++) {
 			if ((aiocbp64 = listp64[i]) != NULL &&
 			    aiocbp64->aio_state == CHECK)
@@ -397,7 +403,6 @@ __aio_suspend(void **list, int nent, const timespec_t *timo, int largefile)
 	} else
 #endif	/* !_LP64 */
 	{
-		listp = (aiocb_t **)list;
 		for (i = 0; i < nent; i++) {
 			if ((aiocbp = listp[i]) != NULL &&
 			    aiocbp->aio_state == CHECK)
@@ -474,10 +479,10 @@ __aio_suspend(void **list, int nent, const timespec_t *timo, int largefile)
 	/*
 	 * IOs using the thread pool are outstanding.
 	 */
+	hrtend = hrtstart + (hrtime_t)timo->tv_sec * (hrtime_t)NANOSEC +
+	    (hrtime_t)timo->tv_nsec;
 	if (timedwait == AIO_TIMEOUT_WAIT) {
 		/* time monitoring */
-		hrtend = hrtstart + (hrtime_t)timo->tv_sec * (hrtime_t)NANOSEC +
-		    (hrtime_t)timo->tv_nsec;
 		hrtres = hrtend - gethrtime();
 		if (hrtres <= 0)
 			hrtres = 1;
@@ -1450,6 +1455,7 @@ lio_listio64(int mode, aiocb64_t *_RESTRICT_KYWD const *_RESTRICT_KYWD list,
 			 * submit an AIO request with flags AIO_NO_KAIO
 			 * to avoid the kaio() syscall in _aio_rw()
 			 */
+			rw = -1;
 			switch (aiocbp->aio_lio_opcode) {
 			case LIO_READ:
 				rw = AIOAREAD64;
@@ -1458,11 +1464,16 @@ lio_listio64(int mode, aiocb64_t *_RESTRICT_KYWD const *_RESTRICT_KYWD list,
 				rw = AIOAWRITE64;
 				break;
 			}
-			error = _aio_rw64(aiocbp, head, &__nextworker_rw, rw,
-			    (AIO_NO_KAIO | AIO_NO_DUPS));
-			if (error == 0)
+			if (rw != -1) {
+				error = _aio_rw64(aiocbp, head,
+				    &__nextworker_rw, rw,
+				    (AIO_NO_KAIO | AIO_NO_DUPS));
+			} else {
+				error = EINVAL;
+			}
+			if (error == 0) {
 				aio_ufs++;
-			else {
+			} else {
 				if (head)
 					_lio_list_decr(head);
 				aiocbp->aio_resultp.aio_errno = error;

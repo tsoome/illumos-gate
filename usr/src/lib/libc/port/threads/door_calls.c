@@ -582,7 +582,7 @@ door_xcreate_n(door_info_t *dip, struct privdoor_data *pdd, int n)
 	struct door_xsync *xsp;
 	int i, failidx = -1;
 	int isdepcb = 0;
-	int failerrno;
+	int failerrno = 0;
 	int bound = 0;
 #ifdef _STACK_GROWS_DOWNWARD
 	int stkdir = -1;

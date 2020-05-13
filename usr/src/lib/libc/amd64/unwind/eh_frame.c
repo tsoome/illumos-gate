@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * interface used by unwind support to query frame descriptor info
  */
@@ -188,7 +186,7 @@ static int
 table_ent_log_size(int enc)
 {
 	int val = enc & 0xf;
-	int res;
+	int res = -1;
 
 	switch (val) {
 	case 0x3:
@@ -218,9 +216,9 @@ get_table_ent_val(unsigned char *data, unsigned char *data_end,
 	int rel = (enc >> 4) & 0xf;
 	unsigned char *second = data;
 	unsigned char *third = data;
-	uint64_t code;
-	void *fde;
-	uint64_t next_code;
+	uint64_t code = 0;
+	void *fde = NULL;
+	uint64_t next_code = 0;
 
 	switch (val) {
 	case 0x3:

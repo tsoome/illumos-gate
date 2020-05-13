@@ -969,7 +969,7 @@ globextend(const wcat_t *path, glob_t *pglob, struct glob_lim *limitp,
 	size_t allocn, newn, len;
 	char *copy = NULL;
 	const wcat_t *p;
-	struct stat **statv;
+	struct stat **statv = NULL;
 	char junk[MB_LEN_MAX];
 	int n;
 

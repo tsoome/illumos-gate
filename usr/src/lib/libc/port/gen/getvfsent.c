@@ -110,7 +110,7 @@ getvfsany(FILE *fd, struct vfstab *vgetp, struct vfstab *vrefp)
 {
 	int	ret, bstat, cstat;
 	mode_t	bmode, cmode;
-	dev_t	brdev, crdev;
+	dev_t	brdev, crdev = NODEV;
 	struct stat64	statb;
 	off64_t start = ftello64(fd);
 

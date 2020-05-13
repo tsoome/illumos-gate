@@ -363,7 +363,7 @@ _Unw_get_val(void **datap, ptrdiff_t reloc,
 	enum operand_desc opr, int daf, int caf, int enc)
 {
 	intptr_t data = (intptr_t)*datap;
-	uint64_t res;
+	uint64_t res = 0;
 	char *dp, *rp;
 
 	switch (opr) {

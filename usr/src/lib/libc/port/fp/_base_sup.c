@@ -29,6 +29,7 @@
  */
 
 #include "lint.h"
+#include <string.h>
 #include <sys/types.h>
 #include "base_conversion.h"
 #include <sys/isa_defs.h>
@@ -102,6 +103,7 @@ __class_quadruple(quadruple *x)
 {
 	quadruple_equivalence kluge;
 
+	(void) memset(&kluge, 0, sizeof (kluge));
 	kluge.x = *x;
 	if (kluge.f.msw.exponent == 0) {	/* 0 or sub */
 		if ((kluge.f.msw.significand == 0) &&

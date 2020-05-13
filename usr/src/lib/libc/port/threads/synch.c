@@ -129,9 +129,9 @@ int
 mutex_init(mutex_t *mp, int type, void *arg)
 {
 	int basetype = (type & ~ALL_ATTRIBUTES);
-	const pcclass_t *pccp;
+	const pcclass_t *pccp = NULL;
 	int error = 0;
-	int ceil;
+	int ceil = 0;
 
 	if (basetype == USYNC_PROCESS_ROBUST) {
 		/*
@@ -1797,8 +1797,8 @@ mutex_lock_queue(ulwp_t *self, tdb_mutex_stats_t *msp, mutex_t *mp,
 	}
 	if (msp) {
 		tdb_incr(msp->mutex_sleep);
-		begin_sleep = gethrtime();
 	}
+	begin_sleep = gethrtime();
 
 	DTRACE_PROBE1(plockstat, mutex__block, mp);
 
@@ -2050,8 +2050,8 @@ mutex_lock_internal(mutex_t *mp, timespec_t *tsp, int try)
 	tdb_mutex_stats_t *msp = MUTEX_STATS(mp, udp);
 	int error = 0;
 	int noceil = try & MUTEX_NOCEIL;
-	uint8_t ceil;
-	int myprio;
+	uint8_t ceil = 0;
+	int myprio = 0;
 
 	try &= ~MUTEX_NOCEIL;
 	ASSERT(try == MUTEX_TRY || try == MUTEX_LOCK);
@@ -3180,7 +3180,7 @@ cond_sleep_queue(cond_t *cvp, mutex_t *mp, timespec_t *tsp)
 {
 	ulwp_t *self = curthread;
 	queue_head_t *qp;
-	queue_head_t *mqp;
+	queue_head_t *mqp = NULL;
 	lwpid_t lwpid;
 	int signalled;
 	int error;

@@ -542,7 +542,7 @@ datum
 dbm_do_nextkey(DBM *db, datum inkey)
 {
 	datum item, bitem;
-	unsigned long hash;
+	unsigned long hash = 0;
 	datum key;
 	int f;
 	int i;

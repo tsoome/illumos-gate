@@ -128,7 +128,7 @@ regcmp(const char *regexp, ...)
 	int		char_size;
 	unsigned int	class_length;
 	char		*compilep;
-	char		*compile_startp = (char *)0;
+	char		*compile_startp = NULL;
 	int		count_length;
 	wchar_t		current_char;
 	int		expr_length;
@@ -140,13 +140,13 @@ regcmp(const char *regexp, ...)
 	int		max_count;
 	int		min_count;
 	const char	*next_argp;
-	wchar_t		first_char_in_range;
-	char		*regex_typep;
+	wchar_t		first_char_in_range = 0;
+	char		*regex_typep = NULL;
 	int		return_arg_number;
 	int		substringn;
 
-	if (___i_size() == (int *)0)
-		return ((char *)0);
+	if (___i_size() == NULL)
+		return (NULL);
 
 	/*
 	 * When compiling a regular expression, regcmp() generates at most
@@ -160,17 +160,17 @@ regcmp(const char *regexp, ...)
 	va_start(arg_listp, regexp);
 	next_argp = regexp;
 	arg_strlen = 0;
-	while (next_argp != (char *)0) {
+	while (next_argp != NULL) {
 		arg_strlen += strlen(next_argp);
 		next_argp = va_arg(arg_listp, /* const */ char *);
 	}
 	va_end(arg_listp);
 
 	if (arg_strlen == 0)
-		return ((char *)0);
-	compile_startp = (char *)malloc(3 * arg_strlen + 1);
-	if (compile_startp == (char *)0)
-		return ((char *)0);
+		return (NULL);
+	compile_startp = malloc(3 * arg_strlen + 1);
+	if (compile_startp == NULL)
+		return (NULL);
 
 	lmutex_lock(&regcmp_lock);
 	__i_size = 0;
@@ -206,7 +206,7 @@ regcmp(const char *regexp, ...)
 			regexp += char_size;
 			*compilep = (unsigned char)START_OF_STRING_MARK;
 			compilep++;
-		} else if /* (char_size == 0) && */ (next_argp != (char *)0) {
+		} else if /* (char_size == 0) && */ (next_argp != NULL) {
 			regexp = next_argp;
 			next_argp = va_arg(arg_listp, /* const */ char *);
 			char_size = get_wchar(&current_char, regexp);
@@ -293,7 +293,7 @@ regcmp(const char *regexp, ...)
 			/* <ASCII_CHAR><'$'> */
 
 			char_size = get_wchar(&current_char, regexp);
-			if ((char_size == 0) && (next_argp == (char *)0)) {
+			if ((char_size == 0) && (next_argp == NULL)) {
 				can_repeat = B_FALSE;
 				*compilep = (unsigned char)END_OF_STRING_MARK;
 				compilep++;
