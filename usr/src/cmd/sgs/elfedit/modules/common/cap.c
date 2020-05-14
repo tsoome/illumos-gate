@@ -771,7 +771,7 @@ cmd_body(CAP_CMD_T cmd, elfedit_obj_state_t *obj_state,
 	Word			cap_ndx;
 	elfedit_cmdret_t	ret = ELFEDIT_CMDRET_NONE;
 	PRINT_CAP_T		print_type = PRINT_CAP_T_ALL;
-	Word			ndx;
+	Word			ndx = 0;
 	int			print_only = 0;
 	int			do_autoprint = 1;
 
