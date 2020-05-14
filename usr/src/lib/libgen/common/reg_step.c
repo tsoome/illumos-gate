@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -237,6 +235,7 @@ _advance(char *lp, char *ep)
 	char 	*bbeg;
 	int 	ct;
 
+	c = -1;
 	for (;;) {
 		neg = 0;
 		switch (*ep++) {
