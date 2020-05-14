@@ -150,7 +150,7 @@ rt_dldump(Rt_map *lmp, const char *opath, int flags, Addr addr)
 	Cache		*icache = 0, *_icache, *mcache = 0, *_mcache;
 	Cache		*data_cache = 0, *dyn_cache = 0;
 	Xword		rel_null_no = 0, rel_data_no = 0, rel_func_no = 0;
-	Xword		rel_entsize;
+	Xword		rel_entsize = 0;
 	Rel		*rel_base = 0, *rel_null, *rel_data, *rel_func;
 	Elf_Scn		*scn;
 	Shdr		*shdr;

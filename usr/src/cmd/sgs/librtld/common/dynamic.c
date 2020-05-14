@@ -41,7 +41,7 @@ update_dynamic(Cache *cache, Cache *_cache, Rt_map *lmp, int flags,
     Xword entsize, Xword checksum)
 {
 	Dyn		*dyn = (Dyn *)_cache->c_data->d_buf, *posdyn = 0;
-	const char	*strs;
+	const char	*strs = NULL;
 	Cache		*__cache;
 
 	/*
