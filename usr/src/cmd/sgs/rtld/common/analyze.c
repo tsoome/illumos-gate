@@ -1774,6 +1774,10 @@ load_file(Lm_list *lml, Aliste lmco, Rt_map *clmp, Fdesc *fdp, int *in_nfavl)
 	 * Traverse the mappings for the input file to capture generic mapping
 	 * information, and create a link-map to represent the file.
 	 */
+	hmpp = NULL;
+	lmpp = NULL;
+	lpmpp = NULL;
+	
 	for (mnum = 0, mpp = ompp; mnum < omapnum; mnum++, mpp++) {
 		uint_t	flags = (mpp->mr_flags & MR_TYPE_MASK);
 
@@ -2321,7 +2325,7 @@ load_finish(Lm_list *lml, const char *name, Rt_map *clmp, int nmode,
 	 */
 	for (APLIST_TRAVERSE(GROUPS(clmp), idx1, ghp)) {
 		Aliste		idx2;
-		Grp_desc	*gdp;
+		Grp_desc	*gdp = NULL;
 		int		ale;
 		Rt_map		*dlmp1;
 		APlist		*lmalp = NULL;

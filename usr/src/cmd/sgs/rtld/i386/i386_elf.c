@@ -374,6 +374,21 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 	uint_t		binfo, pbinfo;
 	APlist		*bound = NULL;
 
+	pbinfo = 0;
+	_lmp = NULL;
+	plmp = NULL;
+	name = NULL;
+	pname = NULL;
+	psymdef = NULL;
+	symdef = NULL;
+	symref = NULL;
+	psymref = NULL;
+	pvalue = 0;
+	dsymndx = 0;
+	_pltbgn = 0;
+	_pltend = 0;
+	pltend = 0;
+
 	/*
 	 * Although only necessary for lazy binding, initialize the first
 	 * global offset entry to go to elf_rtbndr().  dbx(1) seems
@@ -641,24 +656,17 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 						    (roffset - basebgn), name));
 						continue;
 					}
-					/* LINTED */
 					value = pvalue;
-					/* LINTED */
 					name = pname;
-					/* LINTED */
 					symdef = psymdef;
-					/* LINTED */
 					symref = psymref;
-					/* LINTED */
 					_lmp = plmp;
-					/* LINTED */
 					binfo = pbinfo;
 
 					if ((LIST(_lmp)->lm_tflags |
 					    AFLAGS(_lmp)) &
 					    LML_TFLG_AUD_SYMBIND) {
 						value = audit_symbind(lmp, _lmp,
-						    /* LINTED */
 						    symdef, dsymndx, value,
 						    &sb_flags);
 					}

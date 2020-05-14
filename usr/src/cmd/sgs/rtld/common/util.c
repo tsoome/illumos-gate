@@ -154,7 +154,7 @@ rd_event(Lm_list *lml, rd_event_e event, r_state_e state)
 		/*
 		 * RD_NONE - do nothing
 		 */
-		break;
+		return;
 	};
 
 	/*
@@ -2704,6 +2704,7 @@ again:
 					num = (u_longlong_t)
 					    va_arg(args, ulong_t);
 					break;
+				default:
 				case 2:	/* long long */
 					num = va_arg(args, u_longlong_t);
 					break;
