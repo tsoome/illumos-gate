@@ -1173,7 +1173,7 @@ HBA_OpenAdapterByWWN(HBA_HANDLE *phandle, HBA_WWN nodeWWN) {
 			GetNumberOfAdaptersFunc;
     HBAOpenAdapterByWWNFunc
 			OpenAdapterFunc;
-    HBA_STATUS		status;
+    HBA_STATUS		status = HBA_STATUS_OK;
 
     DEBUG(2, "OpenAdapterByWWN: %s", WWN2STR1(&nodeWWN), 0, 0);
 
