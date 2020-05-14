@@ -685,7 +685,7 @@ _rd_loadobj_iter32_native(rd_agent_t *rap, rl_iter_f *cb, void *client_data,
 	TAPlist		apl;
 	uintptr_t	datap, nitems;
 	Addr		addr;
-	rd_err_e	rc;
+	rd_err_e	rc = RD_OK;
 
 	LOG(ps_plog(MSG_ORIG(MSG_DB_LOADOBJITER), rap->rd_dmodel, cb,
 	    client_data));
