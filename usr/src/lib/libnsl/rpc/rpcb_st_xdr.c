@@ -25,8 +25,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file was generated from rpcb_prot.x, but includes only those
  * routines used with the rpcbind stats facility.
@@ -149,9 +147,12 @@ bool_t
 xdr_rpcbs_addrlist_ptr(XDR *xdrs, rpcbs_addrlist_ptr *objp)
 {
 	bool_t			more_data;
-	rpcbs_addrlist_ptr	*nextp;
+	rpcbs_addrlist_ptr	*nextp = NULL;
 
 	for (;;) {
+		if (objp == NULL)
+			return (FALSE);
+
 		more_data = (*objp != NULL);
 
 		if (!xdr_bool(xdrs, &more_data))

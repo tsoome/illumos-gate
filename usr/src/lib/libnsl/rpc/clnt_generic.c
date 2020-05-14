@@ -601,7 +601,7 @@ _clnt_tli_create_timed(int fd, const struct netconfig *nconf,
 {
 	CLIENT *cl;			/* client handle */
 	struct t_info tinfo;		/* transport info */
-	bool_t madefd;			/* whether fd opened here */
+	bool_t madefd = FALSE;		/* whether fd opened here */
 	t_scalar_t servtype;
 	int retval;
 
@@ -647,7 +647,6 @@ _clnt_tli_create_timed(int fd, const struct netconfig *nconf,
 		    (t_getinfo(fd, &tinfo) == -1))
 			goto err;
 		servtype = tinfo.servtype;
-		madefd = FALSE;
 	}
 
 	switch (servtype) {

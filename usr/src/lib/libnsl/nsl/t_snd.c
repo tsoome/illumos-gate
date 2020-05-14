@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.3.1.2 */
-
 /*
  * t_snd.c and t_sndv.c are very similar and contain common code.
  * Any changes to either of them should be reviewed to see whether they
@@ -172,6 +170,7 @@ _tx_snd(int fd, char *buf, unsigned nbytes, int flags, int api_semantics)
 	sig_mutex_unlock(&tiptr->ti_lock);
 	do {
 		bytes_to_send = bytes_remaining;
+		bytes_sent = 0;
 		if (doputmsg) {
 			/*
 			 * transport provider supports TSDU concept

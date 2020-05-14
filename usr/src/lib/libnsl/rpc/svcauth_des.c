@@ -207,6 +207,7 @@ __svcauth_des(struct svc_req *rqst, struct rpc_msg *msg)
 	/*
 	 * Get the conversation key
 	 */
+	sid = cred->adc_nickname;
 	if (fullname_rcvd) {	/* ADN_FULLNAME */
 		netobj	pkey;
 		char	pkey_data[1024];
@@ -256,7 +257,6 @@ again:
 			return (AUTH_BADCRED);	/* key not found */
 		}
 	} else { /* ADN_NICKNAME */
-		sid = cred->adc_nickname;
 		if (sid >= authdes_cachesz) {
 			__msgout(LOG_INFO, "_svcauth_des:", "bad nickname");
 			(void) mutex_unlock(&authdes_lock);
