@@ -1048,7 +1048,7 @@ process_args(elfedit_obj_state_t *obj_state, int argc, const char *argv[],
 	elfedit_symtab_t	*symtab;
 	int		explicit = 0;
 	int		got_sym = 0;
-	Word		index;
+	Word		index = 0;
 	Word		tblndx;
 	size_t		size;
 	SYMSTATE	*symstate;

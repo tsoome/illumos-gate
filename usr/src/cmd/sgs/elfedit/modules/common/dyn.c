@@ -298,7 +298,7 @@ print_dyn(DYN_CMD_T cmd, int autoprint, ARGSTATE *argstate,
 	Word	end_ndx, ndx, printed = 0;
 	Dyn	*dyn;
 	int	header_done = 0;
-	Xword	last_d_val;
+	Xword	last_d_val = 0;
 	int	one_shot;
 	int	osabi_solaris;
 
@@ -771,7 +771,7 @@ cmd_body_value(ARGSTATE *argstate, Word *ret_ndx)
 	Word	numdyn = argstate->dyn.num;
 	int	minus_add, minus_s, minus_dynndx;
 	Word	tmp_val;
-	Xword	arg1, arg2;
+	Xword	arg1, arg2 = 0;
 	int	arg2_known = 1;
 
 	minus_add = ((argstate->optmask & DYN_OPT_F_ADD) != 0);

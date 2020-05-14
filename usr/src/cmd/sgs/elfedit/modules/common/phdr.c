@@ -369,6 +369,7 @@ print_phdr(PHDR_CMD_T cmd, int autoprint, ARGSTATE *argstate)
 	 * -	If no index is specified, every program header is shown.
 	 */
 	by_type = 0;
+	type = 0;
 	if (argstate->ndx_set) {
 		ndx = argstate->ndx;
 		if (argstate->print_req &&
@@ -663,7 +664,7 @@ cmd_body(PHDR_CMD_T cmd, elfedit_obj_state_t *obj_state,
     int argc, const char *argv[])
 {
 	ARGSTATE		argstate;
-	Phdr			*phdr;
+	Phdr			*phdr = NULL;
 	elfedit_cmdret_t	ret = ELFEDIT_CMDRET_NONE;
 	int			do_autoprint = 1;
 
