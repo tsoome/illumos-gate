@@ -108,8 +108,8 @@ rcmd(Cmd_info *cmd_info)
 		else if (!abifile)
 			backptr = fileptr;
 
-		if (cmd_info->namc == 0 ||
-		    (gfile = match(fileptr->ar_longname, cmd_info)) != NULL) {
+		gfile = match(fileptr->ar_longname, cmd_info);
+		if (gfile != NULL) {
 			/*
 			 * NOTE:
 			 *	Refer to "Incompatible Archive Header"
@@ -190,12 +190,12 @@ rcmd(Cmd_info *cmd_info)
 				}
 				cmd_info->modified++;
 			}
-		}
-		else
+		} else {
 			/*
 			 * Unchaged
 			 */
 			mesg('u', fileptr->ar_longname, cmd_info);
+		}
 
 		if (deleted)
 			deleted = 0;
