@@ -827,7 +827,7 @@ xfopen(char *name, char *mode)
 FILE *
 m4open(char ***argvec, char *mode, int *argcnt)
 {
-	FILE	*fp;
+	FILE	*fp = NULL;
 	char *arg;
 
 	while (*argcnt > 0) {
