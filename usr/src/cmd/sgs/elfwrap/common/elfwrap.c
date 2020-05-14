@@ -23,7 +23,6 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include	<sys/types.h>
 #include	<sys/stat.h>
@@ -223,6 +222,13 @@ output(const char *prog, int fd, const char *ofile, ushort_t mach,
 	OutSec_t	*outsec, *outsymtab, *outstrtab, *outshstrtab;
 	size_t		len;
 	TargDesc_t	tdesc;
+
+	outsymtab = NULL;
+	outshstrtab = NULL;
+	outstrtab = NULL;
+	shstrtab = NULL;
+	strtab = NULL;
+	symtab = NULL;
 
 	/*
 	 * Obtain any target specific ELF information.
