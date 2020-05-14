@@ -74,12 +74,12 @@ each_file(char *cur_file, Cmd_Info *cmd_info)
 	Elf *elf = 0;
 	Elf_Cmd cmd;
 	Elf *arf = 0;
-	Elf_Arhdr *mem_header;
+	Elf_Arhdr *mem_header = NULL;
 	char *cur_filenm = NULL;
 	int code = 0;
 	int error = 0, err = 0;
 	int ar_file = 0;
-	int fdartmp;
+	int fdartmp = -1;
 	int fd;
 	int oflag;
 
