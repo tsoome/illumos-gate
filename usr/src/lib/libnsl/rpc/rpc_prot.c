@@ -33,8 +33,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This set of routines implements the rpc message definition,
  * its serializer and some common rpc utility routines.
@@ -52,7 +50,7 @@
 
 /* * * * * * * * * * * * * * XDR Authentication * * * * * * * * * * * */
 
-struct opaque_auth _null_auth;
+extern struct opaque_auth _null_auth;
 
 /*
  * XDR an opaque authentication struct
