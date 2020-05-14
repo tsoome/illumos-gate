@@ -147,7 +147,7 @@ elf_cap_check(Fdesc *fdp, Ehdr *ehdr, Rej_desc *rej)
 	Dyn	*dyn = NULL;
 	char	*str = NULL;
 	Addr	base;
-	uint_t	cnt, dyncnt;
+	uint_t	cnt, dyncnt = 0;
 
 	/*
 	 * If this is a shared object, the base address of the shared object is

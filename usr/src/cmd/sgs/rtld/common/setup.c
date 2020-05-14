@@ -197,7 +197,7 @@ setup(char **envp, auxv_t *auxv, Word _flags, char *_platform, int _syspagsz,
     char *execname, char **argv, uid_t uid, uid_t euid, gid_t gid, gid_t egid,
     void *aoutdyn, int auxflags, uint_t *hwcap)
 {
-	Rt_map			*rlmp, *mlmp, *clmp, **tobj = NULL;
+	Rt_map			*rlmp, *mlmp = NULL, *clmp, **tobj = NULL;
 	Ehdr			*ehdr;
 	rtld_stat_t		status;
 	int			features = 0, ldsoexec = 0;

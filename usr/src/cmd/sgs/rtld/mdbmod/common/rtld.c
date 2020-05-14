@@ -815,7 +815,7 @@ _dcmd_Lm_list(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	if (lml.lm_lists) {
 		Alist		al;
 		Lm_cntl		lmc;
-		uintptr_t	datap;
+		uintptr_t	datap = 0;
 
 		addr = (uintptr_t)lml.lm_lists;
 		if (mdb_vread(&al, sizeof (Alist), addr) == -1) {

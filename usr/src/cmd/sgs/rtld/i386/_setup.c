@@ -58,17 +58,17 @@
 unsigned long
 _setup(Boot *ebp, Dyn *ld_dyn)
 {
-	ulong_t		reladdr, relcount, ld_base = 0;
+	ulong_t		reladdr = 0, relcount = 0, ld_base = 0;
 	ulong_t		relent = 0;
-	ulong_t		strtab, soname, interp_base = 0;
-	char		*_rt_name, **_envp, **_argv;
+	ulong_t		strtab = 0, soname = 0, interp_base = 0;
+	char		*_rt_name, **_envp = NULL, **_argv = NULL;
 	int		_syspagsz = 0, fd = -1;
 	uint_t		_flags = 0;
 	uint_t		hwcap[2] = { 0, 0 };
 	Dyn		*dyn_ptr;
 	Phdr		*phdr = NULL;
 	Rt_map		*lmp;
-	auxv_t		*auxv, *_auxv;
+	auxv_t		*auxv, *_auxv = NULL;
 	uid_t		uid = (uid_t)-1, euid = (uid_t)-1;
 	gid_t		gid = (gid_t)-1, egid = (gid_t)-1;
 	char		*_platform = NULL, *_execname = NULL, *_emulator = NULL;

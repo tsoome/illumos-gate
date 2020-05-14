@@ -350,6 +350,7 @@ expand(char **name, size_t *len, char **list, uint_t orig, uint_t omit,
 	uint_t	flags = 0;
 	Lm_list	*lml = LIST(lmp);
 
+	_list = NULL;
 	optr = _optr = oname = ename = *name;
 	ename += *len;
 	nptr = _name;
@@ -1034,9 +1035,9 @@ expand_paths(Rt_map *clmp, const char *list, Alist **alpp, Aliste alni,
 	Pdesc	*pdp = NULL;
 
 	for (str = nlist; *nlist || fnull; str = nlist) {
-		char	*ostr;
+		char	*ostr = NULL;
 		char	*elist = NULL;
-		size_t	len, olen;
+		size_t	len, olen = 0;
 		uint_t	tkns = 0;
 
 		if (*nlist == ';')

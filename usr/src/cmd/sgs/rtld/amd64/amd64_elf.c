@@ -381,19 +381,20 @@ int
 elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 {
 	ulong_t		relbgn, relend, relsiz, basebgn;
-	ulong_t		pltbgn, pltend, _pltbgn, _pltend;
+	ulong_t		pltbgn, pltend = 0, _pltbgn = 0, _pltend = 0;
 	ulong_t		roffset, rsymndx, psymndx = 0;
-	ulong_t		dsymndx;
+	ulong_t		dsymndx = 0;
 	uchar_t		rtype;
-	long		reladd, value, pvalue;
-	Sym		*symref, *psymref, *symdef, *psymdef;
+	long		reladd, value, pvalue = 0;
+	Sym		*symref = NULL, *psymref = NULL;
+	Sym		*symdef = NULL, *psymdef = NULL;
 	Syminfo		*sip;
-	char		*name, *pname;
-	Rt_map		*_lmp, *plmp;
+	char		*name = NULL, *pname = NULL;
+	Rt_map		*_lmp = NULL, *plmp = NULL;
 	int		ret = 1, noplt = 0;
 	int		relacount = RELACOUNT(lmp), plthint = 0;
 	Rela		*rel;
-	uint_t		binfo, pbinfo;
+	uint_t		binfo, pbinfo = 0;
 	APlist		*bound = NULL;
 
 	/*
@@ -658,31 +659,23 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 				 */
 				if ((rsymndx == psymndx) &&
 				    (rtype != R_AMD64_COPY)) {
-					/* LINTED */
 					if (psymdef == 0) {
 						DBG_CALL(Dbg_bind_weak(lmp,
 						    (Addr)roffset, (Addr)
 						    (roffset - basebgn), name));
 						continue;
 					}
-					/* LINTED */
 					value = pvalue;
-					/* LINTED */
 					name = pname;
-					/* LINTED */
 					symdef = psymdef;
-					/* LINTED */
 					symref = psymref;
-					/* LINTED */
 					_lmp = plmp;
-					/* LINTED */
 					binfo = pbinfo;
 
 					if ((LIST(_lmp)->lm_tflags |
 					    AFLAGS(_lmp)) &
 					    LML_TFLG_AUD_SYMBIND) {
 						value = audit_symbind(lmp, _lmp,
-						    /* LINTED */
 						    symdef, dsymndx, value,
 						    &sb_flags);
 					}
