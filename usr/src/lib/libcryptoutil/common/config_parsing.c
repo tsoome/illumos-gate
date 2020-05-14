@@ -49,7 +49,7 @@ get_pkcs11conf_info(uentrylist_t **ppliblist)
 	size_t len;
 	uentry_t *pent;
 	uentrylist_t *pentlist;
-	uentrylist_t *pcur;
+	uentrylist_t *pcur = NULL;
 	int rc = SUCCESS;
 
 	*ppliblist = NULL;
