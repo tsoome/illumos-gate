@@ -143,6 +143,8 @@ _tx_sndv(int fd, const struct t_iovec *tiov, unsigned int tiovcount,
 	}
 
 	doputmsg = (tiptr->ti_tsdusize != 0) || (flags & T_EXPEDITED);
+	dataptr = NULL;
+	curptr = NULL;
 
 	if (doputmsg) {
 		/*
@@ -180,9 +182,6 @@ _tx_sndv(int fd, const struct t_iovec *tiov, unsigned int tiovcount,
 			 */
 			_t_gather(dataptr, tiov, tiovcount);
 			curptr = dataptr; /* Initialize for subsequent use */
-		} else {
-			dataptr = NULL;
-			curptr = NULL;
 		}
 	}
 
@@ -196,6 +195,7 @@ _tx_sndv(int fd, const struct t_iovec *tiov, unsigned int tiovcount,
 	first_time = 1;
 	do {
 		bytes_to_send = bytes_remaining;
+		bytes_sent = 0;
 		if (doputmsg) {
 			/*
 			 * transport provider supports TSDU concept

@@ -645,6 +645,7 @@ _build_internal_algs(ipsec_proto_t **alg_context, int *alg_nums)
 			 * remains the same.
 			 */
 			trash = NULL;
+			trash_num = 0;
 		}
 		(void) rw_unlock(&proto_rw);
 		_clean_trash(trash, trash_num);

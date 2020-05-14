@@ -187,7 +187,7 @@ _get_hostserv_inetnetdir_byname(struct netconfig *nconf,
 {
 	int	server_port;
 	int *servp = &server_port;
-	char	**haddrlist;
+	char	**haddrlist = NULL;
 	uint32_t dotnameaddr;
 	char	*dotnamelist[2];
 	struct in_addr	*inaddrs = NULL;
@@ -372,7 +372,7 @@ _get_hostserv_inetnetdir_byname(struct netconfig *nconf,
 				haddrlist = baddrlist;
 			} else {
 				/* i.e. need to call a name service on this */
-				haddrlist = 0;
+				haddrlist = NULL;
 			}
 
 			if (haddrlist && servp) {
@@ -466,7 +466,7 @@ _get_hostserv_inetnetdir_byname(struct netconfig *nconf,
 				return (ND_NOHOST);
 			} else {
 				/* i.e. need to call a name service on this */
-				haddrlist = 0;
+				haddrlist = NULL;
 			}
 
 			if (haddrlist && servp) {
@@ -561,7 +561,7 @@ _get_hostserv_inetnetdir_byname(struct netconfig *nconf,
 			NSS_XbyY_FREE(&ndbuf4switch);
 		}
 
-		if (haddrlist == 0) {
+		if (haddrlist == NULL) {
 			int	h_errnop = 0;
 
 			ndbuf4switch = _nss_XbyY_buf_alloc(
@@ -661,7 +661,7 @@ _get_hostserv_inetnetdir_byname(struct netconfig *nconf,
 				NSS_XbyY_FREE(&ndbuf4switch);
 			}
 
-			if (haddrlist == 0) {
+			if (haddrlist == NULL) {
 				int	h_errnop = 0;
 
 				ndbuf4switch = _nss_XbyY_buf_alloc(
@@ -2081,9 +2081,10 @@ hent2ndaddr(int af, char **haddrlist, int *servp, struct nd_addrlist **nd_alist)
 
 	/* Address count */
 	num = 0;
-	if (af == AF_INET6) {
-		in6addrlist = (struct in6_addr **)haddrlist;
+	in6addrlist = (struct in6_addr **)haddrlist;
+	inaddrlist = (struct in_addr **)haddrlist;
 
+	if (af == AF_INET6) {
 		/*
 		 * Exclude IPv4-mapped IPv6 addresses from the count, as
 		 * these are not included in the nd_addrlist we return.
@@ -2092,8 +2093,6 @@ hent2ndaddr(int af, char **haddrlist, int *servp, struct nd_addrlist **nd_alist)
 			if (!IN6_IS_ADDR_V4MAPPED(*in6addr))
 				num++;
 	} else {
-		inaddrlist = (struct in_addr **)haddrlist;
-
 		for (inaddr = inaddrlist; *inaddr != NULL; inaddr++)
 			num++;
 	}

@@ -111,8 +111,8 @@ __str2hostent(int af, const char *instr, int lenstr, void *ent, char *buffer,
 	int		naddr, i, aliases_erange = 0;
 	int		addrlen, res;
 	char		addrbuf[100];  /* Why 100? */
-	struct in_addr	*addrp;
-	struct in6_addr	*addrp6;
+	struct in_addr	*addrp = NULL;
+	struct in6_addr	*addrp6 = NULL;
 	char		**addrvec;
 
 	if ((instr >= buffer && (buffer + buflen) > instr) ||
