@@ -272,7 +272,10 @@ int rcmd_af(char **ahost, unsigned short rport, const char *locuser,
 	if (fd2p == 0) {
 		(void) write(s, "", 1);
 	} else {
-		int s2 = rresvport_af(&lport, res->ai_family), s3;
+		int s2, s3;
+
+		s2 = rresvport_af(&lport, res->ai_family);
+		s3 = 0;
 
 		len = (socklen_t)sizeof (faddr);
 
@@ -289,8 +292,8 @@ int rcmd_af(char **ahost, unsigned short rport, const char *locuser,
 		FD_ZERO(&fdset);
 		FD_SET(s, &fdset);
 		FD_SET(s2, &fdset);
-		while ((selret = select(FD_SETSIZE, &fdset, (fd_set *)0,
-		    (fd_set *)0, (struct timeval *)0)) > 0) {
+		while ((selret = select(FD_SETSIZE, &fdset, NULL,
+		    NULL, NULL)) > 0) {
 			if (FD_ISSET(s, &fdset)) {
 				/*
 				 *	Something's wrong:  we should get no
@@ -424,11 +427,12 @@ _rresvport_addr(int *alport, struct sockaddr_storage *addr)
 	int on = 1;
 	int off = 0;
 
+	sin = (struct sockaddr_in *)addr;
+	sin6 = (struct sockaddr_in6 *)addr;
+
 	if (addr->ss_family == AF_INET) {
-		sin = (struct sockaddr_in *)addr;
 		len = sizeof (struct sockaddr_in);
 	} else if (addr->ss_family == AF_INET6) {
-		sin6 = (struct sockaddr_in6 *)addr;
 		len = sizeof (struct sockaddr_in6);
 	} else {
 		errno = EAFNOSUPPORT;

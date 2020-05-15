@@ -305,7 +305,7 @@ _getaddrinfo(const char *hostname, const char *servname,
 		struct servent result;
 		int bufsize = 128;
 		char *buf = NULL;
-		struct servent *sp;
+		struct servent *sp = NULL;
 		char *proto = NULL;
 
 		switch (aip->ai_socktype) {
