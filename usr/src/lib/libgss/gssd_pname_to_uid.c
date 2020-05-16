@@ -285,7 +285,7 @@ char *make_name_str(
 
 		major = gss_display_name(&minor, iName, &namebuf, NULL);
 		if (major == GSS_S_COMPLETE) {
-			char *s;
+			char *s = NULL;
 
 			if (namebuf.value)
 				s = strdup(namebuf.value);
