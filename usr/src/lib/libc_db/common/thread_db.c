@@ -771,7 +771,7 @@ __td_ta_tsd_iter(td_thragent_t *ta_p, td_key_iter_f *cb, void *cbdata_p)
 	struct ps_prochandle *ph_p;
 	td_err_e	return_val;
 	int		key;
-	int		numkeys;
+	int		numkeys = 0;
 	psaddr_t	dest_addr;
 	psaddr_t	*destructors = NULL;
 	PFrV		destructor;
@@ -2144,8 +2144,8 @@ __td_thr_tsd(td_thrhandle_t *th_p, thread_key_t key, void **data_pp)
 	struct ps_prochandle *ph_p;
 	td_thragent_t	*ta_p;
 	td_err_e	return_val;
-	int		maxkey;
-	int		nkey;
+	int		maxkey = 0;
+	int		nkey = 0;
 	psaddr_t	tsd_paddr;
 
 	if (data_pp == NULL)
