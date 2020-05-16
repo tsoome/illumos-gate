@@ -623,7 +623,7 @@ fdisk_read_extpart(ext_part_t *epp)
 	struct ipart *fdp, *ext_fdp;
 	int i = 0, j = 0, ext_part_found = 0, lpart = 5;
 	off_t secnum, offset;
-	logical_drive_t *temp, *ep_ptr;
+	logical_drive_t *temp, *ep_ptr = NULL;
 	unsigned char *ext_buf;
 	int sectsize = epp->disk_geom.sectsize;
 
