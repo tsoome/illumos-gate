@@ -3232,7 +3232,7 @@ dtrace_imm_opnd(dis86_t *x, int wbit, int size, int opindex)
 {
 	int i;
 	int byte;
-	int valsize;
+	int valsize = 0;
 
 	if (x->d86_numopnds < opindex + 1)
 		x->d86_numopnds = opindex + 1;
@@ -5016,6 +5016,8 @@ just_mem:
 			case 7:
 				vinstr = "invlpga";
 				break;
+			default:
+				vinstr = "unknown";
 			}
 
 			(void) strncpy(x->d86_mnem, vinstr, OPLEN);

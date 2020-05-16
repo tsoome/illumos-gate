@@ -838,6 +838,9 @@ fmt_branch(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 		disp = sign_extend((f->f2c.d16hi << 14)|f->f2c.d16lo, 16);
 		break;
 
+	default:
+		disp = 0;
+		break;
 	}
 
 	disp *= 4;

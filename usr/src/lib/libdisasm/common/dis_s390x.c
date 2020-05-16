@@ -2543,7 +2543,7 @@ dis_s390_disassemble(dis_handle_t *dhp, uint64_t addr, char *buf,
     size_t buflen)
 {
 	union inst inst;
-	int mach;
+	int mach = 0;
 	int len;
 
 	if (dhp->dh_read(dhp->dh_data, addr, &inst.raw[0], 2) != 2)
