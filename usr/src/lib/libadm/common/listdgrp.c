@@ -28,9 +28,6 @@
  * All rights reserved.
  */
 
-#pragma	ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.1 */
-/*LINTLIBRARY*/
-
 /*
  *  listdgrp.c
  *
@@ -108,6 +105,7 @@ listdgrp(char *dgroup)	/* The device group to list */
 	/*
 	 *  Initializations
 	 */
+	rtnval = NULL;
 
 	/*
 	 *  Get the record for this device group
@@ -161,7 +159,6 @@ listdgrp(char *dgroup)	/* The device group to list */
 	    _freedgrptabent(dgrpent);
 
 	}  /* if (_getdgrprec()) */
-	else rtnval = NULL;
 
 
 	/*  Finished -- wasn't that simple?  */

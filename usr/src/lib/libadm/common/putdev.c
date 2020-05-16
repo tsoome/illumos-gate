@@ -1107,6 +1107,7 @@ _rmdevtabattrs(
 	/* Initializations */
 	nobaderr = TRUE;
 	noerr = TRUE;
+	pnxt = NULL;
 
 	/* Count attributes to remove -- make sure "alias" isn't specified */
 	for (pp = attributes, nattrs = 0; *pp; pp++, nattrs++)
