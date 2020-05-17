@@ -58,7 +58,7 @@
 #define	MAXPACKET	1024
 #endif
 
-int h_errno;
+extern int h_errno;
 
 /*
  * Formulate a normal query, send, and await answer.
