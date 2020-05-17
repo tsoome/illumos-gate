@@ -24,10 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/* LINTLIBRARY */
-
 /*
  * touched.c
  *
@@ -65,7 +61,7 @@ is_linetouched(WINDOW *w, int y)
 bool
 is_wintouched(WINDOW *w)
 {
-	int	y, value;
+	int	y, value = 0;
 
 	for (y = 0; y < w->_maxy; ++y)
 		if ((value = (0 <= w->_last[y])) != 0)

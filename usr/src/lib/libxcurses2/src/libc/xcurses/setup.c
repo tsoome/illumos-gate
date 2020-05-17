@@ -24,10 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/* LINTLIBRARY */
-
 /*
  * setupterm.c
  *
@@ -297,7 +293,7 @@ __m_setupterm(char *termname, int ifd, int ofd, int *err_return)
 {
 	int	err_code = 1;
 	TERMINAL	*old_term;
-	const char 	*err_msg;
+	const char 	*err_msg = NULL;
 
 	/*
 	 * It is possible to call setupterm() for multiple terminals,
@@ -436,6 +432,7 @@ restartterm(char *tm, int fd, int *err_return)
 	old_term = cur_term->_term;
 	old_names = cur_term->_names;
 	old_strings = cur_term->_str_table;
+	err_msg = NULL;
 
 	terminfo = getenv("TERMINFO");
 	if (terminfo == NULL || terminfo[0] == '\0') {
