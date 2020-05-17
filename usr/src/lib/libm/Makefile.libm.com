@@ -70,6 +70,7 @@ CFLAGS64	+= -_smatch=off
 
 $(DYNLIB)	:= LDLIBS += -lc
 
+CERRWARN	+= -_gcc=-Wno-maybe-uninitialized
 
 CLEANFILES	+= pics/*.s pics/*.S
 
