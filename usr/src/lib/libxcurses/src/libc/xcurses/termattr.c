@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * termattr.c
  * 
@@ -66,7 +64,7 @@ attr_t
 term_attrs()
 {
 	char *p;
-	attr_t at;
+	attr_t at = WA_NORMAL;
 
 #ifdef M_CURSES_TRACE
 	__m_trace("term_attrs(void)");

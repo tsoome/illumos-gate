@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * touched.c
  * 
@@ -65,7 +63,7 @@ bool
 (is_wintouched)(w)
 WINDOW *w;
 {
-	int y, value;
+	int y, value = 0;
 
 #ifdef M_CURSES_TRACE
 	__m_trace("is_linetouched(%p, %d)", w, y);

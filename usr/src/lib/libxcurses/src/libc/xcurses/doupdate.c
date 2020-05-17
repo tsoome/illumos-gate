@@ -233,7 +233,7 @@ int row;
 	short npair;
 	attr_t cookie, nattr; 
 	cchar_t *optr, *nptr;
-	int col, last, tail, jump, count;
+	int col, last, tail = COLS, jump, count;
 	
 #ifdef M_CURSES_TYPEAHEAD
 	/* Before replacing a line of text, check for type-ahead. */
@@ -408,7 +408,7 @@ done:
 	}
 
 	/* Re-check for clear to end-of-line optimization. */
-	if (clr_eol != (char *) 0 && tail <= col && col < last) {
+	if (clr_eol != NULL && tail <= col && col < last) {
 		/* Is the tail of the current screen image non-blank? */
 		for (tail = col; tail < COLS; ++tail, ++optr)
 			if (!__m_cc_compare(optr, &newscr->_bg, 1))

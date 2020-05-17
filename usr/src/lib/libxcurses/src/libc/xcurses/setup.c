@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * setupterm.c
  *
@@ -265,7 +263,7 @@ int *err_return;
 {
 	int err_code = 1;
 	TERMINAL *old_term;
-	char const *err_msg;
+	char const *err_msg = NULL;
 
 	/* It is possible to call setupterm() for multiple terminals, 
 	 * in which case we have to be able to restore cur_term in 
@@ -404,7 +402,7 @@ int fd, *err_return;
 {
 	size_t len;
 	int path_max, err_code;
-	char const *err_msg, *terminfo;
+	char const *err_msg = NULL, *terminfo;
 	char *old_names, *old_strings, *old_term, *filename;
 	static char const def_termname[] = M_TERM_NAME;
 	static char const def_terminfo[] = M_TERMINFO_DIR;

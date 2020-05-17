@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * System V.2 Emulation Stdio Library -- vfscanf
  *
@@ -134,8 +132,8 @@ mks_vfscanf(FILE *pfin, const char *fmt, va_list ap)
 	int	nitems;
 	int	ltoken;
 	int	c;
-	int	modconv;	/* flag indicating conversion modifier */
-	int	suppression;	/* flag to suppress conversion */
+	int	modconv = 0;	/* flag indicating conversion modifier */
+	int	suppression = 0; /* flag to suppress conversion */
 
 	long unsigned number;	/* return value from getnumber */
 
@@ -221,7 +219,7 @@ mks_vfscanf(FILE *pfin, const char *fmt, va_list ap)
 				case 'S':
 				case 's': {
 					int gotitem = 0;
-					char	*str;
+					char	*str = NULL;
 
 					if (!suppression)
 						str = va_arg(ap, char *);
@@ -542,9 +540,9 @@ getnum(int base, int width, int sign)
 	char	*s;
 	char	cbuf[CBUFSIZ];			/* char buffer for number */
 	int	w;
-	register int	c;
+	int	c;
 	int	neg;
-	long	ret;
+	long	ret = 0;
 
 	gfail = 0;
 	whitespace();
