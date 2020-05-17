@@ -354,7 +354,7 @@ getglobalpath(const char *path, zoneid_t zoneid, struct mntlist *mlist,
 	char		lofspath[MAXPATHLEN];
 	char		zonepath[MAXPATHLEN];
 	int		longestmatch;
-	struct	mnttab	*mountmatch;
+	struct	mnttab	*mountmatch = NULL;
 
 	if (zoneid != GLOBAL_ZONEID) {
 		char	*prefix;
