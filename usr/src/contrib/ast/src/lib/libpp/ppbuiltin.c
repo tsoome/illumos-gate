@@ -41,7 +41,7 @@ ppbuiltin(void)
 	register char*		p;
 	register char*		a;
 
-	int			n;
+	int			n = 0;
 	int			op;
 	char*			token;
 	char*			t;

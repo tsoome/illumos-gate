@@ -579,19 +579,19 @@ lex(register Proto_t* proto, register long flags)
 	register int		c;
 	register int		state;
 	register short*		rp;
-	char*			m;
-	char*			e;
+	char*			m = NULL;
+	char*			e = NULL;
 	char*			t;
 	char*			bp;
 	char*			v;
-	char*			im;
+	char*			im = NULL;
 	char*			ko;
-	char*			aom;
+	char*			aom = NULL;
 	int			n;
 	int			line;
-	int			quot;
+	int			quot = 0;
 	int			brack;
-	int			sub;
+	int			sub = 0;
 	int			x;
 	int			vc;
 
