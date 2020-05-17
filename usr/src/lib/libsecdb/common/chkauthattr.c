@@ -353,7 +353,7 @@ _is_authorized(const char *auth, void *authname, void *res)
 	char	*authname_noun;
 	char	*slash;
 	size_t	auth_len;
-	size_t	noun_len;
+	size_t	noun_len = 0;
 
 	auth_len = strlen(authname);
 	if ((slash = strchr(authname, KV_OBJECTCHAR)) != NULL) {
