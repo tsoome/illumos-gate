@@ -446,7 +446,7 @@ __madvmain()
 	uintptr_t	brkbase, brkend;
 	size_t		brksize;
 	int		rc;
-	char		*locale;
+	char		*locale = NULL;
 
 	/*
 	 * If a private error file is indicated then set the locale
