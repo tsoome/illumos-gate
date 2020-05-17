@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * winnwstr.c
  * 
@@ -58,6 +56,7 @@ int n;
 
 	for (x = w->_curx; x < w->_maxx && 0 < n; n -= i) {
 		cp = &w->_line[w->_cury][x];
+		y = w->_cury;
 
 		/* Will entire character fit into buffer? */
 		if (n < cp->_n)
