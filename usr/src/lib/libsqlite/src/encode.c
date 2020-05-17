@@ -1,6 +1,3 @@
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
 ** 2002 April 25
 **
@@ -124,7 +121,7 @@
 ** not been NULL.
 */
 int sqlite_encode_binary(const unsigned char *in, int n, unsigned char *out){
-  int i, j, e, m;
+  int i, j, e = 0, m;
   unsigned char x;
   int cnt[256];
   if( n<=0 ){

@@ -1,6 +1,3 @@
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
 ** 2001 September 15
 **
@@ -393,7 +390,7 @@ WhereInfo *sqliteWhereBegin(
   int brk, cont = 0;         /* Addresses used during code generation */
   int nExpr;           /* Number of subexpressions in the WHERE clause */
   int loopMask;        /* One bit set for each outer loop */
-  int haveKey;         /* True if KEY is on the stack */
+  int haveKey = 0;         /* True if KEY is on the stack */
   ExprMaskSet maskSet; /* The expression mask set */
   int iDirectEq[32];   /* Term of the form ROWID==X for the N-th table */
   int iDirectLt[32];   /* Term of the form ROWID<X or ROWID<=X */
@@ -951,7 +948,7 @@ WhereInfo *sqliteWhereBegin(
       int score = pLevel->score;
       int nEqColumn = score/8;
       int start;
-      int leFlag, geFlag;
+      int leFlag = 0, geFlag = 0;
       int testOp;
 
       /* Evaluate the equality constraints
