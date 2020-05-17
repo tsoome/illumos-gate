@@ -1365,7 +1365,7 @@ pam_putenv(pam_handle_t *pamh, const char *name_value)
 	int		error = PAM_SYSTEM_ERR;
 	char		*equal_sign = 0;
 	char		*name = NULL, *value = NULL, *tmp_value = NULL;
-	env_list	*traverse, *trail;
+	env_list	*traverse = NULL, *trail;
 
 	pam_trace(PAM_DEBUG_DEFAULT,
 	    "pam_putenv(%p, %s)", (void *)pamh,
@@ -1403,7 +1403,7 @@ pam_putenv(pam_handle_t *pamh, const char *name_value)
 
 	if (traverse) {
 		/* found a match */
-		if (value == 0) {
+		if (value == NULL) {
 			/* remove the env variable */
 			if (pamh->pam_env == traverse)
 				pamh->pam_env = traverse->next;
@@ -1428,7 +1428,7 @@ pam_putenv(pam_handle_t *pamh, const char *name_value)
 			traverse->value = tmp_value;
 		}
 
-	} else if (traverse == 0 && value) {
+	} else if (traverse == NULL && value) {
 		/*
 		 * could not find a match in the PAM handle.
 		 * add the new value if there is one
@@ -1467,10 +1467,8 @@ out:
 			free(traverse);
 		}
 	}
-	if (name)
-		free(name);
-	if (value)
-		free(value);
+	free(name);
+	free(value);
 	return (error);
 }
 
