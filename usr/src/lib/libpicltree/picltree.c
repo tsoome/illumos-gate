@@ -2800,6 +2800,7 @@ get_child_by_path(picl_nodehdl_t rooth, char *prl,
 	plist = NULL;
 	nodename = NULL;
 	baddr = NULL;
+	busval = NULL;
 
 	err = parse_prl(path, &nodename, &baddr, &plist);
 	if (err != PICL_SUCCESS) {
