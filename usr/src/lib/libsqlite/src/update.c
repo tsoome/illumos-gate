@@ -1,6 +1,3 @@
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
 ** 2001 September 15
 **
@@ -35,8 +32,8 @@ void sqliteUpdate(
 ){
   int i, j;              /* Loop counters */
   Table *pTab;           /* The table to be updated */
-  int loopStart;         /* VDBE instruction address of the start of the loop */
-  int jumpInst;          /* Addr of VDBE instruction to jump out of loop */
+  int loopStart = 0;     /* VDBE instruction address of the start of the loop */
+  int jumpInst = 0;      /* Addr of VDBE instruction to jump out of loop */
   WhereInfo *pWInfo;     /* Information about the WHERE clause */
   Vdbe *v;               /* The virtual database engine */
   Index *pIdx;           /* For looping over indices */
@@ -50,8 +47,8 @@ void sqliteUpdate(
                          ** an expression for the i-th column of the table.
                          ** aXRef[i]==-1 if the i-th column is not changed. */
   int chngRecno;         /* True if the record number is being changed */
-  Expr *pRecnoExpr;      /* Expression defining the new record number */
-  int openAll;           /* True if all indices need to be opened */
+  Expr *pRecnoExpr = NULL; /* Expression defining the new record number */
+  int openAll = 0;       /* True if all indices need to be opened */
   int isView;            /* Trying to update a view */
   int iStackDepth;       /* Index of memory cell holding stack depth */
   AuthContext sContext;  /* The authorization context */

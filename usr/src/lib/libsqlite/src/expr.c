@@ -1037,7 +1037,7 @@ void sqliteExprCode(Parse *pParse, Expr *pExpr){
     case TK_LSHIFT:   op = OP_ShiftLeft;  break;
     case TK_RSHIFT:   op = OP_ShiftRight; break;
     case TK_REM:      op = OP_Remainder;  break;
-    default: break;
+    default:          op = 0;           break;
   }
   switch( pExpr->op ){
     case TK_COLUMN: {

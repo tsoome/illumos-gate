@@ -2842,6 +2842,7 @@ case OP_NewRecno: {
     ** to double the speed of the COPY operation.
     */
     int res, rx, cnt, x;
+    rx = 0;
     cnt = 0;
     if( !pC->useRandomRowid ){
       if( pC->nextRowidValid ){
@@ -3128,9 +3129,9 @@ case OP_Column: {
   int amt, offset, end, payloadSize;
   int i = pOp->p1;
   int p2 = pOp->p2;
-  Cursor *pC;
+  Cursor *pC = NULL;
   char *zRec;
-  BtCursor *pCrsr;
+  BtCursor *pCrsr = NULL;
   int idxWidth;
   unsigned char aHdr[10];
 

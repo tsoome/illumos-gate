@@ -2193,8 +2193,8 @@ static int balance(Btree *pBt, MemPage *pPage, BtCursor *pCur){
   int idx;                     /* Index of pPage in pParent->apCell[] */
   int nxDiv;                   /* Next divider slot in pParent->apCell[] */
   int rc;                      /* The return code */
-  int iCur;                    /* apCell[iCur] is the cell of the cursor */
-  MemPage *pOldCurPage;        /* The cursor originally points to this page */
+  int iCur = 0;                /* apCell[iCur] is the cell of the cursor */
+  MemPage *pOldCurPage = NULL; /* The cursor originally points to this page */
   int subtotal;                /* Subtotal of bytes in cells on one page */
   MemPage *extraUnref = 0;     /* A page that needs to be unref-ed */
   MemPage *apOld[NB];          /* pPage and up to two siblings */
@@ -2366,7 +2366,6 @@ static int balance(Btree *pBt, MemPage *pPage, BtCursor *pCur){
   ** distribution loop below.
   */
   if( pCur ){
-    iCur = 0;
     for(i=0; i<nOld; i++){
       if( pCur->pPage==apOld[i] ){
         iCur += pCur->idx;

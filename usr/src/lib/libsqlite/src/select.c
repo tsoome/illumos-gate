@@ -1387,6 +1387,7 @@ static int multiSelect(Parse *pParse, Select *p, int eDest, int iParm){
          case TK_EXCEPT:  op = SRT_Except;   break;
          case TK_UNION:   op = SRT_Union;    break;
          case TK_ALL:     op = SRT_Table;    break;
+         default:         op = 0;            break;
       }
       p->pPrior = 0;
       pOrderBy = p->pOrderBy;

@@ -731,9 +731,9 @@ void sqliteRegisterBuiltinFunctions(sqlite *db){
   int i;
 
   for(i=0; i<sizeof(aFuncs)/sizeof(aFuncs[0]); i++){
-    void *pArg;
+    void *pArg = NULL;
     switch( aFuncs[i].argType ){
-      case 0:  pArg = 0;           break;
+      case 0:  pArg = NULL;        break;
       case 1:  pArg = db;          break;
       case 2:  pArg = (void*)(-1); break;
     }
@@ -744,9 +744,9 @@ void sqliteRegisterBuiltinFunctions(sqlite *db){
     }
   }
   for(i=0; i<sizeof(aAggs)/sizeof(aAggs[0]); i++){
-    void *pArg;
+    void *pArg = NULL;
     switch( aAggs[i].argType ){
-      case 0:  pArg = 0;           break;
+      case 0:  pArg = NULL;        break;
       case 1:  pArg = db;          break;
       case 2:  pArg = (void*)(-1); break;
     }
