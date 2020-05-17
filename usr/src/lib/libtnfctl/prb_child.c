@@ -67,7 +67,7 @@ prb_child_create(const char *cmdname, char * const *cmdargs,
 	pid_t		childpid;
 	char		executable_name[PATH_MAX + 2];
 	extern char	**environ;
-	char * const *	env_to_use;
+	char * const *	env_to_use = NULL;
 	size_t		loptlen, probepathlen;
 	volatile shmem_msg_t *smp;
 

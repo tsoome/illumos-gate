@@ -332,8 +332,8 @@ iscomb(tnfctl_handle_t *hndl, uintptr_t addr, uintptr_t *down_p,
 		char		*targ_p;
 		char		*ptr;
 		char		*tptr;
-		uintptr_t	downaddr;
-		uintptr_t	nextaddr;
+		uintptr_t	downaddr = 0;
+		uintptr_t	nextaddr = 0;
 		int		num_bits = 0;
 		int		tmp_bits = prb_callinfo.mask;
 

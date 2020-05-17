@@ -281,7 +281,7 @@ _tnfctl_traverse_dynsym(Elf * elf,
 	ulong_t		nsyms;
 	int		i;
 	char		*strs;
-	tnfctl_errcode_t	prexstat;
+	tnfctl_errcode_t	prexstat = TNFCTL_ERR_NONE;
 
 	Elf3264_Sym	*syms;
 
