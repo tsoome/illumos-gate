@@ -303,13 +303,12 @@ dummy_gss_init_sec_context(ct, minor_status, claimant_cred_handle,
 		int bodysize;
 		int err;
 
+		ctx = (dummy_gss_ctx_id_t)(*context_handle);
+
 		if (input_token == NULL || input_token->value == NULL) {
 			ctx->last_stat = GSS_S_FAILURE;
 			return (GSS_S_FAILURE);
 		}
-
-		ctx = (dummy_gss_ctx_id_t)(*context_handle);
-
 
 		ptr = (unsigned char *) input_token->value;
 		if (err = g_verify_token_header((gss_OID)gss_mech_dummy,
