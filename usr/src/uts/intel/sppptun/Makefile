@@ -74,6 +74,7 @@ INC_PATH	+= -I$(UTSBASE)/common/io/ppp/common
 #
 
 CERRWARN	+= $(CNOWARN_UNINIT)
+CERRWARN	+= -_gcc=-Wno-array-bounds
 
 #
 #	Default build targets.
