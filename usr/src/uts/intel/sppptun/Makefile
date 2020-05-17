@@ -79,6 +79,7 @@ LINTTAGS	+= -erroff=E_PTRDIFF_OVERFLOW
 LINTTAGS	+= -erroff=E_ASSIGN_NARROW_CONV
 
 CERRWARN	+= $(CNOWARN_UNINIT)
+CERRWARN	+= -_gcc=-Wno-array-bounds
 
 #
 #	Default build targets.
