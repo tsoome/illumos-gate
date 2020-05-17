@@ -253,17 +253,17 @@ regfatal(regex_t* p, int level, int code)
 int
 ppcontrol(void)
 {
-	register char*			p;
-	register int			c;
-	register int			n;
-	register char*			s;
-	register struct ppmacro*	mac;
-	register struct ppsymbol*	sym;
+	char*				p;
+	int				c;
+	int				n = 0;
+	char*				s;
+	struct ppmacro*			mac;
+	struct ppsymbol*		sym;
 	struct edit*			edit;
 	struct map*			map;
 	struct ppfile*			fp;
 	int				o;
-	int				directive;
+	int				directive = 0;
 	long				restore;
 	struct pptuple*			rp;
 	struct pptuple*			tp;

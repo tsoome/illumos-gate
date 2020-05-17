@@ -182,8 +182,8 @@ ppcpp(void)
 	char*			bp;
 	int			n;
 	int			m;
-	int			quot;
-	int			quotquot;
+	int			quot = 0;
+	int			quotquot = 0;
 	int			comdelim = 0;
 	int			comstart = 0;
 	int			comwarn = 0;

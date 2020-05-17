@@ -107,7 +107,7 @@ ppmapinclude(char* file, register char* s)
 	register struct ppdirs*	dp;
 	int			fd;
 	int			flags;
-	int			index;
+	int			index = 0;
 	int			token;
 	char*			t;
 	char*			old_file;
@@ -330,10 +330,10 @@ void
 ppop(int op, ...)
 {
 	va_list				ap;
-	register char*			p;
-	register struct ppkeyword*	kp;
-	register char*			s;
-	int				c;
+	char*				p;
+	struct ppkeyword*		kp;
+	char*				s;
+	int				c = 0;
 	long				n;
 	char*				t;
 	struct ppdirs*			dp;
