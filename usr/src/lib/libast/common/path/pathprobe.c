@@ -86,10 +86,10 @@ char*
 pathprobe(char* path, char* attr, const char* lang, const char* tool, const char* aproc, int op)
 {
 	char*		proc = (char*)aproc;
-	register char*	p;
-	register char*	k;
-	register char*	x;
-	register char**	ap;
+	char*		p;
+	char*		k;
+	char*		x;
+	char**		ap;
 	int		n;
 	int		v;
 	int		force;
@@ -113,6 +113,7 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 	unsigned long	ptime;
 	struct stat	st;
 	struct stat	ps;
+	char*		lpath;
 
 	if (*proc != '/')
 	{
@@ -130,7 +131,10 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 		}
 	}
 	if (!path)
-		path = buf;
+		lpath = buf;
+	else
+		lpath = path;
+
 	probe = PROBE;
 	x = lib + sizeof(lib) - 1;
 	k = lib + sfsprintf(lib, x - lib, "lib/%s/", probe);
@@ -139,27 +143,27 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 	if (op >= -2)
 	{
 		strncopy(p, key, x - p);
-		if (pathpath(path, lib, "", PATH_ABSOLUTE) && !stat(path, &st) && (st.st_mode & S_IWUSR))
-			return path == buf ? strdup(path) : path;
+		if (pathpath(lpath, lib, "", PATH_ABSOLUTE) && !stat(lpath, &st) && (st.st_mode & S_IWUSR))
+			return lpath == buf ? strdup(buf) : path;
 	}
 	e = strncopy(p, probe, x - p);
-	if (!pathpath(path, lib, "", PATH_ABSOLUTE|PATH_EXECUTE) || stat(path, &ps))
+	if (!pathpath(lpath, lib, "", PATH_ABSOLUTE|PATH_EXECUTE) || stat(lpath, &ps))
 		return 0;
 	for (;;)
 	{
 		ptime = ps.st_mtime;
-		n = strlen(path);
+		n = strlen(lpath);
 		if (n < (PATH_MAX - 5))
 		{
-			strcpy(path + n, ".ini");
-			if (!stat(path, &st) && st.st_size && ptime < (unsigned long)st.st_mtime)
+			strcpy(lpath + n, ".ini");
+			if (!stat(lpath, &st) && st.st_size && ptime < (unsigned long)st.st_mtime)
 				ptime = st.st_mtime;
-			path[n] = 0;
+			lpath[n] = 0;
 		}
-		np = path + n - (e - k);
-		nx = path + PATH_MAX - 1;
+		np = lpath + n - (e - k);
+		nx = lpath + PATH_MAX - 1;
 		strncopy(np, probe, nx - np);
-		if (!stat(path, &st))
+		if (!stat(lpath, &st))
 			break;
 
 		/*
@@ -175,13 +179,13 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 		{
 			if (!(dir = dirs))
 				return 0;
-			dirs = pathcat(path, dir, ':', "..", exe);
-			pathcanon(path, 0);
-			if (*path == '/' && pathexists(path, PATH_REGULAR|PATH_EXECUTE))
+			dirs = pathcat(lpath, dir, ':', "..", exe);
+			pathcanon(lpath, 0);
+			if (*lpath == '/' && pathexists(lpath, PATH_REGULAR|PATH_EXECUTE))
 			{
-				pathcat(path, dir, ':', "..", lib);
-				pathcanon(path, 0);
-				if (*path == '/' && pathexists(path, PATH_REGULAR|PATH_EXECUTE) && !stat(path, &ps))
+				pathcat(lpath, dir, ':', "..", lib);
+				pathcanon(lpath, 0);
+				if (*lpath == '/' && pathexists(lpath, PATH_REGULAR|PATH_EXECUTE) && !stat(lpath, &ps))
 					break;
 			}
 		}
@@ -189,16 +193,16 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 	strncopy(p, key, x - p);
 	p = np;
 	x = nx;
-	strcpy(exe, path);
-	if (op >= -1 && (!(st.st_mode & S_ISUID) && ps.st_uid != geteuid() || rofs(path)))
+	strcpy(exe, lpath);
+	if (op >= -1 && (!(st.st_mode & S_ISUID) && ps.st_uid != geteuid() || rofs(lpath)))
 	{
 		if (!(p = getenv("HOME")))
 			return 0;
-		p = path + sfsprintf(path, PATH_MAX - 1, "%s/.%s/%s/", p, probe, HOSTTYPE);
+		p = lpath + sfsprintf(lpath, PATH_MAX - 1, "%s/.%s/%s/", p, probe, HOSTTYPE);
 	}
 	strncopy(p, k, x - p);
 	force = 0;
-	if (op >= 0 && !stat(path, &st))
+	if (op >= 0 && !stat(lpath, &st))
 	{
 		if (ptime <= (unsigned long)st.st_mtime || ptime <= (unsigned long)st.st_ctime)
 		{
@@ -206,7 +210,7 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 			 * verify (<sep><name><sep><option><sep><value>)* header
 			 */
 
-			if (sp = sfopen(NiL, path, "r"))
+			if (sp = sfopen(NiL, lpath, "r"))
 			{
 				if (x = sfgetr(sp, '\n', 1))
 				{
@@ -294,8 +298,8 @@ pathprobe(char* path, char* attr, const char* lang, const char* tool, const char
 		*ap = 0;
 		if (procrun(exe, arg, 0))
 			return 0;
-		if (eaccess(path, R_OK))
+		if (eaccess(lpath, R_OK))
 			return 0;
 	}
-	return path == buf ? strdup(path) : path;
+	return lpath == buf ? strdup(buf) : path;
 }

@@ -56,21 +56,21 @@
 char*
 mcfind(char* path, const char* locale, const char* catalog, int category, int nls)
 {
-	register int		c;
-	register char*		s;
-	register char*		e;
-	register char*		p;
-	register const char*	v;
-	int			i;
-	int			first;
-	int			next;
-	int			last;
-	int			oerrno;
-	Lc_t*			lc;
-	char			file[PATH_MAX];
-	char*			paths[5];
+	int		c;
+	char*		s;
+	char*		e;
+	char*		p;
+	const char*	v = NULL;
+	int		i;
+	int		first;
+	int		next;
+	int		last;
+	int		oerrno;
+	Lc_t*		lc;
+	char		file[PATH_MAX];
+	char*		paths[5];
 
-	static char		lc_messages[] = "LC_MESSAGES";
+	static char	lc_messages[] = "LC_MESSAGES";
 
 	if ((category = lcindex(category, 1)) < 0)
 		return 0;

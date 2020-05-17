@@ -37,7 +37,7 @@ reg int		type;
 #endif
 {
 	Dt_t		*d, *p;
-	Void_t		*o, *n, *ok, *nk;
+	Void_t		*o = NULL, *n, *ok, *nk;
 	int		cmp, lk, sz, ky;
 	Dtcompar_f	cmpf;
 

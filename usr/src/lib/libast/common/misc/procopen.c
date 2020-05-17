@@ -362,9 +362,9 @@ restore(Proc_t* proc)
 Proc_t*
 procopen(const char* cmd, char** argv, char** envv, long* modv, int flags)
 {
-	register Proc_t*	proc = 0;
-	register int		procfd;
-	register char**		p;
+	Proc_t*			proc = 0;
+	int			procfd = 0;
+	char**			p;
 	char**			v;
 	int			i;
 	int			forked = 0;

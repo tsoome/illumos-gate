@@ -40,9 +40,9 @@
 char*
 pathkey(char* key, char* attr, const char* lang, const char* tool, const char* apath)
 {
-	register char*		path = (char*)apath;
-	register char*		s;
-	register char*		k;
+	char*			path = (char*)apath;
+	char*			s;
+	char*			k;
 	char*			t;
 	char*			flags;
 	char**			p;
@@ -53,16 +53,20 @@ pathkey(char* key, char* attr, const char* lang, const char* tool, const char* a
 	char*			env[elementsof(usr) + 3];
 	char*			ver[2];
 	char			tmp[PATH_MAX];
+	char*			lkey;
 
 	static char		let[] = "ABCDEFGHIJKLMNOP";
 
-	if (!key)
-		key = buf;
+	if (key == NULL)
+		lkey = buf;
+	else
+		lkey = key;
+
 	if (tool && streq(tool, "mam"))
 	{
 		for (n = 0; *path; path++)
 			n = n * 0x63c63cd9L + *path + 0x9c39c33dL;
-		k = key;
+		k = lkey;
 		for (n &= 0xffffffffL; n; n >>= 4)
 			*k++ = let[n & 0xf];
 		*k = 0;
@@ -265,8 +269,8 @@ pathkey(char* key, char* attr, const char* lang, const char* tool, const char* a
 		if (flags)
 			*flags = ' ';
 		s = path + strlen(path);
-		sfsprintf(key, 15, "%08lX", memsum(path, s - path, n));
-		k = key + 14;
+		sfsprintf(lkey, 15, "%08lX", memsum(path, s - path, n));
+		k = lkey + 14;
 		*k = 0;
 		if (!flags)
 			t = path;
@@ -284,12 +288,12 @@ pathkey(char* key, char* attr, const char* lang, const char* tool, const char* a
 			if (*s != '/' && *s != ' ')
 			{
 				*--k = *s;
-				if (k <= key + 8)
+				if (k <= lkey + 8)
 					break;
 			}
 		}
-		while (k > key + 8)
+		while (k > lkey + 8)
 			*--k = '.';
 	}
-	return key == buf ? strdup(key) : key;
+	return (lkey == buf) ? strdup(buf) : key;
 }

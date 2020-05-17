@@ -2087,11 +2087,11 @@ list(Sfio_t* sp, register const List_t* lp)
 char*
 opthelp(const char* oopts, const char* what)
 {
-	register Sfio_t*	sp;
-	register Sfio_t*	mp;
-	register int		c;
-	register char*		p;
-	register Indent_t*	ip;
+	Sfio_t*			sp;
+	Sfio_t*			mp;
+	int			c;
+	char*			p;
+	Indent_t*		ip;
 	char*			t;
 	char*			x;
 	char*			w;
@@ -2101,7 +2101,7 @@ opthelp(const char* oopts, const char* what)
 	char*			d;
 	char*			v;
 	char*			ov;
-	char*			pp;
+	char*			pp = NULL;
 	char*			rb;
 	char*			re;
 	int			f;
@@ -2112,7 +2112,7 @@ opthelp(const char* oopts, const char* what)
 	int			a;
 	int			sl;
 	int			vl;
-	int			ol;
+	int			ol = 0;
 	int			wl;
 	int			xl;
 	int			rm;
@@ -3899,10 +3899,10 @@ optget(register char** argv, const char* oopts)
 	int		j;
 	int		x;
 	int		err;
-	int		no;
-	int		nov;
+	int		no = 0;
+	int		nov = 0;
 	int		num;
-	int		numchr;
+	int		numchr = 0;
 	int		prefix;
 	int		version;
 	Help_t*		hp;
@@ -5189,14 +5189,14 @@ optget(register char** argv, const char* oopts)
 int
 optstr(const char* str, const char* opts)
 {
-	register char*		s = (char*)str;
-	register Sfio_t*	mp;
-	register int		c;
-	register int		ql;
-	register int		qr;
-	register int		qc;
-	int			v;
-	char*			e;
+	char*		s = (char*)str;
+	Sfio_t*		mp;
+	int		c;
+	int		ql;
+	int		qr;
+	int		qc = 0;
+	int		v;
+	char*		e;
 
  again:
 	if (s)

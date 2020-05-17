@@ -805,11 +805,11 @@ feature(const char* name, const char* path, const char* value, unsigned int flag
 static int
 lookup(register Lookup_t* look, const char* name, unsigned int flags)
 {
-	register Conf_t*	mid = (Conf_t*)conf;
-	register Conf_t*	lo = mid;
-	register Conf_t*	hi = mid + conf_elements;
-	register int		v;
-	register int		c;
+	Conf_t*	mid = (Conf_t*)conf;
+	Conf_t*	lo = mid;
+	Conf_t*	hi = mid + conf_elements;
+	int		v = 0;
+	int		c;
 	char*			e;
 	const Prefix_t*		p;
 

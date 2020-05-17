@@ -161,22 +161,22 @@ typefix(char* buf, size_t n, register const char* t)
 Find_t*
 findopen(const char* file, const char* pattern, const char* type, Finddisc_t* disc)
 {
-	register Find_t*	fp;
-	register char*		p;
-	register char*		s;
-	register char*		b;
-	register int		i; 
-	register int		j;
-	char*			path;
-	int			brace = 0;
-	int			paren = 0;
-	int			k;
-	int			q;
-	int			fd;
-	int			uid;
-	Vmalloc_t*		vm;
-	Type_t*			tp;
-	struct stat		st;
+	Find_t*		fp = NULL;
+	char*		p;
+	char*		s;
+	char*		b;
+	int		i; 
+	int		j;
+	char*		path;
+	int		brace = 0;
+	int		paren = 0;
+	int		k;
+	int		q;
+	int		fd;
+	int		uid;
+	Vmalloc_t*	vm;
+	Type_t*		tp;
+	struct stat	st;
 
 
 	if (!(vm = vmopen(Vmdcheap, Vmbest, 0)))
@@ -699,18 +699,18 @@ findopen(const char* file, const char* pattern, const char* type, Finddisc_t* di
 char*
 findread(register Find_t* fp)
 {
-	register char*		p;
-	register char*		q;
-	register char*		s;
-	register char*		b;
-	register char*		e;
-	register int		c;
-	register int		n;
-	register int		m;
-	int			ignorecase;
-	int			t;
-	unsigned char		w[4];
-	struct stat		st;
+	char*		p = NULL;
+	char*		q;
+	char*		s;
+	char*		b;
+	char*		e;
+	int		c;
+	int		n;
+	int		m;
+	int		ignorecase;
+	int		t = 0;
+	unsigned char	w[4];
+	struct stat	st;
 
 	if (fp->generate)
 		return 0;

@@ -36,37 +36,40 @@
 #include <ast.h>
 
 char*
-pathpath(register char* path, const char* p, const char* a, int mode)
+pathpath(char* path, const char* p, const char* a, int mode)
 {
-	register char*	s;
+	char*		s;
 	char*		x;
 	char		buf[PATH_MAX];
-
+	char*		lpath;
 	static char*	cmd;
 
 	if (!path)
-		path = buf;
+		lpath = buf;
+	else
+		lpath = path;
+
 	if (!p)
 	{
 		if (cmd)
 			free(cmd);
-		cmd = a ? strdup(a) : (char*)0;
+		cmd = a ? strdup(a) : NULL;
 		return 0;
 	}
 	if (strlen(p) < PATH_MAX)
 	{
-		strcpy(path, p);
-		if (pathexists(path, mode))
+		strcpy(lpath, p);
+		if (pathexists(lpath, mode))
 		{
 			if (*p != '/' && (mode & PATH_ABSOLUTE))
 			{
 				getcwd(buf, sizeof(buf));
 				s = buf + strlen(buf);
 				sfsprintf(s, sizeof(buf) - (s - buf), "/%s", p);
-				if (path != buf)
-					strcpy(path, buf);
+				if (lpath != buf)
+					strcpy(lpath, buf);
 			}
-			return (path == buf) ? strdup(path) : path;
+			return (lpath == buf) ? strdup(buf) : path;
 		}
 	}
 	if (*p == '/')
@@ -87,16 +90,16 @@ pathpath(register char* path, const char* p, const char* a, int mode)
 				cmd = strdup(s);
 			if (strlen(s) < (sizeof(buf) - 6))
 			{
-				s = strcopy(path, s);
+				s = strcopy(lpath, s);
 				for (;;)
 				{
-					do if (s <= path) goto normal; while (*--s == '/');
-					do if (s <= path) goto normal; while (*--s != '/');
+					do if (s <= lpath) goto normal; while (*--s == '/');
+					do if (s <= lpath) goto normal; while (*--s != '/');
 					strcpy(s + 1, "bin");
-					if (pathexists(path, PATH_EXECUTE))
+					if (pathexists(lpath, PATH_EXECUTE))
 					{
-						if (s = pathaccess(path, path, p, a, mode))
-							return path == buf ? strdup(s) : s;
+						if (s = pathaccess(lpath, lpath, p, a, mode))
+							return lpath == buf ? strdup(s) : s;
 						goto normal;
 					}
 				}
@@ -105,7 +108,7 @@ pathpath(register char* path, const char* p, const char* a, int mode)
 		}
 	}
 	x = !a && strchr(p, '/') ? "" : pathbin();
-	if (!(s = pathaccess(path, x, p, a, mode)) && !*x && (x = getenv("FPATH")))
-		s = pathaccess(path, x, p, a, mode);
-	return (s && path == buf) ? strdup(s) : s;
+	if (!(s = pathaccess(lpath, x, p, a, mode)) && !*x && (x = getenv("FPATH")))
+		s = pathaccess(lpath, x, p, a, mode);
+	return (s && lpath == buf) ? strdup(s) : s;
 }

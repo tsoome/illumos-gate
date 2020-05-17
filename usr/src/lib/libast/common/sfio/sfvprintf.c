@@ -101,7 +101,7 @@ char*	form;		/* format to use	*/
 va_list	args;		/* arg list if !argf	*/
 #endif
 {
-	int		n, v, w, k, n_s, base, fmt, flags;
+	int		n, v = 0, w, k, n_s, base, fmt, flags;
 	Sflong_t	lv;
 	char		*sp, *ssp, *endsp, *ep, *endep;
 	int		dot, width, precis, sign, decpt;
@@ -129,7 +129,7 @@ va_list	args;		/* arg list if !argf	*/
 	int		decimal = 0, thousand = 0;
 
 #if _has_multibyte
-	wchar_t*	wsp;
+	wchar_t*	wsp = NULL;
 	SFMBDCL(fmbs)			/* state of format string	*/
 	SFMBDCL(mbs)			/* state of some string		*/
 #ifdef mbwidth

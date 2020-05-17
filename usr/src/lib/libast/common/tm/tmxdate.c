@@ -156,9 +156,9 @@ powerize(Tm_t* tm, unsigned long p, unsigned long q, unsigned long u)
 Time_t
 tmxdate(register const char* s, char** e, Time_t now)
 {
-	register Tm_t*	tm;
-	register long	n;
-	register int	w;
+	Tm_t*		tm;
+	long		n;
+	int		w = 0;
 	unsigned long	set;
 	unsigned long	state;
 	unsigned long	flags;
@@ -177,7 +177,7 @@ tmxdate(register const char* s, char** e, Time_t now)
 	int		f;
 	int		i;
 	int		j;
-	int		k;
+	int		k = 0;
 	int		l;
 	long		m;
 	unsigned long	p;

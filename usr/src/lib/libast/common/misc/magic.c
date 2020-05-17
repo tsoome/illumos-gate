@@ -1011,9 +1011,9 @@ cklang(register Magic_t* mp, const char* file, char* buf, struct stat* st)
 	char*			t2;
 	char*			t3;
 	int			n;
-	int			badpun;
+	int			badpun = 0;
 	int			code;
-	int			pun;
+	int			pun = 0;
 	Cctype_t		flags;
 	Info_t*			ip;
 
@@ -2360,7 +2360,7 @@ magicclose(register Magic_t* mp)
 char*
 magictype(register Magic_t* mp, Sfio_t* fp, const char* file, register struct stat* st)
 {
-	off_t	off;
+	off_t	off = 0;
 	char*	s;
 
 	mp->flags = mp->disc->flags;
@@ -2370,7 +2370,7 @@ magictype(register Magic_t* mp, Sfio_t* fp, const char* file, register struct st
 	else
 	{
 		if (mp->fp = fp)
-			off = sfseek(mp->fp, (off_t)0, SEEK_CUR);
+			off = sfseek(mp->fp, 0, SEEK_CUR);
 		s = type(mp, file, st, mp->tbuf, sizeof(mp->tbuf));
 		if (mp->fp)
 			sfseek(mp->fp, off, SEEK_SET);

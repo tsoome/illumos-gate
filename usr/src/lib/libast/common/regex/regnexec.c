@@ -807,7 +807,7 @@ parse(Env_t* env, Rex_t* rex, Rex_t* cont, unsigned char* s)
 	unsigned char*	p;
 	unsigned char*	t;
 	unsigned char*	b;
-	unsigned char*	e;
+	unsigned char*	e = NULL;
 	char*		u;
 	regmatch_t*	o;
 	Trie_node_t*	x;
@@ -1845,14 +1845,14 @@ list(Env_t* env, Rex_t* rex)
 int
 regnexec(const regex_t* p, const char* s, size_t len, size_t nmatch, regmatch_t* match, regflags_t flags)
 {
-	register int	n;
-	register int	i;
-	int		j;
-	int		k;
-	int		m;
-	int		advance;
-	Env_t*		env;
-	Rex_t*		e;
+	int	n = 0;
+	int	i;
+	int	j;
+	int	k;
+	int	m;
+	int	advance;
+	Env_t*	env;
+	Rex_t*	e;
 
 	DEBUG_INIT();
 	DEBUG_TEST(0x0001,(sfprintf(sfstdout, "AHA#%04d 0x%04x regnexec %d 0x%08x `%-.*s'\n", __LINE__, debug_flag, nmatch, flags, len, s)),(0));

@@ -53,7 +53,7 @@ int		type;	/* >0: scanf, =0: printf, -1: internal	*/
 #endif
 {
 	int		base, fmt, flags, dot, width, precis;
-	ssize_t		n_str, size;
+	ssize_t		n_str, size = 0;
 	char		*t_str, *sp;
 	int		v, n, skip, dollar, decimal, thousand;
 	Sffmt_t		savft;

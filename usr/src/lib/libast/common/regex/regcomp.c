@@ -1022,14 +1022,14 @@ token(register Cenv_t* env)
 static Celt_t*
 col(Celt_t* ce, int ic, unsigned char* bp, int bw, int bc, unsigned char* ep, int ew, int ec)
 {
-	register char*		s;
-	register unsigned char*	k;
-	register unsigned char*	e;
-	register int		c;
-	register int		cc;
-	int			bt;
-	int			et;
-	Ckey_t			key;
+	char*		s;
+	unsigned char*	k;
+	unsigned char*	e;
+	int		c = 0;
+	int		cc;
+	int		bt;
+	int		et;
+	Ckey_t		key;
 
 	cc = 0;
 	for (;;)
@@ -1164,7 +1164,7 @@ bra(Cenv_t* env)
 	int		i;
 	int		w;
 	int		neg;
-	int		last;
+	int		last = 0;
 	int		inrange;
 	int		complicated;
 	int		collate;
@@ -1421,10 +1421,10 @@ bra(Cenv_t* env)
 		Cchr_t*			xc;
 		Celt_t*			ce;
 		Cchr_t			key;
-		int			rw;
-		int			rc;
+		int			rw = 0;
+		int			rc = 0;
 		int			wc;
-		unsigned char*		rp;
+		unsigned char*		rp = 0;
 		unsigned char*		pp;
 		char*			wp;
 		char			cb[2][COLL_KEY_MAX+1];
@@ -2535,13 +2535,13 @@ seq(Cenv_t* env)
 	Token_t		tok;
 	int		c;
 	int		i;
-	int		n;
-	int		x;
+	int		n = 0;
+	int		x = 0;
 	int		parno;
 	int		type;
 	regflags_t	flags;
 	unsigned char*	s;
-	unsigned char*	p;
+	unsigned char*	p = NULL;
 	unsigned char*	t;
 	unsigned char*	u;
 	unsigned char	buf[256];

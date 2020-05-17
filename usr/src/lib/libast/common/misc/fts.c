@@ -805,17 +805,17 @@ fts_open(char* const* pathnames, int flags, int (*comparf)(FTSENT* const*, FTSEN
  */
 
 FTSENT*
-fts_read(register FTS* fts)
+fts_read(FTS* fts)
 {
-	register char*		s;
-	register int		n;
-	register FTSENT*	f;
-	struct dirent*		d;
-	size_t			i;
-	FTSENT*			t;
-	Notify_t*		p;
+	char*		s;
+	int		n;
+	FTSENT*		f = NULL;
+	struct dirent*	d;
+	size_t		i;
+	FTSENT*		t;
+	Notify_t*	p;
 #ifdef verify
-	struct stat		sb;
+	struct stat	sb;
 #endif
 
 	for (;;)

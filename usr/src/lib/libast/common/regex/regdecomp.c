@@ -74,7 +74,7 @@ decomp(register Rex_t* e, Sfio_t* sp, int type, int delimiter, regflags_t flags)
 	Rex_t*		q;
 	unsigned char*	s;
 	unsigned char*	t;
-	int		c;
+	int		c = 0;
 	int		m;
 	int		cb;
 	int		cd;
