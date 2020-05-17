@@ -2935,7 +2935,7 @@ Plwp_iter(struct ps_prochandle *P, proc_lwp_f *func, void *cd)
 	prheader_t *Lhp;
 	lwpstatus_t *Lsp;
 	long nlwp;
-	int rv;
+	int rv = 0;
 
 	switch (P->state) {
 	case PS_RUN:
@@ -3008,7 +3008,7 @@ Plwp_iter_all(struct ps_prochandle *P, proc_lwp_all_f *func, void *cd)
 	lwpsinfo_t *Lpsp;
 	long nstat;
 	long ninfo;
-	int rv;
+	int rv = 0;
 
 retry:
 	if (Lhp != NULL)

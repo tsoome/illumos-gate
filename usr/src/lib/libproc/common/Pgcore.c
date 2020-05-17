@@ -1060,7 +1060,7 @@ Pfgcore(struct ps_prochandle *P, int fd, core_content_t content)
 	char zonename[ZONENAME_MAX];
 	int platlen = -1;
 	pgcore_t pgc;
-	off64_t poff, soff, doff, boff;
+	off64_t poff, soff, doff, boff = 0;
 	struct utsname uts;
 	uint_t nphdrs, nshdrs;
 

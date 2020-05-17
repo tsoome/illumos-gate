@@ -115,7 +115,7 @@ addr_cmp(const void *aa, const void *bb)
 static uintptr_t *
 get_saddrs(struct ps_prochandle *P, uintptr_t ehdr_start, uint_t *n)
 {
-	uintptr_t a, addr, *addrs, last = 0;
+	uintptr_t a, addr, *addrs = NULL, last = 0;
 	uint_t i, naddrs = 0, unordered = 0;
 
 	if (P->status.pr_dmodel == PR_MODEL_ILP32) {
@@ -1339,7 +1339,7 @@ found_cksum:
 static Elf *
 fake_elf(struct ps_prochandle *P, file_info_t *fptr)
 {
-	Elf *elf;
+	Elf *elf = NULL;
 	uintptr_t addr;
 	uint_t phnum;
 
@@ -2650,7 +2650,7 @@ sym_by_addr_linear(sym_tbl_t *symtab, GElf_Addr addr, GElf_Sym *symbolp,
 	char *strs = symtab->sym_strs;
 	GElf_Sym sym, *symp = NULL;
 	GElf_Sym osym, *osymp = NULL;
-	int i, id;
+	int i, id = 0;
 
 	if (symtab->sym_data_pri == NULL || symn == 0 || strs == NULL)
 		return (NULL);
