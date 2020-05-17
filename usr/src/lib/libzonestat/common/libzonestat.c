@@ -2579,6 +2579,7 @@ zs_usage_set_compute(zs_usage_set_t *set,  int func)
 		break;
 	default:
 		assert(0);
+		return (NULL);
 	}
 
 	s = u->zsu_system;
@@ -2764,7 +2765,7 @@ zs_resource_type(int res)
 uint64_t
 zs_resource_total_uint64(zs_usage_t *u, int res)
 {
-	uint64_t v;
+	uint64_t v = 0;
 
 	switch (res)  {
 	case ZS_RESOURCE_CPU:
@@ -2815,7 +2816,7 @@ zs_resource_total_uint64(zs_usage_t *u, int res)
 uint64_t
 zs_resource_used_uint64(zs_usage_t *u, int res, int user)
 {
-	uint64_t v;
+	uint64_t v = 0;
 
 	switch (res)  {
 	case ZS_RESOURCE_CPU:
@@ -3031,7 +3032,7 @@ zs_resource_used_uint64(zs_usage_t *u, int res, int user)
 uint_t
 zs_resource_used_pct(zs_usage_t *u, int res, int user)
 {
-	uint64_t v;
+	uint64_t v = 0;
 
 	switch (res)  {
 	case ZS_RESOURCE_CPU:
@@ -3246,7 +3247,7 @@ zs_resource_used_pct(zs_usage_t *u, int res, int user)
 uint64_t
 zs_resource_used_zone_uint64(zs_zone_t *z, int res)
 {
-	uint64_t v;
+	uint64_t v = 0;
 
 	switch (res)  {
 	case ZS_RESOURCE_CPU:
@@ -3297,7 +3298,7 @@ zs_resource_used_zone_uint64(zs_zone_t *z, int res)
 uint_t
 zs_resource_used_zone_pct(zs_zone_t *z, int res)
 {
-	uint_t v;
+	uint_t v = 0;
 
 	switch (res)  {
 	case ZS_RESOURCE_CPU:
@@ -3563,7 +3564,7 @@ zs_zone_limit_type(int limit)
 uint64_t
 zs_zone_limit_uint64(zs_zone_t *z, int limit)
 {
-	uint64_t v;
+	uint64_t v = 0;
 
 	switch (limit) {
 	case ZS_LIMIT_CPU:
@@ -3615,7 +3616,7 @@ zs_zone_limit_uint64(zs_zone_t *z, int limit)
 uint64_t
 zs_zone_limit_used_uint64(zs_zone_t *z, int limit)
 {
-	uint64_t v;
+	uint64_t v = 0;
 
 	switch (limit) {
 	case ZS_LIMIT_CPU:
@@ -3755,7 +3756,7 @@ zs_zone_limit_used_time(zs_zone_t *z, int limit, timestruc_t *t)
 uint_t
 zs_zone_limit_used_pct(zs_zone_t *z, int limit)
 {
-	uint_t v;
+	uint_t v = 0;
 
 	switch (limit) {
 	case ZS_LIMIT_CPU:
@@ -3948,7 +3949,7 @@ zs_pset_used_time(zs_pset_t *pset, int user, timestruc_t *t)
 uint64_t
 zs_pset_used_cpus(zs_pset_t *pset, int user)
 {
-	uint_t v;
+	uint_t v = 0;
 
 	switch (user) {
 	case ZS_USER_ALL:
@@ -3974,7 +3975,7 @@ zs_pset_used_cpus(zs_pset_t *pset, int user)
 uint_t
 zs_pset_used_pct(zs_pset_t *pset, int user)
 {
-	uint_t v;
+	uint_t v = 0;
 
 	switch (user) {
 	case ZS_USER_ALL:
@@ -4090,7 +4091,7 @@ zs_pset_zone_used_cpus(zs_pset_zone_t *pz)
 uint_t
 zs_pset_zone_used_pct(zs_pset_zone_t *pz, int type)
 {
-	uint_t v;
+	uint_t v = 0;
 
 	switch (type) {
 	case ZS_PZ_PCT_PSET:
