@@ -28,10 +28,6 @@
  *      All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include	<sys/types.h>
 #include	"curses_inc.h"
 
@@ -47,7 +43,7 @@ wgetwstr(WINDOW *win, wchar_t *str)
 int
 wgetnwstr(WINDOW *win, wchar_t *str, int n)
 {
-	int	cpos = 0, ch;
+	int	cpos = 0, ch = 0;
 	wchar_t	*cp = str;
 	int	i = 0;
 	int	total = 0;

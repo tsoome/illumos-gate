@@ -367,8 +367,8 @@ static	void
 _updateln(int wy)
 {
 	chtype	*wcp, *scp, *wp, *sp, wc, sc;
-	int	wx, lastx, x, mtch, idch, blnkx, idcx, video_attrx,
-	    color_attrx, maxi, endns, begns, wx_sav, multi_col;
+	int	wx, lastx, x, mtch, idch, blnkx, idcx, video_attrx = 0,
+	    color_attrx = 0, maxi, endns, begns, wx_sav, multi_col = 0;
 	bool	redraw, changed, didcolor, didvideo;
 
 	redraw = (_virtscr->_firstch[wy] == _REDRAW);

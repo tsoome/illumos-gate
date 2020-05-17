@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include	<sys/types.h>
 #include	"curses_inc.h"
 
@@ -48,7 +44,7 @@
 int
 wclrtobot(WINDOW *win)
 {
-	bool	savimmed, savsync;
+	bool	savimmed = FALSE, savsync = FALSE;
 	int	cury = win->_cury;
 	short	curx = win->_curx;
 

@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include	<sys/types.h>
 #include	"curses_inc.h"
 
@@ -319,7 +315,7 @@ _mvright(int cx, int nx, int doit)
 {
 	chtype	*scp;
 	char	*mks;
-	int	nt, tx, x, stcost, iscont;
+	int	nt = 0, tx = 0, x, stcost, iscont;
 
 	if (!cursor_right && !parm_right_cursor)
 		return (LARGECOST);
@@ -393,7 +389,7 @@ _mvright(int cx, int nx, int doit)
 static int
 _mvleft(int cx, int nx, int doit)
 {
-	int	tx, nt, x, stcost;
+	int	tx = 0, nt = 0, x, stcost;
 
 	if (!cursor_left && !parm_left_cursor)
 		return (LARGECOST);

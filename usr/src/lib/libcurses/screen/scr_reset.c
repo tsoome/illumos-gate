@@ -37,8 +37,6 @@
  * contributors.
  */
 
-/*LINTLIBRARY*/
-
 #include	"curses_inc.h"
 #include	<sys/types.h>
 #include	<sys/stat.h>
@@ -75,7 +73,7 @@ int
 scr_reset(FILE *filep, int type)
 {
 	WINDOW		*win = NULL, *win1 = NULL;
-	int		*hash, y;
+	int		*hash = NULL, y;
 	char		clearit = FALSE;
 	short		magic;
 	struct	stat	statbuf;

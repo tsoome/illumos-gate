@@ -36,8 +36,6 @@
  * contributors.
  */
 
-/*LINTLIBRARY*/
-
 #include	"curses_inc.h"
 #include	<signal.h>
 #include	<unistd.h>
@@ -378,8 +376,8 @@ get_xterm_mouse(int blockpeek, int *i)
 	chtype	*inputQ = cur_term->_input_queue;		/* ??? */
 	/* LINTED */
 	chtype	*chars_onQ = (chtype *) &(cur_term->_chars_on_queue);
-	int	j, mx, my;
-	int	char1, char2, c1, c2;
+	int	j, mx = 0, my;
+	int	char1, char2 = 0, c1, c2;
 
 	/* the first character should be 0, 1, 2, or 4	*/
 

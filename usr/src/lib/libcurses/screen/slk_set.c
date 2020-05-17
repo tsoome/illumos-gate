@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include	<sys/types.h>
 #include	<string.h>
 #include	<unistd.h>
@@ -67,12 +63,12 @@ slk_set(int n, char *lab, int f)
 	/* 0-indexing internally */
 	n--;
 
+	len = 0;
 	if (lab == NULL) {
 		lab = "";
 
 	} else {
 		/* chop lengthy label */
-		/* LINTED */
 		if ((len = (int) strlen(lab)) > slklen)
 			lab[len = slklen] = '\0';
 	}

@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include	<sys/types.h>
 #include	"curses_inc.h"
 
@@ -57,7 +53,7 @@ wgetstr(WINDOW *win, char *str)
 int
 wgetnstr(WINDOW *win, char *str, int n)
 {
-	int	cpos = 0, ch;
+	int	cpos = 0, ch = 0;
 	int	nbyte = 0;
 	int	tbyte = 0;
 	int	byte[LENGTH];

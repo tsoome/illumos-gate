@@ -36,8 +36,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -235,7 +233,7 @@ void
 pr_boolean(char *infoname, char *capname, char *fullname, int value)
 {
 	int	vlen;
-	size_t	nlen;
+	size_t	nlen = 0;
 
 	if (printing == pr_cap && restrictterm &&
 	    !findcapname(capname, capbools, ncapbools))
@@ -391,7 +389,7 @@ void
 pr_number(char *infoname, char *capname, char *fullname, int value)
 {
 	int	vlen;
-	size_t	nlen;
+	size_t	nlen = 0;
 
 	if (printing == pr_cap && restrictterm &&
 	    !findcapname(capname, capnums, ncapnums))
@@ -539,9 +537,9 @@ pr_sheading(void)
 void
 pr_string(char *infoname, char *capname, char *fullname, char *value)
 {
-	char *evalue;
+	char *evalue = NULL;
 	int badcapvalue;
-	size_t nlen, vlen;
+	size_t nlen = 0, vlen;
 
 	if (printing == pr_cap) {
 		if (restrictterm && !findcapname(capname, capstrs, ncapstrs))

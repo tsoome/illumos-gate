@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 /*
  * This routine writes parts of Srcwin onto Dstwin,
  * either non-destructively (over_lay = TRUE) or destructively
@@ -84,6 +80,7 @@ copywin(WINDOW *Srcwin, WINDOW *Dstwin,
 	 * 2 - Dstwin has attributes or bkgd that must changed
 	 * on a char-by-char basis.
 	 */
+	width_bytes = 0;
 	if ((which_copy = (over_lay) ? 1 :
 	    (2 * ((Dstwin->_attrs != A_NORMAL) ||
 	    (Dstwin->_bkgd != _BLNKCHAR)))) == 0)
