@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include <sys/types.h>
 #include <stdlib.h>
 #include "curses_inc.h"
@@ -54,7 +50,7 @@ int
 start_color(void)
 {
 	short  i, j;
-	_Color *color_tbl;
+	_Color *color_tbl = NULL;
 
 #ifdef PC6300PLUS
 	struct console  con;

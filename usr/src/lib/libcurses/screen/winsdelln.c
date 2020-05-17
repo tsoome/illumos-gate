@@ -37,10 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
 #include	<sys/types.h>
 #include	<string.h>
 #include	"curses_inc.h"
@@ -57,7 +53,7 @@ winsdelln(WINDOW *win, int id)
 	int	endy, endx, to, fr, num_lines, dir;
 	chtype	*sw;
 	char	*mk;
-	bool	savimmed, savesync;
+	bool	savimmed = FALSE, savesync;
 	short	x, y, quick, *begch, *endch;
 #ifdef	_VR3_COMPAT_CODE
 	/* LINTED */
@@ -75,6 +71,8 @@ winsdelln(WINDOW *win, int id)
 	} else
 		update_ptr = NULL;
 #endif	/* _VR3_COMPAT_CODE */
+
+	y = 0;
 
 	if ((win->_cury >= win->_tmarg) && (win->_cury <= win->_bmarg))
 		endy = win->_bmarg + 1;
