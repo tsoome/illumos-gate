@@ -210,7 +210,7 @@ Pstack_iter(struct ps_prochandle *P, const prgregset_t regs,
 	prgregset_t gregs;
 	prgreg_t fp, pfp;
 	prgreg_t pc, ctf_pc;
-	int rv;
+	int rv = 0;
 
 	/*
 	 * Type definition for a structure corresponding to an IA32
