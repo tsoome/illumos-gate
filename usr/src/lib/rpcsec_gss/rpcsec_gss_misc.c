@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Copyright 1993 OpenVision Technologies, Inc., All Rights Reserved.
  *
@@ -317,12 +315,18 @@ __find_max_data_length(service, context, qop, max_tp_unit_len)
 	OM_uint32	max_input_size;
 	int		ret_val = 0;
 
-	if (service == rpc_gss_svc_integrity || service == rpc_gss_svc_default)
+	switch (service) {
+	case rpc_gss_svc_integrity:
+	case rpc_gss_svc_default:
 		conf = 0;
-	else if (service == rpc_gss_svc_privacy)
+		break;
+	case rpc_gss_svc_privacy:
 		conf = 1;
-	else if (service == rpc_gss_svc_none)
+		break;
+	case rpc_gss_svc_none:
+	default:
 		return (max_tp_unit_len);
+	}
 
 	maj_stat = gss_wrap_size_limit(&min_stat,
 		context, conf, qop,
