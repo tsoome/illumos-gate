@@ -27,8 +27,6 @@
  *
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <string.h>
 #include "dh_gssapi.h"
 
@@ -256,7 +254,7 @@ static OM_uint32
 establish_session_keys(dh_context_t dhctx, const char *remote,
 		    dh_key_set_t keys, dh_signature_t sig, dh_token_t token)
 {
-	OM_uint32 stat;
+	OM_uint32 stat = DH_SUCCESS;
 	int i, j;
 	des_block *saved_keys;
 	char *saved_sig;
