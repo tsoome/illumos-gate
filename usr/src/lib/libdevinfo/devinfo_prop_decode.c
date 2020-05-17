@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains kernel property decode routines adopted from
  * sunddi.c and ddi_impl.c. The following changes have been applied.
@@ -885,6 +883,11 @@ di_prop_decode_common(void *data, int size, int prop_type, int prom)
 
 		case DI_PROP_TYPE_BYTE:
 			nelements = size;
+			break;
+
+		default:
+			nelements = 0;
+			break;
 		}
 
 		return (nelements);
