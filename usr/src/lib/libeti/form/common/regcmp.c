@@ -86,6 +86,7 @@ libform_regcmp(char *cs1, char *cs2)
 	int cclcnt;
 	intptr_t stack[SSIZE];
 
+	lastep = NULL;
 	__sp_ = stack;
 	*__sp_ = -1;
 	__stmax = &stack[SSIZE];
