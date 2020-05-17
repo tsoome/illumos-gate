@@ -262,8 +262,8 @@ verify(State_t* state, register char* s, char* check, Sfio_t* rp)
 	char*		file;
 	int		attr;
 	int		mode;
-	int		uid;
-	int		gid;
+	int		uid = -1;
+	int		gid = -1;
 	Sfio_t*		sp;
 	struct stat	st;
 

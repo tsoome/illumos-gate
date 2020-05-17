@@ -223,8 +223,8 @@ b_chgrp(int argc, char** argv, void* context)
 	Dt_t*		map = 0;
 	int		logical = 1;
 	int		flags;
-	int		uid;
-	int		gid;
+	int		uid = NOID;
+	int		gid = NOID;
 	char*		op;
 	char*		usage;
 	char*		t;

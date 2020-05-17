@@ -220,8 +220,8 @@ visit(State_t* state, register FTSENT* ent)
 	register char*	base;
 	register int	n;
 	register int	len;
-	int		rm;
-	int		rfd;
+	int		rm = 0;
+	int		rfd = -1;
 	int		wfd;
 	int		m;
 	int		v;
@@ -662,7 +662,7 @@ b_cp(int argc, register char** argv, void* context)
 	FTS*		fts;
 	FTSENT*		ent;
 	const char*	usage;
-	int		path_resolve;
+	int		path_resolve = 0;
 	int		standard;
 	struct stat	st;
 	State_t*	state;

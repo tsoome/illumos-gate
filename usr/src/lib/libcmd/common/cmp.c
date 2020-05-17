@@ -184,7 +184,7 @@ b_cmp(int argc, register char** argv, void* context)
 	char*		e;
 	Sfio_t*		f1 = 0;
 	Sfio_t*		f2 = 0;
-	char*		file1;
+	char*		file1 = NULL;
 	char*		file2;
 	int		n;
 	off_t		o1 = 0;

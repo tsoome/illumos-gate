@@ -106,7 +106,7 @@ rm(State_t* state, register FTSENT* ent)
 {
 	register char*	path;
 	register int	n;
-	int		v;
+	int		v = 0;
 	struct stat	st;
 
 	if (ent->fts_info == FTS_NS || ent->fts_info == FTS_ERR || ent->fts_info == FTS_SLNONE)

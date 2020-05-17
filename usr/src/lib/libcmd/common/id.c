@@ -191,15 +191,15 @@ putid(Sfio_t* sp, int flags, const char* label, const char* name, long number)
 }
 
 static int
-getids(Sfio_t* sp, const char* name, register int flags)
+getids(Sfio_t* sp, const char* name, int flags)
 {
-	register struct passwd*	pw;
-	register struct group*	grp;
-	register int		i;
-	register int		j;
-	register int		k;
+	struct passwd*		pw;
+	struct group*		grp;
+	int			i;
+	int			j;
+	int			k;
 #if _lib_fsid
-	register struct fsg*	fs;
+	struct fsg*		fs;
 	const char*		fs_name;
 	int			fs_id;
 #endif
@@ -207,13 +207,16 @@ getids(Sfio_t* sp, const char* name, register int flags)
 	char*			s;
 	int			lastchar;
 	int			ngroups = 0;
-	const char*		gname;
+	const char*		gname = NULL;
 	uid_t			user;
 	uid_t			euid;
 	gid_t			group;
 	gid_t			egid;
 
 	static gid_t*		groups;
+
+	user = getuid();
+	group = getgid();
 
 	if (flags & GG_FLAG)
 	{

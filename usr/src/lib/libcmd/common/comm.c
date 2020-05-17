@@ -63,10 +63,10 @@ USAGE_LICENSE
 #define C_COMMON	4
 #define C_ALL		(C_FILE1|C_FILE2|C_COMMON)
 
-static int comm(Sfio_t *in1, Sfio_t *in2, register Sfio_t *out,register int mode)
+static int comm(Sfio_t *in1, Sfio_t *in2, Sfio_t *out, int mode)
 {
-	register char *cp1, *cp2;
-	register int n1, n2, n, comp;
+	char *cp1, *cp2;
+	int n1 = 0, n2, n, comp;
 	if(cp1 = sfgetr(in1,'\n',0))
 		n1 = sfvalue(in1);
 	if(cp2 = sfgetr(in2,'\n',0))

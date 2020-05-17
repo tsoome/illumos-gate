@@ -84,10 +84,11 @@ typedef int (*Compare_f)(const char*, const char*, size_t);
 
 static int uniq(Sfio_t *fdin, Sfio_t *fdout, int fields, int chars, int width, int mode, int* all, Compare_f compare)
 {
-	register int n, f, outsize=0, mb = mbwide();
-	register char *cp, *ep, *mp, *bufp, *outp;
-	char *orecp, *sbufp=0, *outbuff;
-	int reclen,oreclen= -1,count=0,cwidth=0,sep,next;
+	int n, f, outsize = 0, mb = mbwide();
+	char *cp = NULL, *ep, *mp, *bufp, *outp = NULL;
+	char *orecp = NULL, *sbufp = NULL, *outbuff;
+	int reclen,oreclen = -1,count = 0,cwidth = 0,sep,next;
+
 	if(mode&C_FLAG)
 		cwidth = CWIDTH+1;
 	while(1)

@@ -365,15 +365,15 @@ cutcols(Cut_t* cut, Sfio_t* fdin, Sfio_t* fdout)
 static void
 cutfields(Cut_t* cut, Sfio_t* fdin, Sfio_t* fdout)
 {
-	register unsigned char *sp = cut->space;
-	register unsigned char *cp;
-	register unsigned char *wp;
-	register int c, nfields;
-	register const int *lp = cut->list;
-	register unsigned char *copy;
-	register int nodelim, empty, inword=0;
-	register unsigned char *ep;
-	unsigned char *bp, *first;
+	unsigned char *sp = cut->space;
+	unsigned char *cp;
+	unsigned char *wp;
+	int c, nfields;
+	const int *lp = cut->list;
+	unsigned char *copy;
+	int nodelim = 0, empty, inword=0;
+	unsigned char *ep;
+	unsigned char *bp, *first = NULL;
 	int lastchar;
 	wchar_t w;
 	Sfio_t *fdtmp = 0;
