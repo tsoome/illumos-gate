@@ -91,8 +91,8 @@ dllinfo(void)
 	char*			v;
 	char*			p;
 	int			dn;
-	int			vn;
-	int			pn;
+	int			vn = 0;
+	int			pn = 0;
 	char			pat[256];
 
 	static Dllinfo_t	info;
