@@ -24,9 +24,6 @@
  * All rights reserved
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-/* LINTLIBRARY */
-
 /*
  * Convert ACL to/from permission bits
  */
@@ -39,7 +36,7 @@ acltomode(aclent_t *aclbufp, int nentries, mode_t *modep)
 {
 	aclent_t		*tp;
 	unsigned long		mode;
-	unsigned long		grpmode;
+	unsigned long		grpmode = 0;
 	unsigned long		mask;
 	int			which;
 	int			got_mask = 0;
@@ -89,9 +86,9 @@ int
 aclfrommode(aclent_t *aclbufp, int nentries, mode_t *modep)
 {
 	aclent_t		*tp;
-	aclent_t		*savp;
+	aclent_t		*savp = NULL;
 	mode_t 			mode;
-	mode_t 			grpmode;
+	mode_t 			grpmode = 0;
 	int			which;
 	int			got_mask = 0;
 

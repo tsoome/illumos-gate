@@ -177,7 +177,7 @@ aclent_printacl(acl_t *aclp)
 {
 	aclent_t *tp;
 	int aclcnt;
-	int mask;
+	int mask = 0;
 	int slot = 0;
 	char perm[4];
 	char uidp[ID_STR_MAX];
@@ -968,7 +968,7 @@ ace_acltotext(acl_t *aceaclp, int flags)
 char *
 acl_totext(acl_t *aclp, int flags)
 {
-	char *txtp;
+	char *txtp = NULL;
 
 	if (aclp == NULL)
 		return (NULL);
