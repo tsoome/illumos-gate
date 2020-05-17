@@ -92,9 +92,9 @@ struct state _res = {
 int
 res_init(void)
 {
-	register FILE *fp;
-	register char *cp, **pp;
-	register int n;
+	FILE *fp;
+	char *cp, **pp;
+	int n = 0;
 	char buf[BUFSIZ];
 	int nserv = 0;    /* number of nameserver records read from file */
 	int haveenv = 0;

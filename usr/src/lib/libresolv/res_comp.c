@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <arpa/nameser.h>
@@ -142,7 +140,7 @@ dn_comp(exp_dn, comp_dn, length, dnptrs, lastdnptr)
 {
 	register u_char *cp, *dn;
 	register int c, l;
-	u_char **cpp, **lpp, *sp, *eob;
+	u_char **cpp = NULL, **lpp = NULL, *sp, *eob;
 	u_char *msg;
 
 	dn = exp_dn;
