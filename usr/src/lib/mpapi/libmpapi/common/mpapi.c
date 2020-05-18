@@ -2897,7 +2897,7 @@ MP_STATUS MP_RegisterForObjectPropertyChanges(
     void *pCallerData,
     MP_OID pluginOid)
 {
-    MP_RegisterForObjectPropertyChangesPluginFn PassFunc;
+    MP_RegisterForObjectPropertyChangesPluginFn PassFunc = NULL;
     MP_UINT32 i;
     MP_UINT32 index;
     MP_STATUS status;
@@ -2994,7 +2994,7 @@ MP_STATUS MP_DeregisterForObjectPropertyChanges(
     MP_OBJECT_TYPE objectType,
     MP_OID pluginOid)
 {
-    MP_DeregisterForObjectPropertyChangesPluginFn PassFunc;
+    MP_DeregisterForObjectPropertyChangesPluginFn PassFunc = NULL;
     MP_UINT32 i;
     MP_UINT32 index;
     MP_STATUS status;
@@ -3090,7 +3090,7 @@ MP_STATUS MP_RegisterForObjectVisibilityChanges(
     void *pCallerData,
     MP_OID pluginOid)
 {
-    MP_RegisterForObjectVisibilityChangesPluginFn PassFunc;
+    MP_RegisterForObjectVisibilityChangesPluginFn PassFunc = NULL;
     MP_UINT32 i;
     MP_UINT32 index;
     MP_STATUS status;
