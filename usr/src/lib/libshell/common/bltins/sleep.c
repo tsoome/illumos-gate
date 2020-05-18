@@ -44,9 +44,9 @@
 
 int	b_sleep(register int argc,char *argv[],void *extra)
 {
-	register char *cp;
-	register double d=0;
-	register Shell_t *shp = ((Shbltin_t*)extra)->shp;
+	char *cp;
+	double d=0;
+	Shell_t *shp = ((Shbltin_t*)extra)->shp;
 	int sflag=0;
 	time_t tloc = 0;
 	char *last;
@@ -70,7 +70,7 @@ int	b_sleep(register int argc,char *argv[],void *extra)
 		d = strtod(cp, &last);
 		if(*last)
 		{
-			Time_t now,ns;
+			Time_t now,ns = 0;
 			char* pp;
 			now = TMX_NOW;
 			if(*cp == 'P' || *cp == 'p')

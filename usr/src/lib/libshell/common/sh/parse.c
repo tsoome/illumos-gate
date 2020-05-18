@@ -297,7 +297,8 @@ static Shnode_t *getanode(Lex_t *lp, struct argnod *ap)
  */
 static Shnode_t	*makelist(Lex_t *lexp, int type, Shnode_t *l, Shnode_t *r)
 {
-	register Shnode_t	*t;
+	Shnode_t	*t = NULL;
+
 	if(!l || !r)
 		sh_syntax(lexp);
 	else
@@ -878,9 +879,9 @@ static Shnode_t *funct(Lex_t *lexp)
  */
 static struct argnod *assign(Lex_t *lexp, register struct argnod *ap, int tdef)
 {
-	register int n;
-	register Shnode_t *t, **tp;
-	register struct comnod *ac;
+	int n;
+	Shnode_t *t, **tp;
+	struct comnod *ac = NULL;
 	Stk_t	*stkp = lexp->sh->stk;
 	int array=0;
 	Namval_t *np;

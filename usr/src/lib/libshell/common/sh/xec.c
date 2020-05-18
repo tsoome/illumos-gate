@@ -2133,9 +2133,9 @@ int sh_exec(register const Shnode_t *t, int flags)
 			}
 			else
 			{
-				register int traceon=0;
-				register char *right;
-				register char *trap;
+				int traceon=0;
+				char *right = NULL;
+				char *trap;
 				char *argv[6];
 				n = type>>TSHIFT;
 				left = sh_macpat(shp,&(t->lst.lstlef->arg),OPTIMIZE);
@@ -2168,7 +2168,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 				}
 				else if(type&TBINARY)
 				{
-					char *op;
+					char *op = NULL;
 					int pattern = 0;
 					if(trap || traceon)
 						op = (char*)(shtab_testops+(n&037)-1)->sh_name;
@@ -2552,16 +2552,16 @@ static void  local_exports(register Namval_t *np, void *data)
  */
 int sh_funscope(int argn, char *argv[],int(*fun)(void*),void *arg,int execflg)
 {
-	register char		*trap;
-	register int		nsig;
-	register Shell_t	*shp =  &sh;
+	char		*trap;
+	int		nsig;
+	Shell_t	*shp =  &sh;
 	struct dolnod		*argsav=0,*saveargfor;
 	struct sh_scoped	savst, *prevscope = shp->st.self;
 	struct argnod		*envlist=0;
 	int			jmpval;
 	volatile int		r = 0;
 	char 			*savstak;
-	struct funenv		*fp;
+	struct funenv		*fp = NULL;
 	struct checkpt		buff;
 	Namval_t		*nspace = shp->namespace;
 	Dt_t			*last_root = shp->last_root;

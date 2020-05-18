@@ -164,9 +164,9 @@ int	b_trap(int argc,char *argv[],void *extra)
 
 int	b_kill(int argc,char *argv[],void *extra)
 {
-	register char *signame;
-	register int sig=SIGTERM, flag=0, n;
-	register Shell_t *shp = ((Shbltin_t*)extra)->shp;
+	char *signame = NULL;
+	int sig=SIGTERM, flag=0, n;
+	Shell_t *shp = ((Shbltin_t*)extra)->shp;
 	NOT_USED(argc);
 	while((n = optget(argv,sh_optkill))) switch(n)
 	{

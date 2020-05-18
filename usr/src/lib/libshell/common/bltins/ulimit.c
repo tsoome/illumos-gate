@@ -67,9 +67,9 @@ static int infof(Opt_t* op, Sfio_t* sp, const char* s, Optdisc_t* dp)
 
 int	b_ulimit(int argc,char *argv[],void *extra)
 {
-	register char *limit;
-	register int mode=0, n;
-	register unsigned long hit = 0;
+	char *limit;
+	int mode=0, n;
+	unsigned long hit = 0;
 	Shell_t *shp = ((Shbltin_t*)extra)->shp;
 #ifdef _lib_getrlimit
 	struct rlimit rlp;
@@ -77,7 +77,7 @@ int	b_ulimit(int argc,char *argv[],void *extra)
 	const Limit_t* tp;
 	char* conf;
 	int label, unit, nosupport;
-	rlim_t i;
+	rlim_t i = 0;
 	char tmp[32];
         Optdisc_t disc;
         memset(&disc, 0, sizeof(disc));

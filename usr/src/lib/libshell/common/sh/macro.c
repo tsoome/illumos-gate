@@ -1028,15 +1028,15 @@ static char *nextname(Mac_t *mp,const char *prefix, int len)
  */
 static int varsub(Mac_t *mp)
 {
-	register int	c;
-	register int	type=0; /* M_xxx */
-	register char	*v,*argp=0;
-	register Namval_t	*np = NIL(Namval_t*);
-	register int 	dolg=0, mode=0;
+	int	c;
+	int	type=0; /* M_xxx */
+	char	*v = NULL, *argp = NULL;
+	Namval_t	*np = NIL(Namval_t*);
+	int 	dolg=0, mode=0;
 	Lex_t		*lp = (Lex_t*)mp->shp->lex_context;
 	Namarr_t	*ap=0;
 	int		dolmax=0, vsize= -1, offset= -1, nulflg, replen=0, bysub=0;
-	char		idbuff[3], *id = idbuff, *pattern=0, *repstr, *arrmax=0;
+	char		idbuff[3], *id = idbuff, *pattern=NULL, *repstr = NULL, *arrmax = NULL;
 	int		var=1,addsub=0,oldpat=mp->pattern,idnum=0,flag=0,d;
 	Stk_t		*stkp = mp->shp->stk;
 retry1:
@@ -1675,9 +1675,10 @@ retry1:
 retry2:
 	if(v && (!nulflg || *v ) && c!='+')
 	{
-		register int d = (mode=='@'?' ':mp->ifs);
-		int match[2*(MATCH_MAX+1)], nmatch, nmatch_prev, vsize_last;
-		char *vlast;
+		int d = (mode=='@'?' ':mp->ifs);
+		int match[2*(MATCH_MAX+1)], nmatch, nmatch_prev, vsize_last = 0;
+		char *vlast = NULL;
+
 		while(1)
 		{
 			if(!v)
@@ -1976,8 +1977,8 @@ static void comsubst(Mac_t *mp,register Shnode_t* t, int type)
 		if(t->tre.tretyp==0 && !t->com.comarg && !t->com.comset)
 		{
 			/* special case $(<file) and $(<#file) */
-			register int fd;
-			int r;
+			int fd;
+			int r = 0;
 			struct checkpt buff;
 			struct ionod *ip=0;
 			sh_pushcontext(&buff,SH_JMPIO);
@@ -2574,8 +2575,9 @@ static void mac_error(Namval_t *np)
  */ 
 static char *mac_getstring(char *pattern)
 {
-	register char	*cp=pattern, *rep=0, *dp;
-	register int	c;
+	char	*cp=pattern, *rep=0, *dp = NULL;
+	int	c;
+
 	while(c = *cp++)
 	{
 		if(c==ESCAPE && (!rep || (*cp && strchr("&|()[]*?",*cp))))

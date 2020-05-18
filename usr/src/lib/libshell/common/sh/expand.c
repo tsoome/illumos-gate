@@ -268,15 +268,15 @@ int path_generate(struct argnod *todo, struct argnod **arghead)
 	return count satisfying count>=1;
 @*/
 {
-	register char *cp;
-	register int brace;
-	register struct argnod *ap;
+	char *cp;
+	int brace;
+	struct argnod *ap;
 	struct argnod *top = 0;
 	struct argnod *apin;
-	char *pat, *rescan;
+	char *pat = NULL, *rescan;
 	char *format;
 	char comma, range=0;
-	int first, last, incr, count = 0;
+	int first = 0, last = 0, incr = 0, count = 0;
 	char tmp[32], end[1];
 	todo->argchn.ap = 0;
 again:

@@ -1117,9 +1117,9 @@ void nv_delete(Namval_t* np, Dt_t *root, int flags)
 Namval_t *nv_open(const char *name, Dt_t *root, int flags)
 {
 	Shell_t			*shp = &sh;
-	register char		*cp=(char*)name;
-	register int		c;
-	register Namval_t	*np;
+	char			*cp=(char*)name;
+	int			c;
+	Namval_t		*np = NULL;
 	Namfun_t		fun;
 	int			append=0;
 	const char		*msg = e_varname;
@@ -1565,8 +1565,8 @@ void nv_putval(register Namval_t *np, const char *string, int flags)
 	}
 	else
 	{
-		const char *tofree=0;
-		int offset;
+		const char *tofree = NULL;
+		int offset = 0;
 #if _lib_pathnative
 		char buff[PATH_MAX];
 #endif /* _lib_pathnative */
@@ -1792,11 +1792,11 @@ static void rightjust(char *str, int size, int fill)
 
     static int ja_size(char *str,int size,int type)
     {
-	register char *cp = str;
-	register int c, n=size;
-	register int outsize;
-	register char *oldcp=cp;
-	int oldn;
+	char *cp = str;
+	int c = 0, n=size;
+	int outsize;
+	char *oldcp=cp;
+	int oldn = n;
 	wchar_t w;
 	while(*cp)
 	{

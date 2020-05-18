@@ -186,7 +186,7 @@ static int enum_create(int argc, char** argv, void* context)
 int b_enum(int argc, char** argv, void* context)
 #endif
 {
-	int			sz,i,n,iflag = 0;
+	int			sz = 0,i,n,iflag = 0;
 	Namval_t		*np, *tp;
 	Namarr_t		*ap;
 	char			*cp,*sp;

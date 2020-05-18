@@ -960,8 +960,8 @@ static char *io_usename(char *name, int *perm, int mode)
 int	sh_redirect(Shell_t *shp,struct ionod *iop, int flag)
 {
 	Sfoff_t off; 
-	register char *fname;
-	register int 	fd, iof;
+	char *fname;
+	int 	fd = -1, iof;
 	const char *message = e_open;
 	int o_mode;		/* mode flag for open */
 	static char io_op[7];	/* used for -x trace info */

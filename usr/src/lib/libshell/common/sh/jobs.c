@@ -243,8 +243,8 @@ static struct jobsave *jobsave_create(pid_t pid)
  */
 int job_reap(register int sig)
 {
-	register pid_t pid;
-	register struct process *pw;
+	pid_t pid;
+	struct process *pw = NULL;
 	struct process *px;
 	register int flags;
 	struct jobsave *jp;
@@ -950,8 +950,8 @@ static struct process *job_bystring(register char *ajob)
 
 int job_kill(register struct process *pw,register int sig)
 {
-	register pid_t pid;
-	register int r;
+	pid_t pid;
+	int r = -1;
 	const char *msg;
 #ifdef SIGTSTP
 	int stopsig = (sig==SIGSTOP||sig==SIGTSTP||sig==SIGTTIN||sig==SIGTTOU);

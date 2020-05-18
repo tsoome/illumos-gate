@@ -501,6 +501,9 @@ static int expr(register struct vars *vp,register int precedence)
 	const char	*pos;
 	Sfdouble_t	d;
 
+	assignop.value = 0;
+	assignop.fun = 0;
+	assignop.flag = 0;
 	lvalue.value = 0;
 	lvalue.fun = 0;
 again:

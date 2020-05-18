@@ -227,9 +227,9 @@ static pid_t path_xargs(const char *path, char *argv[],char *const envp[], int s
  */
 char *path_pwd(int flag)
 {
-	register char *cp;
-	register char *dfault = (char*)e_dot;
-	register int count = 0;
+	char *cp = NULL;
+	char *dfault = (char*)e_dot;
+	int count = 0;
 	Shell_t *shp = &sh;
 	if(shp->pwd)
 		return((char*)shp->pwd);

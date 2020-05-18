@@ -138,7 +138,7 @@ int hist_expand(const char *ln, char **xp)
 	int	off,	/* stack offset */
 		q,	/* quotation flags */
 		p,	/* flag */
-		c,	/* current char */
+		c = 0,	/* current char */
 		flag=0;	/* HIST_* flags */
 	Sfoff_t	n,	/* history line number, counter, etc. */
 		i,	/* counter */

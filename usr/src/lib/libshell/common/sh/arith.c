@@ -113,14 +113,15 @@ static Namval_t *scope(Shell_t *shp,register Namval_t *np,register struct lval *
 static Sfdouble_t arith(const char **ptr, struct lval *lvalue, int type, Sfdouble_t n)
 {
 	Shell_t		*shp = &sh;
-	register Sfdouble_t r= 0;
+	Sfdouble_t r= 0;
 	char *str = (char*)*ptr;
-	register char *cp;
+	char *cp;
+
 	switch(type)
 	{
 	    case ASSIGN:
 	    {
-		register Namval_t *np = (Namval_t*)(lvalue->value);
+		Namval_t *np = (Namval_t*)(lvalue->value);
 		np = scope(shp,np,lvalue,1);
 		nv_putval(np, (char*)&n, NV_LDOUBLE);
 		r=nv_getnum(np);
@@ -137,7 +138,7 @@ static Sfdouble_t arith(const char **ptr, struct lval *lvalue, int type, Sfdoubl
 		c = mbchar(str);
 		if(isaletter(c))
 		{
-			register Namval_t *np;
+			Namval_t *np = NULL;
 			int dot=0;
 			while(1)
 			{
