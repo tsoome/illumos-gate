@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <link.h>
 #include <dlfcn.h>
 #include <sys/types.h>
@@ -234,7 +232,7 @@ la_version(uint_t version)
 	}
 
 	if ((str = checkenv("APPTRACE_OUTPUT")) != NULL) {
-		int fd, newfd, targetfd, lowerlimit;
+		int fd, newfd = -1, targetfd, lowerlimit;
 		struct rlimit rl;
 
 		if (getrlimit(RLIMIT_NOFILE, &rl) == -1) {
