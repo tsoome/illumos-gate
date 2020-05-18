@@ -1169,7 +1169,7 @@ _walk_template_instances(scf_service_t *svc, scf_instance_t *inst,
 {
 	scf_instance_t *tmpl_inst = NULL;
 	scf_handle_t *h;
-	int ret;
+	int ret = SCF_WALK_DONE;
 	char *tg = NULL;
 
 	assert(svc != NULL || inst != NULL);
@@ -1476,7 +1476,7 @@ _find_template_pg_match(scf_service_t *svc, scf_instance_t *inst,
     const scf_snapshot_t *snap, const char *pg_name, const char *pg_type,
     const char *target, char **tmpl_pg_name)
 {
-	int ret, r;
+	int ret = SCF_WALK_ERROR, r;
 	scf_propertygroup_t *pg = NULL;
 	scf_handle_t *h;
 	scf_iter_t *iter;
@@ -2063,7 +2063,7 @@ static scf_iter_t *
 _get_svc_or_inst_iter(scf_handle_t *h, scf_pg_tmpl_t *t)
 {
 	scf_iter_t *iter;
-	int ret;
+	int ret = 0;
 
 	assert(t->pt_svc != NULL || t->pt_inst != NULL);
 	assert(t->pt_svc == NULL || t->pt_inst == NULL);
@@ -2715,7 +2715,7 @@ scf_tmpl_iter_props(scf_pg_tmpl_t *t, scf_prop_tmpl_t *pt, int flags)
 	scf_prop_tmpl_t *prop_tmpl;
 	char *pg_pat;
 	char *pg_name = NULL;
-	int err;
+	int err = 0;
 	int ret;
 	ssize_t size = scf_limit(SCF_LIMIT_MAX_NAME_LENGTH) + 1;
 	uint8_t required;

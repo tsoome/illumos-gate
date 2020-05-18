@@ -5811,7 +5811,7 @@ scf_pg_to_fmri(const scf_propertygroup_t *pg, char *out, size_t sz)
 	struct rep_protocol_integer_response response;
 
 	char tmp[REP_PROTOCOL_NAME_LEN];
-	ssize_t len, r;
+	ssize_t len = 0, r;
 
 	(void) pthread_mutex_lock(&h->rh_lock);
 	request.rpr_request = REP_PROTOCOL_ENTITY_PARENT_TYPE;

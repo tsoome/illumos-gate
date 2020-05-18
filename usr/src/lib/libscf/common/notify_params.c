@@ -947,7 +947,7 @@ values_get(scf_property_t *prop, scf_values_t *v)
 	ssize_t		sz = scf_limit(SCF_LIMIT_MAX_VALUE_LENGTH) + 1;
 	char		*buf = malloc(sz);
 	void **p;
-	int err, elem_sz, count, cursz;
+	int err, elem_sz, count = 0, cursz;
 	int r = SCF_FAILED;
 
 	assert(v != NULL);
