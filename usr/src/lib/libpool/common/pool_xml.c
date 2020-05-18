@@ -1365,7 +1365,7 @@ pool_xml_elem_wrap(xmlNodePtr node, pool_elem_class_t class,
     pool_component_elem_class_t comp_class)
 {
 	pool_conf_t *conf = node->doc->_private;
-	pool_xml_elem_t *elem;
+	pool_xml_elem_t *elem = NULL;
 	/* Need to do some messing about to support SubTypes */
 	switch (class) {
 	case PEC_SYSTEM:
