@@ -572,7 +572,7 @@ smp_action_xalloc(smp_function_t fn, smp_target_t *tp,
 	const smp_function_def_t *dp = NULL;
 	smp_action_t *ap;
 	uint_t cap;
-	size_t rqlen, len;
+	size_t rqlen = 0, len;
 	uint8_t *alloc;
 	int i;
 
