@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Miscellaneous Utilities
  *
@@ -218,7 +216,7 @@ void slp_add2list(const char *item, char **list, SLPBoolean check_onlist) {
  * the caller's stack.
  */
 void slp_list_subtract(const char *item, char **list) {
-	char *p, *s;
+	char *p, *s = NULL;
 
 	if (!*list || !slp_onlist(item, *list))
 		return;
@@ -245,7 +243,7 @@ void slp_list_subtract(const char *item, char **list) {
 	if (!p) {
 		/* last one on list; just chop it off */
 		s--;
-		*s = 0;
+		*s = '\0';
 		return;
 	}
 	/* either first on list, or somewhere in the middle */

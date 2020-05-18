@@ -648,7 +648,7 @@ static SLPError UnpackSrvAck(char *reply, SLPError *ans) {
 static SLPError reg_impl(slp_handle_impl_t *hp, struct reg_msg *msg,
 				void *cookie, SLPRegReport cb) {
 	char *reply = NULL;
-	SLPError err, call_err;
+	SLPError err = SLP_OK, call_err;
 
 	if (hp->cancel)
 		goto transaction_complete;

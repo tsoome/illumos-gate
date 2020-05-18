@@ -192,7 +192,7 @@ void slp_uc_udp_send(slp_handle_impl_t *hp, slp_target_t *target,
 	struct sockaddr_in *sin;
 	struct msghdr msg[1];
 	char header[SLP_DEFAULT_SENDMTU];
-	int sockfd;
+	int sockfd = -1;
 	size_t mtu;
 	SLPBoolean use_tcp;
 	struct pollfd pfd[1];
