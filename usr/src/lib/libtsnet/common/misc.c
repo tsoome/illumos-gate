@@ -182,7 +182,7 @@ boolean_t
 rtsa_keyword(const char *options, struct rtsa_s *sp, int *errp, char **errstrp)
 {
 	const char *valptr, *nxtopt;
-	uint32_t mask = 0, doi;
+	uint32_t mask = 0, doi = 0;
 	int key;
 	m_label_t *min_sl = NULL, *max_sl = NULL;
 	char attrbuf[MAX_ATTR_LEN];
