@@ -144,6 +144,7 @@ ses_build_snap_skel(ses_snap_t *sp)
 	int err;
 	uint64_t idx, eidx;
 
+	np = NULL;
 	pp = ses_snap_find_page(sp, SES2_DIAGPAGE_CONFIG, B_FALSE);
 	if (pp == NULL)
 		return (ses_error(ESES_BAD_RESPONSE, "target does not support "

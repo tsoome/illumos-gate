@@ -267,7 +267,7 @@ smp_plugin_load_dir(smp_target_t *tp, const char *pluginroot)
 	char path[PATH_MAX];
 	DIR *dirp;
 	struct dirent64 *dp;
-	char *c_vendor, *vendor, *product, *revision;
+	char *c_vendor = NULL, *vendor, *product, *revision;
 	char isa[257];
 
 	(void) snprintf(path, sizeof (path), "%s/%s",
