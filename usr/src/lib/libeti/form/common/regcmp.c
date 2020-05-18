@@ -32,8 +32,6 @@
  * Copyright (c) 2018, Joyent, Inc.
  */
 
-/*LINTLIBRARY*/
-
 #include <sys/types.h>
 #include <stdlib.h>
 #include "utility.h"
@@ -71,7 +69,7 @@
 
 intptr_t	*__sp_;
 intptr_t	*__stmax;
-int	__i_size;
+extern int	__i_size;
 
 /*ARGSUSED2*/
 char *
