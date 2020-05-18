@@ -478,7 +478,7 @@ ipmi_sdr_t *
 ipmi_sdr_get(ipmi_handle_t *ihp, uint16_t id, uint16_t *next)
 {
 	uint8_t offset = IPMI_SDR_HDR_SZ, count = 0, chunksz = 16, sdr_sz;
-	ipmi_cmd_t cmd, *rsp;
+	ipmi_cmd_t cmd, *rsp = NULL;
 	ipmi_cmd_get_sdr_t req;
 	ipmi_sdr_t *sdr;
 	int i = 0;
