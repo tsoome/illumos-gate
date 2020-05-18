@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * These functions implement the process of commitment for a pool
  * configuration. This process can be described as taking instructions
@@ -927,7 +925,7 @@ int
 pset_allocate_imp(pool_resource_t **res, uint_t nelem)
 {
 	res_info_t *res_info;
-	res_info_t *default_res_info;
+	res_info_t *default_res_info = NULL;
 	const pool_resource_t *default_res = NULL;
 	uint64_t tot_resources = 0;	/* total count of resources */
 	uint64_t tot_min = 0;		/* total of all resource set mins */
