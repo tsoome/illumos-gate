@@ -73,6 +73,9 @@ static topo_modinfo_t	x86pi_modinfo =
  */
 int x86pi_smbios = 0;
 
+int fac_done;
+smbs_cnt_t stypes[SMB_TYPE_OEM_HI];
+
 /*
  * Called by libtopo when the topo module is loaded.
  */
