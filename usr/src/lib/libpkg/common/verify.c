@@ -388,7 +388,7 @@ averify(int fix, char *ftype, char *path, struct ainfo *ainfo)
 	struct passwd	*pwd;
 	int		n;
 	int		setval;
-	int		uid, gid;
+	int		uid = -1, gid = -1;
 	int		dochown;
 	int		retcode;
 	int		statError = 0;
