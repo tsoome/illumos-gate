@@ -209,7 +209,7 @@ static void
 set_ld_error( int err, char *matched, char *errmsg, void *dummy )
 {
         struct nsldapi_ldap_error *le;
-        void *tsd;
+        void *tsd = NULL;
 
         le = pthread_getspecific( nsldapi_key );
 

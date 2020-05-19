@@ -274,12 +274,12 @@ wait4msg( LDAP *ld, int msgid, int all, int unlock_permitted,
 	int		rc;
 	struct timeval	tv, *tvp;
 #ifdef _SOLARIS_SDK
-	hrtime_t	start_time = 0, tmp_time, tv_time;
+	hrtime_t	start_time = 0, tmp_time, tv_time = 0;
 #else
 	long		start_time = 0, tmp_time;
 #endif
 	LDAPConn	*lc, *nextlc;
-	LDAPRequest	*lr;
+	LDAPRequest	*lr = NULL;
 
 #ifdef LDAP_DEBUG
 	if ( timeout == NULL ) {

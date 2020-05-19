@@ -3,8 +3,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * The contents of this file are subject to the Netscape Public License
@@ -561,7 +559,7 @@ nsldapi_parse_result( LDAP *ld, int msgtype, BerElement *rber, int *errcodep,
 {
 	BerElement	ber;
 	ber_len_t	len;
-	int		berrc, err, errcode;
+	int		berrc, err, errcode = 0;
 	ber_int_t	along;
 	char		*m, *e;
 
