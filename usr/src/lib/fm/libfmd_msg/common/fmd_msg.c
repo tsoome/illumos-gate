@@ -1367,7 +1367,7 @@ static char *
 fmd_msg_getitem(fmd_msg_hdl_t *h,
     const char *locale, nvlist_t *nvl, const char *code, fmd_msg_item_t item)
 {
-	char *old_b, *old_c;
+	char *old_b = old_b, *old_c;
 	char *dict, *key, *p, *s;
 	size_t len;
 	int err;
@@ -1481,7 +1481,7 @@ char *
 fmd_msg_gettext_key(fmd_msg_hdl_t *h,
     const char *locale, const char *dict, const char *key)
 {
-	char *old_b, *old_c, *p, *s;
+	char *old_b = NULL, *old_c, *p, *s;
 
 	fmd_msg_lock();
 
@@ -1542,7 +1542,7 @@ static char *
 fmd_msg_gettext(fmd_msg_hdl_t *h,
     const char *locale, nvlist_t *nvl, const char *code)
 {
-	char *old_b, *old_c;
+	char *old_b = NULL, *old_c;
 	char *dict, *key, *p, *s;
 	size_t len;
 	int err;

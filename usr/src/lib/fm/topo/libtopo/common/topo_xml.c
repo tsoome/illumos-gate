@@ -215,7 +215,7 @@ static int
 xlate_common(topo_mod_t *mp, xmlNodePtr xn, topo_type_t ptype, nvlist_t *nvl,
     const char *name)
 {
-	int rv;
+	int rv = 0;
 	uint64_t ui;
 	double dbl;
 	uint_t i = 0, nelems = 0;
@@ -1170,7 +1170,7 @@ static int
 pad_process(topo_mod_t *mp, tf_rdata_t *rd, xmlNodePtr pxn, tnode_t *ptn,
     tf_pad_t **rpad)
 {
-	xmlNodePtr cn, gcn, psn, ecn, target;
+	xmlNodePtr cn, gcn, psn, ecn = NULL, target;
 	xmlNodePtr def_set = NULL;
 	tnode_t *ct;
 	tf_pad_t *new = *rpad;

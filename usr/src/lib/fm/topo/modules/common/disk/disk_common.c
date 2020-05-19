@@ -1149,7 +1149,7 @@ disk_status(topo_mod_t *mod, tnode_t *nodep, topo_version_t vers,
 {
 	disk_status_t	*dsp;
 	char		*devpath, *fullpath;
-	size_t		pathlen;
+	size_t		pathlen = 0;
 	nvlist_t	*status;
 	int		err;
 

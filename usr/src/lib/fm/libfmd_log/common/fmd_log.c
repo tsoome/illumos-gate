@@ -198,7 +198,7 @@ fmd_log_load_xref(fmd_log_t *lp, uint_t iflags,
 {
 	ea_object_t *obj;
 	fmd_log_t *xlp;
-	dev_t dev;
+	dev_t dev = NODEV;
 
 	off64_t off = (off64_t)-1L;
 	major_t maj = (major_t)-1L;

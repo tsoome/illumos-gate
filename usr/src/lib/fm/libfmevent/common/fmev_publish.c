@@ -471,15 +471,13 @@ _i_fmev_publish(
 	if ((rc = vrfy(&ruleset, &class, &subclass, &pri)) != FMEV_OK)
 		return (rc);
 
-	if (ntuples != 0)
-		va_start(ap, ntuples);
+	va_start(ap, ntuples);
 
 	rc = do_publish(file, func, line,
 	    ruleset, class, subclass,
 	    pri, NULL, ntuples, ap);
 
-	if (ntuples != 0)
-		va_end(ap);
+	va_end(ap);
 
 	return (rc);
 }
@@ -498,15 +496,13 @@ _fmev_publish(const char *class, const char *subclass, fmev_pri_t pri,
 	if ((rc = vrfy(NULL, &class, &subclass, &pri)) != FMEV_OK)
 		return (rc);
 
-	if (ntuples != 0)
-		va_start(ap, ntuples);
+	va_start(ap, ntuples);
 
 	rc = do_publish(NULL, NULL, -1,
 	    FMEV_RULESET_DEFAULT, class, subclass,
 	    pri, NULL, ntuples, ap);
 
-	if (ntuples != 0)
-		va_end(ap);
+	va_end(ap);
 
 	return (rc);
 }
@@ -521,15 +517,13 @@ _fmev_rspublish(const char *ruleset, const char *class, const char *subclass,
 	if ((rc = vrfy(&ruleset, &class, &subclass, &pri)) != FMEV_OK)
 		return (rc);
 
-	if (ntuples != 0)
-		va_start(ap, ntuples);
+	va_start(ap, ntuples);
 
 	rc = do_publish(NULL, NULL, -1,
 	    ruleset, class, subclass,
 	    pri, NULL, ntuples, ap);
 
-	if (ntuples != 0)
-		va_end(ap);
+	va_end(ap);
 
 	return (rc);
 }

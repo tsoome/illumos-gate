@@ -137,7 +137,7 @@ int
 topo_sensor_create_temp_sensor(topo_mod_t *mod, tnode_t *pnode,
     const char *path, const char *fname)
 {
-	int fd, ret, err;
+	int fd, ret = 0, err;
 	sensor_ioctl_kind_t sik;
 	sensor_ioctl_temperature_t temp;
 	tnode_t *fnode = NULL;

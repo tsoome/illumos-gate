@@ -451,6 +451,10 @@ ipmi_check_entity(ipmi_handle_t *ihp, ipmi_entity_t *ep, void *data)
 	case IPMI_ET_FAN:
 		labelname = "FAN";
 		break;
+
+	default:
+		labelname = "UNKNOWN";
+		break;
 	}
 
 	len = strlen(label);
