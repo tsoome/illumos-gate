@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -1077,7 +1075,8 @@ Java_org_opensolaris_os_dtrace_LocalConsumer__1checkProgramEnabling(JNIEnv *env,
 	itr = uu_list_walk_start(jc.dtjj_consumer->dtjc_program_list, 0);
 	while ((p = uu_list_walk_next(itr)) != NULL) {
 		if (!p->dtjp_enabled) {
-			const char *type;
+			const char *type = NULL;
+
 			switch (p->dtjp_type) {
 			case DTJ_PROGRAM_STRING:
 				type = "description";
