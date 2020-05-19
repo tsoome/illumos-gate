@@ -127,7 +127,7 @@ dapli_tavor_wrid_find_match(dapls_tavor_workq_hdr_t *wq, tavor_hw_cqe_t *cqe)
 	dapls_tavor_wrid_list_hdr_t	*container;
 	uint32_t		wqeaddr_size;
 	uint32_t		head, tail, size;
-	int			found = 0, last_container;
+	int			found = 0, last_container = 0;
 
 	/* dapl_os_assert(MUTEX_HELD(&wq->wq_wrid_lock)); */
 
