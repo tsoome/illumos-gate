@@ -443,7 +443,7 @@ s10_sigaction(sysret_t *rval,
 	struct sigaction sigact, osigact;
 	struct sigaction *sigactp, *osigactp;
 	int err, nativesig;
-	void (*handler)();
+	void (*handler)() = NULL;
 
 	if ((nativesig = s10sig_to_native(sig)) < 0) {
 		(void) B_TRUSS_POINT_3(rval, SYS_sigaction, EINVAL,
