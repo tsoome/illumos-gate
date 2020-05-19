@@ -5511,7 +5511,7 @@ zonecfg_get_privset(zone_dochandle_t handle, priv_set_t *privs,
 	char *cp, *limitpriv = NULL;
 	int err, limitlen;
 	zone_iptype_t iptype;
-	const char *curr_iptype;
+	const char *curr_iptype = NULL;
 
 	/*
 	 * Attempt to lookup the "limitpriv" property.  If it does not
