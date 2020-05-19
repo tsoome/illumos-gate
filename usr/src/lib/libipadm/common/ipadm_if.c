@@ -193,7 +193,7 @@ i_ipadm_persist_if_info(ipadm_handle_t iph, const char *ifname,
 	ipadm_status_t		status = IPADM_SUCCESS;
 	ipmgmt_getif_arg_t	getif;
 	ipmgmt_getif_rval_t	*rvalp;
-	ipadm_if_info_t		*ifp, *curr, *prev = NULL;
+	ipadm_if_info_t		*ifp, *curr = NULL, *prev = NULL;
 	int			i = 0, err = 0;
 
 	bzero(&getif, sizeof (getif));
@@ -687,7 +687,7 @@ i_ipadm_plumb_if(ipadm_handle_t iph, char *ifname, sa_family_t af,
 	boolean_t	is_persistent =
 	    ((ipadm_flags & IPADM_OPT_PERSIST) != 0);
 	uint32_t	dlflags;
-	dladm_status_t	dlstatus;
+	dladm_status_t	dlstatus = DLADM_STATUS_OK;
 
 	if (iph->iph_dlh != NULL) {
 		dlstatus = dladm_name2info(iph->iph_dlh, ifname, &linkid,
