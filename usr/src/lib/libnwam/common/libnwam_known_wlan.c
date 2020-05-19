@@ -227,7 +227,7 @@ nwam_walk_known_wlans(int(*cb)(nwam_known_wlan_handle_t, void *), void *data,
 		uint64_t iflags = flags &~
 		    NWAM_FLAG_KNOWN_WLAN_WALK_PRIORITY_ORDER;
 		uint64_t minpriority;
-		int errval, i, j, minindex;
+		int errval, i, j, minindex = 0;
 
 		if (nwam_walk_known_wlans(get_wlans_cb, &wil, iflags, &errval)
 		    != NWAM_SUCCESS) {
