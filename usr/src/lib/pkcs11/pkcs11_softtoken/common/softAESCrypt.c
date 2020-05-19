@@ -1523,7 +1523,7 @@ soft_aes_sign_verify_common(soft_session_t *session_p, CK_BYTE_PTR pData,
     boolean_t sign_op, boolean_t Final)
 {
 	soft_aes_sign_ctx_t	*soft_aes_ctx_sign_verify;
-	CK_RV			rv;
+	CK_RV			rv = CKR_OK;
 	CK_BYTE			*pEncrypted = NULL;
 	CK_ULONG		ulEncryptedLen = AES_BLOCK_LEN;
 	CK_BYTE			last_block[AES_BLOCK_LEN];

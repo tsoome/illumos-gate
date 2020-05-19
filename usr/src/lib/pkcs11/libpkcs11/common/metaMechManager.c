@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Mechanism Manager - centralized knowledge of mechanisms.
  *
@@ -504,7 +502,7 @@ meta_mechManager_allocmechs(CK_MECHANISM_TYPE *new_mechs,
 {
 	CK_RV rv = CKR_OK;
 	unsigned long i, index = 0;
-	boolean_t found;
+	boolean_t found = B_FALSE;
 
 	/* The optimistic assumption is that the mech is already present. */
 	(void) pthread_rwlock_rdlock(&mechlist_lock);

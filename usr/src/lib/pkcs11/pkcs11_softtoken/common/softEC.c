@@ -129,7 +129,7 @@ static void
 soft_genECkey_set_attribute(soft_object_t *key, biginteger_t *bi,
     CK_ATTRIBUTE_TYPE type)
 {
-	biginteger_t *dst;
+	biginteger_t *dst = NULL;
 
 	switch (type) {
 	case CKA_VALUE:
@@ -220,7 +220,7 @@ soft_ec_key_derive(soft_object_t *basekey, soft_object_t *secretkey,
 	uint32_t	value_len = sizeof (value);
 	uchar_t		params[EC_MAX_OID_LEN];
 	uint32_t	params_len = sizeof (params);
-	uint32_t	keylen;
+	uint32_t	keylen = 0;
 	ECParams	*ecparams;
 	SECKEYECParams	params_item;
 	SECItem		public_value_item, private_value_item, secret_item;

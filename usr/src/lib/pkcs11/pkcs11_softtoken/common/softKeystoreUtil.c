@@ -1433,7 +1433,7 @@ soft_keystore_setpin(uchar_t *oldpin, uchar_t *newpin, boolean_t lock_held)
 	int fd, tmp_ks_fd, version, ret_val = -1;
 	soft_object_t *new_crypt_key = NULL, *new_hmac_key = NULL;
 	char filebuf[BUFSIZ];
-	DIR	*pri_dirp;
+	DIR	*pri_dirp = NULL;
 	struct dirent *pri_ent;
 	char pri_obj_path[MAXPATHLEN], ks_desc_file[MAXPATHLEN],
 	    tmp_ks_desc_name[MAXPATHLEN];

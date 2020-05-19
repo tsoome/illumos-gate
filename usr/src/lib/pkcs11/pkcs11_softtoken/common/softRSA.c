@@ -978,7 +978,7 @@ soft_rsa_digest_sign_common(soft_session_t *session_p, CK_BYTE_PTR pData,
 	CK_ULONG hash_len = SHA512_DIGEST_LENGTH;
 	/* space enough for all mechs */
 	CK_BYTE der_data[SHA512_DIGEST_LENGTH + SHA2_DER_PREFIX_Len];
-	CK_ULONG der_data_len;
+	CK_ULONG der_data_len = 0;
 	soft_rsa_ctx_t *rsa_ctx = session_p->sign.context;
 	soft_object_t *key = rsa_ctx->key;
 	uchar_t modulus[MAX_KEY_ATTR_BUFLEN];
@@ -1093,7 +1093,7 @@ soft_rsa_digest_verify_common(soft_session_t *session_p, CK_BYTE_PTR pData,
 	CK_BYTE hash[SHA512_DIGEST_LENGTH];  /* space for all mechs */
 	CK_ULONG hash_len = SHA512_DIGEST_LENGTH;
 	CK_BYTE der_data[SHA512_DIGEST_LENGTH + SHA2_DER_PREFIX_Len];
-	CK_ULONG der_data_len;
+	CK_ULONG der_data_len = 0;
 	soft_rsa_ctx_t *rsa_ctx = session_p->verify.context;
 	soft_object_t *key = rsa_ctx->key;
 	CK_ULONG der_len;

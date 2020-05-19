@@ -151,7 +151,7 @@ C_CloseAllSessions(CK_SLOT_ID slotID)
 static CK_STATE
 get_ses_state(kernel_session_t *session_p)
 {
-	CK_STATE state;
+	CK_STATE state = CKS_RO_PUBLIC_SESSION;
 	kernel_slot_t *pslot;
 
 	pslot = slot_table[session_p->ses_slotid];

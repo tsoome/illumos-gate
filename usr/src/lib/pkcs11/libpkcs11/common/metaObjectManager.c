@@ -1259,7 +1259,7 @@ clone_by_wrap(meta_object_t *object, slot_object_t *new_clone,
 	char key_data[1024]; /* should be big enough for any key size */
 	char ivbuf[1024]; /* should be big enough for any mech */
 	wrap_info_t wrap_info;
-	CK_ULONG key_len, unwrap_template_size;
+	CK_ULONG key_len = 0, unwrap_template_size;
 
 	slot_object = object->clones[object->master_clone_slotnum];
 

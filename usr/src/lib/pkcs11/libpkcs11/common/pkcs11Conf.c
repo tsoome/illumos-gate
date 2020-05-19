@@ -74,7 +74,7 @@ static const char *conf_err = "See cryptoadm(1M). Skipping this plug-in.";
  */
 static CK_RV
 setup_metaslot(uentry_t *metaslot_entry) {
-	CK_RV rv;
+	CK_RV rv = CKR_OK;
 	CK_MECHANISM_TYPE_PTR prov_pol_mechs = NULL;
 	pkcs11_slot_t *cur_slot;
 

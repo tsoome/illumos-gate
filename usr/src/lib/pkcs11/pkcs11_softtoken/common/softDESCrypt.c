@@ -188,7 +188,7 @@ soft_des_encrypt_common(soft_session_t *session_p, CK_BYTE_PTR pData,
 	CK_BYTE *out_buf = NULL;
 	CK_ULONG out_len;
 	CK_ULONG total_len;
-	CK_ULONG remain;
+	CK_ULONG remain = 0;
 	boolean_t pad_mechanism = B_FALSE;
 
 	pad_mechanism = (mechanism == CKM_DES_CBC_PAD ||
@@ -499,7 +499,7 @@ soft_des_decrypt_common(soft_session_t *session_p, CK_BYTE_PTR pEncrypted,
 	CK_BYTE *out_buf = NULL;
 	CK_ULONG out_len;
 	CK_ULONG total_len;
-	CK_ULONG remain;
+	CK_ULONG remain = 0;
 	boolean_t pad_mechanism = B_FALSE;
 
 	pad_mechanism = (mechanism == CKM_DES_CBC_PAD ||
@@ -907,7 +907,7 @@ soft_des_sign_verify_common(soft_session_t *session_p, CK_BYTE_PTR pData,
 {
 	soft_des_ctx_t		*soft_des_ctx_sign_verify;
 	soft_des_ctx_t		*soft_des_ctx_encrypt;
-	CK_RV			rv;
+	CK_RV			rv = CKR_OK;
 	CK_BYTE			*pEncrypted = NULL;
 	CK_ULONG		ulEncryptedLen = 0;
 	uint8_t			remainder;

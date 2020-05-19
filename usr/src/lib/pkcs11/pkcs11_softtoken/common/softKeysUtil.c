@@ -157,7 +157,7 @@ soft_genkey(soft_session_t *session_p, CK_MECHANISM_PTR pMechanism,
 
 	CK_RV rv = CKR_OK;
 	soft_object_t *secret_key;
-	CK_KEY_TYPE key_type;
+	CK_KEY_TYPE key_type = CKK_VENDOR_DEFINED;
 	CK_ULONG keylen = 0;
 	CK_ULONG i;
 	int des_strength = 0;
@@ -627,7 +627,7 @@ soft_pkcs12_pbe(soft_session_t *session_p,
 	CK_BYTE *D = NULL;
 	CK_BYTE *I = NULL, *S, *P;
 	CK_BYTE *keybuf = NULL;
-	CK_ULONG Alen, Ilen, Slen, Plen, AiLen, Blen, Dlen;
+	CK_ULONG Alen = 0, Ilen = 0, Slen, Plen, AiLen, Blen, Dlen;
 	CK_ULONG keysize = OBJ_SEC_VALUE_LEN(derived_key);
 	CK_MECHANISM digest_mech;
 
