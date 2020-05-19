@@ -5260,7 +5260,7 @@ getSlotID(const sasl_utils_t *utils, CK_MECHANISM_TYPE mech_type,
     CK_ULONG ulSlotCount;
     CK_ULONG ulMechTypeCount;
     CK_SLOT_ID *pSlotList = NULL;
-    CK_SLOT_ID slotID;
+    CK_SLOT_ID slotID = 0;
     CK_MECHANISM_TYPE_PTR pMechTypeList = NULL;
     int i, m;
 
