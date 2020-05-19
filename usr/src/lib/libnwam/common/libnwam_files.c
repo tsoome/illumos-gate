@@ -156,7 +156,7 @@ nwam_line_to_object(char *line, char **objname, void *proplist)
 	char **valstr, **newvalstr;
 	boolean_t *valbool, *newvalbool;
 	int64_t *valint, *newvalint;
-	uint64_t *valuint, *newvaluint;
+	uint64_t *valuint = NULL, *newvaluint;
 	uint_t nelem, i;
 	nwam_value_type_t proptype;
 	nwam_value_t val = NULL;
@@ -421,7 +421,7 @@ nwam_read_object_from_files_backend(char *filename, char *objname,
 	char *cp, *foundobjname, **objnames = NULL, **ncpfiles = NULL;
 	uint_t num_files = 0;
 	FILE *fp = NULL;
-	nwam_error_t err;
+	nwam_error_t err = NWAM_SUCCESS;
 	void *objlist = NULL, *proplist = NULL;
 	uint_t i = 0, j = 0;
 	nwam_value_t objnamesval = NULL;
