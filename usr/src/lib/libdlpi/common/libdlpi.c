@@ -1309,7 +1309,7 @@ i_dlpi_strgetmsg(dlpi_impl_t *dip, int msec, dlpi_msg_t *dlreplyp,
 	int			fd = dip->dli_fd;
 	struct strbuf		ctl, data;
 	struct pollfd		pfd;
-	hrtime_t		start, current;
+	hrtime_t		start = 0, current;
 	long			bufc[DLPI_CHUNKSIZE / sizeof (long)];
 	long			bufd[DLPI_CHUNKSIZE / sizeof (long)];
 	union DL_primitives	*dlprim;
