@@ -268,7 +268,7 @@ unlock_index_file(int lock_fd)
 int
 putzoneent(struct zoneent *ze, zoneent_op_t operation)
 {
-	FILE *index_file, *tmp_file;
+	FILE *index_file = NULL, *tmp_file;
 	char *tmp_file_name, buf[MAX_INDEX_LEN];
 	int tmp_file_desc, lock_fd, err;
 	boolean_t exist, need_quotes;
