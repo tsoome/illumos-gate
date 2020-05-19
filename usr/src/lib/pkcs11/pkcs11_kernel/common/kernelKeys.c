@@ -2322,7 +2322,7 @@ C_DeriveKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
 	CK_RV			rv = CKR_OK;
 	kernel_session_t	*session_p;
 	kernel_object_t		*basekey_p;
-	kernel_object_t		*new_objp;
+	kernel_object_t		*new_objp = NULL;
 	kernel_slot_t		*pslot;
 	boolean_t		ses_lock_held = B_FALSE;
 	CK_BBOOL		is_pri_obj;
@@ -2468,9 +2468,7 @@ C_DeriveKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
 
 failed_exit:
 	OBJ_REFRELE(basekey_p);
-	if (new_objp != NULL) {
-		(void) free(new_objp);
-	}
+	(void) free(new_objp);
 
 	REFRELE(session_p, ses_lock_held);
 	return (rv);

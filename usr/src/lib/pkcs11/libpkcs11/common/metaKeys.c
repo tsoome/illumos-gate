@@ -259,7 +259,7 @@ meta_DeriveKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism,
 	CK_OBJECT_HANDLE *phBaseKey2 = NULL;
 	CK_X9_42_DH2_DERIVE_PARAMS x942_params, *x9_tmpptr;
 	CK_ECDH2_DERIVE_PARAMS ecdh_params, *ec_tmpptr;
-	CK_SSL3_KEY_MAT_OUT *ssl_key_mat;
+	CK_SSL3_KEY_MAT_OUT *ssl_key_mat = NULL;
 	CK_SSL3_KEY_MAT_PARAMS *keyparams;
 
 	if (pMech == NULL) {

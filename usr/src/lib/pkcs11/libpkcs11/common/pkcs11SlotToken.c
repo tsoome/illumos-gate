@@ -55,7 +55,7 @@ C_GetSlotList(CK_BBOOL tokenPresent, CK_SLOT_ID_PTR pSlotList,
 	CK_RV rv;
 	CK_RV prov_rv;
 	CK_SLOT_ID true_id;
-	CK_SLOT_INFO_PTR pinfo;
+	CK_SLOT_INFO_PTR pinfo = NULL;
 	CK_SLOT_ID count = 0, i;
 	CK_SLOT_ID slot_id; /* slot ID for returning to the application */
 

@@ -359,7 +359,7 @@ key_mgr_unwrap_key(SESSION	   * sess,
 	OBJECT	    * key_obj = NULL;
 	CK_BYTE	   * data = NULL;
 	CK_ULONG	    data_len;
-	CK_ULONG	    keyclass, keytype;
+	CK_ULONG	    keyclass, keytype = 0;
 	CK_ULONG	    i;
 	CK_BBOOL	    found_class, found_type, fromend;
 	CK_RV		rc;

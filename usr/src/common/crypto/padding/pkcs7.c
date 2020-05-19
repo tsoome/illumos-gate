@@ -100,7 +100,7 @@ int
 pkcs7_decode(uint8_t *padbuf, size_t *plen)
 {
 	int	i;
-	size_t	padlen;
+	size_t	padlen = 0;
 
 	/* Recover the padding value, even if padbuf has trailing nulls */
 	while (*plen > 0 && (padlen = padbuf[*plen - 1]) == 0)

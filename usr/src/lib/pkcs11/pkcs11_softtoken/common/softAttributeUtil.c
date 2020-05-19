@@ -6476,7 +6476,7 @@ soft_find_match_attrs(soft_object_t *obj, CK_OBJECT_CLASS *pclasses,
 {
 	ulong_t i;
 	CK_ATTRIBUTE *tmpl_attr, *obj_attr;
-	cert_attr_t *cert_attr;
+	cert_attr_t *cert_attr = NULL;
 	uint64_t attr_mask;
 	biginteger_t *bigint;
 	boolean_t compare_attr, compare_bigint, compare_boolean;

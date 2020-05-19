@@ -110,7 +110,7 @@ CK_RV
 meta_operation_init(CK_FLAGS optype, meta_session_t *session,
     CK_MECHANISM *pMechanism, meta_object_t *key)
 {
-	CK_RV rv, save_rv;
+	CK_RV rv, save_rv = 0;
 	mechinfo_t **supporting_slots;
 	CK_ULONG slotnum;
 	unsigned long i, slotCount = 0;
@@ -926,7 +926,7 @@ meta_generate_keys(meta_session_t *session, CK_MECHANISM *pMechanism,
 	mechinfo_t **slots = NULL;
 	unsigned long i, slotCount = 0;
 	boolean_t doKeyPair = B_FALSE, token_only = B_FALSE;
-	CK_ULONG slotnum;
+	CK_ULONG slotnum = 0;
 	CK_MECHANISM_INFO mech_info;
 	/*
 	 * Since the keygen call is in a loop, it is performance-wise useful
@@ -1188,12 +1188,12 @@ meta_wrap_key(meta_session_t *session, CK_MECHANISM *pMechanism,
     meta_object_t *wrappingkey, meta_object_t *inputkey, CK_BYTE *wrapped_key,
     CK_ULONG *wrapped_key_len)
 {
-	CK_RV rv, save_rv;
+	CK_RV rv, save_rv = 0;
 	slot_session_t *wrap_session = NULL;
 	slot_object_t *slot_wrappingkey, *slot_inputkey;
 	mechinfo_t **slots = NULL;
 	unsigned long i, slotCount = 0;
-	CK_ULONG slotnum;
+	CK_ULONG slotnum = 0;
 	CK_MECHANISM_INFO mech_info;
 
 	/*
@@ -1303,13 +1303,13 @@ meta_unwrap_key(meta_session_t *session,
     CK_ATTRIBUTE *template, CK_ULONG template_size,
     meta_object_t *unwrapped_key)
 {
-	CK_RV rv, save_rv;
+	CK_RV rv, save_rv = 0;
 	CK_OBJECT_HANDLE hUnwrappedKey;
 	slot_session_t *unwrap_session = NULL;
 	slot_object_t *slot_unwrappingkey, *slot_unwrapped_key;
 	mechinfo_t **slots = NULL;
 	unsigned long i, slotCount = 0;
-	CK_ULONG slotnum;
+	CK_ULONG slotnum = 0;
 	CK_MECHANISM_INFO mech_info;
 
 	/* Can't create token objects in a read-only session. */
@@ -1461,7 +1461,7 @@ meta_derive_key(meta_session_t *session, CK_MECHANISM *pMechanism,
 	CK_RV rv, save_rv;
 	CK_OBJECT_HANDLE hDerivedKey;
 
-	CK_ULONG slotnum;
+	CK_ULONG slotnum = 0;
 	boolean_t isSSL = B_FALSE;
 	boolean_t isTLSPRF = B_FALSE;
 	mechinfo_t **slots = NULL;

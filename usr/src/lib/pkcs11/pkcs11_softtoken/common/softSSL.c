@@ -222,7 +222,7 @@ P_MD5(uchar_t *secret, uint_t secretlen, uchar_t *label, uint_t labellen,
 	uchar_t	md5_hmac[MD5_HASH_SIZE];
 	uchar_t	A[MD5_HASH_SIZE];
 	md5_hc_ctx_t md5_hmac_ctx;
-	uchar_t *res, *cur;
+	uchar_t *res, *cur = NULL;
 	uint_t left = resultlen;
 	int i;
 
@@ -302,7 +302,7 @@ P_SHA1(uchar_t *secret, uint_t secretlen, uchar_t *label, uint_t labellen,
 	uchar_t	sha1_hmac[SHA1_HASH_SIZE];
 	uchar_t	A[SHA1_HASH_SIZE];
 	sha1_hc_ctx_t sha1_hmac_ctx;
-	uchar_t *res, *cur;
+	uchar_t *res, *cur = NULL;
 	uint_t left = resultlen;
 	int i;
 

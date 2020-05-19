@@ -1339,7 +1339,7 @@ soft_unpack_object(soft_object_t *objp, uchar_t *buf)
 {
 
 	public_key_obj_t  *pbk;
-	private_key_obj_t *pvk;
+	private_key_obj_t *pvk = NULL;
 	secret_key_obj_t  *sck;
 	certificate_obj_t *cert;
 	CK_OBJECT_CLASS class = objp->class;
