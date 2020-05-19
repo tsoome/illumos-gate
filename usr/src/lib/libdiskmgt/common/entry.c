@@ -83,7 +83,7 @@ void
 dm_free_descriptors(dm_descriptor_t *desc_list)
 {
 	descriptor_t	**dp;
-	int		error;
+	int		error = 0;
 
 	if (desc_list == NULL) {
 		return;
