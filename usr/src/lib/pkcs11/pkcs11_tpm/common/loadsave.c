@@ -302,7 +302,7 @@
 static char keystore_path[MAXPATHLEN];
 static boolean_t keystore_path_initialized = 0;
 
-TSS_HKEY hPrivateLeafKey;
+extern TSS_HKEY hPrivateLeafKey;
 static CK_RV
 restore_private_token_object(TSS_HCONTEXT, CK_BYTE  *, CK_ULONG, OBJECT *);
 
