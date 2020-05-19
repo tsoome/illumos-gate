@@ -149,6 +149,7 @@ setmask(const char *flags)
 
 	mask.am_success = 0x0;
 	mask.am_failure = 0x0;
+	input = NULL;
 
 	if (flags != NULL) {
 		/*
