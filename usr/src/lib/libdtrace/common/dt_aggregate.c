@@ -289,7 +289,7 @@ dt_aggregate_quantizedcmp(int64_t *lhs, int64_t *rhs)
 {
 	int nbuckets = DTRACE_QUANTIZE_NBUCKETS, i;
 	long double ltotal = 0, rtotal = 0;
-	int64_t lzero, rzero;
+	int64_t lzero = 0, rzero = 0;
 
 	for (i = 0; i < nbuckets; i++) {
 		int64_t bucketval = DTRACE_QUANTIZE_BUCKETVAL(i);
@@ -885,7 +885,7 @@ dt_aggregate_valcmp(const void *lhs, const void *rhs)
 	caddr_t rdata = rh->dtahe_data.dtada_data;
 	dtrace_recdesc_t *lrec, *rrec;
 	int64_t *laddr, *raddr;
-	int rval;
+	int rval = 0;
 
 	assert(lagg->dtagd_nrecs == ragg->dtagd_nrecs);
 

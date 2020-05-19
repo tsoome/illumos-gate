@@ -662,7 +662,7 @@ dt_action_printflike(dtrace_hdl_t *dtp, dt_node_t *dnp, dtrace_stmtdesc_t *sdp,
 static void
 dt_action_trace(dtrace_hdl_t *dtp, dt_node_t *dnp, dtrace_stmtdesc_t *sdp)
 {
-	int ctflib;
+	int ctflib = 0;
 
 	dtrace_actdesc_t *ap = dt_stmt_action(dtp, sdp);
 	boolean_t istrace = (dnp->dn_ident->di_id == DT_ACT_TRACE);
