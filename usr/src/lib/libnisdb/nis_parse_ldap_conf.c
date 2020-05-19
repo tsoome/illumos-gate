@@ -46,7 +46,7 @@
 __nis_ldap_proxy_info	proxyInfo		=
 	{NULL, (auth_method_t)NO_VALUE_SET, (tls_method_t)NO_VALUE_SET, NULL,
 		NULL, NULL, NULL, NULL, (follow_referral_t)NO_VALUE_SET};
-__nis_config_t		ldapConfig;
+extern __nis_config_t		ldapConfig;
 __nisdb_table_mapping_t ldapDBTableMapping;
 __nis_table_mapping_t	*ldapTableMapping	= NULL;
 __yp_domain_context_t	ypDomains;
