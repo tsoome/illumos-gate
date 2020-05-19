@@ -1555,6 +1555,9 @@ dtj_new_distribution(const dtrace_aggdata_t *data, const dtrace_recdesc_t *rec,
 		n = DTRACE_QUANTIZE_NBUCKETS;
 		levels = n - 1; /* levels excludes base */
 		break;
+	default:
+		n = 0;
+		break;
 	}
 
 	if (size != (n * sizeof (uint64_t)) || n < 1) {
