@@ -628,7 +628,7 @@ static struct dm_buf *
 genheader(char *src, char **pkg)
 {
 
-	FILE	*fp;
+	FILE	*fp = NULL;
 	char	path[MAXPATHLEN], tmp_entry[ENTRY_MAX];
 	int	i, n, nparts, maxpsize;
 	int	partcnt;
