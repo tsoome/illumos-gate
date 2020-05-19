@@ -44,6 +44,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 #
 
 CERRWARN	+= -_gcc=-Wno-empty-body
+CERRWARN	+= -_gcc=-Wno-address-of-packed-member
 
 # 3rd party code
 SMOFF += all_func_returns
