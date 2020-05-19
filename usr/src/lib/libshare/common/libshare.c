@@ -694,7 +694,7 @@ static int
 sa_get_object_type(void *object)
 {
 	xmlNodePtr node = (xmlNodePtr)object;
-	int type;
+	int type = 0;
 
 	if (xmlStrcmp(node->name, (xmlChar *)"group") == 0)
 		type = SA_TYPE_GROUP;
@@ -2918,7 +2918,7 @@ sa_destroy_optionset(sa_optionset_t optionset)
 {
 	char name[SA_STRSIZE];
 	int len;
-	int ret;
+	int ret = 0;
 	char *id = NULL;
 	sa_group_t group;
 	int ispersist = 1;
@@ -3855,7 +3855,7 @@ _sa_get_next_resource_index(sa_share_t share)
 sa_resource_t
 sa_add_resource(sa_share_t share, char *resource, int persist, int *error)
 {
-	xmlNodePtr node;
+	xmlNodePtr node = NULL;
 	int err = SA_OK;
 	sa_resource_t res;
 	sa_group_t group;
