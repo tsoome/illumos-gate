@@ -710,7 +710,7 @@ sa_share_props_from_pgroup(xmlNodePtr root, scfutilhandle_t *handle,
 	char *valuestr = NULL;
 	int ret = SA_OK;
 	char *sectype = NULL;
-	char *proto;
+	char *proto = NULL;
 	sa_share_t share;
 	uuid_t uuid;
 
@@ -1529,9 +1529,9 @@ sa_set_resource_property(scfutilhandle_t *handle, sa_share_t share)
 	scf_value_t *value;
 	scf_transaction_entry_t *entry;
 	sa_resource_t resource;
-	char *valstr;
-	char *idstr;
-	char *description;
+	char *valstr = NULL;
+	char *idstr = NULL;
+	char *description = NULL;
 	char *propstr = NULL;
 	size_t strsize;
 
