@@ -159,7 +159,7 @@ dapls_ib_qp_alloc(
 	dapl_ep_create_t	ep_args;
 	dapl_ep_free_t		epf_args;
 	ib_qp_handle_t		qp_p;
-	DAPL_SRQ		*srq_p;
+	DAPL_SRQ		*srq_p = NULL;
 	ib_cq_handle_t		cq_recv;
 	ib_cq_handle_t		cq_send;
 	DAPL_PZ			*pz_handle;
@@ -928,7 +928,7 @@ dapli_ib_srq_resize_internal(
 	dapl_srq_resize_t	resize_msg;
 	int			ia_fd;
 	int			hca_fd;
-	ib_work_completion_t	*new_premature_events;
+	ib_work_completion_t	*new_premature_events = NULL;
 	ib_work_completion_t	*old_premature_events;
 	uint32_t		*new_freepr_events;
 	uint32_t		*old_freepr_events;
