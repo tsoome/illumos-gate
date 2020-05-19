@@ -576,10 +576,10 @@ valid_props(inetd_prop_t *prop, const char *fmri, basic_cfg_t **cfgpp,
 	boolean_t		ret = B_TRUE;
 	int			i;
 	long			uidl;
-	boolean_t		isrpc;
+	boolean_t		isrpc = B_FALSE;
 	int			sock_type_id;
-	int			rpc_pnum;
-	int			rpc_lv, rpc_hv;
+	int			rpc_pnum = -1;
+	int			rpc_lv = -1, rpc_hv = -1;
 	basic_cfg_t		*cfg;
 	char			*proto = NULL;
 	int			pi;
