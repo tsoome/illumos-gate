@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/acct.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -511,7 +509,7 @@ main(int argc, char *argv[])
 {
 	ea_file_t ef;
 	ea_object_t scratch;
-	char *fname;
+	char *fname = NULL;
 	int opt;
 
 	while ((opt = getopt(argc, argv, "v")) != EOF) {
