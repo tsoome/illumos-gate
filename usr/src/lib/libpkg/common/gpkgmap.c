@@ -153,7 +153,9 @@ gpkgmap(struct cfent *ept, FILE *fp)
 	(void) strcpy(ept->ainfo.group, d_group);
 	ept->ainfo.major = BADMAJOR;
 	ept->ainfo.minor = BADMINOR;
-	ept->cinfo.cksum = ept->cinfo.modtime = ept->cinfo.size = (-1L);
+	ept->cinfo.cksum = -1;
+	ept->cinfo.modtime = -1;
+	ept->cinfo.size = -1;
 
 	ept->npkgs = 0;
 
