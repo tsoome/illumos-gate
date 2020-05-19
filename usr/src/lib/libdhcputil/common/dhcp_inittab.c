@@ -477,11 +477,11 @@ get_mac_addr(const char *str, int *ierrnop, uint16_t *hwret, int hwtype,
 	dlpi_info_t dlinfo;
 	char chr;
 
+	maclen = 0;
 	if (*str != '\0') {
 		if (*str++ != ',')
 			goto failed;
 		if (dlpi_open(str, &dh, 0) != DLPI_SUCCESS) {
-			maclen = 0;
 			dig = val = 0;
 			/*
 			 * Allow MAC addresses with separators matching regexp
@@ -558,7 +558,7 @@ inittab_encode_e(const dhcp_symbol_t *ie, const char *value, uint16_t *lengthp,
 	unsigned int	i;
 	uint8_t		type_size = inittab_type_to_size(ie);
 	boolean_t	is_signed;
-	uint_t		vallen, reslen;
+	uint_t		vallen = 0, reslen;
 	dhcpv6_option_t	*d6o;
 	int		type;
 	char		*cp2;

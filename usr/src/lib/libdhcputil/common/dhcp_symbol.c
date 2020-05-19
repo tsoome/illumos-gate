@@ -657,7 +657,7 @@ dsym_init_parser(const char *name, const char *value, char ***fields_ret,
 	char *cp;
 	char *next;
 	char *field;
-	char **fields;
+	char **fields = NULL;
 	int i;
 
 	/*
