@@ -1379,10 +1379,10 @@ dtrace_lookup_by_type(dtrace_hdl_t *dtp, const char *object, const char *name,
 	dtrace_typeinfo_t ti;
 	dt_module_t *dmp;
 	int found = 0;
-	ctf_id_t id;
+	ctf_id_t id = 0;
 	uint_t n, i;
 	int justone;
-	ctf_file_t *fp;
+	ctf_file_t *fp = NULL;
 	char *buf, *p, *q;
 
 	uint_t mask = 0; /* mask of dt_module flags to match */

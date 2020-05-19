@@ -2088,7 +2088,7 @@ void
 dt_cg(dt_pcb_t *pcb, dt_node_t *dnp)
 {
 	dif_instr_t instr;
-	dt_xlator_t *dxp;
+	dt_xlator_t *dxp = NULL;
 	dt_ident_t *idp;
 
 	if (pcb->pcb_regs == NULL && (pcb->pcb_regs =
