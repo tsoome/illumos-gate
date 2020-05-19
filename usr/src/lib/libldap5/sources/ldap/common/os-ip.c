@@ -260,7 +260,7 @@ nsldapi_os_connect_with_to(LBER_SOCKET sockfd, struct sockaddr *saptr,
 	int		msec = ld->ld_connect_timeout; /* milliseconds */
 	int		continue_on_intr = 0;
 #ifdef _SOLARIS_SDK
-	hrtime_t	start_time = 0, tmp_time, tv_time; /* nanoseconds */
+	hrtime_t	start_time = 0, tmp_time, tv_time = 0; /* nanoseconds */
 #else
 	long		start_time = 0, tmp_time; /* seconds */
 #endif
@@ -539,11 +539,11 @@ nsldapi_try_each_host( LDAP *ld, const char *hostlist,
 	NSLDAPI_IOCTL_FN *ioctlfn, NSLDAPI_CONNECT_WITH_TO_FN *connectwithtofn,
 	NSLDAPI_CONNECT_FN *connectfn, NSLDAPI_CLOSE_FN *closefn )
 {
-	int			rc, i, s, err, connected, use_hp;
+	int			rc = 0, i, s = 0, err, connected, use_hp;
 	int			parse_err, port;
 	struct sockaddr_in	sin;
 	nsldapi_in_addr_t	address;
-	char			**addrlist, *ldhpbuf, *ldhpbuf_allocd;
+	char			**addrlist, *ldhpbuf, *ldhpbuf_allocd = NULL;
 	char			*host;
 	LDAPHostEnt		ldhent, *ldhp;
 	struct hostent		*hp;
