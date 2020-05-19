@@ -595,7 +595,7 @@ static ipadm_status_t
 i_ipadm_nvl2ainfo_common(nvlist_t *nvl, ipadm_addr_info_t *ainfo)
 {
 	nvlist_t		*nvladdr;
-	char			*name;
+	char			*name = NULL;
 	char			*propstr = NULL;
 	char			*sname, *dname;
 	nvpair_t		*nvp;
@@ -716,7 +716,7 @@ i_ipadm_nvl2ainfo_persist(nvlist_t *nvl, ipadm_addr_info_t *ainfo)
 {
 	nvlist_t		*nvladdr;
 	struct ifaddrs		*ifa;
-	char			*name;
+	char			*name = NULL;
 	char			*ifname = NULL;
 	char			*aobjname = NULL;
 	char			*propstr = NULL;
@@ -2643,13 +2643,13 @@ ipadm_create_addr(ipadm_handle_t iph, ipadm_addrobj_t addr, uint32_t flags)
 	ipadm_status_t		status;
 	sa_family_t		af;
 	sa_family_t		daf;
-	sa_family_t		other_af;
+	sa_family_t		other_af = AF_UNSPEC;
 	boolean_t		created_af = B_FALSE;
 	boolean_t		created_other_af = B_FALSE;
 	ipadm_addr_type_t	type;
 	char			*ifname = addr->ipadm_ifname;
 	boolean_t		legacy = (iph->iph_flags & IPH_LEGACY);
-	boolean_t		aobjfound;
+	boolean_t		aobjfound = B_FALSE;
 	boolean_t		is_6to4;
 	struct lifreq		lifr;
 	uint64_t		ifflags;
@@ -3355,7 +3355,7 @@ i_ipadm_addr_persist(ipadm_handle_t iph, const ipadm_addrobj_t ipaddr,
 	char			*aname = ipaddr->ipadm_aobjname;
 	nvlist_t		*nvl;
 	int			err = 0;
-	ipadm_status_t		status;
+	ipadm_status_t		status = IPADM_SUCCESS;
 	uint_t			pflags = 0;
 
 	/*

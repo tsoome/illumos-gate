@@ -634,7 +634,7 @@ ipadm_status_t
 i_ipadm_init_addrobj(ipadm_handle_t iph, nvlist_t *nvl)
 {
 	nvpair_t	*nvp;
-	char		*name;
+	char		*name = NULL;
 	char		*aobjname = NULL, *pval = NULL, *ifname = NULL;
 	sa_family_t	af = AF_UNSPEC;
 	ipadm_addr_type_t atype = IPADM_ADDR_NONE;
