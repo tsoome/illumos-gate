@@ -471,7 +471,7 @@ usb_get_conf_rec(char *buf, usb_configrec_t **rec, char **errmsg)
 	token_t token;
 	char tokval[MAXLINESIZE];
 	usb_configrec_t *user_rec;
-	config_field_t  cfgvar;
+	config_field_t  cfgvar = USB_NONE;
 	u_longlong_t    llptr;
 	u_longlong_t    value;
 	boolean_t	sor = B_TRUE;

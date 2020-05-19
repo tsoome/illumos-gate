@@ -1314,7 +1314,7 @@ cfga_private_func(const char *func, const char *ap_id, const char *options,
 	} else if ((strncmp(func, IB_ADD_SERVICE, 12) == 0) ||
 	    (strncmp(func, IB_DELETE_SERVICE, 15) == 0)) {
 		char			*subopts, *val;
-		uint8_t			cmd;
+		uint8_t			cmd = 0;
 
 		/* check: Only supported on fabric ap_ids */
 		if (fab_apid == NULL || strcmp(fab_apid, IBNEX_FABRIC) != 0) {

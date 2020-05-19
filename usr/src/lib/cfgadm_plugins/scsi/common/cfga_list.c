@@ -245,7 +245,7 @@ do_list(
 	/* FALLTHROUGH */
 out:
 	if (ret != SCFGA_OK) list_free(&larg.listp);
-	S_FREE(larg.hba_logp);
+	free(larg.hba_logp);
 	return (ret);
 }
 
@@ -405,7 +405,7 @@ stat_dev(di_node_t node, void *arg)
 
 	/*FALLTHRU*/
 out:
-	S_FREE(nodepath);
+	free(nodepath);
 	if (devfsp != NULL) di_devfs_path_free(devfsp);
 	return (rv);
 }
@@ -434,14 +434,14 @@ create_pathinfo_ldata(di_path_t pi_node, scfga_list_t *lap, int *l_errnop)
 	clp = &listp->ldata;
 	ret = make_path_dyncomp(pi_node, &dyncomp, &lap->l_errno);
 	if (ret != SCFGA_OK) {
-		S_FREE(listp);
+		free(listp);
 		return (ret);
 	}
 
 	client_node = di_path_client_node(pi_node);
 	if (client_node == DI_NODE_NIL) {
 		*l_errnop = errno;
-		S_FREE(dyncomp);
+		free(dyncomp);
 		return (SCFGA_LIB_ERR);
 	}
 
@@ -452,7 +452,7 @@ create_pathinfo_ldata(di_path_t pi_node, scfga_list_t *lap, int *l_errnop)
 	(void) snprintf(clp->ap_phys_id, sizeof (clp->ap_phys_id), "%s%s%s",
 	    lap->apidp->hba_phys, DYN_SEP, dyncomp);
 
-	S_FREE(dyncomp);
+	free(dyncomp);
 
 	/* ap class filled in by libcfgadm */
 	clp->ap_class[0] = '\0';
@@ -482,7 +482,7 @@ create_pathinfo_ldata(di_path_t pi_node, scfga_list_t *lap, int *l_errnop)
 	if (client_devlink) {
 		(void) snprintf(clp->ap_info, CFGA_INFO_LEN,
 		    "%s: %s", "Client Device", client_devlink);
-		S_FREE(client_devlink);
+		free(client_devlink);
 	}
 
 	get_hw_info(client_node, clp, PATH_APID);
@@ -734,7 +734,7 @@ do_stat_dev(
 	/* Create the dynamic component */
 	ret = make_dyncomp(node, nodepath, &dyncomp, &lap->l_errno);
 	if (ret != SCFGA_OK) {
-		S_FREE(listp);
+		free(listp);
 		return (ret);
 	}
 
@@ -747,7 +747,7 @@ do_stat_dev(
 	(void) snprintf(clp->ap_phys_id, sizeof (clp->ap_phys_id), "%s%s%s",
 	    lap->apidp->hba_phys, DYN_SEP, dyncomp);
 
-	S_FREE(dyncomp);
+	free(dyncomp);
 
 	clp->ap_class[0] = '\0'; /* Filled in by libcfgadm */
 	clp->ap_r_state = lap->hba_rstate;
@@ -909,7 +909,7 @@ list_ext_postprocess(
 	}
 
 	if (i < nelem || tmplp != NULL) {
-		S_FREE(ldatap);
+		free(ldatap);
 		return (SCFGA_LIB_ERR);
 	}
 

@@ -704,7 +704,7 @@ disconnect(struct cfga_confirm *confp)
 
 	ans = confp->confirm(confp->appdata_ptr, cq);
 
-	S_FREE(cq);
+	free(cq);
 
 	return (ans == 1);
 }
@@ -828,15 +828,15 @@ quiesce_confirm(
 	if ((buf = calloc(1, len)) == NULL) {
 		*l_errnop = errno;
 		ret = SCFGA_LIB_ERR;
-		S_FREE(cq1);
-		S_FREE(cq2);
+		free(cq1);
+		free(cq2);
 		goto out;
 	}
 	(void) strcpy(buf, cq1);
 	(void) strcat(buf, cq2);
 
-	S_FREE(cq1);
-	S_FREE(cq2);
+	free(cq1);
+	free(cq2);
 
 
 	/* Remove minor name (if any) from phys path */
@@ -859,8 +859,8 @@ quiesce_confirm(
 	ret = SCFGA_OK;
 	/*FALLTHRU*/
 out:
-	S_FREE(buf);
-	S_FREE(hbap);
+	free(buf);
+	free(hbap);
 	return (ret);
 }
 
@@ -913,8 +913,8 @@ suspend_in_rcm(
 	}
 	/*FALLTHROUGH*/
 out:
-	S_FREE(bus_path);
-	S_FREE(dev_path);
+	free(bus_path);
+	free(dev_path);
 	return (ret);
 }
 
@@ -950,7 +950,7 @@ wait_for_hotplug(prompt_t *pt, int msg)
 	} else {
 		ret = SCFGA_OK;
 	}
-	S_FREE(cu);
+	free(cu);
 	return (ret);
 }
 
@@ -1412,7 +1412,7 @@ critical_ctrlr(const char *hba_phys)
 
 	/*FALLTHRU*/
 out:
-	S_FREE(bufp);
+	free(bufp);
 	if (fp != NULL) {
 		(void) fclose(fp);
 	}

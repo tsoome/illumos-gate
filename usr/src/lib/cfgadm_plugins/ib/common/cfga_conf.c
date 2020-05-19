@@ -482,7 +482,7 @@ ib_get_services(char **errmsg)
 	char			*llptr;
 	boolean_t		sor = B_TRUE;
 	ib_token_t		token;
-	ib_service_type_t	cfgvar;
+	ib_service_type_t	cfgvar = IB_NONE;
 	ib_parse_state_t	parse_state = IB_NEWVAR;
 
 	token = ib_lex(tokval, errmsg);

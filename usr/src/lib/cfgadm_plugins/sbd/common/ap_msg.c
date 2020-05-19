@@ -184,17 +184,17 @@ ap_err(apd_t *a, ...)
 	char *sep;
 	char *rsep;
 	const char *fmt;
-	char *cmd;
-	char *value;
-	char *target;
+	char *cmd = NULL;
+	char *value = NULL;
+	char *target = NULL;
 	char *serr;
 	char *syserr;
 	char *rstate;
 	char *ostate;
 	char *srsrc;
 	char *sysrsrc;
-	char *option;
-	char *path;
+	char *option = NULL;
+	char *path = NULL;
 	char *sym;
 	char *msg;
 	const char *error;
@@ -441,8 +441,8 @@ ap_msg(apd_t *a, ...)
 	int len;
 	char *p;
 	const char *fmt;
-	char *cmd;
-	char *target;
+	char *cmd = NULL;
+	char *target = NULL;
 	struct cfga_msg *msgp;
 	va_list ap;
 

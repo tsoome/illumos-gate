@@ -685,7 +685,7 @@ dev_change_state(cfga_cmd_t state_change_cmd, apid_t *apidt, la_wwn_t *pwwn,
 	fpcfga_ret_t		ret;
 	apid_t			my_apidt;
 	uchar_t			unconf_flag = 0, peri_qual;
-	HBA_STATUS		status;
+	HBA_STATUS		status = HBA_STATUS_OK;
 	HBA_PORTATTRIBUTES	discPortAttrs;
 	uint64_t		lun = 0;
 	struct scsi_inquiry	inq;
@@ -814,9 +814,9 @@ dev_change_state(cfga_cmd_t state_change_cmd, apid_t *apidt, la_wwn_t *pwwn,
 	}
 
 	if (status != HBA_STATUS_OK) {
-		if (status ==  HBA_STATUS_ERROR_NOT_A_TARGET) {
+		if (status == HBA_STATUS_ERROR_NOT_A_TARGET) {
 			inq.inq_dtype = DTYPE_UNKNOWN;
-		} else if (status ==  HBA_STATUS_ERROR_ILLEGAL_WWN) {
+		} else if (status == HBA_STATUS_ERROR_ILLEGAL_WWN) {
 			free(update_str);
 			return (FPCFGA_APID_NOEXIST);
 		} else {

@@ -627,7 +627,7 @@ make_portwwn_luncomp_from_dinode(
 	int *l_errnop)
 {
 	uchar_t		*port_wwn_data;
-	int		pwwn_ret, lun_ret;
+	int		pwwn_ret = -1, lun_ret = -1;
 
 	*l_errnop = 0;
 
@@ -669,7 +669,7 @@ make_portwwn_luncomp_from_pinode(
 	int *l_errnop)
 {
 	uchar_t		*port_wwn_data;
-	int		pwwn_ret, lun_ret;
+	int		pwwn_ret = -1, lun_ret = -1;
 
 	*l_errnop = 0;
 
