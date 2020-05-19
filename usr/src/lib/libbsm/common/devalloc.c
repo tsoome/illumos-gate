@@ -260,7 +260,7 @@ _update_zonename(da_args *dargs, devalloc_t *dap)
 	int		i, j;
 	int		oldsize, newsize;
 	int		has_zonename = 0;
-	char		*zonename;
+	char		*zonename = NULL;
 	kva_t		*newkva, *oldkva;
 	kv_t		*newdata, *olddata;
 	devinfo_t	*devinfo;
@@ -312,7 +312,7 @@ _update_zonename(da_args *dargs, devalloc_t *dap)
 	olddata = oldkva->data;
 	for (i = 0, j = 0; i < oldsize; i++) {
 		if ((dargs->optflag & DA_REMOVE_ZONE) &&
-		    (strcmp(olddata[i].key, DAOPT_ZONE) == 0))
+				(strcmp(olddata[i].key, DAOPT_ZONE) == 0))
 			continue;
 		newdata[j].key = strdup(olddata[i].key);
 		newdata[j].value = strdup(olddata[i].value);
@@ -527,7 +527,7 @@ _build_defattrs(da_args *dargs, strentry_t **head_defent)
 {
 	int		rc = 0;
 	da_defs_t	*da_defs;
-	strentry_t	*tail_str, *tmp_str;
+	strentry_t	*tail_str = NULL, *tmp_str;
 
 	setdadefent();
 	while ((da_defs = getdadefent()) != NULL) {
@@ -659,7 +659,7 @@ _rebuild_lists(da_args *dargs, strentry_t **head_devallocp,
 	int		rc = 0;
 	devalloc_t	*devallocp;
 	devmap_t	*devmapp;
-	strentry_t	*tail_str;
+	strentry_t	*tail_str = NULL;
 	strentry_t	*tmp_str;
 	uint64_t	tmp_bitmap = 0;
 	uint_t		tmp = 0;
@@ -902,7 +902,7 @@ _build_lists(da_args *dargs, strentry_t **head_devallocp,
 	int		found = 0;
 	devalloc_t	*devallocp;
 	devmap_t	*devmapp;
-	strentry_t	*tail_str;
+	strentry_t	*tail_str = NULL;
 	strentry_t	*tmp_str;
 
 	if (dargs->optflag & DA_MAPS_ONLY)
