@@ -165,10 +165,8 @@ make_hba_logid(const char *hba_phys, char **hba_logpp, int *l_errnop)
 	}
 
 	/* failed to create logical ap_id */
-	if (pmt.log != NULL) {
-		S_FREE(pmt.log);
-	}
-
+	free(pmt.log);
+	pmt.log = NULL;
 
 	*l_errnop = pmt.l_errno;
 	return (ret);
@@ -225,7 +223,7 @@ drv_to_hba_logid(di_node_t node, di_minor_t minor, void *arg)
 		}
 	}
 
-	S_FREE(log);
+	free(log);
 	return (DI_WALK_CONTINUE);
 }
 
@@ -323,7 +321,7 @@ path_apid_dyn_to_path(
 		(void) memmove(root_path, cp, strlen(cp) + 1);
 	} else if (*root_path != '/') {
 		*l_errnop = 0;
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_ERR);
 	}
 
@@ -344,7 +342,7 @@ path_apid_dyn_to_path(
 	/* Get a snapshot */
 	if ((root = di_init("/", DINFOCACHE)) == DI_NODE_NIL) {
 		*l_errnop = errno;
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_ERR);
 	}
 
@@ -356,11 +354,11 @@ path_apid_dyn_to_path(
 	if (walk_root == DI_NODE_NIL) {
 		*l_errnop = errno;
 		di_fini(root);
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_LIB_ERR);
 	}
 
-	S_FREE(root_path);
+	free(root_path);
 
 	if ((pi_node = di_path_next_client(walk_root, pi_node)) ==
 	    DI_PATH_NIL) {
@@ -440,10 +438,7 @@ drv_dyn_to_devpath(
 		return (SCFGA_OK);
 	}
 
-	if (dpt.path != NULL) {
-		S_FREE(dpt.path);
-	}
-
+	free(dpt.path);
 
 	*l_errnop = dpt.l_errno;
 	return (ret);
@@ -456,7 +451,7 @@ do_drv_dyn_to_devpath(di_node_t node, void *arg)
 	int inst, rv, match_minor;
 	devpath_t *dptp;
 	char *physpath, *drv;
-	char *drvinst, *devpath;
+	char *drvinst = NULL, *devpath = NULL;
 	const size_t drvlen = MAXPATHLEN;
 	size_t devlen;
 
@@ -517,9 +512,9 @@ do_drv_dyn_to_devpath(di_node_t node, void *arg)
 
 	/*FALLTHRU*/
 out:
-	S_FREE(drvinst);
+	free(drvinst);
 	if (physpath != NULL) di_devfs_path_free(physpath);
-	if (dptp->ret != SCFGA_OK) S_FREE(devpath);
+	if (dptp->ret != SCFGA_OK) free(devpath);
 	return (rv);
 }
 
@@ -599,8 +594,11 @@ devlink_dyn_to_devpath(
 
 	/*FALLTHRU*/
 out:
-	S_FREE(dynt.devlink);
-	if (ret != SCFGA_OK) S_FREE(*pathpp);
+	free(dynt.devlink);
+	if (ret != SCFGA_OK) {
+		free(*pathpp);
+		*pathpp = NULL;
+	}
 	return (ret);
 }
 
@@ -641,7 +639,7 @@ make_dyncomp(
 
 		/* Create dynamic component. */
 		ret = devlink_to_dyncomp(devlink, dyncompp, l_errnop);
-		S_FREE(devlink);
+		free(devlink);
 		if (ret == SCFGA_OK) {
 			assert(*dyncompp != NULL);
 			return (SCFGA_OK);
@@ -717,7 +715,8 @@ drv_to_dyncomp(di_node_t node, const char *phys, char **dyncompp, int *l_errnop)
 		ret = SCFGA_APID_NOEXIST;
 	}
 
-	S_FREE(*dyncompp);
+	free(*dyncompp);
+	*dyncompp = NULL;
 	return (ret);
 }
 
@@ -794,7 +793,8 @@ disk_devlink_to_dyncomp(dyn_t *dyntp)
 	} else if ((cp = strchr(cp1 + 1, 'p')) != NULL) {
 		*cp = '\0';
 	} else {
-		S_FREE(dyntp->dyncomp);
+		free(dyntp->dyncomp);
+		dyntp->dyncomp = NULL;
 		dyntp->ret = SCFGA_ERR;
 	}
 
@@ -1042,7 +1042,8 @@ def_dyncomp_to_devlink(dyn_t *dyntp)
 	}
 
 
-	S_FREE(dyntp->devlink);
+	free(dyntp->devlink);
+	dyntp->devlink = NULL;
 	return (SCFGA_CONTINUE);
 
 lib_err:

@@ -335,7 +335,6 @@ typedef struct {
 #define	MINOR_SEP		":"
 #define	PATH_APID_DYN_SEP	","
 
-#define	S_FREE(x)	(((x) != NULL) ? (free(x), (x) = NULL) : (void *)0)
 #define	S_STR(x)	(((x) == NULL) ? "" : (x))
 
 
@@ -344,7 +343,7 @@ typedef struct {
 
 #define	GET_MSG_STR(i)		(str_tbl[msg_idx(i)].msgstr)
 
-#define	GET_DYN(a)	(((a) != NULL) ? strstr((a), DYN_SEP) : (void *)0)
+#define	GET_DYN(a)	(((a) != NULL) ? strstr((a), DYN_SEP) : NULL)
 
 /*
  * The following macro removes the separator from the dynamic component.

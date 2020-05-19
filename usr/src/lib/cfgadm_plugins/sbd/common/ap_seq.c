@@ -217,7 +217,7 @@ ap_seq_get(apd_t *a, int cmd, int *first, int *last)
 cfga_err_t
 ap_seq_exec(apd_t *a, int cmd, int first, int last)
 {
-	int c;
+	int c = 0;
 	int skip;
 	int suspend;
 	int resume;

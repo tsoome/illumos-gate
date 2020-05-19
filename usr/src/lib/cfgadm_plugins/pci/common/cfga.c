@@ -1760,7 +1760,7 @@ cfga_err(char **errstring, ...)
 	int n;
 	int len;
 	int flen;
-	char *p;
+	char *p = NULL;
 	char *q;
 	char *s[32];
 	char *failed;

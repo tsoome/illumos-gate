@@ -386,9 +386,9 @@ apidt_create(const char *ap_id, apid_t *apidp, char **errstring)
 	return (SCFGA_OK);
 
 err:
-	S_FREE(hba_phys);
-	S_FREE(dyncomp);
-	S_FREE(path);
+	free(hba_phys);
+	free(dyncomp);
+	free(path);
 	return (ret);
 }
 
@@ -398,9 +398,12 @@ apidt_free(apid_t *apidp)
 	if (apidp == NULL)
 		return;
 
-	S_FREE(apidp->hba_phys);
-	S_FREE(apidp->dyncomp);
-	S_FREE(apidp->path);
+	free(apidp->hba_phys);
+	apidp->hba_phys = NULL;
+	free(apidp->dyncomp);
+	apidp->dyncomp = NULL;
+	free(apidp->path);
+	apidp->path = NULL;
 }
 
 scfga_ret_t
@@ -502,7 +505,7 @@ walk_tree(
 
 	/*FALLTHRU*/
 out:
-	S_FREE(root_path);
+	free(root_path);
 	return (ret);
 }
 
@@ -612,7 +615,7 @@ cfga_msg(struct cfga_msg *msgp, ...)
 
 	(void) (*msgp->message_routine)(msgp->appdata_ptr, p);
 
-	S_FREE(p);
+	free(p);
 }
 
 
@@ -731,7 +734,7 @@ out:
 	sp = dummy.next;
 	while (sp != NULL) {
 		savep = sp->next;
-		S_FREE(sp);
+		free(sp);
 		sp = savep;
 	}
 }
@@ -809,7 +812,7 @@ path_apid_state_change(
 		(void) memmove(root_path, cp, strlen(cp) + 1);
 	} else if (*root_path != '/') {
 		*l_errnop = 0;
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_ERR);
 	}
 
@@ -830,7 +833,7 @@ path_apid_state_change(
 	/* Get a snapshot */
 	if ((root = di_init("/", DINFOCACHE)) == DI_NODE_NIL) {
 		*l_errnop = errno;
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_ERR);
 	}
 
@@ -842,7 +845,7 @@ path_apid_state_change(
 	if (walk_root == DI_NODE_NIL) {
 		*l_errnop = errno;
 		di_fini(root);
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_LIB_ERR);
 	}
 
@@ -851,7 +854,7 @@ path_apid_state_change(
 	    DI_PATH_NIL) {
 		/* the path apid not found */
 		di_fini(root);
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_APID_NOEXIST);
 	}
 
@@ -872,7 +875,7 @@ path_apid_state_change(
 
 	if (!found) {
 		di_fini(root);
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_APID_NOEXIST);
 	}
 
@@ -880,13 +883,13 @@ path_apid_state_change(
 	client_node = di_path_client_node(pi_node);
 	if (client_node == DI_NODE_NIL) {
 		di_fini(root);
-		S_FREE(root_path);
+		free(root_path);
 		return (SCFGA_ERR);
 	} else {
 		client_path = di_devfs_path(client_node);
 		if (client_path == NULL) {
 			di_fini(root);
-			S_FREE(root_path);
+			free(root_path);
 			return (SCFGA_ERR);
 		}
 
@@ -909,7 +912,7 @@ path_apid_state_change(
 					if (ret != SCFGA_OK) {
 						di_fini(root);
 						di_devfs_path_free(client_path);
-						S_FREE(root_path);
+						free(root_path);
 						return (ret);
 					}
 				}
@@ -935,7 +938,7 @@ path_apid_state_change(
 
 	di_devfs_path_free(client_path);
 	di_fini(root);
-	S_FREE(root_path);
+	free(root_path);
 
 	return (ret);
 }
@@ -1015,7 +1018,7 @@ devctl_cmd(
 	}
 	*l_errnop = errno;
 
-	S_FREE(path);
+	free(path);
 
 	if (hdl == NULL) {
 		return (SCFGA_ERR);
@@ -1075,7 +1078,7 @@ list_free(ldata_list_t **llpp)
 	while (lp != NULL) {
 		olp = lp;
 		lp = olp->next;
-		S_FREE(olp);
+		free(olp);
 	}
 
 	*llpp = NULL;
