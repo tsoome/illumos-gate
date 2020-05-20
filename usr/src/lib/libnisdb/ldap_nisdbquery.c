@@ -440,7 +440,7 @@ createQuery(int num, char **index, __nis_table_mapping_t *t,
 	 * Create queries from the rvq[] array.
 	 */
 	for (a = 0; a < *numVals; a++) {
-		int	nn, err = 0;
+		int	nn = 0, err = 0;
 
 		qc = am(myself, rvq[a].numColumns * sizeof (*qc));
 		if (qc != 0) {

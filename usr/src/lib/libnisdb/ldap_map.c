@@ -1096,7 +1096,8 @@ mapToLDAP(__nis_table_mapping_t *tm, int nq, db_query **old, db_query **new,
  */
 int
 verifyIndexMatch(__nis_table_mapping_t *x, db_query *q,
-		__nis_rule_value_t *rv, char *name, char *val) {
+    __nis_rule_value_t *rv, char *name, char *val)
+{
 	int	i, j, k, match = 1;
 	char	*myself = "verifyIndexMatch";
 
@@ -1106,7 +1107,7 @@ verifyIndexMatch(__nis_table_mapping_t *x, db_query *q,
 	 * nested loop to decide OR or AND.
 	 */
 	int	ppos, fpos;
-	char	**pass, **fail;
+	char	**pass = NULL, **fail = NULL;
 
 	if (x == 0)
 		return (0);

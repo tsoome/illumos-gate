@@ -1593,8 +1593,8 @@ get_print_mapping_element(
 	token_type			t;
 	const char			*begin_token;
 	const char			*end_token;
-	char				elide;
-	bool_t				doElide;
+	char				elide = '\0';
+	bool_t				doElide = FALSE;
 	__nis_mapping_format_t		*base		= NULL;
 	__nis_mapping_sub_element_t	*subElement	= NULL;
 	int				n		= 0;

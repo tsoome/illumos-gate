@@ -296,8 +296,8 @@ makePseudoEntryObj(nis_object *obj, entry_obj *eo, nis_object *tobj) {
 	char		*buf;
 	XDR		xdrs;
 	bool_t		xret;
-	uint_t		ecl;
-	entry_col	*ecv;
+	uint_t		ecl = 0;
+	entry_col	*ecv = NULL;
 	char		*myself = "makePseudoEntryObj";
 
 	if (obj == 0 || eo == 0)

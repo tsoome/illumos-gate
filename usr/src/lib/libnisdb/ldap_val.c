@@ -511,13 +511,14 @@ berDecode(__nis_value_t *valIn, char *berstring) {
  */
 __nis_value_t *
 getMappingItemVal(__nis_mapping_item_t *item, __nis_mapping_item_type_t native,
-		__nis_rule_value_t *rv, char *berstring, int *np_ldap_stat) {
-	__nis_value_t				*val = 0, *nameVal, *exVal = 0;
-	int					numName, caseInsens, cmp;
-	int					i, j, k;
-	char					**name;
+    __nis_rule_value_t *rv, char *berstring, int *np_ldap_stat)
+{
+	__nis_value_t	*val = NULL, *nameVal = NULL, *exVal = NULL;
+	int		numName = 0, caseInsens, cmp;
+	int		i, j, k;
+	char		**name = NULL;
 	enum {rvOnly, rvThenLookup, lookupOnly}	check;
-	unsigned char				fromldap = '\0';
+	unsigned char	fromldap = '\0';
 
 	if (item == 0)
 		return (0);
@@ -2092,7 +2093,7 @@ matchMappingItem(__nis_mapping_format_t *f, __nis_value_t *inVal,
 		int *numVals, char *sepset, char **outstr) {
 	__nis_value_t		**v = 0;
 	int			i, n, ni, numItems, nf;
-	char			*str, *valstr;
+	char			*str = NULL, *valstr;
 	__nis_mapping_format_t	*ftmp;
 	char			*myself = "matchMappingItem";
 

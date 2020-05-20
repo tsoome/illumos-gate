@@ -453,7 +453,7 @@ shim_dbm_open(const char *file, int open_flags, mode_t file_mode)
 int
 shim_dbm_store(DBM  *db,  datum  key,  datum  content, int store_mode)
 {
-	int ret;
+	int ret = SUCCESS;
 	map_ctrl *map;
 
 	/* Get map name */
