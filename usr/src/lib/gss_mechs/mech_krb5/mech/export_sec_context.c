@@ -36,7 +36,7 @@ krb5_gss_export_sec_context(minor_status, context_handle, interprocess_token)
     gss_ctx_id_t	*context_handle;
     gss_buffer_t	interprocess_token;
 {
-    krb5_context	context;
+    krb5_context	context = NULL;
     krb5_error_code	kret;
     OM_uint32		retval;
     size_t		bufsize, blen;

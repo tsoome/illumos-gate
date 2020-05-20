@@ -233,7 +233,7 @@ krb5_preauth_supply_preauth_data(krb5_context context,
 				 const char *attr,
 				 const char *value)
 {
-    krb5_error_code retval;
+    krb5_error_code retval = 0;
     int i;
     void *pctx;
     const char *emsg = NULL;

@@ -1356,7 +1356,7 @@ krb5_fcc_open_file (krb5_context context, krb5_ccache id, int mode)
     int f, open_flag;
     int lock_flag;
     krb5_error_code retval = 0;
-    int retries;
+    int retries = 0;
     int newfile = 0;
 
     k5_assert_locked(&data->lock);
