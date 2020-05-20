@@ -650,7 +650,7 @@ freeCon(__nis_ldap_conn_t *lc) {
  */
 static int
 disconnectCon(__nis_ldap_conn_t *lc) {
-	int	stat;
+	int	stat = 0;
 	char	*myself = "disconnectCon";
 
 	if (lc == 0)
@@ -1346,7 +1346,7 @@ __nis_rule_value_t *
 ldapSearch(__nis_ldap_search_t *ls, int *numValues, __nis_rule_value_t *rvIn,
 		int *ldapStat) {
 	__nis_rule_value_t	*rv = 0;
-	int			stat, numEntries, numVals, tnv, done, lprEc;
+	int			stat, numEntries, numVals = 0, tnv, done, lprEc;
 	LDAPMessage		*msg = 0, *m;
 	__nis_ldap_conn_t	*lc;
 	struct timeval		tv, start, now;
@@ -1357,7 +1357,7 @@ ldapSearch(__nis_ldap_search_t *ls, int *numValues, __nis_rule_value_t *rvIn,
 	struct berval		*spCookie = 0;
 	int			doVLV = 0;
 	int			doSP = 0;
-	long			index;
+	long			index = 0;
 	char			*myself = "ldapSearch";
 	bool_t			follow_referral =
 					proxyInfo.follow_referral == follow;

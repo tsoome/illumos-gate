@@ -205,7 +205,7 @@ addVal2RuleValue(char *msg, int caseSens, int snipNul, __nis_value_type_t type,
 		char *name, void *value, int valueLen,
 		int *numP, char ***inNameP, __nis_value_t **inValP) {
 	int			i, j, copyLen = valueLen;
-	__nis_single_value_t	*v;
+	__nis_single_value_t	*v = NULL;
 	char			**inName = *inNameP;
 	__nis_value_t		*inVal = *inValP;
 	int			num = *numP;
