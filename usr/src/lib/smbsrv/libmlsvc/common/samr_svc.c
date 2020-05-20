@@ -758,7 +758,7 @@ samr_s_QueryUserInfo(void *arg, ndr_xa_t *mxa)
 	samr_keydata_t			*data;
 	smb_domain_t			di;
 	smb_account_t			account;
-	smb_sid_t			*sid;
+	smb_sid_t			*sid = NULL;
 	uint32_t			status;
 
 	id = (ndr_hdid_t *)&param->user_handle;

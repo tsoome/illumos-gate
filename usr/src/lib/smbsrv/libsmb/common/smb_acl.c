@@ -424,6 +424,7 @@ smb_fsacl_getsids(smb_idmap_batch_t *sib, acl_t *zacl)
 
 	for (i = 0, zace = zacl->acl_aclp; i < zacl->acl_cnt;
 	    zace++, i++, sim++) {
+		id = zace->a_who;
 		switch (zace->a_flags & ACE_TYPE_FLAGS) {
 		case ACE_OWNER:
 			idtype = SMB_IDMAP_OWNERAT;
@@ -436,7 +437,6 @@ smb_fsacl_getsids(smb_idmap_batch_t *sib, acl_t *zacl)
 
 		case ACE_IDENTIFIER_GROUP:
 			/* regular group */
-			id = zace->a_who;
 			idtype = SMB_IDMAP_GROUP;
 			break;
 
@@ -446,7 +446,6 @@ smb_fsacl_getsids(smb_idmap_batch_t *sib, acl_t *zacl)
 
 		default:
 			/* user entry */
-			id = zace->a_who;
 			idtype = SMB_IDMAP_USER;
 		}
 

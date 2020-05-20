@@ -1707,7 +1707,7 @@ smb_ads_join(char *domain, char *user, char *usr_passwd, char *machine_passwd)
 	smb_ads_qstat_t qstat;
 	char dn[SMB_ADS_DN_MAX];
 	char tmpfile[] = SMBNS_KRB5_KEYTAB_TMP;
-	int cnt, x;
+	int cnt = 0, x;
 	smb_krb5_pn_set_t spns;
 	krb5_enctype *encptr;
 

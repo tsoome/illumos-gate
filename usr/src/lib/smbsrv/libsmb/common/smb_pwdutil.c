@@ -782,6 +782,7 @@ smb_pwd_lock(void)
 			res = SMB_PWE_DENIED;
 			break;
 		case 0:
+		default:
 			res = SMB_PWE_SUCCESS;
 			break;
 		}

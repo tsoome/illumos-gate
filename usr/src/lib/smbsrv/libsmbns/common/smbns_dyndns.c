@@ -1679,8 +1679,8 @@ dyndns_search_entry(int update_zone, const char *hostname, const char *ip_addr,
 	smb_inaddr_t ipaddr, dnsip;
 	char dns_hostname[NI_MAXHOST];
 	struct addrinfo hints, *res = NULL;
-	int salen;
-	int family;
+	int salen = 0;
+	int family = 0;
 
 	*is_match = 0;
 	if (inet_pton(AF_INET, ip_addr, &ipaddr) == 1) {
