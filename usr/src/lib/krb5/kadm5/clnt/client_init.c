@@ -324,7 +324,7 @@ _kadm5_initialize_rpcsec_gss_handle(kadm5_server_handle_t handle,
 	rpc_gss_options_ret_t   options_ret;
 	rpc_gss_service_t service = rpc_gss_svc_privacy;
 	OM_uint32 gssstat, minor_stat;
-	void *handlep;
+	void *handlep = NULL;
 	enum clnt_stat rpc_err_code;
 	char *server = handle->params.admin_server;
 
@@ -338,7 +338,7 @@ _kadm5_initialize_rpcsec_gss_handle(kadm5_server_handle_t handle,
 			server = handle->params.kpasswd_server;
 	}
 	hp = gethostbyname(server);
-	if (hp == (struct hostent *)NULL) {
+	if (hp == NULL) {
 		code = KADM5_BAD_SERVER_NAME;
 		ADMIN_LOGO(LOG_ERR, dgettext(TEXT_DOMAIN,
 					    "bad server name\n"));
@@ -358,7 +358,7 @@ _kadm5_initialize_rpcsec_gss_handle(kadm5_server_handle_t handle,
 	printf("sin_addr %d:%d\n", addr.sin_addr.S_un.S_un_w.s_w1,
 	    addr.sin_addr.S_un.S_un_w.s_w2);
 #endif
-	if ((handlep = setnetconfig()) == (void *) NULL) {
+	if ((handlep = setnetconfig()) == NULL) {
 		(void) syslog(LOG_ERR,
 			    dgettext(TEXT_DOMAIN,
 				    "cannot get any transport information"));
@@ -560,7 +560,7 @@ _kadm5_initialize_rpcsec_gss_handle(kadm5_server_handle_t handle,
 error:
 cleanup:
 
-	if (handlep != (void *) NULL)
+	if (handlep != NULL)
 		(void) endnetconfig(handlep);
 	/*
 	 * gss_client_creds is freed only when there is an error condition,

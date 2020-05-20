@@ -3,8 +3,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -535,7 +533,7 @@ ulog_map(krb5_context context, kadm5_config_params *params, int caller)
 	char		logname[MAX_FILENAME];
 	kdb_log_context	*log_ctx;
 	kdb_hlog_t	*ulog = NULL;
-	uint32_t	ulogentries;
+	uint32_t	ulogentries = 0;
 	int		ulogfd = -1;
 
 	if ((caller == FKADMIND) || (caller == FKCOMMAND))

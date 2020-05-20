@@ -754,7 +754,7 @@ kadm5_get_principal(void *server_handle, krb5_principal principal,
     long			mask;
     int i;
     kadm5_server_handle_t handle = server_handle;
-    kadm5_principal_ent_rec	entry_local, *entry_orig;
+    kadm5_principal_ent_rec	entry_local, *entry_orig = NULL;
 
     CHECK_HANDLE(server_handle);
 

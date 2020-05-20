@@ -3,8 +3,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Copyright (C) 2002 by the Massachusetts Institute of Technology.
  * All rights reserved.
@@ -276,7 +274,7 @@ __bt_seqadv(t, ep, flags)
 {
 	CURSOR *c;
 	PAGE *h;
-	indx_t idx;
+	indx_t idx = 0;
 	db_pgno_t pg;
 	int exact, rval;
 
@@ -825,7 +823,7 @@ bt_rseqadv(t, ep, rc, flags)
 {
 	CURSOR *c;
 	PAGE *h;
-	indx_t idx;
+	indx_t idx = 0;
 	db_pgno_t pg;
 	int status;
 	EPGNO *e;

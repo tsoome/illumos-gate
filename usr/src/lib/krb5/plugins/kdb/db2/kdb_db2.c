@@ -1053,14 +1053,14 @@ krb5_db2_db_put_principal(krb5_context context,
 			  int *nentries, /* number of entry structs to update */
 			  char **db_args)
 {
-    int     i, n, dbret;
+    int     i = 0, n, dbret;
     DB     *db;
     DBT     key, contents;
     krb5_data contdata, keydata;
     krb5_error_code retval;
     krb5_db2_context *db_ctx;
     kdb5_dal_handle *dal_handle;
-    kdb_incr_update_t *upd, *fupd;
+    kdb_incr_update_t *upd = NULL, *fupd = NULL;
     char *princ_name = NULL;
     kdb_log_context *log_ctx;
 

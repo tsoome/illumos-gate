@@ -1,5 +1,3 @@
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -67,7 +65,7 @@ __rec_open(fname, flags, mode, openinfo, dflags)
 	DB *dbp;
 	PAGE *h;
 	struct stat sb;
-	int rfd, sverrno;
+	int rfd = -1, sverrno;
 
 	/* Open the user's file -- if this fails, we're done. */
 	if (fname != NULL && (rfd = open(fname, flags | O_BINARY, mode)) < 0)

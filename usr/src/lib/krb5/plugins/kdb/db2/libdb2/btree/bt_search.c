@@ -1,5 +1,3 @@
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -159,7 +157,7 @@ __bt_snext(t, h, key, exactp)
 	BINTERNAL *bi;
 	EPG e;
 	EPGNO *parent;
-	indx_t idx;
+	indx_t idx = 0;
 	db_pgno_t pgno;
 	int level;
 
@@ -239,7 +237,7 @@ __bt_sprev(t, h, key, exactp)
 	BINTERNAL *bi;
 	EPG e;
 	EPGNO *parent;
-	indx_t idx;
+	indx_t idx = 0;
 	db_pgno_t pgno;
 	int level;
 

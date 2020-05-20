@@ -308,7 +308,7 @@ kadm5int_acl_parse_restrictions(s, rpp)
     char		*s;
     restriction_t	**rpp;
 {
-    char		*sp, *tp, *ap;
+    char		*sp = NULL, *tp, *ap;
     static const char	*delims = "\t\n\f\v\r ,";
     krb5_deltat		dt;
     krb5_flags		flag;
@@ -378,13 +378,11 @@ kadm5int_acl_parse_restrictions(s, rpp)
 	    }
 	}
     }
-    if (sp)
-	free(sp);
+    free(sp);
     if (*rpp && code) {
-	if ((*rpp)->policy)
-	    free((*rpp)->policy);
+	free((*rpp)->policy);
 	free(*rpp);
-	*rpp = (restriction_t *) NULL;
+	*rpp = NULL;
     }
     DPRINT(DEBUG_CALLS, acl_debug_level,
 	   ("X kadm5int_acl_parse_restrictions() = %d, mask=0x%08x\n",
