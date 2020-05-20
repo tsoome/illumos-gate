@@ -2730,7 +2730,7 @@ NSS_FindCRL(KMF_HANDLE_T handle, int numattr, KMF_ATTRIBUTE *attrlist)
 	CERTName *name = NULL;
 	SECStatus nssrv;
 	char *asciiname = NULL;
-	int crl_num;
+	int crl_num = 0;
 	int i, *CRLCount;
 	CERTCertDBHandle *certHandle = CERT_GetDefaultCertDB();
 	char **CRLNameList;
@@ -2777,7 +2777,6 @@ NSS_FindCRL(KMF_HANDLE_T handle, int numattr, KMF_ATTRIBUTE *attrlist)
 	 * Loop thru the crlList and create a crl list with CRL's subject name.
 	 */
 	crlNode  = crlList->first;
-	crl_num = 0;
 	while (crlNode) {
 		char *subj_name;
 

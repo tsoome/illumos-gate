@@ -91,7 +91,7 @@ kmf_create_pk11_session(CK_SESSION_HANDLE *sessionp,
 	CK_RV rv;
 	KMF_RETURN ret;
 	KMF_RETURN kmf_rv = KMF_OK;
-	CK_SLOT_ID_PTR pSlotList;
+	CK_SLOT_ID_PTR pSlotList = NULL;
 	CK_ULONG pulCount;
 	CK_MECHANISM_INFO info;
 	int i;
