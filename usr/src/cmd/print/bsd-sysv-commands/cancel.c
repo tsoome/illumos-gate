@@ -67,7 +67,7 @@ cancel_jobs_for_user(char *user, papi_encryption_t encryption, char *pname) {
 	papi_status_t status;
 	papi_service_t svc = NULL;
 	char **printers = NULL;
-	int i, exit_code;
+	int i, exit_code = 0;
 
 	if (pname == NULL) {
 		status = papiServiceCreate(&svc, NULL, NULL, NULL,

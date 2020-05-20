@@ -56,7 +56,7 @@ ipp_print_job(papi_service_t svc, papi_attribute_t **request,
 			"printer-uri", NULL };
 
 	/* Get operational attributes from the request */
-	(void) papiAttributeListGetCollection(request, NULL,
+	status =  papiAttributeListGetCollection(request, NULL,
 	    "operational-attributes-group", &operational);
 
 	/*

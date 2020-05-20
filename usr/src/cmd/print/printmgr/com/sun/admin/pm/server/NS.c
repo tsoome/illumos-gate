@@ -117,7 +117,7 @@ _dorexec(
 	int fd = 0;
 	int fd2 = 1;
 
-	FILE *fderr;
+	FILE *fderr = NULL;
 	char *ferr;
 
 	(void) memset(glob_stdout, 0, BUFSIZ);
