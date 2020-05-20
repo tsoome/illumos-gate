@@ -656,7 +656,7 @@ dns_hostnames2netaddrs(
 	struct addrlist *addrlist)
 {
     struct srv_dns_entry *entry = NULL, *next;
-    krb5_error_code code;
+    krb5_error_code code = 0;
 
     Tprintf ("walking answer list:\n");
     for (entry = head; entry != NULL; entry = entry->next) {
@@ -764,7 +764,7 @@ prof_hostnames2netaddrs(
 	struct addrlist *addrlist) /* output */
 {
 	int udpport  = 0 , sec_udpport = 0;
-	int code, i;
+	int code = 0, i;
 	struct servent *serv;
 
 	int count = 0;

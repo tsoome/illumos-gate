@@ -272,7 +272,7 @@ krb5int_aes_encrypt(krb5_context context,
 {
 	krb5_error_code ret = 0;
 	int nblocks, partialamount;
-	CK_RV rv;
+	CK_RV rv = CKR_OK;
 	KRB5_MECH_TO_PKCS algos;
 	CK_MECHANISM mechanism;
 	CK_ULONG outlen;
@@ -724,7 +724,7 @@ krb5int_aes_decrypt(krb5_context context,
 {
 	krb5_error_code ret = 0;
 	int nblocks, partialamount;
-	CK_RV rv;
+	CK_RV rv = CKR_OK;
 	KRB5_MECH_TO_PKCS algos;
 	CK_MECHANISM mechanism;
 	CK_ULONG outlen;
