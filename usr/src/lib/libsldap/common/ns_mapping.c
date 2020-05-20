@@ -328,7 +328,7 @@ __s_api_parseASearchDesc(const char *service,
     char **cur, ns_ldap_search_desc_t **ret)
 {
 	ns_ldap_search_desc_t	*ptr;
-	char			*sptr, *dptr;
+	char			*sptr, *dptr = NULL;
 	int			i, rc;
 	ns_ldap_error_t		**errorp = NULL;
 	ns_ldap_error_t		*error = NULL;

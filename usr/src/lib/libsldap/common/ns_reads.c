@@ -2814,8 +2814,8 @@ search_state_machine(ns_ldap_cookie_t *cookie, ns_state_t state, int cycle)
 			break;
 		case PROCESS_RESULT:
 			/* NOTE THIS STATE MAY BE PROCESSED BY CALLER */
+			rc = 0;
 			if (cookie->use_usercb && cookie->callback) {
-				rc = 0;
 				for (nextEntry = cookie->result->entry;
 				    nextEntry != NULL;
 				    nextEntry = nextEntry->next) {
@@ -4441,6 +4441,7 @@ __ns_ldap_dn2domain(const char *dn, char **domain, const ns_cred_t *cred,
 	char		*newdn, **rdns = NULL;
 	char		**dns, *dn1;
 
+	rc = NS_LDAP_SUCCESS;
 	*errorp = NULL;
 
 	if (domain == NULL)

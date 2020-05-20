@@ -407,7 +407,7 @@ __ns_ldap_check_dns_preq(int foreground,
 
 	char	buf[MSGSIZE];
 	int	retcode = NS_LDAP_SUCCESS;
-	int	loglevel;
+	int	loglevel = 0;
 
 	if (errpp)
 		*errpp = NULL;
@@ -473,7 +473,7 @@ __ns_ldap_check_gssapi_preq(int foreground,
 	char	*attr[2] = {"dn", NULL}, buf[MSGSIZE];
 	ns_cred_t	cred;
 	ns_ldap_result_t *result = NULL;
-	int	loglevel;
+	int	loglevel = 0;
 
 	if (errpp)
 		*errpp = NULL;

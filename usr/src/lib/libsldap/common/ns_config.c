@@ -2811,6 +2811,10 @@ dupParam(ns_param_t *ptr)
 	case INT:
 	case TIMET:
 		count = 1;
+		break;
+	default:
+		count = 0;
+		break;
 	}
 
 	dupdata = (void **)calloc((count + 1), sizeof (void *));
