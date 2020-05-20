@@ -25,10 +25,6 @@
  *
  */
 
-/* $Id: purge-jobs.c 146 2006-03-24 00:26:54Z njacobs $ */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <papi.h>
 #include <ipp.h>
@@ -45,7 +41,7 @@ ipp_purge_jobs(papi_service_t svc, papi_attribute_t **request,
 	char *queue = NULL;
 
 	/* Get operational attributes from the request */
-	(void) papiAttributeListGetCollection(request, NULL,
+	status = papiAttributeListGetCollection(request, NULL,
 				"operational-attributes-group", &operational);
 
 	/*
