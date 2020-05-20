@@ -3406,7 +3406,7 @@ rparseidtype(uint16_t type)
 void
 ipsecutil_exit(exit_type_t type, char *fmri, FILE *fp, const char *fmt, ...)
 {
-	int exit_status;
+	int exit_status = SMF_EXIT_OK;
 	va_list args;
 
 	if (fp == NULL)
