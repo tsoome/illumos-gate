@@ -850,7 +850,7 @@ smb_dcache_wait(void)
 static uint32_t
 smb_dcache_updating(void)
 {
-	uint32_t rc;
+	uint32_t rc = SMB_DOMAIN_SUCCESS;
 
 	(void) mutex_lock(&smb_dcache.dc_mtx);
 	switch (smb_dcache.dc_state) {

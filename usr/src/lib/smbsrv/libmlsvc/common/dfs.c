@@ -1889,7 +1889,7 @@ dfs_modinfo(uint32_t type, dfs_info_t *info, dfs_info_t *newinfo,
 	boolean_t target_op = B_FALSE;
 	uint32_t status = ERROR_SUCCESS;
 	uint32_t state;
-	int target_idx;
+	int target_idx = 0;
 
 	if (newinfo->i_targets != NULL) {
 		target_idx = dfs_target_find(info->i_targets, info->i_ntargets,

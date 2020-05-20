@@ -2840,7 +2840,7 @@ print_samsg(FILE *file, uint64_t *buffer, boolean_t want_timestamp,
 boolean_t
 save_lifetime(struct sadb_lifetime *lifetime, FILE *ofile)
 {
-	char *prefix;
+	char *prefix = NULL;
 
 	switch (lifetime->sadb_lifetime_exttype) {
 	case SADB_EXT_LIFETIME_HARD:
@@ -2885,7 +2885,7 @@ boolean_t
 save_address(struct sadb_address *addr, FILE *ofile)
 {
 	char *printable_addr, buf[INET6_ADDRSTRLEN];
-	const char *prefix, *pprefix;
+	const char *prefix = NULL, *pprefix = NULL;
 	struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)(addr + 1);
 	struct sockaddr_in *sin = (struct sockaddr_in *)sin6;
 	int af = sin->sin_family;
