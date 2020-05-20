@@ -278,7 +278,7 @@ kadm5_get_policy(void *server_handle, kadm5_policy_t name,
 		 kadm5_policy_ent_t entry) 
 {
     osa_policy_ent_t		t;
-    kadm5_policy_ent_rec	entry_local, **entry_orig, *new;
+    kadm5_policy_ent_rec	entry_local, **entry_orig = NULL, *new;
     int				ret;
     kadm5_server_handle_t handle = server_handle;
     int                         cnt=1;

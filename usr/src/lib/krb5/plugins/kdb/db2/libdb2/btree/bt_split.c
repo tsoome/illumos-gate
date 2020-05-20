@@ -1,5 +1,3 @@
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -87,16 +85,16 @@ __bt_split(t, sp, key, data, flags, ilen, argskip)
 	const DBT *key, *data;
 	int flags;
 	size_t ilen;
-	u_int32_t argskip;
+	uint32_t argskip;
 {
-	BINTERNAL *bi;
-	BLEAF *bl, *tbl;
+	BINTERNAL *bi = NULL;
+	BLEAF *bl = NULL, *tbl;
 	DBT a, b;
 	EPGNO *parent;
 	PAGE *h, *l, *r, *lchild, *rchild;
 	indx_t nxtindex;
-	u_int16_t skip;
-	u_int32_t n, nbytes, nksize;
+	uint16_t skip;
+	uint32_t n, nbytes, nksize = 0;
 	int parentsplit;
 	char *dest;
 
