@@ -1996,7 +1996,7 @@ OpenSSL_CertGetPrintable(KMF_HANDLE_T handle, const KMF_DATA *pcert,
 	unsigned char *outbuf = NULL;
 	unsigned char *outbuf_p;
 	int j;
-	int ext_index, nid, len;
+	int ext_index, nid, len = -1;
 	BIO *mem = NULL;
 	STACK_OF(OPENSSL_STRING) *emlst = NULL;
 	X509_EXTENSION *ex;

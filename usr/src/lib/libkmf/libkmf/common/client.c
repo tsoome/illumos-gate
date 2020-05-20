@@ -25,8 +25,6 @@
  * File: CLIENT.C
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -577,7 +575,7 @@ download_file(char *uri, char *proxy, int proxy_port,
 {
 	KMF_RETURN ret = KMF_OK;
 	xmlURIPtr   uriptr;
-	int sock;
+	int sock = -1;
 	boolean_t is_proxy;
 	int final_proxy_port;
 	char *hostname = NULL;

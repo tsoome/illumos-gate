@@ -327,7 +327,7 @@ ParseRdnAttribute(char **pbp, char *endptr, boolean_t singleAVA,
 {
 	KMF_RETURN rv;
 	const struct NameToKind *n2k;
-	int vt;
+	int vt = 0;
 	int valLen;
 	char *bp;
 

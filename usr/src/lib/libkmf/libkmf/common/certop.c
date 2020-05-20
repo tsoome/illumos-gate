@@ -3167,7 +3167,7 @@ verify_cert_with_key(KMF_HANDLE_T handle,
 	KMF_DATA	data_to_verify = { 0, NULL };
 	KMF_DATA	signed_data = { 0, NULL };
 	KMF_DATA	signature = { 0, NULL };
-	KMF_ALGORITHM_INDEX	algid;
+	KMF_ALGORITHM_INDEX	algid = KMF_ALGID_NONE;
 
 	/* check the caller and do other setup for this SPI call */
 	if (handle == NULL || CertToBeVerified == NULL ||
@@ -3258,7 +3258,7 @@ verify_cert_with_cert(KMF_HANDLE_T handle,
 	KMF_DATA	data_to_verify = { 0, NULL };
 	KMF_DATA	signed_data = { 0, NULL };
 	KMF_DATA	signature;
-	KMF_ALGORITHM_INDEX	algid;
+	KMF_ALGORITHM_INDEX	algid = KMF_ALGID_NONE;
 	KMF_POLICY_RECORD	*policy;
 
 	if (handle == NULL ||

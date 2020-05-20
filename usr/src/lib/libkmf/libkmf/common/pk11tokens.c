@@ -296,7 +296,7 @@ kmf_pk11_token_lookup(KMF_HANDLE_T handle, char *label, CK_SLOT_ID *slot_id)
 	CK_TOKEN_INFO	token_info;
 	CK_ULONG	slot_count = 0;
 	int		i;
-	uint_t		len, max_sz;
+	uint_t		len = 0, max_sz;
 	boolean_t 	metaslot_status_enabled;
 	boolean_t 	metaslot_migrate_enabled;
 	char	*metaslot_slot_info;
