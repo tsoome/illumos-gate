@@ -1320,7 +1320,7 @@ get_adobject_batch(adutils_host_t *adh, struct timeval *timeout)
 	LDAPMessage		*res = NULL;
 	int			rc, ret, msgid, qid;
 	adutils_q_t		*que;
-	int			num;
+	int			num = 0;
 
 	(void) pthread_mutex_lock(&adh->lock);
 	if (adh->dead || adh->num_requests == 0) {

@@ -126,7 +126,7 @@ BerElement *
 cldap_build_request(const char *dname,
 	const char *host, uint32_t ntver, uint16_t msgid)
 {
-	BerElement 	*ber;
+	BerElement 	*ber = NULL;
 	int		len = 0;
 	char		*basedn = "";
 	int scope = LDAP_SCOPE_BASE, deref = LDAP_DEREF_NEVER,
