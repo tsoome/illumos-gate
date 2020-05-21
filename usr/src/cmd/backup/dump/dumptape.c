@@ -41,6 +41,7 @@
 
 #define	SLEEPMS		50
 
+int newtape;
 static uint_t writesize;	/* size of malloc()ed buffer for tape */
 static ino_t inos[TP_NINOS];	/* starting inodes on each tape */
 

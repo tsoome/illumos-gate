@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "dump.h"
 
 #ifndef LOCK_EX
@@ -23,6 +21,17 @@ static 	struct flock fl;
 #define	LOCK_SH F_RDLCK
 #define	LOCK_UN F_UNLCK
 #endif
+
+char		*disk;
+char		*dname;
+char		*increm;
+
+char		incno;
+char		lastincno;
+int		uflag;
+uint_t		msiz;
+u_offset_t	o_esize;
+u_offset_t	f_esize;
 
 /*
  * Print a date.  A date of 0 is the beginning of time (the "epoch").

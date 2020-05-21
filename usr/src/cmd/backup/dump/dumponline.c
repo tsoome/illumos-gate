@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "dump.h"
 #include <math.h>
 #include <limits.h>
@@ -40,6 +38,19 @@ struct inodesc {
 	long	id_gen;			/* generation number */
 	struct inodesc *id_next;	/* next on linked list */
 };
+
+char	*archivefile;
+char	*tape;
+
+int	active;
+int	doingactive;
+int	doposition;
+int	pipeout;
+int	tapeout;
+int	to;
+
+struct fs	*sblock;
+union u_spcl	u_spcl;
 
 static struct inodesc	ilist;		/* list of used inodesc structs */
 static struct inodesc	*last;		/* last inodesc init'd or matched */

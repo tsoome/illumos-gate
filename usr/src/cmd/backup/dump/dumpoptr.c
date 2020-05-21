@@ -12,11 +12,10 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <errno.h>
 #include "dump.h"
 
+time_t *tschedule;
 static unsigned int timeout;		/* current timeout */
 static char *attnmessage, *saveattn;	/* attention message */
 

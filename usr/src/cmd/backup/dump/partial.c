@@ -24,12 +24,11 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "dump.h"
 #include <ftw.h>
 #include <ulimit.h>
 
+dev_t partial_dev;
 static int partial;
 
 #ifdef __STDC__

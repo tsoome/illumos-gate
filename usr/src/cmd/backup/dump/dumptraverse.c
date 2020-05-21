@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "dump.h"
 #include <sys/file.h>
 #include <sys/mman.h>
@@ -33,6 +31,9 @@ static void dsrch();
 void lf_dump();
 #endif
 
+int	dadded;
+int	nsubdir;
+int	shortmeta;
 static	char msgbuf[256];
 
 void
