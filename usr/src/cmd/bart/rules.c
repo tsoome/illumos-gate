@@ -64,7 +64,7 @@ static struct rule	*first_rule = NULL, *current_rule = NULL;
 int
 exclude_fname(const char *fname, char fname_type, struct rule *rule_ptr)
 {
-	char	*pattern, *ptr, *fname_ptr, saved_char;
+	char	*pattern, *ptr = NULL, *fname_ptr, saved_char;
 	char 	fname_cp[PATH_MAX], pattern_cp[PATH_MAX];
 	int	num_pattern_slash,  i, num_fname_slash, slashes_to_adv;
 	struct  tree_modifier   *mod_ptr;
