@@ -70,7 +70,7 @@ main(int argc, char **argv)
 {
 	struct dk_geom  geom;
 	int errflg, iflg, pflg, fd, c;
-	char *device;
+	char *device = NULL;
 
 	iflg = 0;
 	pflg = 0;
