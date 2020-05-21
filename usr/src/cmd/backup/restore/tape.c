@@ -43,6 +43,7 @@ static int	numtrec;	/* # of logical blocks in current tape record */
 static char	*tbf = NULL;
 static size_t	tbfsize = 0;
 static int	recsread;
+union		u_spcl u_spcl;
 static union	u_spcl endoftapemark;
 static struct	s_spcl dumpinfo;
 static long	blksread;	/* # of logical blocks actually read/touched */
