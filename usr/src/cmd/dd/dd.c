@@ -517,7 +517,7 @@ main(int argc, char **argv)
 {
 	unsigned char *ip, *op; /* input and output buffer pointers */
 	int c;		/* character counter */
-	int ic;		/* input character */
+	int ic = 0;		/* input character */
 	int conv;		/* conversion option code */
 	int trunc;		/* whether output file is truncated */
 	struct stat file_stat;
