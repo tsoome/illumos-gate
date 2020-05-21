@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/ctfs.h>
@@ -375,7 +373,7 @@ int
 main(int argc, char **argv)
 {
 	int	fd, efd;
-	pid_t	pid;
+	pid_t	pid = 0;
 	ctid_t	ctid = 0;
 	int	ctfd;
 	int	pipefds[2];
