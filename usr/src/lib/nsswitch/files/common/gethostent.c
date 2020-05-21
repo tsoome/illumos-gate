@@ -342,7 +342,7 @@ __nss_files_XY_hostbyname(be, args, filter, type)
 	int type;
 {
 	nss_status_t	res;
-	char		*abuf = NULL, *abuf_start = NULL, *abuf_end;
+	char		*abuf = NULL, *abuf_start = NULL, *abuf_end = NULL;
 	char		*first, *last, *buffer;
 	int		parsestat, i, nhosts = 0, buflen;
 	const char	*namep;
