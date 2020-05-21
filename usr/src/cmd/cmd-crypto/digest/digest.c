@@ -135,7 +135,7 @@ main(int argc, char **argv)
 	extern int optind;
 	int errflag = 0;	/* We had an optstr parse error */
 	char c;			/* current getopts flag */
-	char *algo_str;		/* mechanism/algorithm string */
+	char *algo_str = NULL;	/* mechanism/algorithm string */
 	int filecount;
 	boolean_t mac_cmd;	/* if TRUE, do mac, else do digest */
 	char *optstr;
@@ -363,9 +363,9 @@ execute_cmd(char *algo_str, int filecount, char **filelist, boolean_t mac_cmd)
 	char *filename = NULL;
 	CK_RV rv;
 	CK_ULONG slotcount;
-	CK_SLOT_ID slotID;
+	CK_SLOT_ID slotID = 0;
 	CK_SLOT_ID_PTR pSlotList = NULL;
-	CK_MECHANISM_TYPE mech_type;
+	CK_MECHANISM_TYPE mech_type = 0;
 	CK_MECHANISM_INFO info;
 	CK_MECHANISM mech;
 	CK_SESSION_HANDLE hSession = CK_INVALID_HANDLE;

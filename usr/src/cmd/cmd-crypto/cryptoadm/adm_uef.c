@@ -553,7 +553,7 @@ disable_uef_lib(char *libname, boolean_t rndflag, boolean_t allflag,
     mechlist_t *marglist)
 {
 	uentry_t	*puent;
-	int	rc;
+	int	rc = FAILURE;
 
 	if (libname == NULL) {
 		/* should not happen */

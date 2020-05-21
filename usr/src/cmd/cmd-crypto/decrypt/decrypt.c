@@ -418,7 +418,7 @@ execute_cmd(struct CommandInfo *cmd, char *algo_str)
 {
 	CK_RV rv;
 	CK_ULONG slotcount;
-	CK_SLOT_ID slotID;
+	CK_SLOT_ID slotID = 0;
 	CK_SLOT_ID_PTR pSlotList = NULL;
 	CK_MECHANISM_TYPE mech_type = 0;
 	CK_MECHANISM_INFO info, kg_info;
