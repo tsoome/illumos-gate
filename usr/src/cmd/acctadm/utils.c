@@ -131,7 +131,7 @@ int
 open_exacct_file(const char *file, int type)
 {
 	int rc;
-	int err;
+	int err = 0;
 
 	if (file[0] != '/') {
 		warn(gettext("%s is not an absolute pathname\n"), file);
