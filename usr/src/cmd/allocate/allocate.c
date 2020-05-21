@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <errno.h>
 #include <locale.h>
 #include <pwd.h>
@@ -265,6 +263,11 @@ main(int argc, char *argv[], char *envp[])
 #ifdef DEBUG
 	struct stat	statbuf;
 #endif
+
+	/*
+	 * caller's uid is the default if no user specified.
+	 */
+	uid = getuid();
 
 	(void) setlocale(LC_ALL, "");
 	(void) textdomain(TEXT_DOMAIN);
@@ -585,11 +588,6 @@ main(int argc, char *argv[], char *envp[])
 			exit(1);
 		}
 		uid = pw_ent.pw_uid;
-	} else {
-		/*
-		 * caller's uid is the default if no user specified.
-		 */
-		uid = getuid();
 	}
 
 	/*
