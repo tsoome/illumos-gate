@@ -27,8 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
@@ -1471,7 +1469,7 @@ unreadc(char c)
 void
 binop(char c)
 {
-	struct blk *r;
+	struct blk *r = NULL;
 
 	switch (c) {
 	case '+':
@@ -1783,9 +1781,10 @@ bigot(struct blk *p, int flg)
 	int l;
 	int neg;
 
-	if (flg == 1)
+	if (flg == 1) {
 		t = salloc(0);
-	else {
+		l = 0;
+	} else {
 		t = strptr;
 		l = length(strptr) + fw - 1;
 	}
