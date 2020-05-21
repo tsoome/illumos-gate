@@ -51,8 +51,8 @@ main(int argc, char** argv)
 {
 	register Mc_t*	mc;
 	register char*	s;
-	char*		loc;
-	char*		cmd;
+	char*		loc = NULL;
+	char*		cmd = NULL;
 	char*		cat;
 	char*		msg;
 	int		set;
