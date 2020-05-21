@@ -80,6 +80,13 @@ _nss_ldap_shadow2str(ldap_backend_ptr be, nss_XbyY_args_t *argp)
 	char		*last_str, *min_str, *max_str, *warning_str;
 	char		*inactive_str, *expire_str, *flag_str;
 
+	expire_str = _NO_VALUE;
+	inactive_str = _NO_VALUE;
+	warning_str = _NO_VALUE;
+	max_str = _NO_VALUE;
+	min_str = _NO_VALUE;
+	last_str = _NO_VALUE;
+
 	if (result == NULL)
 		return (NSS_STR_PARSE_PARSE);
 	buflen = argp->buf.buflen;

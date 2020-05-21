@@ -1015,7 +1015,7 @@ _nss_compat_getent(be, a)
 	/*CONSTCOND*/
 	while (1) {
 		char		*instr	= be->buf;
-		int		linelen;
+		int		linelen = 0;
 		char		*name;	/* === Need more distinctive label */
 		const char	*savename;
 

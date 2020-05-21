@@ -328,6 +328,8 @@ match_triple_entry(struct nss_innetgr_args *ia, const ns_ldap_entry_t *entry)
 	phost = (char **)ia->arg[NSS_NETGR_MACHINE].argv;
 	if (phost == NULL || *phost == NULL) {
 		nhost = 0;
+		phlen = 0;
+		phost0 = NULL;
 	} else {
 		phost0 = phost[0];
 		phlen = strlen(phost0);
@@ -340,6 +342,8 @@ match_triple_entry(struct nss_innetgr_args *ia, const ns_ldap_entry_t *entry)
 	pusers = (char **)ia->arg[NSS_NETGR_USER].argv;
 	if (pusers == NULL || *pusers == NULL) {
 		nusers = 0;
+		pulen = 0;
+		pusers0 = NULL;
 	} else {
 		pusers0 = pusers[0];
 		pulen = strlen(pusers0);

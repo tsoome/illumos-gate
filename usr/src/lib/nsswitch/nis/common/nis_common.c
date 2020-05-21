@@ -517,7 +517,8 @@ XbyY_iterator(instr, instr_len, a)
 	args->returnlen = 0;
 	parsestat = (*args->str2ent)(instr, instr_len,
 			args->buf.result, args->buf.buffer, args->buf.buflen);
-	if (parsestat == NSS_STR_PARSE_SUCCESS) {
+	switch (parsestat) {
+	case NSS_STR_PARSE_SUCCESS:
 		args->returnval = args->buf.result;
 		if ((*xydata->func)(args)) {
 			res = NSS_SUCCESS;
@@ -526,7 +527,9 @@ XbyY_iterator(instr, instr_len, a)
 			res = NSS_NOTFOUND;
 			args->returnval = 0;
 		}
-	} else if (parsestat == NSS_STR_PARSE_ERANGE) {
+		break;
+
+	case NSS_STR_PARSE_ERANGE:
 		/*
 		 * If we got here because (*str2ent)() found that the buffer
 		 * wasn't big enough, maybe we should quit and return erange.
@@ -535,7 +538,13 @@ XbyY_iterator(instr, instr_len, a)
 		 */
 		args->erange = 1;	/* <== Is this a good idea? */
 		res = NSS_NOTFOUND;
-	} /* else if (parsestat == NSS_STR_PARSE_PARSE) won't happen ! */
+		break;
+
+	default:
+		/* parsestat == NSS_STR_PARSE_PARSE won't happen ! */
+		res = NSS_NOTFOUND;
+		break;
+	}
 
 	return (res);
 }

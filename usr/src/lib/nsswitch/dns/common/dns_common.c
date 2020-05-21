@@ -428,9 +428,9 @@ _nss_dns_gethost_withttl(void *buffer, size_t bufsize, int ipnode)
 	/* misc variables */
 	int		af;
 	char		*ap, *apc;
-	int		hlen = 0, alen, iplen, len, isans;
+	int		hlen = 0, alen, iplen, len, isans = 0;
 	boolean_t	has_v4 = B_FALSE, has_v6 = B_FALSE;
-	int		flags, family, pass2 = 0;
+	int		flags = 0, family = AF_UNSPEC, pass2 = 0;
 
 	statp = &stat;
 	(void) memset(statp, '\0', sizeof (struct __res_state));
