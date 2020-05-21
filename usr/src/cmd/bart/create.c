@@ -59,7 +59,7 @@ int
 bart_create(int argc, char **argv)
 {
 	boolean_t	filelist_input;
-	int		ret, c, output_pipe[2];
+	int		ret = 0, c, output_pipe[2];
 	FILE 		*rules_fd = NULL;
 	pid_t		pid;
 
