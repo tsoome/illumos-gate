@@ -720,7 +720,7 @@ static int
 doacl(char *file, struct stat *st, acl_args_t *acl_args)
 {
 	acl_t *aclp;
-	acl_t *set_aclp;
+	acl_t *set_aclp = NULL;
 	int error = 0;
 	void *to, *from;
 	int len;
