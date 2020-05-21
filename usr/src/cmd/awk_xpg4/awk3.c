@@ -1239,11 +1239,11 @@ do_asn_op:
 static NODE *
 arithmetic(NODE *np)
 {
-	register NODE *left, *right;
+	NODE *left, *right;
 	int type;
-	register INT i1, i2;
-	register INT iresult;
-	register REAL r1, r2;
+	INT i1 = 0, i2 = 0;
+	INT iresult = 0;
+	REAL r1, r2;
 
 	left = exprreduce(np->n_left);
 	if (isreal(left->n_flags) ||
@@ -1938,14 +1938,14 @@ s_for(NODE *np)
 static int
 s_forin(NODE *np)
 {
-	register NODE *left;
-	register int act = 0;
-	register NODE *var;
-	register NODE **nnp;
-	register NODE *statement;
-	register int issymtab = 0;
+	NODE *left;
+	int act = 0;
+	NODE *var;
+	NODE **nnp;
+	NODE *statement;
+	int issymtab = 0;
 	wchar_t *index;
-	register int alen;
+	int alen = 0;
 	int nbuck;
 
 	left = np->n_left;
@@ -2017,7 +2017,7 @@ s_forin(NODE *np)
 		} else {
 			if ((np = *nnp) == NNULL)
 				break;
-			index = np->n_name+alen;
+			index = np->n_name + alen;
 			*nnp = np->n_alink;
 		}
 		strassign(var, index, FSTATIC, wcslen(index));
@@ -2100,14 +2100,14 @@ makeindex(NODE *np, wchar_t *array, int tag)
 {
 	static wchar_t tags[sizeof (int)];
 	static wchar_t tag_chars[] = M_MB_L("0123456789ABCDEF");
-	register wchar_t *cp;
-	register NODE *index;
-	register uint_t n;
-	register int len;
-	register wchar_t *indstr;
-	register wchar_t *sep;
-	register int seplen;
-	register int taglen;
+	wchar_t *cp = NULL;
+	NODE *index;
+	uint_t n;
+	int len;
+	wchar_t *indstr;
+	wchar_t *sep;
+	int seplen;
+	int taglen;
 
 
 	/*

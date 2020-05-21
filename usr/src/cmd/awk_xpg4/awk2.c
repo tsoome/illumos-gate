@@ -27,8 +27,6 @@
  * Copyright 1986, 1994 by Mortice Kern Systems Inc.  All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * awk -- process input files, field extraction, output
  *
@@ -258,7 +256,7 @@ wchar_t *
 charrecord(wchar_t *abp, int alim, FILE *fp)
 {
 	wchar_t *bp;
-	wint_t c;
+	wint_t c = 0;
 	int limit = alim;
 	wint_t endc;
 
