@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Description:
  *
@@ -657,8 +655,8 @@ g723_encode(
 	unsigned int	bits;
 	unsigned int	codes;
 	int		offset;
-	short		*short_ptr;
-	unsigned char	*char_ptr;
+	short		*short_ptr = NULL;
+	unsigned char	*char_ptr = NULL;
 
 	/* Dereference the array pointer for faster access */
 	leftover = &state_ptr->leftover[0];

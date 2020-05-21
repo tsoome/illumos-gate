@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *
  * Description:
@@ -602,9 +600,9 @@ g721_encode(
 	short	dq, i;
 	int	cnt, cnta;
 	int	out_leng;
-	unsigned char *char_in;
+	unsigned char *char_in = NULL;
 	unsigned char *char_out;
-	short	*short_ptr;
+	short	*short_ptr = NULL;
 
 	if (data_size == 0) {
 		/* Actually, the leftover count will never be more than 4 */

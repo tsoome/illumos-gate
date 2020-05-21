@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains routines to read and write the audio device state.
  */
@@ -150,7 +148,7 @@ audio__setval(int fd, unsigned int *valp, unsigned int which)
 	struct audio_prinfo	*prinfo;
 	int			err;
 	unsigned		*up;
-	unsigned char		*cp;
+	unsigned char		*cp = NULL;
 
 	/* Set a pointer to the value of interest */
 	if (which & AUDIO__PLAY)

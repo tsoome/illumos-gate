@@ -730,7 +730,7 @@ device_devt(char *name)
 static device_t *
 find_device(char *name)
 {
-	dev_t		devt;
+	dev_t		devt = NODEV;
 	device_t	*d;
 
 	/*

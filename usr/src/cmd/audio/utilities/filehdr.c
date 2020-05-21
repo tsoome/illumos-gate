@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains a set of Very Paranoid routines to convert
  * audio file headers to in-core audio headers and vice versa.
@@ -515,7 +513,7 @@ decode_aiff(int fd, unsigned char *buf, Audio_hdr *hdrp, int *isize)
 	uint32_t		tmp;
 	int			data_type;
 	int			hdr_sizes;
-	int			sr;
+	int			sr = 0;
 	short			bits_per_sample;
 	short			channels;
 
