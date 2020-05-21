@@ -124,7 +124,7 @@ main(int argc, char *argv[])
 	int		c, errcnt = 0, ret;
 	cpc_setgrp_t	*sgrp;
 	char		*errstr;
-	double		period;
+	double		period = 0;
 	char		*endp;
 	struct rlimit	rl;
 
@@ -633,7 +633,7 @@ cpustat(void)
 	char		*errstr;
 	cpc_buf_t	**data1, **data2, **scratch;
 	int		nreqs;
-	kstat_ctl_t	*kc;
+	kstat_ctl_t	*kc = NULL;
 
 	ncpus = (int)sysconf(_SC_NPROCESSORS_CONF);
 	if ((gstate = calloc(ncpus, sizeof (*gstate))) == NULL) {
