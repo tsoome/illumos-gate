@@ -71,6 +71,7 @@
 #include <string.h>
 #include <locale.h>
 #include <sys/stat.h>
+#include <sys/mkdev.h>
 #include <zone.h>
 
 #define	OPTIONS	"M:f:gm:r"	/* command line options for getopt(3C) */
@@ -109,8 +110,8 @@ main(int argc, char *argv[])
 {
 	int		c;		/* character read by getopt(3C) */
 	char		*filenamep;	/* name of configuration file */
-	major_t		major;		/* major device number */
-	minor_t		minor;		/* minor device number */
+	major_t		major = MAXMAJ;	/* major device number */
+	minor_t		minor = MAXMIN;	/* minor device number */
 	char		*cp;
 	int		exitcode;
 	ushort_t	minflag = 0;	/* -m option used */
