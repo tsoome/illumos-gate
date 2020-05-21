@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -312,7 +310,7 @@ int
 arch_match(FILE *fp, int arch)
 {
 	off_t offset;
-	char key[20], buf[BUFSIZ], *buf2 = NULL, *localvalue = NULL, *p;
+	char key[20], buf[BUFSIZ], *buf2 = NULL, *localvalue = NULL, *p = NULL;
 	int len;
 	int has_arch = 0;
 	int archset = 0;
