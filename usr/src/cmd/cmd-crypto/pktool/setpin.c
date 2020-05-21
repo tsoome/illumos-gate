@@ -113,7 +113,7 @@ static int
 setpin_pkcs11(KMF_HANDLE_T handle, char *token_spec, boolean_t souser)
 {
 	CK_SLOT_ID		slot_id;
-	CK_FLAGS		pin_state;
+	CK_FLAGS		pin_state = 0;
 	CK_UTF8CHAR_PTR		old_pin = NULL, new_pin = NULL;
 	CK_ULONG		old_pinlen = 0, new_pinlen = 0;
 	CK_RV			rv = CKR_OK;
