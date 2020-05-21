@@ -89,7 +89,7 @@ typedef struct {
 	char		*nbs_last_event;
 } netbios_service_t;
 
-char smb_node_type;
+extern char smb_node_type;
 
 #define	SMB_NODETYPE_B	'B'
 #define	SMB_NODETYPE_P	'P'

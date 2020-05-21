@@ -134,6 +134,7 @@ typedef struct nbt_name_reply {
 	boolean_t		reply_ready;
 } nbt_name_reply_t;
 
+char smb_node_type;
 static nbt_name_reply_t reply_queue;
 static mutex_t rq_mtx;
 static cond_t rq_cv;
