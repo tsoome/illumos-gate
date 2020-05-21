@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "sh.h"
 #include "sh.tconst.h"
 
@@ -37,6 +35,8 @@
 #define	NOTEQ	6
 #define	EQMATCH 7
 #define	NOTEQMATCH 8
+
+int	uid;
 
 int	exp0(tchar ***, bool);
 int	exp1(tchar ***, bool);

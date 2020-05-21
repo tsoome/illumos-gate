@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <unistd.h>	/* for lseek prototype */
 #include "sh.h"
 #include "sh.tconst.h"
@@ -23,6 +21,15 @@
 /*
  * C shell
  */
+
+bool	justpr;
+int	lastev;
+int	onelflg;
+tchar	**alvec;
+tchar	*labuf;
+struct wordent *alhistp;
+struct wordent *alhistt;
+struct wordent paraml;
 
 /*
  * These lexical routines read input and form lists of words.

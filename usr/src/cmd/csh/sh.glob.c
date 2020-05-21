@@ -25,13 +25,18 @@
  * C Shell
  */
 
+long	pargc;
+long	gnleft;
+long	pnleft;
 int	globcnt;
-
+tchar	*arginp;
+tchar	*pargs;
 tchar	*gpath, *gpathp, *lastgpathp;
 int	globbed;
 bool	noglob;
 bool	nonomatch;
 tchar	*entp;
+tchar	*pargcp;
 tchar	**sortbas;
 int	sortscmp(tchar **, tchar **);
 void	ginit(tchar **);

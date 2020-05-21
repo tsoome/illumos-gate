@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "sh.h"
 #include "sh.dir.h"
 #include "sh.proc.h"
@@ -23,6 +21,16 @@
 /*
  * C Shell - functions that manage processes, handling hanging, termination
  */
+
+bool	pnoprocesses;
+bool	neednote;
+bool	pjobs;
+struct process *pprevious;
+short	pmaxindex;
+struct process proclist;
+struct process *pcurrent;
+struct process *pcurrjob;
+struct process *pholdjob;
 
 #define	BIGINDEX	9	/* largest desirable job index */
 

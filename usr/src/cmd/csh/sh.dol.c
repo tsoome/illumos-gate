@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <unistd.h>		/* for lseek prototype */
 #include "sh.h"
 #include "sh.tconst.h"
@@ -21,6 +19,17 @@
 /*
  * C shell
  */
+
+bool	noexec;
+long	gargc;
+short	OLDSTD;
+short	gflag;
+tchar	*bname;
+tchar	*file;
+tchar	**gargv;
+tchar	*doldol;
+tchar	*lap;
+tchar	**pargv;
 
 /*
  * These routines perform variable substitution and quoting via ' and ".

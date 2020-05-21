@@ -48,6 +48,8 @@ bool	fast;
 bool	batch;
 bool	prompt = 1;
 bool	enterhist = 0;
+bool	intact;
+time_t	chktim;
 
 extern	gid_t getegid(), getgid();
 extern	uid_t geteuid(), getuid();

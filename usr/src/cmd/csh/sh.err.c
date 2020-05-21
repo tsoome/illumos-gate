@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "sh.h"
 #include <locale.h>
 #include <dirent.h>
@@ -27,10 +25,18 @@
  * C Shell
  */
 
-
+bool	child;
+bool	didfds;
+bool	exiterr;
 bool	errspl;			/* Argument to error was spliced by seterr2 */
+bool	haderr;
+bool	timflg;
+jmp_buf	reslab;
 tchar one[2] = { '1', 0 };
 tchar *onev[2] = { one, NOSTR };
+short	SHDIAG;
+int	tpgrp;
+
 /* 
  *    contains DIR * for last opendir_(), its left open if an error
  *    longjmp (reset) occurs before it gets closed via closedir.
