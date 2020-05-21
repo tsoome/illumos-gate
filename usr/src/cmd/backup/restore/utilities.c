@@ -736,6 +736,7 @@ safe_fopen(const char *filename, const char *smode, int perms)
 	 * accepts only modes  "r", "r+", and "w"
 	 */
 	if (smode[0] == 'r') {
+		bmode = O_RDONLY;
 		if (smode[1] == '\0') {
 			bmode = O_RDONLY;
 		} else if ((smode[1] == '+') && (smode[2] == '\0')) {

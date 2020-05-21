@@ -423,8 +423,8 @@ setupR(void)
 void
 getvol(int nextvol)
 {
-	int newvol;
-	long savecnt, savetapea, wantnext;
+	int newvol = 0;
+	long savecnt = 0, savetapea = 0, wantnext = 0;
 	long i;
 	union u_spcl tmpspcl;
 #define	tmpbuf tmpspcl.s_spcl
