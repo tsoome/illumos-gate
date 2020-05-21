@@ -188,7 +188,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc, const char **argv)
 	char		buf[PROJECT_BUFSZ];
 	struct project	proj, *pproj;
 	int		error;
-	char		*projname;
+	char		*projname = NULL;
 	char		*kvs;
 	struct passwd	pwd;
 	char		pwbuf[NSS_BUFLEN_PASSWD];
