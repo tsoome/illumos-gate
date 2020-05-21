@@ -257,7 +257,7 @@ main(int argc, char **argv)
 	int		cnt;
 	int		file_type;
 	int		rem;
-	int		outsiz;
+	int		outsiz = 0;
 	int		tsize;
 	int		len;
 	int		err;
@@ -267,7 +267,7 @@ main(int argc, char **argv)
 	int		swapBytes;
 	int		frame;
 	char		*outbuf;
-	caddr_t		mapaddr;
+	caddr_t		mapaddr = NULL;
 	struct stat	st;
 	char		*cp;
 	char		ctldev[MAXPATHLEN];
