@@ -357,7 +357,7 @@ f_split(NODE *np)
 	register NODE *tnp, *snp, *otnp;
 	register NODE *sep;
 	REGEXP old_resep = 0;
-	size_t seplen;
+	size_t seplen = 0;
 	uint n;
 	wint_t c;
 	wchar_t savesep[20];
