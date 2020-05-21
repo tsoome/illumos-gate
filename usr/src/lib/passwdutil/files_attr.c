@@ -97,7 +97,7 @@ struct pwbuf {
 int
 files_lock(void)
 {
-	int res;
+	int res = PWU_SUCCESS;
 
 	if (lckpwdf()) {
 		switch (errno) {
@@ -111,8 +111,7 @@ files_lock(void)
 			res = PWU_SUCCESS;
 			break;
 		}
-	} else
-		res = PWU_SUCCESS;
+	}
 
 	return (res);
 }
@@ -424,7 +423,7 @@ files_checkhistory(char *user, char *passwd, pwu_repository_t *rep)
 
 	if ((res = files_getattr(user, &attr, rep)) == PWU_SUCCESS) {
 		char	*s;
-		char	*crypt_passwd;
+		char	*crypt_passwd = NULL;
 		int	histsize;
 		char	*last = attr.data.val_s;
 
