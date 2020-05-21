@@ -320,10 +320,10 @@ int
 aconf_save(void)
 {
 	scf_propertygroup_t *pg;
-	scf_transaction_t *tx;
+	scf_transaction_t *tx = NULL;
 	props_t *p;
 	props_t *q;
-	int tx_result;
+	int tx_result = 0;
 
 	if (props == NULL)
 		return (0);
@@ -450,7 +450,7 @@ aconf_get_string(const char *pgname, const char *propname, char *buf,
 {
 	scf_propertygroup_t *pg;
 	scf_property_t *prop;
-	scf_value_t *value;
+	scf_value_t *value = NULL;
 	int ret = 0;
 
 	if ((pg = scf_pg_create(handle)) == NULL)
@@ -479,7 +479,7 @@ aconf_get_bool(const char *pgname, const char *propname, uint8_t *rval)
 {
 	scf_propertygroup_t *pg;
 	scf_property_t *prop;
-	scf_value_t *value;
+	scf_value_t *value = NULL;
 	int ret = 0;
 
 	if ((pg = scf_pg_create(handle)) == NULL)
