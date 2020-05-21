@@ -94,7 +94,7 @@ static void usage(void);
 int
 main(int argc, char **argv)
 {
-	int ch, mode;
+	int ch, mode = 0;
 	char *ptr;
 
 	(void) setlocale(LC_ALL, "");
