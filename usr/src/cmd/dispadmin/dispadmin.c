@@ -87,7 +87,7 @@ main(int argc, char **argv)
 
 	int		c;
 	int		uflag, cflag, dflag, lflag, csoptsflag;
-	char		*clname;
+	char		*clname = NULL;
 
 	(void) strncpy(cmdpath, argv[0], PATH_MAX);
 	(void) strncpy(basenm, basename(argv[0]), BASENMSZ);
