@@ -189,7 +189,7 @@ loadmsg(char str[])
 	char *file;
 	int f, *msgvec;
 	int c, lastc = '\n';
-	int blank;
+	int blank = 0;
 	int lines;
 	long ms;
 	FILE *ibuf;

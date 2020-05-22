@@ -35,8 +35,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "rcv.h"
 #include <locale.h>
 
@@ -65,9 +63,9 @@ quit(
 )
 {
 	int mcount, p, modify, autohold, anystat, holdbit, nohold, fd;
-	FILE *ibuf, *obuf, *fbuf, *readstat;
-	register struct message *mp;
-	register int c;
+	FILE *ibuf = NULL, *obuf, *fbuf, *readstat;
+	struct message *mp;
+	int c;
 	char *id;
 	int appending;
 	char *mbox = Getf("MBOX");
