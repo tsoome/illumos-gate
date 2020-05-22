@@ -556,7 +556,7 @@ sup_setdtype()
 	int	val, status, i;
 	ulong_t	flags = 0;
 	struct	disk_type *dtype, *type;
-	struct	ctlr_type *ctype;
+	struct	ctlr_type *ctype = NULL;
 	char	*dtype_name, *ptr;
 	struct	mctlr_list	*mlp;
 

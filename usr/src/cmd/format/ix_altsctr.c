@@ -749,7 +749,7 @@ int	cnt;
 struct	alts_ent *key;
 {
 	int	i;
-	int	ind;
+	int	ind = 0;
 	int	interval;
 	int	mystatus = -1;
 

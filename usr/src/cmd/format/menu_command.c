@@ -126,7 +126,7 @@ c_disk()
 	int			more = 0;
 	int			more_quit = 0;
 	int			one_line = 0;
-	int			tty_lines;
+	int			tty_lines = 24;
 
 /*
  * This buffer holds the check() prompt that verifies we've got the right
@@ -175,7 +175,7 @@ c_disk()
 	fmt_print("\n\nAVAILABLE DISK SELECTIONS:\n");
 
 	i = 0;
-	if ((option_f == (char *)NULL) && isatty(0) == 1 && isatty(1) == 1) {
+	if ((option_f == NULL) && isatty(0) == 1 && isatty(1) == 1) {
 		/*
 		 * We have a real terminal for std input and output, enable
 		 * more style of output for disk selection list.
