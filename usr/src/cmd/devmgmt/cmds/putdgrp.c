@@ -27,9 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	Implements the "putdgrp" command.
  */
@@ -173,7 +170,7 @@ main(int argc, char *argv[])
 	/* Automatic data */
 	char	      **plist;		/* Ptr to list of nonmembers */
 	char	       *lbl;		/* Ptr to label for messages */
-	char	       *dgroup;		/* Ptr to <dgroup> on command-line */
+	char	       *dgroup = NULL;	/* Ptr to <dgroup> on command-line */
 	char	       *p;		/* Temp ptr to char */
 	int		noerr;		/* FLAG, TRUE if all's well */
 	int		d_seen;		/* TRUE if -a seen on command-line */

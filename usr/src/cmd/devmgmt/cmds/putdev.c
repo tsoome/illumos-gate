@@ -27,9 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	Implements the "putdev" command.
  */
@@ -199,8 +196,8 @@ main(int argc, char *argv[])
 	/* Automatic data */
 	char	      **plist;		/* Ptr to list of undef'nd attrs */
 	char	       *lbl;		/* Ptr to label for messages */
-	char	       *alias;		/* Ptr to <alias> on command-line */
-	char	       *device;		/* Ptr to <device> on command-line */
+	char	       *alias = NULL;	/* Ptr to <alias> on command-line */
+	char	       *device = NULL;	/* Ptr to <device> on command-line */
 	char	       *p;		/* Temp ptr to char */
 	int		noerr;		/* FLAG, TRUE if all's well */
 	int		a_seen;		/* TRUE if -a seen on command-line */

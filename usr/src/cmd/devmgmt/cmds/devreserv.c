@@ -27,9 +27,6 @@
 /*    Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T */
 /*      All Rights Reserved   */
   
-  
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include	<sys/types.h>
 #include	<sys/param.h>
 #include	<stdio.h>
@@ -163,7 +160,7 @@ main(int argc, char *argv[])
 	int			argcount;	/* Number of args on cmd */
 	long			lkey;		/* Key for locking (long) */
 	int			key;		/* Key for locking */
-	int			exitcode;	/* Value to return */
+	int			exitcode = EX_OK; /* Value to return */
 	int			sev;		/* Message severity */
 	int			syntaxerr;	/* Flag, TRUE if syntax error */
 	int			c;		/* Option character */
