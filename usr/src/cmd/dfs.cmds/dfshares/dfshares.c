@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	generic interface to dfshares, dfmounts.
  *
@@ -76,7 +74,7 @@ main(int argc, char **argv)
 	char **nargv;		/* new argv list */
 	int hflag = 0;
 	int nargc = 0;		/* new argc */
-	pid_t pid;		/* pid for fork */
+	pid_t pid = 0;		/* pid for fork */
 	int retval;		/* exit status from exec'd commad */
 	int showall = (argc <= 1);	/* show all resources */
 	static char usage[] =
