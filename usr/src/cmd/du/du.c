@@ -102,7 +102,7 @@ main(int argc, char **argv)
 	int		c;
 	extern int	optind;
 	char		*np;
-	pid_t		pid, wpid;
+	pid_t		pid = 0, wpid;
 	int		status, retcode = 0;
 	setbuf(stderr, NULL);
 	(void) setlocale(LC_ALL, "");
