@@ -517,7 +517,7 @@ map_table(itm_data_t	*name, itmc_map_t	*map_list,
 	itm_size_t		num2;
 	itmc_map_t		*ml;
 	itmc_data_pair_t	**tpp;
-	itm_tbl_hdr_t		*table;
+	itm_tbl_hdr_t		*table = NULL;
 	long			source_len = 0;
 	long			result_len = 0;
 	long			source_fixed_len = 1;
@@ -1980,7 +1980,7 @@ map_table_num_range(itmc_data_pair_t	*pair)
 {
 	size_t		i, j;
 	itm_num_t	num;
-	itm_num_t	num2;
+	itm_num_t	num2 = 0;
 	uchar_t		*c1;
 	uchar_t		*c2;
 
