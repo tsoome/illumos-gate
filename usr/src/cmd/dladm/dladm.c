@@ -2782,7 +2782,7 @@ print_link(show_state_t *state, datalink_id_t linkid, link_fields_buf_t *lbuf)
 {
 	char			link[MAXLINKNAMELEN];
 	datalink_class_t	class;
-	uint_t			mtu;
+	uint_t			mtu = 0;
 	uint32_t		flags;
 	dladm_status_t		status;
 
@@ -7138,7 +7138,7 @@ get_secobj_val(char *obj_name, uint8_t *obj_val, uint_t *obj_lenp,
     dladm_secobj_class_t class, FILE *filep)
 {
 	int		rval;
-	uint_t		len, len2;
+	uint_t		len = 0, len2;
 	char		buf[DLADM_SECOBJ_VAL_MAX], buf2[DLADM_SECOBJ_VAL_MAX];
 
 	if (filep == NULL) {
@@ -8586,9 +8586,9 @@ do_show_bridge(int argc, char **argv, const char *use)
 	char		*default_fwd_fields = "dest,age,flags,output";
 	/* -t: TRILL nickname table related data */
 	char		*default_trill_fields = "nick,flags,link,nexthop";
-	char		*default_str;
-	char		*all_str;
-	ofmt_field_t	*field_arr;
+	char		*default_str = NULL;
+	char		*all_str = NULL;
+	ofmt_field_t	*field_arr = NULL;
 	ofmt_handle_t	ofmt;
 	ofmt_status_t	oferr;
 	uint_t		ofmtflags = 0;
