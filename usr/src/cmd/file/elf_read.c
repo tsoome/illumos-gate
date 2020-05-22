@@ -316,7 +316,7 @@ process_phdr(Elf_Info *EI)
 	FILE_ELF_OFF_T	offset;
 	int	class;
 	int	ntype;
-	char	*psinfo, *fname;
+	char	*psinfo, *fname = NULL;
 
 	nsz = sizeof (Elf_Nhdr);
 	nhdr = &Nhdr;
