@@ -123,7 +123,7 @@ do_scan(flags, mode)
 	int	flags, mode;
 {
 	diskaddr_t	start, end, curnt;
-	int	pass, needinit, data;
+	int	pass, needinit, data = 0;
 	uint_t	size;
 	int	status, founderr, i, j;
 	int	error = 0;
@@ -145,6 +145,7 @@ do_scan(flags, mode)
 	 */
 	if (scan_entire) {
 		start = 0;
+		end = 0;
 	    if (cur_label == L_TYPE_SOLARIS) {
 		if (cur_ctype->ctype_flags & CF_SCSI)
 			end = datasects() - 1;

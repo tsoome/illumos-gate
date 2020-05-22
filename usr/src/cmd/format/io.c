@@ -424,8 +424,8 @@ input(int type, char *promptstr, int delim, u_ioparam_t *param, int *deflt,
 	float		nmegs;
 	float		ngigs;
 	char		shell_argv[MAXPATHLEN];
-	part_deflt_t	*part_deflt;
-	efi_deflt_t	*efi_deflt;
+	part_deflt_t	*part_deflt = NULL;
+	efi_deflt_t	*efi_deflt = NULL;
 
 	/*
 	 * Optional integer input has been added as a hack.
