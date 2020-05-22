@@ -205,13 +205,13 @@ main(int argc, char **argv)
 {
 	char	*p;
 	int	ch;
-	FILE	*fl;
+	FILE	*fl = NULL;
 	int	bflg = 0;
 	int	cflg = 0;
 	int	eflg = 0;
 	int	fflg = 0;
 	char	*ap = NULL;
-	int	pathlen;
+	int	pathlen = 0;
 	char	**filep;
 
 	(void) setlocale(LC_ALL, "");
@@ -402,7 +402,7 @@ main(int argc, char **argv)
 	}
 
 	for (; fflg || optind < argc; optind += !fflg) {
-		register int	l;
+		int	l;
 
 		if (fflg) {
 			if ((p = fgets(ap, pathlen, fl)) == NULL) {
