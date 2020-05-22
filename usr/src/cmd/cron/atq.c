@@ -259,7 +259,7 @@ static void
 printqueue(uid_t *uidlist, int nuids)
 {
 	int i, j;			/* for loop indices */
-	int rank;				/* rank of a job */
+	int rank = 0;				/* rank of a job */
 	int entryfound;				/* found file owned by users */
 	char *getname();
 	uid_t *ptr;			/* scratch pointer */
