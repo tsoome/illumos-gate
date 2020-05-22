@@ -341,7 +341,7 @@ static void
 cleanup_removed_flows(show_flow_state_t *state)
 {
 	flow_chain_t	*fcurr;
-	flow_chain_t	*fprev;
+	flow_chain_t	*fprev = NULL;
 	flow_chain_t	*tofree;
 
 	/* Delete all nodes from the list that have fc_visited marked false */
