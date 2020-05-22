@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	diff - differential file comparison
  *
@@ -1100,7 +1098,7 @@ readhash(FILE *f, int filen, char *str)
 static void
 dump_context_vec(void)
 {
-	int	a, b, c, d;
+	int	a, b = 0, c, d;
 	char	ch;
 	struct	context_vec *cvp = context_vec_start;
 	int	lowa, upb, lowc, upd;
