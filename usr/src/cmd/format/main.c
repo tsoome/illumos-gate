@@ -56,6 +56,31 @@
 #include "label.h"
 
 extern	struct menu_item menu_command[];
+uint_t	apc;
+uint_t	solaris_offset;
+char	cur_menu;
+char	last_menu;
+void	*pattern_buf;
+FILE	*log_file;
+void	*cur_buf;
+struct disk_info *cur_disk;
+struct ctlr_ops *cur_ops;
+struct ctlr_info *cur_ctlr;
+struct ctlr_type *cur_ctype;
+struct disk_type *cur_dtype;
+struct partition_info *cur_parts;
+struct defect_list cur_list;
+int	cur_file;
+int	cur_flags;
+int	cur_label;
+uint_t	pcyl;
+uint_t	ncyl;
+uint_t	acyl;
+uint_t	bcyl;
+uint_t	nhead;
+uint_t	phead;
+uint_t	nsect;
+uint_t	psect;
 
 #ifdef	__STDC__
 

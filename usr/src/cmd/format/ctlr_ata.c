@@ -56,6 +56,8 @@
 
 #include "menu_fdisk.h"
 
+diskaddr_t altsec_offset;
+
 int	wr_altsctr();
 int	read_altsctr();
 int	updatebadsec();

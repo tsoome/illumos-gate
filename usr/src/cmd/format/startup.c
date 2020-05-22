@@ -62,6 +62,26 @@ extern	long	strtol();
 
 extern	int	errno;
 
+char	*file_name;
+char	*option_d;
+char	*option_f;
+char	*option_l;
+char	*option_p;
+char	option_s;
+char	*option_t;
+char	*option_x;
+char	diag_msg;
+char	option_msg;
+int	need_newline;
+int	dev_expert;
+int	expert_mode;
+uint_t	cur_blksz;
+struct ctlr_info	*ctlr_list;
+struct disk_info	*disk_list;
+struct mctlr_list	*controlp;
+char	x86_devname[MAXNAMELEN];
+FILE	*data_file;
+
 #ifdef __STDC__
 
 /* Function prototypes for ANSI C Compilers */

@@ -46,7 +46,7 @@ extern "C" {
 #define	TRIPLET(u, m, l)	((int)((((u))&0xff<<16) + \
 				(((m)&0xff)<<8) + (l&0xff)))
 #if	defined(i386)
-diskaddr_t	altsec_offset;	/* Alternate sector offset */
+extern diskaddr_t	altsec_offset;	/* Alternate sector offset */
 #endif	/* defined(i386) */
 
 #ifdef	__STDC__
