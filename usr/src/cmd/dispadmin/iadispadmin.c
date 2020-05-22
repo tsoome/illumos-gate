@@ -27,8 +27,6 @@
 /* Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T */
 /* All Rights Reserved */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
@@ -69,8 +67,8 @@ main(int argc, char **argv)
 
 	int		c;
 	int		lflag, gflag, rflag, sflag;
-	ulong_t		res;
-	char		*infile;
+	ulong_t		res = 0;
+	char		*infile = NULL;
 
 	(void) strcpy(cmdpath, argv[0]);
 	(void) strcpy(basenm, basename(argv[0]));
@@ -229,7 +227,7 @@ char	*infile;
 	iaadmin_t	iaadmin;
 	iadpent_t	*ia_dptbl;
 	int		linenum;
-	ulong_t		res;
+	ulong_t		res = 0;
 	hrtimer_t	hrtime;
 	FILE		*fp;
 	char		buf[512];

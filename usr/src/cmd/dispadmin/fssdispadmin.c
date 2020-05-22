@@ -27,8 +27,6 @@
 /* Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T */
 /* All Rights Reserved */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/fss.h>
@@ -63,8 +61,8 @@ main(int argc, char **argv)
 {
 	int c;
 	int lflag, gflag, rflag, sflag;
-	ulong_t res;
-	char *infile;
+	ulong_t res = 0;
+	char *infile = NULL;
 	char *endp;
 
 	(void) strcpy(cmdpath, argv[0]);
@@ -195,8 +193,8 @@ setadmin(char *infile)
 	pcadmin_t pcadmin;
 	fssadmin_t fssadmin;
 	int line;
-	ulong_t res;
-	long fss_quantum;
+	ulong_t res = 0;
+	long fss_quantum = 0;
 	hrtimer_t hrtime;
 	FILE *fp;
 	char buf[512];
