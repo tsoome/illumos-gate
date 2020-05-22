@@ -315,7 +315,7 @@ disk_callback_sas(di_minor_t minor, di_node_t node)
 {
 	char disk[DISK_SUBPATH_MAX];
 	int lun64_found = 0;
-	scsi_lun64_t lun64, sl;
+	scsi_lun64_t lun64 = 0, sl;
 	scsi_lun_t lun;
 	int64_t *lun64p;
 	uint64_t wwn;

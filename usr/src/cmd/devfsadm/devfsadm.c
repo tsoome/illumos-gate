@@ -7381,7 +7381,7 @@ read_logindevperm_file(void)
 	static int cached = FALSE;
 	static struct stat cached_sb;
 	struct stat current_sb;
-	struct login_dev *ldev;
+	struct login_dev *ldev = NULL;
 	FILE *fp;
 	char line[MAX_LDEV_LINE];
 	int ln, perm, rv;
@@ -7583,7 +7583,7 @@ read_driver_aliases_file(void)
 {
 
 	driver_alias_t *save;
-	driver_alias_t *lst_tail;
+	driver_alias_t *lst_tail = NULL;
 	driver_alias_t *ap;
 	static int cached = FALSE;
 	FILE *afd;
