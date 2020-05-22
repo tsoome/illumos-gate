@@ -39,7 +39,6 @@
  *		write_baseline
  *		(static) bw_header, bw_base, bw_file, showtype
  */
-#ident	"%W%	%E% SMI"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -336,7 +335,7 @@ read_baseline(char *name)
 
 	struct base *bp = 0;
 	struct file *fp;
-	struct fileinfo *ip;
+	struct fileinfo *ip = NULL;
 	aclent_t *ap;
 
 	struct file *dirstack[ MAX_DEPTH ];
