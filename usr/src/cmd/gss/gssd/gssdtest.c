@@ -163,7 +163,7 @@ do_gssdtest(char *buf)
 {
 	int argc, seal_argc;
 	int i;
-	char **argv, **argv_array;
+	char **argv, **argv_array = NULL;
 
 	char *cmd;
 	char *seal_ini_array [] = { "initiator", " Hello"};

@@ -445,7 +445,7 @@ kgss_add_cred(minor_status,
 {
 
 	OM_uint32	err;
-	OM_uint32 gssd_cred_verifier;
+	OM_uint32 gssd_cred_verifier = 0;
 	gssd_cred_id_t gssd_input_cred_handle;
 
 
@@ -785,7 +785,7 @@ kgss_init_sec_context(
 {
 		OM_uint32	err;
 		struct kgss_ctx	*kctx;
-		OM_uint32 gssd_cred_verifier;
+		OM_uint32 gssd_cred_verifier = 0;
 		gssd_cred_id_t gssd_cl_cred_handle;
 
 		/*
@@ -1045,7 +1045,7 @@ kgss_accept_sec_context(
 {
 		OM_uint32 err;
 		struct kgss_ctx *kctx;
-		OM_uint32 gssd_cred_verifier;
+		OM_uint32 gssd_cred_verifier = 0;
 		gssd_cred_id_t gssd_ver_cred_handle;
 
 
