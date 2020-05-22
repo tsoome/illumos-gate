@@ -241,7 +241,7 @@ construct_symtab(dis_tgt_t *tgt)
 	Elf_Data *symdata;
 	int i;
 	GElf_Word *symshndx = NULL;
-	int symshndx_size;
+	int symshndx_size = 0;
 	sym_entry_t *sym;
 	sym_entry_t *p_symtab = NULL;
 	int nsym = 0; /* count of symbols we're not interested in */
