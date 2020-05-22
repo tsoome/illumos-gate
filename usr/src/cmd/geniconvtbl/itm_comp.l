@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -293,7 +291,7 @@ hexadecimal_data(int seqsize, char *seq)
 	itm_data_t	*data;
 	char		*binary;
 	int		i, j;
-	int		val;
+	int		val = 0;
 	int		high;
 	int		low;
 	int		size;

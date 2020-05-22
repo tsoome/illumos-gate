@@ -603,11 +603,11 @@ map_l_f(
 	itm_map_lookup_hdr_t	*map_hdr;
 	long			i;
 	unsigned char		*map;
-	const unsigned char	*p;
+	const unsigned char	*p = NULL;
 	long			high;
 	long			mid;
 	long			low;
-	long			result;
+	long			result = 0;
 	itm_size_t		pair_size;
 
 	TRACE_MESSAGE('i', ("map_l_f\n"));

@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -149,7 +147,7 @@ main(int argc, char **argv)
 static int
 itm_compile(char *file)
 {
-	char	*cmd_line;
+	char	*cmd_line = NULL;
 	char	*command;
 	char	*p;
 	size_t	length;
