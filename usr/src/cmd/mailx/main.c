@@ -80,7 +80,7 @@ main(int argc, char **argv)
 	struct termio tbuf;
 	struct termios tbufs;
 	int c;
-	char *cwd, *mf;
+	char *cwd = NULL, *mf;
 
 	/*
 	 * Set up a reasonable environment.

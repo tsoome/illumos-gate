@@ -442,7 +442,7 @@ type1(int *msgvec, int doign, int page)
 	register char *cp;
 	long nlines;
 	FILE *obuf;
-	void (*sigint)(int), (*sigpipe)(int);
+	void (*sigint)(int) = SIG_DFL, (*sigpipe)(int) = SIG_DFL;
 	int setsigs = 0;
 
 	obuf = stdout;

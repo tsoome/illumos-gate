@@ -490,7 +490,7 @@ edstop(
 {
 	register int gotcha, c;
 	register struct message *mp;
-	FILE *obuf, *ibuf, *tbuf = 0, *readstat;
+	FILE *obuf, *ibuf, *tbuf = NULL, *readstat = NULL;
 	struct stat statb;
 	char tempname[STSIZ], *id;
 	int tmpfd = -1;

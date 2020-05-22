@@ -54,14 +54,14 @@ static char *stripquotes(char *str);
  * pipe messages to cmd.
  */
 
-int 
+int
 dopipe(char str[])
 {
 	int *ip, mesg;
 	struct message *mp;
 	char *cp, *cmd;
 	int f, *msgvec, nowait=0;
-	void (*sigint)(int), (*sigpipe)(int);
+	void (*sigint)(int) = SIG_DFL, (*sigpipe)(int) = SIG_DFL;
 	long lc, cc, t;
 	pid_t pid;
 	int page, s, pivec[2];
@@ -183,13 +183,13 @@ err:
 /*
  * Load the named message from the named file.
  */
-int 
+int
 loadmsg(char str[])
 {
 	char *file;
 	int f, *msgvec;
 	int c, lastc = '\n';
-	int blank;
+	int blank = 0;
 	int lines;
 	long ms;
 	FILE *ibuf;
@@ -261,7 +261,7 @@ loadmsg(char str[])
 /*
  * Display the named field.
  */
-int 
+int
 field(char str[])
 {
 	int *ip;

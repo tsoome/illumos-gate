@@ -675,8 +675,8 @@ int
 unretfield(char *list[])
 {
 	char **ap, field[BUFSIZ];
-	register int h, count = 0;
-	register struct ignore *ig1, *ig2;
+	int h, count = 0;
+	struct ignore *ig1, *ig2 = NULL;
 
 	if (argcount(list) == 0) {
 		for (h = 0; h < HSHSIZE; h++) {
@@ -795,8 +795,8 @@ int
 unigfield(char *list[])
 {
 	char **ap, field[BUFSIZ];
-	register int h, count = 0;
-	register struct ignore *ig1, *ig2;
+	int h, count = 0;
+	struct ignore *ig1, *ig2 = NULL;
 
 	if (argcount(list) == 0) {
 		for (h = 0; h < HSHSIZE; h++) {
