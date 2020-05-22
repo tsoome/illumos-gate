@@ -1012,7 +1012,7 @@ dispatch(void)
 	sysevent_t *new_ev;
 	sysevent_id_t eid;
 	struct ev_completion *ev_comp, *tmp;
-	struct event_dispatchq *dispatchq, *client_list;
+	struct event_dispatchq *dispatchq, *client_list = NULL;
 	struct event_dispatch_pkg *d_pkg;
 
 	/* Check for module unload operation */

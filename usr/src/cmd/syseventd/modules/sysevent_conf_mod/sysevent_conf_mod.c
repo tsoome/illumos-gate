@@ -1139,7 +1139,8 @@ find_macro_definition(sysevent_t *ev, nvlist_t *nvlist, syseventtab_t *sep,
 	nmatches = 0;
 
 	if (nvlist) {
-		nvpair_t *nvp_match;
+		nvpair_t *nvp_match = NULL;
+
 		nvp = NULL;
 		while ((nvp = nvlist_next_nvpair(nvlist, nvp)) != NULL) {
 			if (debug_level >= DBG_DETAILED) {
@@ -1421,7 +1422,7 @@ expand_macros(sysevent_t *ev, nvlist_t *nvlist, syseventtab_t *sep,
 	str_t	*remainder;
 	str_t	*replacement;
 	int	count;
-	int	dollar_position;
+	int	dollar_position = 0;
 
 	syseventd_print(DBG_MACRO, "    expanding macros: '%s'\n", line->s_str);
 
