@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "e.h"
 #include "e.def"
 #include <locale.h>
@@ -21,7 +19,7 @@
 void
 funny(int n)
 {
-	char *f;
+	char *f = NULL;
 
 	yyval = oalloc();
 	switch (n) {

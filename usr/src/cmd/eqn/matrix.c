@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "e.h"
 
 void
@@ -37,6 +35,7 @@ matrix(int p1)
 	int nrow, ncol, i, j, k, hb, b, val[100];
 	char *space;
 
+	val[0] = '\0';
 	space = "\\ \\ ";
 	nrow = lp[p1];	/* disaster if rows inconsistent */
 	ncol = 0;
