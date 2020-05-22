@@ -420,7 +420,7 @@ main(int argc, char **argv)
 static int
 compile(char **argv, struct Node *np, int *actionp)
 {
-	char *b;
+	char *b = NULL;
 	char **av;
 	struct Node *oldnp = topnode;
 	struct Args *argp;
