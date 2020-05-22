@@ -126,7 +126,7 @@ sc_get(sa_handle_t handle, int flags, int argc, char *argv[])
 	int c;
 	sa_protocol_properties_t propset, propsect;
 	sa_property_t prop;
-	char *section, *value, *name;
+	char *section, *value = NULL, *name;
 	int first = 1;
 
 	while ((c = getopt(argc, argv, "?hp:")) != EOF) {

@@ -716,7 +716,7 @@ chk_opt(struct options *optlistp, int security, char *proto)
 	struct options *optlist;
 	char *sep = "";
 	int notfirst = 0;
-	int ret;
+	int ret = 0;
 
 	for (optlist = optlistp; optlist != NULL; optlist = optlist->next) {
 		char *optname;
@@ -3017,7 +3017,7 @@ sa_removeshare(sa_handle_t handle, int flags, int argc, char *argv[])
 	char *rsrcname = NULL;
 	char *sharepath = NULL;
 	char dir[MAXPATHLEN];
-	int auth;
+	int auth = 0;
 
 	while ((c = getopt(argc, argv, "?hfnr:s:v")) != EOF) {
 		switch (c) {
@@ -3278,7 +3278,7 @@ sa_set_share(sa_handle_t handle, int flags, int argc, char *argv[])
 	char *rsrcname = NULL;
 	char *rsrc = NULL;
 	char *newname = NULL;
-	char *newrsrc;
+	char *newrsrc = NULL;
 	char *groupname = NULL;
 	int auth;
 	int verbose = 0;
