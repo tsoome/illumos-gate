@@ -81,7 +81,7 @@ sgen_callback(di_minor_t minor, di_node_t node)
 		uint64_t wwn;
 		scsi_lun64_t sl;
 		scsi_lun_t lun;
-		int64_t lun64;
+		int64_t lun64 = 0;
 		int64_t *lun64p;
 		int *intp;
 		uchar_t addr_method;
