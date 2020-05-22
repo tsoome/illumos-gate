@@ -931,7 +931,7 @@ static void
 cleanup_removed_links(show_state_t *state)
 {
 	link_chain_t	*lcurr;
-	link_chain_t	*lprev;
+	link_chain_t	*lprev = NULL;
 	link_chain_t	*tofree;
 	int		i;
 
