@@ -491,7 +491,7 @@ commands(void)
 	LINE a1;
 	int c;
 	char *p1, *p2;
-	int fsave, m, n;
+	int fsave, m = 0, n;
 
 	for (;;) {
 	nodelim = 0;
