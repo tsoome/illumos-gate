@@ -545,6 +545,12 @@ main(int argc, char **argv)
 
 	/* Initializations */
 
+	action = NULL;
+	cstr = NULL;
+	label = NULL;
+	sstr = NULL;
+	tag = NULL;
+	ustr = NULL;
 
 	/* Extract the base command name from the command */
 	if ((p = strrchr(argv[0], '/')) == (char *) NULL)
