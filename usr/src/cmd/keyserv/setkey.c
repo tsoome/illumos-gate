@@ -34,8 +34,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Do the real work of the keyserver.
  * Store secret keys. Compute common keys,
@@ -1390,7 +1388,7 @@ getdeskey3(
 	struct mechentry *mp;
 	struct psdata *pdp;
 	struct cachekey3_list **cpp, *cp, *cachep;
-	struct cacheuid_list *cu;
+	struct cacheuid_list *cu = NULL;
 	int i;
 	int cached = 0;
 
