@@ -1237,6 +1237,9 @@ getldap_get_server_stat(server_info_t *head, char **output,
 		case INFO_SERVER_REMOVED:
 			status = gettext("REMOVED");
 			break;
+		default:
+			status = NULL;
+			break;
 		}
 
 		len += format_len + strlen(status) +
@@ -2823,7 +2826,7 @@ static void
 create_buf_and_notify(char *input, ns_server_status_t st)
 {
 	rm_svr_t *rms = (rm_svr_t *)input;
-	char	*tmp_buf, *ptr, *status;
+	char	*tmp_buf, *ptr, *status = NULL;
 	int	len, tlen;
 	ldap_get_change_out_t *cout;
 
