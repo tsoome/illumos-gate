@@ -1029,8 +1029,8 @@ idmap_get_namemap(idmap_nm_handle_t *p, int *is_source_ad, char **winname,
 			    *winname, p->windomain);
 		}
 	} else if (*unixuser != NULL ||	*unixgroup != NULL) {
-		char *unixname;
-		int is_user;
+		char *unixname = NULL;
+		int is_user = 0;
 
 		*is_source_ad = IDMAP_NO;
 

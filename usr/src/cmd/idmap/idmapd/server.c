@@ -187,7 +187,7 @@ idmap_get_mapped_ids_1_svc(idmap_mapping_batch batch,
 	uint_t		i;
 	idmap_mapping	*req;
 	idmap_id_res	*res;
-	boolean_t	any_tracing;
+	boolean_t	any_tracing = B_FALSE;
 
 	/* Init */
 	(void) memset(result, 0, sizeof (*result));
@@ -242,8 +242,6 @@ idmap_get_mapped_ids_1_svc(idmap_mapping_batch batch,
 
 	/* Init our 'done' flags */
 	state.sid2pid_done = state.pid2sid_done = TRUE;
-
-	any_tracing = B_FALSE;
 
 	/* First stage */
 	for (i = 0; i < batch.idmap_mapping_batch_len; i++) {

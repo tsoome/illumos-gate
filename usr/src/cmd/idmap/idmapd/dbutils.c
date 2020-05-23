@@ -1889,7 +1889,7 @@ ad_lookup_batch_int(lookup_state_t *state, idmap_mapping_batch *batch,
 {
 	idmap_retcode	retcode;
 	int		i,  num_queued, is_wuser, is_user;
-	int		next_request;
+	int		next_request = 0;
 	int		retries = 0, esidtype;
 	char		**unixname;
 	idmap_mapping	*req;
@@ -2380,7 +2380,7 @@ idmap_retcode
 ad_lookup_batch(lookup_state_t *state, idmap_mapping_batch *batch,
 		idmap_ids_res *result)
 {
-	idmap_retcode	retcode;
+	idmap_retcode	retcode = IDMAP_SUCCESS;
 	int		i, j;
 	idmap_mapping	*req;
 	idmap_id_res	*res;
@@ -3015,7 +3015,7 @@ name_based_mapping_sid2pid(lookup_state_t *state,
 	char		*end, *lower_unixname, *winname;
 	const char	**values;
 	sqlite_vm	*vm = NULL;
-	int		ncol, r, is_user, is_wuser;
+	int		ncol, r, is_user = 0, is_wuser;
 	idmap_namerule	*rule = &res->info.how.idmap_how_u.rule;
 	int		direction;
 	const char	*me = "name_based_mapping_sid2pid";

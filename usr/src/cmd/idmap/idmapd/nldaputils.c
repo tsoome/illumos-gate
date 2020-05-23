@@ -738,7 +738,7 @@ nldap_lookup_batch(lookup_state_t *state, idmap_mapping_batch *batch,
 		idmap_ids_res *result)
 {
 	idmap_retcode			retcode, rc1;
-	int				i, add;
+	int				i, add = 0;
 	idmap_mapping			*req;
 	idmap_id_res			*res;
 	idmap_nldap_query_state_t	*qs = NULL;
@@ -759,7 +759,7 @@ nldap_lookup_batch(lookup_state_t *state, idmap_mapping_batch *batch,
 	qs->defdom = state->defdom;
 
 	/* Add requests to the batch */
-	for (i = 0, add = 0; i < batch->idmap_mapping_batch_len; i++) {
+	for (i = 0; i < batch->idmap_mapping_batch_len; i++) {
 		req = &batch->idmap_mapping_batch_val[i];
 		res = &result->ids.ids_val[i];
 		retcode = IDMAP_SUCCESS;
