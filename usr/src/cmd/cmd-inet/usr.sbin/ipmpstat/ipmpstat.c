@@ -191,8 +191,8 @@ main(int argc, char **argv)
 	uint_t ofmtflags = 0;
 	ipmp_handle_t ih;
 	ipmp_qcontext_t qcontext = IPMP_QCONTEXT_SNAP;
-	ipmpstat_cbfunc_t *cbfunc;
-	ipmpstat_walker_t *walker;
+	ipmpstat_cbfunc_t *cbfunc = NULL;
+	ipmpstat_walker_t *walker = NULL;
 	char errbuf[OFMT_BUFSIZE];
 
 	if ((progname = strrchr(argv[0], '/')) == NULL)

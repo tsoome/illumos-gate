@@ -129,7 +129,7 @@ int
 main(int argc, char *argv[])
 {
 	int ch, s, ret, socksv;
-	char *host, *uport, *proxy;
+	char *host, *uport, *proxy = NULL;
 	struct addrinfo hints;
 	struct servent *sv;
 	socklen_t len;

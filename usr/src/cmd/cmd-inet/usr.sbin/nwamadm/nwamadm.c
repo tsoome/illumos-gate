@@ -545,7 +545,7 @@ ncu_action(const char *name, nwam_ncp_handle_t ncph, nwam_ncu_type_t type,
 static void
 enable_func(int argc, char *argv[])
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	nwam_object_type_t	type = NWAM_OBJECT_TYPE_UNKNOWN;
 	nwam_ncu_type_t		ncu_type = NWAM_NCU_TYPE_ANY;
 	nwam_ncu_class_t	ncu_class = NWAM_NCU_CLASS_ANY;
@@ -610,7 +610,7 @@ enable_func(int argc, char *argv[])
 static void
 disable_func(int argc, char *argv[])
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	nwam_object_type_t	type = NWAM_OBJECT_TYPE_UNKNOWN;
 	nwam_ncu_type_t		ncu_type = NWAM_NCU_TYPE_ANY;
 	nwam_ncu_class_t	ncu_class = NWAM_NCU_CLASS_ANY;
@@ -701,7 +701,7 @@ determine_object_state(nwam_object_type_t type, void *handle,
 {
 	nwam_state_t state;
 	nwam_aux_state_t astate;
-	nwam_error_t ret;
+	nwam_error_t ret = NWAM_ERROR_INTERNAL;
 
 	switch (type) {
 	case NWAM_OBJECT_TYPE_ENM:
@@ -739,7 +739,7 @@ add_to_profile_entry(nwam_object_type_t type, void *handle,
     profile_entry_t *pent)
 {
 	char		*name;
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 
 	pent->p_type = type;
 	if (type == NWAM_OBJECT_TYPE_NCU) {

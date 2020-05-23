@@ -245,7 +245,7 @@ set_sockaddr(struct sockaddr_storage *addr, socklen_t *addr_len,
     void **next_hop, probe_param_t *param)
 {
 	int af;
-	struct in6_addr *param_addr;
+	struct in6_addr *param_addr = NULL;
 	struct sockaddr_in *v4_addr;
 	struct sockaddr_in6 *v6_addr;
 	boolean_t nh = B_FALSE;
@@ -866,6 +866,8 @@ main(int argc, char *argv[])
 	case udp_probe:
 		ret = udp_query(&param);
 		break;
+	default:
+		ret = -1;
 	}
 
 	if (ret == -1)

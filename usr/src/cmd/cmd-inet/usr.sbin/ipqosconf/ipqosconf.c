@@ -7314,7 +7314,7 @@ int num_perm_filters)
 	char *sl = NULL;
 	in6_addr_t addr;
 	int sa;
-	struct hostent *hp;
+	struct hostent *hp = NULL;
 	int err_num;
 	int v4 = 0, v6 = 0;
 	uchar_t mlen;
@@ -9898,8 +9898,8 @@ main(int argc, char *argv[])
 	int c;
 	char *ifile = NULL;
 	int args;
-	int ret;
-	int cmd;
+	int ret = 0;
+	int cmd = -1;
 	int viewall = 0;
 	int lfp;
 

@@ -1660,8 +1660,8 @@ doaddup(int cmd, int satype, char *argv[], char *ebuf)
 	int next, token, sa_len, alloclen, totallen = sizeof (msg), prefix;
 	uint32_t spi = 0;
 	uint_t reserved_bits = 0;
-	uint8_t	sadb_msg_type;
-	char *thiscmd, *pstr;
+	uint8_t	sadb_msg_type = SADB_RESERVED;
+	char *thiscmd = NULL, *pstr;
 	boolean_t readstate = B_FALSE, unspec_src = B_FALSE;
 	boolean_t alloc_inner = B_FALSE, use_natt = B_FALSE;
 	struct hostent *srchp = NULL, *dsthp = NULL, *isrchp = NULL,

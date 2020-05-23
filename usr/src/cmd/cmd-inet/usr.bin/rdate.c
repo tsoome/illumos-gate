@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *  rdate - get date from remote machine
  *
@@ -80,7 +78,7 @@ static void timeout(int);
 int
 main(int argc, char **argv)
 {
-	int s, i;
+	int s = -1, i;
 	uint32_t time;
 	struct timeval timestruct;
 	unsigned int connect_timeout;

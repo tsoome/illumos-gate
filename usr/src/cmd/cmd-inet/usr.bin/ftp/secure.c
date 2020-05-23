@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Shared routines for client and server for
  * secure read(), write(), getc(), and putc().
@@ -231,7 +229,7 @@ static int secure_putbuf(int fd, uchar_t *buf, uint_t nbyte)
 {
 	static char *outbuf;		/* output ciphertext */
 	static uint_t bufsize;	/* size of outbuf */
-	int length;
+	int length = 0;
 	uint_t net_len;
 
 	/* Other auth types go here ... */

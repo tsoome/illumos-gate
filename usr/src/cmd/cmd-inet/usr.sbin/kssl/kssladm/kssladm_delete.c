@@ -46,7 +46,7 @@ do_delete(int argc, char *argv[])
 {
 	struct sockaddr_in6 server_addr;
 	char c;
-	char *port, *addr;
+	char *port = NULL, *addr = NULL;
 	int pcnt;
 
 	if (argc < 3) {

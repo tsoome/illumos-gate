@@ -562,7 +562,7 @@ bsd_decompress(state, cmsg, inlen, dmp, outlenp)
     u_int incode, oldcode, finchar;
     u_char *p, *rptr, *wptr;
     int ilen;
-    int dlen, space, codelen, extra;
+    int dlen = 0, space, codelen, extra;
 
     rptr = cmsg;
     if (*rptr == 0)

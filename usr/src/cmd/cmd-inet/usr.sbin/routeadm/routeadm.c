@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1679,8 +1677,8 @@ ra_list_props_cb(void *data, scf_walkinfo_t *wip)
 	scf_handle_t		*h = scf_instance_handle(inst);
 	scf_iter_t		*propiter, *valiter;
 	scf_propertygroup_t	*pg;
-	scf_property_t		*prop;
-	scf_value_t		*val;
+	scf_property_t		*prop = NULL;
+	scf_value_t		*val = NULL;
 	char			**protolist = NULL, *pnamebuf, *valbuf;
 	ssize_t			pnamelen, vallen;
 	int			numvalues = 0;
@@ -1947,7 +1945,7 @@ ra_get_prop_as_string(scf_handle_t *h, scf_instance_t *inst,
 	scf_iter_t		*valiter = NULL;
 	scf_value_t		*val = NULL;
 	ssize_t			vallen = 0;
-	int			valiterret, i, numvalues_retrieved, ret = 0;
+	int			valiterret, i, numvalues_retrieved = 0, ret = 0;
 
 	if (ra_get_pg(h, inst, pgname, composed, required, &pg) == -1)
 		return (-1);

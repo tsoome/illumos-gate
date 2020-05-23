@@ -1188,7 +1188,7 @@ do_commit()
 		if (interactive_mode)
 			(void) printf(gettext("Committed changes\n"));
 	} else {
-		nwam_error_t verr;
+		nwam_error_t verr = NWAM_ERROR_INTERNAL;
 
 		/* Find property that caused failure */
 		switch (active_object_type()) {
@@ -1590,7 +1590,7 @@ done:
 void
 destroy_func(cmd_t *cmd)
 {
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 	char		*name, *realname = NULL;
 
 	if (current_scope == NWAM_SCOPE_NCP &&
@@ -1783,7 +1783,7 @@ help_func(cmd_t *cmd)
 void
 revert_func(cmd_t *cmd)
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	char			*name = NULL;
 	nwam_ncu_type_t		ncu_type;
 	nwam_object_type_t	object_type = active_object_type();
@@ -1979,7 +1979,7 @@ prop_to_pt(nwam_object_type_t object_type, const char *prop)
 static nwam_value_type_t
 prop_value_type(nwam_object_type_t object_type, const char *prop)
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	nwam_value_type_t	value_type;
 
 	switch (object_type) {
@@ -2014,7 +2014,7 @@ static nwam_value_t
 str_to_nwam_value(nwam_object_type_t object_type, char *input_str, int pt_type,
     boolean_t is_list_prop)
 {
-	int		i, n = 0, ret;
+	int		i, n = 0, ret = NWAM_ERROR_INTERNAL;
 	nwam_value_t	data;
 	char		**val;
 	int		max_str_num;
@@ -2481,7 +2481,7 @@ is_prop_read_only(nwam_object_type_t object_type, const char *prop)
 static boolean_t
 is_prop_multivalued(nwam_object_type_t object_type, const char *prop)
 {
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 	boolean_t	multi;
 
 	switch (object_type) {
@@ -3848,7 +3848,7 @@ get_func(cmd_t *cmd)
 void
 clear_func(cmd_t *cmd)
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	const char		*prop;
 	nwam_object_type_t	object_type = active_object_type();
 
@@ -4161,7 +4161,7 @@ repeat:
 void
 verify_func(cmd_t *cmd)
 {
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 	const char	*errprop;
 
 	switch (active_object_type()) {

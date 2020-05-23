@@ -157,7 +157,7 @@ ilbd_audit_server_event(audit_sg_event_data_t *data,
 {
 	adt_session_data_t	*ah;
 	adt_event_data_t	*event;
-	au_event_t	flag;
+	au_event_t	flag = 0;
 	int	audit_error;
 
 	if ((ucredp == NULL) && ((cmd == ILBD_ADD_SERVER_TO_GROUP) ||
@@ -1140,7 +1140,7 @@ ilbd_retrieve_sg_hosts(const char *sg_name, uint32_t *rbuf, size_t *rbufsz)
 static ilb_cmd_t
 i_srvcmd_d2k(ilbd_srv_status_ind_t dcmd)
 {
-	ilb_cmd_t	cmd;
+	ilb_cmd_t	cmd = 0;
 
 	switch (dcmd) {
 	case stat_enable_server:

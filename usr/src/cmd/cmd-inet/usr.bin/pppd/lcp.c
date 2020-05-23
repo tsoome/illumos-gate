@@ -1831,7 +1831,7 @@ lcp_reqci(f, p, lenp, dont_nak)
     lcp_options *ho = &lcp_hisoptions[f->unit];
     lcp_options *ao = &lcp_allowoptions[f->unit];
     int cilen, citype, cichar;	/* Parsed len, type, char value */
-    u_short cishort;		/* Parsed short value */
+    u_short cishort = 0;	/* Parsed short value */
     u_int32_t cilong;		/* Parse long value */
     int ret, newret;
     u_char *p0, *nakp, *rejp, *prev;

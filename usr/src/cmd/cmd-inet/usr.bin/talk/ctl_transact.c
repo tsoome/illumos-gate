@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "talk_ctl.h"
 #include <sys/time.h>
 #include <libintl.h>
@@ -62,7 +60,7 @@ CTL_RESPONSE *response;
 	struct sockaddr junk;
 	int read_mask;
 	int ctl_mask;
-	int nready;
+	int nready = 0;
 	int cc;
 	socklen_t junk_size;
 	struct timeval wait;

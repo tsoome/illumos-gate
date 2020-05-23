@@ -506,7 +506,7 @@ ilbd_audit_rule_event(const char *audit_rule_name,
 {
 	adt_session_data_t	*ah;
 	adt_event_data_t	*event;
-	au_event_t		flag;
+	au_event_t		flag = 0;
 	int			scf_val_len = ILBD_MAX_VALUE_LEN;
 	char			*aobuf = NULL; /* algo:topo */
 	char			*valstr1 = NULL;
@@ -782,7 +782,7 @@ i_ilbd_action_switch(ilbd_rule_t *irl, ilbd_cmd_t cmd,
 static ilb_cmd_t
 i_ilbd2ilb_cmd(ilbd_cmd_t c)
 {
-	ilb_cmd_t	r;
+	ilb_cmd_t	r = 0;
 
 	switch (c) {
 	case ILBD_CREATE_RULE:
@@ -804,7 +804,7 @@ i_ilbd2ilb_cmd(ilbd_cmd_t c)
 static ilbd_cmd_t
 get_undo_cmd(ilbd_cmd_t cmd)
 {
-	ilbd_cmd_t	u_cmd;
+	ilbd_cmd_t	u_cmd = 0;
 
 	switch (cmd) {
 	case ILBD_DESTROY_RULE:
