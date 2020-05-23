@@ -5062,7 +5062,7 @@ mDNSlocal void AnswerNewLocalOnlyQuestion(mDNS *const m)
             if (LocalOnlyRecordAnswersQuestion(rr, q))
             {
                 retEv = mDNStrue;
-                AnswerLocalQuestionWithLocalAuthRecord(m, rr, mDNStrue);
+                AnswerLocalQuestionWithLocalAuthRecord(m, rr, QC_add);
                 if (m->CurrentQuestion != q) break;     // If callback deleted q, then we're finished here
             }
         }
@@ -5079,7 +5079,7 @@ mDNSlocal void AnswerNewLocalOnlyQuestion(mDNS *const m)
             if (ResourceRecordAnswersQuestion(&rr->resrec, q))
             {
                 retEv = mDNStrue;
-                AnswerLocalQuestionWithLocalAuthRecord(m, rr, mDNStrue);
+                AnswerLocalQuestionWithLocalAuthRecord(m, rr, QC_add);
                 if (m->CurrentQuestion != q) break;     // If callback deleted q, then we're finished here
             }
         }
