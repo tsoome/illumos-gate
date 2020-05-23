@@ -665,6 +665,9 @@ lt_stat_list_create(lt_list_type_t list_type, lt_stat_level_t level,
 	case LT_SORT_COUNT:
 		func = (GCompareFunc)lt_sort_by_count_desc;
 		break;
+	default:
+		func = NULL;
+		break;
 	}
 	list = g_list_sort(list, func);
 
