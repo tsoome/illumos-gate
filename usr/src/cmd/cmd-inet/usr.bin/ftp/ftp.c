@@ -55,7 +55,6 @@ static struct	sockaddr_in6 data_addr;
 int	data = -1;
 static int	abrtflag = 0;
 static int	ptflag = 0;
-int		connected;
 static jmp_buf	sendabort;
 static jmp_buf	recvabort;
 static jmp_buf 	ptabort;
