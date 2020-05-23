@@ -1194,7 +1194,7 @@ remv()
 static void
 process_startd_line(struct CMD_LINE *cmd, char *cmd_string)
 {
-	size_t sz;
+	size_t sz = 0;
 
 	/* Save the command line. */
 	if (sflg || rflg) {
