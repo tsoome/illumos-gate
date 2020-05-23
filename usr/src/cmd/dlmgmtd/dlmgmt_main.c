@@ -214,7 +214,7 @@ dlmgmt_zone_init(zoneid_t zoneid)
 static int
 dlmgmt_allzones_init(void)
 {
-	int		err, i;
+	int		err = 0, i;
 	zoneid_t	*zids = NULL;
 	uint_t		nzids, nzids_saved;
 
