@@ -355,7 +355,7 @@ main(int argc, char **argv)
 	dtrace_prog_t *prog;
 	dtrace_proginfo_t info;
 	int err, i, indefinite = 1;
-	long iter;
+	long iter = 0;
 	processorid_t id;
 	struct sigaction act;
 	struct itimerspec ts;
