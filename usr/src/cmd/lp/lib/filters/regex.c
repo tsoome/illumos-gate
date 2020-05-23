@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* EMACS_MODES: !fill, lnumb, !overwrite, !nodelete, !picture */
 
 #include "sys/types.h"
@@ -89,10 +87,10 @@ replace (pp, result, value)
 	int			nbra;
 #endif
 {
-	register char *		p;
-	register char *		q;
+	char *		p = NULL;
+	char *		q;
 
-	register size_t		ncount	= 0;
+	size_t		ncount	= 0;
 
 
 /*
