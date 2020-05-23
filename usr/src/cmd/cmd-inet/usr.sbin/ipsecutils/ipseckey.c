@@ -1202,7 +1202,7 @@ doaddresses(uint8_t sadb_msg_type, uint8_t sadb_msg_satype, int cmd,
     char *ebuf)
 {
 	boolean_t last_dst;
-	struct sockaddr_in6 *sin6;
+	struct sockaddr_in6 *sin6 = NULL;
 	struct sadb_msg *msgp;
 	int i, rc;
 	char **walker;	/* For the SRC and PROXY walking functions. */
@@ -1558,7 +1558,7 @@ doaddresses(uint8_t sadb_msg_type, uint8_t sadb_msg_satype, int cmd,
 		if (msgp->sadb_msg_errno != 0) {
 			char addrprint[INET6_ADDRSTRLEN];
 			int on_errno = 0;
-			char *on_errno_msg;
+			char *on_errno_msg = NULL;
 
 			/*
 			 * Print different error messages depending
@@ -1660,8 +1660,8 @@ doaddup(int cmd, int satype, char *argv[], char *ebuf)
 	int next, token, sa_len, alloclen, totallen = sizeof (msg), prefix;
 	uint32_t spi = 0;
 	uint_t reserved_bits = 0;
-	uint8_t	sadb_msg_type;
-	char *thiscmd, *pstr;
+	uint8_t	sadb_msg_type = SADB_RESERVED;
+	char *thiscmd = NULL, *pstr;
 	boolean_t readstate = B_FALSE, unspec_src = B_FALSE;
 	boolean_t alloc_inner = B_FALSE, use_natt = B_FALSE;
 	struct hostent *srchp = NULL, *dsthp = NULL, *isrchp = NULL,
@@ -2976,10 +2976,10 @@ dodelget(int cmd, int satype, char *argv[], char *ebuf)
 	uint64_t *nextext;
 	struct sadb_sa *assoc = NULL;
 	struct sadb_address *src = NULL, *dst = NULL;
-	int next, token, sa_len;
-	char *thiscmd;
-	uint32_t spi;
-	uint8_t	sadb_msg_type;
+	int next, token, sa_len = 0;
+	char *thiscmd = NULL;
+	uint32_t spi = 0;
+	uint8_t	sadb_msg_type = SADB_RESERVED;
 	struct hostent *srchp = NULL, *dsthp = NULL;
 	struct sockaddr_in6 *sin6;
 	boolean_t unspec_src = B_TRUE;
@@ -3577,7 +3577,7 @@ int
 main(int argc, char *argv[])
 {
 	int ch;
-	FILE *infile = stdin, *savefile;
+	FILE *infile = stdin, *savefile = NULL;
 	boolean_t dosave = B_FALSE, readfile = B_FALSE;
 	char *configfile = NULL;
 	struct stat sbuf;

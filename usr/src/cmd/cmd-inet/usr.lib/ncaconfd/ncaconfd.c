@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/tihdr.h>
@@ -267,7 +265,7 @@ static int
 find_nca_pos(int fd)
 {
 	int num_mods;
-	int i, pos;
+	int i, pos = 0;
 	struct str_list strlist;
 	boolean_t found_ip = B_FALSE;
 	boolean_t found_nca = B_FALSE;
@@ -707,7 +705,7 @@ ire_process(mib2_ipRouteEntry_t *buf, size_t len, boolean_t *changed)
 {
 	mib2_ipRouteEntry_t 	*rp;
 	mib2_ipRouteEntry_t 	*rp1;
-	mib2_ipRouteEntry_t 	*rp2;
+	mib2_ipRouteEntry_t 	*rp2 = NULL;
 	struct	in_addr		nexthop_v4;
 	mib2_ipRouteEntry_t	*endp;
 	char			ifname[LIFNAMSIZ + 1];

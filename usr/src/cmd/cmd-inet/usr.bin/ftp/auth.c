@@ -3,8 +3,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Copyright (c) 1985, 1989 Regents of the University of California.
  * All rights reserved.
@@ -332,9 +330,9 @@ int
 radix_encode(uchar_t *inbuf, uchar_t *outbuf, size_t buflen,
 	int *outlen, int decode)
 {
-	int i, j, D;
+	int i, j, D = 0;
 	char *p;
-	uchar_t c;
+	uchar_t c = 0;
 
 	if (decode) {
 		for (i = j = 0;

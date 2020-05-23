@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -202,7 +200,7 @@ interpret_extensions(uchar_t *ext,
 
 	int curr_size  =  regext_size; /* remaining total for all exts */
 	exthdr_t *exthdr;
-	gen_exthdr_t *gen_exthdr;
+	gen_exthdr_t *gen_exthdr = NULL;
 	const char *st;
 	uchar_t	*p;
 	interpreter_f *f;
@@ -286,12 +284,12 @@ void interpret_icmp_mip_ext(uchar_t *p, int len) {
 
 void
 interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
-	char		*pt, *pc = NULL;
+	char		*pt = NULL, *pc = NULL;
 	char		*line;
 	regreq_t	rreq[1];
 	regrep_t	rrep[1];
-	int		regext_size;
-	uchar_t		*regext_data;
+	int		regext_size = 0;
+	uchar_t		*regext_data = NULL;
 	struct in_addr	addr_temp;
 
 

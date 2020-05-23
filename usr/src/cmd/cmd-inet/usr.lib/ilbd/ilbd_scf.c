@@ -533,7 +533,7 @@ ilbd_data_to_scfval(ilbd_scf_pg_type_t pg_type, ilbd_var_type_t type,
 	int i;
 	int scf_val_len = ILBD_MAX_VALUE_LEN;
 	char *valstr = NULL;
-	int valint;
+	int valint = 0;
 	uint8_t valbool = 0;
 	ilbd_rule_t *r_ent = NULL;
 	ilbd_sg_t *s_ent = NULL;
@@ -737,7 +737,7 @@ ilb_status_t
 ilbd_create_pg(ilbd_scf_pg_type_t pg_type, void *data)
 {
 	ilb_status_t ret;
-	char *pgname;
+	char *pgname = NULL;
 	scf_propertygroup_t *pg = NULL;
 	scf_value_t **val;
 	scf_handle_t *h;
@@ -1039,7 +1039,7 @@ ilbd_scfval_to_data(const char *propname, ilbd_var_type_t ilb_type,
 	char *valstr;
 	int64_t valint;
 	uint8_t valbool;
-	int ipversion;
+	int ipversion = AF_UNSPEC;
 
 	switch (pg_type) {
 	case ILBD_SCF_RULE:
@@ -1573,7 +1573,7 @@ ilbd_change_prop(ilbd_scf_pg_type_t pg_type, const char *pg_name,
 	scf_propertygroup_t *scfpg = NULL;
 	char *scf_pgname = NULL;
 	scf_type_t scftype;
-	scf_value_t *scfval;
+	scf_value_t *scfval = NULL;
 	scf_handle_t *h;
 
 	if ((scf_pgname = malloc(ILBD_MAX_NAME_LEN)) == NULL)
@@ -1604,7 +1604,10 @@ ilbd_change_prop(ilbd_scf_pg_type_t pg_type, const char *pg_name,
 	} else if (pg_type == ILBD_SCF_SG) {
 		scftype = SCF_TYPE_ASTRING;
 		(void) scf_value_set_astring(scfval, (char *)new_val);
+	} else {
+		scftype = SCF_TYPE_INVALID;
 	}
+
 	ret = ilbd_scf_set_prop(scfpg, prop_name, scftype, scfval);
 
 done:

@@ -227,7 +227,8 @@ print_mesg(FILE *tf, CTL_MSG *request, char *remote_machine)
 	    strlen(request->l_name);
 	for (j = 0, k = 0; j < len; j++) {
 		if (!isprint((unsigned char)request->l_name[j])) {
-			char c;
+			char c = '\0';
+
 			if (!isascii((unsigned char)request->l_name[j])) {
 				l_username[k++] = 'M';
 				l_username[k++] = '-';

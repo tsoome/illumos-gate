@@ -111,7 +111,7 @@ ilbd_audit_hc_event(const char *audit_hcname,
 {
 	adt_session_data_t	*ah;
 	adt_event_data_t	*event;
-	au_event_t	flag;
+	au_event_t	flag = 0;
 	int	audit_error;
 
 	if ((ucredp == NULL) && (cmd == ILBD_CREATE_HC))  {

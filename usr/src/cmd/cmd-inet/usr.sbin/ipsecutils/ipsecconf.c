@@ -1335,8 +1335,8 @@ main(int argc, char *argv[])
 {
 	int ret, flushret;
 	int c;
-	int index;
-	boolean_t smf_managed;
+	int index = -1;
+	boolean_t smf_managed = B_FALSE;
 	boolean_t just_check = B_FALSE;
 	boolean_t replace_policy = B_FALSE;
 

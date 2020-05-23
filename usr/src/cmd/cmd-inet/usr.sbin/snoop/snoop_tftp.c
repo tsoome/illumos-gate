@@ -45,7 +45,7 @@ interpret_tftp(int flags, void *data, int fraglen)
 	extern int src_port, dst_port;
 	int blocksize = fraglen - 4;
 	struct tftp_options opts;
-	struct ttable *tt;
+	struct ttable *tt = NULL;
 	struct tftphdr *tftp = data;
 
 	opts.tsize = 0;

@@ -920,6 +920,8 @@ static int v2_finish(struct slpv2_hdr *slp, int flags) {
 		    op_class = "Not standardized, private";
 		else if (op_id < 0xffff)
 		    op_class = "Reserved";
+		else
+		    op_class = "Unknown";
 		sprintf(get_line(0, 0), "Option ID = 0x%04x, %s",
 			op_id, op_class);
 		if (nextop &&

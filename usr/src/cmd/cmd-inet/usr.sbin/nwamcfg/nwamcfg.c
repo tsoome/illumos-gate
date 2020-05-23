@@ -1188,7 +1188,7 @@ do_commit()
 		if (interactive_mode)
 			(void) printf(gettext("Committed changes\n"));
 	} else {
-		nwam_error_t verr;
+		nwam_error_t verr = NWAM_ERROR_INTERNAL;
 
 		/* Find property that caused failure */
 		switch (active_object_type()) {
@@ -1587,7 +1587,7 @@ done:
 void
 destroy_func(cmd_t *cmd)
 {
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 	char		*name, *realname = NULL;
 
 	if (current_scope == NWAM_SCOPE_NCP &&
@@ -1779,7 +1779,7 @@ help_func(cmd_t *cmd)
 void
 revert_func(cmd_t *cmd)
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	char			*name = NULL;
 	nwam_ncu_type_t		ncu_type;
 	nwam_object_type_t	object_type = active_object_type();
@@ -1972,7 +1972,7 @@ prop_to_pt(nwam_object_type_t object_type, const char *prop)
 static nwam_value_type_t
 prop_value_type(nwam_object_type_t object_type, const char *prop)
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	nwam_value_type_t	value_type;
 
 	switch (object_type) {
@@ -2004,15 +2004,15 @@ static nwam_value_t
 str_to_nwam_value(nwam_object_type_t object_type, char *input_str, int pt_type,
     boolean_t is_list_prop)
 {
-	int		i, n = 0, ret;
+	int		i, n = 0, ret = NWAM_ERROR_INTERNAL;
 	nwam_value_t	data;
 	char		**val;
 	int		max_str_num;
 
 	nwam_value_type_t	value_type;
-	int64_t			*int_vals;
-	uint64_t		*uint_vals;
-	boolean_t		*boolean_vals;
+	int64_t			*int_vals = NULL;
+	uint64_t		*uint_vals = NULL;
+	boolean_t		*boolean_vals = NULL;
 
 	/*
 	 * Worst case is that each char separated by DELIMITER, so the
@@ -2346,6 +2346,9 @@ show_prop_test(nwam_object_type_t object_type, const char *prop,
 			break;
 		case NWAM_OBJECT_TYPE_KNOWN_WLAN:
 			return (B_TRUE);
+		default:
+			ret = NWAM_ERROR_INTERNAL;
+			break;
 		}
 		if (ret != NWAM_SUCCESS)
 			continue;
@@ -2466,7 +2469,7 @@ is_prop_read_only(nwam_object_type_t object_type, const char *prop)
 static boolean_t
 is_prop_multivalued(nwam_object_type_t object_type, const char *prop)
 {
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 	boolean_t	multi;
 
 	switch (object_type) {
@@ -2734,7 +2737,7 @@ output_prop_val(const char *prop_name, nwam_value_t value, FILE *wf,
 	boolean_t	*bvals;
 
 	/* pointer to function to generate string representation of value */
-	const char	*(*tostr)(void *, const char *, char *);
+	const char	*(*tostr)(void *, const char *, char *) = NULL;
 	char		str[NWAM_MAX_VALUE_LEN]; /* to store the string */
 	int		i;
 
@@ -2775,7 +2778,7 @@ output_prop_val(const char *prop_name, nwam_value_t value, FILE *wf,
 
 	/* now, loop and print each value */
 	for (i = 0; i < num; i++) {
-		void *val;
+		void *val = NULL;
 
 		/* get the pointer to the ith value to pass to func() */
 		if (value_type == NWAM_VALUE_TYPE_STRING)
@@ -3830,7 +3833,7 @@ get_func(cmd_t *cmd)
 void
 clear_func(cmd_t *cmd)
 {
-	nwam_error_t		ret;
+	nwam_error_t		ret = NWAM_ERROR_INTERNAL;
 	const char		*prop;
 	nwam_object_type_t	object_type = active_object_type();
 
@@ -4140,7 +4143,7 @@ repeat:
 void
 verify_func(cmd_t *cmd)
 {
-	nwam_error_t	ret;
+	nwam_error_t	ret = NWAM_ERROR_INTERNAL;
 	const char	*errprop;
 
 	switch (active_object_type()) {

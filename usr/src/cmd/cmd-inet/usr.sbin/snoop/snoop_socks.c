@@ -117,6 +117,9 @@ interpret_socks_call(flags, line, fraglen)
 					case 3:
 						cmd = "ASSOCIATE_UDP";
 						break;
+					default:
+						cmd = "UNKNOWN";
+						break;
 					}
 					(void) sprintf(cp, "SOCKS5 %s ", cmd);
 					cp += strlen(cp);
@@ -219,6 +222,9 @@ interpret_socks_call(flags, line, fraglen)
 							break;
 						case 3:
 							cmd = "ASSOCIATE_UDP";
+							break;
+						default:
+							cmd = "UNKNOWN";
 							break;
 						}
 						(void) sprintf(get_line(0, 0),

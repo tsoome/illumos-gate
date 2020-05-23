@@ -2909,7 +2909,7 @@ vrrpd_query(const char *vn, vrrp_ret_query_t *ret, size_t *sizep)
 {
 	vrrp_queryinfo_t	*infop;
 	vrrp_vr_t		*vr;
-	vrrp_intf_t		*vif;
+	vrrp_intf_t		*vif = NULL;
 	vrrp_ip_t		*ip;
 	struct timeval		now;
 	uint32_t		vipcnt = 0;

@@ -126,7 +126,7 @@ uint_t
 interpret_ether(int flags, char *header, int elen, int origlen)
 {
 	struct ether_header *e = (struct ether_header *)header;
-	uchar_t *off, *ieeestart;
+	uchar_t *off, *ieeestart = NULL;
 	int len;
 	int ieee8023 = 0;
 	extern char *dst_name;

@@ -297,7 +297,7 @@ of_server_stats(ofmt_arg_t *of_arg, char *buf, uint_t bufsize)
 	uint64_t	count = 0, val;
 	int		i;
 	boolean_t	valid = B_TRUE;
-	sumfunc_t	sumfunc;
+	sumfunc_t	sumfunc = NULL;
 
 	switch (of_arg->ofmt_id) {
 	case ILBST_PKT_P: sumfunc = i_sum_per_rule_pkt_p;
@@ -344,7 +344,7 @@ static boolean_t
 of_itemize_stats(ofmt_arg_t *of_arg, char *buf, uint_t bufsize)
 {
 	ilbst_arg_t	*sta = (ilbst_arg_t *)of_arg->ofmt_cbarg;
-	int		stat_ind;
+	int		stat_ind = 0;
 	uint64_t	count;
 	int		rule_index = sta->ilbst_rule_index;
 	int		srv_ind = sta->ilbst_rlist[rule_index].ird_srv_ind;
@@ -395,7 +395,7 @@ static boolean_t
 of_rule_stats(ofmt_arg_t *of_arg, char *buf, uint_t bufsize)
 {
 	ilbst_arg_t	*sta = (ilbst_arg_t *)of_arg->ofmt_cbarg;
-	int		i, ind;
+	int		i, ind = 0;
 	uint64_t	count = 0;
 
 	switch (of_arg->ofmt_id) {

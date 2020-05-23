@@ -268,7 +268,7 @@ main(int argc, char **argv)
 void
 doall(void)
 {
-	struct person *p;
+	struct person *p = NULL;
 	struct passwd *pw;
 	struct utmpx *u;
 	char name[NMAX + 1];
@@ -324,7 +324,7 @@ doall(void)
 void
 donames(char **argv)
 {
-	struct person	*p;
+	struct person	*p = NULL;
 	struct passwd	*pw;
 	struct utmpx	*u;
 

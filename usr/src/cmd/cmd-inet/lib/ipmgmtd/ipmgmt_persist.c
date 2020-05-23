@@ -892,7 +892,7 @@ ipmgmt_aobjmap_op(ipmgmt_aobjmap_t *nodep, uint32_t op)
 	ipmgmt_aobjmap_t	*head, *prev, *matched = NULL;
 	boolean_t		update = B_TRUE;
 	int			err = 0;
-	ipadm_db_op_t		db_op;
+	ipadm_db_op_t		db_op = IPADM_DB_READ;
 
 	(void) pthread_rwlock_wrlock(&aobjmap.aobjmap_rwlock);
 
@@ -1368,7 +1368,7 @@ ipmgmt_db_init(void *cbarg, nvlist_t *db_nvl, char *buf, size_t buflen,
     int *errp)
 {
 	ipadm_handle_t	iph = cbarg;
-	nvpair_t	*nvp, *pnvp;
+	nvpair_t	*nvp, *pnvp = NULL;
 	char		*strval = NULL, *name, *mod = NULL, *pname;
 	char		tmpstr[IPMGMT_STRSIZE];
 	uint_t		proto;

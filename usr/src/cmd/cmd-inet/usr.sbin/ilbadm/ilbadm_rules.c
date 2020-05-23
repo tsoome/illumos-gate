@@ -1134,7 +1134,7 @@ ilbadm_create_rule(int argc, char *argv[])
 		 * if user hasn't specified a mask, apply default
 		 */
 		if ((rd->r_flags & ILB_FLAGS_RULE_STICKY) == 0) {
-			char 	*maskstr;
+			char 	*maskstr = NULL;
 
 			switch (rd->r_vip.ia_af) {
 			case AF_INET:

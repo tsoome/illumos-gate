@@ -801,7 +801,7 @@ incoming_prefix_addrconf(struct phyint *pi, uchar_t *opt,
 	char pbuf[INET6_ADDRSTRLEN];
 	boolean_t found_pub = _B_FALSE;
 	boolean_t found_tmp = _B_FALSE;
-	boolean_t ret;
+	boolean_t ret = _B_FALSE;
 
 	validtime = ntohl(po->nd_opt_pi_valid_time);
 	preftime = ntohl(po->nd_opt_pi_preferred_time);

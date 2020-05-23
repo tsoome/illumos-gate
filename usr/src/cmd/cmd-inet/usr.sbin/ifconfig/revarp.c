@@ -53,7 +53,7 @@ static int rarp_recv(dlpi_handle_t, struct arphdr *, size_t, size_t, int64_t);
 int
 doifrevarp(const char *linkname, struct sockaddr_in *laddr)
 {
-	int			s, retval;
+	int			s, retval = 0;
 	struct arphdr		*req, *ans;
 	struct in_addr		from;
 	struct in_addr		answer;

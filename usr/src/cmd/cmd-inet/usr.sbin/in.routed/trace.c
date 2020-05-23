@@ -274,7 +274,7 @@ set_tracefile(const char *filename,
 	struct stat stbuf;
 	struct stat stbuf2;
 	FILE *n_ftrace;
-	const char *fn;
+	const char *fn = NULL;
 	int nfd;
 	boolean_t allow_create;
 

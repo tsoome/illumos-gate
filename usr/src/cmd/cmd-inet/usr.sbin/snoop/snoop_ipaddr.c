@@ -327,8 +327,8 @@ load_names(char *fname)
 	FILE *f;
 	unsigned int addrv4;
 	struct in6_addr addrv6;
-	int family;
-	void *naddr;
+	int family = AF_UNSPEC;
+	void *naddr = NULL;
 
 	(void) fprintf(stderr, "Loading name file %s\n", fname);
 	f = fopen(fname, "r");

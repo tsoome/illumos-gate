@@ -212,7 +212,7 @@ static void
 synch_emit_proto(uint_t proto_num)
 {
 	ipsecalgs_exec_mode_t exec_mode;
-	uint32_t exec_mode_spdval;
+	uint32_t exec_mode_spdval = 0;
 
 	EMIT(sync_req_attr, SPD_ATTR_PROTO_ID, proto_num);
 
@@ -338,8 +338,8 @@ list_kernel_algs(void)
 	struct spd_attribute *attr, *endattr;
 	uint64_t *start, *end;
 	struct ipsecalgent alg;
-	uint_t cur_key, cur_block;
-	uint_t nkey_sizes, nblock_sizes, nparams;
+	uint_t cur_key = 0, cur_block = 0;
+	uint_t nkey_sizes, nblock_sizes, nparams = 0;
 	char diag_buf[SPDSOCK_DIAG_BUF_LEN];
 
 	if (sfd < 0) {

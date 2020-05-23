@@ -790,7 +790,7 @@ ilbadm_status_t
 ilbadm_set_netmask(char *val, ilb_ip_addr_t *ip, int af)
 {
 	int	prefixlen, maxval;
-	boolean_t	r;
+	boolean_t	r = B_FALSE;
 	char	*end;
 
 	assert(af == AF_INET || af == AF_INET6);
@@ -1080,7 +1080,7 @@ i_parse_optstring(char *arg, void *store, ilbadm_key_name_t *keylist,
 	ilbadm_status_t	rc = ILBADM_OK;
 	char		*comma = NULL, *equals = NULL;
 	char		*key, *nextkey, *val;
-	ilbadm_key_code_t	keyword;
+	ilbadm_key_code_t	keyword = ILB_KEY_BAD;
 	boolean_t	is_value_list = flags & OPT_VALUE_LIST;
 	boolean_t	assign_seen = B_FALSE;
 	int		n;

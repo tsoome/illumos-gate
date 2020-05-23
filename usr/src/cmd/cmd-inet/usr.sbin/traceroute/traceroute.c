@@ -839,7 +839,7 @@ calc_packetlen(int plen_input, struct pr_set *pr)
 static int
 set_src_addr(struct pr_set *pr, struct ifaddrlist **alp)
 {
-	union any_in_addr *ap;
+	union any_in_addr *ap = NULL;
 	struct ifaddrlist *al = NULL;
 	struct ifaddrlist *tmp1_al = NULL;
 	struct ifaddrlist *tmp2_al = NULL;

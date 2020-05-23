@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -747,7 +745,7 @@ print_ip(int af, char *line, const uchar_t *data, uint16_t len)
 {
 	in6_addr_t	addr6;
 	in_addr_t	addr4;
-	void		*addr;
+	void		*addr = NULL;
 
 	switch (af) {
 	case AF_INET:
