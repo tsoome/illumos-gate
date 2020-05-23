@@ -29,8 +29,6 @@
 #ifndef _LP_LP_H
 #define	_LP_LP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -568,7 +566,7 @@ char *		strip ( char * );
 
 void		sendmail ( char * , char * );
 
-void		(*lp_alloc_fail_handler)( void );
+extern void	(*lp_alloc_fail_handler)( void );
 
 /*
  * Originally part of liblpfs.a and fs.h, now no longer needed
