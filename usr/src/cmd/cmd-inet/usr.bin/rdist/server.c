@@ -41,7 +41,7 @@ int wrem = 1;
  */
 
 struct	linkbuf *ihead;		/* list of files with more than one link */
-char	buf[RDIST_BUFSIZ];	/* general purpose buffer */
+extern char	buf[RDIST_BUFSIZ];	/* general purpose buffer */
 char	source[RDIST_BUFSIZ];	/* base source directory name */
 char	destination[RDIST_BUFSIZ];	/* base destination directory name */
 char	target[RDIST_BUFSIZ];	/* target/source directory name */
