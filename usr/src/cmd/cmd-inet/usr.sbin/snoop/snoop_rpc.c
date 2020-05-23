@@ -61,6 +61,7 @@ static void rpc_detail_reply(int, int, struct cache_struct *, char *, int len);
 static void print_creds(int);
 static void print_verif(int);
 static void stash_xid(ulong_t, int, int, int, int);
+struct cache_struct xid_cache[XID_CACHE_SIZE];
 
 #define	LAST_FRAG ((ulong_t)1 << 31)
 

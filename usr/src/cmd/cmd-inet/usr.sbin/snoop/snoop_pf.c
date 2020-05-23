@@ -74,10 +74,6 @@ extern struct Pf_ext_packetfilt pf;
 static ushort_t *pfp;
 jmp_buf env;
 
-int eaddr;	/* need ethernet addr */
-
-int opstack;	/* operand stack depth */
-
 #define	EQ(val)		(strcmp(token, val) == 0)
 #define	IPV4_ONLY	0
 #define	IPV6_ONLY	1
@@ -234,14 +230,6 @@ datalink_t	dl;
 
 static int inBrace = 0, inBraceOR = 0;
 static int foundOR = 0;
-char *tkp, *sav_tkp;
-char *token;
-enum { EOL, ALPHA, NUMBER, FIELD, ADDR_IP, ADDR_ETHER, SPECIAL,
-	ADDR_IP6 } tokentype;
-uint_t tokenval;
-
-enum direction { ANY, TO, FROM };
-enum direction dir;
 
 extern void next();
 

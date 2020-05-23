@@ -1123,8 +1123,7 @@ resolve_chain(uint_t p)
 
 char *tkp, *sav_tkp;
 char *token;
-enum { EOL, ALPHA, NUMBER, FIELD, ADDR_IP, ADDR_ETHER, SPECIAL,
-	ADDR_IP6, ADDR_AT } tokentype;
+enum tokentype tokentype;
 uint_t tokenval;
 
 /*
@@ -1460,7 +1459,6 @@ comparison(char *s)
 	return (n_checks > 0);
 }
 
-enum direction { ANY, TO, FROM };
 enum direction dir;
 
 /*
