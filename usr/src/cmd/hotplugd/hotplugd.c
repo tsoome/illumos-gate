@@ -92,7 +92,7 @@ int
 main(int argc, char *argv[])
 {
 	int	opt;
-	int	pfd;
+	int	pfd = -1;
 	int	status;
 
 	if ((prog = strrchr(argv[0], '/')) == NULL)
