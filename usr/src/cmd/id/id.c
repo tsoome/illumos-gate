@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
@@ -155,6 +153,7 @@ main(int argc, char *argv[])
 		gid = getgid();
 		euid = geteuid();
 		egid = getegid();
+		prgid = gid;
 	}
 
 	if (mode != CURR) {
@@ -328,7 +327,7 @@ pgid(gid_t gid)
 static void
 prid(TYPE how, uid_t id)
 {
-	char *s;
+	char *s = NULL;
 
 	switch ((int)how) {
 		case UID:
