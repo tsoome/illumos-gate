@@ -195,7 +195,7 @@ dlmgmt_zfop(const char *filename, zoneid_t zoneid, zfcb_t *zfcb,
 {
 	int		ctfd;
 	int		err;
-	pid_t		childpid;
+	pid_t		childpid = 0;
 	siginfo_t	info;
 	zfarg_t		zfarg;
 	ctid_t		ct;
@@ -970,7 +970,7 @@ process_db_write(dlmgmt_db_req_t *req, FILE *fp, FILE *nfp)
 	int			err = 0;
 	dlmgmt_link_t		link_in_file, *linkp = NULL, *dblinkp;
 	boolean_t		persist = (req->ls_flags == DLMGMT_PERSIST);
-	boolean_t		writeall, rename, attr_renamed;
+	boolean_t		writeall, rename = B_FALSE, attr_renamed;
 	char			buf[MAXLINELEN];
 
 	writeall = (req->ls_linkid == DATALINK_ALL_LINKID);
