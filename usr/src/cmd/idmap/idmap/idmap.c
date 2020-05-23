@@ -870,7 +870,7 @@ nm2winqn(name_mapping_t *nm, char **winqn)
 	char *out;
 	size_t length = 0;
 	int is_domain = 1;
-	char *prefix;
+	char *prefix = NULL;
 
 	/* Sometimes there are no text names. Return a sid, then. */
 	if (nm->winname == NULL && nm->sidprefix != NULL) {
@@ -940,7 +940,7 @@ int
 nm2unixname(name_mapping_t *nm, char **unixname)
 {
 	size_t length = 0;
-	char *out, *it, *prefix;
+	char *out, *it, *prefix = NULL;
 
 	/* Sometimes there is no name, just pid: */
 	if (nm->unixname == NULL) {
@@ -2507,7 +2507,7 @@ name_mapping_t *
 args2nm(int *is_first_win, int argc, char **argv,
     cmd_pos_t *pos)
 {
-	int code;
+	int code = 0;
 	int i;
 	name_mapping_t *nm;
 
@@ -2569,7 +2569,7 @@ do_add_name_mapping(flag_t *f, int argc, char **argv, cmd_pos_t *pos)
 	name_mapping_t *nm;
 	int rc = 0;
 	int is_first_win;
-	idmap_stat stat;
+	idmap_stat stat = 0;
 	int is_wuser;
 	print_handle_t *ph;
 
@@ -3356,7 +3356,7 @@ static int
 /* LINTED E_FUNC_ARG_UNUSED */
 do_get_namemap(flag_t *f, int argc, char **argv, cmd_pos_t *pos)
 {
-	idmap_stat stat;
+	idmap_stat stat = 0;
 	name_mapping_t *nm;
 	int is_first_win;
 	int is_source_ad;
