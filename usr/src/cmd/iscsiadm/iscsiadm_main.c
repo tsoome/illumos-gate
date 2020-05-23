@@ -619,7 +619,7 @@ getTargetAddress(int addrType, char *ipStr, IMA_TARGET_ADDRESS *address)
 	char cBracketR = ']'; /* Close Bracket ']' */
 	char *colPos;
 	char *startPos;
-	unsigned long inputPort;
+	unsigned long inputPort = 0;
 	int addressType = AF_INET;
 	char *tmpStrPtr, tmpStr[SUN_IMA_IP_ADDRESS_PORT_LEN];
 	int rval;
@@ -1076,8 +1076,8 @@ static int
 setLoginParameter(IMA_OID oid, int optval, char *optarg)
 {
 	IMA_STATUS status = IMA_STATUS_SUCCESS;
-	IMA_UINT uintValue;
-	IMA_BOOL boolValue;
+	IMA_UINT uintValue = 0;
+	IMA_BOOL boolValue = IMA_FALSE;
 	SUN_IMA_DIGEST_ALGORITHM digestAlgList[1];
 	IMA_MIN_MAX_VALUE propMinMax;
 	char *endptr;
@@ -2744,7 +2744,7 @@ listTargetParam(int operandLen, char *operand[], cmdOptions_t *options,
 	boolean_t tpgtSpecified = B_FALSE;
 	boolean_t isIpv6 = B_FALSE;
 	int outerLoop;
-	boolean_t found;
+	boolean_t found = B_FALSE;
 	int i, j;
 	SUN_IMA_DIGEST_ALGORITHM_VALUE digestAlgorithms;
 	boolean_t verbose = B_FALSE;
@@ -4843,7 +4843,7 @@ static int
 modifyFunc(int operandLen, char *operand[], int object, cmdOptions_t *options,
     void *addArgs, int *funcRet)
 {
-	int ret, i;
+	int ret = 0, i;
 
 	assert(funcRet != NULL);
 
