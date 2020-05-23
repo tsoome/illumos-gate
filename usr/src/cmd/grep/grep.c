@@ -923,14 +923,14 @@ grep(int fd, const char *fn)
 {
 	PATTERN *pp;
 	off_t	data_len;	/* length of the data chunk */
-	off_t	line_len;	/* length of the current line */
+	off_t	line_len = 0;	/* length of the current line */
 	off_t	line_offset;	/* current line's offset from the beginning */
 	off_t	blkoffset;	/* line_offset but context-compatible */
 	long long	lineno, linenum;
 	long long	matches = 0;	/* Number of matching lines */
 	long long	conacnt = 0, conbcnt = 0;	/* context line count */
 	int	newlinep;	/* 0 if the last line of file has no newline */
-	char	*ptr, *ptrend, *prntptr, *prntptrend;
+	char	*ptr, *ptrend = NULL, *prntptr, *prntptrend;
 	char	*nextptr = NULL, *nextend = NULL;
 	char	*conptr = NULL, *conptrend = NULL;
 	char	*matchptr = NULL;
