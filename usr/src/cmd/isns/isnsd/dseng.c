@@ -64,7 +64,7 @@ load_data(
 	uchar_t phase;
 
 	isns_attr_t *scn_bitmap;
-	isns_attr_t *scn_name;
+	isns_attr_t *scn_name = NULL;
 
 	isns_attr_t *eid_attr;
 

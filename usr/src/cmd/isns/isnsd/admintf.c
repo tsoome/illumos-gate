@@ -54,7 +54,7 @@ get_lc_type(
 	object_type obj
 )
 {
-	isns_type_t type;
+	isns_type_t type = 0;
 
 	switch (obj) {
 	case Node:
@@ -81,7 +81,7 @@ get_lc_id(
 	object_type obj
 )
 {
-	uint32_t id;
+	uint32_t id = 0;
 
 	switch (obj) {
 	case Node:
