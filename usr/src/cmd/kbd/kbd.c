@@ -115,7 +115,8 @@ main(int argc, char **argv)
 	int c, error;
 	int rflag, tflag, lflag, cflag, dflag, aflag, iflag, errflag,
 	    Aflag, Dflag, Rflag, rtlacADRflag, sflag, bflag;
-	char *copt, *aopt, *count, *delay, *rate, *layout_name, *b_type;
+	char *copt, *aopt, *count = NULL, *delay = NULL, *rate = NULL;
+	char *layout_name, *b_type;
 	char *freq_str;
 	char *kbdname = KBD_DEVICE, *endptr = NULL;
 	int kbd, freq_val;
