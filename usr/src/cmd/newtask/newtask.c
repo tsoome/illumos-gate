@@ -326,7 +326,7 @@ update_running_proc(int newproj_flag, char *procname, char *projname)
 	struct ps_prochandle *p;
 	prcred_t original_prcred, current_prcred;
 	projid_t prprojid;
-	taskid_t taskid;
+	taskid_t taskid = 0;
 	int error = 0, gret;
 	struct project project;
 	char prbuf[PROJECT_BUFSZ];
