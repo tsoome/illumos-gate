@@ -375,14 +375,14 @@ open_connection(host, fd, Errmsg, ErrmsgSz)
 	unsigned int	 ErrmsgSz;
 {
 	int	s;
-	krb5_error_code	retval;
+	krb5_error_code	retval = 0;
 	
 	int	socket_length;
 	struct addrinfo hints, *ai, *aitop;
 	struct sockaddr_storage	  ss;
 	char serv_or_port[NI_MAXSERV];
 	enum err_types {SOCKET, CONNECT};
-	int which_err;
+	int which_err = 0;
 	
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;    /* go for either IPv4 or v6 */

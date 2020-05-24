@@ -50,7 +50,7 @@ main(int argc, char **argv)
 {
 	krb5_context ctx = NULL;
 	krb5_error_code code = 0;
-	krb5_enctype *enctypes;
+	krb5_enctype *enctypes = NULL;
 	int enctype_count = 0;
 	krb5_ccache cc = NULL;
 	krb5_keytab kt = NULL;
