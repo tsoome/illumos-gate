@@ -68,7 +68,7 @@ int
 main( int argc, char **argv )
 {
     char	buf[ 4096 ];
-    int		rc, deref, optind;
+    int		rc = 0, deref, optind;
     LDAPControl	*ldctrl;
 
 #ifdef notdef

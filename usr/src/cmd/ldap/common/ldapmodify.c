@@ -453,6 +453,7 @@ process_ldif_rec( char *rbuf )
 
     new_entry = newval;
 
+    modop = LDAP_MOD_ADD;
     rc = got_all = saw_replica = delete_entry = expect_modop = 0;
     expect_deleteoldrdn = expect_newrdn = expect_newparent = expect_sep = 0;
     expect_chgtype_or_control = linenum = got_value = rename = moddn = 0;
