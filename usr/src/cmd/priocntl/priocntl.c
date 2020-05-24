@@ -103,11 +103,11 @@ main(int argc, char *argv[])
 {
 	int		c;
 	int		lflag, dflag, sflag, eflag, cflag, iflag, csoptsflag;
-	char		*clname;
-	char		*idtypnm;
+	char		*clname = NULL;
+	char		*idtypnm = NULL;
 	idtype_t	idtype;
 	int		idargc;
-	char		**idargv;
+	char		**idargv = NULL;
 
 	(void) strlcpy(cmdpath, argv[0], MAXPATHLEN);
 	(void) strlcpy(basenm, basename(argv[0]), BASENMSZ);
@@ -481,7 +481,7 @@ set_procs(char *clname, idtype_t idtype, int idargc, char **idargv,
 	int			procfd;
 	int			saverr;
 	static char		subcmdpath[128];
-	boolean_t		procinset;
+	boolean_t		procinset = B_FALSE;
 	id_t			id;
 	size_t			len;
 
