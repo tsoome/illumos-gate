@@ -115,7 +115,7 @@ ndmpd_tape_open_v2(ndmp_connection_t *connection, void *body)
 	int sid, lun;
 	int err;
 	scsi_adapter_t *sa;
-	int devid;
+	int devid = -1;
 
 	err = NDMP_NO_ERR;
 
@@ -1207,7 +1207,7 @@ common_tape_open(ndmp_connection_t *connection, char *devname, int ndmpmode)
 	int mode;
 	int sid, lun;
 	scsi_adapter_t *sa;
-	int devid;
+	int devid = -1;
 
 	err = NDMP_NO_ERR;
 

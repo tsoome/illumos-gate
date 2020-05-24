@@ -229,7 +229,7 @@ fs_getdents(int fildes, struct dirent *buf, size_t *nbyte,
 	struct stat64 st;
 	char *p;
 	int len;
-	int rv;
+	int rv = 0;
 
 	if (*nbyte == 0) {
 		(void) memset((char *)buf, 0, MAX_DENT_BUF_SIZE);

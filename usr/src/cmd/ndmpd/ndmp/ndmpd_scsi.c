@@ -416,7 +416,7 @@ common_open(ndmp_connection_t *connection, char *devname)
 	int sid, lun;
 	int err;
 	scsi_adapter_t *sa;
-	int devid;
+	int devid = -1;
 
 	err = NDMP_NO_ERR;
 
