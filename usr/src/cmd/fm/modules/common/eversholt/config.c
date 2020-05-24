@@ -259,7 +259,7 @@ addconfig(struct node *lhs, struct node *rhs, void *arg)
 void
 config_cook(struct cfgdata *cdata)
 {
-	struct config *newnode;
+	struct config *newnode = NULL;
 	char *cfgstr, *equals;
 	const char *pn, *sv;
 	char *pv;

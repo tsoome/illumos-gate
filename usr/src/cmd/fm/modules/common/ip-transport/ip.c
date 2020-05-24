@@ -591,7 +591,7 @@ ip_xprt_destroy(ip_xprt_t *ipx)
 static int
 ip_xprt_setup(fmd_hdl_t *hdl, ip_cinfo_t *cinfo)
 {
-	int err, fd, oflags, xflags, optval = 1;
+	int err = 0, fd, oflags, xflags, optval = 1;
 	struct addrinfo *aip;
 	const char *s1, *s2;
 	struct addrinfo *ail = cinfo->ipc_addr;

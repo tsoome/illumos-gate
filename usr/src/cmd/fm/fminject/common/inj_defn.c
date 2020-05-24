@@ -679,6 +679,7 @@ inj_defn_validate_memlist(inj_declmem_t *dlm, inj_defnmem_t *dfm)
 	if ((errno = nvlist_alloc(&nvl, NV_UNIQUE_NAME, 0)) != 0)
 		die("failed to allocate nvl for event");
 
+	rc = 0;
 	for (nmem = 1; dlm != NULL && dfm != NULL;
 	    dlm = inj_list_next(dlm), dfm = inj_list_next(dfm), nmem++) {
 

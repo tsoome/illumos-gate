@@ -710,7 +710,7 @@ platform_config_snapshot(void)
 	int err;
 	topo_walk_t *twp;
 	static uint64_t lastgen;
-	uint64_t curgen;
+	uint64_t curgen = 0;
 
 	/*
 	 * If the DR generation number has changed,

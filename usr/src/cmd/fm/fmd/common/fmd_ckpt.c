@@ -1033,7 +1033,7 @@ fmd_ckpt_restore_case(fmd_ckpt_t *ckp, fmd_module_t *mp, const fcf_sec_t *sp)
 	const fcf_case_t *fcfc = fmd_ckpt_dataptr(ckp, sp);
 	const char *uuid = fmd_ckpt_strptr(ckp, fcfc->fcfc_uuid, NULL);
 	fmd_case_t *cp;
-	int n;
+	int n = 0;
 
 	if (uuid == NULL || fcfc->fcfc_state > FCF_CASE_CLOSE_WAIT) {
 		fmd_ckpt_error(ckp, EFMD_CKPT_INVAL, "corrupt %u case uuid "
