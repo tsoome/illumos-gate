@@ -134,7 +134,7 @@ extern "C" {
 #define	INQUIRY_DATA_LENGTH		96
 #define	DVD_CONFIG_SIZE			0x20
 
-int uscsi_error;	/* used for debugging failed uscsi */
+extern int uscsi_error;	/* used for debugging failed uscsi */
 
 /* fdisk related structures */
 
