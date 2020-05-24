@@ -405,7 +405,7 @@ parsespec(const char *spec)
 	char *p;
 	const char *q;
 	int count;
-	priv_set_t ***toupd;
+	priv_set_t ***toupd = NULL;
 	priv_set_t *upd;
 	int i;
 	boolean_t freeupd = B_TRUE;
