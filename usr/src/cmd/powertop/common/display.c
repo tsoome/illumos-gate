@@ -327,7 +327,7 @@ pt_display_status_bar(void)
 void
 pt_display_mod_status_bar(char *msg)
 {
-	sb_slot_t *new, *n;
+	sb_slot_t *new, *n = NULL;
 	boolean_t found = B_FALSE, first = B_FALSE;
 
 	if (msg == NULL) {

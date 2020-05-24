@@ -53,7 +53,7 @@ pt_events_walk(const dtrace_aggdata_t *data, void *arg)
 	dtrace_recdesc_t	*rec1, *rec2, *rec3;
 	dtrace_syminfo_t	dts;
 	GElf_Sym		sym;
-	uint64_t		offender_addr;
+	uint64_t		offender_addr = 0;
 	uint64_t		n = 0;
 	int32_t			*instance, *offender_cpu;
 	int			i;
