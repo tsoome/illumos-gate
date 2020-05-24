@@ -50,7 +50,7 @@ main(int argc, char **argv)
 
 	char	*prog;
 	int c, pflag, sflag, errflg, rc;
-	char *ptr, *remain, *msg, *path;
+	char *ptr, *remain, *msg = NULL, *path;
 	unsigned int pathlen;
 
 	prog = argv[0];
