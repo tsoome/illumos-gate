@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * rcm scripting module:
  *
@@ -685,7 +683,7 @@ get_state_element(state_file_descr_t *statefd, int index, int *flag)
 static void *
 allocate_state_element(state_file_descr_t *statefd, int *index)
 {
-	void *x;
+	void *x = NULL;
 	int i;
 	int flag;
 

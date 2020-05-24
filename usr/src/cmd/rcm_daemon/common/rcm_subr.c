@@ -1459,8 +1459,8 @@ rsrc_usage_info(char **rsrcnames, uint_t flag, int seq_num, rcm_info_t **info)
 	rsrc_node_t *node;
 	rcm_info_t *result = NULL;
 	tree_walk_arg_t arg;
-	int initial_req;
-	int rv;
+	int initial_req = 0;
+	int rv = 0;
 	int i;
 
 	arg.flag = flag;
