@@ -80,7 +80,7 @@ static const char rcsid[] = "@(#)$Id: ipnat.c,v 1.24.2.2 2005/05/10 21:19:30 dar
 #define	bzero(a,b)	memset(a,0,b)
 #endif
 int	use_inet6 = 0;
-char	thishost[MAXHOSTNAMELEN];
+extern char	thishost[MAXHOSTNAMELEN];
 
 extern	char	*optarg;
 
