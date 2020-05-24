@@ -269,7 +269,7 @@ tar_getdir(tlm_commands_t *commands,
 	char	*hugename;
 	longlong_t huge_size = 0;	/* size of a HUGE file */
 	long	acl_spot;		/* any ACL info on the next volume */
-	long	file_size;		/* size of file to restore */
+	long	file_size = 0;		/* size of file to restore */
 	long	size_left = 0;		/* need this after volume change */
 	int	last_action = 0;	/* what we are doing at EOT */
 	boolean_t multi_volume = FALSE;	/* is this a multi-volume switch ? */

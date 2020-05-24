@@ -583,7 +583,7 @@ backup_file(char *dir, char *name, tlm_acls_t *tlm_acls,
 
 	int erc;
 	char buf[TLM_MAX_PATH_NAME];
-	longlong_t rv;
+	longlong_t rv = 0;
 
 	NDMP_LOG(LOG_DEBUG, "\"%s/%s\"", dir, name);
 

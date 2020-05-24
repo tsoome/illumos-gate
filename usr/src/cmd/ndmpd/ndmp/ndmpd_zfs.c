@@ -942,7 +942,7 @@ ndmpd_zfs_reader_writer(ndmpd_zfs_args_t *ndmpd_zfs_args,
 	funct_t sendrecv_func;
 	funct_t tape_func;
 	int sendrecv_err;
-	int tape_err;
+	int tape_err = 0;
 
 	switch (ndmpd_zfs_params->mp_operation) {
 	case NDMP_DATA_OP_BACKUP:
@@ -952,6 +952,10 @@ ndmpd_zfs_reader_writer(ndmpd_zfs_args_t *ndmpd_zfs_args,
 	case NDMP_DATA_OP_RECOVER:
 		sendrecv_func = ndmpd_zfs_restore_recv_write;
 		tape_func = ndmpd_zfs_restore_tape_read;
+		break;
+	default:
+		sendrecv_func = NULL;
+		tape_func = NULL;
 		break;
 	}
 

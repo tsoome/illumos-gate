@@ -1718,7 +1718,7 @@ backup_filev3(bk_param_v3_t *bpp, fst_node_t *pnp,
     fst_node_t *enp)
 {
 	char *ent;
-	longlong_t rv;
+	longlong_t rv = 0;
 	longlong_t apos, bpos;
 	acl_t *aclp = NULL;
 	char *acltp;

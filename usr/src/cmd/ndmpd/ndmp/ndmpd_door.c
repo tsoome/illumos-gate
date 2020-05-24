@@ -160,7 +160,7 @@ ndmp_door_server(void *cookie, char *ptr, size_t size,
 	unsigned int used;
 	ndmp_door_ctx_t *dec_ctx;
 	ndmp_door_ctx_t *enc_ctx;
-	unsigned int dec_status;
+	unsigned int dec_status = 0;
 	unsigned int enc_status;
 
 	dec_ctx = ndmp_door_decode_start(ptr, size);
