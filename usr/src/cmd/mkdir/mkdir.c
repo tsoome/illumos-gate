@@ -29,8 +29,6 @@
 /*	  All Rights Reserved					*/
 /*								*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * make directory.
  * If -m is used with a valid mode, directories will be
@@ -81,7 +79,7 @@ main(int argc, char *argv[])
 	int 	c, local_errno, tmp_errno;
 	mode_t	cur_umask;
 	mode_t	mode;
-	mode_t	modediff;
+	mode_t	modediff = 0;
 	char 	*d;
 	struct stat	buf;
 
