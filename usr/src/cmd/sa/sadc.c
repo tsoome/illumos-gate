@@ -196,7 +196,7 @@ main(int argc, char *argv[])
 	struct stat buf;
 	char *fname;
 	struct iodevinfo *iodev;
-	off_t flength;
+	off_t flength = 0;
 	hrtime_t start_n;
 	hrtime_t period_n;
 

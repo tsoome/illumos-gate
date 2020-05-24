@@ -26,8 +26,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T */
 /*	All Rights Reserved	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/times.h>
 #include <sys/time.h>
@@ -71,7 +69,7 @@ main(int argc, char **argv)
 	char	eol;
 	char	fld[20][12];
 	int	iline = 0, i, nfld;
-	int	ichar, iblok;
+	int	ichar = 0, iblok = 0;
 	long	chars = 0, bloks = 0;
 
 	aopt[0] = '\0';
