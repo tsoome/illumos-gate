@@ -47,7 +47,6 @@
 /*
  * Global turbo related variables definitions
  */
-boolean_t		g_turbo_supported;
 double			g_turbo_ratio;
 
 /*
