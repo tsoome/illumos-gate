@@ -3605,7 +3605,7 @@ static int
 do_service(const char *fmri, boolean_t waitflag, int dowhat,
 		const char *state) {
 
-	int		status;
+	int		status = 0;
 	boolean_t	is_maint;
 	const char	*what = gettext("not set");
 	useconds_t	max;

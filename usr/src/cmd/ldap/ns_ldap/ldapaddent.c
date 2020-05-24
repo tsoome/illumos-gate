@@ -2427,7 +2427,7 @@ dump_publickey(ns_ldap_result_t *res, char *container)
 	char	**value = NULL;
 	char	buf[BUFSIZ];
 	char	domainname[BUFSIZ];
-	char	*pubptr, *prvptr;
+	char	*pubptr = NULL, *prvptr = NULL;
 
 	if (res == NULL)
 		return;
