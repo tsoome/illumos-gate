@@ -567,7 +567,7 @@ static int
 do_lwps(id_t pid, const char *range, psetid_t pset)
 {
 	char procfile[MAX_PROCFS_PATH];
-	struct ps_prochandle *Pr;
+	struct ps_prochandle *Pr = NULL;
 	struct prheader header;
 	struct lwpsinfo *lwp;
 	char *lpsinfo, *ptr;
