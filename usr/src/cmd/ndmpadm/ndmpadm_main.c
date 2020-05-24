@@ -559,7 +559,7 @@ ndmp_get_password(char **password)
 static int
 ndmp_enable_auth(int argc, char **argv, ndmp_command_t *cur_cmd)
 {
-	char *auth_type, *username, *password;
+	char *auth_type = NULL, *username = NULL, *password;
 	int c, i, auth_type_flag = 0;
 	char *enc_password;
 
@@ -652,7 +652,7 @@ ndmp_enable_auth(int argc, char **argv, ndmp_command_t *cur_cmd)
 static int
 ndmp_disable_auth(int argc, char **argv, ndmp_command_t *cur_cmd)
 {
-	char *auth_type;
+	char *auth_type = NULL;
 	int c, i, auth_type_flag = 0;
 
 	/* disable <-a auth-type> */
