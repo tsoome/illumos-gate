@@ -1160,7 +1160,7 @@ find_device(int defer, char *tmpstr)
 		total_devices_found++;
 
 		if ((!defer) && !found) {
-			char *sn, *tmpbuf;
+			char *sn, *tmpbuf = NULL;
 			/*
 			 * dev_name is an optional command line input.
 			 */
