@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -247,7 +245,7 @@ dfail(const char *message, ...)
 static void
 show_events(char event_type, char *desc)
 {
-	int i, first = -1, last;
+	int i, first = -1, last = -1;
 
 	for (i = 0; i < LS_MAX_EVENTS; i++) {
 		ls_event_info_t *evp = &g_event_info[i];
