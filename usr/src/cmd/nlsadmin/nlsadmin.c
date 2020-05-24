@@ -27,9 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * nlsadmin.c -- control program for the network listener service
  *
@@ -732,7 +729,7 @@ prt_svcs(char *svc, char *netspec)
 	char	mesg[BUFSIZ];
 	FILE	*fp;
 	struct	svcfields entry;
-	int	rtn;
+	int	rtn = 0;
 	int	found = FALSE;
 	char	*p;
 
