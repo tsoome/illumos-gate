@@ -557,7 +557,7 @@ dump_prop_list(const dumpops_t *dumpops, const char *name, int ilev,
 	di_minor_t	minor;
 	char		*p;
 	int		i, prop_type, nitems;
-	dev_t		pdev;
+	dev_t		pdev = NODEV;
 	int		nprop = 0;
 
 	if (compat_printed)
