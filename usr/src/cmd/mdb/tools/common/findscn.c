@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <string.h>
 #include <libelf.h>
 #include <gelf.h>
@@ -43,7 +41,7 @@ findelfsecidx(Elf *elf, char *tofind)
 		elfdie("failed to get ELF header");
 
 	while ((scn = elf_nextscn(elf, scn)) != NULL) {
-		char *name;
+		char *name = NULL;
 
 		if (gelf_getshdr(scn, &shdr) == NULL ||
 		    (name = elf_strptr(elf, ehdr.e_shstrndx,

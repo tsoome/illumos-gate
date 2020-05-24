@@ -231,9 +231,9 @@ lgrp(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	int opt_q = 0; /* display only address. */
 	int i;
 	const char *s_index = NULL, *s_handle = NULL, *s_parent = NULL;
-	uintptr_t index;
-	uintptr_t handle;
-	uintptr_t parent;
+	uintptr_t index = 0;
+	uintptr_t handle = 0;
+	uintptr_t parent = 0;
 	int filters = 0;
 
 	if (!(flags & DCMD_ADDRSPEC)) {

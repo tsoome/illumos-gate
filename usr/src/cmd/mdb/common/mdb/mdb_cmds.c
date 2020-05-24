@@ -320,6 +320,9 @@ write_arglist(mdb_tgt_as_t as, mdb_tgt_addr_t addr,
 	case 'Z':
 		write_value = write_uint64;
 		break;
+	default:
+		write_value = NULL;
+		break;
 	}
 
 	for (argv++, i = 1; i < argc; i++, argv++) {
@@ -433,6 +436,9 @@ match_arglist(mdb_tgt_as_t as, uint_t flags, mdb_tgt_addr_t addr,
 		break;
 	case 'M':
 		match_value = match_uint64;
+		break;
+	default:
+		match_value = NULL;
 		break;
 	}
 
