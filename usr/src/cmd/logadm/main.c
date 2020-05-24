@@ -82,6 +82,9 @@ static char *Chown = "/bin/chown";
 static char *Gzip = "/bin/gzip";
 static char *Mkdir = "/bin/mkdir";
 
+jmp_buf Err_env;
+int Debug;
+
 /* return from time(0), gathered early on to avoid slewed timestamps */
 time_t Now;
 
