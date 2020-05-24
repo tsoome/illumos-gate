@@ -27,8 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include	<stdio.h>
 #include	<string.h>
 #include	<libgen.h>
@@ -87,13 +85,13 @@ main(int argc, char *argv[])
 	int		c;
 	int		lflag, dflag, sflag, mflag, pflag, eflag, iflag, tflag;
 	int		rflag;
-	pri_t		fxuprilim;
-	pri_t		fxupri;
-	char		*idtypnm;
+	pri_t		fxuprilim = 0;
+	pri_t		fxupri = 0;
+	char		*idtypnm = NULL;
 	idtype_t	idtype;
 	int		idargc;
-	long		res;
-	long		tqntm;
+	long		res = 0;
+	long		tqntm = 0;
 	uint_t		cflags;
 
 	(void) strlcpy(cmdpath, argv[0], MAXPATHLEN);

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
@@ -90,11 +88,11 @@ main(int argc, char *argv[])
 	int		c;
 	int		lflag, dflag, sflag, pflag;
 	int		tflag, rflag, eflag, iflag, qflag;
-	pri_t		rtpri;
-	long		tqntm;
-	long		res;
+	pri_t		rtpri = 0;
+	long		tqntm = 0;
+	long		res = 0;
 	int		tqsig;
-	char		*idtypnm;
+	char		*idtypnm = NULL;
 	idtype_t	idtype;
 	int		idargc;
 	uint_t		cflags;

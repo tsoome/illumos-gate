@@ -27,8 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/procset.h>
 #include <sys/priocntl.h>
@@ -77,9 +75,9 @@ main(int argc, char *argv[])
 {
 	int c;
 	int lflag, dflag, sflag, mflag, pflag, eflag, iflag;
-	pri_t fssuprilim;
-	pri_t fssupri;
-	char *idtypnm;
+	pri_t fssuprilim = 0;
+	pri_t fssupri = 0;
+	char *idtypnm = NULL;
 	idtype_t idtype;
 	int idargc;
 	uint_t cflags;
