@@ -185,7 +185,7 @@ main(int argc, char *argv[])
 	int modified = 0;
 	boolean_t refresh = B_FALSE;
 	int opt;
-	char *zonename;
+	char *zonename = NULL;
 	char *maxrss = NULL;
 
 	(void) setpname("rcapadm");

@@ -355,7 +355,7 @@ int
 main(int argc, char *argv[])
 {
 	int interval = 5;
-	int count;
+	int count = 0;
 	int always = 1;
 	int opt;
 	int projects = 0;
