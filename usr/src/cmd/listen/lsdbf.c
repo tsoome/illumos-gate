@@ -719,7 +719,7 @@ check_version(void)
 {
 	FILE *fp;
 	char *line, *p, *tmp;
-	int version;
+	int version = 0;
 
 	if ((fp = fopen(DBFNAME, "r")) == NULL) {
 		logmessage(dbfopenmsg);
