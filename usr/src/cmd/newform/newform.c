@@ -27,8 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	FUNCTION PAGE INDEX
  * Function	Page		Description
@@ -317,13 +315,13 @@ cnvtspec(char *p)	/* Convert tab specification to tab positions.	*/
 	/* Pointer to spec string. */
 {
 	int	state,		/* DFA state				*/
-		spectype,	/* Specification type			*/
+		spectype = 0,	/* Specification type			*/
 		number[40],	/* Array of read-in numbers		*/
-		tp,		/* Pointer to last number		*/
+		tp = 0,		/* Pointer to last number		*/
 		ix;		/* Temporary				*/
 	int	tspec = 0;	/* Tab spec pointer			*/
 	char	c,		/* Temporary				*/
-		*filep;		/* Pointer to file name			*/
+		*filep = NULL;	/* Pointer to file name			*/
 	FILE	*fp;		/* File pointer				*/
 
 	state = 0;
@@ -585,6 +583,8 @@ readspec(char *p)		/* Read a tabspec from a file		*/
 		*restore = " ",	/* Character to be restored		*/
 		repch;		/* Character to replace with		*/
 
+	tabspecp = NULL;
+	repch = '\0';
 	state = 0;
 	firsttime = 1;
 	while (state >= 0) {
@@ -608,11 +608,11 @@ readspec(char *p)		/* Read a tabspec from a file		*/
 				tabspecp = --p;
 				p++;
 				firsttime = 0;
-				}
+			}
 			if ((c == ' ') || (c == '\t') || (c == ':')) {
 				repch = *(restore = p - 1);
 				*restore = '\0';
-				}
+			}
 			state = (c == ':') ? 6
 				: ((c == ' ') || (c == '\t')) ? 5 : 4;
 			break;
@@ -622,9 +622,9 @@ readspec(char *p)		/* Read a tabspec from a file		*/
 		case 6:
 			state = (c == '>') ? -2 : 5;
 			break;
-			}
-		if (c == '\n') state = -1;
 		}
+		if (c == '\n') state = -1;
+	}
 	if (okludge)
 		(void) strcpy(format, tabspecp);
 	value = (state == -1) ? 0 : cnvtspec(tabspecp);
