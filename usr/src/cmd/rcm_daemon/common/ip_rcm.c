@@ -1618,7 +1618,7 @@ if_replumb(ip_cache_t *node)
 	ip_pif_t *pif;
 	int i;
 	boolean_t success, ipmp;
-	const char *fstr;
+	const char *fstr = NULL;
 	char lifname[LIFNAMSIZ];
 	char buf[MAX_RECONFIG_SIZE];
 	int max_lifnum = 0;
@@ -2515,7 +2515,7 @@ if_config_inst(const char *ifinst, FILE *hfp, int af, boolean_t ipmp)
 	char *buf = NULL;
 	char *ifparsebuf = NULL;
 	uint_t ifparsebufsize;
-	const char *fstr;		/* address family string */
+	const char *fstr = NULL;	/* address family string */
 	boolean_t stdif = B_FALSE;
 
 	rcm_log_message(RCM_TRACE1, "IP: if_config_inst(%s) ipmp = %d\n",
