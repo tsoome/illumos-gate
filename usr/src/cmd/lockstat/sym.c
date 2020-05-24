@@ -138,8 +138,8 @@ symtab_init(void)
 {
 	Elf		*elf;
 	Elf_Scn		*scn = NULL;
-	Sym		*symtab, *symp, *lastsym;
-	char		*strtab;
+	Sym		*symtab = NULL, *symp, *lastsym;
+	char		*strtab = NULL;
 	uint_t		cnt;
 	int		fd;
 	int		i;
