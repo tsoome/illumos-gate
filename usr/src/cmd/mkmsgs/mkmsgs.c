@@ -28,8 +28,6 @@
 /*	  All Rights Reserved  	*/
 
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* 
  * Create message files in a specific format.
  * the gettxt message retrieval function must know the format of
@@ -112,7 +110,7 @@ char *argv[];
 	char	*ifilep;		/* input file name */
 	char	*ofilep;		/* output file name */
 	char	*localep; 		/* locale name */
-	char	*localedirp;    	/* full-path name of parent directory
+	char	*localedirp = NULL;    	/* full-path name of parent directory
 				 	 * of the output file */
 	char	*outfilep;		/* full-path name of output file */
 	FILE *fp_inp; 			/* input file FILE pointer */
@@ -124,7 +122,7 @@ char *argv[];
 	int iflag;			/* -i option was specified */
 	int oflag;			/* -o option was slecified */
 	int nitems;			/* number of bytes to write */
-	char *pathoutp;			/* full-path name of output file */
+	char *pathoutp = NULL;		/* full-path name of output file */
 	struct stat buf;		/* buffer to stat the work file */
 	unsigned size;			/* used for argument to malloc */
 	int i;				
