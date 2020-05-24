@@ -372,7 +372,7 @@ static int
 pt_cpufreq_snapshot(void)
 {
 	kstat_ctl_t 	*kc;
-	int 		ret;
+	int 		ret = 0;
 	uint_t		i;
 
 	if ((kc = kstat_open()) == NULL)

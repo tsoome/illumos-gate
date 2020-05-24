@@ -215,7 +215,7 @@ pt_cpuidle_dtrace_walk(const dtrace_aggdata_t *data, void *arg)
 {
 	dtrace_aggdesc_t 	*aggdesc = data->dtada_desc;
 	dtrace_recdesc_t 	*rec;
-	uint64_t 		n = 0, state;
+	uint64_t 		n = 0, state = 0;
 	int 			i;
 
 	rec = &aggdesc->dtagd_rec[1];
