@@ -1490,7 +1490,7 @@ static int
 process_commands(cmdbuf_t *cmds, int starting_index, picl_nodehdl_t parent,
     int *last_processed_index)
 {
-	int		err;
+	int		err = PICL_SUCCESS;
 	int		index;
 	picl_nodehdl_t	rooth;
 	picl_nodehdl_t	nodeh;

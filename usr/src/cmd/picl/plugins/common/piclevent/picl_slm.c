@@ -298,7 +298,7 @@ piclslm_deliver_event(sysevent_t *ev, int flag)
 	int		retval;
 	char		*pack_buf;
 	size_t		nvl_size;
-	int		rval;
+	int		rval = 0;
 
 	/*
 	 * Filter out uninteresting events
