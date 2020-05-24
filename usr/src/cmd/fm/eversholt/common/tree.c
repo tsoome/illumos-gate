@@ -29,8 +29,6 @@
  * routines for semantic checking.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -1100,7 +1098,7 @@ tree_decl(enum nodetype t, struct node *np, struct node *nvpairs,
     const char *file, int line)
 {
 	struct node *decl;
-	struct node *ret;
+	struct node *ret = NULL;
 
 	ASSERT(np != NULL);
 

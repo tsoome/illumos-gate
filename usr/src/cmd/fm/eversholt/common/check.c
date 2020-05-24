@@ -473,7 +473,7 @@ void
 check_propnames(enum nodetype t, struct node *np, int from, int to)
 {
 	struct node *dnp;
-	struct lut *lutp;
+	struct lut *lutp = NULL;
 
 	ASSERT(np != NULL);
 	ASSERTinfo(np->t == T_EVENT || np->t == T_LIST || np->t == T_ARROW,
@@ -825,8 +825,8 @@ check_cycle(struct node *lhs, struct node *rhs, void *arg)
 static void
 check_cycle_lhs(struct node *stmtnp, struct node *arrow)
 {
-	struct node *trylhs;
-	struct node *tryrhs;
+	struct node *trylhs = NULL;
+	struct node *tryrhs = NULL;
 
 	/* handle cascaded arrows */
 	switch (arrow->u.arrow.lhs->t) {

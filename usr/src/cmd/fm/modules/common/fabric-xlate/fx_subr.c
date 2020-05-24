@@ -391,12 +391,12 @@ fab_find_rppath_by_df(fmd_hdl_t *hdl, nvlist_t *nvl, uint8_t df)
 char *
 fab_find_rppath_by_devbdf(fmd_hdl_t *hdl, nvlist_t *nvl, pcie_req_id_t bdf)
 {
-	xmlXPathObjectPtr xpathObj;
+	xmlXPathObjectPtr xpathObj = NULL;
 	xmlNodeSetPtr nodes;
 	xmlNodePtr devNode;
-	char 	*retval, *temp;
+	char 	*retval = NULL, *temp;
 	char	query[500];
-	int	i, size, bus, dev, fn;
+	int	i, size, bus = 0, dev = 0, fn = 0;
 	char	*hcpath;
 	size_t	len;
 
@@ -579,7 +579,7 @@ fab_find_bdf(fmd_hdl_t *hdl, nvlist_t *nvl, pcie_req_id_t bdf)
 {
 	char 	*retval;
 	char	query[500];
-	int	bus, dev, fn;
+	int	bus = 0, dev = 0, fn = 0;
 	char	rcpath[255];
 
 	if (bdf != (uint16_t)-1) {
@@ -623,7 +623,7 @@ fail:
 char *
 fab_find_addr(fmd_hdl_t *hdl, nvlist_t *nvl, uint64_t addr)
 {
-	xmlXPathObjectPtr xpathObj;
+	xmlXPathObjectPtr xpathObj = NULL;
 	xmlNodeSetPtr nodes;
 	xmlNodePtr devNode;
 	char *retval, *temp;

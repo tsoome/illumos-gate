@@ -63,8 +63,8 @@ extern fmd_hdl_t *Hdl;	/* handle from eft.c */
 static int
 begins_with(struct node *lhs, struct node *rhs, struct lut *ex)
 {
-	int lnum;
-	int rnum;
+	int lnum = 0;
+	int rnum = 0;
 	struct iterinfo *iterinfop;
 
 	if (lhs == NULL)
@@ -120,7 +120,7 @@ eval_getname(struct node *funcnp, struct lut *ex, struct node *events[],
     struct node *np, struct lut **globals,
     struct config *croot, struct arrow *arrowp, int try, int *dupedp)
 {
-	struct node *nodep;
+	struct node *nodep = NULL;
 	const char *funcname = funcnp->u.func.s;
 	struct evalue val;
 
@@ -724,6 +724,8 @@ eval_func(struct node *funcnp, struct lut *ex, struct node *events[],
 			str = "suffix";
 		else if (funcname == L_setserdincrement)
 			str = "increment";
+		else
+			str = NULL;
 
 		/*
 		 * allocate a struct evalue to hold the serd property's
@@ -1651,7 +1653,7 @@ eval_expr(struct node *np, struct lut *ex, struct node *events[],
 		return (1);
 
 	case T_CONDIF: {
-		struct node *retnp;
+		struct node *retnp = NULL;
 		int dotrue = 0;
 
 		/*

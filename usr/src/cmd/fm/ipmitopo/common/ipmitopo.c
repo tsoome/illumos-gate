@@ -132,7 +132,7 @@ main(int argc, char **argv)
 {
 	ipmi_handle_t *ihp;
 	char *errmsg;
-	uint_t xport_type;
+	uint_t xport_type = 0;
 	char c, *host = NULL, *user = NULL, *passwd = NULL;
 	int err;
 	nvlist_t *params = NULL;

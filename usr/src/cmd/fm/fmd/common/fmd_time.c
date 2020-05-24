@@ -78,8 +78,8 @@ void
 fmd_time_sync(fmd_timeval_t *ftv, hrtime_t *hrp, uint_t samples)
 {
 	const fmd_timeops_t *ftop = fmd.d_clockops;
-	hrtime_t hrtbase, hrtmin = INT64_MAX;
-	struct timeval todbase;
+	hrtime_t hrtbase = 0, hrtmin = INT64_MAX;
+	struct timeval todbase = { 0 };
 	uint_t i;
 
 	for (i = 0; i < samples; i++) {

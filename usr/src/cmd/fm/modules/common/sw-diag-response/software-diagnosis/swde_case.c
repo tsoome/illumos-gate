@@ -128,7 +128,7 @@ swde_case_unserialize(fmd_hdl_t *hdl, fmd_case_t *cp)
 {
 	swde_case_t *scp;
 	swde_case_data_t *datap;
-	void *subdata;
+	void *subdata = NULL;
 	size_t sz;
 
 	scp = fmd_hdl_zalloc(hdl, sizeof (*scp), FMD_SLEEP);

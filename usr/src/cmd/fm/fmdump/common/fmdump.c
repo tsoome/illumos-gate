@@ -1160,7 +1160,7 @@ main(int argc, char *argv[])
 	int opt_A = 0;
 	char **ifiles = NULL;
 	char *ifile = NULL;
-	int n_ifiles;
+	int n_ifiles = 0;
 	int ifileidx = 0;
 	int iflags = 0;
 

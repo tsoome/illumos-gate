@@ -1207,7 +1207,7 @@ fmd_xprt_list_suspect(fmd_xprt_t *xp, nvlist_t *nvl)
 	nvlist_t *rsrc, *asru, *de_fmri, *de_fmri_dup = NULL;
 	nvlist_t *flt_copy;
 	int err;
-	nvlist_t **asrua;
+	nvlist_t **asrua = NULL;
 	uint8_t *proxy_asru = NULL;
 	int got_proxy_asru = 0;
 	int got_hc_rsrc = 0;
@@ -1459,6 +1459,7 @@ fmd_xprt_recv(fmd_xprt_t *xp, nvlist_t *nvl, hrtime_t hrt, boolean_t logonly)
 	uint_t n;
 	fmd_case_t *cp;
 
+	ishvireport = B_FALSE;
 	/*
 	 * Grab the transport lock and set the busy flag to indicate we are
 	 * busy receiving an event.  If [DI]SUSPEND is pending, wait until fmd

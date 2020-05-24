@@ -1102,7 +1102,7 @@ serd_eval(struct fme *fmep, fmd_hdl_t *hdl, fmd_event_t *ffep,
 	    lut_lookup(serdinst->u.stmt.lutp, (void *)L_id, NULL)) != NULL) {
 		struct evalue *gval;
 		char suffixbuf[200];
-		char *suffix;
+		char *suffix = NULL;
 		char *nserdname;
 		size_t nname;
 
