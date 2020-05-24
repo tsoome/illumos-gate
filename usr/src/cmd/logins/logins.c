@@ -25,9 +25,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.15.1.2 */
-
 /*
  * logins.c
  *
@@ -1127,7 +1124,7 @@ fill_localpw(struct localpw *lpw, struct passwd *pw) {
 void
 build_localpw(struct reqlogin *req_head)
 {
-	struct localpw *next, *cur;
+	struct localpw *next, *cur = NULL;
 	struct passwd *pw;
 	struct reqlogin *req_next;
 
@@ -1286,7 +1283,8 @@ main(int argc, char *argv[])
 	/* Initializations */
 	initmsg(argv[0]);
 
-
+	reqloginhead = NULL;
+	reqgrphead = NULL;
 
 	/*  Command-line processing */
 
