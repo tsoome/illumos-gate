@@ -890,7 +890,7 @@ do_list(char *disk_argp, char **argv, uint32_t optind, uint8_t is_snapshot)
 	disk_tag_t disk_tag;
 	array_tag_t array_tag;
 
-	int ret;
+	int ret = 0;
 
 	/* print RAID system */
 	if (disk_argp == NULL) {
@@ -2931,7 +2931,7 @@ static int
 size_to_string(uint64_t size, char *string, int len)
 {
 	int i = 0;
-	uint32_t remainder;
+	uint32_t remainder = 0;
 	char unit[][2] = {" ", "K", "M", "G", "T"};
 
 	if (string == NULL) {
