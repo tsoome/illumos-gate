@@ -450,7 +450,7 @@ int		cmd = 0;		/* Cmd verb from cmd line */
 int		exit_code = 0;		/* exit code for program */
 int		temp_fd;		/* For -f option */
 char		*file_name = NULL;
-int		option_t_input;
+int		option_t_input = 0;
 char		*path_phys = NULL;
 int		USE_FCHBA = 0;
 
