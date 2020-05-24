@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "gnu_msgfmt.h"
 
 #define	OPT_L	0x01
@@ -289,7 +287,7 @@ check_format(struct entry *id, struct entry *str, int is_c_format)
 	char	**pstr_norm;
 	size_t	id_len, id_num;
 	size_t	plural_off, plural_len, plural_num;
-	size_t	str_len, str_num;
+	size_t	str_len = 0, str_num = 0;
 	size_t	osz, nsz;
 	struct loc	*p;
 
