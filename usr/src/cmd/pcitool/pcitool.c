@@ -1237,7 +1237,7 @@ bytedump_get(int fd, int cmd, pcitool_reg_t *prg_p,
 static uint32_t
 set_acc_attr(pcitool_uiargs_t *input_args_p)
 {
-	uint32_t access_attrs;
+	uint32_t access_attrs = 0;
 
 	switch (input_args_p->size) {
 	case 1:
