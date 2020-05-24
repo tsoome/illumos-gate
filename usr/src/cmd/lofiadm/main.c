@@ -1498,7 +1498,7 @@ lofi_compress(int *lfd, const char *filename, int compress_index,
 	struct stat64 statbuf;
 	int compfd = -1, uncompfd = -1;
 	int tfd = -1;
-	ssize_t rbytes, wbytes, lastread;
+	ssize_t rbytes = 0, wbytes, lastread;
 	int i, type;
 
 	/*
