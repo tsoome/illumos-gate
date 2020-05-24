@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/termio.h>
 #include <unistd.h>
@@ -63,7 +61,7 @@ safe_malloc(size_t size)
 static int
 find_projects(char *name, int default_only)
 {
-	struct projlist *tail, *prev;
+	struct projlist *tail, *prev = NULL;
 	char *projname, *projcomm;
 	struct project proj;
 	void *buffer, *tmp;
