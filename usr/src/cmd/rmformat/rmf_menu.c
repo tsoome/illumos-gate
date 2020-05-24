@@ -308,7 +308,7 @@ Manufacturer supplied formatting utility.\n"));
 static void
 process_F_flag(smedia_handle_t handle, int32_t fd)
 {
-	uint32_t format_flag;
+	uint32_t format_flag = 0;
 	int32_t old_per = 0;
 	int32_t new_per, ret_val;
 
@@ -415,7 +415,7 @@ process_l_flag()
 	int removable;
 	int total_devices_found_last_time;
 	int defer = 0;
-	char *tmpstr;
+	char *tmpstr = NULL;
 
 #define	MAX_RETRIES_FOR_SCANNING 3
 
