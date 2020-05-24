@@ -47,8 +47,26 @@
 #include "check.h"
 #include "ptree.h"
 
-static struct node *Root;
+struct lut *Faults;
+struct lut *Upsets;
+struct lut *Defects;
+struct lut *Errors;
+struct lut *Ereports;
+struct lut *Ereportenames;
+struct lut *Ereportenames_discard;
+struct lut *SERDs;
+struct lut *STATs;
+struct lut *ASRUs;
+struct lut *FRUs;
+struct lut *Configs;
+struct node *Props;
+struct node *Lastprops;
+struct node *Masks;
+struct node *Lastmasks;
+struct node *Problems;
+struct node *Lastproblems;
 
+static struct node *Root;
 static char *Newname;
 
 static struct stats *Faultcount;
