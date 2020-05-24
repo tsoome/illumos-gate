@@ -90,12 +90,12 @@ extern int optind;
 int
 main(int argc, char *argv[])
 {
-	register int j;
-	register int i = 0;
-	register char *p;
-	register char header = 'n';
-	register char body = 't';
-	register char footer = 'n';
+	int j;
+	int i = 0;
+	char *p;
+	char header = 'n';
+	char body = 't';
+	char footer = 'n';
 	char line[LINE_MAX];
 	char tempchr;	/* Temporary holding variable. */
 	char swtch = 'n';
@@ -110,7 +110,7 @@ main(int argc, char *argv[])
 	int blank = 1;
 	int blankctr = 0;
 	int c;
-	int lnt;
+	int lnt = 0;
 	char last;
 	FILE *iptr = stdin;
 	FILE *optr = stdout;
