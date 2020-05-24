@@ -98,7 +98,7 @@ _nscd_server_setadmin(nscd_admin_mod_t *set)
 	nscd_cfg_handle_t	*h;
 	int			i, j;
 	char			*group = "param-group-cache";
-	char			*dbname;
+	char			*dbname = NULL;
 	nscd_cfg_error_t	*err = NULL;
 	char			*me = "_nscd_server_setadmin";
 

@@ -197,7 +197,7 @@ _nscd_refresh()
 {
 	char			*me = "nscd_refresh";
 	char			*cfgfile;
-	nscd_rc_t		rc;
+	nscd_rc_t		rc = NSCD_SUCCESS;
 	nscd_cfg_error_t	*err;
 	char			errmsg[1024];
 

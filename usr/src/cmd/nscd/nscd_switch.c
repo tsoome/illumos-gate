@@ -629,7 +629,7 @@ nss_search(nss_db_root_t *rootp, nss_db_initf_t initf, int search_fnum,
 	nscd_nsw_state_t	*s = NULL;
 	int			n_src;
 	unsigned int		status_vec = 0;
-	int			dbi, srci = -1;
+	int			dbi = 0, srci = -1;
 	int			check_loopback = 0;
 	int			state_thr = 0;
 	lb_key_t		key, *k = NULL;

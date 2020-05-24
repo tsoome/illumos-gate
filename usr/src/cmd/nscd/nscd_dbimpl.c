@@ -483,7 +483,7 @@ nscd_db_t *
 _nscd_alloc_db(
 	int		size)
 {
-	int		sz;
+	int		sz = 0;
 	nscd_db_t	*db;
 
 	/* allocate the database */
