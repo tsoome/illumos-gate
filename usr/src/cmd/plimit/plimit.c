@@ -238,7 +238,7 @@ static int
 limit_value(int which, char *arg, rlim64_t *limit)
 {
 	rlim64_t value;
-	rlim64_t unit;
+	rlim64_t unit = 0;
 	char *lastc;
 
 	if (strcmp(arg, "unlimited") == 0) {
