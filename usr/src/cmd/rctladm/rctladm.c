@@ -445,7 +445,7 @@ int
 main(int argc, char *argv[])
 {
 	int c;			/* options character */
-	char *action;
+	char *action = NULL;
 	char *rctl;
 
 	(void) setlocale(LC_ALL, "");
