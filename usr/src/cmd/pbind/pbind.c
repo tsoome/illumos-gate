@@ -237,7 +237,7 @@ static int
 do_lwps(id_t pid, const char *range, processorid_t cpu)
 {
 	char procfile[MAX_PROCFS_PATH];
-	struct ps_prochandle *Pr;
+	struct ps_prochandle *Pr = NULL;
 	struct prheader header;
 	processorid_t binding;
 	struct lwpsinfo *lwp;
