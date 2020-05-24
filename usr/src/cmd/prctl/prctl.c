@@ -2028,8 +2028,8 @@ grab_process_by_id(char *idname, rctl_entity_t type, pr_info_handle_t *p,
     int priv, int *gret)
 {
 	char prbuf[PROJECT_BUFSZ];
-	projid_t projid;
-	taskid_t taskid;
+	projid_t projid = 0;
+	taskid_t taskid = 0;
 	zoneid_t zoneid;
 	zoneid_t zone_self;
 	struct project proj;
