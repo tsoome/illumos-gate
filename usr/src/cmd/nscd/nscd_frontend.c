@@ -439,7 +439,7 @@ _nscd_APP_check_cred(
 	nss_pheader_t	*phdr = (nss_pheader_t *)buf;
 	ucred_t		*uc = NULL;
 	uid_t		ruid;
-	uid_t		euid;
+	uid_t		euid = 0;
 	pid_t		pid;
 	int		errnum;
 	char		*me = "_nscd_APP_check_cred";

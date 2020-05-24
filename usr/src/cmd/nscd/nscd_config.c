@@ -220,6 +220,8 @@ _nscd_cfg_add_index_entry(
 		dbe_type = NSCD_DATA_CFG_PARAM_INDEX;
 	else if (type == NSCD_CFG_LIST_STAT)
 		dbe_type = NSCD_DATA_CFG_STAT_INDEX;
+	else
+		dbe_type = NSCD_DATA_UNKNOWN;
 
 	size = sizeof (int);
 
@@ -1348,7 +1350,7 @@ _nscd_cfg_init(
 		    _nscd_cfg_nsw_link_default[i].group_off +
 		    _nscd_cfg_nsw_link_default[i].param_off;
 
-		if (_nscd_cfg_nsw_db[j].name != dbnj) {
+		if (_nscd_cfg_nsw_db[i].name != dbnj) {
 			for (j = 0; j < _nscd_cfg_num_nsw_db; j++) {
 
 				if (strcmp(spc->db,
@@ -2427,7 +2429,7 @@ _nscd_cfg_set(
 	char			*me = "_nscd_cfg_set";
 	int			dlen;
 	nscd_cfg_id_t		*nswdb;
-	nscd_cfg_param_desc_t	*desc, *gdesc;
+	nscd_cfg_param_desc_t	*desc, *gdesc = NULL;
 	nscd_cfg_group_info_t	*gi;
 	char			*nswdb_name, *param_name;
 	void			*pdata = NULL;

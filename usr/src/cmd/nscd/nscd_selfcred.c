@@ -1537,7 +1537,7 @@ static void *
 get_smf_prop(const char *var, char type, void *def_val)
 {
 	scf_simple_prop_t	*prop;
-	void			*val;
+	void			*val = NULL;
 	char			*me = "get_smf_prop";
 
 	prop = scf_simple_prop_get(NULL, NULL, "config", var);
