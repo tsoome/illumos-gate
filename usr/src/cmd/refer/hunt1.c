@@ -12,11 +12,10 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <locale.h>
 #include <stdio.h>
 #include <assert.h>
+
 extern char refdir[];
 extern int keepold;
 extern char *fgnames[];
@@ -62,9 +61,9 @@ main(int argc, char *argv[])
 	static char oldname[30];
 	static int was = 0;
 	/* these pointers are unions of pointer to int and pointer to long */
-	long *hpt;
+	long *hpt = NULL;
 	unsigned *master = 0;
-	int falseflg, nhash, nitem, nfound, frtbl, kk;
+	int falseflg, nhash, nitem, nfound = 0, frtbl, kk;
 
 	/* special wart for refpart: default is tags only */
 

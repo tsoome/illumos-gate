@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -39,7 +37,7 @@ baddrop(unsigned *mptr, int nf, FILE *fc, int nitem,
 	    char *qitem[], char *rprog, int full)
 {
 	/* checks list of drops for real bad drops; finds items with "deliv" */
-	int i, g, j, need, got, na, len;
+	int i, g, j, need, got, na, len = 0;
 	long lp;
 	char res[100], *ar[50], output[TXTLEN], *mput;
 	union ptr master;

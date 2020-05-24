@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <locale.h>
 
@@ -26,9 +24,9 @@ recopy(FILE *ft, FILE *fb, FILE *fa, int nhash)
 	int n, i, iflong;
 	long getl();
 	int getw();
-	int *hpt_s;
+	int *hpt_s = NULL;
 	int (*getfun)();
-	long *hpt_l;
+	long *hpt_l = NULL;
 	long k, lp;
 	if (fa == NULL) {
 		err(gettext("No old pointers"), 0);
