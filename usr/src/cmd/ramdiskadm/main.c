@@ -29,8 +29,6 @@
  * communicated via a name or a minor number.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/ramdisk.h>
@@ -216,7 +214,7 @@ main(int argc, char *argv[])
 	int		deleteflag = 0;
 	int		errflag = 0;
 	char		*suffix;
-	uint64_t	size;
+	uint64_t	size = 0;
 	int		openflag;
 	int		ctl_fd = 0;
 	static char	rd_ctl[] = "/dev/" RD_CTL_NAME;
