@@ -544,7 +544,7 @@ list_devs(int listguids, int ctrl)
 {
 	nvlist_t *thisdevnvl;
 	nvpair_t *pair;
-	char *diskpath, *livepath, *key, *querydev;
+	char *diskpath, *livepath, *key = NULL, *querydev;
 	char *matchctrl = NULL;
 	char checkctrl[MAXPATHLEN];
 	int rv;
