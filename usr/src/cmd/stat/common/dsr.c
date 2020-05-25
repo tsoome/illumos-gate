@@ -116,7 +116,7 @@ drvinstpart2dev(char *driver, int instance, char *part,
     char **devpathp, char **adevpathp, char **devidp)
 {
 	minor_match_t	*mm, **mma = mma_disk_tape_misc;
-	char		*devpath;
+	char		*devpath = NULL;
 	char		*devid;
 	char		*devicespath;
 	di_node_t	node;

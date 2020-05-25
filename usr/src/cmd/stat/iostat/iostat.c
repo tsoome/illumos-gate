@@ -206,7 +206,7 @@ main(int argc, char **argv)
 	long hz;
 	int forever;
 	hrtime_t start_n;
-	hrtime_t period_n;
+	hrtime_t period_n = 0;
 
 	(void) setlocale(LC_ALL, "");
 #if !defined(TEXT_DOMAIN)		/* Should be defined by cc -D */
@@ -570,8 +570,9 @@ show_disk(void *v1, void *v2, void *data)
 	struct iodev_snapshot *old = (struct iodev_snapshot *)v1;
 	struct iodev_snapshot *new = (struct iodev_snapshot *)v2;
 	int *count = (int *)data;
-	double rps, wps, tps, mtps, krps, kwps, kps, avw, avr, w_pct, r_pct;
-	double wserv, rserv, serv;
+	double rps = 0, wps = 0, tps = 0, mtps, krps = 0, kwps = 0;
+	double kps = 0, avw = 0, avr = 0, w_pct = 0, r_pct = 0;
+	double wserv = 0, rserv = 0, serv = 0;
 	double iosize;	/* kb/sec or MB/sec */
 	double etime, hr_etime;
 	char *disk_name;
