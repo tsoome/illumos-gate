@@ -111,7 +111,7 @@ main(argc, argv)
 	char **argv;
 {
 	char *from;
-	char *p, *at, *c;
+	char *p = NULL, *at, *c;
 	struct passwd *pw;
 	char *shortfrom;
 	char buf[MAXLINE];

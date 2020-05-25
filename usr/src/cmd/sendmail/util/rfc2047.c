@@ -2,12 +2,6 @@
  * rfc2047.c -- decode RFC-2047 header format
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-#ifndef lint
-static char sccsi2[] = "%W% (Sun) %G%";
-#endif
-
 /*
  * Copyright (c) 1997-1998 Richard Coleman
  * All rights reserved.
@@ -224,7 +218,7 @@ decode_rfc2047(char *str, char *dst, char *charset)
 				}
 			} else {
 				/* base64 */
-				int c1, c2, c3, c4;
+				int c1, c2 = 0, c3 = 0, c4;
 
 				pp = startofmime;
 				while (pp < endofmime) {
