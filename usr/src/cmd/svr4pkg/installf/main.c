@@ -115,7 +115,6 @@ char 	*abi_sym_ptr;
 char 	*ulim;
 char 	*script;
 
-int	eptnum;
 int	nosetuid;
 int	nocnflct;
 int	warnflag = 0;
