@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "streams_wide.h"
 #include "streams_common.h"
 
@@ -126,7 +124,7 @@ static ssize_t
 stream_wide_fetch(stream_t *str)
 {
 	ssize_t dist_to_buf_end;
-	int ret_val;
+	int ret_val = 0;
 	wchar_t *graft_pt;
 	wchar_t *next_nl;
 

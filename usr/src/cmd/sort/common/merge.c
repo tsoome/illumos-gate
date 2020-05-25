@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "merge.h"
 
 /*
@@ -286,7 +284,7 @@ merge_n_streams(sort_t *S, stream_t *head_streamp, int n_streams,
 	stream_t *top_streamp;
 	stream_t *cur_streamp;
 	stream_t *bot_streamp;
-	stream_t *loop_out_streamp;
+	stream_t *loop_out_streamp = NULL;
 	flag_t is_single_byte = S->m_single_byte_locale;
 
 	int n_opens = 0;
