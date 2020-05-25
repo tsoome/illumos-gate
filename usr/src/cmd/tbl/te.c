@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
   
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
  /* te.c: error message control, input line count */
 #include "t..c"
 #include <locale.h>
@@ -32,42 +30,41 @@ error(char *s)
 char *
 gets1(char *s, int len)
 {
-char *p;
-int nbl;
-while(len > 0)
-	{
-	iline++;
-	while ((p = fgets(s,len,tabin))==0)
-		{
-		if (swapin()==0)
-			return((char *)0);
+	char *p = NULL;
+	int nbl;
+
+	while (len > 0) {
+		iline++;
+		while ((p = fgets(s,len,tabin))==0) {
+			if (swapin() == 0)
+				return(NULL);
 		}
 
-	while (*s) s++;
-	s--;
-	if (*s == '\n') {
-		*s-- = '\0';
-	} else {
-		if (!feof(tabin)) {
-			if (ferror(tabin))
-				error(strerror(errno));
-			else
-				error(gettext("Line too long"));
+		while (*s)
+			s++;
+		s--;
+		if (*s == '\n') {
+			*s-- = '\0';
+		} else {
+			if (!feof(tabin)) {
+				if (ferror(tabin))
+					error(strerror(errno));
+				else
+					error(gettext("Line too long"));
+			}
 		}
+
+		for(nbl = 0; *s == '\\' && s > p; s--)
+			nbl++;
+		if (linstart && nbl % 2) { /* fold escaped nl if in table */
+			s++;
+			len -= s - p;
+			continue;
+		}
+		break;
 	}
 
-	for(nbl=0; *s == '\\' && s>p; s--)
-		nbl++;
-	if (linstart && nbl % 2) /* fold escaped nl if in table */
-		{
-		s++;
-		len -= s - p;
-		continue;
-		}
-	break;
-	}
-
-return(p);
+	return(p);
 }
 
 # define BACKMAX 500
