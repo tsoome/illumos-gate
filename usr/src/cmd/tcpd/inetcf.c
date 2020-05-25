@@ -58,7 +58,7 @@ char   *inet_cfg(conf)
 char   *conf;
 {
     char    buf[BUFSIZ];
-    FILE   *fp;
+    FILE   *fp = NULL;
     char   *service;
     char   *protocol;
     char   *user;
@@ -85,7 +85,7 @@ char   *conf;
     } else {
 	for (i = 0; inet_files[i] && (fp = fopen(inet_files[i], "r")) == 0; i++)
 	     /* void */ ;
-	if (fp == 0) {
+	if (fp == NULL) {
 	    fprintf(stderr, "Cannot find your inetd.conf or tlid.conf file.\n");
 	    fprintf(stderr, "Please specify its location.\n");
 	    exit(1);
