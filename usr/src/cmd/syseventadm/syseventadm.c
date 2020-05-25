@@ -503,6 +503,9 @@ list_remove_cmd(int cmd)
 			case CMD_REMOVE:
 				result = remove_file(*p);
 				break;
+			default:
+				result = EXIT_OK;
+				break;
 			}
 			if (rval == EXIT_NO_MATCH &&
 			    result != EXIT_NO_MATCH)
@@ -812,11 +815,11 @@ static serecord_t *
 parse_line(str_t *line)
 {
 	char	*lp;
-	char	*vendor, *publisher;
-	char	*class, *subclass;
-	char	*user;
-	char	*reserved1, *reserved2;
-	char	*path, *args;
+	char	*vendor = NULL, *publisher = NULL;
+	char	*class, *subclass = NULL;
+	char	*user = NULL;
+	char	*reserved1 = NULL, *reserved2 = NULL;
+	char	*path = NULL, *args = NULL;
 	serecord_t *sep;
 
 	lp = line->s_str;
