@@ -9813,7 +9813,7 @@ export_svc_general(scf_propertygroup_t *pg, struct entity_elts *selts)
 static void
 export_method_context(scf_propertygroup_t *pg, struct entity_elts *elts)
 {
-	xmlNodePtr n, prof, cred, env;
+	xmlNodePtr n, prof = NULL, cred = NULL, env;
 	uint8_t use_profile;
 	int ret, err = 0;
 
@@ -13826,7 +13826,7 @@ int
 lscf_setprop(const char *pgname, const char *type, const char *value,
     const uu_list_t *values)
 {
-	scf_type_t ty, current_ty;
+	scf_type_t ty = SCF_TYPE_INVALID, current_ty;
 	scf_service_t *svc;
 	scf_propertygroup_t *pg, *parent_pg;
 	scf_property_t *prop, *parent_prop;
@@ -14544,7 +14544,7 @@ static int
 lscf_setpropvalue(const char *pgname, const char *type,
     const char *arg, int isadd, int isnotfoundok)
 {
-	scf_type_t ty;
+	scf_type_t ty = SCF_TYPE_INVALID;
 	scf_propertygroup_t *pg;
 	scf_property_t *prop;
 	int ret, result = 0;
@@ -16252,7 +16252,7 @@ create_instance_list(scf_service_t *svc, int wohandcrafted)
 	scf_instance_t  *inst;
 	scf_iter_t	*inst_iter;
 	uu_list_t	*instances;
-	char		*instname;
+	char		*instname = NULL;
 	int		r;
 
 	inst_iter = scf_iter_create(g_hndl);

@@ -118,10 +118,10 @@ mhash_retrieve_entry(scf_handle_t *hndl, const char *name, uchar_t *hash,
     apply_action_t *action)
 {
 	scf_scope_t *scope;
-	scf_service_t *svc;
-	scf_propertygroup_t *pg;
-	scf_property_t *prop;
-	scf_value_t *val;
+	scf_service_t *svc = NULL;
+	scf_propertygroup_t *pg = NULL;
+	scf_property_t *prop = NULL;
+	scf_value_t *val = NULL;
 	scf_error_t err;
 	ssize_t szret;
 	int result = 0;

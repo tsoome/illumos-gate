@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * file.c - file dependency vertex code
  *
@@ -51,7 +49,7 @@
 int
 file_ready(graph_vertex_t *v)
 {
-	char *fn;
+	char *fn = NULL;
 	struct stat sbuf;
 	int r;
 	char *file_fmri = v->gv_name;

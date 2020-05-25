@@ -2989,7 +2989,7 @@ refresh_vertex(graph_vertex_t *v, scf_instance_t *inst)
 	char *fmri;
 	int r;
 	scf_handle_t *h = scf_instance_handle(inst);
-	uu_list_t *old_deps;
+	uu_list_t *old_deps = NULL;
 	int ret = 0;
 	graph_edge_t *e;
 	graph_vertex_t *vv;
@@ -4961,7 +4961,7 @@ dgraph_remove_instance(const char *fmri, scf_handle_t *h)
 {
 	graph_vertex_t *v;
 	graph_edge_t *e;
-	uu_list_t *old_deps;
+	uu_list_t *old_deps = NULL;
 	int err;
 
 	log_framework(LOG_DEBUG, "Graph engine: Removing %s.\n", fmri);
@@ -5179,7 +5179,7 @@ static int
 dgraph_set_runlevel(scf_propertygroup_t *pg, scf_property_t *prop)
 {
 	char rl;
-	scf_handle_t *h;
+	scf_handle_t *h = NULL;
 	int r;
 	const char *ms = NULL;	/* what to commit as options/milestone */
 	boolean_t rebound = B_FALSE;
@@ -5526,7 +5526,7 @@ static int
 dgraph_set_milestone(const char *fmri, scf_handle_t *h, boolean_t norepository)
 {
 	const char *cfmri, *fs;
-	graph_vertex_t *nm, *v;
+	graph_vertex_t *nm = NULL, *v;
 	int ret = 0, r;
 	scf_instance_t *inst;
 	boolean_t isall, isnone, rebound = B_FALSE;

@@ -927,7 +927,7 @@ method_run(restarter_inst_t **instp, int type, int *exit_code)
 		write_status(inst, mname, 0);
 
 	} else {
-		int r, err;
+		int r, err = 0;
 		time_t start_time;
 		time_t end_time;
 

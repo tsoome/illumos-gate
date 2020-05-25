@@ -997,7 +997,7 @@ static rep_protocol_responseid_t
 backend_create_backup_locked(sqlite_backend_t *be, const char *name)
 {
 	const char **old_list;
-	ssize_t old_sz;
+	ssize_t old_sz = 0;
 	ssize_t old_max = max_repository_backups;
 	ssize_t cur;
 	char *finalname;
