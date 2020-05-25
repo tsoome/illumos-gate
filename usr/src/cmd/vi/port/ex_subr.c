@@ -47,6 +47,11 @@
 #include "ex_tty.h"
 #include "ex_vis.h"
 
+int (*wdwc)(wchar_t);
+int (*wdbdg)(wchar_t, wchar_t, int);
+wchar_t *(*wddlm)(wchar_t, wchar_t, int);
+wchar_t (*mcfllr)(void);
+
 /*
  * Random routines, in alphabetical order.
  */

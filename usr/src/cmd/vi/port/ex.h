@@ -399,10 +399,10 @@ int	(*setnorm())();
 int	(*setnorm())();
 int	(*setnumb())();
 #ifndef PRESUNEUC
-int	(*wdwc)(wchar_t);	/* tells kind of word character */
-int	(*wdbdg)(wchar_t, wchar_t, int);	/* tells word binding force */
-wchar_t	*(*wddlm)(wchar_t, wchar_t, int);	/* tells desired delimiter */
-wchar_t	(*mcfllr)(void);	/* tells multicolumn filler character */
+extern int (*wdwc)(wchar_t);	/* tells kind of word character */
+extern int (*wdbdg)(wchar_t, wchar_t, int);	/* tells word binding force */
+extern wchar_t *(*wddlm)(wchar_t, wchar_t, int); /* tells desired delimiter */
+extern wchar_t (*mcfllr)(void);	/* tells multicolumn filler character */
 #endif /* PRESUNEUC */
 line	*address();
 unsigned char	*cgoto();
@@ -459,7 +459,7 @@ int	vshftop();
 int	yank(void);
 unsigned char *lastchr();
 unsigned char *nextchr();
-bool putoctal;
+extern bool putoctal;
 
 void	error();
 void	error0(void);
@@ -603,7 +603,6 @@ void vclear(void);
 
 unsigned char *lastchr();
 unsigned char *nextchr();
-bool putoctal;
 
 void setdot1(void);
 
