@@ -878,6 +878,7 @@ reduce_log(uint16_t pol, struct acc_log *log,		/* input args */
 	int cnt, nitems, acnt;
 	int i, j, k, lb, ub, mina, maxa, cutoff[2], mean;
 
+	cutoff[0] = cutoff[1] = 0;
 	if (llp == 0 || cntp == 0)	/* subroutine interface violated */
 		return (-1);
 
