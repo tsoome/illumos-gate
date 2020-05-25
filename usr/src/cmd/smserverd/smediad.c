@@ -1695,13 +1695,13 @@ raw_write(door_data_t *door_dp, smedia_services_t *req)
 static int32_t
 set_protection_status(door_data_t *door_dp, smedia_services_t *req)
 {
-	int32_t			ret_val, saved_errno, status;
+	int32_t			ret_val = 0, saved_errno, status = 0;
 	struct scsi_inquiry	inq;
 	char			vid[9];
 	char			pid[17];
 	struct passwd		*pwd;
 	char			uname[MAXUGNAME + 1];
-	char			*new_state, *old_state;
+	char			*new_state, *old_state = NULL;
 
 	/*
 	 * Read the current protection state before modifiying.
@@ -1965,14 +1965,14 @@ client_servproc(void *cookie, char *argp, size_t arg_size,
 	struct scsi_inquiry	inq;
 	struct dk_minfo		media_info;
 	struct dk_geom		dkgeom;
-	int32_t			status;
+	int32_t			status = 0;
 	uchar_t			data[18];
 	int32_t			completed = 0;
 	door_data_t		*door_dp;
 	size_t			retbuf_size;
 	struct uscsi_cmd	ucmd;
 	union scsi_cdb		cdb;
-	int32_t			ret_val, err;
+	int32_t			ret_val, err = 0;
 	char			rq_data[RQ_LEN];
 	uint_t			nexpected_desc;
 	struct vtoc		vtoc;
@@ -2815,7 +2815,7 @@ server_exists()
 static int
 get_run_level()
 {
-	int	run_level;
+	int	run_level = 0; 
 	struct utmpx	*utmpp;
 
 	setutxent();
