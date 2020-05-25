@@ -28,8 +28,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.5	*/
-
 /*
  * Streams Command strconf:	display the configuration of the
  *				stream associated with stdin.
@@ -79,7 +77,7 @@ static int	more_modules(struct str_list *, int);
 int
 main(int argc, char **argv)
 {
-	char		*modp;		/* ptr to module name		*/
+	char		*modp = NULL;	/* ptr to module name		*/
 	int		i;		/* loop var & junk (what else?)	*/
 	boolean_t	mod_present;	/* B_TRUE if -m module		*/
 	boolean_t	topmost;	/* B_TRUE if -t			*/
