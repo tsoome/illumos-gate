@@ -2930,7 +2930,7 @@ install_func(int argc, char *argv[])
 	char cmdbuf[MAXPATHLEN];
 	char postcmdbuf[MAXPATHLEN];
 	int lockfd;
-	int arg, err, subproc_err;
+	int arg, err, subproc_err = ZONE_SUBPROC_OK;
 	char zonepath[MAXPATHLEN];
 	brand_handle_t bh = NULL;
 	int status;
