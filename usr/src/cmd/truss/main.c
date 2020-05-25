@@ -261,7 +261,7 @@ main(int argc, char *argv[])
 	int badname = FALSE;
 	proc_set_t *grab = NULL;
 	const pstatus_t *Psp;
-	const lwpstatus_t *Lsp;
+	const lwpstatus_t *Lsp = NULL;
 	int sharedmem;
 
 	/* a few of these need to be initialized to NULL */

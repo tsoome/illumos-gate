@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -173,7 +171,7 @@ add_fcall(htbl_t *htp, char *lib, char *key, unsigned long cnt)
 hiter_t *
 iterate_hash(htbl_t *tbl)
 {
-	int b;
+	int b = 0;
 	int i;
 	hiter_t *new;
 	hashb_t *cur;
