@@ -111,6 +111,8 @@ static int zpool_do_set(int, char **);
 
 static int zpool_do_sync(int, char **);
 
+libzfs_handle_t *g_zfs;
+
 /*
  * These libumem hooks provide a reasonable set of defaults for the allocator's
  * debugging facilities.
