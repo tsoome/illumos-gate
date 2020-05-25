@@ -564,7 +564,7 @@ typedef struct contract_entry {
 
 extern volatile uint16_t	storing_contract;
 
-uu_list_pool_t *contract_list_pool;
+extern uu_list_pool_t *contract_list_pool;
 
 /* contract.c */
 ctid_t contract_init(void);
