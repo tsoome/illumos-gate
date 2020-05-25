@@ -336,7 +336,7 @@ int
 libscf_snapshots_refresh(scf_instance_t *inst, const char *fmri)
 {
 	scf_handle_t *h;
-	scf_snapshot_t *snap;
+	scf_snapshot_t *snap = NULL;
 	boolean_t err = 1;
 
 	h = scf_instance_handle(inst);

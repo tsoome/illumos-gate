@@ -721,7 +721,7 @@ get_fmri(const char *fmri, svc_t **spp, inst_t **ipp)
 {
 	const char *sn, *in;
 	svc_t *sp;
-	inst_t *ip;
+	inst_t *ip = NULL;
 
 	if (strlcpy(g_fmri, fmri, g_fmri_sz) >= g_fmri_sz)
 		return (EINVAL);
@@ -1103,7 +1103,7 @@ static void
 process_file_dg(inst_t *svcp, struct dependency_group *dg)
 {
 	uu_list_walk_t *walk;
-	struct dependency *d, **deps;
+	struct dependency *d, **deps = NULL;
 	int r, i = 0, any_satisfied = 0;
 
 	if (dg->grouping == DGG_REQANY) {

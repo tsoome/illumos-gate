@@ -1570,7 +1570,7 @@ static int
 map_granted_status(perm_status_t status, permcheck_t *pcp,
     char **match_auth)
 {
-	int rc;
+	int rc = 0;
 
 	*match_auth = NULL;
 	switch (status) {
@@ -5131,7 +5131,7 @@ rc_attach_snapshot(
 	char *old_name)
 {
 	rc_node_t *np_orig;
-	rc_node_t *nnp, *prev;
+	rc_node_t *nnp = NULL, *prev = NULL;
 	rc_node_t *pp;
 	int rc;
 	size_t sz_out;

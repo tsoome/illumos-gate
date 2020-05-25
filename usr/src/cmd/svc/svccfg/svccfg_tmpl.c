@@ -1621,7 +1621,7 @@ uint64_to_str(uint64_t u)
 static const char *
 value_to_string(value_t *v)
 {
-	char *c;
+	char *c = NULL;
 
 	if (is_numeric_type(v->sc_type)) {
 		switch (v->sc_type) {

@@ -1395,7 +1395,7 @@ lxml_get_restarter(entity_t *entity, xmlNodePtr rstr)
 {
 	pgroup_t *pg;
 	property_t *p;
-	xmlChar *restarter;
+	xmlChar *restarter = NULL;
 	xmlNode *cursor;
 	int r;
 
