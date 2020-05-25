@@ -28,8 +28,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * users.c
  *
@@ -654,7 +652,7 @@ main(int argc, char **argv)
 	char	*token;		/* Ptr to a token extracted by strtok() */
 	char	**pp;		/* Ptr to a member of a group */
 	char	*g_arg;		/* Ptr to the -g option's argument */
-	char	*l_arg;		/* Ptr to the -l option's argument */
+	char	*l_arg = NULL;	/* Ptr to the -l option's argument */
 	int	g_seen;		/* FLAG, true if -g on cmd */
 	int	l_seen;		/* FLAG, TRUE if -l is on the command line */
 	int	errflg;	/* FLAG, TRUE if there is a command-line problem */
@@ -666,6 +664,10 @@ main(int argc, char **argv)
 
 	/* Initializations */
 	initmsg(argv[0]);
+
+	/* Begin with an empty list */
+	groupcount = 0;
+	reqgrphead = NULL;
 
 	/* Command-line processing */
 	g_seen = FALSE;
@@ -712,10 +714,6 @@ main(int argc, char **argv)
 	 *  list containing groups we're to list logins for.
 	 */
 	if (g_seen) {
-
-		/* Begin with an empty list */
-		groupcount = 0;
-		reqgrphead = NULL;
 
 		/* Extract the first token putting an element on the list */
 		if ((token = strtok(g_arg, ",")) != NULL) {
