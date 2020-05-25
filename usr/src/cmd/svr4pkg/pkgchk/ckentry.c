@@ -210,7 +210,7 @@ xdir(int maptyp, VFP_T *vfp, PKGserver server, char *dirname)
 	struct cfent	mine;
 	struct dirent	*drp;
 	struct pinfo	*pinfo;
-	void		*pos;
+	void		*pos = NULL;
 
 	if (!maptyp)
 		pos = vfpGetCurrCharPtr(vfp); /* get current position in file */

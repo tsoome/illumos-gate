@@ -550,7 +550,7 @@ relslock(void)
 int
 pkgWlock(int verbose)
 {
-	int retry_cnt, retval;
+	int retry_cnt, retval = 0;
 	char lockpath[PATH_MAX];
 
 	active_lock = 0;

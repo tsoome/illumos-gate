@@ -152,8 +152,8 @@ main(int argc, char *argv[])
 	int	c;
 	int	n = 0;
 	char	*prog,
-	    *Rvalue,
-	    *dvalue;
+	    *Rvalue = NULL,
+	    *dvalue = NULL;
 	int pathtype;
 
 	/* initialize locale mechanism */

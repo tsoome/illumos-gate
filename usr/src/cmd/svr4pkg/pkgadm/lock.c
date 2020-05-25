@@ -1288,7 +1288,7 @@ _lockMatch(char *a_s1Lock, char *a_s2Lock)
 	char		s2Prefix[MAXPATHLEN] = {'\0'};
 	int		result = 0;
 	int		s1Cnt;
-	int		s2Cnt;
+	int		s2Cnt = 0;
 
 	/* entry assertions */
 

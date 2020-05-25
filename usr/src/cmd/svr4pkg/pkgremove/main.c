@@ -1115,7 +1115,7 @@ static void
 rmclass(char *aclass, int rm_remote, char *a_zoneName)
 {
 	struct cfent	*ept;
-	FILE	*fp;
+	FILE	*fp = NULL;
 	char	tmpfile[PATH_MAX];
 	char	script[PATH_MAX];
 	int	i;
