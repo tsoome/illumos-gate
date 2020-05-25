@@ -206,7 +206,7 @@ main(int argc, char **argv)
 	boolean_t bflag = B_FALSE;
 	long rddir_bufsize = BIGBUF;
 	int error = 0;
-	int check;
+	int check = 0;
 	int fd;
 	int c;
 
