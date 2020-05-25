@@ -1783,7 +1783,7 @@ do_mapent_hosts(mapopts, host, isdirect)
 	struct mapent *me, *ms, *mp;
 	struct mapfs *mfs;
 	struct exportnode *ex = NULL;
-	struct exportnode *exlist, *texlist, **texp, *exnext;
+	struct exportnode *exlist = NULL, *texlist, **texp, *exnext;
 	struct timeval timeout;
 	enum clnt_stat clnt_stat;
 	char name[MAXPATHLEN];

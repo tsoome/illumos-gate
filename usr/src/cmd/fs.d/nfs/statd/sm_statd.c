@@ -944,7 +944,7 @@ move_file(char *fromdir, char *file, char *todir)
 int
 create_symlink(char *todir, char *rname, char *lname)
 {
-	int error;
+	int error = 0;
 	char lpath[MAXPATHLEN];
 
 	/*

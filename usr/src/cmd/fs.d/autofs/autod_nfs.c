@@ -302,7 +302,7 @@ get_mysubnet_servers(struct mapfs *mfs_in)
 	struct nd_addrlist *retaddrs;
 	struct netbuf *nb;
 	struct sioc_addrreq areq;
-	int res;
+	int res = 0;
 	int af;
 	int i;
 	int sa_size;
@@ -1089,6 +1089,8 @@ nextentry:
 	 * Also take the opportunity to set
 	 * the mount protocol version as appropriate.
 	 */
+	mountversmax = MOUNTVERS3;
+	fstype = MNTTYPE_NFS4;
 	switch (nfsvers) {
 	case NFS_V4:
 		fstype = MNTTYPE_NFS4;
@@ -2638,8 +2640,8 @@ portmap_cache_enter(char *hostname, rpcprog_t prog, rpcvers_t vers,
     struct netconfig *nconf, struct netbuf *addrp)
 {
 	struct portmap_cache *cachep;
-	int protofmlylen;
-	int protolen, hostnamelen;
+	int protofmlylen = 0;
+	int protolen = 0, hostnamelen;
 
 	timenow = time(NULL);
 
@@ -3165,7 +3167,7 @@ pingnfs(
 	CLIENT *cl = NULL;
 	struct timeval rpc_to_new = {15, 0};
 	static struct timeval rpc_rtrans_new = {-1, -1};
-	enum clnt_stat clnt_stat;
+	enum clnt_stat clnt_stat = RPC_SUCCESS;
 	int i, j;
 	rpcvers_t versmax;	/* maximum version to try against server */
 	rpcvers_t outvers;	/* version supported by host on last call */

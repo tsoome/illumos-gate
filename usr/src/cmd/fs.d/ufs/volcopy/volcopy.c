@@ -901,7 +901,7 @@ align(int size)
 int
 child_copy()
 {
-	int rv, cur_buf, left, have, tpcnt;
+	int rv, cur_buf, left, have, tpcnt = 0;
 	char *c_p;
 
 	(void) signal(SIGINT, SIG_IGN);
@@ -958,7 +958,7 @@ child_copy()
 static void
 parent_copy(void)
 {
-	int rv, left, have, tpcnt, cur_buf;
+	int rv, left, have, tpcnt = 0, cur_buf;
 	char *c_p;
 	int eom = 0, xfer_cnt = Fs * BLKSIZ;
 

@@ -82,7 +82,7 @@ ud_fini(ud_handle_t h)
 int32_t
 ud_open_dev(ud_handle_t h, char *special, uint32_t flags)
 {
-	char *temp;
+	char *temp = NULL;
 	struct stat i_stat, r_stat;
 
 	(void) bzero(&i_stat, sizeof (struct stat));

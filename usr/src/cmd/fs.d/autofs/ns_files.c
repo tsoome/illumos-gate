@@ -206,7 +206,7 @@ getmapkeys_files(char *mapname, struct dir_entry **list, int *error,
 	struct stat stbuf;
 	char fname[MAXFILENAMELEN]; /* /etc prepended to mapname if reqd */
 	int syntaxok = 1;
-	int nserr;
+	int nserr = __NSW_SUCCESS;
 	struct dir_entry *last = NULL;
 
 	if (trace > 1)

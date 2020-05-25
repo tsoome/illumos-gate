@@ -208,7 +208,7 @@ resolve_netconf(char *host, rpcprog_t prog, rpcvers_t nfsver,
 	NCONF_HANDLE *nc;
 	struct netconfig *nconf = NULL;
 	int nthtry = FIRST_TRY;
-	struct netbuf *nb;
+	struct netbuf *nb = NULL;
 	enum clnt_stat cstat;
 
 	nc = setnetpath();

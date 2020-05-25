@@ -106,7 +106,7 @@ netgroup_check(struct nd_hostservlist *clnames, char  *glist, int grc)
 	int nhosts = clnames->h_cnt;
 	char *host0, *host;
 	int i, j, n;
-	int response;
+	int response = 0;
 	int belong = 0;
 	static char *domain;
 

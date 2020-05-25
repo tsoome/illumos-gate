@@ -302,14 +302,13 @@ static int32_t
 getdir(struct file_entry *fp, struct bufarea **fbp,
 	u_offset_t *poffset, struct file_id **fidpp)
 {
-	/* LINTED */
-	register struct file_id *fidp = (struct file_id *)fidbuf;
-	register struct short_ad *sap;
-	register struct long_ad *lap;
-	register int i, newoff, xoff = 0;
-	uint32_t block = 0, nb, len, left;
+	struct file_id *fidp = (struct file_id *)fidbuf;
+	struct short_ad *sap;
+	struct long_ad *lap;
+	int i, newoff, xoff = 0;
+	uint32_t block = 0, nb, len = 0, left;
 	u_offset_t offset;
-	int err, type;
+	int err, type = 0;
 
 
 again:
@@ -472,9 +471,9 @@ nextone:
 static void
 ckinode(struct file_entry *fp)
 {
-	register struct short_ad *sap;
-	register struct long_ad *lap;
-	register int i, type, len;
+	struct short_ad *sap = NULL;
+	struct long_ad *lap;
+	int i, type, len;
 
 	switch (fp->fe_icb_tag.itag_flags & 0x3) {
 	case ICB_FLAG_SHORT_AD:

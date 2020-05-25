@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Routines to support fssnap subcommand of switchout.  See switchout.c for
  * the real fssnap command.
@@ -110,7 +108,7 @@ fssnap_show_status(char *mountpoint, char *opts, int labels, int brief)
 	kstat_named_t *highp;
 	char *suboptions, *v, *n;
 	int i = 0;
-	int num, usenum = 0;
+	int num = 0, usenum = 0;
 
 	kslib = kstat_open();
 	kshigh = kstat_lookup(kslib, SNAP_NAME, 0, FSSNAP_KSTAT_HIGHWATER);

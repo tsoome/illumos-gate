@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * fsck_pcfs -- routines for manipulating directories.
  */
@@ -494,7 +492,7 @@ visitNodes(int fd, int32_t currentCluster, ClusterContents *dirData,
 {
 	struct pcdir *longdp = NULL;
 	struct pcdir *dp;
-	int32_t longStart;
+	int32_t longStart = 0;
 	int withinLongName = 0;
 	int saveLen = *pathLen;
 

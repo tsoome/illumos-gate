@@ -2974,7 +2974,7 @@ static u_offset_t
 getdirslot(long slot)
 {
 	char		*cptr;
-	struct direct	*dirp;
+	struct direct	*dirp = NULL;
 	short		i;
 	char		*string = &scratch[0];
 	short		bod = 0, mode, temp;
@@ -3439,7 +3439,7 @@ puta()
 	short		terror = 0;
 	long		maxchars, s_err, nbytes, temp;
 	u_offset_t	taddr = addr;
-	long		tcount = 0, item, olditem = 0;
+	long		tcount = 0, item = 0, olditem = 0;
 
 	if (wrtflag == O_RDONLY) {
 		printf("not opened for write '-w'\n");
@@ -3603,7 +3603,7 @@ fprnt(char style, char po)
 	struct direct	*dirp;
 	struct dinode	*ip;
 	int		tbase;
-	char		c, *cptr, *p;
+	char		c, *cptr, *p = NULL;
 	long		tinode, tcount, temp;
 	u_offset_t	taddr;
 	short		offset, mode, end = 0, eof = 0, eof_flag;
@@ -4402,8 +4402,8 @@ print_check(unsigned long *lptr, long *tcount, short tbase, int i)
 {
 	int		j, k, temp = BYTESPERLINE / objsz;
 	short		first_time = 0;
-	unsigned long	*tlptr;
-	unsigned short	*tsptr, *sptr;
+	unsigned long	*tlptr = NULL;
+	unsigned short	*tsptr = NULL, *sptr;
 
 	sptr = (unsigned short *)lptr;
 	if (i == 0)

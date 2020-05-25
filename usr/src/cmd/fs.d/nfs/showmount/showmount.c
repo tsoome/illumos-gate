@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * showmount
  */
@@ -77,7 +75,7 @@ main(int argc, char *argv[])
 	struct mountbody *result_list = NULL;
 	struct mountbody *ml = NULL;
 	struct mountbody **tb;		/* pointer into table */
-	char *host, hostbuf[256];
+	char *host = NULL, hostbuf[256];
 	char *last;
 	CLIENT *cl;
 	extern int optind;

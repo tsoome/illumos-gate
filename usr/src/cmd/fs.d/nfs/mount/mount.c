@@ -1932,7 +1932,7 @@ get_fh_via_pub(struct nfs_args *args, char *fshost, char *fspath, bool_t url,
 {
 	uint_t vers_min;
 	uint_t vers_max;
-	int r;
+	int r = 0;
 	char *path;
 
 	if (nfsvers != 0) {
@@ -2017,9 +2017,9 @@ get_fh(struct nfs_args *args, char *fshost, char *fspath, int *versp,
 	enum clnt_stat rpc_stat;
 	rpcvers_t outvers = 0;
 	rpcvers_t vers_to_try;
-	rpcvers_t vers_min;
+	rpcvers_t vers_min = vers_min_default;
 	static int printed = 0;
-	int count, i, *auths;
+	int count, i = 0, *auths;
 	char *msg;
 
 	switch (nfsvers) {

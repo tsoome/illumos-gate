@@ -1388,8 +1388,8 @@ readvolseq()
 	uint8_t *cp, *end;
 	int err;
 	struct pri_vol_desc *pvolp;
-	struct part_desc *partp;
-	struct log_vol_desc *logvp;
+	struct part_desc *partp = NULL;
+	struct log_vol_desc *logvp = NULL;
 	struct anch_vol_desc_ptr *avp;
 	char *main_vdbuf;
 	uint32_t nextblock;
