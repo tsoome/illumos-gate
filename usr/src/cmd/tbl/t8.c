@@ -35,7 +35,7 @@ void	putsize(char *);
 void
 putline(int i, int nl)
 {
-int c, lf, ct, form, lwid, vspf, ip = -1, cmidx, exvspen, vforml;
+int c, lf, ct, form, lwid, vspf, ip = -1, cmidx = 0, exvspen, vforml;
 int vct, chfont;
 char *s, *size, *fn;
 watchout=vspf=exvspen=0;
@@ -281,7 +281,7 @@ void
 funnies(int stl, int lin)
 {
 /* write out funny diverted things */
-int c, s, pl, lwid, dv, lf, ct;
+int c, s, pl, lwid, dv, lf, ct = 0;
 char *fn;
 fprintf(tabout, ".mk ##\n"); /* rmember current vertical position */
 fprintf(tabout, ".nr %d \\n(##\n", S1); /* bottom position */

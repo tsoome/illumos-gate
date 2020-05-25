@@ -12,8 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
      
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
  /* tu.c: draws horizontal lines */
 # include "t..c"
 
@@ -172,7 +170,7 @@ if (boxflg || allflg || dboxflg)
 int
 left(int i, int c, int *lwidp)
 {
-int kind, li, lj;
+	int kind, li = 0, lj;
 	/* returns -1 if no line to left */
 	/* returns number of line where it starts */
 	/* stores into lwid the kind of line */
