@@ -381,9 +381,9 @@ register audit_pcb_t *pcb;
 int	*nr;
 {
 	adr_t adr;
-	time_t secs;
+	time_t secs = 0;
 	int	tmp;
-	int	ret, ret2;
+	int	ret, ret2 = 0;
 	int	nrecs = 0;	/* count how many records read this call */
 	int	getrec = TRUE;
 	int	alldone = FALSE;
@@ -626,7 +626,7 @@ check_rec(pcb)
 register audit_pcb_t *pcb;
 {
 	adr_t adr;
-	struct timeval tv;
+	struct timeval tv = { 0 };
 	uint_t	bytes;
 	au_emod_t id_modifier;
 	char	version;
