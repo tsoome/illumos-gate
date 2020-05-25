@@ -4059,7 +4059,7 @@ validate_net_address_syntax(char *address, boolean_t ishost)
 	char *slashp, part1[MAXHOSTNAMELEN];
 	struct in6_addr in6;
 	struct in_addr in4;
-	int prefixlen, i;
+	int prefixlen = 0, i;
 
 	/*
 	 * Copy the part before any '/' into part1 or copy the whole
@@ -4275,7 +4275,7 @@ set_in_progress_nwiftab_address(char *prop_id, int prop_type)
 void
 set_func(cmd_t *cmd)
 {
-	char *prop_id;
+	char *prop_id = NULL;
 	int arg, err, res_type, prop_type;
 	property_value_ptr_t pp;
 	boolean_t autoboot;
