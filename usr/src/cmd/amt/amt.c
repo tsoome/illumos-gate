@@ -622,7 +622,7 @@ probe_stack(void)
 	unsigned char probe;
 	long i;
 	int j;
-	unsigned char last_fail, *last_fail_address;
+	unsigned char last_fail = '\0', *last_fail_address = NULL;
 	unsigned char mark = 0xAA;	/* roughly the end of stack */
 	handler_exit_code = FAIL_SEGV;
 
