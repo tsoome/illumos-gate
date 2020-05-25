@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "streams_stdio.h"
 #include "streams_common.h"
 
@@ -173,7 +171,7 @@ static ssize_t
 stream_stdio_fetch(stream_t *str)
 {
 	ssize_t	dist_to_buf_end;
-	int ret_val;
+	int ret_val = 0;
 	char *graft_pt, *next_nl;
 
 	ASSERT(str->s_status & STREAM_OPEN);
