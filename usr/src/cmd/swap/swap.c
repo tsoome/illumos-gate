@@ -96,11 +96,11 @@ int
 main(int argc, char **argv)
 {
 	int c, flag = 0;
-	int ret;
+	int ret = 0;
 	int error = 0;
 	off_t s_offset = 0;
 	off_t length = 0;
-	char *pathname;
+	char *pathname = NULL;
 	char *msg;
 
 	(void) setlocale(LC_ALL, "");
