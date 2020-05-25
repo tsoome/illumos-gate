@@ -25,10 +25,13 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include	<stdlib.h>
 #include	"gprof.h"
+
+double	printtime;
+sztype	total_names;
+int	ncycle;
+nltype	*cyclenl;
 
 /*
  *	add (or just increment) an arc
