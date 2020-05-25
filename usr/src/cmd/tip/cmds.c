@@ -476,7 +476,7 @@ pipeout(int c)
 {
 	char buf[256];
 	int cpid, status, p;
-	time_t start;
+	time_t start = 0;
 
 	(void) putchar(c);
 	if (prompt("Local command? ", buf, sizeof (buf)))
@@ -510,7 +510,7 @@ pipeout(int c)
 		exit(0);
 	}
 	if (boolean(value(VERBOSE)))
-		prtime("away for ", time(0)-start);
+		prtime("away for ", time(0) - start);
 	(void) write(fildes[1], (char *)&ccc, 1);
 	intr("off");
 	(void) signal(SIGINT, SIG_DFL);
@@ -529,7 +529,7 @@ consh(int c)
 	char buf[256];
 	int cpid, status, p;
 	sig_handler_t	ointr, oquit;
-	time_t start;
+	time_t start = 0;
 
 	(void) putchar(c);
 	if (prompt("Local command? ", buf, sizeof (buf)))
@@ -567,7 +567,7 @@ consh(int c)
 		exit(0);
 	}
 	if (boolean(value(VERBOSE)))
-		prtime("\r\naway for ", time(0)-start);
+		prtime("\r\naway for ", time(0) - start);
 	(void) write(fildes[1], (char *)&ccc, 1);
 }
 
