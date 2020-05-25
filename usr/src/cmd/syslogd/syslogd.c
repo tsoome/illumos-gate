@@ -541,7 +541,7 @@ openklog(char *name, int mode)
 {
 	int fd;
 	struct strioctl str;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -612,7 +612,7 @@ sys_poll(void *ap)
 {
 	int nfds;
 	static int klogerrs = 0;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -682,7 +682,7 @@ getkmsg(int timeout)
 	size_t buflen;
 	size_t len;
 	char tmpbuf[MAXLINE+1];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -794,7 +794,7 @@ net_poll(void *ap)
 	char *uap;
 	log_message_t *mp;
 	host_info_t *hinfo;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -965,7 +965,7 @@ static int
 logmymsg(int pri, char *msg, int flags, int pending)
 {
 	log_message_t *mp;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	dataq_t *qptr;
 
 	if (Debug) {
@@ -1000,7 +1000,7 @@ logmymsg(int pri, char *msg, int flags, int pending)
 static int
 shutdown_msg(void)
 {
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	log_message_t *mp;
 
 	if (Debug) {
@@ -1031,7 +1031,7 @@ static void
 flushmsg(int flags)
 {
 	log_message_t *mp;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -1063,7 +1063,7 @@ formatnet(struct netbuf *nbp, log_message_t *mp)
 {
 	char *p;
 	int pri;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -1106,7 +1106,7 @@ formatsys(struct log_ctl *lp, char *msg, int sync)
 	size_t msglen;
 	log_message_t	*mp;
 	char cbuf[30];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -1202,7 +1202,7 @@ logmsg(void *ap)
 	int fac, prilev, flags, refcnt;
 	int fake_shutdown, skip_shutdown;
 	log_message_t *mp, *save_mp;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -1736,7 +1736,7 @@ writemsg(int selection, struct filed *f)
 	char cbuf[30];
 	char *filtered;
 	char *msgid_start, *msgid_end;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	size_t	hlen, filter_len;
 
 	if (Debug) {
@@ -1982,7 +1982,7 @@ wallmsg(struct filed *f, char *from, char *msg)
 	struct stat statbuf;
 	walldev_t *w;
 	char cbuf[30];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -2104,7 +2104,7 @@ writetodev(void *ap)
 	struct stat statb;
 	struct passwd pw, *pwp;
 	char pwbuf[MAXLINE];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -2187,9 +2187,9 @@ cvthname(struct netbuf *nbp, struct netconfig *ncp, char *failsafe_addr)
 	host_list_t *h;
 	struct nd_hostservlist *hsp;
 	struct nd_hostserv *hspp;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int hindex;
-	char *uap;
+	char *uap = NULL;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -2299,7 +2299,7 @@ void
 logerror(const char *type, ...)
 {
 	char buf[MAXLINE+1];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int flag;
 	va_list ap;
 
@@ -2335,7 +2335,7 @@ static void
 logerror_format(const char *type, char *buf, va_list ap)
 {
 	char tmpbuf[MAXLINE + 1];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -2373,7 +2373,7 @@ static int
 logerror_to_console(int nonblock, const char *buf)
 {
 	int cfd, modes;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int ret = 0, len;
 	char tmpbuf[MAXLINE + 1];
 
@@ -2443,7 +2443,7 @@ static void
 freehl(host_list_t *h)
 {
 	int i, refcnt;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -2494,7 +2494,7 @@ open_door(void)
 	struct stat buf;
 	door_info_t info;
 	char line[MAXLINE+1];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int err;
 
 	if (Debug) {
@@ -2862,7 +2862,7 @@ checkm4(void)
 {
 	int notfound = 0;
 	int saverrno;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -2889,7 +2889,7 @@ init(void)
 	struct utsname *up;
 	pthread_attr_t sys_attr, net_attr, log_attr, hnl_attr;
 	int nthread;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3201,7 +3201,7 @@ conf_init(void)
 	char *m4argv[4];
 	int m4argc = 0;
 	conf_t cf;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3333,7 +3333,7 @@ static int
 filed_init(struct filed *f)
 {
 	pthread_attr_t stack_attr;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3402,7 +3402,7 @@ cfline(char *line, int lineno, struct filed *f)
 	char ebuf[SYS_NMLN+1+40];
 	mode_t fmode, omode = O_WRONLY|O_APPEND|O_NOCTTY;
 	struct stat64 sbuf;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3602,7 +3602,7 @@ getnets(void)
 	int i, inputs;
 	void *handle;
 	char *uap;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3778,7 +3778,7 @@ set_udp_buffer(int fd)
 	struct t_optmgmt req, resp;
 	struct opthdr *opt;
 	size_t optsize, bsize = 256 * 1024;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3830,7 +3830,7 @@ bindnet(void)
 	struct t_bind bind, *bound;
 	int cnt, i;
 	char *uap;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -3987,7 +3987,7 @@ amiloghost(void)
 	void *handle;
 	char *uap;
 	struct t_bind bind, *bound;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4095,7 +4095,7 @@ static log_message_t *
 new_msg(void)
 {
 	log_message_t *lm;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4124,7 +4124,7 @@ new_msg(void)
 static void
 free_msg(log_message_t *lm)
 {
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4369,7 +4369,7 @@ filed_destroy(struct filed *f)
 static void
 close_door(void)
 {
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4384,7 +4384,7 @@ close_door(void)
 static void
 delete_doorfiles(void)
 {
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	struct stat sb;
 	int err;
 	char line[MAXLINE+1];
@@ -4573,7 +4573,7 @@ findnl_bkwd(const char *buf, const size_t len)
 {
 	const char *p;
 	size_t	mb_cur_max;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4660,7 +4660,7 @@ copynl_frwd(char *obuf, const size_t obuflen,
 	char	*q = obuf;
 	size_t	olen = 0;
 	size_t	mb_cur_max;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4764,7 +4764,7 @@ copy_frwd(char *obuf, const size_t obuflen,
 	char	*q = obuf;
 	size_t	olen = 0;
 	size_t	mb_cur_max;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4882,7 +4882,7 @@ hostname_lookup(void *ap)
 	log_message_t *mp;
 	host_info_t *hip;
 	char failsafe_addr[SYS_NMLN + 1];
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -4944,7 +4944,7 @@ reconfigure()
 	struct utsname up;
 	char cbuf[30];
 	time_t tim;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
@@ -5304,7 +5304,7 @@ static void
 hnc_init(int reinit)
 {
 	struct hostname_cache **hpp;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int i;
 
 	if (Debug) {
@@ -5343,7 +5343,7 @@ hnc_lookup(struct netbuf *nbp, struct netconfig *ncp, int *hindex)
 {
 	struct hostname_cache **hpp, *hp;
 	time_t now;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int index;
 
 	if (Debug) {
@@ -5411,7 +5411,7 @@ hnc_register(struct netbuf *nbp, struct netconfig *ncp,
 	struct hostname_cache **hpp, **tailp, *hp, *entry;
 	void *addrbuf;
 	time_t now;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 	int i;
 
 	if (Debug) {
@@ -5491,7 +5491,7 @@ static void
 hnc_unreg(struct hostname_cache **hpp)
 {
 	struct hostname_cache *hp = *hpp;
-	pthread_t mythreadno;
+	pthread_t mythreadno = 0;
 
 	if (Debug) {
 		mythreadno = pthread_self();
