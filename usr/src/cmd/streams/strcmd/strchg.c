@@ -28,8 +28,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.6	*/
-
 /*
  * Streams Command strchg:	change the configuration of the
  *				stream associated with stdin.
@@ -104,8 +102,8 @@ int
 main(int argc, char **argv)
 {
 	char		buf[BUFSIZ];	/* input buffer			*/
-	char 		*file_namep;	/* file from -f opt		*/
-	char		*modnamep;	/* mods from -h or -u opt	*/
+	char 		*file_namep = NULL; /* file from -f opt		*/
+	char		*modnamep = NULL; /* mods from -h or -u opt	*/
 	char		*modp;		/* for walking thru modnamep	*/
 
 	FILE		*fp;		/* file pointer for -f file	*/
