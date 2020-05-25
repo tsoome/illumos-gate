@@ -1039,7 +1039,7 @@ init_symtbl_state(SYMTBL_STATE *state, Cache *cache, Word shnum, Word secndx,
 static void
 symbols_getxindex(SYMTBL_STATE *state)
 {
-	uint_t	symn;
+	uint_t	symn = 0;
 	Word	symcnt;
 
 	state->shxndx.checked = 1;   /* Note that we've been called */
@@ -1113,7 +1113,7 @@ output_symbol(SYMTBL_STATE *state, Word symndx, Word info, Word disp_symndx,
 	int		gnuver;
 	uchar_t		type;
 	Shdr		*tshdr;
-	Word		shndx;
+	Word		shndx = 0;
 	Conv_inv_buf_t	inv_buf;
 
 	/* Ensure symbol index is in range */
@@ -1324,12 +1324,12 @@ cap_section(const char *file, Cache *cache, Word shnum, Cache *ccache,
 	Word		cnum, capnum, nulls, symcaps;
 	int		descapndx, objcap, title;
 	Cap		*cap = (Cap *)ccache->c_data->d_buf;
-	Shdr		*cishdr, *cshdr = ccache->c_shdr;
-	Cache		*cicache, *strcache;
+	Shdr		*cishdr = NULL, *cshdr = ccache->c_shdr;
+	Cache		*cicache = NULL, *strcache = NULL;
 	Capinfo		*capinfo = NULL;
-	Word		capinfonum;
+	Word		capinfonum = 0;
 	const char	*strs = NULL;
-	size_t		strs_size;
+	size_t		strs_size = 0;
 
 	if ((cshdr->sh_entsize == 0) || (cshdr->sh_size == 0)) {
 		(void) fprintf(stderr, MSG_INTL(MSG_ERR_BADSZ),
@@ -1697,9 +1697,9 @@ cap(const char *file, Cache *cache, Word shnum, Word phnum, Ehdr *ehdr,
 {
 	Word		cnt;
 	Shdr		*cshdr = NULL;
-	Cache		*ccache;
+	Cache		*ccache = NULL;
 	Off		cphdr_off = 0;
-	Xword		cphdr_sz;
+	Xword		cphdr_sz = 0;
 
 	/*
 	 * Determine if a global capabilities header exists.
@@ -1864,7 +1864,7 @@ syminfo(Cache *cache, Word shnum, Ehdr *ehdr, uchar_t osabi, const char *file)
 	Dyn		*dyns;
 	Word		infonum, cnt, ndx, symnum, dynnum;
 	Cache		*infocache = NULL, *dyncache = NULL, *symsec, *strsec;
-	Boolean		*dynerr;
+	Boolean		*dynerr = NULL;
 
 	for (cnt = 1; cnt < shnum; cnt++) {
 		if (cache[cnt].c_shdr->sh_type == SHT_SUNW_syminfo) {
@@ -2892,7 +2892,7 @@ dyn_symtest(Dyn *dyn, const char *symname, Cache *symtab_cache,
 	Conv_inv_buf_t	buf;
 	int		i;
 	Sym		*sym;
-	Cache		*_cache;
+	Cache		*_cache = NULL;
 
 	for (i = 0; i < 3; i++) {
 		switch (i) {

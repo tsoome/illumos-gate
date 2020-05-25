@@ -47,7 +47,7 @@ ar_sym_read(Elf *elf, char *filename)
 {
 	Elf_Arsym *	arsym;
 	size_t		cnt, ptr, is64;
-	const char	*fmt;
+	const char	*fmt = NULL;
 
 	if ((arsym = elf_getarsym(elf, &ptr)) == NULL) {
 		(void) fprintf(stderr, "%s: %s: no archive symbol table\n",
