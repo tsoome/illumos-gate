@@ -51,6 +51,10 @@
 #include <sys/lockfs.h>
 #include <locale.h>
 
+struct bufarea *pbp;
+struct bufarea *pdirbp;
+struct bufarea bufhead;
+
 extern int32_t	verifytag(struct tag *, uint32_t, struct tag *, int);
 extern char	*tagerrs[];
 extern void	maketag(struct tag *, struct tag *);

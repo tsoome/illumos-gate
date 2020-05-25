@@ -71,7 +71,39 @@ extern char	*tagerrs[];
 #define	POWEROF2(num)	(((num) & ((num) - 1)) == 0)
 
 extern int	mflag;
-extern char	hotroot;
+long fsbsize;
+char hotroot;
+char *freemap;
+char *busymap;
+char havesb;
+struct file_set_desc *fileset;
+uint32_t disk_size;
+uint32_t part_start;
+uint32_t filesetblock;
+uint32_t filesetlen;
+uint32_t lvintlen;
+uint32_t lvintblock;
+uint32_t filesetlen;
+uint32_t rootblock;
+uint32_t rootlen;
+uint32_t part_bmp_bytes;
+uint32_t part_bmp_sectors;
+uint32_t part_bmp_loc;
+int fsreadfd;
+int fswritefd;
+long secsize;
+long numdirs, numfiles, listmax;
+struct fileinfo *inphead, **inphash, *inpnext, *inplast;
+struct space_bmap_desc *spacep;
+struct unall_desc *unallp;
+struct pri_vol_desc *pvolp;
+struct part_desc *partp;
+struct phdr_desc *pheadp;
+struct log_vol_desc *logvp;
+struct lvid_iu *lviup;
+struct vdp_desc *volp;
+struct anch_vol_desc_ptr *avdp;
+struct iuvd_desc *iudp;
 
 char avdbuf[MAXBSIZE];		/* buffer for anchor volume descriptor */
 char *main_vdbuf;		/* buffer for entire main volume sequence */

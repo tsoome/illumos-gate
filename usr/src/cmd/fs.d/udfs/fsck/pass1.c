@@ -40,6 +40,8 @@
 #include "udfs.h"
 #include <locale.h>
 
+uint64_t maxuniqid;
+
 /*
  * for each large file ( size > MAXOFF_T) this global counter
  * gets incremented here.

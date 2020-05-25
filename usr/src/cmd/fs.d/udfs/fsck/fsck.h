@@ -28,8 +28,6 @@
 #ifndef	_FSCK_H
 #define	_FSCK_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -99,22 +97,22 @@ struct bufarea {
 #define		B_INUSE 1
 
 #define		MINBUFS		5	/* minimum number of buffers required */
-struct bufarea bufhead;		/* head of list of other blks in filesys */
-struct bufarea *pbp;		/* pointer to inode data in buffer pool */
-struct bufarea *pdirbp;		/* pointer to directory data in buffer pool */
+extern struct bufarea bufhead;	/* head of list of other blks in filesys */
+extern struct bufarea *pbp;	/* pointer to inode data in buffer pool */
+extern struct bufarea *pdirbp;	/* pointer to directory data in buffer pool */
 
-struct pri_vol_desc *pvolp;
-struct vdp_desc *volp;
-struct iuvd_desc *iudp;
-struct part_desc *partp;
-struct phdr_desc *pheadp;
-struct log_vol_desc *logvp;
-struct unall_desc *unallp;
-struct log_vol_int_desc *lvintp;
-struct lvid_iu *lviup;
-struct anch_vol_desc_ptr *avdp;
-struct file_set_desc *fileset;
-struct space_bmap_desc *spacep;
+extern struct pri_vol_desc *pvolp;
+extern struct vdp_desc *volp;
+extern struct iuvd_desc *iudp;
+extern struct part_desc *partp;
+extern struct phdr_desc *pheadp;
+extern struct log_vol_desc *logvp;
+extern struct unall_desc *unallp;
+extern struct log_vol_int_desc *lvintp;
+extern struct lvid_iu *lviup;
+extern struct anch_vol_desc_ptr *avdp;
+extern struct file_set_desc *fileset;
+extern struct space_bmap_desc *spacep;
 
 #define		dirty(bp)	(bp)->b_dirty = isdirty = 1
 #define		initbarea(bp) \
@@ -150,7 +148,7 @@ struct inodesc {
 /*
  * File entry cache structures.
  */
-struct fileinfo {
+extern struct fileinfo {
 	struct	fileinfo *fe_nexthash;	/* next entry in hash chain */
 	uint32_t fe_block;		/* location of this file entry */
 	uint16_t fe_len;		/* size of file entry */
@@ -159,55 +157,55 @@ struct fileinfo {
 	uint8_t	 fe_type;		/* type of file entry */
 	uint8_t	 fe_state;		/* flag bits */
 } *inphead, **inphash, *inpnext, *inplast;
-long numdirs, numfiles, listmax;
+extern long numdirs, numfiles, listmax;
 
 #define	FEGROW 512
 
-char	*devname;		/* name of device being checked */
-long	secsize;		/* actual disk sector size */
-long	fsbsize;		/* file system block size (same as secsize) */
-char	nflag;			/* assume a no response */
-char	yflag;			/* assume a yes response */
-int	debug;			/* output debugging info */
-int	rflag;			/* check raw file systems */
-int	wflag;			/* check only writable filesystems */
-int	fflag;			/* check regardless of clean flag (force) */
-int	sflag;			/* print status flag */
-char	preen;			/* just fix normal inconsistencies */
-char	mountedfs;		/* checking mounted device */
-int	exitstat;		/* exit status (set to 8 if 'No' response) */
-char	hotroot;		/* checking root device */
-char	havesb;			/* superblock has been read */
-int	fsmodified;		/* 1 => write done to file system */
-int	fsreadfd;		/* file descriptor for reading file system */
-int	fswritefd;		/* file descriptor for writing file system */
+extern char	*devname;	/* name of device being checked */
+extern long	secsize;	/* actual disk sector size */
+extern long	fsbsize;	/* file system block size (same as secsize) */
+extern char	nflag;		/* assume a no response */
+extern char	yflag;		/* assume a yes response */
+extern int	debug;		/* output debugging info */
+extern int	rflag;		/* check raw file systems */
+extern int	wflag;		/* check only writable filesystems */
+extern int	fflag;		/* check regardless of clean flag (force) */
+extern int	sflag;		/* print status flag */
+extern char	preen;		/* just fix normal inconsistencies */
+extern char	mountedfs;	/* checking mounted device */
+extern int	exitstat;	/* exit status (set to 8 if 'No' response) */
+extern char	hotroot;	/* checking root device */
+extern char	havesb;		/* superblock has been read */
+extern int	fsmodified;	/* 1 => write done to file system */
+extern int	fsreadfd;	/* file descriptor for reading file system */
+extern int	fswritefd;	/* file descriptor for writing file system */
 
-int	iscorrupt;		/* known to be corrupt/inconsistent */
-int	isdirty;		/* 1 => write pending to file system */
+extern int	iscorrupt;	/* known to be corrupt/inconsistent */
+extern int	isdirty;	/* 1 => write pending to file system */
 
-int	mountfd;		/* fd of mount point */
-char	mountpoint[100];	/* string set to contain mount point */
+extern int	mountfd;	/* fd of mount point */
+extern char	mountpoint[100]; /* string set to contain mount point */
 
-char	*busymap;		/* ptr to primary blk busy map */
-char	*freemap;		/* ptr to copy of disk map */
+extern char	*busymap;	/* ptr to primary blk busy map */
+extern char	*freemap;	/* ptr to copy of disk map */
 
-uint32_t part_start;
-uint32_t part_len;
-uint32_t part_bmp_bytes;
-uint32_t part_bmp_sectors;
-uint32_t part_bmp_loc;
-uint32_t filesetblock;
-uint32_t filesetlen;
-uint32_t rootblock;
-uint32_t rootlen;
-uint32_t lvintblock;
-uint32_t lvintlen;
-uint32_t disk_size;
+extern uint32_t part_start;
+extern uint32_t part_len;
+extern uint32_t part_bmp_bytes;
+extern uint32_t part_bmp_sectors;
+extern uint32_t part_bmp_loc;
+extern uint32_t filesetblock;
+extern uint32_t filesetlen;
+extern uint32_t rootblock;
+extern uint32_t rootlen;
+extern uint32_t lvintblock;
+extern uint32_t lvintlen;
+extern uint32_t disk_size;
 
-daddr_t	n_blks;			/* number of blocks in use */
-daddr_t	n_files;		/* number of files in use */
-daddr_t	n_dirs;			/* number of dirs in use */
-uint64_t maxuniqid;		/* maximum unique id on medium */
+extern daddr_t	n_blks;		/* number of blocks in use */
+extern daddr_t	n_files;	/* number of files in use */
+extern daddr_t	n_dirs;		/* number of dirs in use */
+extern uint64_t maxuniqid;	/* maximum unique id on medium */
 
 /*
  * bit map related macros

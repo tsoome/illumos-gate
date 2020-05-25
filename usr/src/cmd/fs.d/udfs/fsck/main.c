@@ -25,8 +25,6 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>	/* use isdigit macro rather than 4.1 libc routine */
@@ -48,6 +46,28 @@
 #include <sys/fs/udf_volume.h>
 #include "fsck.h"
 #include <locale.h>
+
+int	debug;
+char	nflag;
+char	yflag;
+int	rflag;
+int	wflag;
+int	fflag;
+int	sflag;
+int	isdirty;
+int	mountfd;
+int	fsmodified;
+int	iscorrupt;
+int	exitstat;
+uint32_t part_len;
+daddr_t	n_blks;
+daddr_t	n_files;
+daddr_t	n_dirs;
+char	preen;
+char	mountpoint[100];
+char	mountedfs;
+char	*devname;
+struct log_vol_int_desc *lvintp;
 
 extern int32_t	writable(char *);
 extern void	pfatal(char *, ...);
