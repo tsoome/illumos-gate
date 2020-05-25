@@ -223,7 +223,7 @@ newentry(char *name, char *group)
 static void
 appendgroup(groupentrylist grlist, char *group)
 {
-	stringlist cur, prev;
+	stringlist cur, prev = NULL;
 
 	prev = NULL;
 	for (cur = grlist->groups; cur; prev = cur, cur = cur->next) {
