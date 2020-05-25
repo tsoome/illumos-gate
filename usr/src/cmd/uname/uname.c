@@ -57,7 +57,7 @@ static void usage(void);
 int
 main(int argc, char *argv[], char *envp[])
 {
-	char *nodename;
+	char *nodename = NULL;
 	char *optstring = "asnrpvmioS:X";
 	int sflg = 0, nflg = 0, rflg = 0, vflg = 0, mflg = 0;
 	int pflg = 0, iflg = 0, oflg = 0, Sflg = 0;
