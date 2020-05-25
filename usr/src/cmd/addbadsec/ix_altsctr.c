@@ -724,7 +724,7 @@ static int
 ent_bsearch(struct alts_ent buf[], int cnt, struct alts_ent *key)
 {
 	int	i;
-	int	ind;
+	int	ind = 0;
 	int	interval;
 	int	mystatus = -1;
 
@@ -859,6 +859,7 @@ absdsk_io(int fd, uint_t srtsec, char *bufp, uint_t len, int ioflag)
 		rc = write (fd, bufp, len);
 		break;
 	default:
+		rc = -1;
 		break;
 	}
 	if (rc == -1)
