@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -371,7 +369,7 @@ findsharepnt(
 	char *name,
 	struct sharepnt_ent **se_tail)
 {
-	struct sharepnt_ent *tail;
+	struct sharepnt_ent *tail = NULL;
 
 	for (; sep != NULL; sep = sep->se_next) {
 		if (strcmp(sep->se_name, name) == 0)

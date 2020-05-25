@@ -1763,7 +1763,7 @@ create_request_list(
 		 * zone.
 		 */
 		boolean_t showall = (getzoneid() != GLOBAL_ZONEID) || Z_option;
-		struct zone_summary *zsp;
+		struct zone_summary *zsp = NULL;
 
 		if (!showall) {
 			zsp = fs_get_zone_summaries();

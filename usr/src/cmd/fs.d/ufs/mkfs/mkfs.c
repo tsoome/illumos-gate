@@ -622,7 +622,7 @@ static diskaddr_t	probe_summaryinfo();
 int
 main(int argc, char *argv[])
 {
-	long i, mincpc, mincpg, ibpcl;
+	long i, mincpc, mincpg = 0, ibpcl;
 	long cylno, rpos, blk, j, warn = 0;
 	long mincpgcnt, maxcpg;
 	uint64_t used, bpcg, inospercg;
@@ -647,7 +647,7 @@ main(int argc, char *argv[])
 	int do_dot = 0;
 	int use_efi_dflts = 0, retry = 0, isremovable = 0, ishotpluggable = 0;
 	int invalid_sb_cnt, ret, skip_this_sb, cg_too_small;
-	int geom_nsect, geom_ntrack, geom_cpg;
+	int geom_nsect = 0, geom_ntrack = 0, geom_cpg = 0;
 
 	(void) setlocale(LC_ALL, "");
 
@@ -2528,10 +2528,10 @@ initcg(int cylno)
 	 */
 	short	*cgblks;	/* pointer to array of free blocks in cg */
 	int	trackrpos;	/* tmp variable for rotation position */
-	int	trackoff;	/* offset within a track */
-	int	trackoff_incr;	/* amount to increment trackoff */
-	int	rpos;		/* rotation position of current block */
-	int	rpos_incr;	/* amount to increment rpos per block */
+	int	trackoff = 0;	/* offset within a track */
+	int	trackoff_incr = 0; /* amount to increment trackoff */
+	int	rpos = 0;	/* rotation position of current block */
+	int	rpos_incr = 0;	/* amount to increment rpos per block */
 
 	union cgun *icgun;	/* local pointer to a cg summary block */
 #define	icg	(icgun->cg)
@@ -5338,7 +5338,7 @@ checkopt(char *optim)
 static char
 checkmtb(char *mtbarg)
 {
-	char	mtbc;
+	char	mtbc = 0;
 	int	limit = strcspn(mtbarg, ",");
 
 	switch (limit) {

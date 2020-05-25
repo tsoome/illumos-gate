@@ -1305,10 +1305,10 @@ mount(struct svc_req *rqstp)
 	char *host = NULL;
 	int error = 0, lofs_tried = 0, enqueued;
 	int flavor_list[MAX_FLAVORS];
-	int flavor_count;
+	int flavor_count = 0;
 	ucred_t	*uc = NULL;
 
-	int audit_status;
+	int audit_status = 0;
 
 	transp = rqstp->rq_xprt;
 	version = rqstp->rq_vers;
@@ -3084,7 +3084,7 @@ check_sharetab()
 	static timestruc_t last_sharetab_time;
 	timestruc_t prev_sharetab_time;
 	share_t *sh;
-	struct sh_list *shp, *shp_prev;
+	struct sh_list *shp, *shp_prev = NULL;
 	int res, c = 0;
 
 	/*

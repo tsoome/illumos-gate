@@ -31,8 +31,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * ff -- obtain file names from reading filesystem
  */
@@ -493,7 +491,7 @@ pass3(struct dinode *ip)
 {
 	struct direct *dp;
 	struct dirstuff dirp;
-	struct dinode   *dip;
+	struct dinode   *dip = NULL;
 	int k;
 
 	if ((ip->di_mode&IFMT) != IFDIR)

@@ -390,7 +390,7 @@ get_indir_offsets(int ilevel_wanted, daddr_t ndb, int *data_blks,
 {
 	int ndb_ilevel = -1;
 	int ilevel;
-	int dblks, lblk;
+	int dblks = 0, lblk = 0;
 
 	for (ilevel = 0; ilevel < NIADDR; ilevel++) {
 		switch (ilevel) {

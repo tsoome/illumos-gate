@@ -213,7 +213,7 @@ mygetvfsany(FILE *fp, struct vfstab *vp, struct vfstab *vrefp)
 int
 main(int argc, char *argv[])
 {
-	int	cc, ret, other_than_ufs = 0;
+	int	cc, ret = 0, other_than_ufs = 0;
 	int	questflg = 0, Fflg = 0, Vflg = 0, sanity = 0;
 	char	*subopt;
 	FILE	*fd = NULL;

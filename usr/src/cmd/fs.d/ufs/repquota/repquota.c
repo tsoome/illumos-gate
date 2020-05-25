@@ -430,7 +430,7 @@ usage(void)
 static int
 quotactl(int cmd, char *special, uid_t uid, caddr_t addr)
 {
-	int		fd;
+	int		fd = -1;
 	int		status;
 	struct quotctl	quota;
 	char		qfile[MAXPATHLEN];
