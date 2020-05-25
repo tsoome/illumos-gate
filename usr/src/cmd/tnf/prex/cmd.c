@@ -23,8 +23,6 @@
  * Copyright (c) 1994, by Sun Microsytems, Inc.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Includes
  */
@@ -204,7 +202,7 @@ cmd_traverse(cmd_traverse_func_t percmdfunc, void *calldata_p)
 
 	cmd_p = (cmd_t *) & g_cmdlist;
 	while ((cmd_p = (cmd_t *) queue_next(&g_cmdlist, &cmd_p->qn))) {
-		expr_t		 *expr_p;
+		expr_t		 *expr_p = NULL;
 		fcn_t		  *fcn_p;
 
 		if (!cmd_p->isnamed) {
@@ -236,7 +234,7 @@ tnfctl_errcode_t
 cmd_callback(cmd_t *cmd_p, cmd_traverse_func_t percmdfunc, void *calldata_p)
 {
 	tnfctl_errcode_t	err = TNFCTL_ERR_NONE;
-	expr_t			*expr_p;
+	expr_t			*expr_p = NULL;
 	fcn_t			*fcn_p;
 
 	if (!cmd_p->isnamed) {
