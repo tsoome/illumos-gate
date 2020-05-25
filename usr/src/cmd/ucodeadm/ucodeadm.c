@@ -242,7 +242,7 @@ ucode_gen_files_amd(uint8_t *buf, int size, char *path)
 	/* LINTED: pointer alignment */
 	uint32_t *ptr = (uint32_t *)buf;
 	char common_path[PATH_MAX];
-	int fd, count, counter;
+	int fd, count, counter = 0;
 	ucode_header_amd_t *uh;
 	int last_cpu_rev = 0;
 
@@ -491,7 +491,7 @@ main(int argc, char *argv[])
 	ucode_errno_t	rc = EM_OK;
 	processorid_t	cpuid_max;
 	struct stat filestat;
-	uint32_t ucode_size;
+	uint32_t ucode_size = 0;
 
 	(void) setlocale(LC_ALL, "");
 
