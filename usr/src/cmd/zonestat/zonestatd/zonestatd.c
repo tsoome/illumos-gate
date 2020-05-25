@@ -2522,7 +2522,7 @@ zsd_flush_proc_info(zsd_proc_t *proc)
 static int
 zsd_open_exacct(zsd_ctl_t *ctl, boolean_t init)
 {
-	int ret, oret, state, trys = 0, flags;
+	int ret, oret = 0, state, trys = 0, flags;
 	int *fd, *open;
 	ea_file_t *eaf;
 	struct stat64 *stat;
@@ -2621,7 +2621,7 @@ zsd_refresh_procs(zsd_ctl_t *ctl, boolean_t init)
 	struct dirent *dent;
 	psinfo_t psinfo;
 	int fd, ret;
-	zsd_proc_t *proc, *pproc, *tmp, *next;
+	zsd_proc_t *proc, *pproc = NULL, *tmp, *next;
 	list_t pplist, plist;
 	zsd_zone_t *zone, *prev_zone;
 	zsd_pset_t *pset, *prev_pset;
@@ -2772,9 +2772,9 @@ zsd_refresh_procs(zsd_ctl_t *ctl, boolean_t init)
 
 	for (;;) {
 		pid_t pid;
-		pid_t ppid;
-		timestruc_t user, sys, proc_usage;
-		timestruc_t finish;
+		pid_t ppid = 0;
+		timestruc_t user = { 0 }, sys = { 0 }, proc_usage;
+		timestruc_t finish = { 0 };
 		int numfound = 0;
 
 		bzero(&object, sizeof (object));
@@ -3213,10 +3213,10 @@ zsd_refresh_memory(zsd_ctl_t *ctl, boolean_t init)
 
 	uint64_t phys_total;
 	uint64_t phys_used;
-	uint64_t phys_zones;
+	uint64_t phys_zones = 0;
 	uint64_t phys_zones_overcount;
 	uint64_t phys_zones_extra;
-	uint64_t phys_zones_credit;
+	uint64_t phys_zones_credit = 0;
 
 	uint64_t vm_free;
 	uint64_t vm_used;
@@ -3224,8 +3224,8 @@ zsd_refresh_memory(zsd_ctl_t *ctl, boolean_t init)
 	uint64_t disk_swap_total;
 	uint64_t disk_swap_used;	/* disk swap with contents */
 
-	uint64_t physmem;
-	uint64_t pp_kernel;
+	uint64_t physmem = 0;
+	uint64_t pp_kernel = 0;
 	uint64_t arc_size = 0;
 	struct anoninfo ani;
 
@@ -4535,7 +4535,7 @@ void *
 stat_thread(void *arg)
 {
 	time_t start;
-	time_t now;
+	time_t now = 0;
 	time_t next_memory;
 	boolean_t do_memory;
 	boolean_t do_read;

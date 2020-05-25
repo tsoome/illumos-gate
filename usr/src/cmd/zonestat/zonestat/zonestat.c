@@ -756,8 +756,8 @@ void
 format_cpu(uint64_t cpu, char *str, size_t len)
 {
 
-	uint64_t high;
-	uint64_t low;
+	uint64_t high = 0;
+	uint64_t low = 0;
 
 	/* #.## cpus */
 	if (cpu <= 999 || opt_parseable) {
@@ -1116,7 +1116,7 @@ zonestat_zone_compare_resource(const void *a, const void *b)
 	zs_zone_t *zonea = *(zs_zone_t **)a;
 	zs_zone_t *zoneb = *(zs_zone_t **)b;
 	zs_property_t *prop, *propb;
-	uint64_t resa, resb;
+	uint64_t resa = 0, resb = 0;
 	uint_t uinta, uintb;
 	int i, res;
 
@@ -1236,7 +1236,7 @@ zonestat_pz_compare_usage(const void *a, const void *b)
 	zs_pset_zone_t *zonea = *(zs_pset_zone_t **)a;
 	zs_pset_zone_t *zoneb = *(zs_pset_zone_t **)b;
 	zs_property_t *prop, *propb;
-	uint64_t resa, resb;
+	uint64_t resa = 0, resb = 0;
 	uint_t uinta, uintb;
 	int i, res;
 
@@ -2285,7 +2285,7 @@ int
 main(int argc, char *argv[])
 {
 	int arg;
-	time_t now, next, start, next_report;
+	time_t now, next, start, next_report = 0;
 	zs_usage_t *usage, *usage_last = NULL, *usage_print;
 	zs_usage_set_t *set;
 	boolean_t formatted;
