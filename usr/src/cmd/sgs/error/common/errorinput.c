@@ -25,8 +25,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -35,9 +33,6 @@
 
 int	wordc;		/* how long the current error message is */
 char	**wordv;	/* the actual error message */
-
-int	nerrors;
-int	language;
 
 Errorclass	onelong(void);
 Errorclass	cpp(void);
