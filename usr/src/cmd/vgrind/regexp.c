@@ -4,8 +4,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <ctype.h>
 
 typedef int	boolean;
@@ -306,8 +304,8 @@ expconv(void)
  *	character matched.
  */
 
-boolean _escaped;		/* true if we are currently _escaped */
-char *Start;			/* start of string */
+extern boolean _escaped;	/* true if we are currently _escaped */
+extern char *Start;		/* start of string */
 
 char *
 expmatch(char *s, char *re, char *mstring)
