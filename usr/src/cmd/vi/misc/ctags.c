@@ -836,7 +836,7 @@ Y_entries()
 {
 	char	*sp, *orig_sp;
 	int	brace;
-	bool	in_rule, toklen;
+	bool	in_rule = FALSE, toklen;
 	char		tok[BUFSIZ];
 
 	brace = 0;

@@ -610,7 +610,7 @@ scrapbad(void)
 	line *ip;
 	struct stat64 stbuf;
 	off_t size, maxt;
-	int bno, cnt, bad, was;
+	int bno, cnt = 0, bad, was;
 	unsigned char bk[BUFSIZE];
 
 	(void)fstat64(tfile, &stbuf);

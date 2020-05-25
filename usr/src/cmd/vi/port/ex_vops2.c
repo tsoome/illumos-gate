@@ -184,14 +184,14 @@ static int 	inscdcnt; /*
 void
 vappend(int ch, int cnt, int indent)
 {
-	int i;
+	int i = 0;
 	unsigned char *gcursor;
 	bool escape;
 	int repcnt, savedoomed;
 	short oldhold = hold;
 	int savecnt = cnt;
 	line *startsrcline;
-	int startsrccol, endsrccol;
+	int startsrccol, endsrccol = 0;
 	int gotNL = 0;
 	int imultlinecnt = 0;
 	int omultlinecnt = 0;

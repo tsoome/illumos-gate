@@ -29,7 +29,6 @@
 
 
 /* Copyright (c) 1981 Regents of the University of California */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include "ex.h"
 #include "ex_tty.h"
@@ -554,7 +553,7 @@ char c;
 int
 plod(int cnt)
 {
-	int i, j, k;
+	int i, j, k = 0;
 	int soutcol, soutline;
 
 	plodcnt = plodflg = cnt;

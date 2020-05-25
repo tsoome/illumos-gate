@@ -1434,7 +1434,7 @@ void
 physdc(int stcol, int endcol)
 {
 	wchar_t *tp, *up;
-	wchar_t *tpe;
+	wchar_t *tpe = NULL;
 	int i;
 	int nc = endcol - stcol;
 

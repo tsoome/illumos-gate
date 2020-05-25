@@ -832,6 +832,9 @@ bad_mode_bit(mode_t mode, mode_t bit, boolean_t on, char *file)
 	case S_IXOTH:
 		str = gettext("world executable");
 		break;
+	default:
+		str = gettext("unknown");
+		break;
 	}
 	if ((mode & bit) == (on ? 0 : bit)) {
 		/*
@@ -4647,9 +4650,9 @@ attach_func(int argc, char *argv[])
 	char postcmdbuf[MAXPATHLEN];
 	boolean_t execute = B_TRUE;
 	boolean_t brand_help = B_FALSE;
-	char *manifest_path;
+	char *manifest_path = NULL;
 	char tmpmanifest[80];
-	int manifest_pos;
+	int manifest_pos = 0;
 	brand_handle_t bh = NULL;
 	int status;
 	int last_index = 0;
