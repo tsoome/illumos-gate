@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Includes
  */
@@ -536,7 +534,7 @@ get_commands(void)
 void
 quit(boolean_t killtarget, boolean_t runtarget)
 {
-	tnfctl_errcode_t err;
+	tnfctl_errcode_t err = TNFCTL_ERR_NONE;
 
 	if (killtarget && runtarget)
 		err = tnfctl_close(g_hndl, TNFCTL_TARG_DEFAULT);
