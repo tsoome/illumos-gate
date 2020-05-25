@@ -1294,7 +1294,7 @@ do_getclass(char *event_str)
 {
 	au_evclass_map_t ec;
 	au_event_ent_t *evp;
-	au_event_t event_number;
+	au_event_t event_number = 0;
 	char *event_name;
 
 	if (strisnum(event_str)) {
@@ -1910,7 +1910,7 @@ do_setstat(void)
 static void
 do_setclass(char *event_str, au_mask_t *mask)
 {
-	au_event_t event;
+	au_event_t event = 0;
 	au_evclass_map_t ec;
 	au_event_ent_t *evp;
 
