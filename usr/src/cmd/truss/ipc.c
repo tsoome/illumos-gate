@@ -109,7 +109,7 @@ Xserialize()
 void
 Ecritical(int num)
 {
-	int rv;
+	int rv = 0;
 
 	if (num == 0)
 		rv = mutex_lock(&gps->ps_mutex0);
@@ -135,7 +135,7 @@ Ecritical(int num)
 void
 Xcritical(int num)
 {
-	int rv;
+	int rv = 0;
 
 	if (num == 0)
 		rv = mutex_unlock(&gps->ps_mutex0);

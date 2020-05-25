@@ -513,7 +513,7 @@ sysexit(private_t *pri, int dotrace)
 {
 	const lwpstatus_t *Lsp = pri->lwpstat;
 	int what = Lsp->pr_what;
-	struct syscount *scp;
+	struct syscount *scp = NULL;
 	const struct systable *stp;
 	int subcode;
 	int istraced;

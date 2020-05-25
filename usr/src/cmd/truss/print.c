@@ -1670,7 +1670,7 @@ void
 prt_psfw(private_t *pri, int raw, long value)
 {
 	psecflagwhich_t which = (psecflagwhich_t)value;
-	char *s;
+	char *s = NULL;
 
 	if (raw != 0) {
 		prt_dec(pri, 0, value);
