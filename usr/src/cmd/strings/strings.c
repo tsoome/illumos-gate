@@ -37,8 +37,6 @@
  *	Copyright (c) 1979 Regents of the University of California
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include "a.out.h"
 #include <ctype.h>
@@ -183,7 +181,7 @@ main(argc, argv)
 	int		opt;
 	int		i;
 	sec_name_t	*seclistptr = NULL;
-	sec_name_t	*seclistendptr;
+	sec_name_t	*seclistendptr = NULL;
 	sec_name_t	*sptr;
 
 	(void) setlocale(LC_ALL, "");
