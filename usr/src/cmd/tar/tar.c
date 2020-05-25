@@ -1271,7 +1271,7 @@ dorep(char *argv[])
 	char file[PATH_MAX*2], origdir[PATH_MAX+1];
 	FILE *fp = (FILE *)NULL;
 	int archtype;
-	int ret;
+	int ret = 0;
 
 
 	if (!cflag) {
@@ -1827,7 +1827,7 @@ putfile(char *longname, char *shortname, char *parent, attr_data_t *attrinfo,
 	int	maxread;
 	int	hint;		/* amount to write to get "in sync" */
 	char filetmp[PATH_MAX + 1];
-	char *cp;
+	char *cp = NULL;
 	char *name;
 	char *attrparent = NULL;
 	char *longattrname = NULL;
@@ -2932,7 +2932,7 @@ doxtract(char *argv[])
 	blkcnt_t blocks;
 	off_t bytes;
 	int ofile;
-	int newfile;			/* Does the file already exist  */
+	int newfile = TRUE;		/* Does the file already exist  */
 	int xcnt = 0;			/* count # files extracted */
 	int fcnt = 0;			/* count # files in argv list */
 	int dir;
@@ -4522,8 +4522,8 @@ resugname(int dirfd,	/* dir fd file resides in */
     char *name,		/* name of the file to be modified */
     int symflag)	/* true if file is a symbolic link */
 {
-	uid_t duid;
-	gid_t dgid;
+	uid_t duid = 0;
+	gid_t dgid = 0;
 	struct stat *sp = &stbuf;
 	char	*u_g_name;
 
