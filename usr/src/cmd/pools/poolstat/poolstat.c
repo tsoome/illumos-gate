@@ -380,7 +380,7 @@ create_prt_sequence_list(char *arg, poolstat_line_format_t *lf)
 	}
 
 	while (arg != NULL && *arg != '\0') {
-		poolstat_field_format_t *ff;	/* current format field */
+		poolstat_field_format_t *ff = NULL; /* current format field */
 		int 	ffIdx;	/* format field index	    */
 		char 	*name;	/* name of field	    */
 		int	n; 	/* no. of chars to strip    */
@@ -438,7 +438,7 @@ sa_update(statistic_bag_t *sbag, int flags)
 static int
 default_f(char *str, int pos, int left, poolstat_field_format_t *ff, char *data)
 {
-	int  used;
+	int  used = 0;
 
 	switch (ff->pff_type) {
 	case LL: {
