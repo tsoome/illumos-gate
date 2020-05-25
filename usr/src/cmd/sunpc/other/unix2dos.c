@@ -24,9 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 /*
  *	Converts files from one char set to another
  *
@@ -107,7 +104,7 @@ main(int argc, char **argv)
 	unsigned char tmp_buff[512];
 
 	unsigned char *src_str, *dest_str;
-	char	 *in_file_name, *out_file_name;
+	char	 *in_file_name = NULL, *out_file_name;
 	int num_read, numchar, i, j, out_len, translate_mode;
 	int same_name;
 	/* char count for fread() */
@@ -115,7 +112,7 @@ main(int argc, char **argv)
 	int	type;
 	int	code_page_overide; /* over ride of default codepage */
 
-	unsigned char * dos_to_iso;
+	unsigned char *dos_to_iso = NULL;
 	unsigned char iso_to_dos[256];
 #ifdef UNIX_BUILD
 	int	kbdfd;
