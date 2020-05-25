@@ -1142,6 +1142,9 @@ mount_one_dev(zlog_t *zlogp, char *devpath, zone_mnt_t mount_cmd)
 	case ZS_EXCLUSIVE:
 		curr_iptype = "exclusive";
 		break;
+	default:
+		curr_iptype = "unknown";
+		break;
 	}
 
 	if (brand_platform_iter_devices(bh, zone_name,
@@ -3290,6 +3293,9 @@ get_privset(zlog_t *zlogp, priv_set_t *privs, zone_mnt_t mount_cmd)
 		case ZS_EXCLUSIVE:
 			curr_iptype = "exclusive";
 			break;
+		default:
+			curr_iptype = "unknown";
+			break;
 		}
 
 		if (zonecfg_default_privset(privs, curr_iptype) == Z_OK) {
@@ -4789,7 +4795,7 @@ vplat_create(zlog_t *zlogp, zone_mnt_t mount_cmd)
 	tsol_zcent_t *zcent = NULL;
 	int match = 0;
 	int doi = 0;
-	int flags;
+	int flags = 0;
 	zone_iptype_t iptype;
 
 	if (zone_get_rootpath(zone_name, rootpath, sizeof (rootpath)) != Z_OK) {
