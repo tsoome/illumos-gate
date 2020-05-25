@@ -568,7 +568,7 @@ short	vcntcol;
 int
 qcolumn(unsigned char *lim, unsigned char *gp)
 {
-	int x, length;
+	int x, length = 0;
 	int	col;
 	wchar_t wchar;
 	int (*OO)();
@@ -850,10 +850,9 @@ tabcol(int col, int ts)
 }
 
 unsigned char *
-vfindcol(i)
-	int i;
+vfindcol(int i)
 {
-	unsigned char *cp, *oldcp;
+	unsigned char *cp = NULL, *oldcp = NULL;
 	int (*OO)() = Outchar;
 	int length;
 	unsigned char x;

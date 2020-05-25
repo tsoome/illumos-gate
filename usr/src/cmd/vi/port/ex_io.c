@@ -967,7 +967,7 @@ unsigned char *aline;
 	int  savepeekc;
 	int  savechng;
 	unsigned char	*savefirstpat;
-	unsigned char	*p;
+	unsigned char	*p = NULL;
 	int	len;
 
 	beg = (unsigned char *)strchr((char *)aline, ':');

@@ -68,7 +68,7 @@ static int get_addr();
 void
 operate(int c, int cnt)
 {
-	wchar_t i;
+	wchar_t i = 0;
 	int (*moveop)(), (*deleteop)();
 	int (*opf)();
 	bool subop = 0;
@@ -1029,7 +1029,7 @@ find(wchar_t c)
 int
 word(int (*op)(), int cnt)
 {
-	int which;
+	int which = 0;
 	unsigned char *iwc;
 	line *iwdot = wdot;
 	wchar_t wchar;

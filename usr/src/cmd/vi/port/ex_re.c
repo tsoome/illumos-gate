@@ -1069,7 +1069,7 @@ int
 execute(int gf, line *addr)
 {
 	unsigned char *p1, *p2;
-	char *start;
+	char *start = NULL;
 	int c, i;
 	int ret;
 	int	len;
