@@ -1906,7 +1906,7 @@ kmt_wapt_info(mdb_tgt_t *t, mdb_sespec_t *sep, mdb_vespec_t *vep,
     mdb_tgt_spec_desc_t *sp, char *buf, size_t nbytes)
 {
 	kmdb_wapt_t *wp = vep != NULL ? vep->ve_args : sep->se_data;
-	const char *fmt;
+	const char *fmt = NULL;
 	char desc[24];
 
 	ASSERT(wp->wp_wflags != 0);
