@@ -244,8 +244,8 @@ typedef struct command {
 /*
  * globally visible door_server file descriptor
  */
-int did_exec_map;
-int did_fork_exec;
+extern int did_exec_map;
+extern int did_fork_exec;
 
 extern time_t timenow;	/* set at start of processing of each RPC call */
 extern char self[];

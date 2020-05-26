@@ -46,6 +46,7 @@
 #include <strings.h>
 #include "automount.h"
 
+int did_exec_map;
 static int read_execout(char *, char **, char *, char *, int);
 static int call_read_execout(char *, char *, char *, int);
 static FILE *file_open(char *, char *, char **, char ***);
