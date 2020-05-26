@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Usermode daemon which assists the kernel when handling gssapi calls.
  * It is gssd that actually implements all gssapi calls.
@@ -62,7 +60,7 @@ extern int  svc_create_local_service();
 int _rpcpmstart = 0;		/* Started by a port monitor ? */
 int _rpcfdtype;			/* Whether Stream or Datagram ? */
 int _rpcsvcdirty;		/* Still serving ? */
-
+mutex_t _svcstate_lock;
 
 static void
 /* LINTED */
@@ -105,7 +103,7 @@ char **argv;
 	setlocale(LC_ALL, "");
 	textdomain(TEXT_DOMAIN);
 
-
+	mutex_init(&_svcstate_lock, USYNC_THREAD, NULL);
 	/*
 	 * Take special note that "getuid()" is called here.  This call is used
 	 * rather than app_krb5_user_uid(), to ensure gssd(1M) is running as
