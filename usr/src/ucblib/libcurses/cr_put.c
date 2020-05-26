@@ -12,15 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
-#ifndef lint
-static char
-sccsid[] = "@(#)cr_put.c 1.7 89/03/27 SMI"; /* from UCB 5.1 85/06/07 */
-#endif	/* not lint */
-
 #include	<string.h>
 #include	"curses.ext"
 #include	<term.h>
@@ -51,7 +42,7 @@ int tabcol(int, int);
 
 static int	outcol, outline, destcol, destline;
 
-WINDOW		*_win;
+extern WINDOW		*_win;
 
 int
 mvcur(int ly, int lx, int y, int x)
