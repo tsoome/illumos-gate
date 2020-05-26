@@ -108,7 +108,7 @@ kmutex_t swapinfo_lock;
 /*
  * protected by the swapinfo_lock
  */
-struct swapinfo	*swapinfo;
+extern struct swapinfo	*swapinfo;
 
 static	struct	swapinfo *silast;
 static	int	nswapfiles;
