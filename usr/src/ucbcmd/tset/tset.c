@@ -461,7 +461,7 @@ main(int argc, char *argv[])
 	extern char	*getenv();
 	extern char	*tgetstr();
 	char		bs_char;
-	int		csh;
+	int		csh = 0;
 	int		settle = NO;
 	void		setmode();
 	extern char	PC;
@@ -1067,7 +1067,7 @@ settabs(void)
 {
 	char caps[100];
 	char *capsp = caps;
-	char *clear_tabs, *set_tab, *set_column, *set_pos;
+	char *clear_tabs, *set_tab, *set_column, *set_pos = NULL;
 	char *tg_out, *tgoto();
 	int c;
 	extern char *tgetstr();
