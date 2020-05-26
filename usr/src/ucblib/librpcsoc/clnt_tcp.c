@@ -109,7 +109,7 @@ clnttcp_create(struct sockaddr_in *raddr, rpcprog_t prog, rpcvers_t vers,
     int *sockp, uint_t sendsz, uint_t recvsz)
 {
 	CLIENT *h;
-	struct ct_data *ct;
+	struct ct_data *ct = NULL;
 	struct timeval now;
 	struct rpc_msg call_msg;
 

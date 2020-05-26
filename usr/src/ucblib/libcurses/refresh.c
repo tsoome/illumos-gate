@@ -12,15 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
-#ifndef lint
-static char
-sccsid[] = "@(#)refresh.c 1.8 89/08/24 SMI"; /* from UCB 5.1 85/06/07 */
-#endif /* not lint */
-
 /*
  * make the current screen look like "win" over the area coverd by
  * win.
@@ -153,9 +144,9 @@ wrefresh(WINDOW *win)
 DEBUGSTATIC int
 makech(WINDOW *win, short wy)
 {
-	char	*nsp, *csp, *ce;
-	short	wx, lch, y;
-	intptr_t	nlsp, clsp;	/* last space in lines		*/
+	char *nsp, *csp, *ce;
+	short wx, lch, y;
+	intptr_t nlsp = 0, clsp;	/* last space in lines		*/
 
 	wx = win->_firstch[wy] - win->_ch_off;
 	if (wx >= win->_maxx)
