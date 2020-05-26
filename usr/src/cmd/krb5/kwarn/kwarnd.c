@@ -30,8 +30,6 @@
  * the code in this file was borrowed from gssd.c
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <rpc/rpc.h>
 #include <sys/syslog.h>
@@ -66,17 +64,16 @@ extern bool_t loadConfigFile(void);
 int _rpcpmstart = 0;		/* Started by a port monitor ? */
 int _rpcfdtype;			/* Whether Stream or Datagram ? */
 int _rpcsvcdirty;		/* Still serving ? */
+mutex_t _svcstate_lock = ERRORCHECKMUTEX;
 
 char myhostname[MAXHOSTNAMELEN] = {0};
 char progname[MAXNAMELEN] = {0};
 
 
 int
-main(argc, argv)
-int argc;
-char **argv;
+main(int argc, char **argv)
 {
-	register SVCXPRT *transp;
+	SVCXPRT *transp;
 	extern int optind;
 	int c;
 	char mname[FMNAMESZ + 1];
