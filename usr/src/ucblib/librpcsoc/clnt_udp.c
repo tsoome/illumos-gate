@@ -39,8 +39,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * clnt_udp.c, Implements a UDP/IP based, client side RPC.
  */
@@ -121,7 +119,7 @@ clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
 	u_int recvsz;
 {
 	CLIENT *cl;
-	register struct cu_data *cu;
+	struct cu_data *cu = NULL;
 	struct timeval now;
 	struct rpc_msg call_msg;
 

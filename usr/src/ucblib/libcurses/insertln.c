@@ -12,15 +12,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-/*LINTLIBRARY*/
-
-#ifndef lint
-static char
-sccsid[] = "@(#)insertln.c 1.6 88/02/08 SMI"; /* from UCB 5.1 85/06/07 */
-#endif /* not lint */
-
 #include	"curses.ext"
 #include	<string.h>
 
@@ -32,7 +23,7 @@ sccsid[] = "@(#)insertln.c 1.6 88/02/08 SMI"; /* from UCB 5.1 85/06/07 */
 int
 winsertln(WINDOW *win)
 {
-	char	*temp;
+	char	*temp = NULL;
 	int	y;
 	char	*end;
 
