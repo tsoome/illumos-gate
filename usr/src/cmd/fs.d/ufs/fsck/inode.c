@@ -44,6 +44,12 @@
 #include <pwd.h>
 #include "fsck.h"
 
+uint_t largefile_count = 0;
+fsck_ino_t lastino;
+struct bufarea cgblk;
+struct inoinfo **aclphead, **aclpsort;
+struct dinode zino;
+
 static int get_indir_offsets(int, daddr_t, int *, int *);
 static int clearanentry(struct inodesc *);
 static void pdinode(struct dinode *);

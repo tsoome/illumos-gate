@@ -61,7 +61,13 @@
 #include <inttypes.h>
 #include "fsck.h"
 
+struct bufarea *pbp;
+struct bufarea *pdirbp;
 caddr_t mount_point = NULL;
+struct bufarea bufhead;
+char *elock_combuf;
+char *elock_mountp;
+struct lockfs *lfp;
 
 static int64_t diskreads, totalreads;	/* Disk cache statistics */
 
