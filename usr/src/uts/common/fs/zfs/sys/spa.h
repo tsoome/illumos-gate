@@ -761,7 +761,7 @@ extern int spa_get_stats(const char *pool, nvlist_t **config, char *altroot,
 extern int spa_create(const char *pool, nvlist_t *nvroot, nvlist_t *props,
     nvlist_t *zplprops, struct dsl_crypto_params *dcp);
 extern int spa_import_rootpool(char *devpath, char *devid, uint64_t pool_guid,
-    uint64_t vdev_guid);
+    uint64_t vdev_guid, uint64_t bootflags);
 extern int spa_import(const char *pool, nvlist_t *config, nvlist_t *props,
     uint64_t flags);
 extern nvlist_t *spa_tryimport(nvlist_t *tryconfig);

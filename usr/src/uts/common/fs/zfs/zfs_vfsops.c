@@ -1732,7 +1732,7 @@ spa_get_bootprop_uint64(const char *name, uint64_t defval)
 		return (defval);
 	}
 
-	e = ddi_strtoull(propval, NULL, 10, &r);
+	e = ddi_strtoull(propval, NULL, 0, &r);
 
 	spa_free_bootprop(propval);
 
@@ -1755,6 +1755,7 @@ zfs_mountroot(vfs_t *vfsp, enum whymountroot why)
 	char *zfs_devid;
 	uint64_t zfs_bootpool;
 	uint64_t zfs_bootvdev;
+	uint64_t zfs_bootflags;
 
 	ASSERT(vfsp);
 
@@ -1790,6 +1791,7 @@ zfs_mountroot(vfs_t *vfsp, enum whymountroot why)
 		 */
 		zfs_bootpool = spa_get_bootprop_uint64("zfs-bootpool", 0);
 		zfs_bootvdev = spa_get_bootprop_uint64("zfs-bootvdev", 0);
+		zfs_bootflags = spa_get_bootprop_uint64("zfs-bootflags", 0);
 
 		/*
 		 * Initialise the early boot device rescan mechanism.  A scan
@@ -1800,7 +1802,7 @@ zfs_mountroot(vfs_t *vfsp, enum whymountroot why)
 		vdev_disk_preroot_init();
 
 		error = spa_import_rootpool(rootfs.bo_name, zfs_devid,
-		    zfs_bootpool, zfs_bootvdev);
+		    zfs_bootpool, zfs_bootvdev, zfs_bootflags);
 
 		spa_free_bootprop(zfs_devid);
 

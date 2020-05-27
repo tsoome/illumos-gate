@@ -5459,7 +5459,7 @@ spa_alt_rootvdev(vdev_t *vd, vdev_t **avd, uint64_t *txg)
  */
 int
 spa_import_rootpool(char *devpath, char *devid, uint64_t pool_guid,
-    uint64_t vdev_guid)
+    uint64_t vdev_guid, uint64_t bootflags)
 {
 	spa_t *spa;
 	vdev_t *rvd, *bvd, *avd = NULL;
@@ -5525,7 +5525,7 @@ spa_import_rootpool(char *devpath, char *devid, uint64_t pool_guid,
 
 	spa = spa_add(pname, config, NULL);
 	spa->spa_is_root = B_TRUE;
-	spa->spa_import_flags = ZFS_IMPORT_VERBATIM;
+	spa->spa_import_flags = ZFS_IMPORT_VERBATIM | bootflags;
 	if (nvlist_lookup_uint64(config, ZPOOL_CONFIG_VERSION,
 	    &spa->spa_ubsync.ub_version) != 0)
 		spa->spa_ubsync.ub_version = SPA_VERSION_INITIAL;
