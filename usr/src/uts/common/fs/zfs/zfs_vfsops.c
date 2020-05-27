@@ -1738,7 +1738,7 @@ spa_get_bootprop_uint64(const char *name, uint64_t defval)
 		return (defval);
 	}
 
-	e = ddi_strtoull(propval, NULL, 10, &r);
+	e = ddi_strtoull(propval, NULL, 0, &r);
 
 	spa_free_bootprop(propval);
 
