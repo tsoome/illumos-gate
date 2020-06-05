@@ -20,7 +20,7 @@
  */
 /*
  * Copyright (c) 1992, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2018, Joyent, Inc.
+ * Copyright 2020 Joyent, Inc.
  */
 
 /*	Copyright (c) 1990, 1991 UNIX System Laboratories, Inc. */
@@ -60,6 +60,7 @@
 #include <sys/x86_archext.h>
 #include <sys/sysmacros.h>
 #include <sys/cmn_err.h>
+#include <sys/kfpu.h>
 
 /*
  * FPU Management Overview
@@ -388,6 +389,43 @@
  * returning to user land and importantly, the only data that is in it is its
  * own.
  *
+ * Kernel FPU Usage
+ * ----------------
+ *
+ * Traditionally the kernel never used the FPU since it had no need for
+ * floating point operations. However, modern FPU hardware supports a variety
+ * of SIMD extensions which can speed up code such as parity calculations or
+ * encryption.
+ *
+ * To allow the kernel to take advantage of these features, the
+ * kernel_fpu_begin() and kernel_fpu_end() functions should be wrapped
+ * around any usage of the FPU by the kernel to ensure that user-level context
+ * is properly saved/restored, as well as to properly setup the FPU for use by
+ * the kernel. The kernel_fpu_alloc() function can be used to allocate
+ * a kfpu_state_t structure which is used to save/restore the kernel's FPU
+ * state. This structure is not tied to a thread. That is, different threads
+ * can use the same kfpu_state_t structure, although not concurrently. A
+ * kfpu_state_t structure is freed by the kernel_fpu_free() function.
+ *
+ * In some cases, the kernel may need to use the FPU for a short operation
+ * without the overhead to manage a kfpu_state_t strucuture and without
+ * allowing for a context switch off the FPU. In this case the KFPU_NO_STATE
+ * bit can be set in the kernel_fpu_begin and kernel_fpu_end flags parameter.
+ * This indicates that there is no kfpu_state_t. When used this way, kernel
+ * preemption and interrupts should be disabled by the caller (kpreempt_disable
+ * and intr_clear) while the FPU is in use. For this usage, it is important to
+ * limit the kernel's FPU use to short operations. The tradeoff between using
+ * the FPU without a kfpu_state_t structure vs. the overhead of allowing a
+ * context switch while using the FPU should be carefully considered on a case
+ * by case basis.
+ *
+ * In other cases, kernel threads have an LWP, but never execute in user space.
+ * In this situation, the LWP's pcb_fpu area can be used to save/restore the
+ * kernel's FPU state if the thread is context switched. The KFPU_USE_LWP bit
+ * in the kernel_fpu_begin and kernel_fpu_end flags parameter is used to enable
+ * this behavior. It is the caller's responsibility to ensure that this is only
+ * used for a kernel thread which never executes in user space.
+ *
  * FPU Exceptions
  * --------------
  *
@@ -442,6 +480,24 @@ CTASSERT(sizeof (struct fxsave_state) == 512);
 CTASSERT(sizeof (struct fnsave_state) == 108);
 CTASSERT((offsetof(struct fxsave_state, fx_xmm[0]) & 0xf) == 0);
 CTASSERT(sizeof (struct xsave_state) >= AVX_XSAVE_SIZE);
+
+/*
+ * This structure is the x86 implementation of the kernel FPU that is defined in
+ * uts/common/sys/kfpu.h.
+ */
+
+typedef enum kfpu_flags {
+	/*
+	 * This indicates that the save state has initial FPU data.
+	 */
+	KFPU_F_INITIALIZED = 0x01
+} kfpu_flags_t;
+
+struct kfpu_state {
+	fpu_ctx_t	kfpu_state;
+	kfpu_flags_t	kfpu_flags;
+	kthread_t	*kfpu_curthread;
+};
 
 /*
  * Initial kfpu state for SSE/SSE2 used by fpinit()
@@ -1091,4 +1147,298 @@ fpsetcw(uint16_t fcw, uint32_t mxcsr)
 		panic("Invalid fp_save_mech");
 		/*NOTREACHED*/
 	}
+}
+
+static void
+kernel_fpu_fpstate_init(kfpu_state_t *kfpu)
+{
+	struct xsave_state *xs;
+
+	switch (fp_save_mech) {
+	case FP_FXSAVE:
+		bcopy(&sse_initial, kfpu->kfpu_state.fpu_regs.kfpu_u.kfpu_fx,
+		    sizeof (struct fxsave_state));
+		kfpu->kfpu_state.fpu_xsave_mask = 0;
+		break;
+	case FP_XSAVE:
+		xs = kfpu->kfpu_state.fpu_regs.kfpu_u.kfpu_xs;
+		bzero(xs, cpuid_get_xsave_size());
+		bcopy(&avx_initial, xs, sizeof (*xs));
+		xs->xs_xstate_bv = XFEATURE_LEGACY_FP | XFEATURE_SSE;
+		kfpu->kfpu_state.fpu_xsave_mask = XFEATURE_FP_ALL;
+		break;
+	default:
+		panic("invalid fp_save_mech");
+	}
+
+	/*
+	 * Set the corresponding flags that the system expects on the FPU state
+	 * to indicate that this is our state. The FPU_EN flag is required to
+	 * indicate that things are valid. The FPU_KERN flag is explicitly not
+	 * set below as it represents that this state is being surpressed by the
+	 * kernel.
+	 */
+	kfpu->kfpu_state.fpu_flags = FPU_EN | FPU_VALID;
+	kfpu->kfpu_flags |= KFPU_F_INITIALIZED;
+}
+
+kfpu_state_t *
+kernel_fpu_alloc(int kmflags, uint_t fpu_flags)
+{
+	kfpu_state_t *kfpu;
+
+	if (fpu_flags != 0) {
+		return (NULL);
+	}
+
+	if ((kfpu = kmem_zalloc(sizeof (kfpu_state_t), kmflags)) == NULL) {
+		return (NULL);
+	}
+
+	kfpu->kfpu_state.fpu_regs.kfpu_u.kfpu_generic =
+	    kmem_cache_alloc(fpsave_cachep, kmflags);
+	if (kfpu->kfpu_state.fpu_regs.kfpu_u.kfpu_generic == NULL) {
+		kmem_free(kfpu, sizeof (kfpu_state_t));
+		return (NULL);
+	}
+
+	kernel_fpu_fpstate_init(kfpu);
+
+	return (kfpu);
+}
+
+void
+kernel_fpu_free(kfpu_state_t *kfpu)
+{
+	kmem_cache_free(fpsave_cachep,
+	    kfpu->kfpu_state.fpu_regs.kfpu_u.kfpu_generic);
+	kmem_free(kfpu, sizeof (kfpu_state_t));
+}
+
+static void
+kernel_fpu_ctx_save(void *arg)
+{
+	kfpu_state_t *kfpu = arg;
+	fpu_ctx_t *pf;
+
+	if (kfpu == NULL) {
+		/*
+		 * A NULL kfpu implies this is a kernel thread with an LWP and
+		 * no user-level FPU usage. Use the lwp fpu save area.
+		 */
+		pf = &curthread->t_lwp->lwp_pcb.pcb_fpu;
+
+		ASSERT(curthread->t_procp->p_flag & SSYS);
+		ASSERT3U(pf->fpu_flags & FPU_EN, !=, 0);
+		ASSERT3U(pf->fpu_flags & FPU_VALID, ==, 0);
+
+		fp_save(pf);
+	} else {
+		pf = &kfpu->kfpu_state;
+
+		ASSERT3P(kfpu->kfpu_curthread, ==, curthread);
+		ASSERT3U(pf->fpu_flags & FPU_EN, !=, 0);
+		ASSERT3U(pf->fpu_flags & FPU_VALID, ==, 0);
+
+		/*
+		 * Note, we can't use fp_save because it assumes that we're
+		 * saving to the thread's PCB and not somewhere else. Because
+		 * this is a different FPU context, we instead have to do this
+		 * ourselves.
+		 */
+		switch (fp_save_mech) {
+		case FP_FXSAVE:
+			fpxsave(pf->fpu_regs.kfpu_u.kfpu_fx);
+			break;
+		case FP_XSAVE:
+			xsavep(pf->fpu_regs.kfpu_u.kfpu_xs, pf->fpu_xsave_mask);
+			break;
+		default:
+			panic("Invalid fp_save_mech");
+		}
+
+		/*
+		 * Because we have saved context here, our save state is no
+		 * longer valid and therefore needs to be reinitialized.
+		 */
+		kfpu->kfpu_flags &= ~KFPU_F_INITIALIZED;
+	}
+
+	pf->fpu_flags |= FPU_VALID;
+}
+
+static void
+kernel_fpu_ctx_restore(void *arg)
+{
+	kfpu_state_t *kfpu = arg;
+	fpu_ctx_t *pf;
+
+	if (kfpu == NULL) {
+		/*
+		 * A NULL kfpu implies this is a kernel thread with an LWP and
+		 * no user-level FPU usage. Use the lwp fpu save area.
+		 */
+		pf = &curthread->t_lwp->lwp_pcb.pcb_fpu;
+
+		ASSERT(curthread->t_procp->p_flag & SSYS);
+		ASSERT3U(pf->fpu_flags & FPU_EN, !=, 0);
+		ASSERT3U(pf->fpu_flags & FPU_VALID, !=, 0);
+	} else {
+		pf = &kfpu->kfpu_state;
+
+		ASSERT3P(kfpu->kfpu_curthread, ==, curthread);
+		ASSERT3U(pf->fpu_flags & FPU_EN, !=, 0);
+		ASSERT3U(pf->fpu_flags & FPU_VALID, !=, 0);
+	}
+
+	fp_restore(pf);
+}
+
+void
+kernel_fpu_begin(kfpu_state_t *kfpu, uint_t flags)
+{
+	ulong_t iflags;
+	klwp_t *pl = curthread->t_lwp;
+
+	if ((curthread->t_flag & T_KFPU) != 0) {
+		panic("curthread attempting to nest kernel FPU states");
+	}
+
+	if (flags & KFPU_NO_STATE) {
+		/*
+		 * Since we don't have a kfpu_state or usable lwp pcb_fpu to
+		 * hold our kernel FPU context, we depend on the caller doing
+		 * kpreempt_disable and intr_clear for the duration of our FPU
+		 * usage. This should only be done for very short periods of
+		 * time.
+		 */
+		ASSERT(curthread->t_preempt > 0);
+		ASSERT(kfpu == NULL);
+
+		if (pl != NULL &&
+		    (pl->lwp_pcb.pcb_fpu.fpu_flags & FPU_EN) != 0) {
+			fp_save(&pl->lwp_pcb.pcb_fpu);
+			pl->lwp_pcb.pcb_fpu.fpu_flags |= FPU_KERNEL;
+		}
+
+		curthread->t_flag |= T_KFPU;
+
+		/* Always restore the fpu to the initial state. */
+		fpinit();
+
+		return;
+	}
+
+	/*
+	 * We either have a kfpu, or are using the LWP pcb_fpu for context ops.
+	 */
+
+	if ((flags & KFPU_USE_LWP) == 0) {
+		if (kfpu->kfpu_curthread != NULL)
+			panic("attempting to reuse kernel FPU state at %p when "
+			    "another thread already is using", kfpu);
+
+		if ((kfpu->kfpu_flags & KFPU_F_INITIALIZED) == 0)
+			kernel_fpu_fpstate_init(kfpu);
+	}
+
+	/*
+	 * The following must all be done with pre-emption disabled and
+	 * interrupts disabled to make sure that we reset and save the possible
+	 * user state correctly.
+	 */
+	kpreempt_disable();
+	iflags = intr_clear();
+
+	/*
+	 * Not all kernel threads may have an active LWP. If they do, then we
+	 * should go ahead and save the state. We must also note that this state
+	 * is now being used by the kernel and therefore we do not need to save
+	 * or restore the user state.
+	 */
+	if (pl != NULL && (pl->lwp_pcb.pcb_fpu.fpu_flags & FPU_EN) != 0) {
+		fp_save(&pl->lwp_pcb.pcb_fpu);
+		pl->lwp_pcb.pcb_fpu.fpu_flags |= FPU_KERNEL;
+	}
+
+	curthread->t_flag |= T_KFPU;
+
+	if (flags & KFPU_USE_LWP) {
+		/*
+		 * For pure kernel threads with an LWP, we can use the LWP's
+		 * pcb_fpu to save/restore context.
+		 */
+		fpu_ctx_t *pf = &pl->lwp_pcb.pcb_fpu;
+
+		VERIFY(curthread->t_procp->p_flag & SSYS);
+		VERIFY(kfpu == NULL);
+		ASSERT((pf->fpu_flags & FPU_EN) == 0);
+
+		/* Always restore the fpu to the initial state. */
+		if (fp_save_mech == FP_XSAVE)
+			pf->fpu_xsave_mask = XFEATURE_FP_ALL;
+		fpinit();
+		pf->fpu_flags = FPU_EN | FPU_KERNEL;
+	} else {
+		kfpu->kfpu_curthread = curthread;
+		kernel_fpu_ctx_restore(kfpu);
+	}
+
+	/* Appropriately set the context operations. */
+	installctx(curthread, kfpu, kernel_fpu_ctx_save, kernel_fpu_ctx_restore,
+	    NULL, NULL, NULL, NULL);
+
+	intr_restore(iflags);
+	kpreempt_enable();
+}
+
+void
+kernel_fpu_end(kfpu_state_t *kfpu, uint_t flags)
+{
+	ulong_t iflags;
+
+	if ((curthread->t_flag & T_KFPU) == 0) {
+		panic("curthread attempting to clear kernel FPU state "
+		    "without using it");
+	}
+
+	if ((flags & KFPU_NO_STATE) == 0) {
+		if (kfpu != NULL && kfpu->kfpu_curthread != curthread)
+			panic("attempting to end kernel FPU state at %p, but "
+			    "recorded thread is not curthread", kfpu);
+
+		/*
+		 * The following must all be done with pre-emption disabled and
+		 * interrupts disabled to make sure that we reset and remove
+		 * all of our context handlers correctly.
+		 */
+		kpreempt_disable();
+		iflags = intr_clear();
+	} else {
+		ASSERT(curthread->t_preempt > 0);
+	}
+
+	curthread->t_flag &= ~T_KFPU;
+
+	/*
+	 * When we are ending things, we explicitly don't save the our current
+	 * state back to the temporary state. The API is not intended to be a
+	 * permanent save location. We always will clear TS and note that the
+	 * user state should be restored as part of it returning to userland.
+	 */
+	if (curthread->t_lwp != NULL &&
+	    (curthread->t_lwp->lwp_pcb.pcb_fpu.fpu_flags & FPU_EN) != 0) {
+		curthread->t_lwp->lwp_pcb.pcb_fpu.fpu_flags &= ~FPU_KERNEL;
+		PCB_SET_UPDATE_FPU(&curthread->t_lwp->lwp_pcb);
+	}
+	fpdisable();
+
+	if (flags & KFPU_NO_STATE)
+		return;
+
+	removectx(curthread, kfpu, kernel_fpu_ctx_save, kernel_fpu_ctx_restore,
+	    NULL, NULL, NULL, NULL);
+
+	intr_restore(iflags);
+	kpreempt_enable();
 }
