@@ -150,8 +150,9 @@ refresh_nlm_rpc(struct nlm_host *hostp, nlm_rpc_t *rpcp)
 		 * NULL request fails so it is safe for us to turn this option
 		 * on.
 		 */
-		if (clnt_control(rpcp->nr_handle, CLSET_NODELAYONERR,
-		    (char *)&clset) == FALSE) {
+		if ((hostp->nh_knc.knc_semantics != NC_TPI_CLTS) &&
+		    (clnt_control(rpcp->nr_handle, CLSET_NODELAYONERR,
+		    (char *)&clset) == FALSE)) {
 			NLM_ERR("Unable to set CLSET_NODELAYONERR\n");
 		}
 	} else {
