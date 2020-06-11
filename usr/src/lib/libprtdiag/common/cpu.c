@@ -22,7 +22,6 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -135,7 +134,7 @@ display_cpu_devices(Sys_tree *tree)
 	bnode = tree->bd_list;
 	while (bnode != NULL) {
 		display_cpus(bnode);
-	bnode = bnode->next;
+		bnode = bnode->next;
 	}
 
 	log_printf("\n", 0);

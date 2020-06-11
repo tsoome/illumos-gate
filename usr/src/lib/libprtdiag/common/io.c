@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -187,7 +185,7 @@ insert_io_card(struct io_card *list, struct io_card *card)
 	newcard->next = NULL;
 
 	if (list == NULL)
-	return (newcard);
+		return (newcard);
 
 	/* Find the proper place in the list for the new card */
 	for (p = list, q = NULL; p != NULL; q = p, p = p->next) {
@@ -905,11 +903,12 @@ display_psycho_pci(Board_node *board)
 			get_slot_number_str(&card, (char **)slot_name_arr,
 			    slot_name_bits);
 
-			if (slot_name_bits)
+			if (slot_name_bits) {
 				D_PRINTF("\nIO Card [%s] dev_no [%d] SlotStr "
 				    "[%s] slot [%s]", name, card.dev_no,
 				    slot_name_arr[card.dev_no],
 				    card.slot_str);
+			}
 
 			/* XXX - Don't know how to get status for PCI cards */
 			card.status[0] = '\0';
@@ -983,7 +982,7 @@ get_slot_number_str(struct io_card *card, char **slot_name_arr,
 				(void) sprintf(card->slot_str, "-");
 		} else {
 			/* this is an on-board dev. */
-			sprintf(card->slot_str, "On-Board");
+			(void) sprintf(card->slot_str, "On-Board");
 		}
 
 	} else {
