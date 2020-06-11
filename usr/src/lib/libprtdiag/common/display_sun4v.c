@@ -1792,7 +1792,7 @@ sun4v_print_fru_status_callback(picl_nodehdl_t nodeh, void *args)
 	}
 
 	if (is_fru_absent(nodeh))
-		strcpy(status, "Not present");
+		(void) strcpy(status, "Not present");
 
 	err = picl_get_propval_by_name(nodeh, PICL_PROP_PARENT, &parenth,
 	    sizeof (parenth));

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -77,8 +75,10 @@ walk_di_tree(Sys_tree *tree, Prom_node *root, di_node_t di_node)
 	char		*name, *type, *model, *compatible_array;
 	int		board_node = 0;
 	int		*int_val;
-	int		portid;
 	int		is_schizo = 0, n_names;
+#ifdef DEBUG
+	int		portid;
+#endif
 
 	/* allocate a node for this level */
 	if ((pnode = (Prom_node *) malloc(sizeof (struct prom_node))) ==
@@ -115,6 +115,7 @@ walk_di_tree(Sys_tree *tree, Prom_node *root, di_node_t di_node)
 			is_schizo = 1;
 	}
 
+#ifdef DEBUG
 	if (int_val = (int *)get_prop_val(find_prop(pnode, "portid")))
 		portid = *int_val;
 	else if ((strcmp(type, "cpu") == 0) &&
@@ -123,7 +124,6 @@ walk_di_tree(Sys_tree *tree, Prom_node *root, di_node_t di_node)
 	else
 		portid = -1;
 
-#ifdef DEBUG
 	if (name != NULL)
 		printf("name=%s\n", name);
 	if (type != NULL)
@@ -229,38 +229,32 @@ dump_di_node(Prom_node *pnode, di_node_t di_node)
 		D_PRINTF("DEVINFO Properties  %s: ", di_name);
 
 		switch (di_ptype) {
-			int	*int_val;
-			char	*char_val;
 		case DI_PROP_TYPE_INT:
 			retval = di_prop_lookup_ints(DDI_DEV_T_ANY,
 				di_node, di_name, (int **)&di_data);
 			if (retval > 0) {
-				int_val = (int *)di_data;
-				D_PRINTF("0x%x\n", *int_val);
+				D_PRINTF("0x%x\n", *(int *)di_data);
 			}
 			break;
 		case DI_PROP_TYPE_STRING:
 			retval = di_prop_lookup_strings(DDI_DEV_T_ANY,
 				di_node, di_name, (char **)&di_data);
 			if (retval > 0) {
-				char_val = (char *)di_data;
-				D_PRINTF("%s\n", char_val);
+				D_PRINTF("%s\n", (char *)di_data);
 			}
 			break;
 		case DI_PROP_TYPE_BYTE:
 			retval = di_prop_lookup_bytes(DDI_DEV_T_ANY,
 				di_node, di_name, (uchar_t **)&di_data);
 			if (retval > 0) {
-				char_val = (char *)di_data;
-				D_PRINTF("%s\n", char_val);
+				D_PRINTF("%s\n", (char *)di_data);
 			}
 			break;
 		case DI_PROP_TYPE_UNKNOWN:
 			retval = di_prop_lookup_bytes(DDI_DEV_T_ANY,
 				di_node, di_name, (uchar_t **)&di_data);
 			if (retval > 0) {
-				char_val = (char *)di_data;
-				D_PRINTF("%s\n", char_val);
+				D_PRINTF("%s\n", (char *)di_data);
 			}
 			break;
 		case DI_PROP_TYPE_BOOLEAN:

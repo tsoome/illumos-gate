@@ -196,8 +196,8 @@ get_us3_mem_regs(Board_node *bnode)
 				/* Move offset to next bank_status string */
 				status_offset += (strlen(bank_status) + 1);
 			} else {
-				bank_status = malloc(strlen("no_status"));
-				strcpy(bank_status, "no_status");
+				bank_status = malloc(strlen("no_status") + 1);
+				(void) strcpy(bank_status, "no_status");
 			}
 
 			/*
