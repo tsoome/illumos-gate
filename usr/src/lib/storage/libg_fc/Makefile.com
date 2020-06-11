@@ -46,6 +46,9 @@ LDLIBS += -lc -ldevinfo -ldevice -lnvpair -ldevid
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 
+# not linted
+SMATCH=off
+
 .KEEP_STATE:
 
 all: $(LIBS)
