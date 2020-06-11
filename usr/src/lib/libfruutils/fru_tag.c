@@ -217,7 +217,7 @@ get_tag_type(fru_tag_t *tag)
 		return (FRU_G);
 	else
 		errno = EINVAL;
-		return (-1);
+	return (-1);
 }
 #endif  /* _LITTLE_ENDIAN */
 
