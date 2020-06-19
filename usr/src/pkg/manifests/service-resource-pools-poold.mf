@@ -45,7 +45,7 @@ file path=usr/lib/pool/libjkstat.so.1
 file path=usr/lib/pool/libjlgrp.so.1
 file path=usr/lib/pool/libjpool.so.1
 file path=usr/lib/pool/libjsyslog.so.1
-file path=usr/lib/pool/poold mode=0555
+file path=usr/lib/pool/poold mode=0555 pkg.depend.bypass-generate=libjvm.so
 file path=usr/lib/pool/poold.properties mode=0444
 file path=usr/share/man/man1m/poold.1m
 legacy pkg=SUNWpoold desc="core software for dynamic resource pools" \
