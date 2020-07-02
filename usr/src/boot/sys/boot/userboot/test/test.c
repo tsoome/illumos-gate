@@ -250,8 +250,8 @@ test_seek(void *arg, void *h, uint64_t offset, int whence)
 }
 
 int
-test_stat(void *arg, void *h, int *mode_return, int *uid_return, int *gid_return,
-    uint64_t *size_return)
+test_stat(void *arg, void *h, int *mode_return, int *uid_return,
+    int *gid_return, uint64_t *size_return)
 {
 	struct test_file *tf = h;
 
@@ -363,7 +363,7 @@ test_setgdt(void *arg, uint64_t v, size_t sz)
 void
 test_exec(void *arg, uint64_t pc)
 {
-	printf("Execute at 0x%"PRIx64"\n", pc);
+	printf("Execute at 0x%"PRIx64"\n\r", pc);
 	test_exit(arg, 0);
 }
 
@@ -437,7 +437,8 @@ void
 usage()
 {
 
-	printf("usage: [-b <userboot shared object>] [-d <disk image path>] [-h <host filesystem path>\n");
+	printf("usage: [-b <userboot shared object>] [-d <disk image path>] "
+	    "[-h <host filesystem path>\n");
 	exit(1);
 }
 
@@ -450,6 +451,7 @@ main(int argc, char** argv)
 	const char *userboot_obj = "/boot/userboot.so";
 	struct winsize ws;
 	int cols = 80, rows = 24, z = 0;
+	int oflag = O_RDONLY;
 	char *buffer = NULL;
 
 	if (ioctl(1, TIOCGWINSZ, &ws) != -1) {
@@ -468,7 +470,7 @@ main(int argc, char** argv)
 	free(buffer);
 	(void)setenv("ISADIR", "amd64", 1);
 
-	while ((opt = getopt(argc, argv, "b:d:h:s:z")) != -1) {
+	while ((opt = getopt(argc, argv, "b:d:h:s:wz")) != -1) {
 		switch (opt) {
 		case 'b':
 			userboot_obj = optarg;
@@ -478,7 +480,7 @@ main(int argc, char** argv)
 			disk_index++;
 			disk_fd = reallocarray(disk_fd, disk_index + 1,
 			    sizeof (int));
-			disk_fd[disk_index] = open(optarg, O_RDONLY);
+			disk_fd[disk_index] = open(optarg, oflag);
 			if (disk_fd[disk_index] < 0)
 				err(1, "Can't open disk image '%s'", optarg);
 			break;
@@ -495,6 +497,10 @@ main(int argc, char** argv)
 
 			if (script < 0)
 				err(1, "Can't open script file '%s'", optarg);
+			break;
+
+		case 'w':
+			oflag = O_RDWR;
 			break;
 
 		case 'z':

@@ -52,9 +52,9 @@ bi_getboothowto(char *kargs)
 	curpos = strsep(&next, " ,");
 	if (*curpos == '\0')
 		continue;
-	if (!strcmp(curpos, "vidconsole"))
+	if (!strcmp(curpos, "text"))
 	    vidconsole = 1;
-	else if (!strcmp(curpos, "comconsole"))
+	else if (!strcmp(curpos, "ttya"))
 	    howto |= RB_SERIAL;
 	else if (!strcmp(curpos, "nullconsole"))
 	    howto |= RB_MUTE;
@@ -68,7 +68,7 @@ bi_getboothowto(char *kargs)
      * for the messages from /etc/rc, the first named console is the primary
      * console
      */
-    if (!strcmp(string, "vidconsole"))
+    if (!strcmp(string, "text"))
 	howto &= ~RB_SERIAL;
 
     free(string);

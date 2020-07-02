@@ -98,8 +98,15 @@ userboot_comcons_init(struct console *cp, int arg __unused)
 }
 
 static void
-userboot_cons_putchar(struct console *cp __unused, int c)
+userboot_cons_putchar(struct console *cp, int c)
 {
+
+	/*
+	 * if we are ttya and text is enabled, skip output.
+	 */
+	if (strcmp(cp->c_name, userboot_comconsole.c_name) == 0 &&
+	    (userboot_console.c_flags & C_PRESENTOUT) != 0)
+		return;
 
         CALLBACK(putc, c);
 }
@@ -108,12 +115,26 @@ static int
 userboot_cons_getchar(struct console *cp __unused)
 {
 
+	/*
+	 * if we are ttya and text is enabled, skip input.
+	 */
+	if (strcmp(cp->c_name, userboot_comconsole.c_name) == 0 &&
+	    (userboot_console.c_flags & C_PRESENTIN) != 0)
+		return (-1);
+
 	return (CALLBACK(getc));
 }
 
 static int
 userboot_cons_poll(struct console *cp __unused)
 {
+
+	/*
+	 * if we are ttya and text is enabled, skip input.
+	 */
+	if (strcmp(cp->c_name, userboot_comconsole.c_name) == 0 &&
+	    (userboot_console.c_flags & C_PRESENTIN) != 0)
+		return (0);
 
 	return (CALLBACK(poll));
 }

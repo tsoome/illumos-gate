@@ -16,6 +16,7 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <pnglite.h>
+#include "bootstrap.h"
 
 void *fonts;
 
@@ -68,4 +69,13 @@ png_close(png_t *png)
 void
 tem_save_state(void)
 {
+}
+
+COMMAND_SET(framebuffer, "framebuffer", "framebuffer mode management",
+    command_fb);
+
+static int
+command_fb(int argc, char *argv[])
+{
+	return (CMD_OK);
 }
