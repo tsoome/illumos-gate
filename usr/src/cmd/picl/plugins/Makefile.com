@@ -35,6 +35,7 @@ CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-unused-variable
+SMATCH=off
 
 # Some picl plugins have dependencies to which they make no reference.  These
 # dependencies are expected to be loaded so that their .init's fire and thus

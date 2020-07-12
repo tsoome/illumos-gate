@@ -54,6 +54,8 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 CERRWARN +=	-_gcc=-Wno-address
 CERRWARN +=	-_gcc=-Wno-char-subscripts
 
+SMATCH=off
+
 LDLIBS +=	-lc -ldevice -ldevinfo -lrcm
 
 .KEEP_STATE:

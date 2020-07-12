@@ -54,6 +54,7 @@ LDFLAGS += -R/usr/lib/fm
 CPPFLAGS += $(INCDIRS:%=-I%) -DGMEM_VERSION='$(GMEM_VERSION)' -D$(ARCH)
 CERRWARN += -_gcc=-Wno-switch
 CERRWARN += -_gcc=-Wno-parentheses
+SMATCH=off
 
 %.o: $(GENERIC_MEM)/%.c
 	$(COMPILE.c) -o $@ $<

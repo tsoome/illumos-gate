@@ -42,3 +42,4 @@ DYNFLAGS += -R/usr/lib
 CERRWARN += -_gcc=-Wno-unused-value
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
+SMATCH=off
