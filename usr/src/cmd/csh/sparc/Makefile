@@ -31,6 +31,7 @@ CERRWARN += -_gcc=-Wno-unused-variable
 CERRWARN += -_gcc=-Wno-clobbered
 CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-extra
+SMATCH=off
 
 LDLIBS += -lcurses
 

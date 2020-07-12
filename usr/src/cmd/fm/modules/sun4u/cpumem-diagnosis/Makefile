@@ -46,3 +46,4 @@ LDFLAGS += -R/usr/lib/fm
 CERRWARN += -_gcc=-Wno-switch
 CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-char-subscripts
+SMATCH=off

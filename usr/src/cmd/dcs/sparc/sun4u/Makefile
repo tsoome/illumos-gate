@@ -86,6 +86,7 @@ CPPFLAGS= 	-I$(USR_PSM_INCL_DIR) $(CPPFLAGS.master) \
 		$($(CONCURR_MODE)_FLAGS)
 
 LINT_FLAGS=	-c -Nlevel=4 -Ncheck $($(CONCURR_MODE)_FLAGS)
+SMATCH=off
 
 XGETFLAGS +=	-a -s -x $(PROG).xcl
 

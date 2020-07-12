@@ -34,7 +34,7 @@ CFLAGS += -D$(MACH) -I$(UTSBASE)/common
 CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += -_gcc=-Wno-unused-variable
-
+SMATCH=off
 LINTFLAGS += -I$(UTSBASE)/common
 
 .KEEP_STATE:

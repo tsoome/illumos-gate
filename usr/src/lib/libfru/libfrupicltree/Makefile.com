@@ -46,7 +46,6 @@ CPPFLAGS +=	-I.. \
 CPPFLAGS +=	-D_REENTRANT
 CFLAGS +=	$(CCVERBOSE)
 
-
 XGETFLAGS += -a
 POFILE=	picl.po
 

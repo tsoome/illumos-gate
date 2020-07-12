@@ -43,6 +43,7 @@ CFLAGS += $(CCVERBOSE) $(C_BIGPICFLAGS)
 CFLAGS64 += $(CCVERBOSE) $(C_BIGPICFLAGS)
 
 CERRWARN += -_gcc=-Wno-parentheses
+SMATCH=off
 
 LDLIBS += $(MACH_LDLIBS)
 LDLIBS += -lfmd_agent -lnvpair -lscf -lmdesc -lc -lxml2

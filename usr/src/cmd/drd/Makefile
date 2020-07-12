@@ -64,7 +64,7 @@ LINT_FLAGS=	-c -Nlevel=4 -Ncheck
 XGETFLAGS +=	-a -s -x $(PROG).xcl
 
 CERRWARN += -_gcc=-Wno-parentheses
-
+SMATCH=off
 
 #
 # LIBRARIES:

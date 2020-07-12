@@ -46,6 +46,7 @@ CFLAGS		+= -R /usr/platform/$(PLATFORM)/lib
 LDLIBS		+= -L$(ROOT)/usr/platform/$(PLATFORM)/lib
 LDLIBS		+= -lrsc -lcurses
 LINTFLAGS	+= -u
+SMATCH=off
 
 .KEEP_STATE:
 
