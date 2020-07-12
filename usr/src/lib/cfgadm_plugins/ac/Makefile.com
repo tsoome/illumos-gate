@@ -49,6 +49,7 @@ SRCDIR =	../common
 LIBS = $(DYNLIB)
 
 CFLAGS +=	$(CCVERBOSE)
+SMATCH=off
 LDLIBS +=	-lc
 
 CPPFLAGS +=	-I$(ROOT)/usr/platform/$(PLATFORM)/include

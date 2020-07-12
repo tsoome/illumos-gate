@@ -37,6 +37,7 @@ CERRWARN  += -_gcc=-Wno-parentheses
 CPPFLAGS  += -I$(SRC)/lib/libfru/include \
              -I$(SRC)/lib/libfruutils
 LINTFLAGS += -u
+SMATCH=off
 EXTRA_LDLIBS    = -lfru -lfrureg -lfruutils
 
 FILEMODE = 755

@@ -41,6 +41,8 @@ SRCDIR	= ../common
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 
+SMATCH=off
+
 LDLIBS += -lc -ldevice -lg_fc
 
 

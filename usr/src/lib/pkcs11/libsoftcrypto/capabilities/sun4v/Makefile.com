@@ -1,4 +1,4 @@
-#
+
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -35,6 +35,7 @@ include		$(SRC)/lib/Makefile.lib
 AS_CPPFLAGS +=	-D__STDC__ -D_ASM -DPIC -D_REENTRANT -D$(MACH)
 ASFLAGS +=	$(AS_PICFLAGS) -P
 CFLAGS +=	$(CCVERBOSE) -xO5 -xbuiltin=%all -dalign
+SMATCH=off
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	$(CNOWARN_UNINIT)
 CERRWARN +=	-_gcc=-Wno-unused-variable

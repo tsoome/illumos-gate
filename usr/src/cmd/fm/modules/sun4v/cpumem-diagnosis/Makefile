@@ -38,3 +38,4 @@ LDFLAGS += -R/usr/lib/fm
 
 CERRWARN += -_gcc=-Wno-switch
 CERRWARN += -_gcc=-Wno-parentheses
+SMATCH=off
