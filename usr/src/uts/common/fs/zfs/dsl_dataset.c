@@ -21,7 +21,7 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2011, 2018 by Delphix. All rights reserved.
+ * Copyright (c) 2011, 2020 by Delphix. All rights reserved.
  * Copyright (c) 2014, Joyent, Inc. All rights reserved.
  * Copyright (c) 2014 RackTop Systems.
  * Copyright (c) 2014 Spectra Logic Corporation, All rights reserved.
@@ -1124,8 +1124,8 @@ dsl_dataset_create_sync_dd(dsl_dir_t *dd, dsl_dataset_t *origin,
 
 		for (spa_feature_t f = 0; f < SPA_FEATURES; f++) {
 			if (zfeature_active(f, origin->ds_feature[f])) {
-			    dsl_dataset_activate_feature(dsobj, f,
-			        origin->ds_feature[f], tx);
+				dsl_dataset_activate_feature(dsobj, f,
+				    origin->ds_feature[f], tx);
 			}
 		}
 
@@ -2167,9 +2167,9 @@ dsl_flush_pending_livelist(dsl_dataset_t *ds, dmu_tx_t *tx)
 
 	/* Insert each entry into the on-disk livelist */
 	bplist_iterate(&dd->dd_pending_allocs,
-	dsl_deadlist_insert_alloc_cb, &dd->dd_livelist, tx);
+	    dsl_deadlist_insert_alloc_cb, &dd->dd_livelist, tx);
 	bplist_iterate(&dd->dd_pending_frees,
-	dsl_deadlist_insert_free_cb, &dd->dd_livelist, tx);
+	    dsl_deadlist_insert_free_cb, &dd->dd_livelist, tx);
 
 	/* Attempt to condense every pair of adjacent entries */
 	try_condense_arg_t arg = {
@@ -3600,7 +3600,7 @@ dsl_dataset_promote_sync(void *arg, dmu_tx_t *tx)
 	 * as well.
 	 */
 	dsl_dir_remove_livelist(dd, tx, B_TRUE);
-	dsl_dir_remove_livelist(origin_ds->ds_dir, tx, B_TRUE);
+	dsl_dir_remove_livelist(odd, tx, B_TRUE);
 
 	/* log history record */
 	spa_history_log_internal_ds(hds, "promote", tx, "");
