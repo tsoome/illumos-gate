@@ -195,24 +195,26 @@ dsl_dir_hold_obj(dsl_pool_t *dp, uint64_t ddobj,
 		dd->dd_dbuf = dbuf;
 		dd->dd_pool = dp;
 
-		if (dsl_dir_is_zapified(dd) &&
-		    zap_contains(dp->dp_meta_objset, ddobj,
-		    DD_FIELD_CRYPTO_KEY_OBJ) == 0) {
-			VERIFY0(zap_lookup(dp->dp_meta_objset,
-			    ddobj, DD_FIELD_CRYPTO_KEY_OBJ,
-			    sizeof (uint64_t), 1, &dd->dd_crypto_obj));
-
-			/* check for on-disk format errata */
-			if (dsl_dir_incompatible_encryption_version(dd)) {
-				dp->dp_spa->spa_errata =
-				    ZPOOL_ERRATA_ZOL_6845_ENCRYPTION;
-			}
-		}
-
 		mutex_init(&dd->dd_lock, NULL, MUTEX_DEFAULT, NULL);
 		mutex_init(&dd->dd_activity_lock, NULL, MUTEX_DEFAULT, NULL);
 		cv_init(&dd->dd_activity_cv, NULL, CV_DEFAULT, NULL);
 		dsl_prop_init(dd);
+
+		if (dsl_dir_is_zapified(dd)) {
+			err = zap_lookup(dp->dp_meta_objset,
+			    ddobj, DD_FIELD_CRYPTO_KEY_OBJ,
+			    sizeof (uint64_t), 1, &dd->dd_crypto_obj);
+			if (err == 0) {
+				/* check for on-disk format errata */
+				if (dsl_dir_incompatible_encryption_version(
+				    dd)) {
+					dp->dp_spa->spa_errata =
+					    ZPOOL_ERRATA_ZOL_6845_ENCRYPTION;
+				}
+			} else if (err != ENOENT) {
+				goto errout;
+			}
+		}
 
 		dsl_dir_snap_cmtime_update(dd);
 
@@ -873,9 +875,14 @@ dsl_fs_ss_limit_check(dsl_dir_t *dd, uint64_t delta, zfs_prop_t prop,
 	 * stop since we know there is no limit here (or above). The counts are
 	 * not valid on this node and we know we won't touch this node's counts.
 	 */
-	if (!dsl_dir_is_zapified(dd) || zap_lookup(os, dd->dd_object,
-	    count_prop, sizeof (count), 1, &count) == ENOENT)
+	if (!dsl_dir_is_zapified(dd))
 		return (0);
+	err =  zap_lookup(os, dd->dd_object,
+	    count_prop, sizeof (count), 1, &count);
+	if (err  == ENOENT)
+		return (0);
+	if (err != 0)
+		return (err);
 
 	err = dsl_prop_get_dd(dd, zfs_prop_to_name(prop), 8, 1, &limit, NULL,
 	    B_FALSE);
@@ -2025,7 +2032,6 @@ dsl_dir_rename_sync(void *arg, dmu_tx_t *tx)
 	dsl_pool_t *dp = dmu_tx_pool(tx);
 	dsl_dir_t *dd, *newparent;
 	const char *mynewname;
-	int error;
 	objset_t *mos = dp->dp_meta_objset;
 
 	VERIFY0(dsl_dir_hold(dp, ddra->ddra_oldname, FTAG, &dd, NULL));
@@ -2092,10 +2098,9 @@ dsl_dir_rename_sync(void *arg, dmu_tx_t *tx)
 	dmu_buf_will_dirty(dd->dd_dbuf, tx);
 
 	/* remove from old parent zapobj */
-	error = zap_remove(mos,
+	VERIFY0(zap_remove(mos,
 	    dsl_dir_phys(dd->dd_parent)->dd_child_dir_zapobj,
-	    dd->dd_myname, tx);
-	ASSERT0(error);
+	    dd->dd_myname, tx));
 
 	(void) strlcpy(dd->dd_myname, mynewname,
 	    sizeof (dd->dd_myname));
@@ -2264,17 +2269,13 @@ dsl_dir_remove_livelist(dsl_dir_t *dd, dmu_tx_t *tx, boolean_t total)
 	}
 
 	dsl_dir_livelist_close(dd);
-	int err = zap_lookup(dp->dp_meta_objset, dd->dd_object,
-	    DD_FIELD_LIVELIST, sizeof (uint64_t), 1, &obj);
-	if (err == 0) {
-		VERIFY0(zap_remove(dp->dp_meta_objset, dd->dd_object,
-		    DD_FIELD_LIVELIST, tx));
-		if (total) {
-			dsl_deadlist_free(dp->dp_meta_objset, obj, tx);
-			spa_feature_decr(spa, SPA_FEATURE_LIVELIST, tx);
-		}
-	} else {
-		ASSERT3U(err, !=, ENOENT);
+	VERIFY0(zap_lookup(dp->dp_meta_objset, dd->dd_object,
+	    DD_FIELD_LIVELIST, sizeof (uint64_t), 1, &obj));
+	VERIFY0(zap_remove(dp->dp_meta_objset, dd->dd_object,
+	    DD_FIELD_LIVELIST, tx));
+	if (total) {
+		dsl_deadlist_free(dp->dp_meta_objset, obj, tx);
+		spa_feature_decr(spa, SPA_FEATURE_LIVELIST, tx);
 	}
 }
 
