@@ -267,6 +267,21 @@ test_stat(void *arg, void *h, int *mode_return, int *uid_return,
  */
 
 int
+test_diskwrite(void *arg, int unit, uint64_t offset, void *src, size_t size,
+    size_t *resid_return)
+{
+	ssize_t n;
+
+	if (unit > disk_index || disk_fd[unit] == -1)
+		return (EIO);
+	n = pwrite(disk_fd[unit], src, size, offset);
+	if (n < 0)
+		return (errno);
+	*resid_return = size - n;
+	return (0);
+}
+
+int
 test_diskread(void *arg, int unit, uint64_t offset, void *dst, size_t size,
     size_t *resid_return)
 {
@@ -416,6 +431,7 @@ struct loader_callbacks cb = {
 	.stat = test_stat,
 
 	.diskread = test_diskread,
+	.diskwrite = test_diskwrite,
 	.diskioctl = test_diskioctl,
 
 	.copyin = test_copyin,

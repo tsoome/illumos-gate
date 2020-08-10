@@ -15,10 +15,12 @@
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
+#include <sys/tem_impl.h>
 #include <pnglite.h>
 #include "bootstrap.h"
 
-void *fonts;
+font_list_t fonts;
+tem_state_t tems;
 
 void
 gfx_term_drawrect(uint32_t ux1, uint32_t uy1, uint32_t ux2, uint32_t uy2)
