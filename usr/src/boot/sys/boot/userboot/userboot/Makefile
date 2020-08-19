@@ -52,6 +52,7 @@ OBJS_COMMON +=	misc.o
 OBJS_COMMON +=	module.o
 OBJS_COMMON +=	part.o
 OBJS_COMMON +=	vdisk.o
+OBJS_COMMON +=	nvstore.o
 OBJS_COMMON +=	zfs_cmd.o
 OBJS_COMMON +=	load_elf32.o
 OBJS_COMMON +=	load_elf32_obj.o
@@ -75,7 +76,6 @@ C99LMODE=	-Xc99=%all
 
 LIBS=		$(DYNLIB)
 SRCDIR=		.
-CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS=	-D_STANDALONE -DLOADER_MBR_SUPPORT -DLOADER_GPT_SUPPORT
 CPPFLAGS +=	-DUSER_MALLOC
 CPPFLAGS +=	-I$(SRC)/boot/include
