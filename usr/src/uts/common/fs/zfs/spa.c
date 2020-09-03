@@ -259,7 +259,7 @@ int zfs_livelist_condense_zthr_cancel = 0;
 
 /*
  * Variable to track whether or not extra ALLOC blkptrs were added to a
-* livelist entry while it was being condensed (caused by the way we track
+ * livelist entry while it was being condensed (caused by the way we track
  * remapped blkptrs in dbuf_remap_impl)
  */
 int zfs_livelist_condense_new_alloc = 0;
@@ -2337,8 +2337,8 @@ delete_blkptr_cb(void *arg, const blkptr_t *bp, dmu_tx_t *tx)
 	spa_t *spa = arg;
 	zio_free(spa, tx->tx_txg, bp);
 	dsl_dir_diduse_space(tx->tx_pool->dp_free_dir, DD_USED_HEAD,
-	-bp_get_dsize_sync(spa, bp),
-	-BP_GET_PSIZE(bp), -BP_GET_UCSIZE(bp), tx);
+	    -bp_get_dsize_sync(spa, bp),
+	    -BP_GET_PSIZE(bp), -BP_GET_UCSIZE(bp), tx);
 	return (0);
 }
 
@@ -2433,11 +2433,12 @@ spa_livelist_delete_cb(void *arg, zthr_t *z)
 	VERIFY0(dsl_get_next_livelist_obj(mos, zap_obj, &ll_obj));
 	VERIFY0(zap_count(mos, ll_obj, &count));
 	if (count > 0) {
-		dsl_deadlist_t ll = { 0 };
+		dsl_deadlist_t *ll;
 		dsl_deadlist_entry_t *dle;
 		bplist_t to_free;
-		dsl_deadlist_open(&ll, mos, ll_obj);
-		dle = dsl_deadlist_first(&ll);
+		ll = kmem_zalloc(sizeof (dsl_deadlist_t), KM_SLEEP);
+		dsl_deadlist_open(ll, mos, ll_obj);
+		dle = dsl_deadlist_first(ll);
 		ASSERT3P(dle, !=, NULL);
 		bplist_create(&to_free);
 		int err = dsl_process_sub_livelist(&dle->dle_bpobj, &to_free,
@@ -2445,7 +2446,7 @@ spa_livelist_delete_cb(void *arg, zthr_t *z)
 		if (err == 0) {
 			sublist_delete_arg_t sync_arg = {
 			    .spa = spa,
-			    .ll = &ll,
+			    .ll = ll,
 			    .key = dle->dle_mintxg,
 			    .to_free = &to_free
 			};
@@ -2460,7 +2461,8 @@ spa_livelist_delete_cb(void *arg, zthr_t *z)
 		}
 		bplist_clear(&to_free);
 		bplist_destroy(&to_free);
-		dsl_deadlist_close(&ll);
+		dsl_deadlist_close(ll);
+		kmem_free(ll, sizeof (dsl_deadlist_t));
 	} else {
 		livelist_delete_arg_t sync_arg = {
 		    .spa = spa,
@@ -2547,11 +2549,11 @@ spa_livelist_condense_sync(void *arg, dmu_tx_t *tx)
 
 	if (cur_first_size > lca->first_size) {
 		VERIFY0(livelist_bpobj_iterate_from_nofree(&first->dle_bpobj,
-		livelist_track_new_cb, &new_bps, lca->first_size));
+		    livelist_track_new_cb, &new_bps, lca->first_size));
 	}
 	if (cur_next_size > lca->next_size) {
 		VERIFY0(livelist_bpobj_iterate_from_nofree(&next->dle_bpobj,
-		livelist_track_new_cb, &new_bps, lca->next_size));
+		    livelist_track_new_cb, &new_bps, lca->next_size));
 	}
 
 	dsl_deadlist_clear_entry(first, ll, tx);
@@ -2635,7 +2637,7 @@ spa_livelist_condense_cb(void *arg, zthr_t *t)
 			lca->first_size = first_size;
 			lca->next_size = next_size;
 			dsl_sync_task_nowait(spa_get_dsl(spa),
-			spa_livelist_condense_sync, lca, 0,
+			    spa_livelist_condense_sync, lca, 0,
 			    ZFS_SPACE_CHECK_NONE, tx);
 			dmu_tx_commit(tx);
 			return;
