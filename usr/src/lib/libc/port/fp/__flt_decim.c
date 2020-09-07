@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Short cut for conversion from double precision to decimal
  * floating point
@@ -163,7 +161,8 @@ __double_to_digits(double x, char *s, int n)
 		for (i = 0; d[i] == 0 && n <= ((4 - i) << 2); i++)
 			;
 		__four_digits_quick(d[i], tmp);
-		for (j = 0; tmp[j] == '0' && n <= ((4 - i) << 2) + 3 - j; j++)
+		for (j = 0; j < 4 && tmp[j] == '0' &&
+		    n <= ((4 - i) << 2) + 3 - j; j++)
 			;
 		while (j < 4)
 			*ss++ = tmp[j++];
