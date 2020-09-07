@@ -1160,6 +1160,24 @@ pics/arc4random.o :=	CPPFLAGS += -I$(SRC)/common/crypto/chacha
 # Files which need extra optimization
 pics/getenv.o := sparcv9_COPTFLAG = -xO4
 
+# smatch is in trouble with _Complex
+pics/_D_cplx_div.o := SMATCH = off
+pics/_D_cplx_div_ix.o := SMATCH = off
+pics/_D_cplx_div_rx.o := SMATCH = off
+pics/_D_cplx_mul.o := SMATCH = off
+pics/_F_cplx_div.o := SMATCH = off
+pics/_F_cplx_div_ix.o := SMATCH = off
+pics/_F_cplx_div_rx.o := SMATCH = off
+pics/_F_cplx_mul.o := SMATCH = off
+pics/_Q_cplx_lr_div.o := SMATCH = off
+pics/_Q_cplx_lr_div_ix.o := SMATCH = off
+pics/_Q_cplx_lr_div_rx.o := SMATCH = off
+pics/_Q_cplx_lr_mul.o := SMATCH = off
+pics/_Q_cplx_div.o := SMATCH = off
+pics/_Q_cplx_div_ix.o := SMATCH = off
+pics/_Q_cplx_div_rx.o := SMATCH = off
+pics/_Q_cplx_mul.o := SMATCH = off
+
 #
 # Disable the stack protector due to issues with bootstrapping rtld. See
 # cmd/sgs/rtld/Makefile.com for more information.

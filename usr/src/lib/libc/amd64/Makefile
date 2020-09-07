@@ -1168,6 +1168,29 @@ pics/file_decim.o := SMOFF += indenting
 pics/func_decim.o := SMOFF += indenting
 pics/string_decim.o := SMOFF += indenting
 
+# smatch is in trouble with _Complex
+pics/_D_cplx_div.o := SMATCH = off
+pics/_D_cplx_div_ix.o := SMATCH = off
+pics/_D_cplx_div_rx.o := SMATCH = off
+pics/_D_cplx_mul.o := SMATCH = off
+pics/_D_cplx_lr_div.o := SMATCH = off
+pics/_D_cplx_lr_div_ix.o := SMATCH = off
+pics/_D_cplx_lr_div_rx.o := SMATCH = off
+pics/_F_cplx_div.o := SMATCH = off
+pics/_F_cplx_div_ix.o := SMATCH = off
+pics/_F_cplx_div_rx.o := SMATCH = off
+pics/_F_cplx_mul.o := SMATCH = off
+pics/_F_cplx_lr_div.o := SMATCH = off
+pics/_F_cplx_lr_div_ix.o := SMATCH = off
+pics/_F_cplx_lr_div_rx.o := SMATCH = off
+pics/_X_cplx_div.o := SMATCH = off
+pics/_X_cplx_div_ix.o := SMATCH = off
+pics/_X_cplx_div_rx.o := SMATCH = off
+pics/_X_cplx_lr_div.o := SMATCH = off
+pics/_X_cplx_lr_div_ix.o := SMATCH = off
+pics/_X_cplx_lr_div_rx.o := SMATCH = off
+pics/_X_cplx_mul.o := SMATCH = off
+
 #
 # Disable the stack protector due to issues with bootstrapping rtld. See
 # cmd/sgs/rtld/Makefile.com for more information.
