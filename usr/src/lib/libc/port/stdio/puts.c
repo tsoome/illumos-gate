@@ -25,7 +25,7 @@
  */
 
 /*	Copyright (c) 1988 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 #include "lint.h"
 #include "file64.h"
@@ -102,10 +102,14 @@ puts(const char *ptr)
 				}
 			}
 			FUNLOCKFILE(lk);
+#ifdef _LP64
 			if (ndone <= INT_MAX)
 				return ((int)ndone);
-			else
-				return (EOF);
+#else
+			if (ndone > 0)
+				return ((int)ndone);
+#endif
+			return (EOF);
 		}
 	}
 }

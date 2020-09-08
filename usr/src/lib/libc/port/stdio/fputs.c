@@ -103,10 +103,14 @@ fputs(const char *ptr, FILE *iop)
 						return (EOF);
 					}
 				FUNLOCKFILE(lk);
+#ifdef _LP64
 				if (ndone <= INT_MAX)
 					return ((int)ndone);
-				else
-					return (EOF);
+#else
+				if (ndone > 0)
+					return ((int)ndone);
+#endif
+				return (EOF);
 			}
 		}
 	} else {

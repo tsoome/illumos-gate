@@ -25,7 +25,7 @@
  */
 
 /*	Copyright (c) 1986 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * Putws transforms process codes in wchar_t array pointed to by
@@ -45,7 +45,7 @@
 int
 putws(const wchar_t *ptr)
 {
-	wchar_t *ptr0 = (wchar_t *)ptr;
+	const wchar_t *ptr0 = ptr;
 	ptrdiff_t diff;
 	rmutex_t	*lk;
 
@@ -62,8 +62,12 @@ putws(const wchar_t *ptr)
 	if (fflush(stdout))  /* flush line */
 		return (EOF);
 	diff = ptr - ptr0;
+#ifdef _LP64
 	if (diff <= INT_MAX)
 		return ((int)diff);
 	else
 		return (EOF);
+#else
+	return ((int)diff);
+#endif
 }
