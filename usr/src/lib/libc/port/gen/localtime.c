@@ -687,7 +687,6 @@ mktime1(struct tm *tmptr, int usetz)
 	long long t;		/* must hold more than 32-bit time_t */
 	int	temp;
 	int	mketimerrno;
-	int	overflow;
 	void	*unused = NULL;
 
 	mketimerrno = errno;
@@ -741,12 +740,6 @@ mktime1(struct tm *tmptr, int usetz)
 		/* Attempt to convert time to GMT based on tm_isdst setting */
 		t += (tmptr->tm_isdst > 0) ? altzone : timezone;
 
-#ifdef _ILP32
-		overflow = t > LONG_MAX || t < LONG_MIN ||
-		    tmptr->tm_year < 1 || tmptr->tm_year > 138;
-#else
-		overflow = t > LONG_MAX || t < LONG_MIN;
-#endif
 		set_zone_context((time_t)t);
 		if (tmptr->tm_isdst < 0) {
 			long dst_delta = timezone - altzone;
@@ -813,17 +806,20 @@ mktime1(struct tm *tmptr, int usetz)
 		}
 
 	} else {	/* !usetz, i.e. using UTC */
-		overflow = 0;
 		/* Normalize the TM structure */
 		(void) offtime_u((time_t)t, 0, &_tm);
 	}
 
-	if (overflow || t > LONG_MAX || t < LONG_MIN) {
+#ifdef _ILP32
+	if (t > LONG_MAX || t < LONG_MIN ||
+	    tmptr->tm_year < 1 || tmptr->tm_year > 138) {
 		mketimerrno = EOVERFLOW;
 		t = -1;
-	} else {
-		*tmptr = _tm;
 	}
+#else
+	/* t is 64-bit data type and can not overflow. */
+	*tmptr = _tm;
+#endif
 
 	lmutex_unlock(&_time_lock);
 	if (unused != NULL)
@@ -1506,17 +1502,11 @@ load_zoneinfo(const char *name, state_t *sp)
 
 	cp += offsetof(struct tzhead, tzh_ttisutcnt);
 
-/* LINTED: alignment */
 	ttisstdcnt = CVTZCODE(cp);
-/* LINTED: alignment */
 	ttisgmtcnt = CVTZCODE(cp);
-/* LINTED: alignment */
 	sp->leapcnt = CVTZCODE(cp);
-/* LINTED: alignment */
 	sp->timecnt = CVTZCODE(cp);
-/* LINTED: alignment */
 	sp->typecnt = CVTZCODE(cp);
-/* LINTED: alignment */
 	sp->charcnt = CVTZCODE(cp);
 
 	if (sp->leapcnt < 0 || sp->leapcnt > TZ_MAX_LEAPS ||
@@ -1542,7 +1532,6 @@ load_zoneinfo(const char *name, state_t *sp)
 
 
 	for (i = 0; i < sp->timecnt; ++i) {
-/* LINTED: alignment */
 		sp->ats[i] = CVTZCODE(cp);
 	}
 
@@ -1557,7 +1546,6 @@ load_zoneinfo(const char *name, state_t *sp)
 
 	for (i = 0; i < sp->typecnt; ++i) {
 		ttisp = &sp->ttis[i];
-/* LINTED: alignment */
 		ttisp->tt_gmtoff = CVTZCODE(cp2);
 		ttisp->tt_isdst = (uchar_t)*cp2++;
 
@@ -1632,9 +1620,7 @@ load_zoneinfo(const char *name, state_t *sp)
 		struct lsinfo *lsisp;
 
 		lsisp = &sp->lsis[i];
-/* LINTED: alignment */
 		lsisp->ls_trans = CVTZCODE(cp);
-/* LINTED: alignment */
 		lsisp->ls_corr = CVTZCODE(cp);
 	}
 
@@ -2434,7 +2420,6 @@ reload_counter(void)
 
 	if (addr == MAP_FAILED)
 		return;
-	/*LINTED*/
 	zoneinfo_seqadr = (uint32_t *)addr;
 	zoneinfo_seqno = *zoneinfo_seqadr;
 }
@@ -2446,7 +2431,7 @@ reload_counter(void)
  * /etc/default/init file to get the value.
  */
 static const char *
-getsystemTZ()
+getsystemTZ(void)
 {
 	tznmlist_t *tzn;
 	char	*tz;

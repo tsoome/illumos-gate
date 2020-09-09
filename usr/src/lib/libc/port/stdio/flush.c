@@ -1075,10 +1075,12 @@ _xseek64(FILE *iop, off64_t off, int whence)
 		 * can accept. As such, we try and catch such cases and error
 		 * about it before we get there.
 		 */
+#ifdef _ILP32
 		if (off > LONG_MAX || off < LONG_MIN) {
 			errno = EOVERFLOW;
 			return (-1);
 		}
+#endif
 		return (ops->std_seek(iop, off, whence));
 	}
 

@@ -25,6 +25,9 @@
 
 #define	SHELLS "/etc/shells"
 
+/* Limit for /etc/shells size. */
+#define	FOUR_MB	(1 << 22)
+
 /*
  * Do not add local shells here.  They should be added in /etc/shells
  *
@@ -144,7 +147,7 @@ initshells(void)
 	 * of-file condition is encountered.  The string is then termi-
 	 * nated with a null character.
 	 */
-	if ((fstat(fileno(fp), &statb) == -1) || (statb.st_size > LONG_MAX) ||
+	if ((fstat(fileno(fp), &statb) == -1) || (statb.st_size > FOUR_MB) ||
 	    ((strings = malloc((size_t)statb.st_size + 1)) == NULL)) {
 		(void) fclose(fp);
 		return ((char **)okshells);

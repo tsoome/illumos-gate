@@ -100,9 +100,11 @@ getgrouplist(const char *uname, gid_t agroup, gid_t *groups, int *ngroups)
 	 * wrong.
 	 */
 	ngroups_max = sysconf(_SC_NGROUPS_MAX);
+#ifdef _LP64
 	if (ngroups_max > INT_MAX)
 		ngroups_max = INT_MAX;
-	else if (ngroups_max < 0)
+#endif
+	if (ngroups_max < 0)
 		return (-1);
 	VERIFY3S(ngroups_max, >, 0);
 

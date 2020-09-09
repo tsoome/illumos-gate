@@ -420,13 +420,20 @@ mq_open(const char *path, int oflag, /* mode_t mode, mq_attr *attr */ ...)
 		if (attr == NULL) {
 			maxmsg = MQ_MAXMSG;
 			msgsize = MQ_MAXSIZE;
-		} else if (attr->mq_maxmsg <= 0 || attr->mq_msgsize <= 0) {
-			errno = EINVAL;
-			goto out;
-		} else if (attr->mq_maxmsg > _SEM_VALUE_MAX) {
-			errno = ENOSPC;
-			goto out;
 		} else {
+			if (attr->mq_maxmsg <= 0 || attr->mq_msgsize <= 0) {
+				errno = EINVAL;
+				goto out;
+			}
+#ifdef _LP64
+			/*
+			 * _SEM_VALUE_MAX is in fact INT_MAX in sys/param.h
+			 */
+			if (attr->mq_maxmsg > _SEM_VALUE_MAX) {
+				errno = ENOSPC;
+				goto out;
+			}
+#endif
 			maxmsg = attr->mq_maxmsg;
 			msgsize = attr->mq_msgsize;
 		}

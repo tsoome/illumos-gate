@@ -100,10 +100,18 @@ ftell(FILE *iop)
 	off64_t	tres;
 
 	tres = ftell_common(iop);
+	/*
+	 * The internal ftell_common() function returns an off64_t which is
+         * larger than the 32-bit long. Check on 32-bit systems that we haven't
+         * exceeded the 32-bit limit as someone may be using large file APIs.
+         * This is unnecessary for 64-bit code as the types are the same.
+	 */
+#ifdef _ILP32
 	if (tres > LONG_MAX) {
 		errno = EOVERFLOW;
 		return (EOF);
 	}
+#endif
 
 	return ((long)tres);
 }

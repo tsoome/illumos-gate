@@ -244,7 +244,7 @@ _nsw_getoneconfig_v1(const char *name, char *linep, enum __nsw_parse_err *errp)
 				else if (alldigits(linep)) {
 					act = __NSW_TRYAGAIN_NTIMES;
 					ntimes = atoi(linep);
-					if (ntimes < 0 || ntimes > INT_MAX)
+					if (ntimes < 0)
 						ntimes = 0;
 				}
 				else

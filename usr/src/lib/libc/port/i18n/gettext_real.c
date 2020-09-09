@@ -1076,7 +1076,7 @@ handle_mo(struct msg_pack *mp)
 	}
 
 	fd = nls_safe_open(mp->msgfile, &statbuf, &mp->trusted, !mp->nlsp);
-	if ((fd == -1) || (statbuf.st_size > LONG_MAX)) {
+	if (fd == -1) {
 		if (fd != -1)
 			(void) close(fd);
 		mnp->type = T_ILL_MO;
