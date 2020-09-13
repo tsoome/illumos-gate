@@ -292,7 +292,7 @@ bootprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 
 	ptr = NULL;
 	n = readudp(d, &ptr, (void **)&bp, tleft);
-	if (n == -1 || n < sizeof (struct bootp) - BOOTP_VENDSIZE)
+	if (n == -1 || n < (ssize_t)(sizeof (struct bootp) - BOOTP_VENDSIZE))
 		goto bad;
 
 #ifdef BOOTP_DEBUG
@@ -748,7 +748,7 @@ setenv_(uchar_t *cp,  uchar_t *ep, struct dhcp_opt *opts)
 			buf[0] = '\0';	/* option already done */
 		}
 
-		if (tp - tags < sizeof (tags) - 5) {
+		if (tp - tags < (ssize_t)(sizeof (tags) - 5)) {
 			/* add tag to the list */
 			if (tp != tags)
 				*tp++ = FLD_SEP;

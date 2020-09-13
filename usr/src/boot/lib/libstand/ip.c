@@ -89,7 +89,7 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 {
 	ssize_t cc;
 	struct ip *ip;
-	u_char *ea;
+	uchar_t *ea;
 
 #ifdef NET_DEBUG
 	if (debug) {
@@ -104,18 +104,18 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 #endif
 
 	ip = (struct ip *)pkt - 1;
-	len += sizeof(*ip);
+	len += sizeof (*ip);
 
-	bzero(ip, sizeof(*ip));
+	bzero(ip, sizeof (*ip));
 
 	ip->ip_v = IPVERSION;			/* half-char */
-	ip->ip_hl = sizeof(*ip) >> 2;		/* half-char */
+	ip->ip_hl = sizeof (*ip) >> 2;		/* half-char */
 	ip->ip_len = htons(len);
 	ip->ip_p = proto;			/* char */
 	ip->ip_ttl = IPDEFTTL;			/* char */
 	ip->ip_src = d->myip;
 	ip->ip_dst = d->destip;
-	ip->ip_sum = in_cksum(ip, sizeof(*ip));	 /* short, but special */
+	ip->ip_sum = in_cksum(ip, sizeof (*ip)); /* short, but special */
 
 	if (ip->ip_dst.s_addr == INADDR_BROADCAST || ip->ip_src.s_addr == 0 ||
 	    netmask == 0 || SAMENET(ip->ip_src, ip->ip_dst, netmask))
@@ -126,9 +126,9 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 	cc = sendether(d, ip, len, ea, ETHERTYPE_IP);
 	if (cc == -1)
 		return (-1);
-	if (cc != len)
+	if ((size_t)cc != len)
 		panic("sendip: bad write (%zd != %zd)", cc, len);
-	return (cc - sizeof(*ip));
+	return (cc - sizeof (*ip));
 }
 
 static void
@@ -198,7 +198,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	ip = NULL;
 	ptr = NULL;
 	n = readether(d, (void **)&ptr, (void **)&ip, tleft, &etype);
-	if (n == -1 || n < sizeof(*ip) + sizeof(*uh)) {
+	if (n == -1 || n < (ssize_t)(sizeof (*ip) + sizeof (*uh))) {
 		free(ptr);
 		return (-1);
 	}
@@ -240,7 +240,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	}
 
 	hlen = ip->ip_hl << 2;
-	if (hlen < sizeof(*ip) ||
+	if (hlen < sizeof (*ip) ||
 	    in_cksum(ip, hlen) != 0) {
 #ifdef NET_DEBUG
 		if (debug)
@@ -253,7 +253,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 #ifdef NET_DEBUG
 		if (debug)
 			printf("readip: bad length %d < %d.\n",
-			       (int)n, ntohs(ip->ip_len));
+			    (int)n, ntohs(ip->ip_len));
 #endif
 		free(ptr);
 		return (-1);
@@ -274,16 +274,16 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	    (ntohs(ip->ip_off) & IP_OFFMASK) == 0) {
 		uh = (struct udphdr *)((uintptr_t)ip + sizeof (*ip));
 		/* If there were ip options, make them go away */
-		if (hlen != sizeof(*ip)) {
-			bcopy(((u_char *)ip) + hlen, uh, uh->uh_ulen - hlen);
-			ip->ip_len = htons(sizeof(*ip));
-			n -= hlen - sizeof(*ip);
+		if (hlen != sizeof (*ip)) {
+			bcopy(((uchar_t *)ip) + hlen, uh, uh->uh_ulen - hlen);
+			ip->ip_len = htons(sizeof (*ip));
+			n -= hlen - sizeof (*ip);
 		}
 
-		n = (n > (ntohs(ip->ip_len) - sizeof(*ip))) ?
-		    ntohs(ip->ip_len) - sizeof(*ip) : n;
+		n = ((size_t)n > (ntohs(ip->ip_len) - sizeof (*ip))) ?
+		    (ssize_t)(ntohs(ip->ip_len) - sizeof (*ip)) : n;
 		*pkt = ptr;
-		*payload = (void *)((uintptr_t)ip + sizeof(*ip));
+		*payload = (void *)((uintptr_t)ip + sizeof (*ip));
 		return (n);
 	}
 

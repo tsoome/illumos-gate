@@ -147,7 +147,7 @@ zfs_read(struct open_file *f, void *start, size_t size, size_t *resid)
 	if (rc)
 		return (rc);
 	n = size;
-	if (fp->f_seekp + n > sb.st_size)
+	if (fp->f_seekp + (off_t)n > sb.st_size)
 		n = sb.st_size - fp->f_seekp;
 
 	rc = dnode_read(spa, &fp->f_dnode, fp->f_seekp, start, n);
@@ -246,7 +246,7 @@ zfs_readdir(struct open_file *f, struct dirent *d)
 
 	if (fp->f_zap_type == ZBT_MICRO) {
 	mzap_next:
-		if (fp->f_seekp >= bsize)
+		if (fp->f_seekp >= (off_t)bsize)
 			return (ENOENT);
 
 		rc = dnode_read(spa, &fp->f_dnode, fp->f_seekp, &mze,
@@ -292,7 +292,7 @@ zfs_readdir(struct open_file *f, struct dirent *d)
 			/*
 			 * Check for EOF and read the new leaf.
 			 */
-			if (fp->f_seekp >= bsize * fp->f_num_leafs)
+			if (fp->f_seekp >= (off_t)(bsize * fp->f_num_leafs))
 				return (ENOENT);
 
 			rc = dnode_read(spa, &fp->f_dnode, fp->f_seekp,

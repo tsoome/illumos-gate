@@ -2203,7 +2203,7 @@ zio_read_gang(const spa_t *spa, const blkptr_t *bp, void *buf)
 	blkptr_t gbh_bp;
 	zio_gbh_phys_t zio_gb;
 	char *pbuf;
-	int i;
+	size_t i;
 
 	/* Artificial BP for gang block header. */
 	gbh_bp = *bp;
@@ -2351,9 +2351,10 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
     void *buf, size_t buflen)
 {
 	int ibshift = dnode->dn_indblkshift - SPA_BLKPTRSHIFT;
-	int bsize = dnode->dn_datablkszsec << SPA_MINBLOCKSHIFT;
-	int nlevels = dnode->dn_nlevels;
-	int i, rc;
+	uint64_t bsize = dnode->dn_datablkszsec << SPA_MINBLOCKSHIFT;
+	size_t nlevels = dnode->dn_nlevels;
+	size_t i;
+	int rc;
 
 	if (bsize > SPA_MAXBLOCKSIZE) {
 		printf("ZFS: I/O error - blocks larger than %llu are not "
@@ -2413,7 +2414,8 @@ dnode_read(const spa_t *spa, const dnode_phys_t *dnode, off_t offset,
 		 * need from it and loop.
 		 */
 		i = bsize - boff;
-		if (i > buflen) i = buflen;
+		if (i > buflen)
+			i = buflen;
 		memcpy(buf, &dnode_cache_buf[boff], i);
 		buf = ((char *)buf) + i;
 		offset += i;
@@ -2529,10 +2531,10 @@ fzap_leaf_array(const zap_leaf_t *zl, const zap_leaf_chunk_t *zc,
 	uint64_t array_int_len = zc->l_entry.le_value_intlen;
 	uint64_t value = 0;
 	uint64_t *u64 = buf;
+	uint64_t byten = 0;
 	char *p = buf;
 	int len = MIN(zc->l_entry.le_value_numints, num_integers);
 	int chunk = zc->l_entry.le_value_chunk;
-	int byten = 0;
 
 	if (integer_size == 8 && len == 1) {
 		*u64 = fzap_leaf_value(zl, zc);
@@ -2816,7 +2818,8 @@ fzap_list(const spa_t *spa, const dnode_phys_t *dnode, zap_phys_t *zh,
 {
 	int bsize = dnode->dn_datablkszsec << SPA_MINBLOCKSHIFT;
 	fat_zap_t z;
-	int i, j, rc;
+	uint64_t i;
+	int j, rc;
 
 	if (zh->zap_magic != ZAP_MAGIC)
 		return (EIO);
@@ -2846,7 +2849,7 @@ fzap_list(const spa_t *spa, const dnode_phys_t *dnode, zap_phys_t *zh,
 
 		for (j = 0; j < ZAP_LEAF_NUMCHUNKS(&zl); j++) {
 			zap_leaf_chunk_t *zc, *nc;
-			int namelen;
+			size_t namelen;
 
 			zc = &ZAP_LEAF_CHUNK(&zl, j);
 			if (zc->l_entry.le_type != ZAP_CHUNK_ENTRY)
@@ -3834,7 +3837,7 @@ zfs_lookup(const struct zfsmount *mnt, const char *upath, dnode_phys_t *dnode)
 			objnum = (STAILQ_FIRST(&on_cache))->objnum;
 			continue;
 		}
-		if (q - p + 1 > sizeof (element)) {
+		if (q - p + 1 > (intptr_t)sizeof (element)) {
 			rc = ENAMETOOLONG;
 			goto done;
 		}

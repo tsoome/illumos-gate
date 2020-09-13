@@ -61,8 +61,8 @@
 #include "rpc.h"
 
 struct auth_info {
-	int32_t 	authtype;	/* auth type */
-	u_int32_t	authlen;	/* auth length */
+	int32_t		authtype;	/* auth type */
+	uint32_t	authlen;	/* auth length */
 };
 
 struct auth_unix {
@@ -74,23 +74,23 @@ struct auth_unix {
 };
 
 struct rpc_call {
-	u_int32_t	rp_xid;		/* request transaction id */
-	int32_t 	rp_direction;	/* call direction (0) */
-	u_int32_t	rp_rpcvers;	/* rpc version (2) */
-	u_int32_t	rp_prog;	/* program */
-	u_int32_t	rp_vers;	/* version */
-	u_int32_t	rp_proc;	/* procedure */
+	uint32_t	rp_xid;		/* request transaction id */
+	int32_t		rp_direction;	/* call direction (0) */
+	uint32_t	rp_rpcvers;	/* rpc version (2) */
+	uint32_t	rp_prog;	/* program */
+	uint32_t	rp_vers;	/* version */
+	uint32_t	rp_proc;	/* procedure */
 };
 
 struct rpc_reply {
-	u_int32_t	rp_xid;		/* request transaction id */
-	int32_t 	rp_direction;	/* call direction (1) */
-	int32_t 	rp_astatus;	/* accept status (0: accepted) */
+	uint32_t	rp_xid;		/* request transaction id */
+	int32_t		rp_direction;	/* call direction (1) */
+	int32_t		rp_astatus;	/* accept status (0: accepted) */
 	union {
-		u_int32_t	rpu_errno;
+		uint32_t	rpu_errno;
 		struct {
 			struct auth_info rok_auth;
-			u_int32_t	rok_status;
+			uint32_t	rok_status;
 		} rpu_rok;
 	} rp_u;
 };
@@ -108,7 +108,7 @@ int rpc_port = 0x400;	/* predecrement */
  */
 ssize_t
 rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
-	void *sdata, size_t slen, void **rdata, void **pkt)
+    void *sdata, size_t slen, void **rdata, void **pkt)
 {
 	ssize_t cc, rsize;
 	struct auth_info *auth;
@@ -139,26 +139,26 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 	send_tail = (char *)sdata + slen;
 
 	/* Auth verifier is always auth_null */
-	send_head -= sizeof(*auth);
+	send_head -= sizeof (*auth);
 	auth = (struct auth_info *)send_head;
 	auth->authtype = htonl(RPCAUTH_NULL);
 	auth->authlen = 0;
 
 	/* Auth credentials: always auth unix (as root) */
-	send_head -= sizeof(struct auth_unix);
-	bzero(send_head, sizeof(struct auth_unix));
-	send_head -= sizeof(*auth);
+	send_head -= sizeof (struct auth_unix);
+	bzero(send_head, sizeof (struct auth_unix));
+	send_head -= sizeof (*auth);
 	auth = (struct auth_info *)send_head;
 	auth->authtype = htonl(RPCAUTH_UNIX);
-	auth->authlen = htonl(sizeof(struct auth_unix));
+	auth->authlen = htonl(sizeof (struct auth_unix));
 
 	/* RPC call structure. */
-	send_head -= sizeof(*call);
+	send_head -= sizeof (*call);
 	call = (struct rpc_call *)send_head;
 	rpc_xid++;
-	call->rp_xid       = htonl(rpc_xid);
+	call->rp_xid = htonl(rpc_xid);
 	call->rp_direction = htonl(RPC_CALL);
-	call->rp_rpcvers   = htonl(RPC_VER2);
+	call->rp_rpcvers = htonl(RPC_VER2);
 	call->rp_prog = htonl(prog);
 	call->rp_vers = htonl(vers);
 	call->rp_proc = htonl(proc);
@@ -175,7 +175,7 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 	if (cc == -1)
 		return (-1);
 
-	if (cc <= sizeof(*reply)) {
+	if (cc <= (ssize_t)sizeof (*reply)) {
 		errno = EBADRPC;
 		free(ptr);
 		return (-1);
@@ -204,8 +204,8 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 		return (-1);
 	}
 
-	rsize = cc - sizeof(*reply);
-	*rdata = (void *)((uintptr_t)reply + sizeof(*reply));
+	rsize = cc - sizeof (*reply);
+	*rdata = (void *)((uintptr_t)reply + sizeof (*reply));
 	*pkt = ptr;
 	return (rsize);
 }
@@ -276,17 +276,17 @@ recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
  * dig out the IP address/port from the headers.
  */
 void
-rpc_fromaddr(void *pkt, struct in_addr *addr, u_short *port)
+rpc_fromaddr(void *pkt, struct in_addr *addr, ushort_t *port)
 {
 	struct hackhdr {
 		/* Tail of IP header: just IP addresses */
 		n_long ip_src;
 		n_long ip_dst;
 		/* UDP header: */
-		u_int16_t uh_sport;		/* source port */
-		u_int16_t uh_dport;		/* destination port */
+		uint16_t uh_sport;		/* source port */
+		uint16_t uh_dport;		/* destination port */
 		int16_t	  uh_ulen;		/* udp length */
-		u_int16_t uh_sum;		/* udp checksum */
+		uint16_t uh_sum;		/* udp checksum */
 		/* RPC reply header: */
 		struct rpc_reply rpc;
 	} *hhdr;
@@ -299,14 +299,14 @@ rpc_fromaddr(void *pkt, struct in_addr *addr, u_short *port)
 /*
  * RPC Portmapper cache
  */
-#define PMAP_NUM 8			/* need at most 5 pmap entries */
+#define	PMAP_NUM 8			/* need at most 5 pmap entries */
 
 int rpc_pmap_num;
 struct pmap_list {
 	struct in_addr	addr;	/* server, net order */
-	u_int	prog;		/* host order */
-	u_int	vers;		/* host order */
-	int 	port;		/* host order */
+	uint_t	prog;		/* host order */
+	uint_t	vers;		/* host order */
+	int	port;		/* host order */
 } rpc_pmap_list[PMAP_NUM];
 
 /*
@@ -317,14 +317,13 @@ struct pmap_list {
  *  vers .. host order.
  */
 int
-rpc_pmap_getcache(struct in_addr addr, u_int prog, u_int vers)
+rpc_pmap_getcache(struct in_addr addr, uint_t prog, uint_t vers)
 {
 	struct pmap_list *pl;
 
 	for (pl = rpc_pmap_list; pl < &rpc_pmap_list[rpc_pmap_num]; pl++) {
 		if (pl->addr.s_addr == addr.s_addr &&
-			pl->prog == prog && pl->vers == vers )
-		{
+		    pl->prog == prog && pl->vers == vers) {
 			return (pl->port);
 		}
 	}
@@ -339,7 +338,7 @@ rpc_pmap_getcache(struct in_addr addr, u_int prog, u_int vers)
  *  port .. host order.
  */
 void
-rpc_pmap_putcache(struct in_addr addr, u_int prog, u_int vers, int port)
+rpc_pmap_putcache(struct in_addr addr, uint_t prog, uint_t vers, int port)
 {
 	struct pmap_list *pl;
 
@@ -412,8 +411,8 @@ rpc_getport(struct iodesc *d, n_long prog, n_long vers)
 	pkt = NULL;
 
 	cc = rpc_call(d, PMAPPROG, PMAPVERS, PMAPPROC_GETPORT,
-	    args, sizeof(*args), (void **)&res, &pkt);
-	if (cc < sizeof(*res)) {
+	    args, sizeof (*args), (void **)&res, &pkt);
+	if (cc < (ssize_t)sizeof (*res)) {
 		printf("getport: %s", strerror(errno));
 		errno = EBADRPC;
 		free(pkt);

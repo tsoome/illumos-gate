@@ -25,14 +25,13 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <sys/types.h>
 #include <limits.h>
 #include <string.h>
 
-#define	IDX(c)	((u_char)(c) / LONG_BIT)
-#define	BIT(c)	((u_long)1 << ((u_char)(c) % LONG_BIT))
+#define	IDX(c)	((uchar_t)(c) / LONG_BIT)
+#define	BIT(c)	((ulong_t)1 << ((uchar_t)(c) % LONG_BIT))
 
 size_t
 strspn(const char *s, const char *charset)
@@ -42,17 +41,17 @@ strspn(const char *s, const char *charset)
 	 * generate better code.  Without them, gcc gets a little confused.
 	 */
 	const char *s1;
-	u_long bit;
-	u_long tbl[(UCHAR_MAX + 1) / LONG_BIT];
-	int idx;
+	ulong_t bit;
+	ulong_t tbl[(UCHAR_MAX + 1) / LONG_BIT];
+	unsigned idx;
 
-	if(*s == '\0')
+	if (*s == '\0')
 		return (0);
 
 #if LONG_BIT == 64	/* always better to unroll on 64-bit architectures */
 	tbl[3] = tbl[2] = tbl[1] = tbl[0] = 0;
 #else
-	for (idx = 0; idx < sizeof(tbl) / sizeof(tbl[0]); idx++)
+	for (idx = 0; idx < sizeof (tbl) / sizeof (tbl[0]); idx++)
 		tbl[idx] = 0;
 #endif
 	for (; *charset != '\0'; charset++) {
@@ -61,7 +60,7 @@ strspn(const char *s, const char *charset)
 		tbl[idx] |= bit;
 	}
 
-	for(s1 = s; ; s1++) {
+	for (s1 = s; ; s1++) {
 		idx = IDX(*s1);
 		bit = BIT(*s1);
 		if ((tbl[idx] & bit) == 0)

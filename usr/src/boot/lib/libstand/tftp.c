@@ -143,7 +143,7 @@ tftp_senderr(struct tftp_handle *h, ushort_t errcode, const char *msg)
 		uchar_t space[63]; /* +1 from t */
 	} __packed __aligned(4) wbuf;
 	char *wtail;
-	int len;
+	size_t len;
 
 	len = strlen(msg);
 	if (len > sizeof (wbuf.space))
@@ -367,7 +367,7 @@ tftp_makereq(struct tftp_handle *h)
 			h->currblock = 1;
 			h->validsize = res;
 			h->islastblock = 0;
-			if (res < h->tftp_blksize) {
+			if (res < (ssize_t)h->tftp_blksize) {
 				h->islastblock = 1;	/* very short file */
 				tftp_sendack(h, h->currblock);
 			}
@@ -390,7 +390,7 @@ tftp_getnextblock(struct tftp_handle *h)
 	} __packed __aligned(4) wbuf;
 	struct tftprecv_extra recv_extra;
 	char *wtail;
-	int res;
+	ssize_t res;
 	void *pkt;
 	struct tftphdr *t;
 
@@ -416,7 +416,7 @@ tftp_getnextblock(struct tftp_handle *h)
 	h->tftp_hdr = t;
 	h->currblock++;
 	h->validsize = res;
-	if (res < h->tftp_blksize)
+	if (res < (ssize_t)h->tftp_blksize)
 		h->islastblock = 1;	/* EOF */
 
 	if (h->islastblock == 1) {
@@ -471,7 +471,7 @@ tftp_open(const char *path, struct open_file *f)
 		extraslash = "/";
 	res = snprintf(tftpfile->path, pathsize, "%s%s%s",
 	    rootpath, extraslash, path);
-	if (res < 0 || res > pathsize) {
+	if (res < 0 || res > (int)pathsize) {
 		free(tftpfile->path);
 		free(tftpfile);
 		return (ENOMEM);
@@ -548,7 +548,8 @@ tftp_read(struct open_file *f, void *addr, size_t size,
 #endif
 				return (EINVAL);
 			}
-			count = (size < inbuffer ? size : inbuffer);
+			count = (size < (size_t)inbuffer ?
+			    (int)size : inbuffer);
 			bcopy(tftpfile->tftp_hdr->th_data + offinblock,
 			    addr, count);
 
@@ -683,8 +684,7 @@ tftp_parse_oack(struct tftp_handle *h, char *buf, size_t len)
 	 */
 	char *tftp_options[128] = { 0 };
 	char *val = buf;
-	int i = 0;
-	int option_idx = 0;
+	size_t i = 0, option_idx = 0;
 	int blksize_is_set = 0;
 	int tsize = 0;
 

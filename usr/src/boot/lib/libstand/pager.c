@@ -132,7 +132,7 @@ int
 pager_file(const char *fname)
 {
 	char	buf[80];
-	size_t	hmuch;
+	ssize_t	hmuch;
 	int	fd;
 	int	result;
 

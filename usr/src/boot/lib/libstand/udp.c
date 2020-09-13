@@ -97,8 +97,8 @@ sendudp(struct iodesc *d, void *pkt, size_t len)
 	cc = sendip(d, uh, len, IPPROTO_UDP);
 	if (cc == -1)
 		return (-1);
-	if (cc != len)
-		panic("sendudp: bad write (%zd != %zd)", cc, len);
+	if (cc != (ssize_t)len)
+		panic("sendudp: bad write (%zd != %zu)", cc, len);
 	return (cc - sizeof (*uh));
 }
 
@@ -120,7 +120,7 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 	uh = NULL;
 	ptr = NULL;
 	n = readip(d, &ptr, (void **)&uh, tleft, IPPROTO_UDP);
-	if (n == -1 || n < sizeof (*uh) || n != ntohs(uh->uh_ulen)) {
+	if (n == -1 || n < (ssize_t)sizeof (*uh) || n != ntohs(uh->uh_ulen)) {
 		free(ptr);
 		return (-1);
 	}
@@ -176,8 +176,8 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 		return (-1);
 	}
 
-	n = (n > (ntohs(uh->uh_ulen) - sizeof (*uh))) ?
-	    ntohs(uh->uh_ulen) - sizeof (*uh) : n;
+	n = (n > (ssize_t)(ntohs(uh->uh_ulen) - sizeof (*uh))) ?
+	    (ssize_t)(ntohs(uh->uh_ulen) - sizeof (*uh)) : n;
 	*pkt = ptr;
 	*payload = (void *)((uintptr_t)uh + sizeof (*uh));
 	return (n);

@@ -65,15 +65,15 @@ rarp_getipaddress(int sock)
 	struct ether_arp *ap;
 	void *pkt;
 	struct {
-		u_char header[ETHER_SIZE];
+		uchar_t header[ETHER_SIZE];
 		struct {
 			struct ether_arp arp;
-			u_char pad[18]; 	/* 60 - sizeof(arp) */
+			uchar_t pad[18];	/* 60 - sizeof(arp) */
 		} data;
 	} wbuf;
 
 #ifdef RARP_DEBUG
- 	if (debug)
+	if (debug)
 		printf("rarp: socket=%d\n", sock);
 #endif
 	if (!(d = socktodesc(sock))) {
@@ -81,32 +81,32 @@ rarp_getipaddress(int sock)
 		return (-1);
 	}
 #ifdef RARP_DEBUG
- 	if (debug)
-		printf("rarp: d=%x\n", (u_int)d);
+	if (debug)
+		printf("rarp: d=%x\n", (uint_t)d);
 #endif
 
-	bzero((char*)&wbuf.data, sizeof(wbuf.data));
+	bzero((char *)&wbuf.data, sizeof (wbuf.data));
 	ap = &wbuf.data.arp;
 	ap->arp_hrd = htons(ARPHRD_ETHER);
 	ap->arp_pro = htons(ETHERTYPE_IP);
-	ap->arp_hln = sizeof(ap->arp_sha); /* hardware address length */
-	ap->arp_pln = sizeof(ap->arp_spa); /* protocol address length */
+	ap->arp_hln = sizeof (ap->arp_sha); /* hardware address length */
+	ap->arp_pln = sizeof (ap->arp_spa); /* protocol address length */
 	ap->arp_op = htons(ARPOP_REVREQUEST);
 	bcopy(d->myea, ap->arp_sha, 6);
 	bcopy(d->myea, ap->arp_tha, 6);
 	pkt = NULL;
 
 	if (sendrecv(d,
-	    rarpsend, &wbuf.data, sizeof(wbuf.data),
+	    rarpsend, &wbuf.data, sizeof (wbuf.data),
 	    rarprecv, &pkt, (void *)&ap, NULL) < 0) {
 		printf("No response for RARP request\n");
 		return (-1);
 	}
 
-	bcopy(ap->arp_tpa, (char *)&myip, sizeof(myip));
+	bcopy(ap->arp_tpa, (char *)&myip, sizeof (myip));
 #if 0
 	/* XXX - Can NOT assume this is our root server! */
-	bcopy(ap->arp_spa, (char *)&rootip, sizeof(rootip));
+	bcopy(ap->arp_spa, (char *)&rootip, sizeof (rootip));
 #endif
 	free(pkt);
 
@@ -130,7 +130,7 @@ rarpsend(struct iodesc *d, void *pkt, size_t len)
 {
 
 #ifdef RARP_DEBUG
- 	if (debug)
+	if (debug)
 		printf("rarpsend: called\n");
 #endif
 
@@ -151,13 +151,13 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	uint16_t etype;		/* host order */
 
 #ifdef RARP_DEBUG
- 	if (debug)
+	if (debug)
 		printf("rarprecv: ");
 #endif
 
 	n = readether(d, &ptr, (void **)&ap, tleft, &etype);
 	errno = 0;	/* XXX */
-	if (n == -1 || n < sizeof(struct ether_arp)) {
+	if (n == -1 || n < (ssize_t)sizeof (struct ether_arp)) {
 #ifdef RARP_DEBUG
 		if (debug)
 			printf("bad len=%d\n", n);
@@ -177,9 +177,8 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 
 	if (ap->arp_hrd != htons(ARPHRD_ETHER) ||
 	    ap->arp_pro != htons(ETHERTYPE_IP) ||
-	    ap->arp_hln != sizeof(ap->arp_sha) ||
-	    ap->arp_pln != sizeof(ap->arp_spa) )
-	{
+	    ap->arp_hln != sizeof (ap->arp_sha) ||
+	    ap->arp_pln != sizeof (ap->arp_spa)) {
 #ifdef RARP_DEBUG
 		if (debug)
 			printf("bad hrd/pro/hln/pln\n");
@@ -209,7 +208,7 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 
 	/* We have our answer. */
 #ifdef RARP_DEBUG
- 	if (debug)
+	if (debug)
 		printf("got it\n");
 #endif
 	*pkt = ptr;

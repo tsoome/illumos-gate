@@ -120,16 +120,16 @@ static DOS_DE dot[2] = {
 #define	blklsn(fs, b)	((fs)->lsndta + blksec(fs, (b) - LOCLUS))
 
 /* Convert cluster number to offset within FAT */
-#define	fatoff(sz, c)	((sz) == 12 ? (c) + ((c) >> 1) :  \
-			(sz) == 16 ? (c) << 1 :          \
+#define	fatoff(sz, c)	((sz) == 12 ? (c) + ((c) >> 1) :	\
+			(sz) == 16 ? (c) << 1 :			\
 			(c) << 2)
 
 /* Does cluster number reference a valid data cluster? */
 #define	okclus(fs, c)	((c) >= LOCLUS && (c) <= (fs)->xclus)
 
 /* Get start cluster from directory entry */
-#define	stclus(sz, de)	((sz) != 32 ? cv2((de)->clus) :          \
-			((uint_t)cv2((de)->dex.h_clus) << 16) |  \
+#define	stclus(sz, de)	((sz) != 32 ? (uint_t)cv2((de)->clus) :	\
+			((uint_t)cv2((de)->dex.h_clus) << 16) |	\
 			cv2((de)->clus))
 
 static int parsebs(DOS_FS *, DOS_BS *);
@@ -156,7 +156,7 @@ dos_read_fatblk(DOS_FS *fs, struct open_file *fd, uint_t blknum)
 	io_size = FATBLKSZ;
 	if (offset_in_fat > max_offset_in_fat)
 		offset_in_fat = max_offset_in_fat;
-	if (offset_in_fat + io_size > max_offset_in_fat)
+	if (offset_in_fat + (daddr_t)io_size > max_offset_in_fat)
 		io_size = ((size_t)(max_offset_in_fat - offset_in_fat));
 
 	if (io_size != 0) {

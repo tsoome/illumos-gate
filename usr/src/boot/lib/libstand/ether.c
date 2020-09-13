@@ -71,7 +71,7 @@ sendether(struct iodesc *d, void *pkt, size_t len, uint8_t *dea, int etype)
 	eh->ether_type = htons(etype);
 
 	n = netif_put(d, eh, len);
-	if (n == -1 || n < sizeof (*eh))
+	if (n == -1 || n < (ssize_t)sizeof (*eh))
 		return (-1);
 
 	n -= sizeof (*eh);
@@ -99,7 +99,7 @@ readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 
 	ptr = NULL;
 	n = netif_get(d, &ptr, tleft);
-	if (n == -1 || n < sizeof (*eh)) {
+	if (n == -1 || n < (ssize_t)sizeof (*eh)) {
 		free(ptr);
 		return (-1);
 	}
