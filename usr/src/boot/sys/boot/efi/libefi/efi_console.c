@@ -213,7 +213,8 @@ plat_cons_update_mode(int mode)
 		console_mode = EfiConsoleControlScreenText;
 	} else {
 		efi_framebuffer_setup();
-		if (mode != -1 && console_mode != mode)
+		if (mode != -1 &&
+		    console_mode != (EFI_CONSOLE_CONTROL_SCREEN_MODE)mode)
 			console_mode = mode;
 	}
 
@@ -334,7 +335,9 @@ efi_text_cons_display(struct vis_consdisplay *da)
 	(void) conout->QueryMode(conout, conout->Mode->Mode, &col, &row);
 
 	/* reduce clear line on bottom row by one to prevent autoscroll */
-	if (row - 1 == da->row && da->col == 0 && da->width == col)
+	if (row - 1 == (UINTN)da->row &&
+	    da->col == 0 &&
+	    col == (UINTN)da->width)
 		da->width--;
 
 	data = (tem_char_t *)da->data;
@@ -459,7 +462,8 @@ efi_cons_init(struct console *cp, int arg __unused)
 	struct efi_console_data *ecd;
 	void *coninex;
 	EFI_STATUS status;
-	UINTN i, max_dim, best_mode, cols, rows;
+	UINTN max_dim, best_mode, cols, rows;
+	INT32 i;
 
 	if (cp->c_private != NULL)
 		return (0);

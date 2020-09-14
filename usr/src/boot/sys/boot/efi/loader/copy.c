@@ -75,7 +75,7 @@ static vm_offset_t
 memmap_find(EFI_MEMORY_DESCRIPTOR *map, size_t count, UINTN dsize,
     vm_offset_t addr, size_t size)
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < count; i++, map = NextMemoryDescriptor(map, dsize)) {
 

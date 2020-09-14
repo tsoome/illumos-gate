@@ -35,7 +35,7 @@ struct smap_buf {
 };
 
 static struct bios_smap *smapbase;
-static int smaplen;
+static size_t smaplen;
 
 /*
  * See ACPI 6.1 Table 15-330 UEFI Memory Types and mapping to ACPI address
@@ -168,7 +168,7 @@ COMMAND_SET(smap, "smap", "show BIOS SMAP", command_smap);
 static int
 command_smap(int argc __unused, char *argv[] __unused)
 {
-	u_int i;
+	uint_t i;
 
 	if (smapbase == NULL || smaplen == 0)
 		return (CMD_ERROR);

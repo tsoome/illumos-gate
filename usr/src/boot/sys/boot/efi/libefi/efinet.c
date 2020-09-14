@@ -156,7 +156,7 @@ efinet_put(struct iodesc *desc, void *pkt, size_t len)
 	} while (status == EFI_SUCCESS && buf == NULL);
 
 	/* XXX How do we deal with status != EFI_SUCCESS now? */
-	return ((status == EFI_SUCCESS) ? len : -1);
+	return ((status == EFI_SUCCESS) ? (ssize_t)len : -1);
 }
 
 static ssize_t
@@ -289,7 +289,7 @@ efinet_dev_init(void)
 	EFI_HANDLE *handles, *handles2;
 	EFI_STATUS status;
 	UINTN sz;
-	int err, i, nifs;
+	int err, nifs;
 	extern struct devsw netdev;
 
 	sz = 0;
@@ -310,7 +310,7 @@ efinet_dev_init(void)
 		return (ENOMEM);
 	}
 	nifs = 0;
-	for (i = 0; i < sz / sizeof (EFI_HANDLE); i++) {
+	for (UINTN i = 0; i < sz / sizeof (EFI_HANDLE); i++) {
 		devpath = efi_lookup_devpath(handles[i]);
 		if (devpath == NULL)
 			continue;
@@ -345,7 +345,7 @@ efinet_dev_init(void)
 	}
 	efinetif.netif_nifs = nifs;
 
-	for (i = 0; i < nifs; i++) {
+	for (int i = 0; i < nifs; i++) {
 
 		dif = &efinetif.netif_ifs[i];
 		dif->dif_unit = i;

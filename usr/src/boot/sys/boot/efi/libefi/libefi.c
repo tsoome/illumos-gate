@@ -38,7 +38,7 @@ void *
 efi_get_table(EFI_GUID *tbl)
 {
 	EFI_GUID *id;
-	int i;
+	UINTN i;
 
 	for (i = 0; i < ST->NumberOfTableEntries; i++) {
 		id = &ST->ConfigurationTable[i].VendorGuid;

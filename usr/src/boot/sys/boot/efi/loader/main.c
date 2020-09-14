@@ -701,7 +701,7 @@ main(int argc, CHAR16 *argv[])
 	sz = sizeof (boot_order);
 	efi_global_getenv("BootOrder", &boot_order, &sz);
 	printf("   BootOrder:");
-	for (i = 0; i < sz / sizeof (boot_order[0]); i++)
+	for (i = 0; i < (int)(sz / sizeof (boot_order[0])); i++)
 		printf(" %04x%s", boot_order[i],
 		    boot_order[i] == boot_current ? "[*]" : "");
 	printf("\n");
@@ -1152,7 +1152,7 @@ command_chain(int argc, char *argv[])
 				/*
 				 * d_partition should be 255
 				 */
-				if (pd->pd_unit == d_dev->d_slice) {
+				if (pd->pd_unit == (uint32_t)d_dev->d_slice) {
 					loaded_image->DeviceHandle =
 					    pd->pd_handle;
 					break;
