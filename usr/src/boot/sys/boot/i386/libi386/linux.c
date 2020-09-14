@@ -157,7 +157,7 @@ linux_loadkernel(char *filename, uint64_t dest __unused,
 			max_cmdline_size = lh.cmdline_size + 1;
 
 		linux_data_real_addr = find_real_addr(fp);
-		if (linux_data_real_addr == -1) {
+		if ((int)linux_data_real_addr == -1) {
 			printf("failed to detect suitable low memory\n");
 			file_discard(fp);
 			error = ENOMEM;
@@ -218,7 +218,7 @@ linux_loadkernel(char *filename, uint64_t dest __unused,
 
 	mem = LINUX_BZIMAGE_ADDR;
 
-	if (archsw.arch_readin(fd, mem, text) != text) {
+	if ((unsigned long)archsw.arch_readin(fd, mem, text) != text) {
 		printf("failed to read %s\n", filename);
 		file_discard(fp);
 		error = EIO;

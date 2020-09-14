@@ -1022,13 +1022,14 @@ bd_realstrategy(void *devdata, int rw, daddr_t dblk, size_t size,
 		disk_blocks = bd->bd_sectors - d_offset;
 
 	/* Validate source block address. */
-	if (dblk < d_offset || dblk >= d_offset + disk_blocks)
+	if ((uint64_t)dblk < d_offset ||
+	    (uint64_t)dblk >= d_offset + disk_blocks)
 		return (EIO);
 
 	/*
 	 * Truncate if we are crossing disk or partition end.
 	 */
-	if (dblk + blks >= d_offset + disk_blocks) {
+	if ((uint64_t)(dblk + blks) >= d_offset + disk_blocks) {
 		blks = d_offset + disk_blocks - dblk;
 		size = blks * bd->bd_sectorsize;
 		DPRINTF("short I/O %d", blks);
