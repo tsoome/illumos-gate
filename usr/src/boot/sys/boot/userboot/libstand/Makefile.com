@@ -71,5 +71,5 @@ x86:
 %.o:	$(LZ4)/%.c
 	$(COMPILE.c) $<
 
-%.o:	$(LIBCSRC)/port/gen/%.c
+%.o:	$(SRC)/common/util/%.c
 	$(COMPILE.c) $<
