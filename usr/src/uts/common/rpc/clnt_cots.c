@@ -20,9 +20,9 @@
  */
 
 /*
- * Copyright 2016 Nexenta Systems, Inc.  All rights reserved.
  * Copyright (c) 2016 by Delphix. All rights reserved.
  * Copyright 2019 Joyent, Inc.
+ * Copyright 2020 Tintri by DDN. All rights reserved.
  */
 
 /*
@@ -2414,6 +2414,7 @@ connmgr_wrapconnect(
 		 * If we need to send a T_DISCON_REQ, send one.
 		 */
 		connmgr_dis_and_wait(cm_entry);
+		cm_entry->x_dead = FALSE;
 
 		mutex_exit(&connmgr_lock);
 
@@ -2536,6 +2537,7 @@ connmgr_dis_and_wait(struct cm_xprt *cm_entry)
 		 * then send another T_DISCON_REQ.
 		 */
 		if (cm_entry->x_waitdis == FALSE) {
+			cm_entry->x_dead = TRUE;
 			break;
 		} else {
 			RPCLOG(8, "connmgr_dis_and_wait: did"
@@ -3135,6 +3137,37 @@ connmgr_snddis(struct cm_xprt *cm_entry)
 
 	RPCLOG(8, "connmgr_snddis: sending discon to queue %p\n", (void *)q);
 	put(q, mp);
+}
+
+/*
+ * We end up here if there is a connection disconnect.
+ * The cm_entry is taken off the list.
+ */
+void
+connmgr_destroy(queue_t *wq)
+{
+	struct cm_xprt *cm_entry, *cm_prev;
+
+	mutex_enter(&connmgr_lock);
+	cm_entry = cm_hd;
+	cm_prev = NULL;
+
+	while (cm_entry) {
+		if (cm_entry->x_wq == wq) {
+			if (cm_prev)
+				cm_prev->x_next = cm_entry->x_next;
+			else
+				cm_hd = cm_entry->x_next;
+			cm_entry->x_next = NULL;
+			break;
+		}
+		cm_prev = cm_entry;
+		cm_entry = cm_entry->x_next;
+	}
+	mutex_exit(&connmgr_lock);
+
+	if (cm_entry)
+		connmgr_close(cm_entry);
 }
 
 /*
