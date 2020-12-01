@@ -14,6 +14,7 @@
 #
 
 PROG=	test
+OBJS=	test.o
 
 include ../../../../../cmd/Makefile.cmd
 
@@ -21,13 +22,17 @@ all: $(PROG)
 
 KEEP_STATE:
 
-CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 CPPFLAGS +=	-I.. -I../../..
 LDLIBS += -lumem
 
 install: all $(ROOTPROG)
 
+$(PROG): $(OBJS)
+	$(LINK.c) -o $@ $(OBJS) $(LDLIBS)
+	$(POST_PROCESS)
+
 clean:
+	$(RM) $(OBJS)
 
 include ../../../../../cmd/Makefile.targ

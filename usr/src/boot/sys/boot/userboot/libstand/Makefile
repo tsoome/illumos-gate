@@ -22,7 +22,7 @@ all install:	$(LIBRARY)
 include Makefile.com
 
 CPPFLAGS += -DUSER_MALLOC
-CFLAGS +=	-m32
+CFLAGS +=	-m32 $(CSOURCEDEBUGFLAGS)
 CCASFLAGS +=	-m32
 
 CLEANFILES += x86
