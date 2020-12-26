@@ -1388,6 +1388,7 @@ fmd_msg_getitem(fmd_msg_hdl_t *h,
 	 * If a non-default text domain binding was requested, save the old
 	 * binding perform the re-bind now that fmd_msg_lock() is held.
 	 */
+	old_b = NULL;
 	if (h->fmh_binding != NULL) {
 		p = bindtextdomain(dict, NULL);
 		old_b = strdupa(p);
@@ -1489,6 +1490,7 @@ fmd_msg_gettext_key(fmd_msg_hdl_t *h,
 	 * If a non-default text domain binding was requested, save the old
 	 * binding perform the re-bind now that fmd_msg_lock() is held.
 	 */
+	old_b = NULL;
 	if (h->fmh_binding != NULL) {
 		p = bindtextdomain(dict, NULL);
 		old_b = alloca(strlen(p) + 1);
@@ -1563,6 +1565,7 @@ fmd_msg_gettext(fmd_msg_hdl_t *h,
 	 * If a non-default text domain binding was requested, save the old
 	 * binding perform the re-bind now that fmd_msg_lock() is held.
 	 */
+	old_b = NULL;
 	if (h->fmh_binding != NULL) {
 		p = bindtextdomain(dict, NULL);
 		old_b = strdupa(p);

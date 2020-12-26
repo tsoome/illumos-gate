@@ -465,7 +465,7 @@ _i_fmev_publish(
     fmev_pri_t pri,
     uint_t ntuples, ...)
 {
-	va_list ap;
+	va_list ap = { 0 };
 	fmev_err_t rc;
 
 	if ((rc = vrfy(&ruleset, &class, &subclass, &pri)) != FMEV_OK)
@@ -493,7 +493,7 @@ _fmev_publish(const char *class, const char *subclass, fmev_pri_t pri,
     uint_t ntuples, ...)
 {
 	fmev_err_t rc;
-	va_list ap;
+	va_list ap = { 0 };
 
 	if ((rc = vrfy(NULL, &class, &subclass, &pri)) != FMEV_OK)
 		return (rc);
@@ -516,7 +516,7 @@ _fmev_rspublish(const char *ruleset, const char *class, const char *subclass,
     fmev_pri_t pri, uint_t ntuples, ...)
 {
 	fmev_err_t rc;
-	va_list ap;
+	va_list ap = { 0 };
 
 	if ((rc = vrfy(&ruleset, &class, &subclass, &pri)) != FMEV_OK)
 		return (rc);
