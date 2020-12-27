@@ -253,6 +253,7 @@ lio_listio(int mode, aiocb_t *_RESTRICT_KYWD const *_RESTRICT_KYWD list,
 			 * submit an AIO request with flags AIO_NO_KAIO
 			 * to avoid the kaio() syscall in _aio_rw()
 			 */
+			rw = 0;
 			switch (aiocbp->aio_lio_opcode) {
 			case LIO_READ:
 				rw = AIOAREAD;
@@ -347,14 +348,14 @@ __aio_suspend(void **list, int nent, const timespec_t *timo, int largefile)
 	timespec_t	*wait = NULL;
 	int		timedwait;
 	int		req_outstanding;
-	aiocb_t		**listp;
+	aiocb_t		**listp = NULL;
 	aiocb_t		*aiocbp;
 #if !defined(_LP64)
-	aiocb64_t	**listp64;
+	aiocb64_t	**listp64 = NULL;
 	aiocb64_t	*aiocbp64;
 #endif
 	hrtime_t	hrtstart;
-	hrtime_t	hrtend;
+	hrtime_t	hrtend = 0;
 	hrtime_t	hrtres;
 
 #if defined(_LP64)
@@ -1450,6 +1451,7 @@ lio_listio64(int mode, aiocb64_t *_RESTRICT_KYWD const *_RESTRICT_KYWD list,
 			 * submit an AIO request with flags AIO_NO_KAIO
 			 * to avoid the kaio() syscall in _aio_rw()
 			 */
+			rw = 0;
 			switch (aiocbp->aio_lio_opcode) {
 			case LIO_READ:
 				rw = AIOAREAD64;

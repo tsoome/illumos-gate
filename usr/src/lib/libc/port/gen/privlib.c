@@ -409,7 +409,7 @@ priv_set(priv_op_t op, priv_ptype_t setname, ...)
 {
 	va_list ap;
 	priv_set_t *pset;
-	int ret;
+	int ret = -1;
 
 	va_start(ap, setname);
 
@@ -418,7 +418,7 @@ priv_set(priv_op_t op, priv_ptype_t setname, ...)
 	va_end(ap);
 
 	if (pset == NULL)
-		return (-1);
+		return (ret);
 
 	/* All sets */
 	if (setname == NULL) {
@@ -607,10 +607,10 @@ __init_suid_priv(int flags, ...)
 	uid_t ruid, euid;
 
 	euid = geteuid();
+	ruid = getuid();
 
 	/* If we're not set-uid root, don't reset the uid */
 	if (euid == 0) {
-		ruid = getuid();
 		/* If we're running as root, keep everything */
 		if (ruid == 0)
 			return (0);

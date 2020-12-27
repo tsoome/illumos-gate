@@ -96,11 +96,10 @@ __base_conversion_set_exception(fp_exception_field_type ef)
  * Regardless, on 32-bit, 'quadruple' under GCC is not 128 bits, so it
  * uses uninitialized memory...
  */
-#pragma GCC diagnostic ignored "-Wuninitialized"
 enum fp_class_type
 __class_quadruple(quadruple *x)
 {
-	quadruple_equivalence kluge;
+	quadruple_equivalence kluge = { 0 };
 
 	kluge.x = *x;
 	if (kluge.f.msw.exponent == 0) {	/* 0 or sub */

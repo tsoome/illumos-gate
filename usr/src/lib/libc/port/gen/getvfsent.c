@@ -148,8 +148,10 @@ getvfsany(FILE *fd, struct vfstab *vgetp, struct vfstab *vrefp)
 	    cmode == S_IFCHR)) {
 		cstat = 1;
 		crdev = statb.st_rdev;
-	} else
+	} else {
 		cstat = 0;
+		crdev = NODEV;
+	}
 
 	while ((ret = getvfsent(fd, vgetp)) == 0 &&
 	    ((bstat == 0 && DIFF(vfs_special)) ||

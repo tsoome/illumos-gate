@@ -1326,6 +1326,7 @@ posix_daylight(long long *janfirst, int year, posix_daylight_t *pdaylightp)
 		DAYS_PER_LYEAR * SECSPERDAY
 	};
 
+	value = 0;
 	leapyear = isleap(year);
 
 	for (idx = 0; idx < 2; idx++) {
@@ -1789,17 +1790,16 @@ load_posixinfo(const char *name, state_t *sp)
 {
 	const char	*stdname;
 	const char	*dstname = 0;
-	size_t		stdlen;
+	size_t		stdlen = 0;
 	size_t		dstlen;
 	long		stdoff = 0;
 	long		dstoff = 0;
 	char		*cp;
 	int		i;
-	ttinfo_t	*dst;
+	ttinfo_t	*dst = NULL;
 	ttinfo_t	*std;
 	int		quoted;
 	zone_rules_t	zonetype;
-
 
 	zonetype = POSIX_USA;
 	stdname = name;

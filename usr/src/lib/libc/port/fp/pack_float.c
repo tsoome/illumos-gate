@@ -71,7 +71,7 @@ __fp_rightshift(unpacked *pu, int n)
 static int
 overflow_to_infinity(int sign, enum fp_direction_type rd)
 {
-	int		inf;
+	int	inf = 0;
 
 	switch (rd) {
 	case fp_nearest:
@@ -122,6 +122,9 @@ round(unpacked *pu, int roundword, enum fp_direction_type rd, int *ex)
 		break;
 	case fp_negative:
 		increment = (pu->sign != 0) & (pu->significand[roundword] != 0);
+		break;
+	default:
+		increment = 0;
 		break;
 	}
 	if (increment) {
@@ -286,7 +289,7 @@ void
 __pack_extended(unpacked *pu, extended *px, enum fp_direction_type rd,
     fp_exception_field_type *ex)
 {
-	extended_equivalence kluge;
+	extended_equivalence kluge = { 0 };
 	int		e;
 
 	e = 0;

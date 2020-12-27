@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	nftw - new file tree walk
  *
@@ -187,6 +185,7 @@ walk(char *component,
 	size_t base_comp, base_component, base_this_comp, base_last_comp;
 	size_t base_fullpath, base_tmppath;
 
+	base_last_comp = 0;
 	this.last = last;
 	this.fd = 0;
 	if ((vp->curflags & FTW_CHDIR) && last)

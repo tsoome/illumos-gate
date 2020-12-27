@@ -376,7 +376,7 @@ mq_open(const char *path, int oflag, /* mode_t mode, mq_attr *attr */ ...)
 	va_list		ap;
 	mode_t		mode = 0;
 	struct mq_attr	*attr = NULL;
-	int		fd;
+	int		fd = -1;
 	int		err;
 	int		cr_flag = 0;
 	int		locked = 0;
@@ -385,9 +385,12 @@ mq_open(const char *path, int oflag, /* mode_t mode, mq_attr *attr */ ...)
 	ssize_t		maxmsg;
 	uint64_t	temp;
 	void		*ptr;
-	mqdes_t		*mqdp;
-	mqhdr_t		*mqhp;
-	struct mq_dn	*mqdnp;
+	mqdes_t		*mqdp = NULL;
+	mqhdr_t		*mqhp = NULL;
+	struct mq_dn	*mqdnp = NULL;
+
+	maxmsg = MQ_MAXMSG;
+	msgsize = MQ_MAXSIZE;
 
 	if (__pos4obj_check(path) == -1)
 		return ((mqd_t)-1);
@@ -933,15 +936,15 @@ mq_notify(mqd_t mqdes, const struct sigevent *sigevp)
 {
 	mqdes_t *mqdp = (mqdes_t *)mqdes;
 	mqhdr_t *mqhp;
-	thread_communication_data_t *tcdp;
+	thread_communication_data_t *tcdp = NULL;
 	siginfo_t mq_siginfo;
 	struct sigevent sigevent;
 	struct stat64 statb;
 	port_notify_t *pn;
-	void *userval;
+	void *userval = NULL;
 	int rval = -1;
 	int ntype;
-	int port;
+	int port = -1;
 	int error;
 
 	if (!mq_is_valid(mqdp)) {

@@ -1088,8 +1088,8 @@ const char *text, const char *action, const char *tag)
 {
 	int	rtnval;		/* Value to return */
 	FILE	*console;	/* Ptr to "console" stream */
-	char	*message1;
-	char	*message2;
+	char	*message1 = NULL;
+	char	*message2 = NULL;
 
 	/*
 	 * Determine the "verbosity" of the message.  If "msgverb" is

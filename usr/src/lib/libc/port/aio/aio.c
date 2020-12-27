@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "thr_uberdata.h"
 #include "asyncio.h"
@@ -518,7 +516,7 @@ aiowait(struct timeval *uwait)
 	int kaio_errno = 0;
 	struct timeval twait;
 	struct timeval *wait = NULL;
-	hrtime_t hrtend;
+	hrtime_t hrtend = 0;
 	hrtime_t hres;
 
 	if (uwait) {
