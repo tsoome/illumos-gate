@@ -19,6 +19,12 @@
 		TRACE("not impl");		\
 		return (mdb_tgt_notsup());	\
 	}
+#define GSSIZENOTSUP(name)				\
+	static ssize_t gdb_##name()			\
+	{					\
+		TRACE("not impl");		\
+		return (mdb_tgt_notsup());	\
+	}
 #define GNULL(name)				\
 	static void *gdb_##name()		\
 	{					\
@@ -26,15 +32,14 @@
 		return (mdb_tgt_null());	\
 	}
 #define GNOP(name)				\
-	static void *gdb_##name()		\
+	static void gdb_##name()		\
 	{					\
 		TRACE("not impl/nop");		\
-		return (0);			\
 	}
 
 GNOTSUP(setflags)
-GNOTSUP(aread)
-GNOTSUP(awrite)
+GSSIZENOTSUP(aread)
+GSSIZENOTSUP(awrite)
 GNOTSUP(lookup_by_name)
 GNOTSUP(symbol_iter)
 GNOTSUP(mapping_iter)
@@ -54,24 +59,25 @@ GNOTSUP(step_out)
 GNOTSUP(next)
 GNOTSUP(signal)
 GNOTSUP(setareg)
-GNOTSUP(vwrite)
+GSSIZENOTSUP(vwrite)
+GNOTSUP(vtop)
 
 GNULL(addr_to_map)
 GNULL(name_to_map)
 GNULL(addr_to_ctf)
 GNULL(name_to_ctf)
-GNULL(add_vbrkpt)
-GNULL(add_sbrkpt)
-GNULL(add_pwapt)
-GNULL(add_vwapt)
-GNULL(add_iowapt)
-GNULL(add_sysenter)
-GNULL(add_sysexit)
-GNULL(add_signal)
-GNULL(add_fault)
+GNOTSUP(add_vbrkpt)
+GNOTSUP(add_sbrkpt)
+GNOTSUP(add_pwapt)
+GNOTSUP(add_vwapt)
+GNOTSUP(add_iowapt)
+GNOTSUP(add_sysenter)
+GNOTSUP(add_sysexit)
+GNOTSUP(add_signal)
+GNOTSUP(add_fault)
 
 GNOP(deactivate)
-GNOP(stack_iter)
+GNOTSUP(stack_iter)
 
 static int
 gdb_auxv(mdb_tgt_t *t, const auxv_t **auxvp)
@@ -311,7 +317,7 @@ static const mdb_tgt_ops_t gdb_ops = {
 	.t_setflags = (int (*)()) gdb_setflags,
 	.t_setcontext = gdb_setcontext,
 	.t_activate = gdb_activate,
-	.t_deactivate = (void (*)()) gdb_deactivate,
+	.t_deactivate = gdb_deactivate,
 	.t_periodic = gdb_periodic,
 	.t_destroy = mdb_gdb_tgt_destroy,
 	.t_name = gdb_name,
@@ -319,17 +325,17 @@ static const mdb_tgt_ops_t gdb_ops = {
 	.t_platform = gdb_platform,
 	.t_uname = gdb_uname,
 	.t_dmodel = gdb_dmodel,
-	.t_aread = (ssize_t (*)()) gdb_aread,
-	.t_awrite = (ssize_t (*)()) gdb_awrite,
+	.t_aread = gdb_aread,
+	.t_awrite = gdb_awrite,
 	.t_vread = gdb_vread,
-	.t_vwrite = (ssize_t (*)()) gdb_vwrite,
+	.t_vwrite = gdb_vwrite,
 	.t_pread = (ssize_t (*)()) mdb_tgt_notsup,
 	.t_pwrite = (ssize_t (*)()) mdb_tgt_notsup,
 	.t_fread = (ssize_t (*)()) mdb_tgt_notsup,
 	.t_fwrite = (ssize_t (*)()) mdb_tgt_notsup,
 	.t_ioread = (ssize_t (*)()) mdb_tgt_notsup,
 	.t_iowrite = (ssize_t (*)()) mdb_tgt_notsup,
-	.t_vtop = (int (*)()) mdb_tgt_notsup,
+	.t_vtop = gdb_vtop,
 	.t_lookup_by_name = (int (*)()) gdb_lookup_by_name,
 	.t_lookup_by_addr = gdb_lookup_by_addr,
 	.t_symbol_iter = (int (*)()) gdb_symbol_iter,
@@ -345,18 +351,18 @@ static const mdb_tgt_ops_t gdb_ops = {
 	.t_next = (int (*)()) gdb_next,
 	.t_cont = gdb_cont,
 	.t_signal = (int (*)()) gdb_signal,
-	.t_add_vbrkpt = (int (*)()) gdb_add_vbrkpt,
-	.t_add_sbrkpt = (int (*)()) gdb_add_sbrkpt,
-	.t_add_pwapt = (int (*)()) gdb_add_pwapt,
-	.t_add_vwapt = (int (*)()) gdb_add_vwapt,
-	.t_add_iowapt = (int (*)()) gdb_add_iowapt,
-	.t_add_sysenter = (int (*)()) gdb_add_sysenter,
-	.t_add_sysexit = (int (*)()) gdb_add_sysexit,
-	.t_add_signal = (int (*)()) gdb_add_signal,
-	.t_add_fault = (int (*)()) gdb_add_fault,
+	.t_add_vbrkpt = gdb_add_vbrkpt,
+	.t_add_sbrkpt = gdb_add_sbrkpt,
+	.t_add_pwapt = gdb_add_pwapt,
+	.t_add_vwapt = gdb_add_vwapt,
+	.t_add_iowapt = gdb_add_iowapt,
+	.t_add_sysenter = gdb_add_sysenter,
+	.t_add_sysexit = gdb_add_sysexit,
+	.t_add_signal = gdb_add_signal,
+	.t_add_fault = gdb_add_fault,
 	.t_getareg = gdb_getareg,
 	.t_putareg = (int (*)()) gdb_setareg,
-	.t_stack_iter = (int (*)()) gdb_stack_iter,
+	.t_stack_iter = gdb_stack_iter,
 	.t_auxv = gdb_auxv
 };
 
