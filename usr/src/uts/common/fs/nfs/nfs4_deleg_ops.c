@@ -179,11 +179,12 @@ deleg_rd_write(femarg_t *arg, uio_t *uiop, int ioflag, cred_t *cr,
 	int rc;
 	rfs4_file_t *fp;
 
-	fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
-	rc = recall_all_delegations(fp, FALSE, ct);
-	if (rc == NFS4ERR_DELAY)
-		return (EAGAIN);
-
+	if (ct == NULL || ct->cc_caller_id != nfs4_srv_caller_id) {
+		fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
+		rc = recall_all_delegations(fp, FALSE, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
 	return (vnext_write(arg, uiop, ioflag, cr, ct));
 }
 
@@ -217,14 +218,14 @@ deleg_rd_setattr(femarg_t *arg, vattr_t *vap, int flags, cred_t *cr,
 	bool_t trunc = FALSE;
 	rfs4_file_t *fp;
 
-	if ((vap->va_mask & AT_SIZE) && (vap->va_size == 0))
-		trunc = TRUE;
-
-	fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
-	rc = recall_all_delegations(fp, trunc, ct);
-	if (rc == NFS4ERR_DELAY)
-		return (EAGAIN);
-
+	if (ct == NULL || ct->cc_caller_id != nfs4_srv_caller_id) {
+		if ((vap->va_mask & AT_SIZE) && (vap->va_size == 0))
+			trunc = TRUE;
+		fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
+		rc = recall_all_delegations(fp, trunc, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
 	return (vnext_setattr(arg, vap, flags, cr, ct));
 }
 
@@ -290,6 +291,81 @@ deleg_wr_rwlock(femarg_t *arg, int write_lock, caller_context_t *ct)
 	return (vnext_rwlock(arg, write_lock, ct));
 }
 
+/*
+ * Check if it's a WR frlock request.
+ */
+static bool_t
+check_write_frlock(int cmd, flock64_t *bfp)
+{
+	if (cmd == F_SETLK ||
+	    cmd == F_SETLKW ||
+	    cmd == F_SETLK_NBMAND) {
+		return (bfp->l_type == F_WRLCK);
+	}
+
+	return (FALSE);
+}
+
+int
+deleg_rd_frlock(femarg_t *arg, int cmd, flock64_t *bfp, int flag,
+    offset_t offset, flk_callback_t *flk_cbp, cred_t *cr, caller_context_t *ct)
+{
+	int rc;
+	rfs4_file_t *fp;
+
+	/*
+	 * If this is a write lock, then we got us a conflict.
+	 */
+	if (check_write_frlock(cmd, bfp)) {
+		fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
+		rc = recall_all_delegations(fp, FALSE, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
+
+	return (vnext_frlock(arg, cmd, bfp, flag, offset, flk_cbp, cr, ct));
+}
+
+/*
+ * Check if it's a RD/WR (i.e. any)  frlock request.
+ */
+static bool_t
+check_any_frlock(int cmd, flock64_t *bfp)
+{
+	if (cmd == F_SETLK ||
+	    cmd == F_SETLKW ||
+	    cmd == F_SETLK_NBMAND) {
+		return (bfp->l_type == F_RDLCK || bfp->l_type == F_WRLCK);
+	}
+
+	return (FALSE);
+}
+
+/* Only the owner of the write delegation should be doing this. */
+int
+deleg_wr_frlock(femarg_t *arg, int cmd, flock64_t *bfp, int flag,
+    offset_t offset, flk_callback_t *flk_cbp, cred_t *cr, caller_context_t *ct)
+{
+	int rc;
+	rfs4_file_t *fp;
+
+	fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
+
+	/*
+	 * If this is a RD or WR lock, then we got us a conflict.
+	 * use caller context to compare caller to delegation owner.
+	 */
+
+	if ((check_any_frlock(cmd, bfp)) &&
+	    (ct == NULL || ct->cc_caller_id != nfs4_srv_caller_id)) {
+		rc = recall_all_delegations(fp, FALSE, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
+
+	return (vnext_frlock(arg, cmd, bfp, flag, offset, flk_cbp, cr, ct));
+}
+
 int
 deleg_rd_space(femarg_t *arg, int cmd, flock64_t *bfp, int flag,
     offset_t offset, cred_t *cr, caller_context_t *ct)
@@ -297,10 +373,12 @@ deleg_rd_space(femarg_t *arg, int cmd, flock64_t *bfp, int flag,
 	int rc;
 	rfs4_file_t *fp;
 
-	fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
-	rc = recall_all_delegations(fp, FALSE, ct);
-	if (rc == NFS4ERR_DELAY)
-		return (EAGAIN);
+	if (ct == NULL || ct->cc_caller_id != nfs4_srv_caller_id) {
+		fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
+		rc = recall_all_delegations(fp, FALSE, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
 
 	return (vnext_space(arg, cmd, bfp, flag, offset, cr, ct));
 }
@@ -330,12 +408,13 @@ deleg_rd_setsecattr(femarg_t *arg, vsecattr_t *vsap, int flag, cred_t *cr,
 	int rc;
 	rfs4_file_t *fp;
 
-	fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
-
-	/* Changing security attribute triggers recall */
-	rc = recall_all_delegations(fp, FALSE, ct);
-	if (rc == NFS4ERR_DELAY)
-		return (EAGAIN);
+	if (ct == NULL || ct->cc_caller_id != nfs4_srv_caller_id) {
+		fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
+		/* Changing security attribute triggers recall */
+		rc = recall_all_delegations(fp, FALSE, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
 
 	return (vnext_setsecattr(arg, vsap, flag, cr, ct));
 }
@@ -349,10 +428,12 @@ deleg_wr_setsecattr(femarg_t *arg, vsecattr_t *vsap, int flag, cred_t *cr,
 
 	fp = (rfs4_file_t *)arg->fa_fnode->fn_available;
 
-	/* Changing security attribute triggers recall */
-	rc = recall_all_delegations(fp, FALSE, ct);
-	if (rc == NFS4ERR_DELAY)
-		return (EAGAIN);
+	/* Use caller context to compare caller to delegation owner */
+	if (ct == NULL || ct->cc_caller_id != nfs4_srv_caller_id) {
+		rc = recall_all_delegations(fp, FALSE, ct);
+		if (rc == NFS4ERR_DELAY)
+			return (EAGAIN);
+	}
 
 	return (vnext_setsecattr(arg, vsap, flag, cr, ct));
 }

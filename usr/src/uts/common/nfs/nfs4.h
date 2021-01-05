@@ -48,6 +48,7 @@
 #include <sys/acl.h>
 #include <sys/list.h>
 #include <nfs/nfs4x.h>
+#include <sys/flock.h>
 
 #ifdef	__cplusplus
 extern "C" {
@@ -1063,6 +1064,10 @@ extern int deleg_wr_setattr(femarg_t *, vattr_t *, int, cred_t *,
 		caller_context_t *);
 extern int deleg_rd_rwlock(femarg_t *, int, caller_context_t *);
 extern int deleg_wr_rwlock(femarg_t *, int, caller_context_t *);
+extern int deleg_rd_frlock(femarg_t *, int, flock64_t *, int, offset_t,
+		flk_callback_t *, cred_t *, caller_context_t *);
+extern int deleg_wr_frlock(femarg_t *, int, flock64_t *, int, offset_t,
+		flk_callback_t *, cred_t *, caller_context_t *);
 extern int deleg_rd_space(femarg_t *, int, flock64_t *, int, offset_t, cred_t *,
 		caller_context_t *);
 extern int deleg_wr_space(femarg_t *, int, flock64_t *, int, offset_t, cred_t *,
@@ -1291,6 +1296,7 @@ typedef enum nfs4_attr_cmd nfs4_attr_cmd_t;
 struct nfs4_svgetit_arg {
 	nfs4_attr_cmd_t op;		/* getit or setit */
 	struct compound_state *cs;
+	caller_context_t *ct;		/* context for VOP_SETSECATTR() */
 	struct statvfs64 *sbp;
 	uint_t		flag;		/* VOP_GETATTR/VOP_SETATTR flag */
 	uint_t		xattr;		/* object is xattr */

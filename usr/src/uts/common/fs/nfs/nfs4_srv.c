@@ -600,6 +600,7 @@ static const fs_operation_def_t nfs4_rd_deleg_tmpl[] = {
 	VOPNAME_WRITE,		{ .femop_write = deleg_rd_write },
 	VOPNAME_SETATTR,	{ .femop_setattr = deleg_rd_setattr },
 	VOPNAME_RWLOCK,		{ .femop_rwlock = deleg_rd_rwlock },
+	VOPNAME_FRLOCK,		{ .femop_frlock = deleg_rd_frlock },
 	VOPNAME_SPACE,		{ .femop_space = deleg_rd_space },
 	VOPNAME_SETSECATTR,	{ .femop_setsecattr = deleg_rd_setsecattr },
 	VOPNAME_VNEVENT,	{ .femop_vnevent = deleg_rd_vnevent },
@@ -611,6 +612,7 @@ static const fs_operation_def_t nfs4_wr_deleg_tmpl[] = {
 	VOPNAME_WRITE,		{ .femop_write = deleg_wr_write },
 	VOPNAME_SETATTR,	{ .femop_setattr = deleg_wr_setattr },
 	VOPNAME_RWLOCK,		{ .femop_rwlock = deleg_wr_rwlock },
+	VOPNAME_FRLOCK,		{ .femop_frlock = deleg_wr_frlock },
 	VOPNAME_SPACE,		{ .femop_space = deleg_wr_space },
 	VOPNAME_SETSECATTR,	{ .femop_setsecattr = deleg_wr_setsecattr },
 	VOPNAME_VNEVENT,	{ .femop_vnevent = deleg_wr_vnevent },
@@ -5570,6 +5572,7 @@ do_rfs4_op_setattr(bitmap4 *resp, fattr4 *fattrp, struct compound_state *cs,
 			if (ntov.amap[i] == FATTR4_ACL)
 				break;
 		if (i < NFS4_MAXNUM_ATTRS) {
+			sarg.ct = &ct;
 			error = (*nfs4_ntov_map[FATTR4_ACL].sv_getit)(
 			    NFS4ATTR_SETIT, &sarg, &ntov.na[i]);
 			if (error == 0) {
@@ -8980,7 +8983,8 @@ finish:
  * network traffic and tries to make sure the client gets the lock ASAP.
  */
 static int
-setlock(vnode_t *vp, struct flock64 *flock, int flag, cred_t *cred)
+setlock(vnode_t *vp, struct flock64 *flock, int flag,
+    cred_t *cred, caller_context_t *ct)
 {
 	int error;
 	struct flock64 flk;
@@ -8996,7 +9000,7 @@ retry:
 	for (i = 0; i < rfs4_maxlock_tries; i++) {
 		LOCK_PRINT(rfs4_debug, "setlock", cmd, flock);
 		error = VOP_FRLOCK(vp, cmd,
-		    flock, flag, (u_offset_t)0, NULL, cred, NULL);
+		    flock, flag, (u_offset_t)0, NULL, cred, ct);
 
 		if (error != EAGAIN && error != EACCES)
 			break;
@@ -9012,7 +9016,7 @@ retry:
 		flk = *flock;
 		LOCK_PRINT(rfs4_debug, "setlock", F_GETLK, &flk);
 		if (VOP_FRLOCK(vp, F_GETLK, &flk, flag, 0, NULL, cred,
-		    NULL) == 0) {
+		    ct) == 0) {
 			/*
 			 * There's a race inherent in the current VOP_FRLOCK
 			 * design where:
@@ -9079,6 +9083,7 @@ rfs4_do_lock(rfs4_lo_state_t *lsp, nfs_lock_type4 locktype,
 	sysid_t sysid;
 	LOCK4res *lres;
 	vnode_t *vp;
+	caller_context_t ct;
 
 	if (rfs4_lease_expired(lo->rl_client)) {
 		return (NFS4ERR_EXPIRED);
@@ -9154,7 +9159,12 @@ retry:
 	 */
 	rfs4_dbe_unlock(sp->rs_dbe);
 
-	error = setlock(vp, &flock, flag, cred);
+	ct.cc_sysid = sysid;
+	ct.cc_pid = lsp->rls_locker->rl_pid;
+	ct.cc_caller_id = nfs4_srv_caller_id;
+	ct.cc_flags = CC_DONTBLOCK;
+
+	error = setlock(vp, &flock, flag, cred, &ct);
 
 	/*
 	 * Make sure the file is still open.  In a case the file was closed in

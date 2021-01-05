@@ -906,6 +906,7 @@ rfs4_fattr4_acl(nfs4_attr_cmd_t cmd, struct nfs4_svgetit_arg *sarg,
 	nfsstat4 status;
 	vattr_t va, *vap = sarg->vap;
 	vnode_t *vp = sarg->cs->vp;
+	caller_context_t *ct = sarg->ct;
 
 	if (RFS4_MANDATTR_ONLY)
 		return (ENOTSUP);
@@ -1045,14 +1046,15 @@ rfs4_fattr4_acl(nfs4_attr_cmd_t cmd, struct nfs4_svgetit_arg *sarg,
 			whichacl = _ACL_ACLENT_ENABLED;
 		}
 
+		ASSERT(ct != NULL);
 		if (whichacl & _ACL_ACE_ENABLED) {
 			error = vs_ace4_to_acet(&vs_ace4, &vs_native,
 			    vap->va_uid, vap->va_gid, TRUE);
 			if (error != 0)
 				break;
-			(void) VOP_RWLOCK(vp, V_WRITELOCK_TRUE, NULL);
+			(void) VOP_RWLOCK(vp, V_WRITELOCK_TRUE, ct);
 			error = VOP_SETSECATTR(vp, &vs_native,
-			    0, sarg->cs->cr, NULL);
+			    0, sarg->cs->cr, ct);
 			VOP_RWUNLOCK(vp, V_WRITELOCK_TRUE, NULL);
 			vs_acet_destroy(&vs_native);
 		} else if (whichacl & _ACL_ACLENT_ENABLED) {
@@ -1060,9 +1062,9 @@ rfs4_fattr4_acl(nfs4_attr_cmd_t cmd, struct nfs4_svgetit_arg *sarg,
 			    vap->va_uid, vap->va_gid, vp->v_type == VDIR, TRUE);
 			if (error != 0)
 				break;
-			(void) VOP_RWLOCK(vp, V_WRITELOCK_TRUE, NULL);
+			(void) VOP_RWLOCK(vp, V_WRITELOCK_TRUE, ct);
 			error = VOP_SETSECATTR(vp, &vs_native,
-			    0, sarg->cs->cr, NULL);
+			    0, sarg->cs->cr, ct);
 			VOP_RWUNLOCK(vp, V_WRITELOCK_TRUE, NULL);
 			vs_aent_destroy(&vs_native);
 		}
