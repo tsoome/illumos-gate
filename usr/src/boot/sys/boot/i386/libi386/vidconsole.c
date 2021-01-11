@@ -737,9 +737,9 @@ vga_cp437_to_uni(uint8_t c)
 static void
 vidc_install_font(tem_modechg_cb_arg_t arg __unused)
 {
-	static uchar_t fsreg[8] = {0x0, 0x30, 0x5, 0x35, 0xa, 0x3a, 0xf, 0x3f};
-	const uchar_t *from;
-	uchar_t volatile *to;
+	uint8_t reg[7];
+	const uint8_t *from;
+	uint8_t volatile *to;
 	uint16_t c;
 	int i, j, s;
 	int fsr, bpc, f_offset;
@@ -748,34 +748,49 @@ vidc_install_font(tem_modechg_cb_arg_t arg __unused)
 		return;
 
 	/* Sync-reset the sequencer registers */
-	vga_set_seq(VGA_REG_ADDR, 0x00, 0x01);
-	/*
-	 *  enable write to plane2, since fonts
-	 * could only be loaded into plane2
-	 */
-	vga_set_seq(VGA_REG_ADDR, 0x02, 0x04);
-	/*
-	 *  sequentially access data in the bit map being
-	 * selected by MapMask register (index 0x02)
-	 */
-	vga_set_seq(VGA_REG_ADDR, 0x04, 0x07);
-	/* Sync-reset ended, and allow the sequencer to operate */
-	vga_set_seq(VGA_REG_ADDR, 0x00, 0x03);
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_RST_SYN,
+	    VGA_SEQ_RST_SYN_NO_ASYNC_RESET);
+
+	reg[0] = vga_get_seq(VGA_REG_ADDR, VGA_SEQ_MAP_MASK);
+	reg[1] = vga_get_seq(VGA_REG_ADDR, VGA_SEQ_CLK_MODE);
+	reg[2] = vga_get_seq(VGA_REG_ADDR, VGA_SEQ_MEM_MODE);
+	reg[3] = vga_get_grc(VGA_REG_ADDR, VGA_GRC_RD_PL_SL);
+	reg[4] = vga_get_grc(VGA_REG_ADDR, VGA_GRC_GRP_MODE);
+	reg[5] = vga_get_grc(VGA_REG_ADDR, VGA_GRC_MISC_GM);
+	reg[6] = vga_get_atr(VGA_REG_ADDR, VGA_ATR_MODE);
+
+	/* Screen off */
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_CLK_MODE,
+	    reg[1] | VGA_SEQ_CLK_MODE_SO);
 
 	/*
-	 *  select plane 2 on Read Mode 0
+	 * enable write to plane2, since fonts
+	 * could only be loaded into plane2
 	 */
-	vga_set_grc(VGA_REG_ADDR, 0x04, 0x02);
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_MAP_MASK, VGA_SEQ_MAP_MASK_EM2);
 	/*
-	 *  system addresses sequentially access data, follow
+	 * sequentially access data in the bit map being
+	 * selected by MapMask register (index 0x02)
+	 */
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_MEM_MODE, 0x07);
+	/* Sync-reset ended, and allow the sequencer to operate */
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_RST_SYN,
+	    VGA_SEQ_RST_SYN_NO_ASYNC_RESET | VGA_SEQ_RST_SYN_NO_SYNC_RESET);
+
+	/*
+	 * select plane 2 on Read Mode 0
+	 */
+	vga_set_grc(VGA_REG_ADDR, VGA_GRC_RD_PL_SL, 0x02);
+	/*
+	 * system addresses sequentially access data, follow
 	 * Memory Mode register bit 2 in the sequencer
 	 */
-	vga_set_grc(VGA_REG_ADDR, 0x05, 0x00);
+	vga_set_grc(VGA_REG_ADDR, VGA_GRC_GRP_MODE, 0x00);
 	/*
 	 * set range of host memory addresses decoded by VGA
 	 * hardware -- A0000h-BFFFFh (128K region)
 	 */
-	vga_set_grc(VGA_REG_ADDR, 0x06, 0x00);
+	vga_set_grc(VGA_REG_ADDR, VGA_GRC_MISC_GM, 0x00);
 
 	/*
 	 * This assumes 8x16 characters, which yield the traditional 80x25
@@ -793,38 +808,30 @@ vidc_install_font(tem_modechg_cb_arg_t arg __unused)
 			*to++ = *from++;
 	}
 
+	vga_set_atr(VGA_REG_ADDR, VGA_ATR_MODE, reg[6]);
+
 	/* Sync-reset the sequencer registers */
-	vga_set_seq(VGA_REG_ADDR, 0x00, 0x01);
-	/* enable write to plane 0 and 1 */
-	vga_set_seq(VGA_REG_ADDR, 0x02, 0x03);
-	/*
-	 * enable character map selection
-	 * and odd/even addressing
-	 */
-	vga_set_seq(VGA_REG_ADDR, 0x04, 0x03);
-	/*
-	 * select font map
-	 */
-	vga_set_seq(VGA_REG_ADDR, 0x03, fsreg[s]);
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_RST_SYN,
+	    VGA_SEQ_RST_SYN_NO_ASYNC_RESET);
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_MAP_MASK, reg[0]);
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_MEM_MODE, reg[2]);
 	/* Sync-reset ended, and allow the sequencer to operate */
-	vga_set_seq(VGA_REG_ADDR, 0x00, 0x03);
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_RST_SYN,
+	    VGA_SEQ_RST_SYN_NO_ASYNC_RESET | VGA_SEQ_RST_SYN_NO_SYNC_RESET);
 
 	/* restore graphic registers */
-
-	/* select plane 0 */
-	vga_set_grc(VGA_REG_ADDR, 0x04, 0x00);
-	/* enable odd/even addressing mode */
-	vga_set_grc(VGA_REG_ADDR, 0x05, 0x10);
-	/*
-	 * range of host memory addresses decoded by VGA
-	 * hardware -- B8000h-BFFFFh (32K region)
-	 */
-	vga_set_grc(VGA_REG_ADDR, 0x06, 0x0e);
+	vga_set_grc(VGA_REG_ADDR, VGA_GRC_RD_PL_SL, reg[3]);
+	vga_set_grc(VGA_REG_ADDR, VGA_GRC_GRP_MODE, reg[4]);
+	vga_set_grc(VGA_REG_ADDR, VGA_GRC_MISC_GM, (reg[5] & 0x03) | 0x0c);
 	/* enable all color plane */
-	vga_set_atr(VGA_REG_ADDR, 0x12, 0x0f);
+	vga_set_atr(VGA_REG_ADDR, VGA_ATR_DISP_PLN, 0x0f);
+
+	/* Set max scan line */
 	fsr = vga_get_crtc(VGA_REG_ADDR, VGA_CRTC_MAX_S_LN);
 	fsr = (fsr & 0xE0) | (bpc - 1);
 	vga_set_crtc(VGA_REG_ADDR, VGA_CRTC_MAX_S_LN, fsr);
+	/* Screen on */
+	vga_set_seq(VGA_REG_ADDR, VGA_SEQ_CLK_MODE, reg[1] & 0xdf);
 }
 
 static int

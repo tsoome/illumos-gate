@@ -179,9 +179,16 @@ extern "C" {
 #define		VGA_SEQ_RST_SYN_SYNC_RESET	0x00
 #define		VGA_SEQ_RST_SYN_NO_SYNC_RESET	0x02
 #define	VGA_SEQ_CLK_MODE	0x01
-#define		VGA_SEQ_CLK_MODE_8DC		0x01
-#define	VGA_SEQ_EN_WT_PL	0x02
-#define		VGA_SEQ_EN_WT_PL_ALL		0x0f
+#define		VGA_SEQ_CLK_MODE_SO		0x20	/* Screen off */
+#define		VGA_SEQ_CLK_MODE_S4		0x10	/* Shift four */
+#define		VGA_SEQ_CLK_MODE_DC		0x08	/* Dot clock */
+#define		VGA_SEQ_CLK_MODE_SL		0x04	/* Shift load */
+#define		VGA_SEQ_CLK_MODE_8DC		0x01	/* 8/9 Dot clocks */
+#define	VGA_SEQ_MAP_MASK	0x02
+#define		VGA_SEQ_MAP_MASK_EM3		0x08 /* Enable memory plane 3 */
+#define		VGA_SEQ_MAP_MASK_EM2		0x04 /* Enable memory plane 2 */
+#define		VGA_SEQ_MAP_MASK_EM1		0x02 /* Enable memory plane 1 */
+#define		VGA_SEQ_MAP_MASK_EM0		0x01 /* Enable memory plane 0 */
 #define	VGA_SEQ_CMS		0x03		/* Char Map Select */
 #define		VGA_SEQ_CMS_SAH			0x20	/* Char. A (bit 2) */
 #define		VGA_SEQ_CMS_SBH			0x10	/* Char. B (bit 2) */
