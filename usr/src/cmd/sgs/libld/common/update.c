@@ -3439,7 +3439,7 @@ update_oscapinfo(Ofl_desc *ofl)
 {
 	Os_desc		*symosp, *ciosp, *ccosp = NULL;
 	Capinfo		*ocapinfo;
-	Capchain	*ocapchain;
+	Capchain	*ocapchain = NULL;
 	Cap_avlnode	*cav;
 	Word		chainndx = 0;
 
