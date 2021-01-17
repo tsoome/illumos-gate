@@ -390,7 +390,7 @@ static void
 udp_bind_hash_remove(udp_t *udp, boolean_t caller_holds_lock)
 {
 	udp_t		*udpnext;
-	kmutex_t	*lockp;
+	kmutex_t	*lockp = NULL;
 	udp_stack_t	*us = udp->udp_us;
 	conn_t		*connp = udp->udp_connp;
 

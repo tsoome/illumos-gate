@@ -1473,6 +1473,7 @@ sctp_add_ip(sctp_t *sctp, const void *addrs, uint32_t cnt)
 	 * If deleting:
 	 *   o Must be part of the association
 	 */
+	sin4 = NULL;
 	sin6 = NULL;
 	for (i = 0; i < cnt; i++) {
 		switch (connp->conn_family) {
