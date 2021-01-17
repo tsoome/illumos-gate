@@ -7263,7 +7263,7 @@ segvn_sync(struct seg *seg, caddr_t addr, size_t len, int attr, uint_t flags)
 	int err = 0;
 	int segtype;
 	int pageprot = 0;
-	int prot;
+	int prot = 0;
 	ulong_t anon_index = 0;
 	struct anon_map *amp;
 	struct anon *ap;

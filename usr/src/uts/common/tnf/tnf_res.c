@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * "Resident" part of TNF -- this has to be around even when the
  * driver is not loaded.
@@ -279,7 +277,7 @@ tnf_thread_switch(kthread_t *next)
 {
 	kthread_t	*t;
 	klwp_t		*lwp;
-	caddr_t		ztpdp;
+	caddr_t		ztpdp = NULL;
 	int		borrow;
 	uint_t		ts;
 	pc_t		pcs[TNF_PC_COUNT + 1];

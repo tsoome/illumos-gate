@@ -941,7 +941,7 @@ seg_ppurge_async(int force)
 	struct seg_phash *hp;
 	pgcnt_t npages = 0;
 	pgcnt_t npages_window = 0;
-	pgcnt_t	npgs_to_purge;
+	pgcnt_t	npgs_to_purge = 0;
 	pgcnt_t npgs_purged = 0;
 	int hlinks = 0;
 	int hlix;
@@ -959,9 +959,9 @@ seg_ppurge_async(int force)
 		return;
 	}
 
+	trim = 0;
 	if (!force) {
 		lowmem = 0;
-		trim = 0;
 		if (freemem < lotsfree + needfree) {
 			spgcnt_t fmem = MAX((spgcnt_t)(freemem - needfree), 0);
 			if (fmem <= 5 * (desfree >> 2)) {

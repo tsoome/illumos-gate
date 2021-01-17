@@ -1538,6 +1538,8 @@ setparams()
 			bootobjp = &swapfile;
 		else if (sysp->sys_type == MOD_ROOTFS)
 			bootobjp = &rootfs;
+		else
+			bootobjp = NULL;
 
 		switch (sysp->sys_type) {
 		case MOD_SWAPDEV:

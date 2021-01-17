@@ -2655,7 +2655,7 @@ static int
 modrload(const char *subdir, const char *filename, struct modctl **rmodp)
 {
 	struct modctl *modp;
-	size_t size;
+	size_t size = 0;
 	char *fullname;
 	int retval = EINVAL;
 	int id = -1;

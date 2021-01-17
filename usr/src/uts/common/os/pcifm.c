@@ -708,8 +708,8 @@ static int
 pcix_ecc_error_report(dev_info_t *dip, ddi_fm_error_t *derr, pci_erpt_t *erpt_p,
     void *pe_regs)
 {
-	pcix_error_regs_t *pcix_regs;
-	pcix_bdg_error_regs_t *pcix_bdg_regs;
+	pcix_error_regs_t *pcix_regs = NULL;
+	pcix_bdg_error_regs_t *pcix_bdg_regs = NULL;
 	pcix_ecc_regs_t *pcix_ecc_regs;
 	int bridge;
 	int i;

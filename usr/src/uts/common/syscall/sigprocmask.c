@@ -94,7 +94,7 @@ sigprocmask(int how, sigset_t *setp, sigset_t *osetp)
 {
 	sigset_t set;
 	sigset_t oset;
-	k_sigset_t kset;
+	k_sigset_t kset = { 0 };
 
 	/*
 	 * User's osetp and setp might be the same address,
