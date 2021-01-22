@@ -7190,15 +7190,20 @@ again:
 	 *
 	 * However, if this is open with CLAIM_DLEGATE_CUR, then don't
 	 * call VOP_OPEN(), just do the open upgrade.
+	 *
+	 * Drop the rf_dbe lock (file dbe lock) before calling VOP_OPEN()
+	 * which might invoke FEM hook routines e.g. recall_all_delegations()
+	 * to recursive-mutex PANIC. Reacquire lock if VOP_OPEN() succeeds.
 	 */
 	if (first_open && !deleg_cur) {
 		ct.cc_sysid = sysid;
 		ct.cc_pid = rfs4_dbe_getid(sp->rs_owner->ro_dbe);
 		ct.cc_caller_id = nfs4_srv_caller_id;
 		ct.cc_flags = CC_DONTBLOCK;
+		rfs4_dbe_hold(fp->rf_dbe);
+		rfs4_dbe_unlock(fp->rf_dbe);
 		err = VOP_OPEN(&cs->vp, fflags, cs->cr, &ct);
 		if (err) {
-			rfs4_dbe_unlock(fp->rf_dbe);
 			if (share_a || share_d)
 				(void) rfs4_unshare(sp);
 			rfs4_dbe_unlock(sp->rs_dbe);
@@ -7213,8 +7218,11 @@ again:
 				resp->status = NFS4ERR_DELAY;
 			else
 				resp->status = NFS4ERR_SERVERFAULT;
+			rfs4_dbe_rele(fp->rf_dbe);
 			return;
 		}
+		rfs4_dbe_rele(fp->rf_dbe);
+		rfs4_dbe_lock(fp->rf_dbe);
 	} else { /* open upgrade */
 		/*
 		 * calculate the fflags for the new mode that is being added
