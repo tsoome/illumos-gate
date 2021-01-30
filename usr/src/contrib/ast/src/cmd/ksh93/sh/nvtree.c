@@ -324,7 +324,7 @@ char *nv_dirnext(void *dir)
 					else
 						root = (Dt_t*)np;
 					/* check for recursive walk */
-					for(save=dp; save;  save=save->prev) 
+					for(save=dp; save;  save=save->prev)
 					{
 						if(save->root==root)
 							break;
@@ -379,7 +379,7 @@ static void outtype(Namval_t *np, Namfun_t *fp, Sfio_t* out, const char *prefix)
 {
 	char *type=0;
 	Namval_t *tp = fp->type;
-	if(!tp && fp->disc && fp->disc->typef) 
+	if(!tp && fp->disc && fp->disc->typef)
 		tp = (*fp->disc->typef)(np,fp);
 	for(fp=fp->next;fp;fp=fp->next)
 	{
@@ -413,7 +413,7 @@ void nv_attribute(register Namval_t *np,Sfio_t *out,char *prefix,int noname)
 	register char *cp;
 	register unsigned val,mask,attr;
 	char *ip=0;
-	Namfun_t *fp=0; 
+	Namfun_t *fp=0;
 	Namval_t *typep=0;
 #if SHOPT_FIXEDARRAY
 	int fixed=0;
@@ -582,7 +582,7 @@ void nv_outnode(Namval_t *np, Sfio_t* out, int indent, int special)
 	char		*fmtq,*ep,*xp;
 	Namval_t	*mp;
 	Namarr_t	*ap = nv_arrayptr(np);
-	int		scan,tabs=0,c,more,associative = 0;
+	int		scan = 0,tabs=0,c,more,associative = 0;
 	int		saveI = Indent;
 	Indent = indent;
 	if(ap)
@@ -785,7 +785,7 @@ static void outval(char *name, const char *vname, struct Walk *wp)
 			}
 		}
 		nv_outname(wp->out,name,-1);
-		if((np->nvalue.cp && np->nvalue.cp!=Empty) || nv_isattr(np,~(NV_MINIMAL|NV_NOFREE)) || nv_isvtree(np))  
+		if((np->nvalue.cp && np->nvalue.cp!=Empty) || nv_isattr(np,~(NV_MINIMAL|NV_NOFREE)) || nv_isvtree(np))
 			sfputc(wp->out,(isarray==2?(wp->indent>=0?'\n':';'):'='));
 		if(isarray==2)
 			return;
@@ -895,7 +895,7 @@ static char **genvalue(char **argv, const char *prefix, int n, struct Walk *wp)
 					continue;
 				if((wp->array = nv_isarray(np)) && (ap=nv_arrayptr(np)))
 					k = array_elem(ap);
-					
+
 				if(wp->indent>0)
 					sfnputc(outfile,'\t',wp->indent);
 				nv_attribute(np,outfile,"typeset",1);
@@ -970,7 +970,7 @@ static char *walk_tree(register Namval_t *np, Namval_t *xp, int flags)
 	Sfoff_t	off = 0;
 	int len, savtop = staktell();
 	char *savptr = stakfreeze(0);
-	register struct argnod *ap=0; 
+	register struct argnod *ap=0;
 	struct argnod *arglist=0;
 	char *name,*cp, **argv;
 	char *subscript=0;
@@ -1041,7 +1041,7 @@ static char *walk_tree(register Namval_t *np, Namval_t *xp, int flags)
 		stakputs(cp);
 		ap = (struct argnod*)stakfreeze(1);
 		ap->argflag = ARG_RAW;
-		ap->argchn.ap = arglist; 
+		ap->argchn.ap = arglist;
 		n++;
 		arglist = ap;
 	}

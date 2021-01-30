@@ -73,7 +73,7 @@ b_mkdir(int argc, char** argv, Shbltin_t* context)
 	register int	vflag = 0;
 	int		made;
 	char*		part;
-	mode_t		dmode;
+	mode_t		dmode = 0;
 	struct stat	st;
 
 	cmdinit(argc, argv, context, ERROR_CATALOG, 0);

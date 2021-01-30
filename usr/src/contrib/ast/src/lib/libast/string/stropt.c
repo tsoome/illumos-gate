@@ -60,13 +60,13 @@ stropt(const char* as, const void* tab, int siz, int(*f)(void*, const void*, int
 	register char*	v;
 	register char*	t;
 	char**		p;
-	char*		u;
+	char*		u = NULL;
 	char*		x;
 	char*		e;
 	int		n;
 	int		ql;
 	int		qr;
-	int		qc;
+	int		qc = 0;
 
 	if (!as) n = 0;
 	else if (!(x = s = strdup(as))) n = -1;

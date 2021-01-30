@@ -67,7 +67,7 @@
  *
  *	qualifier:	[lL]
  *			[uU]
- *			[uU][lL] 
+ *			[uU][lL]
  *			[lL][uU]
  *			[lL][lL][uU]
  *			[uU][lL][lL]
@@ -230,7 +230,7 @@ S2I_function(a, e, base) const char* a; char** e; int base;
 #endif
 	register S2I_unumber	n;
 	register S2I_unumber	x;
-	register int		c;
+	register int		c = 0;
 	register int		shift;
 	register unsigned char*	p;
 	register unsigned char*	cv;
@@ -390,7 +390,7 @@ S2I_function(a, e, base) const char* a; char** e; int base;
 		SFCVINIT();
 		cv = base <= 36 ? _Sfcv36 : _Sfcv64;
 		if ((base & ~(base - 1)) == base)
-		{	
+		{
 #if !S2I_unsigned
 			qualifier |= QU;
 #endif

@@ -39,7 +39,7 @@
 	iconv_t		cvt; \
 	Sfio_t*		tmp; \
 	Vmalloc_t*	vm;
-	
+
 #include <vmalloc.h>
 #include <error.h>
 #include <mc.h>
@@ -60,7 +60,7 @@ mcfind(const char* locale, const char* catalog, int category, int nls, char* pat
 	register char*		s;
 	register char*		e;
 	register char*		p;
-	register const char*	v;
+	register const char*	v = NULL;
 	int			i;
 	int			first;
 	int			next;
@@ -521,7 +521,7 @@ mcdump(register Mc_t* mc, register Sfio_t* op)
 	/*
 	 * write the magic
 	 */
-	
+
 	if (sfwrite(op, MC_MAGIC, MC_MAGIC_SIZE) != MC_MAGIC_SIZE)
 		return -1;
 

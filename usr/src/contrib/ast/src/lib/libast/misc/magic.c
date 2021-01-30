@@ -1049,9 +1049,9 @@ cklang(register Magic_t* mp, const char* file, char* buf, char* end, struct stat
 	char*			t2;
 	char*			t3;
 	int			n;
-	int			badpun;
+	int			badpun = 0;
 	int			code;
-	int			pun;
+	int			pun = 0;
 	Cctype_t		flags;
 	Info_t*			ip;
 
@@ -2398,7 +2398,7 @@ magicclose(register Magic_t* mp)
 char*
 magictype(register Magic_t* mp, Sfio_t* fp, const char* file, register struct stat* st)
 {
-	off_t	off;
+	off_t	off = 0;
 	char*	s;
 
 	mp->flags = mp->disc->flags;

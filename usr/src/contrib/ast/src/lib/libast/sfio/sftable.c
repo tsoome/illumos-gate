@@ -34,7 +34,7 @@ static char* sffmtint(str, v)
 char*	str;
 int*	v;
 #endif
-{	
+{
 	for(*v = 0; isdigit(*str); ++str)
 		*v = *v * 10 + (*str - '0');
 	*v -= 1;
@@ -53,7 +53,7 @@ int		type;	/* >0: scanf, =0: printf, -1: internal	*/
 #endif
 {
 	int		base, fmt, flags, dot, width, precis;
-	ssize_t		n_str, size;
+	ssize_t		n_str, size = 0;
 	char		*t_str, *sp;
 	int		v, n, skip, dollar, decimal, thousand;
 	Sffmt_t		savft;
@@ -268,7 +268,7 @@ int		type;	/* >0: scanf, =0: printf, -1: internal	*/
 					size = sizeof(char);
 				else if(flags&SFFMT_TFLAG)
 					size = sizeof(ptrdiff_t);
-				else if(flags&SFFMT_ZFLAG) 
+				else if(flags&SFFMT_ZFLAG)
 					size = sizeof(size_t);
 				else if(flags&(SFFMT_LLONG|SFFMT_JFLAG) )
 					size = sizeof(Sflong_t);

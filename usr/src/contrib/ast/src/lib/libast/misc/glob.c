@@ -582,7 +582,7 @@ glob(const char* pattern, int flags, int (*errfn)(const char*, int), register gl
 	register globlist_t*	ap;
 	register char*		pat;
 	globlist_t*		top;
-	Stak_t*			oldstak;
+	Stak_t*			oldstak = NULL;
 	char**			argv;
 	char**			av;
 	size_t			skip;

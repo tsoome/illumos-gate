@@ -506,7 +506,7 @@ astlicense(char* p, int size, char* file, char* options, int cc1, int cc2, int c
 	int		i;
 	int		h;
 	int		k;
-	int		n;
+	int		n = 0;
 	int		q;
 	int		contributor;
 	int		first;

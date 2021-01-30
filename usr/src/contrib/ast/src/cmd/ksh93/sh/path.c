@@ -39,7 +39,7 @@
 #include	"test.h"
 #include	"FEATURE/dynamic"
 #include	"FEATURE/externs"
-#if SHOPT_PFSH 
+#if SHOPT_PFSH
 #   ifdef _hdr_exec_attr
 #	include	<exec_attr.h>
 #   endif
@@ -76,7 +76,7 @@ static int onstdpath(const char *name)
 	return(0);
 }
 
-#if SHOPT_PFSH 
+#if SHOPT_PFSH
 int path_xattr(Shell_t *shp, const char *path, char *rpath)
 {
 	char  resolvedpath[PATH_MAX + 1];
@@ -105,7 +105,7 @@ int path_xattr(Shell_t *shp, const char *path, char *rpath)
 
 static pid_t path_pfexecve(Shell_t *shp,const char *path, char *argv[],char *const envp[],int spawn)
 {
-#if SHOPT_PFSH 
+#if SHOPT_PFSH
 	char  resolvedpath[PATH_MAX + 1];
 	pid_t	pid;
 	if(spawn)
@@ -165,9 +165,9 @@ static pid_t path_xargs(Shell_t *shp,const char *path, char *argv[],char *const 
 	size = shp->gd->lim.arg_max-1024;
 	for(ev=envp; cp= *ev; ev++)
 		size -= strlen(cp)-1;
-	for(av=argv; (cp= *av) && av< &argv[shp->xargmin]; av++)  
+	for(av=argv; (cp= *av) && av< &argv[shp->xargmin]; av++)
 		size -= strlen(cp)-1;
-	for(av=avlast; cp= *av; av++,nlast++)  
+	for(av=avlast; cp= *av; av++,nlast++)
 		size -= strlen(cp)-1;
 	av =  &argv[shp->xargmin];
 	if(!spawn)
@@ -237,12 +237,12 @@ static pid_t path_xargs(Shell_t *shp,const char *path, char *argv[],char *const 
  */
 char *path_pwd(Shell_t *shp,int flag)
 {
-	register char *cp;
+	register char *cp = NULL;
 	register char *dfault = (char*)e_dot;
 	register int count = 0;
 	if(shp->pwd)
 		return((char*)shp->pwd);
-	while(1) 
+	while(1)
 	{
 		/* try from lowest to highest */
 		switch(count++)
@@ -264,7 +264,7 @@ char *path_pwd(Shell_t *shp,int flag)
 			case 4:
 			{
 				if(cp=getcwd(NIL(char*),0))
-				{  
+				{
 					nv_offattr(PWDNOD,NV_NOFREE);
 					_nv_unset(PWDNOD,0);
 					PWDNOD->nvalue.cp = cp;
@@ -310,7 +310,7 @@ void  path_delete(Pathcomp_t *first)
 		}
 		else
 			old = pp;
-		pp = ppnext; 
+		pp = ppnext;
 	}
 }
 
@@ -1049,7 +1049,7 @@ void	path_exec(Shell_t *shp,register const char *arg0,register char *argv[],stru
 pid_t path_spawn(Shell_t *shp,const char *opath,register char **argv, char **envp, Pathcomp_t *libpath, int spawn)
 {
 	register char *path;
-	char **xp=0, *xval, *libenv = (libpath?libpath->lib:0); 
+	char **xp=0, *xval, *libenv = (libpath?libpath->lib:0);
 	Namval_t*	np;
 	char		*s, *v;
 	int		r, n, pidsize;
@@ -1178,7 +1178,7 @@ retry:
 	switch(shp->path_err = errno)
 	{
 #ifdef apollo
-	    /* 
+	    /*
   	     * On apollo's execve will fail with eacces when
 	     * file has execute but not read permissions. So,
 	     * for now we will pretend that EACCES and ENOEXEC
@@ -1418,7 +1418,7 @@ static void exscript(Shell_t *shp,register char *path,register char *argv[],char
 		close( fd);
 	}
     }
- 
+
     /*
      * Produce a pseudo-floating point representation
      * with 3 bits base-8 exponent, 13 bits fraction.
@@ -1503,7 +1503,7 @@ static Pathcomp_t *path_addcomp(Shell_t *shp,Pathcomp_t *first, Pathcomp_t *old,
 
 /*
  * This function checks for the .paths file in directory in <pp>
- * it assumes that the directory is on the stack at <offset> 
+ * it assumes that the directory is on the stack at <offset>
  */
 static int path_chkpaths(Shell_t *shp,Pathcomp_t *first, Pathcomp_t* old,Pathcomp_t *pp, int offset)
 {
@@ -1586,7 +1586,7 @@ Pathcomp_t *path_addpath(Shell_t *shp,Pathcomp_t *first, register const char *pa
 	Pathcomp_t *old=0;
 	int offset = staktell();
 	char *savptr;
-	
+
 	if(!path && type!=PATH_PATH)
 		return(first);
 	if(type!=PATH_FPATH)
@@ -1745,7 +1745,7 @@ Pathcomp_t *path_unsetfpath(Shell_t *shp)
 				}
 				continue;
 			}
-			
+
 		}
 		old = pp;
 		pp = pp->next;
@@ -1758,7 +1758,7 @@ Pathcomp_t *path_dirfind(Pathcomp_t *first,const char *name,int c)
 	register Pathcomp_t *pp=first;
 	while(pp)
 	{
-		if(memcmp(name,pp->name,pp->len)==0 && name[pp->len]==c) 
+		if(memcmp(name,pp->name,pp->len)==0 && name[pp->len]==c)
 			return(pp);
 		pp = pp->next;
 	}

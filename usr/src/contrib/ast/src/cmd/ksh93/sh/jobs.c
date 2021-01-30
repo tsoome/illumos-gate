@@ -170,13 +170,13 @@ static struct back_save	bck;
 #   ifndef _lib_tcgetpgrp
 #	ifdef TIOCGPGRP
 	   static int _i_;
-#	   define tcgetpgrp(a) (ioctl(a, TIOCGPGRP, &_i_)>=0?_i_:-1)	
+#	   define tcgetpgrp(a) (ioctl(a, TIOCGPGRP, &_i_)>=0?_i_:-1)
 #	endif /* TIOCGPGRP */
 	int tcsetpgrp(int fd,pid_t pgrp)
 	{
 		int pgid = pgrp;
 #		ifdef TIOCGPGRP
-			return(ioctl(fd, TIOCSPGRP, &pgid));	
+			return(ioctl(fd, TIOCSPGRP, &pgid));
 #		else
 			return(-1);
 #		endif /* TIOCGPGRP */
@@ -338,7 +338,7 @@ int job_reap(register int sig)
 {
 	Shell_t *shp = sh_getinterp();
 	register pid_t pid;
-	register struct process *pw;
+	register struct process *pw = NULL;
 	struct process *px;
 	register int flags;
 	struct jobsave *jp;
@@ -464,7 +464,7 @@ int job_reap(register int sig)
 			pw->p_flag |= (P_NOTIFY|P_SIGNALLED|P_STOPPED);
 			pw->p_exit = WSTOPSIG(wstat);
 			if(pw->p_pgrp && pw->p_pgrp==job.curpgid && sh_isstate(SH_STOPOK))
-				kill(getpid(),pw->p_exit); 
+				kill(getpid(),pw->p_exit);
 			if(px)
 			{
 				/* move to top of job list */
@@ -502,7 +502,7 @@ int job_reap(register int sig)
 				{
 					pw->p_flag &= ~P_NOTIFY;
 					sh_offstate(SH_STOPOK);
-					kill(getpid(),SIGINT); 
+					kill(getpid(),SIGINT);
 					sh_onstate(SH_STOPOK);
 				}
 			}
@@ -1112,7 +1112,7 @@ int job_kill(register struct process *pw,register int sig)
 {
 	Shell_t	*shp;
 	register pid_t pid;
-	register int r;
+	register int r = 0;
 	const char *msg;
 #ifdef SIGTSTP
 	int stopsig = (sig==SIGSTOP||sig==SIGTSTP||sig==SIGTTIN||sig==SIGTTOU);
@@ -1182,7 +1182,7 @@ int job_kill(register struct process *pw,register int sig)
 			if(r>=0)
 				sh_delay(.05);
 		}
-		while(pw && pw->p_pgrp==0 && (r=kill(pw->p_pid,sig))>=0) 
+		while(pw && pw->p_pgrp==0 && (r=kill(pw->p_pid,sig))>=0)
 		{
 #ifdef SIGTSTP
 			if(sig==SIGHUP || sig==SIGTERM)
@@ -1410,7 +1410,7 @@ int job_post(Shell_t *shp,pid_t pid, pid_t join)
 		pw->p_nxtjob = job.pwlist;
 		pw->p_nxtproc = 0;
 	}
-	pw->p_exitval = job.exitval; 
+	pw->p_exitval = job.exitval;
 #if SHOPT_COSHELL
 	pw->p_cojob = 0;
 	if(shp->coshell && (pid&COPID_BIT))
@@ -1696,12 +1696,12 @@ int	job_wait(register pid_t pid)
 		job_reset(pw);
 		/* propogate keyboard interrupts to parent */
 		if((pw->p_flag&P_SIGNALLED) && pw->p_exit==SIGINT && !(shp->sigflag[SIGINT]&SH_SIGOFF))
-			kill(getpid(),SIGINT); 
+			kill(getpid(),SIGINT);
 #ifdef SIGTSTP
 		else if((pw->p_flag&P_STOPPED) && pw->p_exit==SIGTSTP)
 		{
 			job.parent = 0;
-			kill(getpid(),SIGTSTP); 
+			kill(getpid(),SIGTSTP);
 		}
 #endif /* SIGTSTP */
 	}
@@ -1850,7 +1850,7 @@ static struct process *job_unpost(register struct process *pwtop,int notify)
 #endif /* DEBUG */
 	pwtop = pw = job_byjid((int)pwtop->p_job);
 #ifdef SHOPT_BGX
-	if(pw->p_flag&P_BG) 
+	if(pw->p_flag&P_BG)
 		return(pw);
 #endif /* SHOPT_BGX */
 	for(; pw && (pw->p_flag&P_DONE)&&(notify||!(pw->p_flag&P_NOTIFY)||pw->p_env); pw=pw->p_nxtproc);
@@ -1962,10 +1962,10 @@ static char *job_sigmsg(int sig)
 #ifdef apollo
 	/*
 	 * This code handles the formatting for the apollo specific signal
-	 * SIGAPOLLO. 
+	 * SIGAPOLLO.
 	 */
 	extern char *apollo_error(void);
-	
+
 	if ( sig == SIGAPOLLO )
 		return( apollo_error() );
 #endif /* apollo */

@@ -70,7 +70,7 @@ int	b_sleep(register int argc,char *argv[],Shbltin_t *context)
 		d = strtod(cp, &last);
 		if(*last)
 		{
-			Time_t now,ns;
+			Time_t now,ns = 0;
 			char* pp;
 			now = TMX_NOW;
 			if(*cp == 'P' || *cp == 'p')

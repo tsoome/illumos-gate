@@ -238,8 +238,8 @@ visit(State_t* state, register FTSENT* ent)
 	register char*	base;
 	register int	n;
 	register int	len;
-	int		rm;
-	int		rfd;
+	int		rm = 0;
+	int		rfd = -1;
 	int		wfd;
 	int		m;
 	int		v;
@@ -475,7 +475,7 @@ visit(State_t* state, register FTSENT* ent)
 			{
 				protection =
 #ifdef ETXTBSY
-				    errno == ETXTBSY ? "``running program''" : 
+				    errno == ETXTBSY ? "``running program''" :
 #endif
 				    st.st_uid != state->uid ? "``not owner''" :
 				    fmtmode(st.st_mode & (S_IRWXU|S_IRWXG|S_IRWXO), 0) + 1;
@@ -685,7 +685,7 @@ b_cp(int argc, register char** argv, Shbltin_t* context)
 	FTS*		fts;
 	FTSENT*		ent;
 	const char*	usage;
-	int		path_resolve;
+	int		path_resolve = 0;
 	int		standard;
 	struct stat	st;
 	State_t*	state;

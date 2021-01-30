@@ -286,12 +286,12 @@ static void put_history(register Namval_t* np,const char *val,int flags,Namfun_t
 	Shell_t *shp = nv_shell(np);
 	void 	*histopen = NULL;
 	char	*cp;
-	if( shp ) { 
-	    histopen = shp->gd->hist_ptr; 
+	if( shp ) {
+	    histopen = shp->gd->hist_ptr;
 	}
 	if(val && histopen)
 	{
-		if(np==HISTFILE && (cp=nv_getval(np)) && strcmp(val,cp)==0) 
+		if(np==HISTFILE && (cp=nv_getval(np)) && strcmp(val,cp)==0)
 			return;
 		if(np==HISTSIZE && sh_arith(shp,val)==nv_getnum(HISTSIZE))
 			return;
@@ -341,7 +341,7 @@ static void put_restricted(register Namval_t* np,const char *val,int flags,Namfu
 	char *name = nv_name(np);
 	if(!(flags&NV_RDONLY) && sh_isoption(SH_RESTRICTED))
 		errormsg(SH_DICT,ERROR_exit(1),e_restricted,nv_name(np));
-	if(np==PATHNOD	|| (path_scoped=(strcmp(name,PATHNOD->nvname)==0)))		
+	if(np==PATHNOD	|| (path_scoped=(strcmp(name,PATHNOD->nvname)==0)))
 	{
 		nv_scan(shp->track_tree,rehash,(void*)0,NV_TAGGED,NV_TAGGED);
 		if(path_scoped && !val)
@@ -349,7 +349,7 @@ static void put_restricted(register Namval_t* np,const char *val,int flags,Namfu
 	}
 	if(val && !(flags&NV_RDONLY) && np->nvalue.cp && strcmp(val,np->nvalue.cp)==0)
 		 return;
-	if(np==FPATHNOD	|| (fpath_scoped=(strcmp(name,FPATHNOD->nvname)==0)))		
+	if(np==FPATHNOD	|| (fpath_scoped=(strcmp(name,FPATHNOD->nvname)==0)))
 		shp->pathlist = (void*)path_unsetfpath(shp);
 	nv_putv(np, val, flags, fp);
 	shp->universe = 0;
@@ -769,7 +769,7 @@ static int hasgetdisc(register Namfun_t *fp)
 void sh_setmatch(Shell_t *shp,const char *v, int vsize, int nmatch, regoff_t match[],int index)
 {
 	struct match	*mp = &ip->SH_MATCH_init;
-	Namval_t	*np = nv_namptr(mp->node,0); 
+	Namval_t	*np = nv_namptr(mp->node,0);
 	register int	i,n,x, savesub=shp->subshell;
 	Namarr_t	*ap = nv_arrayptr(SH_MATCHNOD);
 	shp->subshell = 0;
@@ -845,7 +845,7 @@ void sh_setmatch(Shell_t *shp,const char *v, int vsize, int nmatch, regoff_t mat
 				mp->match = (int*)malloc(i+vsize+1);
 			mp->vsize = i+vsize+1;
 		}
-		mp->val =  ((char*)mp->match)+i; 
+		mp->val =  ((char*)mp->match)+i;
 		memcpy(mp->match+index,match,nmatch*2*sizeof(match[0]));
 		for(x=0,i=0; i < 2*nmatch; i++)
 		{
@@ -862,7 +862,7 @@ void sh_setmatch(Shell_t *shp,const char *v, int vsize, int nmatch, regoff_t mat
 		mp->val[vsize] = 0;
 		mp->lastsub[0] = mp->lastsub[1] = -1;
 	}
-} 
+}
 
 #define array_scan(np)	((nv_arrayptr(np)->nelem&ARRAY_SCAN))
 
@@ -964,7 +964,7 @@ static const Namdisc_t SH_VERSION_disc	= {  0, 0, get_version, nget_version };
 
 static const Namdisc_t IFS_disc		= {  sizeof(struct ifs), put_ifs, get_ifs };
 const Namdisc_t RESTRICTED_disc	= {  sizeof(Namfun_t), put_restricted };
-static const Namdisc_t CDPATH_disc	= {  sizeof(Namfun_t), put_cdpath }; 
+static const Namdisc_t CDPATH_disc	= {  sizeof(Namfun_t), put_cdpath };
 static const Namdisc_t EDITOR_disc	= {  sizeof(Namfun_t), put_ed };
 static const Namdisc_t HISTFILE_disc	= {  sizeof(Namfun_t), put_history };
 static const Namdisc_t OPTINDEX_disc	= {  sizeof(Namfun_t), put_optindex, 0, nget_optindex, 0, 0, clone_optindex };
@@ -1042,7 +1042,7 @@ static char* get_math(register Namval_t* np, Namfun_t *fp)
 	}
 	val = sfstruse(shp->strbuf);
 	return(val);
-	
+
 }
 
 static char *setdisc_any(Namval_t *np, const char *event, Namval_t *action, Namfun_t *fp)
@@ -1151,7 +1151,7 @@ int sh_type(register const char *path)
 {
 	register const char*	s;
 	register int		t = 0;
-	
+
 	if (s = (const char*)strrchr(path, '/'))
 	{
 		if (*path == '-')
@@ -1265,7 +1265,7 @@ Shell_t *sh_init(register int argc,register char *argv[], Shinit_f userinit)
 	static int beenhere;
 	Shell_t	*shp;
 	register int n;
-	int type;
+	int type = 0;
 	static char *login_files[3];
 	memfatal();
 	n = strlen(e_version);
@@ -1469,7 +1469,7 @@ Shell_t *sh_init(register int argc,register char *argv[], Shinit_f userinit)
 		dolv_index = (argc-1)-shp->st.dolc;
 		shp->st.dolv=argv+dolv_index;
 		shp->st.repl_index = dolv_index;
-		shp->st.repl_arg = argv[dolv_index];	
+		shp->st.repl_arg = argv[dolv_index];
 		shp->st.dolv[0] = argv[0];
 		if(shp->st.dolc < 1)
 			sh_onoption(SH_SFLAG);
@@ -1514,7 +1514,7 @@ Shell_t *sh_init(register int argc,register char *argv[], Shinit_f userinit)
 		struct passwd *pw = getpwuid(shp->gd->userid);
 		if(pw)
 			shp->gd->user = strdup(pw->pw_name);
-		
+
 	}
 #endif
 	/* set[ug]id scripts require the -p flag */
@@ -1568,7 +1568,7 @@ Shell_t *sh_init(register int argc,register char *argv[], Shinit_f userinit)
 	astintercept(&shp->bltindata,1);
 #endif
 #if 0
-#define NV_MKINTTYPE(x,y,z)	nv_mkinttype(#x,sizeof(x),(x)-1<0,(y),(Namdisc_t*)z); 
+#define NV_MKINTTYPE(x,y,z)	nv_mkinttype(#x,sizeof(x),(x)-1<0,(y),(Namdisc_t*)z);
 	NV_MKINTTYPE(pid_t,"process id",0);
 	NV_MKINTTYPE(gid_t,"group id",0);
 	NV_MKINTTYPE(uid_t,"user id",0);
@@ -1950,7 +1950,7 @@ static Dt_t *inittree(Shell_t *shp,const struct shtable2 *name_vals)
 	register const struct shtable2 *tp;
 	register unsigned n = 0;
 	register Dt_t *treep;
-	Dt_t *base_treep, *dict;
+	Dt_t *base_treep, *dict = NULL;
 	for(tp=name_vals;*tp->sh_name;tp++)
 		n++;
 	np = (Namval_t*)calloc(n,sizeof(Namval_t));
@@ -2188,7 +2188,7 @@ static void put_trans(register Namval_t* np,const char *val,int flags,Namfun_t *
 		if(mp->lctype!=lctype)
 		{
 			mp->lctype = lctype;
-			mp->trans = wctrans(mp->name);	
+			mp->trans = wctrans(mp->name);
 		}
 		if(!mp->trans || (flags&NV_INTEGER))
 			goto skip;

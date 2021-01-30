@@ -120,8 +120,8 @@ int path_expand(Shell_t *shp,const char *pattern, struct argnod **arghead)
 	if(sh_isstate(SH_COMPLETE))
 	{
 #if KSHELL
-		extra += scantree(shp->alias_tree,pattern,arghead); 
-		extra += scantree(shp->fun_tree,pattern,arghead); 
+		extra += scantree(shp->alias_tree,pattern,arghead);
+		extra += scantree(shp->fun_tree,pattern,arghead);
 #   if GLOB_VERSION >= 20010916L
 		gp->gl_nextdir = nextdir;
 #   endif
@@ -188,7 +188,7 @@ int path_expand(Shell_t *shp,const char *pattern, struct argnod **arghead)
 	gp->gl_fignore = nv_getval(sh_scoped(shp,FIGNORENOD));
 	if(suflen)
 		gp->gl_suffix = sufstr;
-	gp->gl_intr = &shp->trapnote; 
+	gp->gl_intr = &shp->trapnote;
 	suflen = 0;
 	if(memcmp(pattern,"~(N",3)==0)
 		flags &= ~GLOB_NOCHECK;
@@ -273,10 +273,10 @@ int path_generate(Shell_t *shp,struct argnod *todo, struct argnod **arghead)
 	register struct argnod *ap;
 	struct argnod *top = 0;
 	struct argnod *apin;
-	char *pat, *rescan;
+	char *pat = NULL, *rescan;
 	char *format;
 	char comma, range=0;
-	int first, last, incr, count = 0;
+	int first = 0, last = 0, incr = 0, count = 0;
 	char tmp[32], end[1];
 	todo->argchn.ap = 0;
 again:

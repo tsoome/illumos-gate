@@ -77,7 +77,7 @@ int	b_ulimit(int argc,char *argv[],Shbltin_t *context)
 	const Limit_t* tp;
 	char* conf;
 	int label, unit, nosupport;
-	rlim_t i;
+	rlim_t i = 0;
 	char tmp[32];
         Optdisc_t disc;
         memset(&disc, 0, sizeof(disc));

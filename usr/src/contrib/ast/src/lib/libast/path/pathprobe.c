@@ -114,7 +114,7 @@ pathprobe_20100601(const char* lang, const char* tool, const char* aproc, int op
 	const char*	dir;
 	Proc_t*		pp;
 	Sfio_t*		sp;
-	char		buf[PATH_MAX];
+	char*		buf;
 	char		cmd[PATH_MAX];
 	char		exe[PATH_MAX];
 	char		lib[PATH_MAX];
@@ -125,6 +125,10 @@ pathprobe_20100601(const char* lang, const char* tool, const char* aproc, int op
 	unsigned long	ptime;
 	struct stat	st;
 	struct stat	ps;
+
+	buf = malloc(PATH_MAX);
+	if (buf == NULL)
+		return (buf);
 
 	if (*proc != '/')
 	{
@@ -144,7 +148,7 @@ pathprobe_20100601(const char* lang, const char* tool, const char* aproc, int op
 	if (!path)
 	{
 		path = buf;
-		pathsize = sizeof(buf);
+		pathsize = PATH_MAX;
 	}
 	probe = PROBE;
 	x = lib + sizeof(lib) - 1;
@@ -154,12 +158,18 @@ pathprobe_20100601(const char* lang, const char* tool, const char* aproc, int op
 	if (op >= -2)
 	{
 		strncopy(p, key, x - p);
-		if (pathpath(lib, "", PATH_ABSOLUTE, path, pathsize) && !stat(path, &st) && (st.st_mode & S_IWUSR))
-			return path == buf ? strdup(path) : path;
+		if (pathpath(lib, "", PATH_ABSOLUTE, path, pathsize) && !stat(path, &st) && (st.st_mode & S_IWUSR)) {
+			if (path == buf)
+				return (buf);
+			free(buf);
+			return (path);
+		}
 	}
 	e = strncopy(p, probe, x - p);
-	if (!pathpath(lib, "", PATH_ABSOLUTE|PATH_EXECUTE, path, pathsize) || stat(path, &ps))
-		return 0;
+	if (!pathpath(lib, "", PATH_ABSOLUTE|PATH_EXECUTE, path, pathsize) || stat(path, &ps)) {
+		free(buf);
+		return NULL;
+	}
 	for (;;)
 	{
 		ptime = ps.st_mtime;
@@ -207,8 +217,10 @@ pathprobe_20100601(const char* lang, const char* tool, const char* aproc, int op
 	strcpy(exe, path);
 	if (op >= -1 && (!(st.st_mode & S_ISUID) && ps.st_uid != geteuid() || rofs(path)))
 	{
-		if (!(p = getenv("HOME")))
-			return 0;
+		if (!(p = getenv("HOME"))) {
+			free(buf);
+			return NULL;
+		}
 		p = path + sfsprintf(path, PATH_MAX - 1, "%s/.%s/%s/", p, probe, HOSTTYPE);
 	}
 	strncopy(p, k, x - p);
@@ -317,10 +329,17 @@ pathprobe_20100601(const char* lang, const char* tool, const char* aproc, int op
 		*ap++ = (char*)tool;
 		*ap++ = proc;
 		*ap = 0;
-		if (procrun(exe, arg, 0))
-			return 0;
-		if (eaccess(path, R_OK))
-			return 0;
+		if (procrun(exe, arg, 0)) {
+			free(buf);
+			return NULL;
+		}
+		if (eaccess(path, R_OK)) {
+			free(buf);
+			return NULL;
+		}
 	}
-	return path == buf ? strdup(path) : path;
+	if (path == buf)
+		return (path);
+	free(buf);
+	return (path);
 }

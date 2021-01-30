@@ -4700,7 +4700,7 @@ char**	argv;
 	int			unzip;
 	int			verbose;
 	unsigned int		mode;
-	unsigned long		total;
+	unsigned long		total = 0;
 	off_t			pos;
 	gzFile			gz;
 	FILE*			fp;
@@ -4736,7 +4736,7 @@ char**	argv;
 	}
 	else
 		state.id = "ratz";
-	switch ('~')
+	switch ((unsigned)'~')
 	{
 	case 0241:
 		switch ('\n')
@@ -5156,7 +5156,7 @@ char**	argv;
 						break;
 					}
 					printf("%c", c);
-					m = 0400; 
+					m = 0400;
 					while (m)
 					{
 						printf("%c", (n & m) ? 'r' : '-');

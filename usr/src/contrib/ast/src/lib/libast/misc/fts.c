@@ -270,7 +270,7 @@ search(FTSENT* e, FTSENT* root, int(*comparf)(FTSENT* const*, FTSENT* const*), i
 		if (!(cmp = (*comparf)(&e, &root)) && !insert)
 			break;
 		if (cmp < 0)
-		{	
+		{
 			/*
 			 * this is the left zig-zig case
 			 */
@@ -295,7 +295,7 @@ search(FTSENT* e, FTSENT* root, int(*comparf)(FTSENT* const*, FTSENT* const*), i
 			right->left = 0;
 		}
 		else
-		{	
+		{
 			/*
 			 * this is the right zig-zig case
 			 */
@@ -826,7 +826,7 @@ fts_read(register FTS* fts)
 {
 	register char*		s;
 	register int		n;
-	register FTSENT*	f;
+	register FTSENT*	f = NULL;
 	struct dirent*		d;
 	size_t			i;
 	FTSENT*			t;
@@ -1121,7 +1121,7 @@ fts_read(register FTS* fts)
 			if (fts->root)
 				getlist(&fts->top, &fts->bot, fts->root);
 			if (fts->children)
-			{	
+			{
 				/*
 				 * try moving back to parent dir
 				 */
@@ -1506,7 +1506,7 @@ int
 fts_flags(void)
 {
 	register char*	s;
-	
+
 	s = astconf("PATH_RESOLVE", NiL, NiL);
 	if (streq(s, "logical"))
 		return FTS_LOGICAL;

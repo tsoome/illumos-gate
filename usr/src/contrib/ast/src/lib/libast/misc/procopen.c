@@ -37,7 +37,7 @@
 #include <ast_tty.h>
 
 /*
- * not quite ready for _use_spawnveg 
+ * not quite ready for _use_spawnveg
  */
 
 #if _use_spawnveg
@@ -446,7 +446,7 @@ procopen(const char* cmd, char** argv, char** envv, long* modv, int flags)
 		goto bad;
 	switch (flags & (PROC_READ|PROC_WRITE))
 	{
-	case 0:
+	default:
 		procfd = -1;
 		break;
 	case PROC_READ:

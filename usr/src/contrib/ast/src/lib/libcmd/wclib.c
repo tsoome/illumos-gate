@@ -340,7 +340,7 @@ int wc_count(Wc_t *wp, Sfio_t *fd, const char* file)
 		int		skip=0;
 		int		adjust=0;
 		int		state=0;
-		int		oldc;
+		int		oldc = 0;
 		int		xspace;
 		int		wasspace = 1;
 		unsigned char*	start;
@@ -468,7 +468,7 @@ int wc_count(Wc_t *wp, Sfio_t *fd, const char* file)
 						state = 0;
 						if(eline!=nlines && !(wp->mode & WC_QUIET))
 							eline = invalid(file, nlines);
-						while(mbc(c) && ((c|WC_ERR) || (c&7)==0)) 
+						while(mbc(c) && ((c|WC_ERR) || (c&7)==0))
 							c=type[*cp++];
 						if(eol(c) && (cp > endbuff))
 						{

@@ -493,7 +493,7 @@ search(register Dict_t* dict, char* name, void* value)
 		if (!(cmp = strcmp(name, root->name)))
 			break;
 		else if (cmp < 0)
-		{	
+		{
 			if (root->left && (cmp = strcmp(name, root->left->name)) <= 0)
 			{
 				ROTATE(root, left, right, t);
@@ -509,7 +509,7 @@ search(register Dict_t* dict, char* name, void* value)
 			right->left = 0;
 		}
 		else
-		{	
+		{
 			if (root->right && (cmp = strcmp(name, root->right->name)) >= 0)
 			{
 				ROTATE(root, right, left, t);
@@ -641,7 +641,7 @@ view(void)
 {
 	register char*		s;
 	register char*		t;
-	register char*		p;
+	register char*		p = NULL;
 	register View_t*	vp;
 
 	View_t*			zp;
@@ -1156,7 +1156,7 @@ execute(register char* s)
 			{
 				add(buf, '\\');
 				add(buf, c);
-			} 
+			}
 		}
 		add(buf, c);
 	}

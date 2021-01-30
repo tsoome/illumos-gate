@@ -95,7 +95,7 @@ struct tm*
 _tm_localtime(const time_t* t)
 {
 	struct tm*	r;
-	char*		e;
+	char*		e = NULL;
 	char**		v = environ;
 
 	if (TZ[0])
@@ -208,7 +208,7 @@ tmlocal(void)
 	register Tm_zone_t*	zp;
 	register int		n;
 	register char*		s;
-	register char*		e;
+	register char*		e = NULL;
 	int			i;
 	int			m;
 	int			isdst;
