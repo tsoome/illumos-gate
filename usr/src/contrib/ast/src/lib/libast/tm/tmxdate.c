@@ -158,7 +158,7 @@ tmxdate(register const char* s, char** e, Time_t now)
 {
 	register Tm_t*	tm;
 	register long	n;
-	register int	w;
+	register int	w = 0;
 	unsigned long	set;
 	unsigned long	state;
 	unsigned long	flags;
@@ -177,7 +177,7 @@ tmxdate(register const char* s, char** e, Time_t now)
 	int		f;
 	int		i;
 	int		j;
-	int		k;
+	int		k = 0;
 	int		l;
 	long		m;
 	unsigned long	p;
@@ -1220,7 +1220,7 @@ tmxdate(register const char* s, char** e, Time_t now)
 						continue;
 					case TM_NEXT:
 						/*
-						 * disambiguate english "last ... in" 
+						 * disambiguate english "last ... in"
 						 */
 
 						if (!((state|set) & LAST))

@@ -398,7 +398,7 @@ static int expr_cmp(State_t* state, Node_t *np)
 	while ((tok&~T_OP)==T_CMP)
 	{
 		Node_t rp;
-		register char *left,*right;
+		register char *left = NULL,*right = NULL;
 		char buff1[36],buff2[36];
 		int op = (tok&T_OP);
 		tok = expr_add(state, &rp);

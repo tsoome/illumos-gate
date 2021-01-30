@@ -207,10 +207,10 @@ getids(Sfio_t* sp, const char* name, register int flags)
 	char*			s;
 	int			lastchar;
 	int			ngroups = 0;
-	const char*		gname;
-	uid_t			user;
+	const char*		gname = NULL;
+	uid_t			user = -1;
 	uid_t			euid;
-	gid_t			group;
+	gid_t			group = -1;
 	gid_t			egid;
 
 	static gid_t*		groups;

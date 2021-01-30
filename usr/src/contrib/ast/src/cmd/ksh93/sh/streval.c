@@ -66,8 +66,8 @@ static int level;
 struct vars				/* vars stacked per invocation */
 {
 	Shell_t		*shp;
-	const char	*expr;		/* current expression */	
-	const char	*nextchr;	/* next char in current expression */	
+	const char	*expr;		/* current expression */
+	const char	*nextchr;	/* next char in current expression */
 	const char	*errchr; 	/* next char after error	*/
 	const char	*errstr;	/* error string			*/
 	struct lval	errmsg;	 	/* error message text		*/
@@ -161,7 +161,7 @@ Sfdouble_t	arith_exec(Arith_t *ep)
 	Sfdouble_t small_stack[SMALL_STACK+1],arg[9];
 	const char *ptr = "";
 	char	*lastval=0;
-	int	lastsub;
+	int	lastsub = 0;
 	Math_f fun;
 	struct lval node;
 	Shell_t	*shp = ep->shp;
@@ -294,9 +294,9 @@ Sfdouble_t	arith_exec(Arith_t *ep)
 				node.eflag = 1;
 			node.ptr = 0;
 			num = (*ep->fun)(&ptr,&node,ASSIGN,num);
-			if(lastval && node.ptr) 
+			if(lastval && node.ptr)
 			{
-				Sfdouble_t r; 
+				Sfdouble_t r;
 				node.flag = 0;
 				node.value = lastval;
 				r =  (*ep->fun)(&ptr,&node,VALUE,num);
@@ -571,7 +571,7 @@ static int gettok(register struct vars *vp)
 	}
 }
 
-/*   
+/*
  * evaluate a subexpression with precedence
  */
 
@@ -579,7 +579,7 @@ static int expr(register struct vars *vp,register int precedence)
 {
 	register int	c, op;
 	int		invalid,wasop=0;
-	struct lval	lvalue,assignop;
+	struct lval	lvalue,assignop = { 0 };
 	const char	*pos;
 	Sfdouble_t	d;
 
@@ -881,7 +881,7 @@ again:
 				stakpush(vp,d,Sfdouble_t);
 				stakputc(lvalue.isfloat);
 			}
-	
+
 			/* check for function call */
 			if(lvalue.fun)
 				continue;
@@ -949,7 +949,7 @@ Arith_t *arith_compile(Shell_t *shp,const char *string,char **last,Sfdouble_t(*f
  * evaluate an integer arithmetic expression in s
  *
  * (Sfdouble_t)(*convert)(char** end, struct lval* string, int type, Sfdouble_t value)
- *     is a user supplied conversion routine that is called when unknown 
+ *     is a user supplied conversion routine that is called when unknown
  *     chars are encountered.
  * *end points to the part to be converted and must be adjusted by convert to
  * point to the next non-converted character; if typ is MESSAGE then string

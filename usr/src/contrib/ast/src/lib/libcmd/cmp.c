@@ -265,7 +265,7 @@ b_cmp(int argc, register char** argv, Shbltin_t* context)
 {
 	char*		s;
 	char*		e;
-	char*		file1;
+	char*		file1 = NULL;
 	char*		file2;
 	int		n;
 	struct stat	s1;

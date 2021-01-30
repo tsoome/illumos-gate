@@ -2357,10 +2357,10 @@ opthelp(const char* oopts, const char* what)
 	char*			s;
 	char*			d;
 	char*			v;
-	char*			cb;
-	char*			dt;
+	char*			cb = NULL;
+	char*			dt = NULL;
 	char*			ov;
-	char*			pp;
+	char*			pp = NULL;
 	char*			rb;
 	char*			re;
 	int			f;
@@ -2369,10 +2369,10 @@ opthelp(const char* oopts, const char* what)
 	int			m;
 	int			n;
 	int			a;
-	int			cl;
+	int			cl = 0;
 	int			sl;
 	int			vl;
-	int			ol;
+	int			ol = 0;
 	int			wl;
 	int			xl;
 	int			rm;
@@ -4101,7 +4101,7 @@ optusage(const char* opts)
  * 0x.* or <base>#* for alternate bases
  */
 
-static intmax_t     
+static intmax_t
 optnumber(const char* s, char** t, int* e)
 {
 	intmax_t	n;
@@ -4261,16 +4261,16 @@ optget(register char** argv, const char* oopts)
 	char*		opts;
 	char*		id;
 	char*		catalog;
-	int		n;
+	int		n = 0;
 	int		m;
-	int		k;
+	int		k = 0;
 	int		j;
 	int		x;
 	int		err;
-	int		no;
-	int		nov;
+	int		no = 0;
+	int		nov = 0;
 	int		num;
-	int		numchr;
+	int		numchr = 0;
 	int		prefix;
 	int		version;
 	Help_t*		hp;
@@ -5600,7 +5600,7 @@ optstr(const char* str, const char* opts)
 	register int		c;
 	register int		ql;
 	register int		qr;
-	register int		qc;
+	register int		qc = 0;
 	int			v;
 	char*			e;
 

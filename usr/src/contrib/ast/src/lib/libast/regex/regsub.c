@@ -37,7 +37,7 @@ subold(register Sfio_t* dp, const char* op, register const char* sp, size_t nmat
 	register int	c;
 	char*		s;
 	char*		e;
-	const char*	b;
+	const char*	b = NULL;
 	regflags_t	f;
 
 	f = flags &= (REG_SUB_LOWER|REG_SUB_UPPER);

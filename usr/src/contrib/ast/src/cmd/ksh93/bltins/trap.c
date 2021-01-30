@@ -184,7 +184,7 @@ int	b_trap(int argc,char *argv[],Shbltin_t *context)
 
 int	b_kill(int argc,char *argv[],Shbltin_t *context)
 {
-	register char *signame;
+	register char *signame = NULL;
 	register int sig=SIGTERM, flag=0, n;
 	register Shell_t *shp = context->shp;
 	int usemenu = 0;

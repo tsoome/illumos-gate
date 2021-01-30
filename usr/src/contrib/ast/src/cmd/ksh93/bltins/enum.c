@@ -28,7 +28,7 @@ USAGE_LICENSE
     "type \atypename\a that can only store any one of the values in the indexed "
     "array variable \atypename\a.]"
 "[+?If the list of \avalue\as is omitted, then \atypename\a must name an "
-    "indexed array variable with at least two elements.]" 
+    "indexed array variable with at least two elements.]"
 "[i:ignorecase?The values are case insensitive.]"
 "\n"
 "\n\atypename\a[\b=(\b \avalue\a ... \b)\b]\n"
@@ -187,7 +187,7 @@ static int enum_create(int argc, char** argv, Shbltin_t *context)
 int b_enum(int argc, char** argv, Shbltin_t *context)
 #endif
 {
-	int			sz,i,n,iflag = 0;
+	int			sz = 0,i,n,iflag = 0;
 	Namval_t		*np, *tp;
 	Namarr_t		*ap;
 	char			*cp,*sp;
@@ -265,7 +265,7 @@ int b_enum(int argc, char** argv, Shbltin_t *context)
 		memset(&optdisc,0,sizeof(optdisc));
 		optdisc.opt.infof = enuminfo;
 		optdisc.np = tp;
-		nv_addtype(tp, enum_type, &optdisc.opt, sizeof(optdisc)); 
+		nv_addtype(tp, enum_type, &optdisc.opt, sizeof(optdisc));
 	}
 	return error_info.errors != 0;
 }
@@ -277,7 +277,7 @@ void lib_init(int flag, void* context)
 	Namval_t	*mp,*bp;
 	if(flag)
 		return;
-	bp = sh_addbuiltin("Enum", enum_create, (void*)0); 
+	bp = sh_addbuiltin("Enum", enum_create, (void*)0);
 	mp = nv_search("typeset",shp->bltin_tree,0);
 	nv_onattr(bp,nv_isattr(mp,NV_PUBLIC));
 }

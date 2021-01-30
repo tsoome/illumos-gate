@@ -319,7 +319,7 @@ cutcols(Cut_t* cut, Sfio_t* fdin, Sfio_t* fdout)
 						z = 1;
 					s += z;
 					w -= z;
-					
+
 				}
 				c = s - bp;
 				ncol = !w && (ncol || !skip);
@@ -369,9 +369,9 @@ cutfields(Cut_t* cut, Sfio_t* fdin, Sfio_t* fdout)
 	register int c, nfields;
 	register const int *lp = cut->list;
 	register unsigned char *copy;
-	register int nodelim, empty, inword=0;
+	register int nodelim = 0, empty, inword=0;
 	register unsigned char *ep;
-	unsigned char *bp, *first;
+	unsigned char *bp, *first = NULL;
 	int lastchar;
 	wchar_t w;
 	Sfio_t *fdtmp = 0;
@@ -510,7 +510,7 @@ cutfields(Cut_t* cut, Sfio_t* fdin, Sfio_t* fdout)
 					if (!sp[lastchar])
 						break;
 				}
-				nodelim = 0;	
+				nodelim = 0;
 				if (--nfields > 0)
 					continue;
 				nfields = *++lp;

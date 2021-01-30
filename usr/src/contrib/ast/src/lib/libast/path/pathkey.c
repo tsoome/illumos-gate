@@ -61,7 +61,7 @@ pathkey_20100601(const char* lang, const char* tool, const char* apath, char* ke
 	char**			p;
 	int			c;
 	unsigned long		n;
-	char			buf[15];
+	char*			buf;
 	char*			usr[16];
 	char*			env[elementsof(usr) + 3];
 	char*			ver[2];
@@ -72,8 +72,12 @@ pathkey_20100601(const char* lang, const char* tool, const char* apath, char* ke
 
 	static char		let[] = "ABCDEFGHIJKLMNOP";
 
+	buf = malloc(15);
+	if (buf == NULL)
+		return (buf);
 	if (!key)
 		key = buf;
+
 	if (tool && streq(tool, "mam"))
 	{
 		for (n = 0; *path; path++)
@@ -316,5 +320,9 @@ pathkey_20100601(const char* lang, const char* tool, const char* apath, char* ke
 		while (k > key + 8)
 			*--k = '.';
 	}
-	return key == buf ? strdup(key) : key;
+
+	if (key == buf)
+		return (buf);
+	free(buf);
+	return (key);
 }

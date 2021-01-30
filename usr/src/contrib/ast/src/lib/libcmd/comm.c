@@ -67,6 +67,8 @@ static int comm(Sfio_t *in1, Sfio_t *in2, register Sfio_t *out,register int mode
 {
 	register char *cp1, *cp2;
 	register int n1, n2, n, comp;
+
+	n1 = 0;
 	if(cp1 = sfgetr(in1,'\n',0))
 		n1 = sfvalue(in1);
 	if(cp2 = sfgetr(in2,'\n',0))

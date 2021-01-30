@@ -52,9 +52,9 @@
 #if SHOPT_AUDIT
 #   define _HIST_AUDIT	Sfio_t	*auditfp; \
 			char	*tty; \
-			int	auditmask; 
+			int	auditmask;
 #else
-#   define _HIST_AUDIT 
+#   define _HIST_AUDIT
 #endif
 
 #define _HIST_PRIVATE \
@@ -129,7 +129,7 @@ static History_t *hist_ptr;
     static int	acctfd;
     static char *logname;
 #   include <pwd.h>
-    
+
     static int  acctinit(History_t *hp)
     {
 	register char *cp, *acctfile;
@@ -205,7 +205,7 @@ static int sh_checkaudit(History_t *hp, const char *name, char *logbuf, size_t l
 done:
 	close(fd);
 	return(r);
-	
+
 }
 #endif /*SHOPT_AUDIT*/
 
@@ -553,7 +553,7 @@ static History_t* hist_trim(History_t *hp, int n)
 }
 
 /*
- * position history file at size and find next command number 
+ * position history file at size and find next command number
  */
 static int hist_nearend(History_t *hp, Sfio_t *iop, register off_t size)
 {
@@ -627,7 +627,7 @@ void hist_eof(register History_t *hp)
 	register char *cp,*first,*endbuff;
 	register int incmd = 0;
 	register off_t count = hp->histcnt;
-	int oldind,n,skip=0;
+	int oldind = 0,n,skip=0;
 	off_t last = sfseek(hp->histfp,(off_t)0,SEEK_END);
 	if(last < count)
 	{
@@ -942,7 +942,7 @@ void hist_list(register History_t *hp,Sfio_t *outfile, off_t offset,int last, ch
 	}
 	return;
 }
-		 
+
 /*
  * find index for last line with given string
  * If flag==0 then line must begin with string
@@ -1069,7 +1069,7 @@ int hist_copy(char *s1,int size,int command,int line)
 		{
 			if(count++ ==line)
 				break;
-			else if(line >= 0)	
+			else if(line >= 0)
 				continue;
 		}
 		if(s1 && (line<0 || line==count))
@@ -1081,7 +1081,7 @@ int hist_copy(char *s1,int size,int command,int line)
 			}
 			*s1++ = c;
 		}
-			
+
 	}
 	sfseek(hp->histfp,(off_t)0,SEEK_END);
 	if(s1==0)

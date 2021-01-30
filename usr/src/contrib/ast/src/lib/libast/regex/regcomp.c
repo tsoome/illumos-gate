@@ -69,7 +69,7 @@ typedef struct Cchr_s
 /*
  * determine whether greedy matching will work, i.e. produce
  * the best match first.  such expressions are "easy", and
- * need no backtracking once a complete match is found.  
+ * need no backtracking once a complete match is found.
  * if an expression has backreferences or alts it's hard
  * else if it has only one closure it's easy
  * else if all closures are simple (i.e. one-character) it's easy
@@ -337,7 +337,7 @@ cat(Cenv_t* env, Rex_t* e, Rex_t* f)
 		{
 			if (e->hi > RE_DUP_MAX || f->hi > RE_DUP_MAX)
 			{
-				n = RE_DUP_INF;	
+				n = RE_DUP_INF;
 				goto combine;
 			}
 			else if (n <= RE_DUP_MAX)
@@ -1034,7 +1034,7 @@ col(Celt_t* ce, int ic, unsigned char* bp, int bw, int bc, unsigned char* ep, in
 	register char*		s;
 	register unsigned char*	k;
 	register unsigned char*	e;
-	register int		c;
+	register int		c = 0;
 	register int		cc;
 	int			bt;
 	int			et;
@@ -1173,7 +1173,7 @@ bra(Cenv_t* env)
 	int		i;
 	int		w;
 	int		neg;
-	int		last;
+	int		last = 0;
 	int		inrange;
 	int		complicated;
 	int		collate;
@@ -1430,10 +1430,10 @@ bra(Cenv_t* env)
 		Cchr_t*			xc;
 		Celt_t*			ce;
 		Cchr_t			key;
-		int			rw;
-		int			rc;
+		int			rw = 0;
+		int			rc = 0;
 		wchar_t			wc;
-		unsigned char*		rp;
+		unsigned char*		rp = NULL;
 		unsigned char*		pp;
 		char			cb[2][COLL_KEY_MAX+1];
 
@@ -2586,13 +2586,13 @@ seq(Cenv_t* env)
 	Token_t		tok;
 	int		c;
 	int		i;
-	int		n;
-	int		x;
+	int		n = 0;
+	int		x = 0;
 	int		parno;
 	int		type;
 	regflags_t	flags;
 	unsigned char*	s;
-	unsigned char*	p;
+	unsigned char*	p = NULL;
 	unsigned char*	t;
 	unsigned char*	u;
 	unsigned char	buf[256];
@@ -2601,7 +2601,7 @@ seq(Cenv_t* env)
 	{
 		s = buf;
 		while ((c = token(env)) < T_META && s < &buf[sizeof(buf) - env->token.len])
-		{	
+		{
 			x = c;
 			p = env->cursor;
 			if (c >= 0)
@@ -2732,13 +2732,13 @@ seq(Cenv_t* env)
 					drop(env->disc, e);
 					env->error = (*env->cursor == 0 || *env->cursor == env->delimiter || *env->cursor == env->terminator) ? REG_EPAREN : REG_ENULL;
 					return 0;
-				} 
+				}
 				if (token(env) != T_CLOSE)
 				{
 					drop(env->disc, e);
 					env->error = REG_EPAREN;
 					return 0;
-				} 
+				}
 				env->parnest--;
 				eat(env);
 				if (!(f = node(env, REX_GROUP, 0, 0, 0)))
@@ -3005,7 +3005,7 @@ bmtrie(Cenv_t* env, Rex_t* a, unsigned char* v, Trie_node_t* x, int n, int m, Bm
  * 2. max length fixed string found -- use BM algorithm
  * 3. it begins with an unanchored string - use KMP algorithm
  * 0 returned on success
- */		
+ */
 
 static int
 special(Cenv_t* env, regex_t* p)
@@ -3225,7 +3225,7 @@ special(Cenv_t* env, regex_t* p)
 	}
 	p->env->once = 1;
 	return 0;
-}		
+}
 
 int
 regcomp(regex_t* p, const char* pattern, regflags_t flags)

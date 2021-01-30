@@ -301,7 +301,7 @@ static Shnode_t *getanode(Lex_t *lp, struct argnod *ap)
  */
 static Shnode_t	*makelist(Lex_t *lexp, int type, Shnode_t *l, Shnode_t *r)
 {
-	register Shnode_t	*t;
+	register Shnode_t	*t = NULL;
 	if(!l || !r)
 		sh_syntax(lexp);
 	else
@@ -350,7 +350,7 @@ void	*sh_parse(Shell_t *shp, Sfio_t *iop, int flag)
 	if(fcfile())
 	{
 		char *cp = fcfirst();
-		if( cp[0]==CNTL('k') &&  cp[1]==CNTL('s') && cp[2]==CNTL('h') && cp[3]==0) 
+		if( cp[0]==CNTL('k') &&  cp[1]==CNTL('s') && cp[2]==CNTL('h') && cp[3]==0)
 		{
 			int version;
 			fcseek(4);
@@ -816,7 +816,7 @@ static Shnode_t *funct(Lex_t *lexp)
 		{
 			struct comnod	*ac;
 			char		*cp, **argv, **argv0;
-			int		c;
+			int		c = 0;
 			t->funct.functargs = ac = (struct comnod*)simple(lexp,SH_NOIO|SH_FUNDEF,NIL(struct ionod*));
 			if(ac->comset || (ac->comtyp&COMSCAN))
 				errormsg(SH_DICT,ERROR_exit(3),e_lexsyntax4,lexp->sh->inlineno);
@@ -944,7 +944,7 @@ static struct argnod *assign(Lex_t *lexp, register struct argnod *ap, int type)
 {
 	register int n;
 	register Shnode_t *t, **tp;
-	register struct comnod *ac;
+	register struct comnod *ac = NULL;
 	Stk_t	*stkp = lexp->sh->stk;
 	int array=0, index=0;
 	Namval_t *np;
@@ -1557,7 +1557,7 @@ static Shnode_t *simple(Lex_t *lexp,int flag, struct ionod *io)
 				lexp->comp_assign = 2;
 				goto retry;
 			}
-			
+
 		}
 		if(!(flag&SH_NOIO))
 		{
@@ -1604,7 +1604,7 @@ static Shnode_t *simple(Lex_t *lexp,int flag, struct ionod *io)
 	}
 #endif /* SHOPT_KIA */
 	if(t->comnamp && (argp=t->comarg->argnxt.ap))
-	{ 
+	{
 		Namval_t *np=(Namval_t*)t->comnamp;
 		if((np==SYSBREAK || np==SYSCONT) && (argp->argflag&ARG_RAW) && !isdigit(*argp->argval))
 		{
@@ -1726,7 +1726,7 @@ static struct ionod	*inout(Lex_t *lexp,struct ionod *lastio,int flag)
 	iop->iodelim = 0;
 	if(token=sh_lex(lexp))
 	{
-		if(token==RPAREN && (iof&IOLSEEK) && lexp->comsub) 
+		if(token==RPAREN && (iof&IOLSEEK) && lexp->comsub)
 		{
 			lexp->arg = (struct argnod*)stkalloc(stkp,sizeof(struct argnod)+3);
 			strcpy(lexp->arg->argval,"CUR");

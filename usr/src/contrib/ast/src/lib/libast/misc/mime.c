@@ -146,9 +146,9 @@ mimeset(Mime_t* mp, char* s, unsigned long flags)
 	Att_t*	att;
 	char*	t;
 	char*	v;
-	char*	k;
-	char*		x;
-	Att_t*		tta;
+	char*	k = NULL;
+	char*		x = NULL;
+	Att_t*		tta = NULL;
 	int		q;
 
 	for (; isspace(*s); s++);

@@ -59,7 +59,7 @@ USAGE_LICENSE
 	"an empty string will be used for comparison. +\anumber\a is "
 	"equivalent to \b--skip-chars\b=\anumber\a.]"
 "[u:unique?Output unique lines.]"
-"[w:check-chars]#[chars?\achars\a is the number of characters to compare " 
+"[w:check-chars]#[chars?\achars\a is the number of characters to compare "
 	"after skipping any specified fields and characters.]"
 "\n"
 "\n[infile [outfile]]\n"
@@ -85,8 +85,8 @@ typedef int (*Compare_f)(const char*, const char*, size_t);
 static int uniq(Sfio_t *fdin, Sfio_t *fdout, int fields, int chars, int width, int mode, int* all, Compare_f compare)
 {
 	register int n, f, outsize=0, mb = mbwide();
-	register char *cp, *ep, *mp, *bufp, *outp;
-	char *orecp, *sbufp=0, *outbuff;
+	register char *cp = NULL, *ep, *mp, *bufp, *outp = NULL;
+	char *orecp = NULL, *sbufp=NULL, *outbuff;
 	int reclen,oreclen= -1,count=0,cwidth=0,sep,next;
 	if(mode&C_FLAG)
 		cwidth = CWIDTH+1;

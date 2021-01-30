@@ -118,7 +118,7 @@ static int iousepipe(Shell_t *shp)
 	fcntl(subpipe[0],F_SETFD,FD_CLOEXEC);
 	subpipe[2] = fcntl(1,F_DUPFD,10);
 	VALIDATE_FD(shp, subpipe[1]);
-	VALIDATE_FD(shp, subpipe[2]);	
+	VALIDATE_FD(shp, subpipe[2]);
 	fcntl(subpipe[2],F_SETFD,FD_CLOEXEC);
 	shp->fdstatus[subpipe[2]] = shp->fdstatus[1];
 	close(1);
@@ -313,7 +313,7 @@ static int sh_tclear(register Shnode_t *t)
 	{
 		case TTIME:
 		case TPAR:
-			return(sh_tclear(t->par.partre)); 
+			return(sh_tclear(t->par.partre));
 		case TCOM:
 			return(p_comarg((struct comnod*)t));
 		case TSETIO:
@@ -349,7 +349,7 @@ static int sh_tclear(register Shnode_t *t)
 			return(n+sh_tclear((Shnode_t*)t->funct.functargs));
 		case TTST:
 			if((t->tre.tretyp&TPAREN)==TPAREN)
-				return(sh_tclear(t->lst.lstlef)); 
+				return(sh_tclear(t->lst.lstlef));
 			else
 			{
 				n=p_arg(&(t->lst.lstlef->arg),0);
@@ -449,7 +449,7 @@ struct Level
  * this is for a debugger but it hasn't been tested yet
  * if a debug script sets .sh.level it should set up the scope
  *  as if you were executing in that level
- */ 
+ */
 static void put_level(Namval_t* np,const char *val,int flags,Namfun_t *fp)
 {
 	Shscope_t	*sp;
@@ -476,7 +476,7 @@ static void put_level(Namval_t* np,const char *val,int flags,Namfun_t *fp)
 	{
 		sh_setscope(sp);
 		error_info.id = sp->cmdname;
-		
+
 	}
 }
 
@@ -935,7 +935,7 @@ static Namval_t *enter_namespace(Shell_t *shp, Namval_t *nsp)
 	}
 	if(!nsp && !onsp)
 		return(0);
-	if(onsp == nsp) 
+	if(onsp == nsp)
 		return(nsp);
 	if(onsp)
 	{
@@ -1067,7 +1067,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 				np = 0;
 				if(!(com0= *(com+=n)))
 					break;
-				np = nv_bfsearch(com0, shp->bltin_tree, &nq, &cp); 
+				np = nv_bfsearch(com0, shp->bltin_tree, &nq, &cp);
 			}
 			if(shp->xargexit)
 			{
@@ -1115,7 +1115,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 					np = dtsearch(shp->fun_tree,np);
 				}
 #if SHOPT_PFSH
-				if(sh_isoption(SH_PFSH) && nv_isattr(np,NV_BLTINOPT) && !nv_isattr(np,NV_BLTPFSH)) 
+				if(sh_isoption(SH_PFSH) && nv_isattr(np,NV_BLTINOPT) && !nv_isattr(np,NV_BLTPFSH))
 				{
 					if(path_xattr(shp,np->nvname,(char*)0))
 					{
@@ -1124,7 +1124,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 					}
 					else
 						nv_onattr(np,NV_BLTPFSH);
-					
+
 				}
 #endif /* SHOPT_PFSH */
 			}
@@ -1133,7 +1133,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 				if(!np && !strchr(com0,'/'))
 				{
 					Dt_t *root = command?shp->bltin_tree:shp->fun_tree;
-					np = nv_bfsearch(com0, root, &nq, &cp); 
+					np = nv_bfsearch(com0, root, &nq, &cp);
 #if SHOPT_NAMESPACE
 					if(shp->namespace && !nq && !cp)
 						np = sh_fsearch(shp,com0,0);
@@ -1166,7 +1166,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 							sh_scope(shp,(struct argnod*)0,0);
 							shp->st.var_local = shp->var_tree;
 						}
-			
+
 					}
 #endif /* SHOPT_BASH */
 					if(np==SYSTYPESET ||  (np && np->nvalue.bfp==SYSTYPESET->nvalue.bfp))
@@ -1200,7 +1200,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 #   endif /* SHOPT_NAMESPACE */
 							shp->prefix = NV_CLASS;
 							flgs |= NV_TYPE;
-			
+
 						}
 #endif /* SHOPT_TYPEDEF */
 						if((shp->fn_depth && !shp->prefix) || np==SYSLOCAL)
@@ -1472,7 +1472,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 					/* don't restore for subshell exec */
 					if((shp->topfd>topfd) && !(shp->subshell && np==SYSEXEC))
 						sh_iorestore(shp,topfd,jmpval);
-			
+
 					shp->redir0 = 0;
 					if(jmpval)
 						siglongjmp(*shp->jmplist,jmpval);
@@ -1511,7 +1511,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 #endif /* SHOPT_NAMESPACE */
 							np = nv_search(com0,shp->fun_tree,HASH_NOSCOPE);
 						}
-						
+
 						if(!np->nvalue.ip)
 						{
 							if(indx==1)
@@ -1553,7 +1553,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 #if SHOPT_NAMESPACE
 						if(*np->nvname=='.')
 						{
-							char *cp = strchr(np->nvname+1,'.');	
+							char *cp = strchr(np->nvname+1,'.');
 							if(cp)
 							{
 								*cp = 0;
@@ -2783,7 +2783,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 			{
 				static Dtdisc_t		_Rpdisc =
 				{
-				        offsetof(struct Ufunction,fname), -1, sizeof(struct Ufunction) 
+				        offsetof(struct Ufunction,fname), -1, sizeof(struct Ufunction)
 				};
 				struct functnod *fp;
 				struct comnod *ac = t->funct.functargs;
@@ -2849,7 +2849,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 			else
 			{
 				register int traceon=0;
-				register char *right;
+				register char *right = NULL;
 				register char *trap;
 				char *argv[6];
 				n = type>>TSHIFT;
@@ -2883,7 +2883,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 				}
 				else if(type&TBINARY)
 				{
-					char *op;
+					char *op = NULL;
 					int pattern = 0;
 					if(trap || traceon)
 						op = (char*)(shtab_testops+(n&037)-1)->sh_name;
@@ -2912,7 +2912,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 				if(traceon)
 					sfwrite(sfstderr,e_tstend,4);
 			}
-			shp->exitval = ((!n)^negate); 
+			shp->exitval = ((!n)^negate);
 			if(!skipexitset)
 				exitset();
 			break;
@@ -2924,7 +2924,7 @@ int sh_exec(register const Shnode_t *t, int flags)
 			sh_timetraps(shp);
 		}
 		if(shp->trapnote || (shp->exitval && sh_isstate(SH_ERREXIT)) &&
-			t && echeck) 
+			t && echeck)
 			sh_chktrap(shp);
 		/* set $_ */
 		if(mainloop && com0)
@@ -3047,7 +3047,7 @@ int sh_trace(Shell_t *shp,register char *argv[], register int nl)
 			char *argv0 = *argv;
 			nl = (nl?'\n':-1);
 			/* don't quote [ and [[ */
-			if(*(cp=argv[0])=='[' && (!cp[1] || !cp[2]&&cp[1]=='['))  
+			if(*(cp=argv[0])=='[' && (!cp[1] || !cp[2]&&cp[1]=='['))
 			{
 				sfputr(sfstderr,cp,*++argv?' ':nl);
 				bracket = 1;
@@ -3302,14 +3302,14 @@ Sfdouble_t sh_mathfun(Shell_t *shp,void *fp, int nargs, Sfdouble_t *arg)
 	int		i;
 	np = (Namval_t*)fp;
 	funenv.node = np;
-	funenv.nref = nref; 
+	funenv.nref = nref;
 	funenv.env = 0;
 	memcpy(&node,SH_VALNOD,sizeof(node));
 	SH_VALNOD->nvfun = 0;
 	SH_VALNOD->nvenv = 0;
 	SH_VALNOD->nvflag = NV_LDOUBLE|NV_NOFREE;
 	SH_VALNOD->nvalue.ldp = 0;
-	for(i=0; i < nargs; i++)	
+	for(i=0; i < nargs; i++)
 	{
 		*nr++ = mp = nv_namptr(shp->mathnodes,i);
 		mp->nvalue.ldp = arg++;
@@ -3627,7 +3627,7 @@ int cmdrecurse(int argc, char* argv[], int ac, char* av[])
 }
 
 /*
- * set up pipe for cooperating process 
+ * set up pipe for cooperating process
  */
 static void coproc_init(Shell_t *shp, int pipes[])
 {
@@ -3640,7 +3640,7 @@ static void coproc_init(Shell_t *shp, int pipes[])
 		/* first co-process */
 		sh_pclose(shp->cpipe);
 		sh_pipe(shp->cpipe);
-		if((outfd=shp->cpipe[1]) < 10) 
+		if((outfd=shp->cpipe[1]) < 10)
 		{
 		        int fd=fcntl(shp->cpipe[1],F_DUPFD,10);
 			VALIDATE_FD(shp, outfd);
@@ -3659,7 +3659,7 @@ static void coproc_init(Shell_t *shp, int pipes[])
 		if(fcntl(*shp->cpipe,F_SETFD,FD_CLOEXEC)>=0)
 			shp->fdstatus[shp->cpipe[0]] |= IOCLEX;
 		shp->fdptrs[shp->cpipe[0]] = shp->cpipe;
-			
+
 		if(fcntl(shp->cpipe[1],F_SETFD,FD_CLOEXEC) >=0)
 			shp->fdstatus[shp->cpipe[1]] |= IOCLEX;
 	}
@@ -3855,7 +3855,7 @@ static pid_t sh_ntfork(Shell_t *shp,const Shnode_t *t,char *argv[],int *jobid,in
 				if(fcntl(shp->outpipe[0],F_SETFD,FD_CLOEXEC)>=0)
 					shp->fdstatus[shp->outpipe[0]] |= IOCLEX;
 			}
-	
+
 			if(t->fork.forkio)
 				sh_redirect(shp,t->fork.forkio,0);
 			if(optimize==0)
@@ -3946,7 +3946,7 @@ static pid_t sh_ntfork(Shell_t *shp,const Shnode_t *t,char *argv[],int *jobid,in
 			scope++;
 			sh_scope(shp,t->com.comset,0);
 		}
-		if(!strchr(path=argv[0],'/')) 
+		if(!strchr(path=argv[0],'/'))
 		{
 			Namval_t *np;
 			if((np=nv_search(path,shp->track_tree,0)) && !nv_isattr(np,NV_NOALIAS) && np->nvalue.cp)
@@ -4025,7 +4025,7 @@ static pid_t sh_ntfork(Shell_t *shp,const Shnode_t *t,char *argv[],int *jobid,in
 			argv[0] = argv[-1];
 		}
 	fail:
-		if(jobfork && spawnpid<0) 
+		if(jobfork && spawnpid<0)
 			job_fork(0);
 		if(spawnpid < 0) switch(errno=shp->path_err)
 		{

@@ -134,7 +134,7 @@ getaddrinfo(const char* node, const char* service, const struct addrinfo* hint, 
 	struct sockaddr_in*	ip;
 	char*			prot;
 	long			n;
-	
+
 	if (!(hp = gethostbyname(node)) || hp->h_addrtype!=AF_INET || hp->h_length>sizeof(struct in_addr))
 	{
 		errno = EADDRNOTAVAIL;
@@ -154,7 +154,7 @@ getaddrinfo(const char* node, const char* service, const struct addrinfo* hint, 
 			case SOCK_STREAM:
 				switch (hint->ai_protocol)
 				{
-				case 0: 	  
+				case 0:
 					protocol = "tcp";
 					break;
 #ifdef IPPROTO_SCTP
@@ -660,7 +660,7 @@ int sh_iorenumber(Shell_t *shp, register int f1,register int f2)
 			sfswap(spnew,sp);
 			sfset(sp,SF_SHARE|SF_PUBLIC,1);
 		}
-		else 
+		else
 		{
 			shp->fdstatus[f2] = (shp->fdstatus[f1]&~IOCLEX);
 			if((f2 = sh_fcntl(f1,F_DUPFD, f2)) < 0)
@@ -684,7 +684,7 @@ int sh_iorenumber(Shell_t *shp, register int f1,register int f2)
 }
 
 /*
- * close a file descriptor and update stream table and attributes 
+ * close a file descriptor and update stream table and attributes
  */
 int sh_close(register int fd)
 {
@@ -1155,9 +1155,9 @@ static char *io_usename(char *name, int *perm, int fno, int mode)
  */
 int	sh_redirect(Shell_t *shp,struct ionod *iop, int flag)
 {
-	Sfoff_t off; 
+	Sfoff_t off;
 	register char *fname;
-	register int 	fd, iof;
+	register int 	fd = -1, iof;
 	const char *message = e_open;
 	int o_mode;		/* mode flag for open */
 	static char io_op[7];	/* used for -x trace info */
@@ -1212,7 +1212,7 @@ int	sh_redirect(Shell_t *shp,struct ionod *iop, int flag)
 					ap->argflag = ARG_RAW;
 				else if(shp->subshell)
 					sh_subtmpfile(shp);
-				ap->argchn.ap = (struct argnod*)fname; 
+				ap->argchn.ap = (struct argnod*)fname;
 				ap = sh_argprocsub(shp,ap);
 				fname = ap->argval;
 			}
@@ -1564,7 +1564,7 @@ int	sh_redirect(Shell_t *shp,struct ionod *iop, int flag)
 				shp->fdstatus[fd] |= IOCLEX;
 			}
 		}
-		else 
+		else
 			goto fail;
 	}
 	return(indx);
@@ -2333,7 +2333,7 @@ struct eval
 };
 
 /*
- * Create a stream consisting of a space separated argv[] list 
+ * Create a stream consisting of a space separated argv[] list
  */
 
 Sfio_t *sh_sfeval(register char *argv[])
@@ -2470,7 +2470,7 @@ static int subexcept(Sfio_t* sp,register int mode, void *data, Sfdisc_t* handle)
 
 #define NROW    15      /* number of rows before going to multi-columns */
 #define LBLSIZ	3	/* size of label field and interfield spacing */
-/* 
+/*
  * print a list of arguments in columns
  */
 void	sh_menu(Sfio_t *outfile,int argn,char *argv[])
@@ -2531,7 +2531,7 @@ skip:
 /*
  * shell version of read() for user added builtins
  */
-ssize_t sh_read(register int fd, void* buff, size_t n) 
+ssize_t sh_read(register int fd, void* buff, size_t n)
 {
 	Shell_t *shp = sh_getinterp();
 	register Sfio_t *sp;
@@ -2547,7 +2547,7 @@ ssize_t sh_read(register int fd, void* buff, size_t n)
 /*
  * shell version of write() for user added builtins
  */
-ssize_t sh_write(register int fd, const void* buff, size_t n) 
+ssize_t sh_write(register int fd, const void* buff, size_t n)
 {
 	Shell_t *shp = sh_getinterp();
 	register Sfio_t *sp;
@@ -2639,7 +2639,7 @@ mode_t	sh_umask(mode_t m)
 /*
  * give file descriptor <fd> and <mode>, return an iostream pointer
  * <mode> must be SF_READ or SF_WRITE
- * <fd> must be a non-negative number ofr SH_IOCOPROCESS or SH_IOHISTFILE. 
+ * <fd> must be a non-negative number ofr SH_IOCOPROCESS or SH_IOHISTFILE.
  * returns NULL on failure and may set errno.
  */
 
