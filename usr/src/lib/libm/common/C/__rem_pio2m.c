@@ -174,6 +174,7 @@ __rem_pio2m(double *x, double *y, int e0, int nx, int prec, const int *ipio2)
 	rp = __swapRP(fp_extended);
 #endif
 
+	fq[0] = 0;	/* Make gcc happy */
 	/* initialize jk */
 	jp = jk = init_jk[prec];
 
