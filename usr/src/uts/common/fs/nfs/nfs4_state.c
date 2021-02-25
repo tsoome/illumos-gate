@@ -183,6 +183,7 @@ deep_open_copy(OPEN4res *dres, OPEN4res *sres)
 
 	switch (sres->delegation.delegation_type) {
 	case OPEN_DELEGATE_NONE:
+	case OPEN_DELEGATE_NONE_EXT:
 		return;
 	case OPEN_DELEGATE_READ:
 		sacep = &sres->delegation.open_delegation4_u.read.permissions;
@@ -208,6 +209,7 @@ deep_open_free(OPEN4res *res)
 
 	switch (res->delegation.delegation_type) {
 	case OPEN_DELEGATE_NONE:
+	case OPEN_DELEGATE_NONE_EXT:
 		return;
 	case OPEN_DELEGATE_READ:
 		acep = &res->delegation.open_delegation4_u.read.permissions;
@@ -343,9 +345,6 @@ static void rfs4_dss_remove_cpleaf(rfs4_client_t *);
 static void rfs4_dss_remove_leaf(rfs4_servinst_t *, char *, char *);
 static void rfs4_client_destroy(rfs4_entry_t);
 static bool_t rfs4_client_expiry(rfs4_entry_t);
-static uint32_t clientid_hash(void *);
-static bool_t clientid_compare(rfs4_entry_t, void *);
-static void *clientid_mkkey(rfs4_entry_t);
 static uint32_t nfsclnt_hash(void *);
 static bool_t nfsclnt_compare(rfs4_entry_t, void *);
 static void *nfsclnt_mkkey(rfs4_entry_t);
@@ -407,6 +406,10 @@ static bool_t deleg_state_compare(rfs4_entry_t, void *);
 static void *deleg_state_mkkey(rfs4_entry_t);
 
 static int rfs4_ss_enabled = 0;
+
+uint32_t clientid_hash(void *);
+bool_t clientid_compare(rfs4_entry_t, void *);
+void *clientid_mkkey(rfs4_entry_t);
 
 void
 rfs4_ss_pnfree(rfs4_ss_pn_t *ss_pn)
@@ -1650,7 +1653,7 @@ typedef union {
 	verifier4	confirm_verf;
 } scid_confirm_verf;
 
-static uint32_t
+uint32_t
 clientid_hash(void *key)
 {
 	cid *idp = key;
@@ -1658,7 +1661,7 @@ clientid_hash(void *key)
 	return (idp->impl_id.c_id);
 }
 
-static bool_t
+bool_t
 clientid_compare(rfs4_entry_t entry, void *key)
 {
 	rfs4_client_t *cp = (rfs4_client_t *)entry;
@@ -1667,7 +1670,7 @@ clientid_compare(rfs4_entry_t entry, void *key)
 	return (*idp == cp->rc_clientid);
 }
 
-static void *
+void *
 clientid_mkkey(rfs4_entry_t entry)
 {
 	rfs4_client_t *cp = (rfs4_client_t *)entry;
