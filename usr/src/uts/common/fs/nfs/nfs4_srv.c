@@ -4239,7 +4239,6 @@ rfs4_lookup_and_findfile(vnode_t *dvp, char *nm, vnode_t **vpp,
 {
 	vnode_t *vp;
 	rfs4_file_t *fp = NULL;
-	bool_t fcreate = FALSE;
 	int error;
 
 	if (vpp)
@@ -4248,7 +4247,7 @@ rfs4_lookup_and_findfile(vnode_t *dvp, char *nm, vnode_t **vpp,
 	if ((error = VOP_LOOKUP(dvp, nm, &vp, NULL, 0, NULL, cr, NULL, NULL,
 	    NULL)) == 0) {
 		if (vp->v_type == VREG)
-			fp = rfs4_findfile(vp, NULL, &fcreate);
+			fp = rfs4_findfile(vp, NULL);
 		if (vpp)
 			*vpp = vp;
 		else
@@ -4266,7 +4265,6 @@ rfs4_lookup_and_findfile(vnode_t *dvp, char *nm, vnode_t **vpp,
  *	res: status. If success - CURRENT_FH unchanged, return change_info
  *		for directory.
  */
-/* ARGSUSED */
 static void
 rfs4_op_remove(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
     struct compound_state *cs)
@@ -4360,8 +4358,13 @@ rfs4_op_remove(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	 */
 	fp = rfs4_lookup_and_findfile(dvp, name, &vp, &error, cs->cr);
 	if (fp != NULL) {
+		clientid4 *client = NULL;
+
+		if (rfs4_has_session(cs))
+			client = &cs->client->rc_clientid;
+
 		if (rfs4_check_delegated_byfp(FWRITE, fp, TRUE, TRUE, TRUE,
-		    NULL)) {
+		    client)) {
 			VN_RELE(vp);
 			rfs4_file_rele(fp);
 			*cs->statusp = resp->status = NFS4ERR_DELAY;
@@ -4561,7 +4564,6 @@ out:
  *	res: status. If success - CURRENT_FH unchanged, return change_info
  *		for both from and target directories.
  */
-/* ARGSUSED */
 static void
 rfs4_op_rename(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
     struct compound_state *cs)
@@ -4585,6 +4587,7 @@ rfs4_op_rename(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	char *converted_onm = NULL;
 	char *converted_nnm = NULL;
 	nfsstat4 status;
+	clientid4 *client = NULL;
 
 	DTRACE_NFSV4_2(op__rename__start, struct compound_state *, cs,
 	    RENAME4args *, args);
@@ -4727,6 +4730,8 @@ rfs4_op_rename(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 		}
 	}
 
+	if (rfs4_has_session(cs))
+		client = &cs->client->rc_clientid;
 	/*
 	 * Is the source a file and have a delegation?
 	 * We don't need to acquire va_seq before these lookups, if
@@ -4737,7 +4742,7 @@ rfs4_op_rename(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	    &error, cs->cr);
 	if (sfp != NULL) {
 		if (rfs4_check_delegated_byfp(FWRITE, sfp, TRUE, TRUE, TRUE,
-		    NULL)) {
+		    client)) {
 			*cs->statusp = resp->status = NFS4ERR_DELAY;
 			goto err_out;
 		}
@@ -4761,7 +4766,7 @@ rfs4_op_rename(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	    cs->cr);
 	if (fp != NULL) {
 		if (rfs4_check_delegated_byfp(FWRITE, fp, TRUE, TRUE, TRUE,
-		    NULL)) {
+		    client)) {
 			*cs->statusp = resp->status = NFS4ERR_DELAY;
 			goto err_out;
 		}
@@ -5377,7 +5382,7 @@ do_rfs4_op_setattr(bitmap4 *resp, fattr4 *fattrp, struct compound_state *cs,
 {
 	int error = 0;
 	struct nfs4_svgetit_arg sarg;
-	bool_t trunc;
+	bool_t trunc = FALSE;
 
 	nfsstat4 status = NFS4_OK;
 	cred_t *cr = cs->cr;
@@ -5389,6 +5394,7 @@ do_rfs4_op_setattr(bitmap4 *resp, fattr4 *fattrp, struct compound_state *cs,
 	int in_crit = 0;
 	uint_t saved_mask = 0;
 	caller_context_t ct;
+	rfs4_file_t *fp;
 
 	*resp = 0;
 	sarg.sbp = &sb;
@@ -5448,7 +5454,22 @@ do_rfs4_op_setattr(bitmap4 *resp, fattr4 *fattrp, struct compound_state *cs,
 		ct.cc_flags = CC_DONTBLOCK;
 	}
 
-	/* XXX start of possible race with delegations */
+	fp = rfs4_findfile(cs->vp, NULL);
+	if (fp != NULL) {
+		bool_t ret;
+		clientid4 *client = NULL;
+
+		if (rfs4_has_session(cs))
+			client = &cs->client->rc_clientid;
+
+		ret = rfs4_check_delegated_byfp(FWRITE, fp,
+		    trunc, TRUE, FALSE, client);
+		rfs4_file_rele(fp);
+		if (ret) {
+			status = NFS4ERR_DELAY;
+			goto done;
+		}
+	}
 
 	/*
 	 * We need to specially handle size changes because it is
@@ -6565,7 +6586,7 @@ rfs4_verifier_to_mtime(verifier4 v, timestruc_t *mtime)
 
 static nfsstat4
 rfs4_createfile(OPEN4args *args, struct svc_req *req, struct compound_state *cs,
-    change_info4 *cinfo, bitmap4 *attrset, clientid4 clientid)
+    change_info4 *cinfo, bitmap4 *attrset, rfs4_client_t *clientid)
 {
 	struct nfs4_svgetit_arg sarg;
 	struct nfs4_ntov_table ntov;
@@ -6878,7 +6899,10 @@ rfs4_createfile(OPEN4args *args, struct svc_req *req, struct compound_state *cs,
 			int in_crit = 0;
 			rfs4_file_t *fp;
 			nfs4_srv_t *nsrv4;
-			bool_t create = FALSE;
+			clientid4 *client = NULL;
+
+			if (rfs4_has_session(cs))
+				client = &cs->client->rc_clientid;
 
 			/*
 			 * We are writing over an existing file.
@@ -6886,9 +6910,10 @@ rfs4_createfile(OPEN4args *args, struct svc_req *req, struct compound_state *cs,
 			 */
 			nsrv4 = nfs4_get_srv();
 			rfs4_hold_deleg_policy(nsrv4);
-			if ((fp = rfs4_findfile(vp, NULL, &create)) != NULL) {
+			if ((fp = rfs4_findfile(vp, NULL)) != NULL) {
 				if (rfs4_check_delegated_byfp(FWRITE, fp,
-				    (reqsize == 0), FALSE, FALSE, &clientid)) {
+				    (reqsize == 0), FALSE, FALSE,
+				    client)) {
 					rfs4_file_rele(fp);
 					rfs4_rele_deleg_policy(nsrv4);
 					VN_RELE(vp);
@@ -7004,7 +7029,8 @@ rfs4_do_open(struct compound_state *cs, struct svc_req *req __unused,
 	int tries = 0;
 
 	/* get the file struct and hold a lock on it during initial open */
-	fp = rfs4_findfile_withlock(cs->vp, &cs->fh, &fcreate);
+	fp = rfs4_findfile_withlock(cs->vp, &cs->fh, &fcreate,
+	    cs->minorversion);
 	if (fp == NULL) {
 		resp->status = NFS4ERR_RESOURCE;
 		DTRACE_PROBE1(nfss__e__do__open1, nfsstat4, resp->status);
@@ -7104,7 +7130,8 @@ again:
 	if (rfs4_check_recall(sp, access)) {
 		rfs4_dbe_unlock(fp->rf_dbe);
 		rfs4_dbe_unlock(sp->rs_dbe);
-		rfs4_recall_deleg(fp, FALSE, sp->rs_owner->ro_client);
+		rfs4_recall_deleg(fp, FALSE,
+		    sp->rs_owner->ro_client);
 		delay(NFS4_DELEGATION_CONFLICT_DELAY);
 		rfs4_dbe_lock(sp->rs_dbe);
 
@@ -7279,7 +7306,7 @@ rfs4_do_opennull(struct compound_state *cs, struct svc_req *req,
 			rfs4_disable_delegation();
 
 		resp->status = rfs4_createfile(args, req, cs, cinfo, attrset,
-		    oo->ro_client->rc_clientid);
+		    oo->ro_client);
 	}
 
 	if (resp->status == NFS4_OK) {
@@ -7454,7 +7481,8 @@ rfs4_do_opendelprev(struct compound_state *cs, struct svc_req *req,
 	}
 
 	/* get the file struct and hold a lock on it during initial open */
-	fp = rfs4_findfile_withlock(cs->vp, NULL, &create);
+	fp = rfs4_findfile_withlock(cs->vp, NULL, &create,
+	    !rfs4_has_session(cs));
 	if (fp == NULL) {
 		resp->status = NFS4ERR_RESOURCE;
 		DTRACE_PROBE1(nfss__e__do_opendelprev1, nfsstat4, resp->status);

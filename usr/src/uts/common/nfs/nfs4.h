@@ -752,6 +752,7 @@ typedef struct rfs4_file {
 	rfs4_dbe_t	*rf_dbe;
 	vnode_t		*rf_vp;
 	nfs_fh4		rf_filehandle;
+	uint8_t		rf_minorversion;	/* NFS4 minor version */
 	list_t		rf_delegstatelist;
 	rfs4_dinfo_t	rf_dinfo;
 	uint32_t	rf_share_deny;
@@ -972,9 +973,9 @@ extern	void		rfs4_update_lock_resp(rfs4_lo_state_t *,
 					nfs_resop4 *);
 
 /* rfs4_file_t handling */
-extern	rfs4_file_t	*rfs4_findfile(vnode_t *, nfs_fh4 *, bool_t *);
+extern	rfs4_file_t	*rfs4_findfile(vnode_t *, nfs_fh4 *);
 extern	rfs4_file_t	*rfs4_findfile_withlock(vnode_t *, nfs_fh4 *,
-						bool_t *);
+			    bool_t *, uint8_t);
 extern	void		rfs4_file_rele(rfs4_file_t *);
 
 /* General collection of "get state" functions */
@@ -1038,7 +1039,7 @@ extern	void		rfs4_return_deleg(rfs4_deleg_state_t *, bool_t);
 extern	bool_t		rfs4_is_deleg(rfs4_state_t *);
 extern	void		rfs4_deleg_state_rele(rfs4_deleg_state_t *);
 extern	bool_t		rfs4_check_delegated_byfp(int, rfs4_file_t *,
-					bool_t, bool_t, bool_t, clientid4 *);
+			    bool_t, bool_t, bool_t, const clientid4 *);
 extern	void		rfs4_clear_dont_grant(rfs4_file_t *);
 extern delegreq_t	do_4x_deleg_hack(int);
 extern void		rfs4x_rs_erase(void *);

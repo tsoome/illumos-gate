@@ -2576,6 +2576,7 @@ rfs4_file_rele(rfs4_file_t *fp)
 typedef struct {
     vnode_t *vp;
     nfs_fh4 *fh;
+    uint8_t minorversion;
 } rfs4_fcreate_arg;
 
 static bool_t
@@ -2585,6 +2586,7 @@ rfs4_file_create(rfs4_entry_t u_entry, void *arg)
 	rfs4_fcreate_arg *ap = (rfs4_fcreate_arg *)arg;
 	vnode_t *vp = ap->vp;
 	nfs_fh4 *fh = ap->fh;
+	uint8_t minorversion = ap->minorversion;
 
 	VN_HOLD(vp);
 
@@ -2597,6 +2599,7 @@ rfs4_file_create(rfs4_entry_t u_entry, void *arg)
 		nfs_fh4_copy(fh, &fp->rf_filehandle);
 	}
 	fp->rf_vp = vp;
+	fp->rf_minorversion = minorversion;
 
 	list_create(&fp->rf_delegstatelist, sizeof (rfs4_deleg_state_t),
 	    offsetof(rfs4_deleg_state_t, rds_node));
@@ -2619,35 +2622,25 @@ rfs4_file_create(rfs4_entry_t u_entry, void *arg)
 }
 
 rfs4_file_t *
-rfs4_findfile(vnode_t *vp, nfs_fh4 *fh, bool_t *create)
+rfs4_findfile(vnode_t *vp, nfs_fh4 *fh)
 {
 	rfs4_file_t *fp;
-	rfs4_fcreate_arg arg;
-	nfs4_srv_t *nsrv4 = nfs4_get_srv();
 
-	arg.vp = vp;
-	arg.fh = fh;
-
-	if (*create == TRUE)
-		/* CSTYLED */
-		fp = (rfs4_file_t *)rfs4_dbsearch(nsrv4->rfs4_file_idx, vp, create,
-		    &arg, RFS4_DBS_VALID);
-	else {
-		mutex_enter(&vp->v_vsd_lock);
-		fp = (rfs4_file_t *)vsd_get(vp, nfs4_srv_vkey);
-		if (fp) {
-			rfs4_dbe_lock(fp->rf_dbe);
-			if (rfs4_dbe_is_invalid(fp->rf_dbe) ||
-			    (rfs4_dbe_refcnt(fp->rf_dbe) == 0)) {
-				rfs4_dbe_unlock(fp->rf_dbe);
-				fp = NULL;
-			} else {
-				rfs4_dbe_hold(fp->rf_dbe);
-				rfs4_dbe_unlock(fp->rf_dbe);
-			}
+	mutex_enter(&vp->v_vsd_lock);
+	fp = (rfs4_file_t *)vsd_get(vp, nfs4_srv_vkey);
+	if (fp != NULL) {
+		rfs4_dbe_lock(fp->rf_dbe);
+		if (rfs4_dbe_is_invalid(fp->rf_dbe) ||
+		    (rfs4_dbe_refcnt(fp->rf_dbe) == 0)) {
+			rfs4_dbe_unlock(fp->rf_dbe);
+			fp = NULL;
+		} else {
+			rfs4_dbe_hold(fp->rf_dbe);
+			rfs4_dbe_unlock(fp->rf_dbe);
 		}
-		mutex_exit(&vp->v_vsd_lock);
 	}
+	mutex_exit(&vp->v_vsd_lock);
+
 	return (fp);
 }
 
@@ -2660,7 +2653,8 @@ rfs4_findfile(vnode_t *vp, nfs_fh4 *fh, bool_t *create)
  * around.
  */
 rfs4_file_t *
-rfs4_findfile_withlock(vnode_t *vp, nfs_fh4 *fh, bool_t *create)
+rfs4_findfile_withlock(vnode_t *vp, nfs_fh4 *fh, bool_t *create,
+    uint8_t minorversion)
 {
 	rfs4_file_t *fp;
 	rfs4_fcreate_arg arg;
@@ -2695,6 +2689,7 @@ rfs4_findfile_withlock(vnode_t *vp, nfs_fh4 *fh, bool_t *create)
 retry:
 		arg.vp = vp;
 		arg.fh = fh;
+		arg.minorversion = minorversion;
 
 		fp = (rfs4_file_t *)rfs4_dbsearch(nsrv4->rfs4_file_idx, vp,
 		    create, &arg, RFS4_DBS_VALID);
@@ -3739,7 +3734,6 @@ rfs4_state_has_access(rfs4_state_t *sp, int mode, vnode_t *vp)
 {
 	nfsstat4 stat = NFS4_OK;
 	rfs4_file_t *fp;
-	bool_t create = FALSE;
 
 	rfs4_dbe_lock(sp->rs_dbe);
 	if (mode == FWRITE) {
@@ -3758,7 +3752,7 @@ rfs4_state_has_access(rfs4_state_t *sp, int mode, vnode_t *vp)
 				goto out;
 
 			/* Check against file struct's DENY mode */
-			fp = rfs4_findfile(vp, NULL, &create);
+			fp = rfs4_findfile(vp, NULL);
 			if (fp != NULL) {
 				int deny_read = 0;
 				rfs4_dbe_lock(fp->rf_dbe);
@@ -3823,7 +3817,6 @@ rfs4_check_stateid(int mode, vnode_t *vp,
     bool_t do_access, caller_context_t *ct, compound_state_t *cs)
 {
 	rfs4_file_t *fp;
-	bool_t create = FALSE;
 	rfs4_state_t *sp;
 	rfs4_deleg_state_t *dsp;
 	rfs4_lo_state_t *lsp;
@@ -3839,7 +3832,7 @@ rfs4_check_stateid(int mode, vnode_t *vp,
 	}
 
 	if (ZERO_STATEID(stateid) || ONE_STATEID(stateid)) {
-		fp = rfs4_findfile(vp, NULL, &create);
+		fp = rfs4_findfile(vp, NULL);
 		if (fp == NULL)
 			return (NFS4_OK);
 

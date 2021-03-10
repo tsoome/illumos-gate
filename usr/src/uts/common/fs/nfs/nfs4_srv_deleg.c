@@ -1506,7 +1506,6 @@ void
 rfs4_recall_deleg(rfs4_file_t *fp, bool_t trunc, rfs4_client_t *cp)
 {
 	time_t elapsed1, elapsed2;
-	rfs4_session_t *sp;
 
 	if (fp->rf_dinfo.rd_time_recalled != 0) {
 		elapsed1 = gethrestime_sec() - fp->rf_dinfo.rd_time_recalled;
@@ -1524,12 +1523,10 @@ rfs4_recall_deleg(rfs4_file_t *fp, bool_t trunc, rfs4_client_t *cp)
 		if (elapsed1 <= ((rfs4_lease_time * 20) / 100))
 			return;
 	}
-	if (cp == NULL ||
-	    (sp = rfs4x_findsession_by_clid(cp->rc_clientid)) == NULL) {
+	if (fp->rf_minorversion == NFS4_MINORVERSION) {
 		rfs4_recall_file(fp, rfs4_do_cb_recall, trunc, cp);
 	} else {
-		rfs4x_session_rele(sp);
-		rfs4_recall_file(fp, rfs4x_do_cb_recall, trunc, sp->sn_clnt);
+		rfs4_recall_file(fp, rfs4x_do_cb_recall, trunc, cp);
 	}
 }
 
@@ -1883,7 +1880,7 @@ rfs4_set_deleg_response(rfs4_deleg_state_t *dsp, open_delegation4 *dp,
  */
 bool_t
 rfs4_check_delegated_byfp(int mode, rfs4_file_t *fp,
-    bool_t trunc, bool_t do_delay, bool_t is_rm, clientid4 *cp)
+    bool_t trunc, bool_t do_delay, bool_t is_rm, const clientid4 *cp)
 {
 	rfs4_deleg_state_t *dsp;
 
@@ -1957,7 +1954,6 @@ rfs4_check_delegated(int mode, vnode_t *vp, bool_t trunc)
 {
 	nfs4_srv_t *nsrv4;
 	rfs4_file_t *fp;
-	bool_t create = FALSE;
 	bool_t rc = FALSE;
 
 	nsrv4 = nfs4_get_srv();
@@ -1965,7 +1961,7 @@ rfs4_check_delegated(int mode, vnode_t *vp, bool_t trunc)
 
 	/* Is delegation enabled? */
 	if (nsrv4->nfs4_deleg_policy != SRV_NEVER_DELEGATE) {
-		fp = rfs4_findfile(vp, NULL, &create);
+		fp = rfs4_findfile(vp, NULL);
 		if (fp != NULL) {
 			if (rfs4_check_delegated_byfp(mode, fp, trunc,
 			    TRUE, FALSE, NULL)) {
@@ -2417,9 +2413,9 @@ rfs4x_cb_chinit(rfs4_session_t *sp)
 	/*
 	 * Adjust cred as per backchannel security
 	 * TODO:
-	 * Only AUTH supported is AUTH_UNIX, though AUTH_NONE is supported,
-	 * kernel defaults to AUTH_UNIX, Refer: clnt_cots_kcreate() which calls
-	 * authkern_create(). [authnone_create() needs to be explored later.]
+	 * rfs4x_cbsec_valid successfully negotiates AUTH_NONE with client,
+	 * but kernel defaults to AUTH_UNIX when creating backchannel to client,
+	 * clnt_cots_kcreate() which calls authkern_create().
 	 */
 	(void) crsetugid(cr, rfs4x_cbsec_getuid(secp),
 	    rfs4x_cbsec_getgid(secp));
