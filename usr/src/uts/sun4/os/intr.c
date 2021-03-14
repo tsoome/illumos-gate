@@ -59,7 +59,7 @@ static kmutex_t intr_dist_cpu_lock;
 
 /* Head of the interrupt distribution lists */
 static struct intr_dist *intr_dist_head = NULL;
-static struct intr_dist *intr_dist_whead = NULL;
+static struct wintr_dist *intr_dist_whead = NULL;
 
 static uint64_t siron_inum[DDI_IPL_10]; /* software interrupt numbers */
 uint64_t *siron_cpu_inum = NULL;
@@ -125,7 +125,7 @@ intr_init(cpu_t *cp)
 	 */
 	for (i = DDI_IPL_1; i <= DDI_IPL_10; i++) {
 		siron_inum[i - 1] = add_softintr(i,
-		    (softintrfunc)ddi_periodic_softintr,
+		    (softintrfunc)(uintptr_t)ddi_periodic_softintr,
 		    (caddr_t)(uintptr_t)(i), SOFTINT_ST);
 	}
 
@@ -478,16 +478,43 @@ intr_dist_add_list(struct intr_dist **phead, void (*func)(void *), void *arg)
 	mutex_exit(&intr_dist_lock);
 }
 
+static void
+wintr_dist_add_list(struct wintr_dist **phead, void (*func)(void *), void *arg)
+{
+	struct wintr_dist *new = kmem_alloc(sizeof (*new), KM_SLEEP);
+	struct wintr_dist *iptr;
+	struct wintr_dist **pptr;
+
+	ASSERT(func);
+	new->func = func;
+	new->arg = arg;
+	new->next = NULL;
+
+	/* Add to tail so that redistribution occurs in original order. */
+	mutex_enter(&intr_dist_lock);
+	for (iptr = *phead, pptr = phead; iptr != NULL;
+	    pptr = &iptr->next, iptr = iptr->next) {
+		/* check for problems as we locate the tail */
+		if ((iptr->func == func) && (iptr->arg == arg)) {
+			cmn_err(CE_PANIC, "intr_dist_add_list(): duplicate");
+			/*NOTREACHED*/
+		}
+	}
+	*pptr = new;
+
+	mutex_exit(&intr_dist_lock);
+}
+
 void
 intr_dist_add(void (*func)(void *), void *arg)
 {
-	intr_dist_add_list(&intr_dist_head, (void (*)(void *))func, arg);
+	intr_dist_add_list(&intr_dist_head, func, arg);
 }
 
 void
 intr_dist_add_weighted(void (*func)(void *, int32_t, int32_t), void *arg)
 {
-	intr_dist_add_list(&intr_dist_whead, (void (*)(void *))func, arg);
+	wintr_dist_add_list(&intr_dist_whead, func, arg);
 }
 
 /*
@@ -518,16 +545,38 @@ intr_dist_rem_list(struct intr_dist **headp, void (*func)(void *), void *arg)
 	mutex_exit(&intr_dist_lock);
 }
 
+static void
+wintr_dist_rem_list(struct intr_dist **headp, void (*func)(void *), void *arg)
+{
+	struct wintr_dist *iptr;
+	struct wintr_dist **vect;
+
+	mutex_enter(&intr_dist_lock);
+	for (iptr = *headp, vect = headp;
+	    iptr != NULL; vect = &iptr->next, iptr = iptr->next) {
+		if ((iptr->func == func) && (iptr->arg == arg)) {
+			*vect = iptr->next;
+			kmem_free(iptr, sizeof (struct intr_dist));
+			mutex_exit(&intr_dist_lock);
+			return;
+		}
+	}
+
+	if (!panicstr)
+		cmn_err(CE_PANIC, "intr_dist_rem_list: not found");
+	mutex_exit(&intr_dist_lock);
+}
+
 void
 intr_dist_rem(void (*func)(void *), void *arg)
 {
-	intr_dist_rem_list(&intr_dist_head, (void (*)(void *))func, arg);
+	intr_dist_rem_list(&intr_dist_head, func, arg);
 }
 
 void
 intr_dist_rem_weighted(void (*func)(void *, int32_t, int32_t), void *arg)
 {
-	intr_dist_rem_list(&intr_dist_whead, (void (*)(void *))func, arg);
+	intr_dist_rem_list(&intr_dist_whead, func, arg);
 }
 
 /*
@@ -576,6 +625,7 @@ intr_redist_all_cpus(void)
 {
 	struct cpu *cp;
 	struct intr_dist *iptr;
+	struct wintr_dist *wptr;
 	int32_t weight, max_weight;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
@@ -613,13 +663,12 @@ intr_redist_all_cpus(void)
 	 * to any lesser weight interrupts.
 	 */
 	for (weight = max_weight; weight >= 0; weight--)
-		for (iptr = intr_dist_whead; iptr != NULL; iptr = iptr->next)
-			((void (*)(void *, int32_t, int32_t))iptr->func)
-			    (iptr->arg, max_weight, weight);
+		for (wptr = intr_dist_whead; wptr != NULL; wptr = wptr->next)
+			wptr->func(wptr->arg, max_weight, weight);
 
 	/* redistribute normal (non-weighted) interrupts */
 	for (iptr = intr_dist_head; iptr != NULL; iptr = iptr->next)
-		((void (*)(void *))iptr->func)(iptr->arg);
+		iptr->func(iptr->arg);
 	mutex_exit(&intr_dist_lock);
 }
 

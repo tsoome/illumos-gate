@@ -95,7 +95,7 @@ static char	abort_seq_msgbuf[ABORT_SEQ_MSGBUFSZ];
 
 /*ARGSUSED0*/
 static uint_t
-abort_seq_softintr(caddr_t arg)
+abort_seq_softintr(caddr_t arg, caddr_t arg1 __unused)
 {
 	char	    *msg;
 	char	    msgbuf[ABORT_SEQ_MSGBUFSZ];
@@ -130,7 +130,7 @@ abort_sequence_init(void)
 	abort_seq_tstamp = 0LL;
 	if (abort_seq_inum == 0)
 		abort_seq_inum = add_softintr(LOCK_LEVEL,
-		    (softintrfunc)abort_seq_softintr, NULL, SOFTINT_ST);
+		    abort_seq_softintr, NULL, SOFTINT_ST);
 }
 
 /*

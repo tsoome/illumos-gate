@@ -58,7 +58,7 @@ extern void mon_clock_unshare(void);
 extern hrtime_t hrtime_base;
 extern void hres_tick(void);
 extern void	clkstart(void);
-extern void cbe_level14();
+extern uint_t cbe_level14(caddr_t, caddr_t);
 extern hrtime_t tick2ns(hrtime_t, uint_t);
 
 typedef struct {

@@ -89,25 +89,25 @@ struct seg_ops segnf_ops = {
 	segnf_free,
 	(faultcode_t (*)(struct hat *, struct seg *, caddr_t, size_t,
 	    enum fault_type, enum seg_rw))
-		segnf_nomap,		/* fault */
+		(uintptr_t)segnf_nomap,		/* fault */
 	(faultcode_t (*)(struct seg *, caddr_t))
-		segnf_nomap,		/* faulta */
+		(uintptr_t)segnf_nomap,		/* faulta */
 	segnf_setprot,
 	segnf_checkprot,
 	(int (*)())segnf_badop,		/* kluster */
 	(size_t (*)(struct seg *))NULL,	/* swapout */
 	(int (*)(struct seg *, caddr_t, size_t, int, uint_t))
-		segnf_nop,		/* sync */
+		(uintptr_t)segnf_nop,		/* sync */
 	(size_t (*)(struct seg *, caddr_t, size_t, char *))
-		segnf_nop,		/* incore */
+		(uintptr_t)segnf_nop,		/* incore */
 	(int (*)(struct seg *, caddr_t, size_t, int, int, ulong_t *, size_t))
-		segnf_nop,		/* lockop */
+		(uintptr_t)segnf_nop,		/* lockop */
 	segnf_getprot,
 	segnf_getoffset,
 	segnf_gettype,
 	segnf_getvp,
 	(int (*)(struct seg *, caddr_t, size_t, uint_t))
-		segnf_nop,		/* advise */
+		(uintptr_t)segnf_nop,		/* advise */
 	segnf_dump,
 	segnf_pagelock,
 	segnf_setpagesize,

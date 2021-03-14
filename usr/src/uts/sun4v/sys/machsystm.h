@@ -92,6 +92,12 @@ struct intr_dist {
 	void *arg;		/* Nexus parent callback arg 1 */
 };
 
+struct wintr_dist {
+	struct intr_dist *next;	/* link to next in list */
+	void (*func)(void *, int32_t, int32_t);	/* Callback function */
+	void *arg;		/* Nexus parent callback arg 1 */
+};
+
 /*
  * Miscellaneous cpu_state changes
  */

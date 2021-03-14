@@ -1015,10 +1015,7 @@ loadable_syscall(
 	 * we've locked either the loaded syscall or nosys
 	 */
 	if (callp->sy_flags & SE_ARGC) {
-		int64_t (*sy_call)();
-
-		sy_call = (int64_t (*)())callp->sy_call;
-		rval = (*sy_call)(a0, a1, a2, a3, a4, a5);
+		rval = (int64_t)(*callp->sy_call)(a0, a1, a2, a3, a4, a5);
 	} else {
 		rval = syscall_ap();
 	}

@@ -283,7 +283,7 @@ cbe_init(void)
 	};
 
 	cbe_level14_inum = add_softintr(CBE_HIGH_PIL,
-	    (softintrfunc)cbe_level14, 0, SOFTINT_MT);
+	    cbe_level14, 0, SOFTINT_MT);
 	cbe_hrtime_max = gethrtime_max();
 
 	/*
