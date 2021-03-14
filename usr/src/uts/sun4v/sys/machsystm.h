@@ -93,7 +93,7 @@ struct intr_dist {
 };
 
 struct wintr_dist {
-	struct intr_dist *next;	/* link to next in list */
+	struct wintr_dist *next;	/* link to next in list */
 	void (*func)(void *, int32_t, int32_t);	/* Callback function */
 	void *arg;		/* Nexus parent callback arg 1 */
 };

@@ -84,7 +84,7 @@ static int ldstub_nc(struct regs *, int);
 void	trap_cleanup(struct regs *, uint_t, k_siginfo_t *, int);
 void	trap_rtt(void);
 
-static int __NORETURN
+static void __NORETURN
 die(unsigned type, struct regs *rp, caddr_t addr, uint_t mmu_fsr)
 {
 	struct panic_trap_info ti;
