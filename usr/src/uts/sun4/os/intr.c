@@ -479,7 +479,8 @@ intr_dist_add_list(struct intr_dist **phead, void (*func)(void *), void *arg)
 }
 
 static void
-wintr_dist_add_list(struct wintr_dist **phead, void (*func)(void *), void *arg)
+wintr_dist_add_list(struct wintr_dist **phead,
+    void (*func)(void *, int32_t, int32_t), void *arg)
 {
 	struct wintr_dist *new = kmem_alloc(sizeof (*new), KM_SLEEP);
 	struct wintr_dist *iptr;
@@ -546,7 +547,8 @@ intr_dist_rem_list(struct intr_dist **headp, void (*func)(void *), void *arg)
 }
 
 static void
-wintr_dist_rem_list(struct intr_dist **headp, void (*func)(void *), void *arg)
+wintr_dist_rem_list(struct wintr_dist **headp,
+    void (*func)(void *, int32_t, int32_t), void *arg)
 {
 	struct wintr_dist *iptr;
 	struct wintr_dist **vect;
@@ -576,7 +578,7 @@ intr_dist_rem(void (*func)(void *), void *arg)
 void
 intr_dist_rem_weighted(void (*func)(void *, int32_t, int32_t), void *arg)
 {
-	intr_dist_rem_list(&intr_dist_whead, func, arg);
+	wintr_dist_rem_list(&intr_dist_whead, func, arg);
 }
 
 /*
