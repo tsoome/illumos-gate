@@ -27,8 +27,6 @@
 #ifndef	_SYS_XC_IMPL_H
 #define	_SYS_XC_IMPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -41,8 +39,8 @@ extern "C" {
 
 extern cpuset_t cpu_ready_set;	/* cpus ready for x-call */
 extern void send_self_xcall(struct cpu *, uint64_t, uint64_t, xcfunc_t *);
-extern uint_t xc_loop(void);
-extern uint_t xc_serv(void);
+extern uint_t xc_loop(caddr_t, caddr_t);
+extern uint_t xc_serv(caddr_t, caddr_t);
 extern void xc_stop(struct regs *);
 #ifdef TRAPTRACE
 extern void xc_trace(uint_t, cpuset_t *, xcfunc_t *, uint64_t, uint64_t);
@@ -71,13 +69,13 @@ extern uint_t sendmondo_in_recover;
 
 #define	XT_SYNC_ONE(cpuid)				\
 {							\
-	init_mondo((xcfunc_t *)xt_sync_tl1, 0, 0);	\
+	init_mondo((xcfunc_t *)(uintptr_t)xt_sync_tl1, 0, 0);	\
 	send_one_mondo(cpuid);				\
 }
 
 #define	XT_SYNC_SOME(cpuset)				\
 {							\
-	init_mondo((xcfunc_t *)xt_sync_tl1, 0, 0);	\
+	init_mondo((xcfunc_t *)(uintptr_t)xt_sync_tl1, 0, 0);	\
 	send_mondo_set(cpuset);				\
 }
 

@@ -530,7 +530,7 @@ xt_sync(cpuset_t cpuset)
 	kpreempt_disable();
 	CPUSET_DEL(cpuset, CPU->cpu_id);
 	CPUSET_AND(cpuset, cpu_ready_set);
-	xt_some(cpuset, (xcfunc_t *)xt_sync_tl1, 0, 0);
+	xt_some(cpuset, (xcfunc_t *)(uintptr_t)xt_sync_tl1, 0, 0);
 	kpreempt_enable();
 }
 
