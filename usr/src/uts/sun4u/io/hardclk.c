@@ -66,7 +66,7 @@ uint_t watchdog_timeout_seconds = CLK_WATCHDOG_DEFAULT;
  * tod module name and operations
  */
 struct tod_ops	tod_ops;
-char		*tod_module_name;
+extern char		*tod_module_name;
 
 
 void

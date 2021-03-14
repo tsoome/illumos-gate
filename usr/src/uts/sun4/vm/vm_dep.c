@@ -91,7 +91,7 @@ plcnt_t		plcnt;		/* page list count */
  * remain 0 if the workaround is not needed.
  */
 #if defined(SF_ERRATA_57)
-caddr_t errata57_limit;
+extern caddr_t errata57_limit;
 #endif
 
 extern void page_relocate_hash(page_t *, page_t *);
