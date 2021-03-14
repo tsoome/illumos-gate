@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/iommutsb.h>
 #include <sys/systm.h>
@@ -101,7 +99,7 @@ static uint_t iommu_tsb_nfree;
 static caddr_t iommu_tsb_base;
 static uint_t iommu_tsb_size;
 
-uint_t niommu_tsbs;
+extern uint_t niommu_tsbs;
 
 /*
  * The following variables can be patched to override the auto-selection

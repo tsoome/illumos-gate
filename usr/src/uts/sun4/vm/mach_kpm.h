@@ -57,7 +57,7 @@ extern void	sfmmu_kpm_page_cache(page_t *, int, int);
 /*
  * kstat data
  */
-struct sfmmu_global_stat sfmmu_global_stat;
+extern struct sfmmu_global_stat sfmmu_global_stat;
 
 /* kpm globals */
 #ifdef	DEBUG
@@ -65,7 +65,7 @@ struct sfmmu_global_stat sfmmu_global_stat;
  * Flush the TLB on kpm mapout. Note: Xcalls are used (again) for the
  * required TLB shootdowns in this case, so handle w/ care. Off by default.
  */
-int	kpm_tlb_flush;
+extern int	kpm_tlb_flush;
 #endif	/* DEBUG */
 
 /*
@@ -74,7 +74,7 @@ int	kpm_tlb_flush;
  * shouldn't have their mutexes in the same cache line.
  */
 #ifdef	DEBUG
-int kpmp_hash_debug;
+extern int kpmp_hash_debug;
 #define	KPMP_HASH(kpp)	(kpmp_hash_debug ? &kpmp_table[0] : &kpmp_table[ \
 	((uintptr_t)(kpp) + ((uintptr_t)(kpp) >> kpmp_shift)) \
 	& (kpmp_table_sz - 1)])
