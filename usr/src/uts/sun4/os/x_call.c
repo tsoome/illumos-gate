@@ -903,7 +903,7 @@ xc_dismissed(cpuset_t cpuset)
  * runs at XCALL_PIL level.
  */
 uint_t
-xc_serv(void)
+xc_serv(caddr_t arg1 __unused, caddr_t arg2 __unused)
 {
 	int lcx = (int)(CPU->cpu_id);
 	struct xc_mbox *xmp;
