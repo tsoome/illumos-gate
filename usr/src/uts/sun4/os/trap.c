@@ -386,8 +386,8 @@ trap(struct regs *rp, caddr_t addr, uint32_t type, uint32_t mmu_fsr)
 		case FT_NFO:
 			break;
 		}
-		/* fall into ... */
 
+		/* FALLTHROUGH */
 	case T_DATA_MMU_MISS:		/* system data mmu miss */
 	case T_DATA_PROT:		/* system data protection fault */
 		if (nfload(rp, &instr))
