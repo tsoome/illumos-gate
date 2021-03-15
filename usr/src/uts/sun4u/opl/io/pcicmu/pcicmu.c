@@ -1434,7 +1434,7 @@ pcmu_ecc_add_intr(pcmu_t *pcmu_p, int inum, pcmu_ecc_intr_info_t *eii_p)
 	mondo = ((pcmu_p->pcmu_cb_p->pcb_ign << PCMU_INO_BITS) |
 	    pcmu_p->pcmu_inos[inum]);
 
-	VERIFY(add_ivintr(mondo, pcmu_pil[inum], (intrfunc)pcmu_ecc_intr,
+	VERIFY(add_ivintr(mondo, pcmu_pil[inum], pcmu_ecc_intr,
 	    (caddr_t)eii_p, NULL, NULL) == 0);
 
 	return (PCMU_ATTACH_RETCODE(PCMU_ECC_OBJ,
