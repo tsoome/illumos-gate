@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * CMU-CH PBM implementation:
  *	initialization
@@ -46,7 +44,7 @@
 #include <sys/membar.h>
 #include <sys/ivintr.h>
 
-static uint_t pcmu_pbm_error_intr(caddr_t a);
+static uint_t pcmu_pbm_error_intr(caddr_t, caddr_t);
 
 /* The nexus interrupt priority values */
 int pcmu_pil[] = {14, 14, 14, 14, 14, 14};
@@ -119,7 +117,7 @@ pcmu_pbm_register_intr(pcmu_pbm_t *pcbm_p)
 	    pcmu_p->pcmu_inos[CBNINTR_PBM]);
 
 	VERIFY(add_ivintr(mondo, pcmu_pil[CBNINTR_PBM],
-	    (intrfunc)pcmu_pbm_error_intr, (caddr_t)pcmu_p, NULL, NULL) == 0);
+	    pcmu_pbm_error_intr, (caddr_t)pcmu_p, NULL, NULL) == 0);
 
 	pcbm_p->pcbm_iblock_cookie = (void *)(uintptr_t)pcmu_pil[CBNINTR_PBM];
 
@@ -176,7 +174,7 @@ pcmu_pbm_destroy(pcmu_t *pcmu_p)
 }
 
 static uint_t
-pcmu_pbm_error_intr(caddr_t a)
+pcmu_pbm_error_intr(caddr_t a, caddr_t b __unused)
 {
 	pcmu_t *pcmu_p = (pcmu_t *)a;
 	pcmu_pbm_t *pcbm_p = pcmu_p->pcmu_pcbm_p;

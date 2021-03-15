@@ -26,8 +26,6 @@
 #ifndef	_SYS_PCMU_ECC_H
 #define	_SYS_PCMU_ECC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -64,7 +62,7 @@ extern void pcmu_ecc_configure(pcmu_t *pcmu_p);
 extern void pcmu_ecc_enable_intr(pcmu_t *pcmu_p);
 extern void pcmu_ecc_disable_wait(pcmu_ecc_t *pecc_p);
 extern uint_t pcmu_ecc_disable_nowait(pcmu_ecc_t *pecc_p);
-extern uint_t pcmu_ecc_intr(caddr_t a);
+extern uint_t pcmu_ecc_intr(caddr_t, caddr_t);
 extern int pcmu_ecc_err_handler(pcmu_ecc_errstate_t *ecc_err_p);
 extern void pcmu_ecc_err_drain(void *not_used, pcmu_ecc_errstate_t *ecc_err);
 

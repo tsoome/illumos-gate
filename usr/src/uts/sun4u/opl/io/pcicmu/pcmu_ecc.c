@@ -239,7 +239,7 @@ pcmu_ecc_read_afsr(pcmu_ecc_intr_info_t *ecc_ii_p)
  * is protected by the per-chip mutex pcmu_err_mutex.
  */
 uint_t
-pcmu_ecc_intr(caddr_t a)
+pcmu_ecc_intr(caddr_t a, caddr_t b __unused)
 {
 	pcmu_ecc_intr_info_t *ecc_ii_p = (pcmu_ecc_intr_info_t *)a;
 	pcmu_ecc_t *pecc_p = ecc_ii_p->pecc_p;
