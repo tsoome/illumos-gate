@@ -129,7 +129,7 @@ static int sbbc_apply_range(struct sbbcsoft *sbbc_p, dev_info_t *rdip,
 
 static int sbbc_init(struct sbbcsoft *);
 
-static uint_t sbbc_intr_wrapper(caddr_t arg);
+static uint_t sbbc_intr_wrapper(caddr_t, caddr_t);
 
 static int sbbc_get_ranges(struct sbbcsoft *);
 static int sbbc_config4pci(struct sbbcsoft *);
@@ -696,8 +696,7 @@ sbbc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip, ddi_intr_op_t intr_op,
 		}
 	}
 
-	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-	    (ddi_intr_handler_t *)sbbc_intr_wrapper,
+	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, sbbc_intr_wrapper,
 	    (caddr_t)sbbcsoftp, NULL);
 
 	if ((rval = i_ddi_intr_ops(dip, rdip, intr_op,
@@ -1323,7 +1322,7 @@ sbbc_uninitchild(dev_info_t *rdip, dev_info_t *child)
  * as a wrapper to all the children requiring interrupt services.
  */
 static uint_t
-sbbc_intr_wrapper(caddr_t arg)
+sbbc_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 
 	struct sbbcsoft *sbbcsoftp = (struct sbbcsoft *)arg;
