@@ -285,7 +285,7 @@ ecc_read_afsr(ecc_intr_info_t *ecc_ii_p)
  * is protected by the per-chip mutex pci_fm_mutex.
  */
 uint_t
-ecc_intr(caddr_t a)
+ecc_intr(caddr_t a, caddr_t b __unused)
 {
 	ecc_intr_info_t *ecc_ii_p = (ecc_intr_info_t *)a;
 	ecc_t *ecc_p = ecc_ii_p->ecc_p;

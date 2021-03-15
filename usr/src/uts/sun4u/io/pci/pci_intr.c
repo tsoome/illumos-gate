@@ -286,7 +286,7 @@ warn:
 extern uint64_t intr_get_time(void);
 
 uint_t
-pci_intr_wrapper(caddr_t arg)
+pci_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	ib_ino_pil_t	*ipil_p = (ib_ino_pil_t *)arg;
 	ib_ino_info_t	*ino_p = ipil_p->ipil_ino_p;
@@ -547,7 +547,7 @@ pci_add_intr(dev_info_t *dip, dev_info_t *rdip, ddi_intr_handle_impl_t *hdlp)
 	    hdlp->ih_pri, hdlp->ih_vector);
 
 	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-	    (ddi_intr_handler_t *)pci_intr_wrapper, (caddr_t)ipil_p, NULL);
+	    pci_intr_wrapper, (caddr_t)ipil_p, NULL);
 
 	ret = i_ddi_add_ivintr(hdlp);
 

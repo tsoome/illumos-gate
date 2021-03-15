@@ -50,7 +50,7 @@
 
 /*LINTLIBRARY*/
 
-static uint_t pbm_error_intr(caddr_t a);
+static uint_t pbm_error_intr(caddr_t, caddr_t);
 
 /* The nexus interrupt priority values */
 int pci_pil[] = {14, 14, 14, 14, 14, 14};
@@ -155,7 +155,7 @@ pbm_register_intr(pbm_t *pbm_p)
 	mondo = IB_INO_TO_MONDO(pci_p->pci_ib_p, pci_p->pci_inos[CBNINTR_PBM]);
 	mondo = CB_MONDO_TO_XMONDO(pci_p->pci_cb_p, mondo);
 
-	VERIFY(add_ivintr(mondo, pci_pil[CBNINTR_PBM], (intrfunc)pbm_error_intr,
+	VERIFY(add_ivintr(mondo, pci_pil[CBNINTR_PBM], pbm_error_intr,
 	    (caddr_t)pci_p, NULL, NULL) == 0);
 
 	pbm_p->pbm_iblock_cookie = (void *)(uintptr_t)pci_pil[CBNINTR_PBM];
@@ -213,7 +213,7 @@ pbm_destroy(pci_t *pci_p)
 }
 
 static uint_t
-pbm_error_intr(caddr_t a)
+pbm_error_intr(caddr_t a, caddr_t b __unused)
 {
 	pci_t *pci_p = (pci_t *)a;
 	pbm_t *pbm_p = pci_p->pci_pbm_p;
