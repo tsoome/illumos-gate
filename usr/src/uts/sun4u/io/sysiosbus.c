@@ -1561,7 +1561,7 @@ find_sbus_slot(dev_info_t *dip, dev_info_t *rdip)
 #define	MAX_INTR_CNT 10
 
 static uint_t
-sbus_intr_wrapper(caddr_t arg)
+sbus_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	uint_t intr_return = DDI_INTR_UNCLAIMED;
 	volatile uint64_t tmpreg;
@@ -1754,8 +1754,7 @@ sbus_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 		 * system. The wrapper will call the device
 		 * interrupt handler.
 		 */
-		DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-		    (ddi_intr_handler_t *)sbus_intr_wrapper,
+		DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, sbus_intr_wrapper,
 		    (caddr_t)sbus_arg, NULL);
 
 		ret = i_ddi_add_ivintr(hdlp);
