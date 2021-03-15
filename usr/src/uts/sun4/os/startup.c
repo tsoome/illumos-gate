@@ -111,13 +111,6 @@ extern uint_t vac_colors;
  */
 
 /*
- * XXX - Don't port this to new architectures
- * A 3rd party volume manager driver (vxdm) depends on the symbol romp.
- * 'romp' has no use with a prom with an IEEE 1275 client interface.
- * The driver doesn't use the value, but it depends on the symbol.
- */
-void *romp;		/* veritas driver won't load without romp 4154976 */
-/*
  * Declare these as initialized data so we can patch them.
  */
 pgcnt_t physmem = 0;	/* memory size in pages, patch if you want less */
