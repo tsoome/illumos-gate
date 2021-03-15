@@ -2088,7 +2088,7 @@ trapstat_stop()
  * _not_ be re-TSTAT_CPU_ENABLED.
  */
 static int
-trapstat_cpu_setup(cpu_setup_t what, processorid_t cpu)
+trapstat_cpu_setup(cpu_setup_t what, processorid_t cpu, void *ptr __unused)
 {
 	tstat_percpu_t *tcpu = &tstat_percpu[cpu];
 
@@ -2234,7 +2234,7 @@ trapstat_open(dev_t *devp, int flag, int otyp, cred_t *cred_p)
 	 * device tree locks.
 	 */
 	ASSERT(!tstat_running);
-	register_cpu_setup_func((cpu_setup_func_t *)trapstat_cpu_setup, NULL);
+	register_cpu_setup_func(trapstat_cpu_setup, NULL);
 
 	/*
 	 * Clear all options.  And until specific CPUs are specified, we'll
@@ -2268,7 +2268,7 @@ trapstat_close(dev_t dev, int flag, int otyp, cred_t *cred_p)
 	ASSERT(!tstat_running);
 
 	mutex_enter(&cpu_lock);
-	unregister_cpu_setup_func((cpu_setup_func_t *)trapstat_cpu_setup, NULL);
+	unregister_cpu_setup_func(trapstat_cpu_setup, NULL);
 	mutex_exit(&cpu_lock);
 
 	tstat_open = 0;
