@@ -121,7 +121,7 @@ static struct dev_ops px_ops = {
 extern struct mod_ops mod_driverops;
 
 static struct modldrv modldrv = {
-	&mod_driverops, 			/* Type of module - driver */
+	&mod_driverops,				/* Type of module - driver */
 #if defined(sun4u)
 	"Sun4u Host to PCIe nexus driver",	/* Name of module. */
 #elif defined(sun4v)
@@ -644,7 +644,7 @@ px_pwr_setup(dev_info_t *dip)
 	hdl.ih_pri = px_pwr_pil;
 
 	/* Add PME_TO_ACK message handler */
-	hdl.ih_cb_func = (ddi_intr_handler_t *)px_pmeq_intr;
+	hdl.ih_cb_func = px_pmeq_intr;
 	if (px_add_msiq_intr(dip, dip, &hdl, MSG_REC,
 	    (msgcode_t)PCIE_PME_ACK_MSG, -1,
 	    &px_p->px_pm_msiq_id) != DDI_SUCCESS) {
@@ -715,15 +715,15 @@ px_pwr_teardown(dev_info_t *dip)
 /*
  * bus map entry point:
  *
- * 	if map request is for an rnumber
+ *	if map request is for an rnumber
  *		get the corresponding regspec from device node
- * 	build a new regspec in our parent's format
+ *	build a new regspec in our parent's format
  *	build a new map_req with the new regspec
  *	call up the tree to complete the mapping
  */
 int
 px_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
-	off_t off, off_t len, caddr_t *addrp)
+    off_t off, off_t len, caddr_t *addrp)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	struct regspec p_regspec;
@@ -835,7 +835,7 @@ done:
  */
 int
 px_dma_setup(dev_info_t *dip, dev_info_t *rdip, ddi_dma_req_t *dmareq,
-	ddi_dma_handle_t *handlep)
+    ddi_dma_handle_t *handlep)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	px_mmu_t *mmu_p = px_p->px_mmu_p;
@@ -903,7 +903,7 @@ freehandle:
  */
 int
 px_dma_allochdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_attr_t *attrp,
-	int (*waitfp)(caddr_t), caddr_t arg, ddi_dma_handle_t *handlep)
+    int (*waitfp)(caddr_t), caddr_t arg, ddi_dma_handle_t *handlep)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	ddi_dma_impl_t *mp;
@@ -961,8 +961,8 @@ px_dma_freehdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle)
  */
 int
 px_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
-	ddi_dma_handle_t handle, ddi_dma_req_t *dmareq,
-	ddi_dma_cookie_t *cookiep, uint_t *ccountp)
+    ddi_dma_handle_t handle, ddi_dma_req_t *dmareq,
+    ddi_dma_cookie_t *cookiep, uint_t *ccountp)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	px_mmu_t *mmu_p = px_p->px_mmu_p;
@@ -1096,8 +1096,8 @@ px_dma_unbindhdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle)
  */
 int
 px_dma_win(dev_info_t *dip, dev_info_t *rdip,
-	ddi_dma_handle_t handle, uint_t win, off_t *offp,
-	size_t *lenp, ddi_dma_cookie_t *cookiep, uint_t *ccountp)
+    ddi_dma_handle_t handle, uint_t win, off_t *offp,
+    size_t *lenp, ddi_dma_cookie_t *cookiep, uint_t *ccountp)
 {
 	ddi_dma_impl_t	*mp = (ddi_dma_impl_t *)handle;
 	int		ret;
@@ -1200,8 +1200,8 @@ static char *px_dmactl_str[] = {
 /*ARGSUSED*/
 int
 px_dma_ctlops(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle,
-	enum ddi_dma_ctlops cmd, off_t *offp, size_t *lenp, caddr_t *objp,
-	uint_t cache_flags)
+    enum ddi_dma_ctlops cmd, off_t *offp, size_t *lenp, caddr_t *objp,
+    uint_t cache_flags)
 {
 	ddi_dma_impl_t *mp = (ddi_dma_impl_t *)handle;
 
@@ -1263,7 +1263,7 @@ px_dma_ctlops(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle,
  */
 int
 px_ctlops(dev_info_t *dip, dev_info_t *rdip,
-	ddi_ctl_enum_t op, void *arg, void *result)
+    ddi_ctl_enum_t op, void *arg, void *result)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	struct detachspec *ds;

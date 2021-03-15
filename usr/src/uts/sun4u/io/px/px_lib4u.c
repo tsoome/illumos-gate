@@ -65,7 +65,7 @@ static int px_goto_l0(px_t *px_p);
 static int px_pre_pwron_check(px_t *px_p);
 static uint32_t px_identity_init(px_t *px_p);
 static boolean_t px_cpr_callb(void *arg, int code);
-static uint_t px_cb_intr(caddr_t arg);
+static uint_t px_cb_intr(caddr_t, caddr_t);
 
 /*
  * ACKNAK Latency Threshold Table.
@@ -1481,9 +1481,8 @@ px_set_cb(dev_info_t *dip, uint64_t val)
 
 /*ARGSUSED*/
 int
-px_lib_map_vconfig(dev_info_t *dip,
-	ddi_map_req_t *mp, pci_config_offset_t off,
-		pci_regspec_t *rp, caddr_t *addrp)
+px_lib_map_vconfig(dev_info_t *dip, ddi_map_req_t *mp, pci_config_offset_t off,
+    pci_regspec_t *rp, caddr_t *addrp)
 {
 	/*
 	 * No special config space access services in this layer.
@@ -1971,7 +1970,7 @@ l23ready_done:
  * PME_To_ACK message.
  */
 uint_t
-px_pmeq_intr(caddr_t arg)
+px_pmeq_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_t	*px_p = (px_t *)arg;
 
@@ -2099,7 +2098,7 @@ px_err_add_intr(px_fault_t *px_fault_p)
 	px_t		*px_p = DIP_TO_STATE(dip);
 
 	VERIFY(add_ivintr(px_fault_p->px_fh_sysino, PX_ERR_PIL,
-	    (intrfunc)px_fault_p->px_err_func, (caddr_t)px_fault_p,
+	    px_fault_p->px_err_func, (caddr_t)px_fault_p,
 	    NULL, NULL) == 0);
 
 	px_ib_intr_enable(px_p, intr_dist_cpuid(), px_fault_p->px_intr_ino);
@@ -2203,7 +2202,7 @@ px_cb_add_intr(px_fault_t *fault_p)
 
 	/* register cb interrupt */
 	VERIFY(add_ivintr(fault_p->px_fh_sysino, PX_ERR_PIL,
-	    (intrfunc)cb_p->px_cb_func, (caddr_t)cb_p, NULL, NULL) == 0);
+	    cb_p->px_cb_func, (caddr_t)cb_p, NULL, NULL) == 0);
 
 
 	/* update cb list */
@@ -2329,7 +2328,7 @@ px_cb_rem_intr(px_fault_t *fault_p)
  * px_cb_intr() - sun4u only,  CB interrupt dispatcher
  */
 uint_t
-px_cb_intr(caddr_t arg)
+px_cb_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_cb_t		*cb_p = (px_cb_t *)arg;
 	px_t		*pxp;
@@ -2346,7 +2345,7 @@ px_cb_intr(caddr_t arg)
 	pxp = cb_p->pxl->pxp;
 	f_p = &pxp->px_cb_fault;
 
-	ret = f_p->px_err_func((caddr_t)f_p);
+	ret = f_p->px_err_func((caddr_t)f_p, NULL);
 
 	mutex_exit(&cb_p->cb_mutex);
 	return (ret);
@@ -2562,7 +2561,7 @@ int
 px_lib_hotplug_init(dev_info_t *dip, void *arg)
 {
 	px_t	*px_p = DIP_TO_STATE(dip);
-	pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 	uint64_t ret;
 
 	if (ddi_prop_exists(DDI_DEV_T_ANY, dip, DDI_PROP_DONTPASS,
@@ -2596,7 +2595,7 @@ px_lib_hotplug_uninit(dev_info_t *dip)
 {
 	if (hvio_hotplug_uninit(dip) == DDI_SUCCESS) {
 		px_t	*px_p = DIP_TO_STATE(dip);
-		pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+		pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 
 		px_ib_intr_disable(px_p->px_ib_p,
 		    px_p->px_inos[PX_INTR_HOTPLUG], IB_INTR_WAIT);
@@ -2622,7 +2621,7 @@ px_hp_intr_redist(px_t *px_p)
 boolean_t
 px_lib_is_in_drain_state(px_t *px_p)
 {
-	pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 	caddr_t csr_base = (caddr_t)pxu_p->px_address[PX_REG_CSR];
 	uint64_t drain_status;
 
@@ -2638,7 +2637,7 @@ px_lib_is_in_drain_state(px_t *px_p)
 pcie_req_id_t
 px_lib_get_bdf(px_t *px_p)
 {
-	pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 	caddr_t csr_base = (caddr_t)pxu_p->px_address[PX_REG_CSR];
 	pcie_req_id_t bdf;
 

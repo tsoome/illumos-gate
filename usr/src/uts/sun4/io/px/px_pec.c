@@ -152,7 +152,7 @@ px_pec_msg_add_intr(px_t *px_p)
 
 	/* Initialize handle */
 	bzero(&hdl, sizeof (ddi_intr_handle_impl_t));
-	hdl.ih_cb_func = (ddi_intr_handler_t *)px_err_fabric_intr;
+	hdl.ih_cb_func = (ddi_intr_handler_t *)(uintptr_t)px_err_fabric_intr;
 	hdl.ih_ver = DDI_INTR_VERSION;
 	hdl.ih_state = DDI_IHDL_STATE_ALLOC;
 	hdl.ih_dip = dip;

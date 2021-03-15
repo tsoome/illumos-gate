@@ -646,7 +646,7 @@ static int  px_err_check_severity(px_t *px_p, ddi_fm_error_t *derr,
  * o handle error: fatal? fm_panic() : return INTR_CLAIMED)
  */
 uint_t
-px_err_cb_intr(caddr_t arg)
+px_err_cb_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*px_fault_p = (px_fault_t *)arg;
 	dev_info_t	*rpdip = px_fault_p->px_fh_dip;
@@ -686,7 +686,7 @@ done:
  * o handle error: fatal? fm_panic() : return INTR_CLAIMED)
  */
 uint_t
-px_err_dmc_pec_intr(caddr_t arg)
+px_err_dmc_pec_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*px_fault_p = (px_fault_t *)arg;
 	dev_info_t	*rpdip = px_fault_p->px_fh_dip;
@@ -733,8 +733,8 @@ void
 px_err_reg_enable(px_err_id_t reg_id, caddr_t csr_base)
 {
 	const px_err_reg_desc_t	*reg_desc_p = &px_err_reg_tbl[reg_id];
-	uint64_t 		intr_mask = *reg_desc_p->intr_mask_p;
-	uint64_t 		log_mask = *reg_desc_p->log_mask_p;
+	uint64_t		intr_mask = *reg_desc_p->intr_mask_p;
+	uint64_t		log_mask = *reg_desc_p->log_mask_p;
 
 	/* Enable logs if it exists */
 	if (reg_desc_p->log_addr != 0)
@@ -1005,7 +1005,7 @@ px_err_erpt_and_clr(px_t *px_p, ddi_fm_error_t *derr, px_err_ss_t *ss_p)
 static int
 px_err_check_severity(px_t *px_p, ddi_fm_error_t *derr, int err, int caller)
 {
-	px_pec_t 	*pec_p = px_p->px_pec_p;
+	px_pec_t	*pec_p = px_p->px_pec_p;
 	boolean_t	is_safeacc = B_FALSE;
 
 	/*
@@ -1059,7 +1059,7 @@ px_err_check_severity(px_t *px_p, ddi_fm_error_t *derr, int err, int caller)
 /* ARGSUSED */
 void
 px_err_log_handle(dev_info_t *rpdip, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr, char *msg)
+    px_err_bit_desc_t *err_bit_descr, char *msg)
 {
 	DBG(DBG_ERR_INTR, rpdip,
 	    "Bit %d, %s, at %s(0x%x) has occured %d times with a severity "
@@ -1072,8 +1072,8 @@ px_err_log_handle(dev_info_t *rpdip, px_err_reg_desc_t *err_reg_descr,
 /* ARGSUSED */
 int
 px_err_hw_reset_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	if (px_log & PX_HW_RESET) {
 		px_err_log_handle(rpdip, err_reg_descr, err_bit_descr,
@@ -1086,8 +1086,8 @@ px_err_hw_reset_handle(dev_info_t *rpdip, caddr_t csr_base,
 /* ARGSUSED */
 int
 px_err_panic_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	if (px_log & PX_PANIC) {
 		px_err_log_handle(rpdip, err_reg_descr, err_bit_descr, "PANIC");
@@ -1099,8 +1099,8 @@ px_err_panic_handle(dev_info_t *rpdip, caddr_t csr_base,
 /* ARGSUSED */
 int
 px_err_protected_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	if (px_log & PX_PROTECTED) {
 		px_err_log_handle(rpdip, err_reg_descr, err_bit_descr,
@@ -1113,8 +1113,8 @@ px_err_protected_handle(dev_info_t *rpdip, caddr_t csr_base,
 /* ARGSUSED */
 int
 px_err_no_panic_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	if (px_log & PX_NO_PANIC) {
 		px_err_log_handle(rpdip, err_reg_descr, err_bit_descr,
@@ -1127,8 +1127,8 @@ px_err_no_panic_handle(dev_info_t *rpdip, caddr_t csr_base,
 /* ARGSUSED */
 int
 px_err_no_error_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	if (px_log & PX_NO_ERROR) {
 		px_err_log_handle(rpdip, err_reg_descr, err_bit_descr,
@@ -1411,8 +1411,8 @@ PX_ERPT_SEND_DEC(jbc_in)
  */
 int
 px_err_jbc_jbusint_in_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	/*
 	 * Holder function to attempt error recovery.  When the features
@@ -1491,8 +1491,8 @@ PX_ERPT_SEND_DEC(jbc_odcd)
 /* ARGSUSED */
 int
 px_err_jbc_dmcint_odcd_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	/*
 	 * Holder function to attempt error recovery.  When the features
@@ -1536,8 +1536,8 @@ px_jbc_pcitool_addr_match(dev_info_t *rpdip, caddr_t csr_base)
 /* ARGSUSED */
 int
 px_err_jbc_safe_acc_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	boolean_t	pri = PX_ERR_IS_PRI(err_bit_descr->bit);
 
@@ -1642,8 +1642,8 @@ PX_ERPT_SEND_DEC(imu_rds)
 /* ARGSUSED */
 int
 px_err_imu_eq_ovfl_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	px_t	*px_p = DIP_TO_STATE(rpdip);
 	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
@@ -1784,8 +1784,8 @@ PX_ERPT_SEND_DEC(mmu)
  */
 int
 px_err_mmu_rbne_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	pcie_req_id_t bdf;
 
@@ -1814,8 +1814,8 @@ done:
 /* ARGSUSED */
 int
 px_err_mmu_tfa_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	pcie_req_id_t bdf;
 
@@ -1842,8 +1842,8 @@ done:
 /* ARGSUSED */
 int
 px_err_mmu_parity_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	uint64_t mmu_tfa;
 	pcie_req_id_t bdf;
@@ -1872,12 +1872,12 @@ done:
 /* ARGSUSED */
 int
 px_err_wuc_ruc_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	px_t		*px_p = DIP_TO_STATE(rpdip);
 	pxu_t		*pxu_p = (pxu_t *)px_p->px_plat_p;
-	uint64_t 	data;
+	uint64_t	data;
 	pf_pcie_adv_err_regs_t adv_reg;
 	int		sts;
 
@@ -1910,8 +1910,8 @@ done:
 /* ARGSUSED */
 int
 px_err_tlu_lup_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	px_t	*px_p = DIP_TO_STATE(rpdip);
 
@@ -1932,8 +1932,8 @@ px_err_tlu_lup_handle(dev_info_t *rpdip, caddr_t csr_base,
 /* ARGSUSED */
 int
 px_err_tlu_ldn_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	px_t    *px_p = DIP_TO_STATE(rpdip);
 	return ((px_p->px_pm_flags & PX_LDN_EXPECTED) ? PX_EXPECTED :
@@ -1967,8 +1967,8 @@ PX_ERPT_SEND_DEC(pec_ilu)
 /* ARGSUSED */
 int
 px_err_pciex_ue_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	px_err_pcie_t	regs = {0};
 	uint32_t	err_bit;
@@ -2122,8 +2122,8 @@ PX_ERPT_SEND_DEC(pciex_ue)
 /* ARGSUSED */
 int
 px_err_pciex_ce_handle(dev_info_t *rpdip, caddr_t csr_base,
-	ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
-	px_err_bit_desc_t *err_bit_descr)
+    ddi_fm_error_t *derr, px_err_reg_desc_t *err_reg_descr,
+    px_err_bit_desc_t *err_bit_descr)
 {
 	px_err_pcie_t	regs = {0};
 	int		err;

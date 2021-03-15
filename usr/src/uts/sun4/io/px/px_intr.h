@@ -49,8 +49,8 @@ extern int px_rem_msiq_intr(dev_info_t *dip, dev_info_t *rdip,
 	ddi_intr_handle_impl_t *hdlp, msiq_rec_type_t rec_type,
 	msgcode_t msg_code, msiqid_t msiq_id);
 
-extern uint_t px_intx_intr(caddr_t arg);
-extern uint_t px_msiq_intr(caddr_t arg);
+extern uint_t px_intx_intr(caddr_t, caddr_t);
+extern uint_t px_msiq_intr(caddr_t, caddr_t);
 
 #ifdef	__cplusplus
 }

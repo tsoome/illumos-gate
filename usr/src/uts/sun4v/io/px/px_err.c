@@ -81,7 +81,7 @@ boolean_t px_legacy_epkt = B_TRUE;
  * Interrupt handler for the Host Bus Block.
  */
 uint_t
-px_err_cb_intr(caddr_t arg)
+px_err_cb_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*fault_p = (px_fault_t *)arg;
 	px_rc_err_t	*epkt = (px_rc_err_t *)fault_p->px_intr_payload;
@@ -98,7 +98,7 @@ px_err_cb_intr(caddr_t arg)
  * Interrupt handler for the DMC/PEC block.
  */
 uint_t
-px_err_dmc_pec_intr(caddr_t arg)
+px_err_dmc_pec_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*fault_p = (px_fault_t *)arg;
 	px_rc_err_t	*epkt = (px_rc_err_t *)fault_p->px_intr_payload;
@@ -138,7 +138,8 @@ px_err_cmn_intr(px_t *px_p, ddi_fm_error_t *derr, int caller, int block)
  * fills RC specific fault data
  */
 static void
-px_err_fill_pfd(dev_info_t *dip, pf_data_t *pfd_p, px_rc_err_t *epkt) {
+px_err_fill_pfd(dev_info_t *dip, pf_data_t *pfd_p, px_rc_err_t *epkt)
+{
 	pf_pcie_adv_err_regs_t adv_reg;
 	pcie_req_id_t	fault_bdf = PCIE_INVALID_BDF;
 	uint64_t	fault_addr = 0;
@@ -227,7 +228,8 @@ px_err_fill_pfd(dev_info_t *dip, pf_data_t *pfd_p, px_rc_err_t *epkt) {
  * returned as is if forgivable.
  */
 static int
-px_err_to_fab_sev(int *rc_err) {
+px_err_to_fab_sev(int *rc_err)
+{
 	int fab_err = 0;
 
 	if (*rc_err & px_die) {
@@ -342,7 +344,7 @@ static int
 px_err_epkt_severity(px_t *px_p, ddi_fm_error_t *derr, px_rc_err_t *epkt,
     pf_data_t *pfd_p)
 {
-	px_pec_t 	*pec_p = px_p->px_pec_p;
+	px_pec_t	*pec_p = px_p->px_pec_p;
 	dev_info_t	*dip = px_p->px_dip;
 	boolean_t	is_safeacc = B_FALSE;
 	boolean_t	is_block_pci = B_FALSE;

@@ -83,7 +83,7 @@ typedef struct px_cb {
 	sysino_t	sysino;		/* proxy sysino */
 	cpuid_t		cpuid;		/* proxy cpuid */
 	int		attachcnt;	/* number of attached px */
-	uint_t		(*px_cb_func)(caddr_t); /* CB intr dispatcher */
+	uint_t	(*px_cb_func)(caddr_t, caddr_t); /* CB intr dispatcher */
 } px_cb_t;
 
 typedef struct pxu {
