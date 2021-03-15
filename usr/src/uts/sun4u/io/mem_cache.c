@@ -825,7 +825,7 @@ retry_l2_retire:
 			 * the cross trap call xt_one.
 			 */
 			xt_one(cache_info->cpu_id,
-			    (xcfunc_t *)(get_ecache_dtags_tl1),
+			    (xcfunc_t *)(uintptr_t)get_ecache_dtags_tl1,
 			    afar, (uint64_t)(&clop));
 			mutex_enter(&cpu_lock);
 			(void) start_cpus();
