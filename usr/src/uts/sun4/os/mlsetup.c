@@ -88,9 +88,6 @@ int	ecache_associativity;
 int	ecache_setsize;			/* max possible e$ setsize */
 int	cpu_setsize;			/* max e$ setsize of configured cpus */
 int	dcache_line_mask;		/* spitfire only */
-int	vac_size;			/* cache size in bytes */
-uint_t	vac_mask;			/* VAC alignment consistency mask */
-int	vac_shift;			/* log2(vac_size) for ppmapout() */
 int	vac = 0;	/* virtual address cache type (none == 0) */
 
 /*

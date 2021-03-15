@@ -187,6 +187,11 @@ static struct wkdevice {
 	{ 0, },
 };
 
+int             vac_size;	/* cache size in bytes */
+uint_t          vac_mask;	/* VAC alignment consistency mask */
+int             vac_shift;	/* log2(vac_size) for ppmapout() */
+uintptr_t	shm_alignment;	/* VAC address consistency modulus */
+
 static void map_wellknown(pnode_t);
 
 void

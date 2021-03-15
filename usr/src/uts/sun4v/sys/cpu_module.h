@@ -168,8 +168,8 @@ int	cleanup_cpu_common(int);
 void	setup_exec_unit_mappings(md_t *);
 void	setup_chip_mappings(md_t *);
 
-boolean_t	broken_md_flag;
-int	va_bits;
+extern boolean_t	broken_md_flag;
+extern int	va_bits;
 
 #endif /* _KERNEL */
 

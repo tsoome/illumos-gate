@@ -157,7 +157,6 @@ caddr_t kmem64_aligned_end;	/* end of large page, overmaps 64-bit space */
 int	kmem64_szc;		/* page size code */
 uint64_t kmem64_pabase = (uint64_t)-1;	/* physical address of kmem64_base */
 
-uintptr_t shm_alignment;	/* VAC address consistency modulus */
 struct memlist *phys_install;	/* Total installed physical memory */
 struct memlist *phys_avail;	/* Available (unreserved) physical memory */
 struct memlist *virt_avail;	/* Available (unmapped?) virtual memory */
