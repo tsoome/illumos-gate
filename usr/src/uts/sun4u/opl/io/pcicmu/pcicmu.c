@@ -2155,8 +2155,8 @@ pcmu_err_create(pcmu_t *pcmu_p)
 	 */
 	if (pcmu_ecc_queue == NULL) {
 		pcmu_ecc_queue = errorq_create("pcmu_ecc_queue",
-		    (errorq_func_t)pcmu_ecc_err_drain,
-		    (void *)NULL,
+		    (errorq_func_t)(uintptr_t)pcmu_ecc_err_drain,
+		    NULL,
 		    ECC_MAX_ERRS, sizeof (pcmu_ecc_errstate_t),
 		    PIL_2, ERRORQ_VITAL);
 		if (pcmu_ecc_queue == NULL)
