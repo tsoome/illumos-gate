@@ -3400,8 +3400,9 @@ drmach_lock_critical(uintptr_t arg1, uintptr_t arg2)
 }
 
 static void
-drmach_unlock_critical(caddr_t va)
+drmach_unlock_critical(uintptr_t arg, uintptr_t arg1 __unused)
 {
+	caddr_t va = (caddr_t)arg;
 	int i;
 
 	for (i = 0; i < DRMACH_FMEM_LOCKED_PAGES; i++) {
@@ -3555,7 +3556,7 @@ drmach_copy_rename_init(drmachid_t t_id, drmachid_t s_id,
 	wp = bp = (caddr_t)prog;
 
 	/* Now remap prog_kmem to prog */
-	drmach_lock_critical((caddr_t)prog_kmem, (caddr_t)prog);
+	drmach_lock_critical((uintptr_t)prog_kmem, (uintptr_t)prog);
 
 	/* All pointers in prog are based on the alternate mapping */
 	prog->data = (drmach_copy_rename_data_t *)roundup(((uint64_t)prog +
@@ -3831,7 +3832,7 @@ end:
 	*pgm_id = prog_kmem;
 
 	/* Unmap the alternate space.  It will have to be remapped again */
-	drmach_unlock_critical((caddr_t)prog);
+	drmach_unlock_critical((uintptr_t)prog, 0);
 	return (NULL);
 
 err_out:
@@ -3842,7 +3843,7 @@ err_out:
 	}
 out:
 	if (prog != NULL) {
-		drmach_unlock_critical((caddr_t)prog);
+		drmach_unlock_critical((uintptr_t)prog, 0);
 		vmem_free(heap_arena, prog, DRMACH_FMEM_LOCKED_PAGES *
 		    PAGESIZE);
 	}
@@ -3874,7 +3875,8 @@ drmach_copy_rename_fini(drmachid_t id)
 	 * we have to remap again because all the pointer like data,
 	 * critical in prog are based on the alternate vmem space.
 	 */
-	(void) drmach_lock_critical((caddr_t)prog, (caddr_t)prog->locked_prog);
+	(void) drmach_lock_critical((uintptr_t)prog,
+	    (uintptr_t)prog->locked_prog);
 
 	if (prog->data->c_ml != NULL)
 		memlist_delete(prog->data->c_ml);
@@ -3921,7 +3923,7 @@ drmach_copy_rename_fini(drmachid_t id)
 	/* soft resume mac patrol */
 	(*prog->data->mc_resume)();
 
-	drmach_unlock_critical((caddr_t)prog->locked_prog);
+	drmach_unlock_critical((uintptr_t)prog->locked_prog, 0);
 
 	vmem_free(heap_arena, prog->locked_prog,
 	    DRMACH_FMEM_LOCKED_PAGES * PAGESIZE);
@@ -4033,7 +4035,7 @@ drmach_copy_rename(drmachid_t id)
 	 * are based on the alternate vmem space.
 	 */
 
-	(void) drmach_lock_critical((caddr_t)prog_kmem, (caddr_t)prog);
+	(void) drmach_lock_critical((uintptr_t)prog_kmem, (uintptr_t)prog);
 
 	/*
 	 * we call scf to get the base address here becuase if scf
@@ -4046,7 +4048,7 @@ drmach_copy_rename(drmachid_t id)
 	if (prog->critical->scf_reg_base == (uint64_t)-1 ||
 	    prog->critical->scf_reg_base == 0) {
 		prog->data->fmem_status.error = EOPL_FMEM_SCF_ERR;
-		drmach_unlock_critical((caddr_t)prog);
+		drmach_unlock_critical((uintptr_t)prog, 0);
 		return;
 	}
 
@@ -4067,7 +4069,7 @@ drmach_copy_rename(drmachid_t id)
 
 	for (cpuid = 0; cpuid < NCPU; cpuid++) {
 		if (CPU_IN_SET(cpuset, cpuid)) {
-			xc_one(cpuid, (xcfunc_t *)drmach_lock_critical,
+			xc_one(cpuid, drmach_lock_critical,
 			    (uint64_t)prog_kmem, (uint64_t)prog);
 		}
 	}
@@ -4168,7 +4170,7 @@ done:
 
 	for (cpuid = 0; cpuid < NCPU; cpuid++) {
 		if (CPU_IN_SET(cpuset, cpuid)) {
-			xc_one(cpuid, (xcfunc_t *)drmach_unlock_critical,
+			xc_one(cpuid, drmach_unlock_critical,
 			    (uint64_t)prog, 0);
 		}
 	}
@@ -4179,13 +4181,13 @@ done:
 	 * we should unlock before the following lock to keep the kpreempt
 	 * count correct.
 	 */
-	(void) drmach_unlock_critical((caddr_t)prog);
+	(void) drmach_unlock_critical((uintptr_t)prog, 0);
 
 	/*
 	 * we must remap again.  TLB might have been removed in above xcall.
 	 */
 
-	(void) drmach_lock_critical((caddr_t)prog_kmem, (caddr_t)prog);
+	(void) drmach_lock_critical((uintptr_t)prog_kmem, (uintptr_t)prog);
 
 	if (prog->data->fmem_status.error == ESBD_NOERROR)
 		prog->data->fmem_status.error = rtn;
@@ -4196,5 +4198,5 @@ done:
 		    prog->data->copy_wait_time/prog->data->stick_freq,
 		    prog->data->slowest_cpuid);
 	}
-	drmach_unlock_critical((caddr_t)prog);
+	drmach_unlock_critical((uintptr_t)prog, 0);
 }
