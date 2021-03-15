@@ -4758,7 +4758,7 @@ pcmcia_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 
 	handler.socket = sockp->ls_socket;
 	handler.irq = 0;	/* default case */
-	handler.handler = (f_tt *)hdlp->ih_cb_func;
+	handler.handler = (f_tt *)(uintptr_t)hdlp->ih_cb_func;
 	handler.arg1 = hdlp->ih_cb_arg1;
 	handler.arg2 = hdlp->ih_cb_arg2;
 	handler.handler_id = (uint32_t)(uintptr_t)rdip;
@@ -4801,7 +4801,7 @@ pcmcia_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 			 * replace first function handler with
 			 * the mfc handler
 			 */
-			handler.handler =  (f_tt *)pcmcia_mfc_intr;
+			handler.handler =  (f_tt *)(uintptr_t)pcmcia_mfc_intr;
 			handler.arg1 = (caddr_t)sockp;
 			handler.arg2 = NULL;
 		} else {
