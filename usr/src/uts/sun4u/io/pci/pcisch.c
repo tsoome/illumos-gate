@@ -674,7 +674,7 @@ cb_register_intr(pci_t *pci_p)
 	mondo = CB_MONDO_TO_XMONDO(pci_p->pci_cb_p, mondo);
 
 	VERIFY(add_ivintr(mondo, pci_pil[CBNINTR_BUS_ERROR],
-	    (intrfunc)cb_buserr_intr, (caddr_t)pci_p->pci_cb_p,
+	    cb_buserr_intr, (caddr_t)pci_p->pci_cb_p,
 	    NULL, NULL) == 0);
 
 	return (PCI_ATTACH_RETCODE(PCI_CB_OBJ, PCI_OBJ_INTR_ADD, DDI_SUCCESS));
@@ -1706,7 +1706,7 @@ jbus_err_handler(dev_info_t *dip, uint64_t fme_ena,
  * Control Block error interrupt handler.
  */
 uint_t
-cb_buserr_intr(caddr_t a)
+cb_buserr_intr(caddr_t a, caddr_t b __unused)
 {
 	cb_t *cb_p = (cb_t *)a;
 	pci_common_t *cmn_p = cb_p->cb_pci_cmn_p;
@@ -3410,14 +3410,14 @@ pci_ecc_add_intr(pci_t *pci_p, int inum, ecc_intr_info_t *eii_p)
 	    pci_p->pci_inos[inum]);
 	mondo = CB_MONDO_TO_XMONDO(pci_p->pci_cb_p, mondo);
 
-	VERIFY(add_ivintr(mondo, pci_pil[inum], (intrfunc)ecc_intr,
+	VERIFY(add_ivintr(mondo, pci_pil[inum], ecc_intr,
 	    (caddr_t)eii_p, NULL, NULL) == 0);
 
 	if (CHIP_TYPE(pci_p) != PCI_CHIP_TOMATILLO)
 		return (PCI_ATTACH_RETCODE(PCI_ECC_OBJ, PCI_OBJ_INTR_ADD,
 		    DDI_SUCCESS));
 
-	r = pci_tom_nbintr_op(pci_p, inum, (intrfunc)ecc_intr,
+	r = pci_tom_nbintr_op(pci_p, inum, ecc_intr,
 	    (caddr_t)eii_p, PCI_OBJ_INTR_ADD);
 	return (PCI_ATTACH_RETCODE(PCI_ECC_OBJ, PCI_OBJ_INTR_ADD, r));
 }
@@ -3434,12 +3434,12 @@ pci_ecc_rem_intr(pci_t *pci_p, int inum, ecc_intr_info_t *eii_p)
 	VERIFY(rem_ivintr(mondo, pci_pil[inum]) == 0);
 
 	if (CHIP_TYPE(pci_p) == PCI_CHIP_TOMATILLO)
-		pci_tom_nbintr_op(pci_p, inum, (intrfunc)ecc_intr,
+		pci_tom_nbintr_op(pci_p, inum, ecc_intr,
 		    (caddr_t)eii_p, PCI_OBJ_INTR_REMOVE);
 }
 
 static uint_t
-pci_pbm_cdma_intr(caddr_t a)
+pci_pbm_cdma_intr(caddr_t a, caddr_t b __unused)
 {
 	pbm_t *pbm_p = (pbm_t *)a;
 	pbm_p->pbm_cdma_flag = PBM_CDMA_DONE;
@@ -3458,7 +3458,7 @@ pci_pbm_add_intr(pci_t *pci_p)
 	mondo = CB_MONDO_TO_XMONDO(pci_p->pci_cb_p, mondo);
 
 	VERIFY(add_ivintr(mondo, pci_pil[CBNINTR_CDMA],
-	    (intrfunc)pci_pbm_cdma_intr, (caddr_t)pci_p->pci_pbm_p,
+	    pci_pbm_cdma_intr, (caddr_t)pci_p->pci_pbm_p,
 	    NULL, NULL) == 0);
 
 	return (DDI_SUCCESS);

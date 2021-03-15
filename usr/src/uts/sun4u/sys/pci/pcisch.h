@@ -522,7 +522,7 @@ typedef struct pcix_err_tbl {
 #define	TLBDATA_CACHE_BIT			(0x1ull << 30)
 #define	TLBDATA_MEMPA_BITS			((0x1ull << 30) - 1)
 
-extern uint_t cb_buserr_intr(caddr_t a);
+extern uint_t cb_buserr_intr(caddr_t, caddr_t);
 
 /*
  * pbm_cdma_flag(schizo only): consistent dma sync handshake

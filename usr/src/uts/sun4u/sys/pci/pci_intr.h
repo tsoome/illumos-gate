@@ -35,7 +35,7 @@ extern int pci_add_intr(dev_info_t *dip, dev_info_t *rdip,
 	ddi_intr_handle_impl_t *hdlp);
 extern int pci_remove_intr(dev_info_t *dip, dev_info_t *rdip,
 	ddi_intr_handle_impl_t *hdlp);
-extern uint_t pci_intr_wrapper(caddr_t arg);
+extern uint_t pci_intr_wrapper(caddr_t, caddr_t);
 extern void pci_intr_teardown(pci_t *pci_p);
 
 #ifdef	__cplusplus
