@@ -678,9 +678,8 @@ cb_thermal_timeout(void *arg)
  * Use timeout(9f) to implement the core functionality so that the
  * timeout(9f) function can sleep, if needed.
  */
-/*ARGSUSED*/
 uint_t
-cb_thermal_intr(caddr_t a)
+cb_thermal_intr(caddr_t a __unused, caddr_t b __unused)
 {
 	cmn_err(CE_WARN, "pci: Thermal warning detected!\n");
 	if (pci_thermal_intr_fatal) {
@@ -718,7 +717,7 @@ cb_register_intr(pci_t *pci_p)
 	mondo = CB_MONDO_TO_XMONDO(pci_p->pci_cb_p, mondo);
 
 	VERIFY(add_ivintr(mondo, pci_pil[CBNINTR_THERMAL],
-	    (intrfunc)cb_thermal_intr, (caddr_t)pci_p->pci_cb_p,
+	    cb_thermal_intr, (caddr_t)pci_p->pci_cb_p,
 	    NULL, NULL) == 0);
 
 	return (PCI_ATTACH_RETCODE(PCI_CB_OBJ, PCI_OBJ_INTR_ADD, DDI_SUCCESS));
