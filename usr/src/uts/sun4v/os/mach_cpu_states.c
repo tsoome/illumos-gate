@@ -1304,7 +1304,7 @@ xt_sync(cpuset_t cpuset)
 	 * traptrace buffer and the panic message.
 	 */
 	traptrace_id = gettick();
-	xt_some(cpuset, (xcfunc_t *)xt_sync_tl1,
+	xt_some(cpuset, (xcfunc_t *)(uintptr_t)xt_sync_tl1,
 	    (uint64_t)cpu_sync.byte, traptrace_id);
 
 	starttick = lasttick = gettick();
