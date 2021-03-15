@@ -90,7 +90,7 @@ void	send_mondo_set(cpuset_t set);
  * values.
  */
 static int
-xc_func_timeout_adj(cpu_setup_t what, int cpuid)
+xc_func_timeout_adj(cpu_setup_t what, int cpuid, void *ptr __unused)
 {
 	uint64_t freq = cpunodes[cpuid].clock_freq;
 
@@ -134,10 +134,8 @@ xc_init(void)
 	}
 #endif /* TRAPTRACE */
 
-	xc_serv_inum = add_softintr(XCALL_PIL, (softintrfunc)xc_serv, 0,
-	    SOFTINT_MT);
-	xc_loop_inum = add_softintr(XCALL_PIL, (softintrfunc)xc_loop, 0,
-	    SOFTINT_MT);
+	xc_serv_inum = add_softintr(XCALL_PIL, xc_serv, 0, SOFTINT_MT);
+	xc_loop_inum = add_softintr(XCALL_PIL, xc_loop, 0, SOFTINT_MT);
 
 	/*
 	 * Initialize the calibrated tick limit for send_mondo.
@@ -156,7 +154,7 @@ xc_init(void)
 		maxfreq = MAX(cpunodes[pix].clock_freq, maxfreq);
 	}
 	xc_mondo_time_limit = maxfreq * xc_scale;
-	register_cpu_setup_func((cpu_setup_func_t *)xc_func_timeout_adj, NULL);
+	register_cpu_setup_func(xc_func_timeout_adj, NULL);
 
 	/*
 	 * Maximum number of loops to wait for a xcall function to be
@@ -903,7 +901,7 @@ xc_dismissed(cpuset_t cpuset)
  * runs at XCALL_PIL level.
  */
 uint_t
-xc_serv(caddr_t arg1 __unused, caddr_t arg2 __unused)
+xc_serv(caddr_t _arg1 __unused, caddr_t _arg2 __unused)
 {
 	int lcx = (int)(CPU->cpu_id);
 	struct xc_mbox *xmp;
@@ -943,7 +941,7 @@ uint_t xc_loop_panic = 0;
  * session, or serve multiple x-call requests runs at XCALL_PIL level.
  */
 uint_t
-xc_loop(void)
+xc_loop(caddr_t _arg1 __unused, caddr_t _arg2 __unused)
 {
 	int lcx = (int)(CPU->cpu_id);
 	struct xc_mbox *xmp;
