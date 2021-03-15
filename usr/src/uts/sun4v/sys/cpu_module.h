@@ -27,8 +27,6 @@
 #ifndef _SYS_CPU_MODULE_H
 #define	_SYS_CPU_MODULE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/pte.h>
 #include <sys/async.h>
 #include <sys/x_call.h>
@@ -169,7 +167,7 @@ void	setup_exec_unit_mappings(md_t *);
 void	setup_chip_mappings(md_t *);
 
 extern boolean_t	broken_md_flag;
-extern int	va_bits;
+extern uint_t		va_bits;
 
 #endif /* _KERNEL */
 

@@ -96,6 +96,9 @@ uint_t		vac_mask = MMU_PAGEMASK & (S_VAC_SIZE - 1);
 int		vac_shift = S_VAC_SHIFT;
 uintptr_t	shm_alignment = S_VAC_SIZE;
 
+boolean_t	broken_md_flag = B_FALSE;
+uint_t		va_bits;
+
 void
 map_wellknown_devices()
 {
@@ -1013,7 +1016,7 @@ get_l2_cache_info(md_t *mdp, mde_cookie_t cpu_node_cookie,
 
 
 /*
- * Set the broken_md_flag to 1 if the MD doesn't have
+ * Set the broken_md_flag to B_TRUE if the MD doesn't have
  * the domaining-enabled property in the platform node and the
  * platform uses the UltraSPARC-T1 cpu. This flag is used to
  * workaround some of the incorrect MD properties.
@@ -1046,7 +1049,7 @@ init_md_broken(md_t *mdp, mde_cookie_t *cpulist)
 	if (md_get_prop_val(mdp, platlist[0],
 	    "domaining-enabled", &val) == -1 &&
 	    strcmp(namebuf, "SUNW,UltraSPARC-T1") == 0)
-		broken_md_flag = 1;
+		broken_md_flag = B_TRUE;
 
 	md_free_scan_dag(mdp, &platlist);
 }
