@@ -3379,8 +3379,10 @@ drmach_setup_memlist(drmach_copy_rename_program_t *p)
 }
 
 static void
-drmach_lock_critical(caddr_t va, caddr_t new_va)
+drmach_lock_critical(uintptr_t arg1, uintptr_t arg2)
 {
+	caddr_t va = (caddr_t)arg1;
+	caddr_t new_va = (caddr_t)arg2;
 	tte_t tte;
 	int i;
 
