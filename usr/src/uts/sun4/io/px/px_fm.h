@@ -112,8 +112,8 @@ extern int px_err_cmn_intr(px_t *, ddi_fm_error_t *, int, int);
 /*
  * Fire interrupt handlers
  */
-extern uint_t px_err_cb_intr(caddr_t arg);
-extern uint_t px_err_dmc_pec_intr(caddr_t arg);
+extern uint_t px_err_cb_intr(caddr_t, caddr_t);
+extern uint_t px_err_dmc_pec_intr(caddr_t, caddr_t);
 extern uint_t px_err_fabric_intr(px_t *px_p, msgcode_t msg_code,
     pcie_req_id_t rid);
 

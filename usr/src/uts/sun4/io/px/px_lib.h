@@ -158,7 +158,7 @@ extern void px_lib_resume(dev_info_t *dip);
 extern void px_cpr_add_callb(px_t *);
 extern void px_cpr_rem_callb(px_t *);
 extern int px_lib_pmctl(int cmd, px_t *px_p);
-extern uint_t px_pmeq_intr(caddr_t arg);
+extern uint_t px_pmeq_intr(caddr_t, caddr_t);
 
 /*
  * Common range property functions and definitions.
@@ -181,7 +181,7 @@ extern int px_lib_ctlops_peek(dev_info_t *dip, dev_info_t *rdip,
 typedef struct px_fault {
 	dev_info_t	*px_fh_dip;
 	sysino_t	px_fh_sysino;
-	uint_t		(*px_err_func)(caddr_t px_fault);
+	uint_t		(*px_err_func)(caddr_t, caddr_t);
 	devino_t	px_intr_ino;
 	uint64_t	px_intr_payload[PX_INTR_PAYLOAD_SIZE];
 } px_fault_t;

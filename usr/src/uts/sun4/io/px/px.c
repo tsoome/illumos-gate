@@ -644,7 +644,7 @@ px_pwr_setup(dev_info_t *dip)
 	hdl.ih_pri = px_pwr_pil;
 
 	/* Add PME_TO_ACK message handler */
-	hdl.ih_cb_func = (ddi_intr_handler_t *)px_pmeq_intr;
+	hdl.ih_cb_func = px_pmeq_intr;
 	if (px_add_msiq_intr(dip, dip, &hdl, MSG_REC,
 	    (msgcode_t)PCIE_PME_ACK_MSG, -1,
 	    &px_p->px_pm_msiq_id) != DDI_SUCCESS) {

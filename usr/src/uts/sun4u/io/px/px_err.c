@@ -646,7 +646,7 @@ static int  px_err_check_severity(px_t *px_p, ddi_fm_error_t *derr,
  * o handle error: fatal? fm_panic() : return INTR_CLAIMED)
  */
 uint_t
-px_err_cb_intr(caddr_t arg)
+px_err_cb_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*px_fault_p = (px_fault_t *)arg;
 	dev_info_t	*rpdip = px_fault_p->px_fh_dip;
@@ -686,7 +686,7 @@ done:
  * o handle error: fatal? fm_panic() : return INTR_CLAIMED)
  */
 uint_t
-px_err_dmc_pec_intr(caddr_t arg)
+px_err_dmc_pec_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*px_fault_p = (px_fault_t *)arg;
 	dev_info_t	*rpdip = px_fault_p->px_fh_dip;
