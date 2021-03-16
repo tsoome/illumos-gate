@@ -56,7 +56,7 @@ static int niumx_add_intr(dev_info_t *dip, dev_info_t *rdip,
 	ddi_intr_handle_impl_t *hdlp);
 static int niumx_rem_intr(dev_info_t *dip, dev_info_t *rdip,
 	ddi_intr_handle_impl_t *hdlp);
-static uint_t niumx_intr_hdlr(void *arg);
+static uint_t niumx_intr_hdlr(caddr_t, caddr_t);
 static int niumx_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	off_t offset, off_t len, caddr_t *addrp);
 static int niumx_dma_allochdl(dev_info_t *dip, dev_info_t *rdip,
@@ -1099,8 +1099,7 @@ niumx_add_intr(dev_info_t *dip, dev_info_t *rdip,
 	hdlp->ih_vector = ih_p->ih_sysino;
 
 	/* swap in our handler & arg */
-	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, (ddi_intr_handler_t *)niumx_intr_hdlr,
-	    (void *)ih_p, NULL);
+	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, niumx_intr_hdlr, (void *)ih_p, NULL);
 
 	ret = i_ddi_add_ivintr(hdlp);
 
@@ -1186,7 +1185,7 @@ fail:
  * niumx_intr_hdlr (our interrupt handler)
  */
 uint_t
-niumx_intr_hdlr(void *arg)
+niumx_intr_hdlr(caddr_t arg, caddr_t arg1 __unused)
 {
 	niumx_ih_t *ih_p = (niumx_ih_t *)arg;
 	uint_t		r;
