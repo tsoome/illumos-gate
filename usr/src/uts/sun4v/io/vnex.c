@@ -86,7 +86,7 @@ static void vnex_add_id(vnex_id_t *vid_p);
 static void vnex_rem_id(vnex_id_t *vid_p);
 static void vnex_free_id(vnex_id_t *vid_p);
 
-uint_t vnex_intr_wrapper(caddr_t arg);
+uint_t vnex_intr_wrapper(caddr_t, caddr_t);
 
 static struct vnex_pil_map vnex_name_to_pil[] = {
 	{"console", 	PIL_12},
@@ -503,7 +503,7 @@ vnex_add_intr(dev_info_t *dip, dev_info_t *rdip,
 	vid_p->vid_ddi_hdlp =  hdlp;
 
 	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-	    (ddi_intr_handler_t *)vnex_intr_wrapper, (caddr_t)vid_p, NULL);
+	    vnex_intr_wrapper, (caddr_t)vid_p, NULL);
 
 	if (hdlp->ih_pri == 0) {
 		hdlp->ih_pri = vnex_get_pil(rdip);
@@ -666,7 +666,7 @@ vnex_add_id(vnex_id_t *vid_p)
 }
 
 uint_t
-vnex_intr_wrapper(caddr_t arg)
+vnex_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	vnex_id_t *vid_p = (vnex_id_t *)arg;
 	int res;
