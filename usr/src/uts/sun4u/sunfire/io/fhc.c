@@ -1015,7 +1015,7 @@ bad:
 }
 
 static uint_t
-fhc_intr_wrapper(caddr_t arg)
+fhc_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	uint_t intr_return;
 	uint_t tmpreg;
@@ -1057,7 +1057,7 @@ fhc_intr_wrapper(caddr_t arg)
 #define	MAX_INTR_CNT 10
 
 static uint_t
-fhc_zs_intr_wrapper(caddr_t arg)
+fhc_zs_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	struct fhc_soft_state *softsp = (struct fhc_soft_state *)arg;
 	uint_t (*funcp0)(caddr_t, caddr_t);
@@ -1204,8 +1204,7 @@ fhc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 		 * and enable interrupts for this ino.
 		 */
 		if (zs_inst == 0) {
-			DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-			    (ddi_intr_handler_t *)fhc_zs_intr_wrapper,
+			DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, fhc_zs_intr_wrapper,
 			    (caddr_t)softsp, NULL);
 
 			ret = i_ddi_add_ivintr(hdlp);
@@ -1259,8 +1258,7 @@ fhc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 		 * Save the fhc_arg in the ispec so we can use this info
 		 * later to uninstall this interrupt spec.
 		 */
-		DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-		    (ddi_intr_handler_t *)fhc_intr_wrapper,
+		DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, fhc_intr_wrapper,
 		    (caddr_t)fhc_arg, NULL);
 
 		ret = i_ddi_add_ivintr(hdlp);
