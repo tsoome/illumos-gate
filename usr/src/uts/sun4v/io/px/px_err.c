@@ -81,7 +81,7 @@ boolean_t px_legacy_epkt = B_TRUE;
  * Interrupt handler for the Host Bus Block.
  */
 uint_t
-px_err_cb_intr(caddr_t arg)
+px_err_cb_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*fault_p = (px_fault_t *)arg;
 	px_rc_err_t	*epkt = (px_rc_err_t *)fault_p->px_intr_payload;
@@ -98,7 +98,7 @@ px_err_cb_intr(caddr_t arg)
  * Interrupt handler for the DMC/PEC block.
  */
 uint_t
-px_err_dmc_pec_intr(caddr_t arg)
+px_err_dmc_pec_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_fault_t	*fault_p = (px_fault_t *)arg;
 	px_rc_err_t	*epkt = (px_rc_err_t *)fault_p->px_intr_payload;

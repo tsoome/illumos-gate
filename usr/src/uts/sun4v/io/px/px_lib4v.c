@@ -2061,9 +2061,8 @@ px_lib_pmctl(int cmd, px_t *px_p)
 	return (DDI_FAILURE);
 }
 
-/*ARGSUSED*/
 uint_t
-px_pmeq_intr(caddr_t arg)
+px_pmeq_intr(caddr_t arg1 __unused, caddr_t arg2 __unused)
 {
 	return (DDI_INTR_CLAIMED);
 }
