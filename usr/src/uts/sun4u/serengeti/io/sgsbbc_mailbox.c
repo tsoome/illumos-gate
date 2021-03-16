@@ -141,10 +141,10 @@ static uint_t sbbc_dp_trans_event(char *arg);
 /*
  * Interrupt handlers
  */
-static int sbbc_mbox_msgin(void);
-static int sbbc_mbox_msgout(void);
-static int sbbc_mbox_spacein(void);
-static int sbbc_mbox_spaceout(void);
+static uint_t sbbc_mbox_msgin(caddr_t);
+static uint_t sbbc_mbox_msgout(caddr_t);
+static uint_t sbbc_mbox_spacein(caddr_t);
+static uint_t sbbc_mbox_spaceout(caddr_t);
 
 /*
  * ECC event mailbox message taskq and parameters
@@ -446,25 +446,25 @@ sbbc_mbox_create(sbbc_softstate_t *softsp)
 
 		switch (i) {
 		case MBOX_MSGIN_INTR:
-			intr_handler = (sbbc_intrfunc_t)sbbc_mbox_msgin;
+			intr_handler = sbbc_mbox_msgin;
 			intr_num = SBBC_MAILBOX_IN;
 			break;
 		case MBOX_MSGOUT_INTR:
-			intr_handler = (sbbc_intrfunc_t)sbbc_mbox_msgout;
+			intr_handler = sbbc_mbox_msgout;
 			intr_num = SBBC_MAILBOX_OUT;
 			break;
 		case MBOX_SPACEIN_INTR:
-			intr_handler = (sbbc_intrfunc_t)sbbc_mbox_spacein;
+			intr_handler = sbbc_mbox_spacein;
 			intr_num = SBBC_MAILBOX_SPACE_IN;
 			break;
 		case MBOX_SPACEOUT_INTR:
-			intr_handler = (sbbc_intrfunc_t)sbbc_mbox_spaceout;
+			intr_handler = sbbc_mbox_spaceout;
 			intr_num = SBBC_MAILBOX_SPACE_OUT;
 			break;
 		}
 		state = (uint_t *)&master_mbox->intr_state[i].mbox_intr_state;
 		lock = &master_mbox->intr_state[i].mbox_intr_lock;
-		if (iosram_reg_intr(intr_num, intr_handler, (caddr_t)NULL,
+		if (iosram_reg_intr(intr_num, intr_handler, NULL,
 			state, lock)) {
 
 			cmn_err(CE_WARN,
@@ -735,8 +735,8 @@ sbbc_mbox_unreg_intr(uint32_t msg_type, sbbc_intrfunc_t intr_handler)
 /*
  * mailbox message received
  */
-static int
-sbbc_mbox_msgin()
+static uint_t
+sbbc_mbox_msgin(caddr_t arg __unused)
 {
 	mutex_enter(&master_mbox->intr_state[MBOX_MSGIN_INTR].mbox_intr_lock);
 	master_mbox->intr_state[MBOX_MSGIN_INTR].mbox_intr_state =
@@ -792,8 +792,8 @@ sbbc_mbox_msgin()
 /*
  * mailbox message sent
  */
-static int
-sbbc_mbox_msgout()
+static uint_t
+sbbc_mbox_msgout(caddr_t arg __unused)
 {
 	/*
 	 * Should never get this
@@ -805,8 +805,8 @@ sbbc_mbox_msgout()
 /*
  * space in the inbox
  */
-static int
-sbbc_mbox_spacein()
+static uint_t
+sbbc_mbox_spacein(caddr_t arg __unused)
 {
 	/*
 	 * Should never get this
@@ -818,8 +818,8 @@ sbbc_mbox_spacein()
 /*
  * space in the outbox
  */
-static int
-sbbc_mbox_spaceout()
+static uint_t
+sbbc_mbox_spaceout(caddr_t arg __unused)
 {
 	/*
 	 * cv_broadcast() the threads waiting on the
@@ -2761,6 +2761,12 @@ sbbc_mbox_ecc_output(sbbc_ecc_mbox_t *msgp)
 	return (rv);
 }
 
+static void
+sbbc_mbox_ecc_output_task(void *msgp)
+{
+	(void)sbbc_mbox_ecc_output(msgp);
+}
+
 /*
  * Enqueue ECC event message on taskq to SC.  This is invoked from
  * plat_send_ecc_mailbox_msg() for each ECC event generating a message.
@@ -2815,9 +2821,8 @@ sbbc_mbox_queue_ecc_event(sbbc_ecc_mbox_t *sbbc_ecc_msgp)
 	 * Enqueue the message
 	 */
 
-	if (taskq_dispatch(sbbc_ecc_mbox_taskq,
-	    (task_func_t *)sbbc_mbox_ecc_output, sbbc_ecc_msgp,
-	    TQ_NOSLEEP) == TASKQID_INVALID) {
+	if (taskq_dispatch(sbbc_ecc_mbox_taskq, sbbc_mbox_ecc_output_task,
+	    sbbc_ecc_msgp, TQ_NOSLEEP) == TASKQID_INVALID) {
 
 		if (sbbc_ecc_mbox_taskq_errs == 0) {
 			cmn_err(CE_NOTE, "Unable to send ECC event "
