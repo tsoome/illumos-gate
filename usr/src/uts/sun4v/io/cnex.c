@@ -79,7 +79,7 @@ static clock_t cnex_wait_usecs = 1000; /* wait time in usecs */
 static int cnex_wait_retries = 3;
 static void *cnex_state;
 
-static uint_t cnex_intr_wrapper(caddr_t arg);
+static uint_t cnex_intr_wrapper(caddr_t, caddr_t);
 static dev_info_t *cnex_find_chan_dip(dev_info_t *dip, uint64_t chan_id,
     md_t *mdp, mde_cookie_t mde);
 
@@ -689,7 +689,7 @@ cnex_add_intr(dev_info_t *dip, uint64_t id, cnex_intrtype_t itype,
 	}
 
 	/* add interrupt to solaris ivec table */
-	if (add_ivintr(iinfo->icookie, pil, (intrfunc)cnex_intr_wrapper,
+	if (add_ivintr(iinfo->icookie, pil, cnex_intr_wrapper,
 	    (caddr_t)iinfo, NULL, NULL) != 0) {
 		DWARN("cnex_add_intr: add_ivintr fail cookie %x ino %x\n",
 		    iinfo->icookie, iinfo->ino);
@@ -966,7 +966,7 @@ cnex_clr_intr(dev_info_t *dip, uint64_t id, cnex_intrtype_t itype)
  * Channel nexus interrupt handler wrapper
  */
 static uint_t
-cnex_intr_wrapper(caddr_t arg)
+cnex_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	int 			res;
 	uint_t 			(*handler)();
