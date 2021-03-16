@@ -365,15 +365,15 @@ sgcn_open(queue_t *q, dev_t *devp, int oflag, int sflag, cred_t *credp)
 
 	/* initialize interrupt handler */
 	(void) iosram_reg_intr(SBBC_CONSOLE_IN,
-	    (sbbc_intrfunc_t)sgcn_data_in_handler, NULL,
+	    sgcn_data_in_handler, NULL,
 	    &sgcn_state->sgcn_sbbc_in_state,
 	    &sgcn_state->sgcn_sbbc_in_lock);
 	(void) iosram_reg_intr(SBBC_CONSOLE_SPACE_OUT,
-	    (sbbc_intrfunc_t)sgcn_space_2_out_handler, NULL,
+	    sgcn_space_2_out_handler, NULL,
 	    &sgcn_state->sgcn_sbbc_outspace_state,
 	    &sgcn_state->sgcn_sbbc_outspace_lock);
 	(void) iosram_reg_intr(SBBC_CONSOLE_BRK,
-	    (sbbc_intrfunc_t)sgcn_break_handler, NULL,
+	    sgcn_break_handler, NULL,
 	    &sgcn_state->sgcn_sbbc_brk_state,
 	    &sgcn_state->sgcn_sbbc_brk_lock);
 
