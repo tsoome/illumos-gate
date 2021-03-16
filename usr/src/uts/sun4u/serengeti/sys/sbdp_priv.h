@@ -27,8 +27,6 @@
 #ifndef _SBDP_PRIV_H
 #define	_SBDP_PRIV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -120,8 +118,6 @@ extern uint_t sbdp_debug;
 #define	SBDP_DIAG_MEM1		0x60
 #define	SBDP_DIAG_MEM2		0x7f
 #define	SBDP_DIAG_NVCI		0xffff	/* Use stored value in nvci */
-
-int		*slices;
 
 #define	SBDP_INIT_PLATOPTS	(uint_t)-1
 #define	SBDP_PLATFORM_OPTS(s_platopts)  ((s_platopts) = SBDP_INIT_PLATOPTS, \
