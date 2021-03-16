@@ -80,9 +80,9 @@ static int sgcn_wsrv(queue_t *);
 static int sgcn_rsrv(queue_t *);
 
 /* interrupt handlers */
-static void sgcn_data_in_handler(caddr_t);
-static void sgcn_space_2_out_handler(caddr_t);
-static void sgcn_break_handler(caddr_t);
+static uint_t sgcn_data_in_handler(caddr_t);
+static uint_t sgcn_space_2_out_handler(caddr_t);
+static uint_t sgcn_break_handler(caddr_t);
 
 /* other internal sgcn routines */
 static void sgcn_ioctl(queue_t *, mblk_t *);
@@ -743,7 +743,7 @@ uint64_t sgcn_input_dropped;
  * SC sends an interrupt when new data comes in
  */
 /* ARGSUSED */
-void
+uint_t
 sgcn_data_in_handler(caddr_t arg)
 {
 	caddr_t		buf = sgcn_state->sgcn_inbuf;
@@ -784,7 +784,7 @@ sgcn_data_in_handler(caddr_t arg)
 				/* leave our perimeter */
 				leavesq(sgcn_state->sgcn_readq->q_syncq,
 				    SQ_CALLBACK);
-				return;
+				return (0);
 			} else {
 				mutex_exit(&sgcn_state->sgcn_sbbc_in_lock);
 			}
@@ -814,7 +814,7 @@ sgcn_data_in_handler(caddr_t arg)
 			}
 		}
 	}
-
+	return (0);
 }
 
 /*
@@ -822,7 +822,7 @@ sgcn_data_in_handler(caddr_t arg)
  * from a full IOSRAM
  */
 /* ARGSUSED */
-void
+uint_t
 sgcn_space_2_out_handler(caddr_t arg)
 {
 	/*
@@ -844,13 +844,14 @@ sgcn_space_2_out_handler(caddr_t arg)
 	mutex_enter(&sgcn_state->sgcn_sbbc_outspace_lock);
 	sgcn_state->sgcn_sbbc_outspace_state = SBBC_INTR_IDLE;
 	mutex_exit(&sgcn_state->sgcn_sbbc_outspace_lock);
+	return (0);
 }
 
 /*
  * SC sends an interrupt when it detects BREAK sequence
  */
 /* ARGSUSED */
-void
+uint_t
 sgcn_break_handler(caddr_t arg)
 {
 	/*
@@ -868,6 +869,7 @@ sgcn_break_handler(caddr_t arg)
 	mutex_enter(&sgcn_state->sgcn_sbbc_brk_lock);
 	sgcn_state->sgcn_sbbc_brk_state = SBBC_INTR_IDLE;
 	mutex_exit(&sgcn_state->sgcn_sbbc_brk_lock);
+	return (0);
 }
 
 /*
