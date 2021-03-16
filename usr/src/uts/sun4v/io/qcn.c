@@ -71,7 +71,7 @@ static int qcn_transmit_putchr(queue_t *, mblk_t *);
 static void qcn_receive_read(void);
 static void qcn_receive_getchr(void);
 static void qcn_flush(void);
-static uint_t qcn_hi_intr(caddr_t arg);
+static uint_t qcn_hi_intr(caddr_t, caddr_t);
 static uint_t qcn_soft_intr(caddr_t arg1, caddr_t arg2);
 
 /* functions required for polled io */
@@ -299,8 +299,7 @@ qcn_add_intrs(void)
 	/* Call ddi_intr_add_handler() */
 	for (x = 0; x < actual; x++) {
 		if (ddi_intr_add_handler(qcn_state->qcn_htable[x],
-		    (ddi_intr_handler_t *)qcn_hi_intr,
-		    (caddr_t)qcn_state, NULL) != DDI_SUCCESS) {
+		    qcn_hi_intr, (caddr_t)qcn_state, NULL) != DDI_SUCCESS) {
 
 			for (y = 0; y < x; y++) {
 				(void) ddi_intr_remove_handler(
@@ -1060,9 +1059,8 @@ out:
 	return (DDI_INTR_CLAIMED);
 }
 
-/*ARGSUSED*/
 static uint_t
-qcn_hi_intr(caddr_t arg)
+qcn_hi_intr(caddr_t arg1 __unused, caddr_t arg2 __unused)
 {
 	mutex_enter(&qcn_state->qcn_hi_lock);
 
