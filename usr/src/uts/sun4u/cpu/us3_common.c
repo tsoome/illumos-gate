@@ -1045,8 +1045,8 @@ cheetah_nudge_buddy(void)
 	 */
 	kpreempt_disable();
 	if ((CPU->cpu_next_onln != CPU) && (sendmondo_in_recover == 0)) {
-		xt_one(CPU->cpu_next_onln->cpu_id, (xcfunc_t *)xt_sync_tl1,
-		    0, 0);
+		xt_one(CPU->cpu_next_onln->cpu_id,
+		    (xcfunc_t *)(uintptr_t)xt_sync_tl1, 0, 0);
 	}
 	kpreempt_enable();
 }
@@ -3167,8 +3167,11 @@ ce_ptnr_select(struct async_flt *aflt, int flags, int *typep)
  * a cpu that experienced a possibly sticky or possibly persistnet CE.
  */
 static void
-ce_ptnrchk_xc(struct async_flt *aflt, uchar_t *dispp)
+ce_ptnrchk_xc(uintptr_t arg1, uintptr_t arg2)
 {
+	struct async_flt *aflt = (struct async_flt *)arg1;
+	uchar_t *dispp = (uchar_t *)arg2;
+
 	*dispp = cpu_ce_scrub_mem_err_common(aflt, B_FALSE);
 }
 
@@ -3191,7 +3194,7 @@ ce_lkychk_cb(ce_lkychk_cb_t *cbarg)
 	kpreempt_disable();
 	if (cp = ce_ptnr_select(aflt, PTNR_SIBLINGOK | PTNR_SELFOK,
 	    &ptnrtype)) {
-		xc_one(cp->cpu_id, (xcfunc_t *)ce_ptnrchk_xc, (uint64_t)aflt,
+		xc_one(cp->cpu_id, ce_ptnrchk_xc, (uint64_t)aflt,
 		    (uint64_t)&disp);
 		CE_XDIAG_SETLKYINFO(aflt->flt_disp, disp);
 		CE_XDIAG_SETPTNRID(aflt->flt_disp, cp->cpu_id);
@@ -3311,7 +3314,7 @@ ce_scrub_xdiag_recirc(struct async_flt *aflt, errorq_t *eqp,
 	case CE_ACT_PTNRCHK:
 		kpreempt_disable();	/* stop cpu list changing */
 		if ((cp = ce_ptnr_select(aflt, 0, &ptnrtype)) != NULL) {
-			xc_one(cp->cpu_id, (xcfunc_t *)ce_ptnrchk_xc,
+			xc_one(cp->cpu_id, ce_ptnrchk_xc,
 			    (uint64_t)aflt, (uint64_t)&disp);
 			CE_XDIAG_SETPTNRINFO(aflt->flt_disp, disp);
 			CE_XDIAG_SETPTNRID(aflt->flt_disp, cp->cpu_id);
@@ -6077,6 +6080,12 @@ cpu_delayed_check_ce_errors(void *arg)
 	}
 }
 
+static void
+xc_cpu_check_ce(uint64_t flag, uint64_t pa)
+{
+	cpu_check_ce(flag, pa, 0, 0);
+}
+
 /*
  * CE Deferred Re-enable after trap.
  *
@@ -6141,8 +6150,7 @@ cpu_check_ce_errors(void *arg)
 	 * lose CEEN forever on that CPU.
 	 */
 	if (CPU_XCALL_READY(cp->cpu_id) && (!(cp->cpu_flags & CPU_QUIESCED))) {
-		xc_one(cp->cpu_id, (xcfunc_t *)cpu_check_ce,
-		    TIMEOUT_CEEN_CHECK, 0);
+		xc_one(cp->cpu_id, xc_cpu_check_ce, TIMEOUT_CEEN_CHECK, 0);
 		mutex_exit(&cpu_lock);
 	} else {
 		/*
@@ -7099,6 +7107,12 @@ cpu_faulted_enter(struct cpu *cp)
 	xt_one(cp->cpu_id, set_error_enable_tl1, EN_REG_CEEN, EER_SET_CLRBITS);
 }
 
+static void
+xc_set_cpu_error_state(uintptr_t arg1, uintptr_t arg2 __unused)
+{
+	set_cpu_error_state((ch_cpu_errors_t *)arg1);
+}
+
 /*
  * Called when a cpu leaves the CPU_FAULTED state to return to one of
  * offline, spare, or online (by the cpu requesting this state change).
@@ -7114,7 +7128,7 @@ cpu_faulted_exit(struct cpu *cp)
 	cpu_error_regs.afsr = C_AFSR_CECC_ERRS;
 	if (IS_PANTHER(cpunodes[cp->cpu_id].implementation))
 		cpu_error_regs.afsr_ext &= C_AFSR_EXT_CECC_ERRS;
-	xc_one(cp->cpu_id, (xcfunc_t *)set_cpu_error_state,
+	xc_one(cp->cpu_id, xc_set_cpu_error_state,
 	    (uint64_t)&cpu_error_regs, 0);
 
 	xt_one(cp->cpu_id, set_error_enable_tl1, EN_REG_CEEN, EER_SET_SETBITS);
