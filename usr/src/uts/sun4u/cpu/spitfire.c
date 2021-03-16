@@ -2340,6 +2340,11 @@ cpu_async_log_err(void *flt)
 	}
 }
 
+static void
+xc_get_cpu_status(uint64_t arg1, uint64_t arg2 __unused)
+{
+	(void)get_cpu_status(arg1);
+}
 
 /*
  * Check all cpus for non-trapping UE-causing errors
@@ -2358,8 +2363,7 @@ cpu_check_allcpus(struct async_flt *aflt)
 
 	for (pix = 0; pix < NCPU; pix++) {
 		if (CPU_XCALL_READY(pix)) {
-			xc_one(pix, (xcfunc_t *)get_cpu_status,
-			    (uint64_t)cpflt, 0);
+			xc_one(pix, xc_get_cpu_status, (uint64_t)cpflt, 0);
 
 			if (cpflt->flt_stat & P_AFSR_CP) {
 				char *space;
