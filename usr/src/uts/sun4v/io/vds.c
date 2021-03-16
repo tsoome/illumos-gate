@@ -676,7 +676,7 @@ static int vd_dskimg_validate_geometry(vd_t *vd);
 static boolean_t vd_dskimg_is_iso_image(vd_t *vd);
 static void vd_set_exported_operations(vd_t *vd);
 static void vd_reset_access(vd_t *vd);
-static int vd_backend_ioctl(vd_t *vd, int cmd, caddr_t arg);
+static int vd_backend_ioctl(void *, int, uintptr_t);
 static int vds_efi_alloc_and_read(vd_t *, efi_gpt_t **, efi_gpe_t **);
 static void vds_efi_free(vd_t *, efi_gpt_t *, efi_gpe_t *);
 static void vds_driver_types_free(vds_t *vds);
@@ -1904,6 +1904,12 @@ vd_flush_write(vd_t *vd)
 }
 
 static void
+vd_flush_write_task(void *vd)
+{
+	(void)vd_flush_write(vd);
+}
+
+static void
 vd_bio_task(void *arg)
 {
 	struct buf *buf = (struct buf *)arg;
@@ -2481,8 +2487,7 @@ vd_complete_bio(vd_task_t *task)
 				request->status = vd_flush_write(vd);
 			} else if (vd_awflush & VD_AWFLUSH_DEFER) {
 				(void) taskq_dispatch(system_taskq,
-				    (void (*)(void *))vd_flush_write, vd,
-				    DDI_SLEEP);
+				    vd_flush_write_task, vd, DDI_SLEEP);
 				request->status = 0;
 			}
 		}
@@ -3147,7 +3152,7 @@ vds_efi_alloc_and_read(vd_t *vd, efi_gpt_t **gpt, efi_gpe_t **gpe)
 	vd_efi_dev_t edev;
 	int status;
 
-	VD_EFI_DEV_SET(edev, vd, (vd_efi_ioctl_func)vd_backend_ioctl);
+	VD_EFI_DEV_SET(edev, vd, vd_backend_ioctl);
 
 	status = vd_efi_alloc_and_read(&edev, gpt, gpe);
 
@@ -3159,7 +3164,7 @@ vds_efi_free(vd_t *vd, efi_gpt_t *gpt, efi_gpe_t *gpe)
 {
 	vd_efi_dev_t edev;
 
-	VD_EFI_DEV_SET(edev, vd, (vd_efi_ioctl_func)vd_backend_ioctl);
+	VD_EFI_DEV_SET(edev, vd, vd_backend_ioctl);
 
 	vd_efi_free(&edev, gpt, gpe);
 }
@@ -3400,8 +3405,10 @@ vd_do_dskimg_ioctl(vd_t *vd, int cmd, void *ioctl_arg)
 }
 
 static int
-vd_backend_ioctl(vd_t *vd, int cmd, caddr_t arg)
+vd_backend_ioctl(void *ptr, int cmd, uintptr_t a)
 {
+	vd_t *vd = ptr;
+	caddr_t arg = (caddr_t)a;
 	int rval = 0, status;
 	struct vtoc vtoc;
 
@@ -3530,7 +3537,8 @@ vd_do_ioctl(vd_t *vd, vd_dring_payload_t *request, void* buf, vd_ioctl_t *ioctl)
 	/*
 	 * Send the ioctl to the disk backend.
 	 */
-	request->status = vd_backend_ioctl(vd, ioctl->cmd, ioctl->arg);
+	request->status = vd_backend_ioctl(vd, ioctl->cmd,
+	    (uintptr_t)ioctl->arg);
 
 	if (request->status != 0) {
 		PR0("ioctl(%s) = errno %d", ioctl->cmd_name, request->status);
