@@ -111,6 +111,8 @@ uchar_t ch_err_tl1_pending[NCPU];
  */
 taskq_t		*ch_check_ce_tq;
 
+int dcache_nlines;	/* max number of D$ lines */
+
 /*
  * Internal functions.
  */

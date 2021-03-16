@@ -606,7 +606,7 @@ extern int cheetah_sendmondo_recover;
  * The following allows for a one time calculation of the number of dcache
  * lines vs. calculating the number every time through the scrub routine.
  */
-int dcache_nlines;			/* max number of D$ lines */
+extern int dcache_nlines;		/* max number of D$ lines */
 
 extern uint64_t afar_overwrite[];
 extern uint64_t esynd_overwrite[];
