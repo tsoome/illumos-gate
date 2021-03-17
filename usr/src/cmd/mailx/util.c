@@ -38,8 +38,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "rcv.h"
 #include <locale.h>
 
@@ -431,15 +429,11 @@ phrase(char *name, int token, int comma)
 	register char *cp, *cp2;
 	char *bufend, *nbufp;
 	int gotlt, lastsp, didq;
-	char nbuf[LINESIZE];
 	int nesting;
 
 	if (name == NOSTR)
 		return(NOSTR);
-	if (strlen(name) >= (unsigned)LINESIZE)
-		nbufp = (char *)salloc(strlen(name));
-	else
-		nbufp = nbuf;
+	nbufp = (char *)salloc(strlen(name));
 	gotlt = 0;
 	lastsp = 0;
 	bufend = nbufp;
@@ -550,8 +544,7 @@ phrase(char *name, int token, int comma)
 		}
 	}
 	*cp2 = 0;
-	return (token ? --cp : equal(name, nbufp) ? name :
-	    nbufp == nbuf ? savestr(nbuf) : nbufp);
+	return (token ? --cp : equal(name, nbufp) ? name : nbufp);
 }
 
 char *
