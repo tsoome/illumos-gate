@@ -23,8 +23,6 @@
  *	Copyright (c) 1994, by Sun Microsytems, Inc.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef _KERNEL
 #include <sys/types.h>
 #include <sys/param.h>
@@ -45,6 +43,7 @@
 #include "tnf_types.h"
 #include <tnf_trace.h>
 #endif	/* _KERNEL */
+#include <sys/sysmacros.h>
 
 
 /*
@@ -152,10 +151,8 @@ tnf_probe_tag(tnf_ops_t *ops, tnf_probe_control_t *probe_p)
 #else
 		nm_len = nm_end - nm_start;
 #endif
-		nm_len = (nm_len > (NAME_LIMIT - 1)) ? (NAME_LIMIT - 1) :
-							nm_len;
-		(void) strncpy(slot_array[count], nm_start, nm_len);
-		slot_array[count][nm_len] = '\0';
+		nm_len = MIN(nm_len, NAME_LIMIT - 1);
+		(void) strlcpy(slot_array[count], nm_start, nm_len);
 		slot_args[count+CONST_SLOTS] = slot_array[count];
 		/* get next name */
 		nm_start = nm_end + 1;
