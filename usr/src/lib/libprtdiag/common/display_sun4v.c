@@ -84,7 +84,6 @@
 #define	PICL_PROP_NAC			"nac"
 #endif
 
-extern int sys_clk;
 extern picl_errno_t sun4v_get_node_by_name(picl_nodehdl_t, char *,
 	picl_nodehdl_t *);
 
