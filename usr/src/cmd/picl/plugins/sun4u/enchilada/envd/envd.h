@@ -27,8 +27,6 @@
 #ifndef	_ENVD_H
 #define	_ENVD_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <libintl.h>
 
@@ -208,7 +206,7 @@ typedef int16_t tempr_t;
 #define	SENSOR_INT_AMB_1	"int-amb1"
 
 /* Bit Map of ADM 1031 Status 1/2 Registers */
-enum adm1031 {
+typedef enum adm1031 {
 	FANFAULT = 0x2,
 	REMOTEHIGH = 0x4,
 	REMOTELOW = 0x8,
@@ -218,7 +216,7 @@ enum adm1031 {
 } adm1031_t;
 
 /* ADM Stat 1/2 Mask */
-enum adm1031Mask {
+typedef enum adm1031Mask {
 	STAT1MASK = 0xdc,
 	STAT2MASK = 0x1c
 } adm1031Mask_t;
