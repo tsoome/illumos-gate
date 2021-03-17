@@ -2346,7 +2346,7 @@ nxge_hio_dc_share(
 	if (group->count == 0) {
 		group->nxge = nxge;
 		group->type = (type == MAC_RING_TYPE_TX) ?
-		    VP_BOUND_TX : VP_BOUND_RX;
+		    NXGE_TRANSMIT_GROUP : NXGE_RECEIVE_GROUP;
 		group->sequence	= nhd->sequence++;
 		group->active = B_TRUE;
 	}
