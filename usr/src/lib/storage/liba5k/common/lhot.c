@@ -467,6 +467,11 @@ l_encl_status_page_funcs(int func, char *code, int todo, char *ses_path,
 				(void) g_destroy_data(page_buf);
 				(void) close(fd);
 				return (0);
+			default:
+				*code = 0;
+				(void) g_destroy_data(page_buf);
+				(void) close(fd);
+				return (0);
 		    }
 		    /* NOTREACHED */
 		case SET_RQST_INSRT:
