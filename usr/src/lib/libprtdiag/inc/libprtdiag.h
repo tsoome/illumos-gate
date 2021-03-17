@@ -55,7 +55,7 @@ extern "C" {
 #define	MAX_SLOTS_PER_IO_BD	8
 
 
-int	sys_clk;  /* System clock freq. (in MHz) */
+extern int	sys_clk;  /* System clock freq. (in MHz) */
 
 /*
  * Defines for identifying PCI devices

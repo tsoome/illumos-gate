@@ -52,8 +52,6 @@
 #define	TEXT_DOMAIN	"SYS_TEST"
 #endif
 
-extern	int sys_clk;
-
 int
 display(Sys_tree *tree,
 	Prom_node *root,

@@ -55,6 +55,8 @@
 #define	TEXT_DOMAIN	"SYS_TEST"
 #endif
 
+int sys_clk;	/* System clock freq. (in MHz) */
+
 Prom_node *
 find_pci_bus(Prom_node *node, int id, int bus)
 {
