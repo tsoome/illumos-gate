@@ -66,7 +66,7 @@ extern int errno;
  * If we create another clnt type this should be
  * moved to a common file
  */
-struct rpc_createerr rpc_createerr;
+extern struct rpc_createerr rpc_createerr;
 
 static struct clnt_ops *clntbudp_ops();
 
