@@ -1413,7 +1413,7 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 		mutex_exit(&db->db_mtx);
 		if (err == 0 && prefetch) {
 			dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE,
-			    flags & DB_RF_HAVESTRUCT);
+			    B_FALSE, flags & DB_RF_HAVESTRUCT);
 		}
 		DB_DNODE_EXIT(db);
 	} else if (db->db_state == DB_UNCACHED) {
@@ -1434,6 +1434,7 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 		 */
 		if (!err && prefetch) {
 			dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE,
+			    db->db_state != DB_CACHED,
 			    flags & DB_RF_HAVESTRUCT);
 		}
 
@@ -1453,7 +1454,7 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 		mutex_exit(&db->db_mtx);
 		if (prefetch) {
 			dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE,
-			    flags & DB_RF_HAVESTRUCT);
+			    B_TRUE, flags & DB_RF_HAVESTRUCT);
 		}
 		DB_DNODE_EXIT(db);
 
