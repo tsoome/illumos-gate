@@ -853,11 +853,19 @@ rfs4_servinst_in_grace(rfs4_servinst_t *sip)
 }
 
 int
-rfs4_clnt_in_grace(rfs4_client_t *cp)
+rfs4_clnt_in_grace(rfs4_client_t *cp, uint8_t minorversion)
 {
+	int server_in_grace =  rfs4_servinst_in_grace(cp->rc_server_instance);
+
 	ASSERT(rfs4_dbe_refcnt(cp->rc_dbe) > 0);
 
-	return (rfs4_servinst_in_grace(cp->rc_server_instance));
+	if (server_in_grace)
+		return (TRUE);
+
+	if (minorversion > NFS4_MINORVERSION)
+		return (cp->rc_reclaim_completed != TRUE);
+
+	return (FALSE);
 }
 
 /*
@@ -7770,7 +7778,7 @@ retry:
 		}
 	}
 	/* Grace only applies to regular-type OPENs */
-	if (rfs4_clnt_in_grace(cp) &&
+	if (rfs4_clnt_in_grace(cp, cs->minorversion) &&
 	    (claim == CLAIM_NULL || claim == CLAIM_DELEGATE_CUR ||
 	    claim == CLAIM_FH)) {
 		*cs->statusp = resp->status = NFS4ERR_GRACE;
@@ -7782,7 +7790,8 @@ retry:
 	 * will be set. If not reply NFS4ERR_NO_GRACE to the
 	 * client.
 	 */
-	if (rfs4_clnt_in_grace(cp) && claim == CLAIM_PREVIOUS && !can_reclaim) {
+	if (rfs4_clnt_in_grace(cp, cs->minorversion) &&
+	    claim == CLAIM_PREVIOUS && !can_reclaim) {
 		*cs->statusp = resp->status = NFS4ERR_NO_GRACE;
 		goto out;
 	}
@@ -7791,7 +7800,8 @@ retry:
 	/*
 	 * Reject the open if the client has missed the grace period
 	 */
-	if (!rfs4_clnt_in_grace(cp) && claim == CLAIM_PREVIOUS) {
+	if (!rfs4_clnt_in_grace(cp, cs->minorversion) &&
+	    claim == CLAIM_PREVIOUS) {
 		*cs->statusp = resp->status = NFS4ERR_NO_GRACE;
 		goto out;
 	}
@@ -9564,17 +9574,18 @@ rfs4_op_lock(nfs_argop4 *argop, nfs_resop4 *resop,
 
 	cp = lsp->rls_state->rs_owner->ro_client;
 
-	if (rfs4_clnt_in_grace(cp) && !args->reclaim) {
+	if (rfs4_clnt_in_grace(cp, cs->minorversion) && !args->reclaim) {
 		status = NFS4ERR_GRACE;
 		goto out;
 	}
 
-	if (rfs4_clnt_in_grace(cp) && args->reclaim && !cp->rc_can_reclaim) {
+	if (rfs4_clnt_in_grace(cp, cs->minorversion) &&
+	    args->reclaim && !cp->rc_can_reclaim) {
 		status = NFS4ERR_NO_GRACE;
 		goto out;
 	}
 
-	if (!rfs4_clnt_in_grace(cp) && args->reclaim) {
+	if (!rfs4_clnt_in_grace(cp, cs->minorversion) && args->reclaim) {
 		status = NFS4ERR_NO_GRACE;
 		goto out;
 	}
@@ -9754,7 +9765,8 @@ rfs4_op_locku(nfs_argop4 *argop, nfs_resop4 *resop,
 		goto out;
 	}
 
-	if (rfs4_clnt_in_grace(lsp->rls_state->rs_owner->ro_client)) {
+	if (rfs4_clnt_in_grace(lsp->rls_state->rs_owner->ro_client,
+	    cs->minorversion)) {
 		status = NFS4ERR_GRACE;
 		goto out;
 	}
@@ -9843,7 +9855,7 @@ rfs4_op_lockt(nfs_argop4 *argop, nfs_resop4 *resop,
 		goto out;
 	}
 
-	if (rfs4_clnt_in_grace(cp) && !(cp->rc_can_reclaim)) {
+	if (rfs4_clnt_in_grace(cp, cs->minorversion) && !(cp->rc_can_reclaim)) {
 		*cs->statusp = resp->status = NFS4ERR_GRACE;
 		rfs4_client_rele(cp);
 		goto out;

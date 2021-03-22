@@ -906,7 +906,7 @@ extern void		rfs4_servinst_destroy_all(nfs4_srv_t *);
 extern void		rfs4_servinst_assign(nfs4_srv_t *, rfs4_client_t *,
 			    rfs4_servinst_t *);
 extern rfs4_servinst_t	*rfs4_servinst(rfs4_client_t *);
-extern int		rfs4_clnt_in_grace(rfs4_client_t *);
+extern int		rfs4_clnt_in_grace(rfs4_client_t *, uint8_t);
 extern int		rfs4_servinst_in_grace(rfs4_servinst_t *);
 extern int		rfs4_servinst_grace_new(rfs4_servinst_t *);
 extern void		rfs4_grace_start(rfs4_servinst_t *);

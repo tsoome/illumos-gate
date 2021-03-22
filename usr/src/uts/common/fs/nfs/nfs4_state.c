@@ -3855,7 +3855,8 @@ rfs4_check_stateid(int mode, vnode_t *vp,
 
 		if (lsp != NULL) {
 			/* Is associated server instance in its grace period? */
-			if (rfs4_clnt_in_grace(lsp->rls_locker->rl_client)) {
+			if (rfs4_clnt_in_grace(lsp->rls_locker->rl_client,
+			    cs->minorversion)) {
 				rfs4_lo_state_rele(lsp, FALSE);
 				if (sp != NULL)
 					rfs4_state_rele_nounlock(sp);
@@ -3890,7 +3891,8 @@ rfs4_check_stateid(int mode, vnode_t *vp,
 		/* Stateid provided was an "open" stateid */
 		if (sp != NULL) {
 			/* Is associated server instance in its grace period? */
-			if (rfs4_clnt_in_grace(sp->rs_owner->ro_client)) {
+			if (rfs4_clnt_in_grace(sp->rs_owner->ro_client,
+			    cs->minorversion)) {
 				rfs4_state_rele_nounlock(sp);
 				return (NFS4ERR_GRACE);
 			}
@@ -3969,7 +3971,8 @@ rfs4_check_stateid(int mode, vnode_t *vp,
 
 		if (dsp != NULL) {
 			/* Is associated server instance in its grace period? */
-			if (rfs4_clnt_in_grace(dsp->rds_client)) {
+			if (rfs4_clnt_in_grace(dsp->rds_client,
+			    cs->minorversion)) {
 				rfs4_deleg_state_rele(dsp);
 				return (NFS4ERR_GRACE);
 			}
