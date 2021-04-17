@@ -83,7 +83,7 @@ CPPFLAGS +=	-I$(SRC)/boot/sys
 CPPFLAGS +=	-I$(SRC)/boot/sys/cddl/boot/zfs
 CPPFLAGS +=	-I$(SRC)/boot/lib/libstand
 CPPFLAGS +=	-I$(SRC)/boot/lib/libstand/zfs
-CPPFLAGS +=	-I$(BOOTSRC)/libcrypto
+CPPFLAGS +=	-I$(CRYPTOSRC)
 CPPFLAGS +=	-I$(BOOTSRC)/common
 CPPFLAGS +=	-DBOOT_FORTH -I$(SRC)/common/ficl -I../../libficl
 CPPFLAGS +=	-I$(SRC)/common/pnglite
@@ -98,12 +98,11 @@ MACHINE=	$(MACH)
 
 CLEANFILES=	vers.c machine x86
 
-LDLIBS +=	-L../../libficl/i386 -lficl --start-group -L../../libcrypto/i386 -lcrypto -L../libstand -lstand --end-group
+LDLIBS +=	-L../../libficl/i386 -lficl -L../libstand -lstand
 
 BUILD.SO= $(GNU_ROOT)/bin/gld -G -Bsymbolic -o userboot.so $(PICS) $(LDLIBS)
 
-$(LIBS):	../../libficl/i386/libficl.a ../../libcrypto/i386/libcrypto.a \
-	../libstand/libstand.a
+$(LIBS):	../../libficl/i386/libficl.a ../libstand/libstand.a
 
 all:	$(LIBS)
 
