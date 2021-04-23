@@ -3935,7 +3935,7 @@ daplka_cr_accept(daplka_ia_resource_t *ia_rp, intptr_t arg, int mode,
 	ibt_cm_proceed_reply_t		proc_reply;
 	ibt_status_t			status;
 	uint16_t			bkl_index;
-	uint32_t			old_state, new_state;
+	uint32_t			old_state = 0, new_state = 0;
 	int				retval = 0;
 	void				*priv_data = NULL, *sid;
 
