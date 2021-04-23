@@ -814,7 +814,7 @@ mac_sw_lso(mblk_t *omp, mac_emul_t emul, mblk_t **head, mblk_t **tail,
 	ipha_t *niph;
 	tcph_t *ntcph;
 	uint16_t ip_id;
-	uint32_t tcp_seq, tcp_sum, otcp_sum;
+	uint32_t tcp_seq, tcp_sum = 0, otcp_sum;
 
 	uint32_t offset;
 	mblk_t *odatamp;

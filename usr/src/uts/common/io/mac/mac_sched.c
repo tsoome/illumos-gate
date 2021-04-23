@@ -4038,7 +4038,7 @@ void
 mac_tx_srs_drain(mac_soft_ring_set_t *mac_srs, uint_t proc_type)
 {
 	mblk_t			*head, *tail;
-	size_t			sz;
+	size_t			sz = 0;
 	uint32_t		tx_mode;
 	uint_t			saved_pkt_count;
 	mac_tx_stats_t		stats;
@@ -4155,7 +4155,7 @@ mac_tx_srs_drain(mac_soft_ring_set_t *mac_srs, uint_t proc_type)
 		}
 	} else if (tx_mode == SRS_TX_BW_FANOUT || tx_mode == SRS_TX_BW_AGGR) {
 		mblk_t *prev;
-		uint64_t hint;
+		uint64_t hint = 0;
 
 		/*
 		 * We are here because the timer fired and we
