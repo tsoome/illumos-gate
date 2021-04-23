@@ -778,6 +778,8 @@ mptsas_get_handshake_msg(mptsas_t *mpt, caddr_t memp, int numbytes,
 	int		i, totalbytes, bytesleft;
 	uint16_t	val;
 
+	totalbytes = 0;
+
 	/*
 	 * wait for doorbell
 	 */
