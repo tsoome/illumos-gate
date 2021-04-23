@@ -922,7 +922,7 @@ parse_dp_name(char *dp_der_code, int dp_der_size, KMF_CRL_DIST_POINT *dp)
 	ber_len_t size;
 	char *end = NULL;
 	int tag;
-	KMF_GENERALNAMES *fullname;
+	KMF_GENERALNAMES *fullname = NULL;
 
 	if (dp_der_code == NULL || dp_der_size == 0 || dp == NULL)
 		return (KMF_ERR_BAD_PARAMETER);
