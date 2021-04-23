@@ -1169,8 +1169,8 @@ ibmf_i_repost_recv_buffer(ibmf_ci_t *cip, ibmf_recv_wqe_t *recv_wqep)
 	ibt_status_t		status;
 	ibmf_qp_handle_t	ibmf_qp_handle = recv_wqep->recv_ibmf_qp_handle;
 	struct kmem_cache	*kmem_cachep;
-	ibmf_alt_qp_t		*altqp;
-	ibmf_qp_t		*qpp;
+	ibmf_alt_qp_t		*altqp = NULL;
+	ibmf_qp_t		*qpp = NULL;
 
 	IBMF_TRACE_2(IBMF_TNF_DEBUG, DPRINT_L4,
 	    ibmf_i_repost_recv_buffer_start, IBMF_TNF_TRACE, "",
