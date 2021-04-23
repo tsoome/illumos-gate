@@ -1701,7 +1701,7 @@ static uint_t
 spdsock_encode_action_list(uint8_t *base, uint_t offset,
     const ipsec_action_t *ap)
 {
-	struct spd_ext_actions *act;
+	struct spd_ext_actions *act = NULL;
 	uint_t nact = 0;
 	uint_t start = offset;
 
@@ -1731,7 +1731,7 @@ spdsock_encode_action_list(uint8_t *base, uint_t offset,
 
 	ASSERT(ALIGNED64(offset));
 
-	if (base != NULL) {
+	if (act != NULL) {
 		act->spd_actions_count = nact;
 		act->spd_actions_len = SPD_8TO64(offset - start);
 	}
