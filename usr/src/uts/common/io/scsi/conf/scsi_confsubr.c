@@ -616,7 +616,7 @@ scsi_test_ereport_post(struct scsi_pkt *pkt, enum scsi_test_ctxt ctxt,
 	struct scsi_device *sd;
 	scsi_lun64_t lun64;
 	const char *d_ass;
-	const char *class;
+	const char *class = NULL;
 	char *pathbuf;
 	nvlist_t *pl;
 	uint64_t wwn;
