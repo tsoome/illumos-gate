@@ -476,6 +476,7 @@ des_crypt_impl(uint64_t *ks, uint64_t block, int one_or_three)
 	uint64_t l, r, t;
 
 	des_ip(&l, &r, block);
+	t = 0;
 	for (j = 0; j < one_or_three; j++) {
 		for (i = j * 16; i < (j + 1) * 16; i++) {
 			t = r ^ ks[i];
