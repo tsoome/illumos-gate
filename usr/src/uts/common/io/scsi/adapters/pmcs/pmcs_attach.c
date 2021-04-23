@@ -2861,7 +2861,7 @@ pmcs_prt_impl(pmcs_hw_t *pwp, pmcs_prt_level_t level,
 	char *ptr;
 	uint32_t elem_size = PMCS_TBUF_ELEM_SIZE - 1;
 	boolean_t system_log;
-	int system_log_level;
+	int system_log_level = CE_NOTE;
 	hrtime_t hrtimestamp;
 
 	switch (level) {
