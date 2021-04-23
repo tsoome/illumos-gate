@@ -220,6 +220,7 @@ copy_attribute(CK_ULONG type, CK_ATTRIBUTE_PTR src, CK_ULONG src_cnt,
 {
 	int rv, i;
 
+	rv = CKR_GENERAL_ERROR;
 	for (i = 0; i < src_cnt; i++) {
 		if (src[i].type == type) {
 			rv = get_string_from_template(dst, &src[i]);
