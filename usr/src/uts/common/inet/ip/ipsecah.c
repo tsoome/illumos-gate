@@ -2711,7 +2711,7 @@ ah_submit_req_inbound(mblk_t *phdr_mp, ip_recv_attr_t *ira,
     size_t skip_len, uint32_t ah_offset, ipsa_t *assoc)
 {
 	int kef_rc;
-	mblk_t *mp;
+	mblk_t *mp = NULL;
 	crypto_call_req_t call_req, *callrp;
 	uint_t icv_len = assoc->ipsa_mac_len;
 	crypto_ctx_template_t ctx_tmpl;
@@ -2810,7 +2810,7 @@ ah_submit_req_outbound(mblk_t *phdr_mp, ip_xmit_attr_t *ixa,
     size_t skip_len, ipsa_t *assoc)
 {
 	int kef_rc;
-	mblk_t *mp;
+	mblk_t *mp = NULL;
 	crypto_call_req_t call_req, *callrp;
 	uint_t icv_len = assoc->ipsa_mac_len;
 	ipsecah_stack_t	*ahstack;
