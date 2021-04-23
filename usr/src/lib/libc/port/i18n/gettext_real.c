@@ -337,7 +337,7 @@ process_nlspath(const char *cur_domain, const char *cur_msgloc,
 	size_t	nlspath_len, domain_len, locale_len, path_len;
 	size_t	ppaths_len = 0;
 	Nlstmp	*nlstmp = NULL;
-	Nlstmp	*pnlstmp, *qnlstmp;
+	Nlstmp	*pnlstmp, *qnlstmp = NULL;
 	Nls_node	*cur_nls, *nnp;
 	Gettext_t	*gt = global_gt;
 
@@ -442,8 +442,10 @@ process_nlspath(const char *cur_domain, const char *cur_msgloc,
 
 			pnlstmp->next = NULL;
 
-			if (nlstmp == NULL) {
+			if (nlstmp == NULL)
 				nlstmp = pnlstmp;
+
+			if (qnlstmp == NULL) {
 				qnlstmp = pnlstmp;
 			} else {
 				qnlstmp->next = pnlstmp;
