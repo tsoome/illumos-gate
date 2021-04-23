@@ -3258,7 +3258,7 @@ emlxs_dump_menlo_log(
 	menlo_log_t *pLcEntry;
 
 	/* Get Log Data Command vars */
-	uint32_t LdBufSize;
+	uint32_t LdBufSize = 0;
 	menlo_rsp_t *pLdBuf = NULL;
 	uint16_t Head;
 	uint8_t *pLogEntry;
