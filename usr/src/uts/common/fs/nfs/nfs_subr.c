@@ -4307,7 +4307,7 @@ failover_thread(mntinfo_t *mi)
 	callb_cpr_t cprinfo;
 	rnode_t *rp;
 	int index;
-	char *srvnames;
+	char *srvnames = NULL;
 	size_t srvnames_len;
 	struct nfs_clnt *nfscl = NULL;
 	zoneid_t zoneid = getzoneid();
