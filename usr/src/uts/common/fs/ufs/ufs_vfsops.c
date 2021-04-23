@@ -471,7 +471,7 @@ ufs_mountroot(struct vfs *vfsp, enum whymountroot why)
 	dev_t rootdev = NODEV;
 	struct vnode *vp;
 	struct vnode *devvp = 0;
-	int ovflags;
+	int ovflags = 0;
 	int doclkset;
 	ufsvfs_t *ufsvfsp;
 
