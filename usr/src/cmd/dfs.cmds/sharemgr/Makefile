@@ -55,11 +55,10 @@ install	:=	TARGET= install
 clean	:=	TARGET= clean
 clobber	:=	TARGET= clobber
 _msg	:=	TARGET= _msg
-lint	:=	TARGET= lint
 
 .KEEP_STATE:
 
-all clean clobber lint _msg:	$(SUBDIRS)
+all clean clobber _msg:	$(SUBDIRS)
 
 install: $(SUBDIRS) $(ROOTMANIFEST) .WAIT $(ROOTLINKS)
 

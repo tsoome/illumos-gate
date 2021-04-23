@@ -44,8 +44,6 @@ NATIVE_LIBS += libxml2.so
 
 all install := LDLIBS += -lxml2
 
-CERRWARN	+= $(CNOWARN_UNINIT)
-
 POFILES = $(SRCS:.c=.po)
 POFILE  = sharemgr.po
 

@@ -716,7 +716,7 @@ chk_opt(struct options *optlistp, int security, char *proto)
 	struct options *optlist;
 	char *sep = "";
 	int notfirst = 0;
-	int ret;
+	int ret = SA_OK;
 
 	for (optlist = optlistp; optlist != NULL; optlist = optlist->next) {
 		char *optname;
@@ -2298,10 +2298,7 @@ sa_show(sa_handle_t handle, int flags, int argc, char *argv[])
 	int ret = SA_OK;
 	char *protocol = NULL;
 	int xml = 0;
-	xmlDocPtr doc;
-#ifdef lint
-	flags = flags;
-#endif
+	xmlDocPtr doc = NULL;
 
 	while ((c = getopt(argc, argv, "?hvP:px")) !=	EOF) {
 		switch (c) {
@@ -3011,13 +3008,13 @@ sa_removeshare(sa_handle_t handle, int flags, int argc, char *argv[])
 	int force = 0;
 	int c;
 	int ret = SA_OK;
-	sa_group_t group;
+	sa_group_t group = NULL;
 	sa_resource_t resource = NULL;
 	sa_share_t share = NULL;
 	char *rsrcname = NULL;
 	char *sharepath = NULL;
 	char dir[MAXPATHLEN];
-	int auth;
+	int auth = 0;
 
 	while ((c = getopt(argc, argv, "?hfnr:s:v")) != EOF) {
 		switch (c) {
@@ -3278,9 +3275,9 @@ sa_set_share(sa_handle_t handle, int flags, int argc, char *argv[])
 	char *rsrcname = NULL;
 	char *rsrc = NULL;
 	char *newname = NULL;
-	char *newrsrc;
+	char *newrsrc = NULL;
 	char *groupname = NULL;
-	int auth;
+	int auth = 0;
 	int verbose = 0;
 
 	while ((c = getopt(argc, argv, "?hnd:r:s:")) != EOF) {
