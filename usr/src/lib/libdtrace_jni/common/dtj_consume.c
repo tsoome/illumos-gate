@@ -1524,7 +1524,7 @@ dtj_new_distribution(const dtrace_aggdata_t *data, const dtrace_recdesc_t *rec,
 	int64_t *aggbuckets = (int64_t *)
 	    (data->dtada_data + rec->dtrd_offset);
 	size_t size = rec->dtrd_size;
-	int64_t value;
+	int64_t value = 0;
 	uint64_t normal = data->dtada_normal;
 	int64_t base, step;
 	int levels;
