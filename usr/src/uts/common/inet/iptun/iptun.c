@@ -2392,7 +2392,7 @@ iptun_input_icmp_v4(iptun_t *iptun, mblk_t *data_mp, icmph_t *icmph,
 	ipha_t	*outer4, *inner4;
 	ip6_t	*outer6, *inner6;
 	int	outer_hlen;
-	uint8_t	type, code;
+	uint8_t	type, code = 0;
 
 	ASSERT(data_mp->b_cont == NULL);
 	/*
