@@ -1826,13 +1826,13 @@ static mblk_t *
 esp_submit_req_inbound(mblk_t *esp_mp, ip_recv_attr_t *ira,
     ipsa_t *assoc, uint_t esph_offset)
 {
-	uint_t auth_offset, msg_len, auth_len;
+	uint_t auth_offset = 0, msg_len, auth_len = 0;
 	crypto_call_req_t call_req, *callrp;
 	mblk_t *mp;
 	esph_t *esph_ptr;
 	int kef_rc;
 	uint_t icv_len = assoc->ipsa_mac_len;
-	crypto_ctx_template_t auth_ctx_tmpl;
+	crypto_ctx_template_t auth_ctx_tmpl = NULL;
 	boolean_t do_auth, do_encr, force;
 	uint_t encr_offset, encr_len;
 	uint_t iv_len = assoc->ipsa_iv_len;
@@ -2149,14 +2149,14 @@ static mblk_t *
 esp_submit_req_outbound(mblk_t *data_mp, ip_xmit_attr_t *ixa, ipsa_t *assoc,
     uchar_t *icv_buf, uint_t payload_len)
 {
-	uint_t auth_len;
+	uint_t auth_len = 0;
 	crypto_call_req_t call_req, *callrp;
 	mblk_t *esp_mp;
 	esph_t *esph_ptr;
 	mblk_t *mp;
 	int kef_rc = CRYPTO_FAILED;
 	uint_t icv_len = assoc->ipsa_mac_len;
-	crypto_ctx_template_t auth_ctx_tmpl;
+	crypto_ctx_template_t auth_ctx_tmpl = NULL;
 	boolean_t do_auth, do_encr, force;
 	uint_t iv_len = assoc->ipsa_iv_len;
 	crypto_ctx_template_t encr_ctx_tmpl;
