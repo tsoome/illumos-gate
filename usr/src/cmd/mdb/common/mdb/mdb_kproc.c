@@ -573,8 +573,8 @@ kp_lookup_by_name(mdb_tgt_t *t, const char *object,
 	kp_file_t *kpf;
 	int n;
 
-	GElf_Sym sym;
-	uint_t symid;
+	GElf_Sym sym = { 0 };
+	uint_t symid = 0;
 	int rv = -1;
 
 	/*
@@ -641,7 +641,7 @@ kp_lookup_by_addr(mdb_tgt_t *t, uintptr_t addr, uint_t flags,
 
 	kp_file_t *sym_kpf = NULL;
 	GElf_Sym sym;
-	uint_t symid;
+	uint_t symid = 0;
 
 	const char *name;
 	kp_file_t *kpf;

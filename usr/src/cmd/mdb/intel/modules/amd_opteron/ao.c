@@ -89,7 +89,7 @@ ao_nbcfg_describe(uintptr_t val, uint_t flags, int argc, const mdb_arg_t *argv)
 
 		uintptr_t cntfld = (val & AMD_NB_CFG_WDOGTMRCNTSEL_MASK);
 		uintptr_t basefld = (val & AMD_NB_CFG_WDOGTMRBASESEL_MASK);
-		uintptr_t count;
+		uintptr_t count = 0;
 		int valid = 1;
 		const char *units;
 

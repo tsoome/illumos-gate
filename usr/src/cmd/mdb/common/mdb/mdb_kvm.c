@@ -904,7 +904,7 @@ kt_lookup_by_addr(mdb_tgt_t *t, uintptr_t addr, uint_t flags,
 	kt_module_t *km = &kmods[0];	/* Point km at first fake module */
 	kt_module_t *sym_km = NULL;	/* Module associated with best sym */
 	GElf_Sym sym;			/* Best symbol found so far if !exact */
-	uint_t symid;			/* ID of best symbol found so far */
+	uint_t symid = 0;		/* ID of best symbol found so far */
 
 	/*
 	 * To simplify the implementation, we create fake modules on the stack

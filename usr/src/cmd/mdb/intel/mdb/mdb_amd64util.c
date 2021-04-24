@@ -210,7 +210,7 @@ mdb_amd64_kvm_stack_iter(mdb_tgt_t *t, const mdb_tgt_gregset_t *gsp,
 	int got_pc = (gsp->kregs[KREG_RIP] != 0);
 	uint_t argc, reg_argc;
 	long fr_argv[32];
-	int start_index; /* index to save_instr where to start comparison */
+	int start_index = 0; /* index to save_instr where to start comparison */
 	int err;
 	int i;
 

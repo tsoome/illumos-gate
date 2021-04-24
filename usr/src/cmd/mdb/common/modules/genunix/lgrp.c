@@ -58,7 +58,7 @@ print_cpuset_range(ulong_t *cs, int words, int width)
 	int i, j;
 	ulong_t m;
 	int in = 0;
-	int start;
+	int start = 0;
 	int end;
 	int count = 0;
 	int sep = 0;

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * User Process Target SPARC v7 and v9 component
  *
@@ -438,21 +436,26 @@ pt_getfpreg(mdb_tgt_t *t, mdb_tgt_tid_t tid, ushort_t rd_num,
 		case FPU_FPRS:
 			if (rd_flags & MDB_TGT_R_XREG)
 				rval = xrs.pr_un.pr_v8p.pr_fprs;
-			break;
-		}
 
+			/* FALLTHROUGH */
+		default:
+			errno = EINVAL;
+			return (-1);
+		}
 	} else if (rd_flags & MDB_TGT_R_FPS) {
 		if (rd_flags & MDB_TGT_R_XREG)
 			rval = xrs.pr_un.pr_v8p.pr_xfr.pr_regs[rd_num - 32];
 		else
 			rval = fprs.pr_fr.pr_regs[rd_num];
-
 	} else if (rd_flags & MDB_TGT_R_FPD) {
 		if (rd_flags & MDB_TGT_R_XREG)
 			rval = ((uint64_t *)
 			    xrs.pr_un.pr_v8p.pr_xfr.pr_dregs)[rd_num - 16];
 		else
 			rval = ((uint64_t *)fprs.pr_fr.pr_dregs)[rd_num];
+	} else {
+		errno = EINVAL;
+		return (-1);
 	}
 
 	*rp = rval;

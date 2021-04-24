@@ -33,5 +33,3 @@ include ../../../../Makefile.cmd
 include ../../../../Makefile.cmd.64
 include ../../Makefile.sparcv9
 include ../../../Makefile.module
-
-CERRWARN += $(CNOWARN_UNINIT)

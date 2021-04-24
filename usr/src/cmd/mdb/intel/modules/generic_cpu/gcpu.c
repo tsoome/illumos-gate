@@ -323,7 +323,7 @@ cmihdl_disp(uintptr_t addr, cmi_hdl_impl_t *hdl)
 	struct modctl cmimodc, cmsmodc;		/* 288 bytes max */
 	cmi_t cmi;				/* 40 bytes max */
 	cms_t cms;				/* 40 bytes max */
-	cpu_t *cp;
+	cpu_t *cp = NULL;
 	char cmimodnm[25], cmsmodnm[25];	/* 50 bytes */
 	char cpuidstr[4], hwidstr[16];
 	int native = hdl->cmih_class == CMI_HDL_NATIVE;

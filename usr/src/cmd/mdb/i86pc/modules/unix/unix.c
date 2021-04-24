@@ -133,7 +133,7 @@ ttrace_walk_init(mdb_walk_state_t *wsp)
 int
 ttrace_walk_step(mdb_walk_state_t *wsp)
 {
-	trap_trace_ctl_t *ttcp = wsp->walk_data, *ttc, *latest_ttc;
+	trap_trace_ctl_t *ttcp = wsp->walk_data, *ttc, *latest_ttc = NULL;
 	trap_trace_rec_t rec;
 	int rval, i, recsize = sizeof (trap_trace_rec_t);
 	hrtime_t latest = 0;

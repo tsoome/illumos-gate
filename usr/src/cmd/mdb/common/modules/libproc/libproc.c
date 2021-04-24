@@ -59,7 +59,7 @@ pr_symtab(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	int byaddr = FALSE;
 	int byname = FALSE;
 	uint_t *symlist;
-	size_t symlistsz;
+	size_t symlistsz = 0;
 
 	if (mdb_getopts(argc, argv,
 	    'a', MDB_OPT_SETBITS, TRUE, &byaddr,

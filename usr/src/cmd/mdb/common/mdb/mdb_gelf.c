@@ -514,7 +514,7 @@ gelf_dyns_init(mdb_gelf_file_t *gf, size_t dyn_size,
 	caddr_t dyns, dp;
 	GElf_Dyn *gdp;
 
-	off64_t dyn_addr;
+	off64_t dyn_addr = 0;
 
 	if (gf->gf_dyns != NULL)
 		return (gf->gf_dyns);	/* Already loaded */

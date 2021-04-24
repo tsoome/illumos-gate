@@ -514,7 +514,7 @@ cyctrace_walk_step(mdb_walk_state_t *wsp)
 	cyc_cpu_t *cpu = wsp->walk_data;
 	cyc_tracebuf_t *buf = cpu->cyp_trace;
 	hrtime_t latest = 0;
-	int i, ndx, new_ndx, lev, rval;
+	int i, ndx, new_ndx, lev = 0, rval;
 	uintptr_t addr;
 
 	for (i = 0; i < CY_LEVELS; i++) {
