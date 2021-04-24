@@ -1036,7 +1036,7 @@ parse_key(char *input, uint_t *keybuflen, uint_t *lbits)
 static int
 parse_ps(int argc, char **argv, ike_ps_t **presharedpp, int *len)
 {
-	uint_t		c = 0, locidlen, remidlen, keylen, keybits;
+	uint_t		c = 0, locidlen = 0, remidlen = 0, keylen, keybits;
 	uint_t		a_locidtotal = 0, a_remidtotal = 0;
 	char		*locid, *remid, *locpfx = NULL, *rempfx = NULL;
 	uint8_t		*keyp = NULL;
@@ -2455,7 +2455,7 @@ do_getvar(int cmd)
 {
 	ike_service_t	req, *rtn;
 	ike_dbg_t	*dreq;
-	char		*varname;
+	char		*varname = NULL;
 
 	switch (cmd) {
 	case IKE_SVC_GET_DBG:
@@ -2551,7 +2551,7 @@ do_setvar(int cmd, int argc, char **argv)
 	door_desc_t	*descp = NULL, desc;
 	int		fd, ndesc = 0;
 	uint32_t	reqlevel;
-	char		*varname;
+	char		*varname = NULL;
 
 	if (argc < 1)
 		Bail("unspecified level");
@@ -2671,7 +2671,7 @@ do_getdefs(int cmd)
 static void
 do_dump(int cmd)
 {
-	char		*name;
+	char		*name = NULL;
 	ike_service_t	req, *rtn;
 	ike_dump_t	*dreq, *dump;
 
@@ -2825,7 +2825,7 @@ do_getdel(int cmd, int argc, char **argv)
 {
 	int		idlen, idtype = 0, i, j;
 	int		bytelen1, bytelen2;
-	char		*name, *idp, *p, *p1, *p2;
+	char		*name = NULL, *idp, *p, *p1, *p2;
 	ike_addr_pr_t	apr;
 	ike_cky_pr_t	cpr;
 	sadb_ident_t	*sid1p, *sid2p;
@@ -2989,8 +2989,8 @@ do_new(int cmd, int argc, char **argv)
 	ike_service_t	*rtn;
 	ike_new_t	new, *newp = NULL;
 	door_desc_t	desc, *descp = NULL;
-	int		i, fd, ndesc = 0, buflen;
-	char		*name, tmpfilepath[32];
+	int		i, fd, ndesc = 0, buflen = 0;
+	char		*name = NULL, tmpfilepath[32];
 	FILE		*tmpfile;
 
 	switch (cmd) {
@@ -3183,8 +3183,8 @@ do_rw(int cmd, int argc, char **argv)
 	ike_service_t	*rtnp;
 	ike_rw_t	rw;
 	door_desc_t	desc, *descp = NULL;
-	int		oflag, omode, fd, ndesc = 0;
-	char		*op, *obj = NULL;
+	int		oflag, omode, fd = -1, ndesc = 0;
+	char		*op = NULL, *obj = NULL;
 	boolean_t	writing = B_FALSE;
 
 	switch (cmd) {

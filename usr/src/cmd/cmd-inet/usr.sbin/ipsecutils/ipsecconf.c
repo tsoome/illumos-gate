@@ -1335,7 +1335,7 @@ main(int argc, char *argv[])
 {
 	int ret, flushret;
 	int c;
-	int index;
+	int index = -1;
 	boolean_t smf_managed;
 	boolean_t just_check = B_FALSE;
 	boolean_t replace_policy = B_FALSE;
@@ -1357,6 +1357,12 @@ main(int argc, char *argv[])
 
 	openlog("ipsecconf", LOG_CONS, LOG_AUTH);
 
+	my_fmri = getenv("SMF_FMRI");
+	if (my_fmri == NULL)
+		smf_managed = B_FALSE;
+	else
+		smf_managed = B_TRUE;
+
 	/*
 	 * We don't immediately check for privilege here. This is done by IP
 	 * when we open /dev/ip below.
@@ -1366,11 +1372,6 @@ main(int argc, char *argv[])
 		cmd = IPSEC_CONF_VIEW;
 		goto done;
 	}
-	my_fmri = getenv("SMF_FMRI");
-	if (my_fmri == NULL)
-		smf_managed = B_FALSE;
-	else
-		smf_managed = B_TRUE;
 
 	while ((c = getopt(argc, argv, "nlfLFa:qd:r:i:c:")) != EOF) {
 		switch (c) {
@@ -4218,7 +4219,7 @@ form_ipsec_conf(act_prop_t *act_props, ips_conf_t *cptr)
 	int line_no;
 	int ret;
 	int ap_num = 0;
-	int type, code, type_end, code_end;
+	int type = 0, code, type_end, code_end;
 #ifdef DEBUG_HEAVY
 	/*
 	 * pattern => act_props->pattern

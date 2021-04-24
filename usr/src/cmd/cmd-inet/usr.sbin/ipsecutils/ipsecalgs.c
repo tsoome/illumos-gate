@@ -211,8 +211,7 @@ synch_emit_alg(struct ipsecalgent *alg)
 static void
 synch_emit_proto(uint_t proto_num)
 {
-	ipsecalgs_exec_mode_t exec_mode;
-	uint32_t exec_mode_spdval;
+	ipsecalgs_exec_mode_t exec_mode, exec_mode_spdval;
 
 	EMIT(sync_req_attr, SPD_ATTR_PROTO_ID, proto_num);
 
@@ -229,6 +228,9 @@ synch_emit_proto(uint_t proto_num)
 	case LIBIPSEC_ALGS_EXEC_ASYNC:
 		exec_mode_spdval = SPD_ALG_EXEC_MODE_ASYNC;
 		break;
+	default:
+		errx(EXIT_FAILURE, gettext("unknown execution mode for "
+		    "proto %d"), proto_num);
 	}
 	EMIT(sync_req_attr, SPD_ATTR_PROTO_EXEC_MODE, exec_mode_spdval);
 
@@ -338,8 +340,8 @@ list_kernel_algs(void)
 	struct spd_attribute *attr, *endattr;
 	uint64_t *start, *end;
 	struct ipsecalgent alg;
-	uint_t cur_key, cur_block;
-	uint_t nkey_sizes, nblock_sizes, nparams;
+	uint_t cur_key = 0, cur_block = 0;
+	uint_t nkey_sizes, nblock_sizes, nparams = 0;
 	char diag_buf[SPDSOCK_DIAG_BUF_LEN];
 
 	if (sfd < 0) {

@@ -1202,7 +1202,7 @@ doaddresses(uint8_t sadb_msg_type, uint8_t sadb_msg_satype, int cmd,
     char *ebuf)
 {
 	boolean_t last_dst;
-	struct sockaddr_in6 *sin6;
+	struct sockaddr_in6 *sin6 = NULL;
 	struct sadb_msg *msgp;
 	int i, rc;
 	char **walker;	/* For the SRC and PROXY walking functions. */
@@ -1558,7 +1558,7 @@ doaddresses(uint8_t sadb_msg_type, uint8_t sadb_msg_satype, int cmd,
 		if (msgp->sadb_msg_errno != 0) {
 			char addrprint[INET6_ADDRSTRLEN];
 			int on_errno = 0;
-			char *on_errno_msg;
+			char *on_errno_msg = NULL;
 
 			/*
 			 * Print different error messages depending
@@ -1685,6 +1685,9 @@ doaddup(int cmd, int satype, char *argv[], char *ebuf)
 		thiscmd = "update-pair";
 		sadb_msg_type = SADB_X_UPDATEPAIR;
 		break;
+	default:
+		thiscmd = "unknown";
+		sadb_msg_type = SADB_RESERVED;
 	}
 
 	msg_init(&msg, sadb_msg_type, (uint8_t)satype);
@@ -2976,9 +2979,9 @@ dodelget(int cmd, int satype, char *argv[], char *ebuf)
 	uint64_t *nextext;
 	struct sadb_sa *assoc = NULL;
 	struct sadb_address *src = NULL, *dst = NULL;
-	int next, token, sa_len;
+	int next, token, sa_len = 0;
 	char *thiscmd;
-	uint32_t spi;
+	uint32_t spi = 0;
 	uint8_t	sadb_msg_type;
 	struct hostent *srchp = NULL, *dsthp = NULL;
 	struct sockaddr_in6 *sin6;
@@ -3005,6 +3008,9 @@ dodelget(int cmd, int satype, char *argv[], char *ebuf)
 		thiscmd = "delete-pair";
 		sadb_msg_type = SADB_X_DELPAIR;
 		break;
+	default:
+		thiscmd = "unknown";
+		sadb_msg_type = SADB_RESERVED;
 	}
 
 	msg_init(msg, sadb_msg_type, (uint8_t)satype);
@@ -3577,7 +3583,7 @@ int
 main(int argc, char *argv[])
 {
 	int ch;
-	FILE *infile = stdin, *savefile;
+	FILE *infile = stdin, *savefile = NULL;
 	boolean_t dosave = B_FALSE, readfile = B_FALSE;
 	char *configfile = NULL;
 	struct stat sbuf;
