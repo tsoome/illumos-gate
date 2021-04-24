@@ -597,6 +597,7 @@ esi_remove_obj(
 		uid = 0;
 		break;
 	default:
+		uid = 0;
 		puid = 0;
 		break;
 	}

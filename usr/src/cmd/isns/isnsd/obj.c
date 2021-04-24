@@ -496,7 +496,7 @@ pg_hval(
 	lookup_ctrl_t *lcp;
 
 	in6_addr_t *ip = NULL;
-	uint32_t port;
+	uint32_t port = 0;
 
 	if ((*flags & FLAGS_CTRL_MASK) == 0) {
 		/* p is a portal group object */
@@ -3410,7 +3410,7 @@ cb_verify_ref(
 	const void *vp;
 	uint32_t vnum;
 
-	const void **evpp;
+	const void **evpp = NULL;
 	const void *evp;
 	uint32_t evnum;
 
@@ -3892,7 +3892,7 @@ make_unique_name(
 	uint32_t tag
 )
 {
-	int i;
+	int i = 0;
 	int count;
 	char name[32] = { 0 };
 

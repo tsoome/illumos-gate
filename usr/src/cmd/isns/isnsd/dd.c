@@ -77,7 +77,7 @@ cb_update_ds_attr(
 	isns_obj_t *obj = (isns_obj_t *)p1;
 	lookup_ctrl_t *lcp = (lookup_ctrl_t *)p2;
 	uint32_t tag = lcp->id[1];
-	uint32_t which;
+	uint32_t which = 0;
 	isns_attr_t *attr;
 
 	uint32_t len;

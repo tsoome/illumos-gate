@@ -277,7 +277,7 @@ avl_insert(
 	htab_itemx_t *x
 )
 {
-	htab_itemx_t *f, *a, *p, *q, *b, *c;
+	htab_itemx_t *f, *a, *p, *q, *b, *c = NULL;
 	int d;
 
 	/* initialize the new one */

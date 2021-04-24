@@ -341,7 +341,7 @@ scn_add_portal(
 	scn_portal_t *p
 )
 {
-	scn_portal_t *x;
+	scn_portal_t *x = NULL;
 	scn_list_t *l, *m;
 
 	scn_list_t **lp;
@@ -1299,7 +1299,7 @@ scn_disp1(
 )
 {
 	scn_t *s, *r = NULL;
-	scn_list_t *l, **lp;
+	scn_list_t *l, **lp = NULL;
 
 	s = p->scn;
 

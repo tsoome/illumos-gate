@@ -159,7 +159,7 @@ process_get_request_from_doc(xmlXPathContextPtr ctext, request_t *req)
 	xmlXPathObjectPtr xpath_obj = NULL;
 	xmlNodeSetPtr r_nodes = NULL;
 	xmlAttrPtr attr = NULL;
-	int i, cnt;
+	int i = 0, cnt;
 
 	int obj = 0;
 

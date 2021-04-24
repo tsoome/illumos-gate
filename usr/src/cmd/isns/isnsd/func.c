@@ -1115,7 +1115,7 @@ dev_dereg(conn_arg_t *conn)
 
 	uchar_t *iscsi_name;
 	int ctrl;
-	uint32_t puid;
+	uint32_t puid = 0;
 
 	lookup_ctrl_t lc;
 	uint8_t *value;

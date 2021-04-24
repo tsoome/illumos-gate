@@ -3176,7 +3176,7 @@ modify_ddset_func(int operandLen, char *operand[], cmdOptions_t *options,
 	msg_code_t ret;
 	door_arg_t	darg;
 	int	fd, m_flag = 0;
-	uint32_t    id;
+	uint32_t    id = 0;
 
 	if ((fd = open(ISNS_DOOR_NAME, 0)) == -1) {
 	    ret = check_door_error(ERROR_DOOR_OPEN_FAILED, errno);

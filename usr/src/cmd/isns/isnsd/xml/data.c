@@ -1008,7 +1008,7 @@ xml_add_obj(
 	xmlDocPtr doc;
 	xmlXPathContextPtr context = NULL;
 	xmlXPathObjectPtr result = NULL;
-	xmlNodePtr node, prev;
+	xmlNodePtr node, prev = NULL;
 	xmlNodePtr candidate;
 
 	uint32_t puid, parent_type;

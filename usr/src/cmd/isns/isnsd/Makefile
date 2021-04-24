@@ -58,16 +58,12 @@ CPPFLAGS	+= -D_POSIX_PTHREAD_SEMANTICS
 
 CERRWARN += -_gcc=-Wno-char-subscripts
 CERRWARN += -_gcc=-Wno-ignored-qualifiers
-CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-implicit-function-declaration
 
 # not linted
 SMATCH=off
 
 CLOBBERFILES += $(DTRACE_HEADER)
-
-obj.o := CERRWARN += -erroff=E_CONST_OBJ_SHOULD_HAVE_INITIZR
-obj.o := CERRWARN += -erroff=E_IMPLICIT_DECL_FUNC_RETURN_INT
 
 LDLIBS		+= -lsecdb -lsocket -lnsl -lscf -lxml2
 NATIVE_LIBS	+= libxml2.so
@@ -93,8 +89,6 @@ $(PROG): $(OBJS)
 
 clean:
 	$(RM) $(OBJS)
-
-lint:	lint_SRCS
 
 $(POFILES): $(DTRACE_HEADER)
 
