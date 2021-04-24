@@ -79,7 +79,7 @@ static const int flagval[]  =
 #if SHOPT_HISTEXPAND
         SH_HISTEXPAND,
 #endif
-	0 
+	0
 };
 
 #define NUM_OPTS	(sizeof(flagval)/sizeof(*flagval))
@@ -113,7 +113,7 @@ static int infof(Opt_t* op, Sfio_t* sp, const char* s, Optdisc_t* dp)
 {
 #if SHOPT_BASH
 	extern const char sh_bash1[], sh_bash2[];
-	if(strcmp(s,"bash1")==0) 
+	if(strcmp(s,"bash1")==0)
 	{
 		if(sh_isoption(SH_BASH))
 			sfputr(sp,sh_bash1,-1);
@@ -467,7 +467,7 @@ char *sh_argdolminus(void* context)
 }
 
 /*
- * set up positional parameters 
+ * set up positional parameters
  */
 static void sh_argset(Arg_t *ap,char *argv[])
 {
@@ -707,7 +707,7 @@ void sh_printopts(Shopt_t oflags,register int mode, Shopt_t *mask)
  */
 char **sh_argbuild(Shell_t *shp,int *nargs, const struct comnod *comptr,int flag)
 {
-	register struct argnod	*argp;
+	register struct argnod	*argp = NULL;
 	struct argnod *arghead=0;
 	shp->xargmin = 0;
 	{

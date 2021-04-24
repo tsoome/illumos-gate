@@ -1098,7 +1098,7 @@ static int varsub(Mac_t *mp)
 	int		dolmax=0, vsize= -1, offset= -1, nulflg, replen=0, bysub=0;
 	char		idbuff[3], *id = idbuff, *pattern=0, *repstr=0, *arrmax=0;
 	char		*idx = 0;
-	int		var=1,addsub=0,oldpat=mp->pattern,idnum=0,flag=0,d;
+	int		var=1,addsub=0,oldpat=mp->pattern,idnum=0,flag=0,d = 0;
 	Stk_t		*stkp = mp->shp->stk;
 retry1:
 	mp->zeros = 0;

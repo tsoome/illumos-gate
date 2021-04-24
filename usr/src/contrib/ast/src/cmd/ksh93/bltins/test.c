@@ -86,7 +86,7 @@ static int test_strmatch(Shell_t *shp,const char *str, const char *pat)
 {
 	regoff_t match[2*(MATCH_MAX+1)],n;
 	register int c, m=0;
-	register const char *cp=pat; 
+	register const char *cp=pat;
 	while(c = *cp++)
 	{
 		if(c=='(')
@@ -192,7 +192,7 @@ int b_test(int argc, char *argv[],Shbltin_t *context)
  * evaluate a test expression.
  * flag is 0 on outer level
  * flag is 1 when in parenthesis
- * flag is 2 when evaluating -a 
+ * flag is 2 when evaluating -a
  */
 static int expr(struct test *tp,register int flag)
 {
@@ -445,7 +445,7 @@ int test_unop(Shell_t *shp,register int op,register const char *arg)
 				np = nv_refnode(np);
 			else
 				return(0);
-			
+
 		}
 		if(ap = nv_arrayptr(np))
 			return(nv_arrayisset(np,ap));
@@ -465,6 +465,9 @@ int test_unop(Shell_t *shp,register int op,register const char *arg)
 int test_binop(Shell_t *shp,register int op,const char *left,const char *right)
 {
 	register double lnum,rnum;
+
+	lnum = rnum = 0;
+
 	if(op&TEST_ARITH)
 	{
 		while(*left=='0')
@@ -572,7 +575,7 @@ int sh_access(register const char *name, register int mode)
 #ifdef _lib_setreuid
 	/* swap the real uid to effective, check access then restore */
 	/* first swap real and effective gid, if different */
-	if(shp->gd->groupid==shp->gd->euserid || setregid(shp->gd->egroupid,shp->gd->groupid)==0) 
+	if(shp->gd->groupid==shp->gd->euserid || setregid(shp->gd->egroupid,shp->gd->groupid)==0)
 	{
 		/* next swap real and effective uid, if needed */
 		if(shp->gd->userid==shp->gd->euserid || setreuid(shp->gd->euserid,shp->gd->userid)==0)
@@ -610,7 +613,7 @@ skip:
 		else
 		{
 			static int maxgroups;
-			gid_t *groups; 
+			gid_t *groups;
 			register int n;
 			if(maxgroups==0)
 			{
@@ -640,7 +643,7 @@ skip:
 }
 
 /*
- * Return the mode bits of file <file> 
+ * Return the mode bits of file <file>
  * If <file> is null, then the previous stat buffer is used.
  * The mode bits are zero if the file doesn't exist.
  */

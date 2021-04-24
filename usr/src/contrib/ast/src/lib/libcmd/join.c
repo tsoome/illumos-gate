@@ -325,7 +325,7 @@ getrec(Join_t* jp, int index, int discard)
 	else
 		do /* separate into fields */
 		{
-			if (field >= fieldmax)	
+			if (field >= fieldmax)
 			{
 				n = 2 * fp->maxfields;
 				fp->fields = newof(fp->fields, Field_t, n + 1, 0);
@@ -460,7 +460,7 @@ outfield(Join_t* jp, int index, register int n, int last)
 {
 	register File_t*	fp = &jp->file[index];
 	register char*		cp;
-	register char*		cpmax;
+	register char*		cpmax = NULL;
 	register int		size;
 	register Sfio_t*	iop = jp->outfile;
 	char*			tp;
