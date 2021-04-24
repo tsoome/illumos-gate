@@ -126,7 +126,7 @@ uint_t
 interpret_ether(int flags, char *header, int elen, int origlen)
 {
 	struct ether_header *e = (struct ether_header *)header;
-	uchar_t *off, *ieeestart;
+	uchar_t *off, *ieeestart = NULL;
 	int len;
 	int ieee8023 = 0;
 	extern char *dst_name;
@@ -809,12 +809,12 @@ interpret_tr(int flags, caddr_t e, int elen, int origlen)
 	struct tr_header *mh;
 	struct tr_ri *rh;
 	uchar_t fc;
-	struct llc_snap_hdr *snaphdr;
+	struct llc_snap_hdr *snaphdr = NULL;
 	char *off;
 	int maclen, len;
 	boolean_t data_copied = B_FALSE;
 	extern char *dst_name, *src_name;
-	int ethertype;
+	int ethertype = 0;
 	int is_llc = 0, is_snap = 0, source_routing = 0;
 	int blen = MAX(origlen, 17800);
 
@@ -1070,7 +1070,7 @@ interpret_fddi(int flags, caddr_t e, int elen, int origlen)
 	int len;
 	boolean_t data_copied = B_FALSE;
 	extern char *dst_name, *src_name;
-	int ethertype;
+	int ethertype = 0;
 	int is_llc = 0, is_smt = 0, is_snap = 0;
 	int blen = MAX(origlen, 4500);
 
@@ -1129,8 +1129,8 @@ interpret_fddi(int flags, caddr_t e, int elen, int origlen)
 	if (is_snap)
 		ethertype = ntohs(f->type);
 	else {
-		src_name = 	print_etherinfo(&f->shost);
-		dst_name =  print_etherinfo(&f->dhost);
+		src_name = print_etherinfo(&f->shost);
+		dst_name = print_etherinfo(&f->dhost);
 	}
 
 	/*

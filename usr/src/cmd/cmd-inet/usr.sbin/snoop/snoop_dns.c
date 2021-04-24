@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -306,10 +304,14 @@ dns_class_string(uint_t cls, int detail)
 {
 	static char buffer[64];
 	switch (cls) {
-	case ns_c_in:		return (detail ? "Internet" : "Internet");
-	case ns_c_chaos: 	return (detail ? "CHAOS" : "CH");
-	case ns_c_hs:		return (detail ? "Hesiod" : "HS");
-	case ns_c_any:		return (detail ? "* (Any class)" : "*");
+	case ns_c_in:
+		return (detail ? "Internet" : "Internet");
+	case ns_c_chaos:
+		return (detail ? "CHAOS" : "CH");
+	case ns_c_hs:
+		return (detail ? "Hesiod" : "HS");
+	case ns_c_any:
+		return (detail ? "* (Any class)" : "*");
 	default:
 		(void) snprintf(buffer, sizeof (buffer), "Unknown (%u)", cls);
 		return (buffer);
@@ -395,8 +397,8 @@ print_question(char *line, const uchar_t *header, const uchar_t *data,
  *	*line: snoops output buffer.
  *	*header: start of the DNS packet, required for names and rcode.
  *	*data: location within header from where the RR starts.
- * 	*data_end: where DNS data ends.
- * 	detail: simple or verbose output.
+ *	*data_end: where DNS data ends.
+ *	detail: simple or verbose output.
  *
  * Returns:
  *	Pointer to next RR or data_end.
@@ -747,7 +749,7 @@ print_ip(int af, char *line, const uchar_t *data, uint16_t len)
 {
 	in6_addr_t	addr6;
 	in_addr_t	addr4;
-	void		*addr;
+	void		*addr = NULL;
 
 	switch (af) {
 	case AF_INET:

@@ -500,7 +500,7 @@ print_ipv6_extensions(int flags, uint8_t **hdr, uint8_t *next, int *iplen,
 	struct ip6_dest *ipv6ext_dest;
 	struct ip6_rthdr *ipv6ext_rthdr;
 	struct ip6_frag *ipv6ext_frag;
-	uint32_t exthdrlen;
+	uint32_t exthdrlen = 0;
 	uint8_t extmask = 0;
 
 	if ((hdr == NULL) || (*hdr == NULL) || (next == NULL) || (iplen == 0))

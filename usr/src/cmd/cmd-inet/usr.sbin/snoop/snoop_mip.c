@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -196,13 +194,11 @@ static interpreter_f *get_interpreter(struct ext_dispatch table[],
 }
 
 static int
-interpret_extensions(uchar_t *ext,
-			int regext_size,
-			enum EXT_TYPE etype) {
-
+interpret_extensions(uchar_t *ext, int regext_size, enum EXT_TYPE etype)
+{
 	int curr_size  =  regext_size; /* remaining total for all exts */
 	exthdr_t *exthdr;
-	gen_exthdr_t *gen_exthdr;
+	gen_exthdr_t *gen_exthdr = NULL;
 	const char *st;
 	uchar_t	*p;
 	interpreter_f *f;
@@ -215,62 +211,63 @@ interpret_extensions(uchar_t *ext,
 
 
 	do {
-	    ext_type = exthdr->type;
-	    if (ext_type == GEN_AUTH) {
-		gen_exthdr = (gen_exthdr_t *)exthdr;
-		ext_hdrlen = sizeof (gen_exthdr_t);
-		ext_len = ntohs(gen_exthdr->length);
-	    } else {
-		ext_hdrlen = sizeof (exthdr_t);
-		ext_len = exthdr->length;
-	    }
+		ext_type = exthdr->type;
+		if (ext_type == GEN_AUTH) {
+			gen_exthdr = (gen_exthdr_t *)exthdr;
+			ext_hdrlen = sizeof (gen_exthdr_t);
+			ext_len = ntohs(gen_exthdr->length);
+		} else {
+			ext_hdrlen = sizeof (exthdr_t);
+			ext_len = exthdr->length;
+		}
 
-	    if (!((etype == ADV && ext_type == ICMP_ADV_MSG_PADDING_EXT &&
-		curr_size >= 1) ||
-		curr_size >= ext_hdrlen + ext_len))
-		    break;
+		if (!((etype == ADV && ext_type == ICMP_ADV_MSG_PADDING_EXT &&
+		    curr_size >= 1) || curr_size >= ext_hdrlen + ext_len))
+			break;
 
-	    /* Print description for this extension */
-	    if (etype == ADV) {
-		st = get_desc(adv_desc, ext_type, ADV_TBL_LEN);
-	    } else /* REG */ {
-		st = get_desc(reg_desc, ext_type, REG_TBL_LEN);
-	    }
+		/* Print description for this extension */
+		if (etype == ADV) {
+			st = get_desc(adv_desc, ext_type, ADV_TBL_LEN);
+		} else /* REG */ {
+			st = get_desc(reg_desc, ext_type, REG_TBL_LEN);
+		}
 
-	    (void) sprintf(get_line((char *)exthdr-dlc_header, 1),
-			"Extension header type = %d  %s", ext_type, st);
-
-	    if (ext_type == GEN_AUTH) {
-		st = get_desc(genauth_desc, gen_exthdr->subtype,
-		    GENAUTH_TBL_LEN);
 		(void) sprintf(get_line((char *)exthdr-dlc_header, 1),
-		    "Subtype = %d %s", gen_exthdr->subtype, st);
-	    }
+		    "Extension header type = %d  %s", ext_type, st);
 
-	    /* Special case for 1-byte padding */
-	    if (etype == ADV && ext_type == ICMP_ADV_MSG_PADDING_EXT) {
-		exthdr = (exthdr_t *)((uchar_t *)exthdr + 1);
-		curr_size--;
-		continue;
-	    }
+		if (ext_type == GEN_AUTH) {
+			st = get_desc(genauth_desc, gen_exthdr->subtype,
+			    GENAUTH_TBL_LEN);
+			(void) sprintf(get_line((char *)exthdr-dlc_header, 1),
+			    "Subtype = %d %s", gen_exthdr->subtype, st);
+		}
 
-	    (void) sprintf(get_line((char *)&exthdr->length-dlc_header, 1),
-			"Length = %d", ext_len);
+		/* Special case for 1-byte padding */
+		if (etype == ADV && ext_type == ICMP_ADV_MSG_PADDING_EXT) {
+			exthdr = (exthdr_t *)((uchar_t *)exthdr + 1);
+			curr_size--;
+			continue;
+		}
 
-	    /* Parse out the extension's payload */
-	    p = (uchar_t *)exthdr + ext_hdrlen;
-	    curr_size -= (ext_hdrlen + ext_len);
+		(void) sprintf(get_line((char *)&exthdr->length-dlc_header, 1),
+		    "Length = %d", ext_len);
 
-	    if (etype == ADV) {
-		f = get_interpreter(adv_dispatch, ext_type, ADV_TBL_LEN);
-	    } else /* REG */ {
-		f = get_interpreter(reg_dispatch, ext_type, REG_TBL_LEN);
-	    }
+		/* Parse out the extension's payload */
+		p = (uchar_t *)exthdr + ext_hdrlen;
+		curr_size -= (ext_hdrlen + ext_len);
 
-	    f(ext_type, ext_len, p);
+		if (etype == ADV) {
+			f = get_interpreter(adv_dispatch, ext_type,
+			    ADV_TBL_LEN);
+		} else /* REG */ {
+			f = get_interpreter(reg_dispatch, ext_type,
+			    REG_TBL_LEN);
+		}
 
-	    show_space();
-	    exthdr = (exthdr_t *)(p + ext_len);
+		f(ext_type, ext_len, p);
+
+		show_space();
+		exthdr = (exthdr_t *)(p + ext_len);
 	} while (B_TRUE);
 
 	return (0);
@@ -285,13 +282,14 @@ void interpret_icmp_mip_ext(uchar_t *p, int len) {
 }
 
 void
-interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
-	char		*pt, *pc = NULL;
+interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen)
+{
+	char		*pt = NULL, *pc = NULL;
 	char		*line;
 	regreq_t	rreq[1];
 	regrep_t	rrep[1];
-	int		regext_size;
-	uchar_t		*regext_data;
+	int		regext_size = 0;
+	uchar_t		*regext_data = NULL;
 	struct in_addr	addr_temp;
 
 
@@ -368,17 +366,17 @@ interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
 		case  REPLY_CODE_FA_NACK_BIDIR_TUNNEL_UNAVAILABLE:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: reverse tunnel unavailable":
-				"FA denial: code 74";
+			    "FA denial: code 74";
 			break;
 		case  REPLY_CODE_FA_NACK_BIDIR_TUNNEL_NO_TBIT:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: reverse tunnel: missing T-bit":
-				"FA denial: code 75";
+			    "FA denial: code 75";
 			break;
 		case  REPLY_CODE_FA_NACK_BIDIR_TUNNEL_TOO_DISTANT:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: reverse tunnel: too distant":
-				"FA denial: code 76";
+			    "FA denial: code 76";
 			break;
 		case  REPLY_CODE_FA_NACK_ICMP_HA_NET_UNREACHABLE:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
@@ -402,32 +400,32 @@ interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
 		case REPLY_CODE_FA_NACK_UNIQUE_HOMEADDR_REQD:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: Unique Home Addr Required":
-				"FA denial: code 96";
+			    "FA denial: code 96";
 			break;
 		case REPLY_CODE_FA_NACK_MISSING_NAI:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: Missing NAI":
-				"FA denial: code 97";
+			    "FA denial: code 97";
 			break;
 		case REPLY_CODE_FA_NACK_MISSING_HOME_AGENT:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: Missing Home Agent":
-				"FA denial: code 98";
+			    "FA denial: code 98";
 			break;
 		case REPLY_CODE_FA_NACK_UNKNOWN_CHALLENGE:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: Unknown Challenge":
-				"FA denial: code 104";
+			    "FA denial: code 104";
 			break;
 		case REPLY_CODE_FA_NACK_MISSING_CHALLENGE:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: Missing Challenge":
-				"FA denial: code 105";
+			    "FA denial: code 105";
 			break;
 		case REPLY_CODE_FA_NACK_MISSING_MN_FA:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
 			    "FA denial: Missing Mobile-Foreign Key Extension":
-				"FA denial: code 106";
+			    "FA denial: code 106";
 			break;
 		case  REPLY_CODE_HA_NACK_UNSPECIFIED:
 			pc = ((flags & F_ALLSUM) || (flags & F_DTAIL))?
@@ -522,7 +520,7 @@ interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
 			    "..%d. .... = %s decapsulation by MN",
 			    (rreq->Decapsulation_done_locally == 1) ? 1 : 0,
 			    (rreq->Decapsulation_done_locally == 1) ?
-				"" : "no");
+			    "" : "no");
 			(void) sprintf(get_line(
 			    (char *)(((uchar_t *)&rreq) + 1) - dlc_header, 1),
 			    "...%d .... = %s minimum encapsulation ",
@@ -543,7 +541,7 @@ interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
 			    ".... ..%d. = %s reverse tunnel",
 			    (rreq->BiDirectional_Tunnel_desired == 1) ? 1 : 0,
 			    (rreq->BiDirectional_Tunnel_desired == 1) ?
-				"" : "no");
+			    "" : "no");
 			if (ntohs(rreq->lifetime) == 0xffff) {
 				(void) sprintf(get_line(
 				    (char *)&rreq->lifetime - dlc_header, 1),
@@ -598,7 +596,7 @@ interpret_mip_cntrlmsg(int flags, uchar_t *msg, int fraglen) {
 				    (char *)&rrep->lifetime - dlc_header, 1),
 				    ((rrep->code == REPLY_CODE_ACK) ||
 				    (rrep->code ==
-					REPLY_CODE_ACK_NO_SIMULTANEOUS))?
+				    REPLY_CODE_ACK_NO_SIMULTANEOUS))?
 				    "Life time = 0 (de-registeration success)" :
 				    "Life time = 0 (de-registration failed)");
 			} else {

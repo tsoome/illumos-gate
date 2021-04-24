@@ -347,7 +347,7 @@ scan(char *buf, int len, int filter, int cap, int old, void (*proc)(),
 {
 	volatile char *bp, *bufstop;
 	volatile struct sb_hdr *hdrp;
-	volatile struct sb_hdr nhdr, *nhdrp;
+	volatile struct sb_hdr nhdr, *nhdrp = NULL;
 	volatile char *pktp;
 	volatile struct timeval last_timestamp;
 	volatile int header_okay;

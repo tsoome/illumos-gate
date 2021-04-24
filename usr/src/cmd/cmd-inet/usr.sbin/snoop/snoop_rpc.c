@@ -70,12 +70,12 @@ interpret_rpc(int flags, char *rpc, int fraglen, int type)
 {
 	ulong_t xid;
 	int direction;
-	struct cache_struct *x;
-	int rpcvers, prog, vers, proc;
+	struct cache_struct *x = NULL;
+	int rpcvers = 0, prog = 0, vers = 0, proc = 0;
 	int status, astat, rstat, why;
 	char *lp;
-	unsigned recmark;
-	int markpos;
+	unsigned recmark = 0;
+	int markpos = 0;
 	extern int pi_frame;
 	int lo, hi;
 

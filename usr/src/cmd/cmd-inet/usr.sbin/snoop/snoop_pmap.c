@@ -102,9 +102,9 @@ interpret_pmap_2(flags, type, xid, vers, proc, data, len)
 {
 	char *line;
 	unsigned port, proto;
-	unsigned iprog, ivers, iproc, ilen;
+	unsigned iprog = 0, ivers = 0, iproc = 0, ilen;
 	extern int pi_frame;
-	struct cache_struct *x, *find_callit();
+	struct cache_struct *x = NULL, *find_callit();
 	int trailer_done = 0;
 
 	if (proc < 0 || proc > MAXPROC_2)
@@ -389,9 +389,9 @@ interpret_pmap_4(flags, type, xid, vers, proc, data, len)
 	char *line;
 	unsigned prog, ver;
 	char buff1[MAXSTRINGLEN + 1];
-	int iprog, ivers, iproc, ilen;
+	int iprog = 0, ivers = 0, iproc = 0, ilen;
 	extern int pi_frame;
-	struct cache_struct *x, *find_callit();
+	struct cache_struct *x = NULL, *find_callit();
 	int trailer_done = 0;
 
 	if (proc < 0 || proc > MAXPROC_4 || (vers == 3 && proc > MAXPROC_3))

@@ -556,12 +556,12 @@ want_packet(uchar_t *pkt, int len, int origlen)
 	struct rpc_msg *rpc;
 	int newrpc = 0;
 	uchar_t *slphdr;		/* beginning of SLP header */
-	uint_t slp_sport, slp_dport;
+	uint_t slp_sport = 0, slp_dport = 0;
 	int off, header_size;
 	uchar_t *offstack[MAXSS];	/* offset stack */
 	uchar_t **offp;		/* current offset */
 	uchar_t *opkt = NULL;
-	uint_t olen;
+	uint_t olen = 0;
 
 	sp = stack;
 	*sp = 1;
@@ -1492,8 +1492,8 @@ ipaddr_match(enum direction which, char *hostname, int inet_type)
 	 * duplicate code need not exist for the TO and FROM case.
 	 * A value of -1 describes the ANY case (TO and FROM).
 	 */
-	int addr4offset;
-	int addr6offset;
+	int addr4offset = 0;
+	int addr6offset = 0;
 
 	found_host = 0;
 
@@ -1803,7 +1803,7 @@ etheraddr_match(enum direction which, char *hostname)
 {
 	uint_t addr;
 	ushort_t *addrp;
-	int to_offset, from_offset;
+	int to_offset = 0, from_offset = 0;
 	struct ether_addr e, *ep = NULL;
 	int m;
 

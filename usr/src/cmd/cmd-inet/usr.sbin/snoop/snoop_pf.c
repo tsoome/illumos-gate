@@ -603,8 +603,8 @@ pf_ipaddr_match(enum direction which, char *hostname, int inet_type)
 	 * duplicate code need not exist for the TO and FROM case.
 	 * A value of -1 describes the ANY case (TO and FROM).
 	 */
-	int addr4offset;
-	int addr6offset;
+	int addr4offset = 0;
+	int addr6offset = 0;
 
 	found_host = 0;
 
@@ -739,8 +739,7 @@ pf_ipaddr_match(enum direction which, char *hostname, int inet_type)
 					    addr4);
 					pf_emit(ENF_OR);
 				} else {
-					pf_compare_value(addr4offset, 4,
-					    addr4);
+					pf_compare_value(addr4offset, 4, addr4);
 					if (!first)
 						pf_emit(ENF_OR);
 				}

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -131,11 +129,11 @@ static const dispatch_t chunk_dispatch_table[] = {
 	    parse_opaque_chunk },
 	{ CHUNK_SHUTDOWN_COMPLETE,	"Shutdown Done", "Shutdown Done",
 	    parse_shutdone_chunk },
-	{ CHUNK_FORWARD_TSN,		"FORWARD TSN", 	"Forward TSN Chunk",
+	{ CHUNK_FORWARD_TSN,		"FORWARD TSN",	"Forward TSN Chunk",
 	    parse_ftsn_chunk },
-	{ CHUNK_ASCONF_ACK,		"ASCONF ACK", 	"ASCONF ACK Chunk",
+	{ CHUNK_ASCONF_ACK,		"ASCONF ACK",	"ASCONF ACK Chunk",
 	    parse_asconf_chunk },
-	{ CHUNK_ASCONF,			"ASCONF", 	"ASCONF Chunk",
+	{ CHUNK_ASCONF,			"ASCONF",	"ASCONF Chunk",
 	    parse_asconf_chunk }
 };
 
@@ -959,7 +957,7 @@ interpret_chunks(int flags, sctp_chunk_hdr_t *cp, int fraglen)
 	uint16_t clen;
 	int signed_len;
 	int pad;
-	const char *desc;
+	const char *desc = NULL;
 	parse_func_t *parse;
 	const dispatch_t *dp;
 	const char *actstr;

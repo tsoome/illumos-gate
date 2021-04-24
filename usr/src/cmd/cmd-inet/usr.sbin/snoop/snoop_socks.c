@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -38,10 +36,7 @@ static void put_socks4_res(char *cp, int code);
 static void put_socks5_res(char *cp, int code);
 
 int
-interpret_socks_call(flags, line, fraglen)
-	int flags;
-	char *line;
-	int fraglen;
+interpret_socks_call(int flags, char *line, int fraglen)
 {
 	unsigned char	*buf = (unsigned char *)line;
 	char		*cp;
@@ -70,8 +65,8 @@ interpret_socks_call(flags, line, fraglen)
 						(void) sprintf(cp, " User=");
 						cp += strlen(cp);
 						for (i = 8;
-							i < 40 && i < fraglen;
-							++i) {
+						    i < 40 && i < fraglen;
+						    ++i) {
 							if (buf[i] == '\0')
 								break;
 							*cp++ = buf[i];
@@ -93,7 +88,7 @@ interpret_socks_call(flags, line, fraglen)
 			n = buf[1];
 			if (2 + n == fraglen) {
 				(void) sprintf(cp,
-					"SOCKS5 CONTACT NMETHODS=%d:", n);
+				    "SOCKS5 CONTACT NMETHODS=%d:", n);
 				cp += strlen(cp);
 				for (i = 0; i < n && 2 + i < fraglen; ++i) {
 					put_method(cp, buf[2 + i]);
@@ -104,8 +99,8 @@ interpret_socks_call(flags, line, fraglen)
 
 				if (n < 1 || n > 3) {
 					(void) sprintf(cp,
-						"SOCKS (send data): %s",
-						show_string(line, fraglen, 20));
+					    "SOCKS (send data): %s",
+					    show_string(line, fraglen, 20));
 				} else {
 					switch (n) {
 					case 1:
@@ -117,24 +112,27 @@ interpret_socks_call(flags, line, fraglen)
 					case 3:
 						cmd = "ASSOCIATE_UDP";
 						break;
+					default:
+						cmd = "UNKNOWN";
+						break;
 					}
 					(void) sprintf(cp, "SOCKS5 %s ", cmd);
 					cp += strlen(cp);
 					put_socks5_addr(cp, &buf[3],
-						fraglen - 3);
+					    fraglen - 3);
 				}
 			} else {
 				(void) sprintf(cp, "SOCKS (send data): %s",
-					show_string(line, fraglen, 20));
+				    show_string(line, fraglen, 20));
 			}
 			break;
 		default:
 			(void) sprintf(cp, "SOCKS (send data): %s",
-				show_string(line, fraglen, 20));
+			    show_string(line, fraglen, 20));
 		}
 	} else {
 		(void) sprintf(cp, "SOCKS (send data): %s",
-			show_string(line, fraglen, 20));
+		    show_string(line, fraglen, 20));
 	}
 
 	} /* if (flags & F_SUM) */
@@ -168,9 +166,9 @@ interpret_socks_call(flags, line, fraglen)
 							    "User = ");
 							cp += strlen(cp);
 							for (i = 8;
-								i < 40; ++i) {
-								if
-								(buf[i] == '\0')
+							    i < 40; ++i) {
+								if (buf[i] ==
+								    '\0')
 									break;
 								*cp++ = buf[i];
 							}
@@ -195,10 +193,10 @@ interpret_socks_call(flags, line, fraglen)
 					(void) sprintf(get_line(0, 0),
 					    "Number of methods = %u", n);
 					for (i = 0;
-						i < n && 2 + i < fraglen; ++i) {
+					    i < n && 2 + i < fraglen; ++i) {
 						cp = get_line(0, 0);
 						(void) sprintf(cp,
-							"Method %3u =", i);
+						    "Method %3u =", i);
 						cp += strlen(cp);
 						put_method(cp, buf[2 + i]);
 					}
@@ -206,9 +204,9 @@ interpret_socks_call(flags, line, fraglen)
 					const char	*cmd;
 					if (n < 1 || n > 3) {
 						(void) sprintf(cp,
-							"SOCKS (send data): %s",
-							show_string(line,
-							fraglen, 20));
+						    "SOCKS (send data): %s",
+						    show_string(line,
+						    fraglen, 20));
 					} else {
 						switch (n) {
 						case 1:
@@ -220,6 +218,9 @@ interpret_socks_call(flags, line, fraglen)
 						case 3:
 							cmd = "ASSOCIATE_UDP";
 							break;
+						default:
+							cmd = "UNKNOWN";
+							break;
 						}
 						(void) sprintf(get_line(0, 0),
 						    "Operation = %s ", cmd);
@@ -229,20 +230,20 @@ interpret_socks_call(flags, line, fraglen)
 					}
 				} else
 					(void) sprintf(cp,
-						" SOCKS (send data): %s",
-						show_string(line, fraglen,
-						20));
+					    " SOCKS (send data): %s",
+					    show_string(line, fraglen,
+					    20));
 				break;
 			default:
 				(void) sprintf(cp,
-					"SOCKS (send data): %s",
-					show_string(line, fraglen, 20));
+				    "SOCKS (send data): %s",
+				    show_string(line, fraglen, 20));
 			}
 			show_space();
 		} else
 			(void) sprintf(cp,
-				"SOCKS (send data): %s",
-				show_string(line, fraglen, 20));
+			    "SOCKS (send data): %s",
+			    show_string(line, fraglen, 20));
 	}
 
 out:
@@ -250,10 +251,7 @@ out:
 }
 
 int
-interpret_socks_reply(flags, line, fraglen)
-	int flags;
-	char *line;
-	int fraglen;
+interpret_socks_reply(int flags, char *line, int fraglen)
 {
 	unsigned char	*buf = (unsigned char *)line;
 	char		*cp;
