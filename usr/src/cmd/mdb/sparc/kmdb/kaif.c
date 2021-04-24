@@ -573,7 +573,7 @@ regno2name(int idx)
 static int
 kaif_step(void)
 {
-	kreg_t pc, npc, brtgt, pstate, tt;
+	kreg_t pc, npc, brtgt = 0, pstate, tt;
 	int bptgt = 0, bpnpc = 0, bppc8 = 0;
 	mdb_instr_t svtgt = 0, svnpc = 0, svpc8 = 0;
 	mdb_instr_t instr;

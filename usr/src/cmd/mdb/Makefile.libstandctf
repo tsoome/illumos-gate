@@ -65,8 +65,6 @@ LDFLAGS = $(ZNOVERSION) $(BREDUCE) -Wl,-M$(MAPFILE) -dy -r
 LIB = libstandctf.so
 OBJS = $(CTF_COMMON_SRCS:%.c=%.o) $(CTF_STUB_SRCS:%.c=%.o)
 
-CERRWARN += $(CNOWARN_UNINIT)
-
 .NO_PARALLEL:
 .PARALLEL: $(OBJS)
 

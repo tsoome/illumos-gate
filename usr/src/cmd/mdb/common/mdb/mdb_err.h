@@ -27,8 +27,6 @@
 #ifndef	_MDB_ERR_H
 #define	_MDB_ERR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdarg.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -44,12 +42,12 @@ extern "C" {
 extern const char *mdb_strerror(int);
 
 extern void vwarn(const char *, va_list);
-extern void vdie(const char *, va_list);
-extern void vfail(const char *, va_list);
+extern void vdie(const char *, va_list) __NORETURN;
+extern void vfail(const char *, va_list) __NORETURN;
 
 extern void warn(const char *, ...);
-extern void die(const char *, ...);
-extern void fail(const char *, ...);
+extern void die(const char *, ...) __NORETURN;
+extern void fail(const char *, ...) __NORETURN;
 
 extern int set_errbytes(size_t, size_t);
 extern int set_errno(int);

@@ -572,7 +572,6 @@ kp_lookup_by_name(mdb_tgt_t *t, const char *object,
 	kp_data_t *kp = t->t_data;
 	kp_file_t *kpf;
 	int n;
-
 	GElf_Sym sym;
 	uint_t symid;
 	int rv = -1;

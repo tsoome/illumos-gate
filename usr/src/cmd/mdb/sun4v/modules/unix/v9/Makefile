@@ -45,4 +45,3 @@ CPPFLAGS += -I$(SRC)/uts/sun4v
 CPPFLAGS += -I$(SRC)/uts/sun4u
 CPPFLAGS += -I$(SRC)/uts/sfmmu
 CPPFLAGS += -I$(SRC)/uts/sparc/v9
-CERRWARN += $(CNOWARN_UNINIT)
