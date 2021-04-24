@@ -98,13 +98,11 @@ static void usage(void);
 static char *prtype(int t);
 static void prsubcmd(struct subcmd *s);
 static void docmdargs(int nargs, char *args[]);
-void prnames();
-void prcmd();
+void prnames(struct namelist *nl);
+void prcmd(struct cmd *c);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	register char *arg;
 	int cmdargs = 0;
@@ -132,8 +130,8 @@ main(argc, argv)
 			if (strncmp(*argv, "-PO", 3) == 0) {
 				if (rcmdoption_done == B_TRUE) {
 					(void) fprintf(stderr, gettext("rdist: "
-						"Only one of -PN "
-						"and -PO allowed.\n"));
+					    "Only one of -PN "
+					    "and -PO allowed.\n"));
 					usage();
 				}
 				kcmd_proto = KCMD_OLD_PROTOCOL;
@@ -144,8 +142,8 @@ main(argc, argv)
 			if (strncmp(*argv, "-PN", 3) == 0) {
 				if (rcmdoption_done == B_TRUE) {
 					(void) fprintf(stderr, gettext("rdist: "
-						"Only one of -PN "
-						"and -PO allowed.\n"));
+					    "Only one of -PN "
+					    "and -PO allowed.\n"));
 					usage();
 				}
 				kcmd_proto = KCMD_NEW_PROTOCOL;
@@ -165,13 +163,13 @@ main(argc, argv)
 			case 'k':
 				if (--argc <= 0) {
 					(void) fprintf(stderr, gettext("rdist: "
-						"-k flag must be followed with "
-						" a realm name.\n"));
+					    "-k flag must be followed with "
+					    " a realm name.\n"));
 					exit(1);
 				}
 				if ((krb_realm = strdup(*++argv)) == NULL) {
 					(void) fprintf(stderr, gettext("rdist: "
-						"Cannot malloc.\n"));
+					    "Cannot malloc.\n"));
 					exit(1);
 				}
 				krb5auth_flag++;
@@ -204,8 +202,8 @@ main(argc, argv)
 					usage();
 				if (hp >= &dhosts[NHOSTS-2]) {
 					(void) fprintf(stderr, gettext("rdist:"
-						" too many destination"
-						" hosts\n"));
+					    " too many destination"
+					    " hosts\n"));
 					exit(1);
 				}
 				*hp++ = *++argv;
@@ -300,8 +298,7 @@ main(argc, argv)
 			 * krb5auth_flag
 			 */
 			(void) profile_get_options_boolean(bsd_context->profile,
-							appdef,
-							autologin_option);
+			    appdef, autologin_option);
 		}
 	}
 
@@ -327,28 +324,28 @@ main(argc, argv)
 		status = krb5_get_default_realm(bsd_context, &realmdef[1]);
 		if (status) {
 			com_err("rdist", status,
-				gettext("while getting default realm"));
+			    gettext("while getting default realm"));
 			exit(1);
 		}
 		/*
 		 * See if encryption should be done for this realm
 		 */
 		profile_get_options_boolean(bsd_context->profile, realmdef,
-						option);
+		    option);
 		/*
 		 * Check the appdefaults section
 		 */
 		profile_get_options_boolean(bsd_context->profile, appdef,
-						option);
+		    option);
 		profile_get_options_string(bsd_context->profile, appdef,
-						rcmdversion);
+		    rcmdversion);
 
 		if ((encrypt_done > 0) || (encrypt_flag > 0)) {
 			if (krb5_privacy_allowed() == TRUE) {
 				encrypt_flag++;
 			} else {
 				(void) fprintf(stderr, gettext("rdist: "
-						"Encryption not supported.\n"));
+				    "Encryption not supported.\n"));
 				exit(1);
 			}
 		}
@@ -360,7 +357,7 @@ main(argc, argv)
 				kcmd_proto = KCMD_OLD_PROTOCOL;
 			} else {
 				(void) fprintf(stderr, gettext("Unrecognized "
-					"KCMD protocol (%s)"), rcmdproto);
+				    "KCMD protocol (%s)"), rcmdproto);
 				exit(1);
 			}
 		}
@@ -373,7 +370,7 @@ main(argc, argv)
 	}
 	if (__init_suid_priv(0, PRIV_NET_PRIVADDR, NULL) == -1) {
 		(void) fprintf(stderr,
-			"rdist needs to run with sufficient privilege\n");
+		    "rdist needs to run with sufficient privilege\n");
 		exit(1);
 	}
 
@@ -400,7 +397,7 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
 	printf(gettext("Usage: rdist [-nqbhirvwyDax] [-PN / -PO] "
 #ifdef DEBUG
@@ -416,13 +413,11 @@ usage()
  * rcp like interface for distributing files.
  */
 static void
-docmdargs(nargs, args)
-	int nargs;
-	char *args[];
+docmdargs(int nargs, char *args[])
 {
 	register struct namelist *nl, *prev;
 	register char *cp;
-	struct namelist *files, *hosts;
+	struct namelist *files = NULL, *hosts;
 	struct subcmd *cmds;
 	char *dest;
 	static struct namelist tnl = { NULL, NULL };
@@ -472,8 +467,7 @@ docmdargs(nargs, args)
  * Print a list of NAME blocks (mostly for debugging).
  */
 void
-prnames(nl)
-	register struct namelist *nl;
+prnames(struct namelist *nl)
 {
 	printf("( ");
 	while (nl != NULL) {
@@ -484,15 +478,14 @@ prnames(nl)
 }
 
 void
-prcmd(c)
-	struct cmd *c;
+prcmd(struct cmd *c)
 {
 	extern char *prtype();
 
 	while (c) {
 		printf("c_type %s, c_name %s, c_label %s, c_files ",
-			prtype(c->c_type), c->c_name,
-			c->c_label?  c->c_label : "NULL");
+		    prtype(c->c_type), c->c_name,
+		    c->c_label?  c->c_label : "NULL");
 		prnames(c->c_files);
 		prsubcmd(c->c_cmds);
 		c = c->c_next;
@@ -500,25 +493,23 @@ prcmd(c)
 }
 
 static void
-prsubcmd(s)
-	struct subcmd *s;
+prsubcmd(struct subcmd *s)
 {
 	extern char *prtype();
 	extern char *proptions();
 
 	while (s) {
 		printf("sc_type %s, sc_options %d%s, sc_name %s, sc_args ",
-			prtype(s->sc_type),
-			s->sc_options, proptions(s->sc_options),
-			s->sc_name ? s->sc_name : "NULL");
+		    prtype(s->sc_type),
+		    s->sc_options, proptions(s->sc_options),
+		    s->sc_name ? s->sc_name : "NULL");
 		prnames(s->sc_args);
 		s = s->sc_next;
 	}
 }
 
 char *
-prtype(t)
-	int t;
+prtype(int t)
 {
 	switch (t) {
 		case EQUAL:
@@ -556,19 +547,16 @@ prtype(t)
 }
 
 char *
-proptions(o)
-	int o;
+proptions(int o)
 {
 	return (printb((unsigned short) o, OBITS));
 }
 
 char *
-printb(v, bits)
-	register char *bits;
-	register unsigned short v;
+printb(unsigned short v, char *bits)
 {
-	register int i, any = 0;
-	register char c;
+	int i, any = 0;
+	char c;
 	char *p = buf;
 
 	bits++;

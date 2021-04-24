@@ -118,7 +118,7 @@ cmdlist:	  /* VOID */ {
 		;
 
 cmd:		  INSTALL options opt_namelist SM = {
-			register struct namelist *nl;
+			struct namelist *nl;
 
 			$1->sc_options = $2 | options;
 			if ($3 != NULL) {
@@ -187,13 +187,13 @@ int	yylineno = 1;
 extern	FILE *fin;
 
 int
-yylex()
+yylex(void)
 {
 	static char yytext[INMAX];
-	register int c;
-	register char *cp1, *cp2;
+	int c;
+	char *cp1, *cp2;
 	static char quotechars[] = "[]{}*?$";
-	
+
 again:
 	switch (c = getc(fin)) {
 	case EOF:  /* end of file */
@@ -339,9 +339,7 @@ again:
 }
 
 int
-any(c, str)
-	register int c;
-	register char *str;
+any(int c, char *str)
 {
 	while (*str)
 		if (c == *str++)
@@ -353,13 +351,11 @@ any(c, str)
  * Insert or append ARROW command to list of hosts to be updated.
  */
 void
-insert(label, files, hosts, subcmds)
-	char *label;
-	struct namelist *files, *hosts;
-	struct subcmd *subcmds;
+insert(char *label, struct namelist *files, struct namelist *hosts,
+    struct subcmd *subcmds)
 {
-	register struct cmd *c, *prev, *nc;
-	register struct namelist *h, *oldh;
+	struct cmd *c, *prev, *nc;
+	struct namelist *h, *oldh;
 
 	files = expand(files, E_VARS|E_SHELL);
 	hosts = expand(hosts, E_ALL);
@@ -414,13 +410,9 @@ if (debug) {
  * executed in the order they appear in the distfile.
  */
 static void
-append(label, files, stamp, subcmds)
-	char *label;
-	struct namelist *files;
-	char *stamp;
-	struct subcmd *subcmds;
+append(char *label, struct namelist *files, char *stamp, struct subcmd *subcmds)
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	c = ALLOC(cmd);
 	if (c == NULL)
@@ -443,8 +435,7 @@ append(label, files, stamp, subcmds)
  * Error printing routine in parser.
  */
 void
-yyerror(s)
-	char *s;
+yyerror(char *s)
 {
 	extern int yychar;
 
@@ -457,10 +448,9 @@ yyerror(s)
  * Return a copy of the string.
  */
 char *
-makestr(str)
-	char *str;
+makestr(char *str)
 {
-	register char *cp, *s;
+	char *cp, *s;
 
 	str = cp = malloc(strlen(s = str) + 1);
 	if (cp == NULL)
@@ -474,10 +464,9 @@ makestr(str)
  * Allocate a namelist structure.
  */
 struct namelist *
-makenl(name)
-	char *name;
+makenl(char *name)
 {
-	register struct namelist *nl;
+	struct namelist *nl;
 
 	nl = ALLOC(namelist);
 	if (nl == NULL)
@@ -492,8 +481,7 @@ makenl(name)
  * code, and then only because expand() is destructive.
  */
 struct namelist *
-dupnl(old)
-	struct namelist *old;
+dupnl(struct namelist *old)
 {
 	struct namelist *n;
 	struct namelist *new, *newhead = (struct namelist *) NULL;
@@ -524,12 +512,10 @@ dupnl(old)
  * Make a sub command for lists of variables, commands, etc.
  */
 struct subcmd *
-makesubcmd(type, name)
-	int type;
-	register char *name;
+makesubcmd(int type)
 {
-	register char *cp;
-	register struct subcmd *sc;
+	char *cp;
+	struct subcmd *sc;
 
 	sc = ALLOC(subcmd);
 	if (sc == NULL)
@@ -538,5 +524,5 @@ makesubcmd(type, name)
 	sc->sc_args = NULL;
 	sc->sc_next = NULL;
 	sc->sc_name = NULL;
-	return(sc);
+	return (sc);
 }

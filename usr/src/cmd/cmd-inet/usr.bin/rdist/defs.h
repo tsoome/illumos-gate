@@ -18,8 +18,6 @@
 #ifndef	_DEFS_H
 #define	_DEFS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,7 +60,7 @@ extern "C" {
 #define	OPTION	15
 
 	/* lexical definitions */
-#define	QUOTE 	0200		/* used internally for quoted characters */
+#define	QUOTE	0200		/* used internally for quoted characters */
 #define	TRIM	0177		/* Mask to strip quote bit */
 
 	/* table sizes */
@@ -141,14 +139,14 @@ extern struct group *gr;	/* pointer to static area used by getgrent */
 extern char host[];		/* host name of master copy */
 extern char buf[];		/* general purpose buffer */
 
-char *makestr();
-struct namelist *makenl();
-struct subcmd *makesubcmd();
-struct namelist *lookup();
-struct namelist *expand();
-char *exptilde();
-char *printb();
-void sendrem();
+char *makestr(char *);
+struct namelist *makenl(char *);
+struct subcmd *makesubcmd(int);
+struct namelist *lookup(char *, int, struct namelist *);
+struct namelist *expand(struct namelist *, int);
+char *exptilde(char [], unsigned int, char *);
+char *printb(unsigned short, char *);
+void sendrem(char *, ...);
 
 #ifdef __cplusplus
 }

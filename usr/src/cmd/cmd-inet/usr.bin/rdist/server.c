@@ -768,7 +768,7 @@ static void
 recvf(char *cmd, int type)
 {
 	char *cp;
-	int f, mode, opts, wrerr, olderrno;
+	int f, mode, opts, wrerr, olderrno = 0;
 	off_t i, size;
 	time_t mtime;
 	struct stat stb;
@@ -1679,12 +1679,15 @@ comment(char *s)
  * N.B.: uses buf[].
  */
 void
-sendrem(char *fmt, int a1, int a2, int a3)
+sendrem(char *fmt, ...)
 {
+	va_list ap;
 	int len;
 
 	buf[0] = '\0';
-	len = snprintf(buf + 1, sizeof (buf) - 1, fmt, a1, a2, a3) + 2;
+	va_start(ap, fmt);
+	len = vsnprintf(buf + 1, sizeof (buf) - 1, fmt, ap) + 2;
+	va_end(ap);
 	if (len > sizeof (buf))
 		len = sizeof (buf);
 	buf[len - 1] = '\n';

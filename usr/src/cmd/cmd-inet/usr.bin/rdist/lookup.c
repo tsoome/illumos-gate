@@ -14,13 +14,12 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include "defs.h"
 
 	/* symbol types */
-#define VAR	1
-#define CONST	2
+#define	VAR	1
+#define	CONST	2
 
 struct syment {
 	int	s_type;
@@ -35,12 +34,11 @@ static struct syment *hashtab[HASHSIZE];
  * Define a variable from a command line argument.
  */
 void
-define(name)
-	char *name;
+define(char *name)
 {
-	register char *cp, *s;
-	register struct namelist *nl;
-	struct namelist *value;
+	char *cp, *s;
+	struct namelist *nl;
+	struct namelist *value = NULL;
 
 	if (debug)
 		printf("define(%s)\n", name);
@@ -59,7 +57,8 @@ define(name)
 		*cp++ = '\0';
 		do
 			cp++;
-		while (*cp == ' ' || *cp == '\t');
+		while (*cp == ' ' || *cp == '\t')
+			;
 		for (s = cp; ; s++) {
 			switch (*s) {
 			case ')':
@@ -99,10 +98,7 @@ define(name)
  */
 
 struct namelist *
-lookup(name, action, value)
-	char *name;
-	int action;
-	struct namelist *value;
+lookup(char *name, int action, struct namelist *value)
 {
 	register unsigned n;
 	register char *cp;
@@ -122,19 +118,19 @@ lookup(name, action, value)
 			continue;
 		if (action != LOOKUP) {
 			if (action != INSERT || s->s_type != CONST) {
-				(void)sprintf(buf, "%.*s redefined",
-				      sizeof(buf) - sizeof(" redefined"), name);
+				(void) sprintf(buf, "%.*s redefined",
+				    sizeof (buf) - sizeof (" redefined"), name);
 				yyerror(buf);
 			}
 		}
-		return(s->s_value);
+		return (s->s_value);
 	}
 
 	if (action == LOOKUP) {
-		(void)sprintf(buf, "%.*s undefined",
-			sizeof(buf) - sizeof(" undefined"), name);
+		(void) sprintf(buf, "%.*s undefined",
+		    sizeof (buf) - sizeof (" undefined"), name);
 		yyerror(buf);
-		return(NULL);
+		return (NULL);
 	}
 
 	s = ALLOC(syment);
@@ -145,5 +141,5 @@ lookup(name, action, value)
 	s->s_type = action == INSERT ? VAR : CONST;
 	s->s_name = name;
 	s->s_value = value;
-	return(value);
+	return (value);
 }
