@@ -65,14 +65,10 @@ dmod/$(MODULE) := LDLIBS += -lproc -lm
 
 CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-parentheses
-CERRWARN += $(CNOWARN_UNINIT)
 
 %.o: $(MODSRCS_DIR)/%.c
 	$(COMPILE.c) $<
 	$(CTFCONVERT_O)
-
-%.ln: $(MODSRCS_DIR)/%.c
-	$(LINT.c) -c $<
 
 #
 # This module is somewhat unusual in that it is a proc-style dmod.  proc dmods

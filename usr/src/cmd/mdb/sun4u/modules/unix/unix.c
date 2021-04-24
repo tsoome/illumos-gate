@@ -738,7 +738,7 @@ ttrace_walk_step(mdb_walk_state_t *wsp)
 	ttrace_walk_data_t *tw = wsp->walk_data;
 	ttrace_cpu_data_t *tc;
 	struct trap_trace_record *rec;
-	int oldest, i, status;
+	int oldest = 0, i, status;
 	uint64_t oldest_tick = 0;
 	int done = 1;
 	trap_trace_fullrec_t fullrec;
@@ -772,6 +772,8 @@ ttrace_walk_step(mdb_walk_state_t *wsp)
 		status = wsp->walk_callback((uintptr_t)rec -
 		    (uintptr_t)tc->tc_buf + tc->tc_base, &fullrec,
 		    wsp->walk_cbdata);
+	else
+		status = WALK_NEXT;
 
 	tc->tc_rec--;
 
@@ -1027,7 +1029,7 @@ httrace_walk_step(mdb_walk_state_t *wsp)
 	httrace_walk_data_t *tw = wsp->walk_data;
 	httrace_cpu_data_t *tc;
 	struct htrap_trace_record *rec;
-	int oldest, i, status;
+	int oldest = 0, i, status;
 	uint64_t oldest_tick = 0;
 	int done = 1;
 	htrap_trace_fullrec_t fullrec;
@@ -1061,6 +1063,8 @@ httrace_walk_step(mdb_walk_state_t *wsp)
 		status = wsp->walk_callback((uintptr_t)rec -
 		    (uintptr_t)tc->tc_buf + tc->tc_base, &fullrec,
 		    wsp->walk_cbdata);
+	else
+		status = WALK_NEXT;
 
 	tc->tc_rec--;
 

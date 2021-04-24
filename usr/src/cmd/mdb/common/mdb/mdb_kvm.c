@@ -935,6 +935,8 @@ kt_lookup_by_addr(mdb_tgt_t *t, uintptr_t addr, uint_t flags,
 	 * jump to 'found' immediately if we match.  Otherwise we continue
 	 * looking and improve our choice if we find a closer symbol.
 	 */
+	bzero(&sym, sizeof (sym));
+	symid = 0;
 	for (km = &kmods[0]; km != NULL; km = mdb_list_next(km)) {
 		if (km->km_symtab == NULL && addr >= km->km_text_va &&
 		    addr < km->km_text_va + km->km_text_size)

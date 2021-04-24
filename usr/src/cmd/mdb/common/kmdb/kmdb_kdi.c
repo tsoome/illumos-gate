@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * The KDI, or kernel/debugger interface, is used to allow the kernel and the
  * debugger to communicate.  These communications take two forms:
@@ -229,7 +227,7 @@ kmdb_kdi_kmdb_enter(void)
 int
 kmdb_kdi_vtop(uintptr_t va, physaddr_t *pap)
 {
-	jmp_buf pcb, *oldpcb;
+	jmp_buf pcb, *oldpcb = NULL;
 	int rc = 0;
 
 	if (setjmp(pcb) == 0) {

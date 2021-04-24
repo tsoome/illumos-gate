@@ -538,6 +538,7 @@ gelf_dyns_init(mdb_gelf_file_t *gf, size_t dyn_size,
 	} else {
 		mdb_gelf_sect_t *gsp = gf->gf_sects;
 
+		dyn_addr = -1;
 		for (i = 0; i < gf->gf_shnum; i++, gsp++) {
 			if (gsp->gs_shdr.sh_type == SHT_DYNAMIC) {
 				dyn_addr = gsp->gs_shdr.sh_offset;
@@ -545,7 +546,7 @@ gelf_dyns_init(mdb_gelf_file_t *gf, size_t dyn_size,
 			}
 		}
 
-		if (i == gf->gf_shnum)
+		if (dyn_addr == -1)
 			return (NULL); /* No SHT_DYNAMIC entry was found */
 	}
 

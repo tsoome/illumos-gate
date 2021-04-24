@@ -572,7 +572,6 @@ kp_lookup_by_name(mdb_tgt_t *t, const char *object,
 	kp_data_t *kp = t->t_data;
 	kp_file_t *kpf;
 	int n;
-
 	GElf_Sym sym;
 	uint_t symid;
 	int rv = -1;
@@ -600,6 +599,8 @@ kp_lookup_by_name(mdb_tgt_t *t, const char *object,
 	 * a name such as "puts" will match the puts function in libc instead
 	 * of matching the puts PLT entry in the a.out file.
 	 */
+	bzero(&sym, sizeof (sym));
+	symid = 0;
 	for (; n > 0; n--, kpf = kpf->kpf_next) {
 		if (kpf->kpf_dynsym == NULL)
 			continue; /* No symbols for this file */
@@ -680,6 +681,8 @@ kp_lookup_by_addr(mdb_tgt_t *t, uintptr_t addr, uint_t flags,
 	 * has a symbol table.  In fuzzy mode, we continue looking and
 	 * improve our choice if we find a closer symbol.
 	 */
+	bzero(&sym, sizeof (sym));
+	symid = 0;
 	for (; n > 0; n--, kpf = kpf->kpf_next) {
 		if (kpf->kpf_dynsym == NULL)
 			continue; /* No symbols for this file */

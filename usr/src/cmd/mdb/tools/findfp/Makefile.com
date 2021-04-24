@@ -44,7 +44,6 @@ include ../../common/Makefile.util
 #
 CPPFLAGS = -I../../common -I../common
 CFLAGS = $(NATIVE_CFLAGS) $(CCVERBOSE)
-CERRWARN += $(CNOWARN_UNINIT)
 LDFLAGS = $(NATIVE_LDFLAGS) $(ZLAZYLOAD) $(BDIRECT)
 LDLIBS = -lelf
 CC = $(NATIVECC)

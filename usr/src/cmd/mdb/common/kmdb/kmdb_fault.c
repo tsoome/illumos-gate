@@ -45,7 +45,7 @@ kmdb_fault(kreg_t tt, kreg_t pc, kreg_t sp, int cpuid)
 {
 	int debug_self_confirm = 0;
 	volatile int try;
-	jmp_buf pcb, *old;
+	jmp_buf pcb, *old = NULL;
 	char c;
 
 	/* Make absolutely sure */

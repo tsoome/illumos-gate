@@ -108,6 +108,7 @@ pr_symtab(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	}
 
 	symlist = NULL;
+	symlistsz = 0;
 	if (byaddr || byname) {
 		uintptr_t src = byaddr ? (uintptr_t)symtab.sym_byaddr :
 		    (uintptr_t)symtab.sym_byname;

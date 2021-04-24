@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Routines for manipulating the kmdb-specific aspects of dmods.
  */
@@ -96,6 +94,8 @@ kmdb_module_lookup_by_addr(uintptr_t addr, uint_t flags, char *buf,
 	const char *name;
 
 	mdb_nv_rewind(&mdb.m_dmodctl);
+	bzero(&sym, sizeof (sym));
+	symid = 0;
 	while ((v = mdb_nv_advance(&mdb.m_dmodctl)) != NULL) {
 		kmdb_modctl_t *kmc = MDB_NV_COOKIE(v);
 

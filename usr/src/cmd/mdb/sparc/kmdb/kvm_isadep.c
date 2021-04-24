@@ -274,7 +274,7 @@ kmt_write_page(mdb_tgt_t *t, const void *buf, size_t nbytes, uintptr_t addr)
 ssize_t
 kmt_write(mdb_tgt_t *t, const void *buf, size_t nbytes, uintptr_t addr)
 {
-	size_t ntowrite, nwritten, n;
+	size_t ntowrite, nwritten = 0, n;
 	int rc;
 
 	kmdb_prom_check_interrupt();

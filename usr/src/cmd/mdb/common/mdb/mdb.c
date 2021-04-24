@@ -877,7 +877,7 @@ mdb_call(uintmax_t addr, uintmax_t count, uint_t flags)
 	mdb_frame_t *fp = mdb.m_frame;
 	mdb_cmd_t *cp, *ncp;
 	mdb_iob_t *iobs[2];
-	int status, err = 0;
+	int status = DCMD_OK, err = 0;
 	jmp_buf pcb;
 
 	if (mdb_iob_isapipe(mdb.m_in))

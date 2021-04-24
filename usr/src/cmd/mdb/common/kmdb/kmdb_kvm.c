@@ -887,6 +887,8 @@ kmt_lookup_by_addr(mdb_tgt_t *t, uintptr_t addr, uint_t flags,
 	if (kmdb_dpi_get_state(NULL) == DPI_STATE_INIT)
 		return (set_errno(EMDB_NOSYM));
 
+	bzero(&sym, sizeof (sym));
+	symid = 0;
 	for (; km != NULL; km = mdb_list_next(km)) {
 		if (km != &prmod && !kmt->kmt_symavail)
 			continue;
