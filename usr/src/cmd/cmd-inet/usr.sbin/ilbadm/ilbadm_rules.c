@@ -230,7 +230,7 @@ i_key_to_opt(ilbadm_key_name_t *n, ilbadm_key_code_t k)
 char *
 ilbadm_key_to_opt(ilbadm_key_code_t k)
 {
-	char 	*name;
+	char	*name;
 	int	i;
 
 	for (i = 0; all_keys[i] != NULL; i++) {
@@ -269,7 +269,7 @@ proto2str(short proto, char *buf, int sz)
 static void
 algo2str(ilb_algo_t algo, char *buf, int sz)
 {
-	char 	*s = i_str_from_val((int)algo, &algo_types[0]);
+	char	*s = i_str_from_val((int)algo, &algo_types[0]);
 
 	(void) snprintf(buf, sz, "lbalg=%s", (s && *s) ? s : "(bad algo)");
 }
@@ -277,7 +277,7 @@ algo2str(ilb_algo_t algo, char *buf, int sz)
 static int
 algo2bare_str(ilb_algo_t algo, char *buf, int sz)
 {
-	char 	*s = i_str_from_val((int)algo, &algo_types[0]);
+	char	*s = i_str_from_val((int)algo, &algo_types[0]);
 
 	return (snprintf(buf, sz, "%s", (s && *s) ? s : ""));
 }
@@ -285,7 +285,7 @@ algo2bare_str(ilb_algo_t algo, char *buf, int sz)
 static void
 topo2str(ilb_topo_t topo, char *buf, int sz)
 {
-	char 	*s = i_str_from_val((int)topo, &topo_types[0]);
+	char	*s = i_str_from_val((int)topo, &topo_types[0]);
 
 	(void) snprintf(buf, sz, "type=%s", (s && *s) ? s : "(bad type)");
 }
@@ -293,7 +293,7 @@ topo2str(ilb_topo_t topo, char *buf, int sz)
 static int
 topo2bare_str(ilb_topo_t topo, char *buf, int sz)
 {
-	char 	*s = i_str_from_val((int)topo, &topo_types[0]);
+	char	*s = i_str_from_val((int)topo, &topo_types[0]);
 
 	return (snprintf(buf, sz, "%s", (s && *s) ? s : ""));
 }
@@ -1134,7 +1134,7 @@ ilbadm_create_rule(int argc, char *argv[])
 		 * if user hasn't specified a mask, apply default
 		 */
 		if ((rd->r_flags & ILB_FLAGS_RULE_STICKY) == 0) {
-			char 	*maskstr;
+			char	*maskstr;
 
 			switch (rd->r_vip.ia_af) {
 			case AF_INET:
@@ -1143,6 +1143,10 @@ ilbadm_create_rule(int argc, char *argv[])
 			case AF_INET6:
 				maskstr = "128";
 				break;
+			default:
+				ilbadm_err(gettext("unknown address family"));
+				rc = ILBADM_LIBERR;
+				goto out;
 			}
 			rc = ilbadm_set_netmask(maskstr, &rd->r_stickymask,
 			    rd->r_vip.ia_af);

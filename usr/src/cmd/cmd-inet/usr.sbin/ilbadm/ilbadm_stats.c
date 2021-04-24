@@ -197,7 +197,7 @@ typedef struct {
 	int			ilbst_flags;
 	/* fields representing user input */
 	char			*ilbst_rulename;	/* optional */
-	char 			*ilbst_server;	/* optional */
+	char			*ilbst_server;	/* optional */
 	int			ilbst_interval;
 	int			ilbst_count;
 	/* "internal" fields for data and data presentation */
@@ -304,6 +304,8 @@ of_server_stats(ofmt_arg_t *of_arg, char *buf, uint_t bufsize)
 		break;
 	case ILBST_BYTES_P: sumfunc = i_sum_per_rule_bytes_p;
 		break;
+	default:
+		return (B_FALSE);
 	}
 
 	for (i = 0; i < sta->ilbst_rcount; i++) {
@@ -344,7 +346,7 @@ static boolean_t
 of_itemize_stats(ofmt_arg_t *of_arg, char *buf, uint_t bufsize)
 {
 	ilbst_arg_t	*sta = (ilbst_arg_t *)of_arg->ofmt_cbarg;
-	int		stat_ind;
+	int		stat_ind = 0;
 	uint64_t	count;
 	int		rule_index = sta->ilbst_rule_index;
 	int		srv_ind = sta->ilbst_rlist[rule_index].ird_srv_ind;
@@ -395,7 +397,7 @@ static boolean_t
 of_rule_stats(ofmt_arg_t *of_arg, char *buf, uint_t bufsize)
 {
 	ilbst_arg_t	*sta = (ilbst_arg_t *)of_arg->ofmt_cbarg;
-	int		i, ind;
+	int		i, ind = 0;
 	uint64_t	count = 0;
 
 	switch (of_arg->ofmt_id) {

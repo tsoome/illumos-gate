@@ -388,7 +388,7 @@ i_match_hostorip(void *store, ilbadm_sgroup_t *sg, char *val,
 	char		*close1, *close2;
 	ilb_ip_addr_t	ip2store;
 	ilb_ip_addr_t	*ip1, *ip2;
-	int		p1, p2;
+	int		p1 = 0, p2;
 	ilb_server_data_t	*s = NULL;
 	ilbadm_status_t	rc = ILBADM_OK;
 	int		af = AF_INET;
@@ -819,6 +819,9 @@ ilbadm_set_netmask(char *val, ilb_ip_addr_t *ip, int af)
 		r = in_prefixlentomask(prefixlen, maxval,
 		    (uchar_t *)&ip->ia_v6.s6_addr);
 		break;
+	default:
+		r = B_FALSE;
+		break;
 	}
 	if (r != B_TRUE) {
 		ilbadm_err(gettext("cannot convert %s to a netmask"), val);
@@ -1099,6 +1102,7 @@ i_parse_optstring(char *arg, void *store, ilbadm_key_name_t *keylist,
 	 *	5. match the keyword to the list we were passed in
 	 * 6. store the value.
 	 */
+	keyword = ILB_KEY_BAD;
 	while (key != NULL && *key != '\0') {
 		comma = equals = NULL;
 
