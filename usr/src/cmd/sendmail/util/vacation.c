@@ -111,14 +111,14 @@ main(argc, argv)
 	char **argv;
 {
 	char *from;
-	char *p, *at, *c;
+	char *p = NULL, *at, *c;
 	struct passwd *pw;
 	char *shortfrom;
 	char buf[MAXLINE];
 	char *message_file = MsgFile;
 	char *db_file_base = DbFileBase;
 	char *filter_file = FilterFile;
-	char *sender;
+	char *sender = NULL;
 	bool sender_oob = FALSE;
 	bool initialize_only = FALSE;
 

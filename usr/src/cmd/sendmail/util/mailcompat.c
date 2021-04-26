@@ -56,7 +56,7 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	register char *p;
+	register char *p = NULL;
 	struct passwd *pw;
 	extern char *getfrom();
 

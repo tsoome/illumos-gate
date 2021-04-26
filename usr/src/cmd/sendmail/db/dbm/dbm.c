@@ -102,7 +102,7 @@ datum
 __db_dbm_fetch(key)
 	datum key;
 {
-	datum item;
+	datum item = { 0 };
 
 	if (__cur_db == NULL) {
 		__db_no_open();
@@ -115,7 +115,7 @@ __db_dbm_fetch(key)
 datum
 __db_dbm_firstkey()
 {
-	datum item;
+	datum item = { 0 };
 
 	if (__cur_db == NULL) {
 		__db_no_open();
@@ -129,7 +129,7 @@ datum
 __db_dbm_nextkey(key)
 	datum key;
 {
-	datum item;
+	datum item = { 0 };
 
 	COMPQUIET(key.dsize, 0);
 
