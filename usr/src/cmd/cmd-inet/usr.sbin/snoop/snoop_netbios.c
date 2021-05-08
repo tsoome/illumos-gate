@@ -75,9 +75,8 @@ struct callnames {
 };
 
 
-static void interpret_netbios_names(int flags, uchar_t *data, int len,
-					char *xtra);
-static void netbiosname2ascii(char *asciiname, uchar_t *netbiosname);
+static void interpret_netbios_names(int, uchar_t *, int, char *, size_t);
+static void netbiosname2ascii(char *, uchar_t *, size_t);
 
 /*
  * Helpers to read network-order values,
@@ -202,17 +201,45 @@ interpret_netbios_datagram(int flags, uchar_t *data, int len)
 	char name[24];
 	int packettype = data[0];
 	int packetlen;
+
 	data++;
 
-	if (packettype < 0x10 || packettype > 0x11)
+	if (packettype < 0x10 || packettype > 0x16)
 		return;
 
 	if (flags & F_SUM) {
-		data += 14;
-		netbiosname2ascii(name, data);
-		sprintf(get_sum_line(),
-				"NBT Datagram Service Type=%d Source=%s",
-				packettype, name);
+
+		switch (packettype) {
+		case 0x10:	/* DIRECT_UNIQUE DATAGRAM */
+		case 0x11:	/* DIRECT_GROUP DATAGRAM */
+		case 0x12:	/* BROADCAST DATAGRAM */
+			data += 14;
+			netbiosname2ascii(name, data, sizeof (name));
+			sprintf(get_sum_line(),
+			    "NBT Datagram Service Type=%d Source=%s",
+			    packettype, name);
+			break;
+
+		case 0x14:	/* DATAGRAM QUERY REQUEST */
+		case 0x15:	/* DATAGRAM POSITIVE QUERY RESPONSE */
+		case 0x16:	/* DATAGRAM NEGATIVE QUERY RESPONSE */
+			data += 10;
+			netbiosname2ascii(name, data, sizeof (name));
+			sprintf(get_sum_line(),
+			    "NBT Datagram Service Type=%d Destination=%s",
+			    packettype, name);
+			break;
+
+		case 0x13:	/* DATAGRAM ERROR */
+			sprintf(get_sum_line(),
+			    "NBT Datagram Service Type=%d Error=%u",
+			    packettype, data[10]);
+			break;
+		default:
+			sprintf(get_sum_line(),
+			    "NBT Datagram Service Unknown Type=%d", packettype);
+			break;
+		}
 	}
 
 	if (flags & F_DTAIL) {
@@ -239,10 +266,10 @@ interpret_netbios_datagram(int flags, uchar_t *data, int len)
 		sprintf(get_line(0, 0), "Packet Offset = 0x%.4x",
 					getshort(data));
 		data += 3;
-		netbiosname2ascii(name, data);
+		netbiosname2ascii(name, data, 34);
 		sprintf(get_line(0, 0), "Source Name = %s", name);
 		data += 34;
-		netbiosname2ascii(name, data);
+		netbiosname2ascii(name, data, 34);
 		sprintf(get_line(0, 0), "Destination Name = %s", name);
 		sprintf(get_line(0, 0), "Number of data bytes remaining = %d",
 					packetlen - 68);
@@ -280,7 +307,7 @@ interpret_netbios_ns(int flags, uchar_t *data, int len)
 	if (flags & F_SUM) {
 		print_ns_type(flags, headerflags, extra);
 		data++;
-		netbiosname2ascii(name, data);
+		netbiosname2ascii(name, data, 34);
 		sprintf(get_sum_line(), "NBT NS %s for %s, %s",
 			extra, name, errortype);
 
@@ -309,7 +336,7 @@ interpret_netbios_ns(int flags, uchar_t *data, int len)
 
 		if (qcount) {
 			data++;
-			netbiosname2ascii(name, data);
+			netbiosname2ascii(name, data, 34);
 			sprintf(get_line(0, 0), "Question Name = %s", name);
 			data += 33;
 			sprintf(get_line(0, 0), "Question Type = 0x%.4x",
@@ -330,13 +357,13 @@ interpret_netbios_ns(int flags, uchar_t *data, int len)
 			/* Second level encoding from RFC883 (p.31, 32) */
 			if (data[0] & 0xc0) {
 				nameptr = getshort(data)&0x3fff;
-				netbiosname2ascii(name, (data0+nameptr+1));
+				netbiosname2ascii(name, (data0+nameptr+1), 34);
 				sprintf(get_line(0, 0),
 					"Resource Record Name = %s", name);
 				data += 2;
 			} else {
 				data++;
-				netbiosname2ascii(name, data);
+				netbiosname2ascii(name, data, 34);
 				sprintf(get_line(0, 0),
 					"Resource Record Name = %s", name);
 				data += 33;
@@ -426,7 +453,7 @@ interpret_netbios_ses(int flags, uchar_t *data, int len)
 		case 0x81:
 			type = "SESSION REQUEST";
 			interpret_netbios_names(flags, trailer,
-						length, extrainfo);
+			    length, extrainfo, sizeof (extrainfo));
 			break;
 		case 0x82:
 			type = "POSITIVE SESSION RESPONSE";
@@ -460,7 +487,8 @@ interpret_netbios_ses(int flags, uchar_t *data, int len)
 		case 0x81:
 			(void) sprintf(get_line(0, 0),
 			"Type = SESSION REQUEST");
-			interpret_netbios_names(flags, trailer, length, 0);
+			interpret_netbios_names(flags, trailer, length,
+			    NULL, 0);
 			break;
 		case 0x82:
 			(void) sprintf(get_line(0, 0),
@@ -504,18 +532,28 @@ interpret_netbios_ses(int flags, uchar_t *data, int len)
 
 /*
  * NetBIOS name encoding (First Level Encoding)
- * [RFC 1001, Sec. 4.1]
+ * [RFC 1001, Sec. 14.1]
  */
 static void
-netbiosname2ascii(char *aname, uchar_t *nbname)
+netbiosname2ascii(char *aname, uchar_t *nbname, size_t len)
 {
-	int c, i, j;
+	char c;
+	size_t i, j;
 
-	i = j = 0;
-	for (;;) {
-		c = nbname[i++] - 'A';
-		c = (c << 4) +
-			nbname[i++] - 'A';
+	j = 0;
+	c = 0;
+	for (i = 0;i < len;) {
+		/*
+		 * Encoded chars should be from set {A,B,C...N,O,P}
+		 */
+		if (nbname[i] < 'A' || nbname[i] > 'P' ||
+		    nbname[i + 1] < 'A' || nbname[i + 1] > 'P') {
+			aname[0] = '\0';
+			return;
+		} else {
+			c = nbname[i++] - 'A';
+			c = (c << 4) + nbname[i++] - 'A';
+		}
 		/* 16th char is the "type" */
 		if (i >= 32)
 			break;
@@ -525,6 +563,16 @@ netbiosname2ascii(char *aname, uchar_t *nbname)
 			aname[j++] = c;
 	}
 	sprintf(&aname[j], "[%x]", c);
+	printf("netbiosname2ascii: %d \"%s\"\n", j, aname);
+}
+
+static void
+compressedname2ascii(char *aname, uchar_t *nbname)
+{
+	size_t len;
+
+	len = *nbname;
+	netbiosname2ascii(aname, nbname + 1, len);
 }
 
 /*
@@ -532,20 +580,26 @@ netbiosname2ascii(char *aname, uchar_t *nbname)
  * [RFC 1002, Sec. 4.3.2]
  */
 static void
-interpret_netbios_names(int flags, uchar_t *data, int len, char *xtra)
+interpret_netbios_names(int flags, uchar_t *data, int len, char *xtra,
+    size_t xtra_len)
 {
-	char  calledname[24];
+	char calledname[24];
 	char callingname[24];
 	struct callnames *names = (struct callnames *)data;
 
 	if (len < sizeof (*names))
 		return;
 
-	netbiosname2ascii(calledname, names->calledname);
-	netbiosname2ascii(callingname, names->callingname);
+	*calledname = '\0';
+	*callingname = '\0';
+	compressedname2ascii(calledname, data);
+
+	/* netbiosname2ascii(calledname, names->calledname); */
+	netbiosname2ascii(callingname, names->callingname, 34);
 
 	if (flags & F_SUM) {
-		sprintf(xtra, "Dest=%s Source=%s ", calledname, callingname);
+		snprintf(xtra, xtra_len, "Dest=%s Source=%s ", calledname,
+		    callingname);
 	}
 
 	if (flags & F_DTAIL) {
