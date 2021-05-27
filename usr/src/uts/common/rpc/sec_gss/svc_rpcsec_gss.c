@@ -547,7 +547,6 @@ rpc_gss_getcred(struct svc_req *req, rpc_gss_rawcred_t **rcred,
 {
 	SVCAUTH			*svcauth;
 	svc_rpc_gss_data	*client_data;
-	int			gssstat, gidlen;
 
 	svcauth = &req->rq_xprt->xp_auth;
 	client_data = (svc_rpc_gss_data *)svcauth->svc_ah_private;
@@ -559,49 +558,10 @@ rpc_gss_getcred(struct svc_req *req, rpc_gss_rawcred_t **rcred,
 		*rcred = &svcauth->raw_cred;
 	}
 	if (ucred != NULL) {
-		*ucred = &client_data->u_cred;
-
-		if (client_data->u_cred_set == 0 ||
-		    client_data->u_cred_set < gethrestime_sec()) {
-			if (client_data->u_cred_set == 0) {
-				if ((gssstat = kgsscred_expname_to_unix_cred(
-				    &client_data->client_name,
-				    &client_data->u_cred.uid,
-				    &client_data->u_cred.gid,
-				    &client_data->u_cred.gidlist,
-				    &gidlen, crgetuid(CRED())))
-				    != GSS_S_COMPLETE) {
-					RPCGSS_LOG(1, "rpc_gss_getcred: "
-					    "kgsscred_expname_to_unix_cred "
-					    "failed %x\n", gssstat);
-					*ucred = NULL;
-				} else {
-					client_data->u_cred.gidlen =
-					    (short)gidlen;
-					client_data->u_cred_set =
-					    gethrestime_sec() +
-					    svc_rpcgss_gid_timeout;
-				}
-			} else if (client_data->u_cred_set
-			    < gethrestime_sec()) {
-				if ((gssstat = kgss_get_group_info(
-				    client_data->u_cred.uid,
-				    &client_data->u_cred.gid,
-				    &client_data->u_cred.gidlist,
-				    &gidlen, crgetuid(CRED())))
-				    != GSS_S_COMPLETE) {
-					RPCGSS_LOG(1, "rpc_gss_getcred: "
-					    "kgss_get_group_info failed %x\n",
-					    gssstat);
-					*ucred = NULL;
-				} else {
-					client_data->u_cred.gidlen =
-					    (short)gidlen;
-					client_data->u_cred_set =
-					    gethrestime_sec() +
-					    svc_rpcgss_gid_timeout;
-				}
-			}
+		if (client_data->u_cred_set == 0) {
+			*ucred = NULL;
+		} else {
+			*ucred = &client_data->u_cred;
 		}
 	}
 
@@ -690,7 +650,7 @@ do_gss_accept(
 	rpc_gss_init_res	call_res;
 	gss_buffer_desc		output_token;
 	OM_uint32		gssstat, minor, minor_stat, time_rec;
-	int			ret_flags, ret;
+	int			ret_flags, ret, gidlen;
 	gss_OID			mech_type = GSS_C_NULL_OID;
 	int			free_mech_type = 1;
 	struct svc_req		r, *rqst;
@@ -785,6 +745,31 @@ do_gss_accept(
 			    "make principal failed\n");
 			gssstat = GSS_S_FAILURE;
 			(void) gss_release_buffer(&minor_stat, &output_token);
+		}
+
+		if (gssstat != GSS_S_FAILURE) {
+			gssstat = kgsscred_expname_to_unix_cred(
+			    &client_data->client_name,
+			    &client_data->u_cred.uid,
+			    &client_data->u_cred.gid,
+			    &client_data->u_cred.gidlist,
+			    &gidlen, crgetuid(CRED()));
+			if (gssstat != GSS_S_COMPLETE) {
+				RPCGSS_LOG1(1,
+				    "%s: kgsscred_expname_to_unix_cred "
+				    "failed %x\n", __func__, gssstat);
+				client_data->u_cred.uid = UID_NOBODY;
+				client_data->u_cred.gid = GID_NOBODY;
+				client_data->u_cred.gidlen = 0;
+				client_data->u_cred_set = gethrestime_sec();
+				gssstat = GSS_S_COMPLETE;
+			} else {
+				client_data->u_cred.gidlen =
+				    (short)gidlen;
+				client_data->u_cred_set =
+				    gethrestime_sec() +
+				    svc_rpcgss_gid_timeout;
+			}
 		}
 	}
 
