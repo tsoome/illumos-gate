@@ -740,6 +740,9 @@ file \
 file \
     path=opt/zfs-tests/tests/functional/cli_root/zfs_destroy/zfs_clone_livelist_condense_races \
     mode=0555
+file \
+    path=opt/zfs-tests/tests/functional/cli_root/zfs_destroy/zfs_clone_livelist_dedup \
+    mode=0555
 file path=opt/zfs-tests/tests/functional/cli_root/zfs_destroy/zfs_destroy.cfg \
     mode=0444
 file \
