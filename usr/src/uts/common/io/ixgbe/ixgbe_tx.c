@@ -124,7 +124,7 @@ ixgbe_ring_tx(void *arg, mblk_t *orig_mp)
 	ixgbe_t *ixgbe = tx_ring->ixgbe;
 	mblk_t *mp = orig_mp;
 	mblk_t *pull_mp = NULL;
-	tx_control_block_t *tcb;
+	tx_control_block_t *tcb = NULL;
 	size_t mbsize, offset, len;
 	uint32_t desc_total;
 	uint32_t copy_thresh;
