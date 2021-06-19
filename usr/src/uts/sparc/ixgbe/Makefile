@@ -69,12 +69,10 @@ INC_PATH	+= -I$(CONF_SRCDIR)
 # to investigate and remove these for maximum coverage.
 # Please do not carry these forward to new Makefiles.
 #
-CFLAGS          += $(CCVERBOSE)
-CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-switch
-CERRWARN	+= $(CNOWARN_UNINIT)
-CERRWARN	+= -_gcc=-Wno-unused-value
-CERRWARN	+= -_cc=-erroff=E_STATEMENT_NOT_REACHED
+#CFLAGS          += $(CCVERBOSE)
+#CERRWARN	+= -_gcc=-Wno-parentheses
+#CERRWARN	+= -_gcc=-Wno-switch
+#CERRWARN	+= -_gcc=-Wno-unused-value
 
 #
 # Turn on doubleword alignment for 64 bit registers

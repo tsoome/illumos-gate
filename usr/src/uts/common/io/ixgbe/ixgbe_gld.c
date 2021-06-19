@@ -601,6 +601,7 @@ ixgbe_m_getprop(void *arg, const char *pr_name, mac_prop_id_t pr_num,
 				flow_control = LINK_FLOWCTRL_TX;
 				break;
 			case ixgbe_fc_full:
+			case ixgbe_fc_default:
 				flow_control = LINK_FLOWCTRL_BI;
 				break;
 		}
@@ -831,6 +832,9 @@ ixgbe_m_propinfo(void *arg, const char *pr_name, mac_prop_id_t pr_num,
 
 		(void) snprintf(valstr, sizeof (valstr), "%x", value);
 	}
+	default:
+		/* Rest of the enum values are ignored */
+		break;
 	}
 }
 
@@ -842,16 +846,17 @@ ixgbe_param_locked(mac_prop_id_t pr_num)
 	 * the device is in any sort of loopback mode ...
 	 */
 	switch (pr_num) {
-		case MAC_PROP_EN_10GFDX_CAP:
-		case MAC_PROP_EN_5000FDX_CAP:
-		case MAC_PROP_EN_2500FDX_CAP:
-		case MAC_PROP_EN_1000FDX_CAP:
-		case MAC_PROP_EN_100FDX_CAP:
-		case MAC_PROP_AUTONEG:
-		case MAC_PROP_FLOWCTRL:
-			return (B_TRUE);
+	case MAC_PROP_EN_10GFDX_CAP:
+	case MAC_PROP_EN_5000FDX_CAP:
+	case MAC_PROP_EN_2500FDX_CAP:
+	case MAC_PROP_EN_1000FDX_CAP:
+	case MAC_PROP_EN_100FDX_CAP:
+	case MAC_PROP_AUTONEG:
+	case MAC_PROP_FLOWCTRL:
+		return (B_TRUE);
+	default:
+		return (B_FALSE);
 	}
-	return (B_FALSE);
 }
 
 /* ARGSUSED */

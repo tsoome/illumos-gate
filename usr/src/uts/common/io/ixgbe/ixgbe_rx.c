@@ -282,6 +282,7 @@ ixgbe_lro_bind(ixgbe_rx_data_t *rx_data, uint32_t lro_start,
 	mblk_t **mblk_tail;
 	ixgbe_t	*ixgbe = rx_data->rx_ring->ixgbe;
 
+	lro_next = 0;
 	/*
 	 * If the free list is empty, we cannot proceed to send
 	 * the current DMA buffer upstream. We'll have to return
@@ -399,6 +400,7 @@ ixgbe_lro_copy(ixgbe_rx_data_t *rx_data, uint32_t lro_start,
 	uint32_t i;
 
 	ixgbe = rx_data->rx_ring->ixgbe;
+	lro_next = 0;
 
 	/*
 	 * Allocate buffer to receive this LRO packet
@@ -473,8 +475,9 @@ ixgbe_lro_get_start(ixgbe_rx_data_t *rx_data, uint32_t rx_next)
 	uint32_t lro_num = 1;
 	rx_control_block_t *prev_rcb;
 	rx_control_block_t *current_rcb = rx_data->work_list[rx_next];
-	lro_prev = current_rcb->lro_prev;
 
+	lro_prev = current_rcb->lro_prev;
+	lro_start = 0;
 	while (lro_prev != -1) {
 		lro_num ++;
 		prev_rcb = rx_data->work_list[lro_prev];
