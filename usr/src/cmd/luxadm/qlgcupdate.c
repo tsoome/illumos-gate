@@ -405,6 +405,7 @@ q_findversion(int verbose, int index, uchar_t *version, uint16_t *chip_id)
 	char	mcode_ver[100] = { 0 };
 	fcio_t	fcio;
 
+	fd = -1;
 	if (strstr(&pcibus_list[index][0], fc_trans)) {
 
 	if ((fd = open(&pcibus_list[index][0], O_RDWR)) < 0) {
@@ -772,7 +773,7 @@ q_load_file(int fcode_fd, char *device)
 	ifp_download_t	*download_p = NULL;
 	fcio_t		fcio;
 	uint16_t	file_id = 0;
-	uchar_t		*bin;
+	uchar_t		*bin = NULL;
 
 	if (lseek(fcode_fd, 0, SEEK_SET) == -1) {
 		perror(MSGSTR(21022, "seek"));

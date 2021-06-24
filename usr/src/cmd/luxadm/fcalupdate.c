@@ -309,6 +309,8 @@ fcio_t	fcio;
 char	fw_rev[FC_FW_REV_SIZE + 1];
 
 
+	fd = -1;
+
 	if ((dev_type = g_get_path_type(&sbussoc_list[index][0])) == 0) {
 		return (L_INVALID_PATH);
 	}
@@ -602,6 +604,7 @@ getbootdev(unsigned int verbose)
 
 
 	if ((ptr = popen(df, "r")) != NULL) {
+		p = NULL;
 		while (fgets(buf, BUFSIZ, ptr) != NULL) {
 			if (p = strstr(buf, "/dev/dsk/")) {
 				(void) memset((char *)&bootdev[0], 0,
@@ -917,7 +920,7 @@ loadsocpath(const char *pathname, int *devcnt)
 	int ret = 0;
 	int len;
 	int len_tmp;
-	char *sp;
+	char *sp = NULL;
 	char *sp_tmp;
 	char buffer[PATH_MAX];
 
