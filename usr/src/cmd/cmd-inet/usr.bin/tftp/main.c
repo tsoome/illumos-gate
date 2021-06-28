@@ -25,7 +25,7 @@
  */
 
 /*	Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * University Copyright- Copyright (c) 1982, 1986, 1988
@@ -37,30 +37,29 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * TFTP User Program -- Command Interface.
  */
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/sysmacros.h>
 
 #include <arpa/inet.h>
 
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <ctype.h>
 #include <netdb.h>
 #include <fcntl.h>
 #include <string.h>
 #include <limits.h>
+#include <libtecla.h>
 
 #include "tftpcommon.h"
 #include "tftpprivate.h"
-
-#define	NELEM(a)	(sizeof (a) / sizeof ((a)[0]))
 
 #define	TIMEOUT		5		/* secs between rexmt's */
 
@@ -79,8 +78,9 @@ static int			default_port, port;
 static int			connected;
 static char			mode[32];
 static char			line[200];
-static char			*prompt = "tftp";
+static char			*prompt = "tftp> ";
 static char			hostname[MAXHOSTNAMELEN];
+static GetLine			*gl;
 
 static void		intr(int);
 static void		quit(int, char **);
@@ -108,7 +108,7 @@ static int		prompt_for_arg(char *, int, char *);
 static struct cmd	*getcmd(char *);
 static char		*tail(char *);
 static void		command(int);
-static void		makeargv(int *, char ***);
+static void		makeargv(char *, int *, char ***);
 
 #define	HELPINDENT (sizeof ("connect"))
 
@@ -154,11 +154,68 @@ static struct cmd	cmdtab[] = {
 	{ "blksize",	bshelp,		setblksize },
 	{ "srexmt",	srhelp,		setsrexmt },
 	{ "tsize",	tshelp,		settsize },
+	{ "help",	hhelp,		help },
 	{ "?",		hhelp,		help },
 	{ NULL }
 };
 
-#define	AMBIGCMD	(&cmdtab[NELEM(cmdtab)])
+#define	AMBIGCMD	(&cmdtab[ARRAY_SIZE(cmdtab)])
+
+static struct modes {
+	char *m_name;
+	char *m_mode;
+} modes[] = {
+	{ "ascii",	"netascii" },
+	{ "netascii",	"netascii" },
+	{ "binary",	"octet" },
+	{ "image",	"octet" },
+	{ "octet",	"octet" },
+/*      { "mail",       "mail" },       */
+	{ NULL,		NULL }
+};
+
+static int
+cmdmatch(WordCompletion *cpl, void *data, const char *line, int word_end)
+{
+	struct cmd *cmds = data;
+	const char *word;
+	int i, rc = 0;
+
+	for (word = line + word_end; word > line && *(word - 1) != ' '; word--)
+		;
+
+	/* This word is command */
+	if (word == line) {
+		for (i = 0; cmds[i].name != NULL; i++) {
+			char *cmd = strstr(cmds[i].name, word);
+
+			if (cmd == cmds[i].name) {
+				rc = cpl_add_completion(cpl, line, 0,
+				    word_end, cmds[i].name + strlen(word),
+				    NULL, NULL);
+			}
+		}
+	} else {
+		/* We only complete arguments for mode command */
+		if (strncmp(line, "mode", 4) == 0) {
+			for (i = 0; modes[i].m_name != NULL; i++) {
+				char *mode = strstr(modes[i].m_name, word);
+
+				if (mode == modes[i].m_name) {
+					rc = cpl_add_completion(cpl, line, 0,
+					    word_end,
+					    modes[i].m_name + strlen(word),
+					    NULL, NULL);
+				}
+			}
+		}
+	}
+
+	return (rc);
+}
+
+#define	LINELEN		1024
+#define	HISTORY		2048
 
 int
 main(int argc, char **argv)
@@ -185,6 +242,15 @@ main(int argc, char **argv)
 	}
 
 	(void) strlcpy(mode, "netascii", sizeof (mode));
+
+	gl = new_GetLine(LINELEN, HISTORY);
+	if (gl == NULL) {
+		perror("tftp: cli setup");
+		exit(1);
+	}
+	(void) gl_ignore_signal(gl, SIGALRM);
+	(void) gl_customize_completion(gl, cmdtab, cmdmatch);
+
 	(void) signal(SIGINT, intr);
 	if (argc > 1) {
 		if (setjmp(toplevel) != 0)
@@ -204,25 +270,24 @@ main(int argc, char **argv)
 static int
 prompt_for_arg(char *buffer, int buffer_size, char *prompt)
 {
-	int ch;
+	char *buf;
+	char *p;
+
+	if (asprintf(&p, "(%s) ", prompt) < 0)
+		perror("prompt_for_arg");
 
 	if (strlcat(buffer, " ", buffer_size) >= buffer_size) {
 		(void) fputs("?Line too long\n", stderr);
 		return (-1);
 	}
-	(void) printf("(%s) ", prompt);
-	if (fgets(buffer + strlen(buffer), buffer_size - strlen(buffer),
-		stdin) == NULL) {
+	buf = gl_get_line(gl, p, NULL, -1);
+	free(p);
+	if (buf == NULL)
 		return (-1);
-	}
-	/* Flush what didn't fit in the buffer */
-	if (buffer[strlen(buffer)-1] != '\n') {
-		while (((ch = getchar()) != EOF) && (ch != '\n'))
-			;
+
+	if (strlcat(buffer, buf, buffer_size) >= buffer_size) {
 		(void) fputs("?Line too long\n", stderr);
 		return (-1);
-	} else {
-		buffer[strlen(buffer)-1] = '\0';
 	}
 	return (0);
 }
@@ -245,11 +310,13 @@ setpeer(int argc, char **argv)
 	struct in6_addr ipv6addr;
 	struct in_addr ipv4addr;
 	char *hostnameinput;
+	char *endp;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "to") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc > 3 || argc < 2) {
 		(void) fprintf(stderr, "usage: %s host-name [port]\n",
@@ -260,8 +327,9 @@ setpeer(int argc, char **argv)
 
 	(void) memset(&sin6, 0, sizeof (sin6));
 	sin6.sin6_family = AF_INET6;
-	if (host = getipnodebyname(hostnameinput, AF_INET6,
-	    AI_ALL | AI_ADDRCONFIG | AI_V4MAPPED, &error_num)) {
+	host = getipnodebyname(hostnameinput, AF_INET6,
+	    AI_ALL | AI_ADDRCONFIG | AI_V4MAPPED, &error_num);
+	if (host != NULL) {
 		(void) memcpy(&sin6.sin6_addr, host->h_addr_list[0],
 		    host->h_length);
 		/*
@@ -287,8 +355,10 @@ setpeer(int argc, char **argv)
 
 	port = default_port;
 	if (argc == 3) {
-		port = atoi(argv[2]);
-		if ((port < 1) || (port > 65535)) {
+		errno = 0;
+		port = strtol(argv[2], &endp, 10);
+		if (errno != 0 || *endp != '\0' ||
+		    (port < 1) || (port > 65535)) {
 			(void) fprintf(stderr, "%s: bad port number\n",
 			    argv[2]);
 			connected = 0;
@@ -298,19 +368,6 @@ setpeer(int argc, char **argv)
 	}
 	connected = 1;
 }
-
-static struct modes {
-	char *m_name;
-	char *m_mode;
-} modes[] = {
-	{ "ascii",	"netascii" },
-	{ "netascii",   "netascii" },
-	{ "binary",     "octet" },
-	{ "image",      "octet" },
-	{ "octet",     "octet" },
-/*      { "mail",       "mail" },       */
-	{ 0,		0 }
-};
 
 static void
 modecmd(int argc, char **argv)
@@ -375,9 +432,10 @@ put(int argc, char **argv)
 	char buf[PATH_MAX + 1], *argtail;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "file") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc < 2) {
 		putusage(argv[0]);
@@ -438,7 +496,7 @@ put(int argc, char **argv)
 		}
 		if (verbose)
 			(void) printf("putting %s to %s:%s [%s]\n",
-				cp, hostname, targ, mode);
+			    cp, hostname, targ, mode);
 		sin6.sin6_port = port;
 		tftp_sendfile(fd, targ, mode);
 		return;
@@ -465,7 +523,7 @@ put(int argc, char **argv)
 		}
 		if (verbose)
 			(void) printf("putting %s to %s:%s [%s]\n",
-				argv[n], hostname, buf, mode);
+			    argv[n], hostname, buf, mode);
 		sin6.sin6_port = port;
 		tftp_sendfile(fd, buf, mode);
 	}
@@ -493,9 +551,10 @@ get(int argc, char **argv)
 	int error_num;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "files") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc < 2) {
 		getusage(argv[0]);
@@ -554,7 +613,7 @@ get(int argc, char **argv)
 			}
 			if (verbose)
 				(void) printf("getting from %s:%s to %s [%s]\n",
-					hostname, src, cp, mode);
+				    hostname, src, cp, mode);
 			sin6.sin6_port = port;
 			tftp_recvfile(fd, src, mode);
 			break;
@@ -585,18 +644,21 @@ static void
 setrexmt(int argc, char **argv)
 {
 	int t;
+	char *endp;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "value") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc != 2) {
 		(void) fprintf(stderr, "usage: %s value\n", argv[0]);
 		return;
 	}
-	t = atoi(argv[1]);
-	if (t < 0)
+	errno = 0;
+	t = strtol(argv[1], &endp, 10);
+	if (errno != 0 || t < 0 || *endp != '\0')
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		rexmtval = t;
@@ -606,18 +668,21 @@ static void
 settimeout(int argc, char **argv)
 {
 	int t;
+	char *endp;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "value") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc != 2) {
 		(void) fprintf(stderr, "usage: %s value\n", argv[0]);
 		return;
 	}
-	t = atoi(argv[1]);
-	if (t < 0)
+	errno = 0;
+	t = strtol(argv[1], &endp, 10);
+	if (errno != 0 || t < 0 || *endp != '\0')
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		maxtimeout = t;
@@ -632,9 +697,9 @@ status(int argc, char **argv)
 	else
 		(void) puts("Not connected.");
 	(void) printf("Mode: %s Verbose: %s Tracing: %s\n", mode,
-		verbose ? "on" : "off", trace ? "on" : "off");
+	    verbose ? "on" : "off", trace ? "on" : "off");
 	(void) printf("Rexmt-interval: %d seconds, Max-timeout: %d seconds\n",
-		rexmtval, maxtimeout);
+	    rexmtval, maxtimeout);
 	(void) printf("Transfer blocksize option: ");
 	if (blksize == 0)
 		(void) puts("off");
@@ -679,42 +744,25 @@ static void
 command(int top)
 {
 	struct cmd *c;
-	int ch;
+	char *buf, **argv;
+	int argc;
 
 	if (!top)
 		(void) putchar('\n');
 	for (;;) {
-		(void) printf("%s> ", prompt);
-		if (fgets(line, sizeof (line), stdin) == NULL) {
-			if (feof(stdin))
-				quit(0, NULL);
-			else
-				continue;
+		buf = gl_get_line(gl, prompt, NULL, -1);
+		if (buf == NULL) {
+			quit(0, NULL);
 		}
 
-		/* Flush what didn't fit in the buffer */
-		if (line[strlen(line)-1] != '\n') {
-			while (((ch = getchar()) != EOF) && (ch != '\n'))
-				;
-			(void) fputs("?Line too long\n", stderr);
-		} else {
-			line[strlen(line)-1] = '\0';
-			if (line[0] != '\0') {
-				int	argc;
-				char	**argv;
-
-				makeargv(&argc, &argv);
-				c = getcmd(argv[0]);
-				if (c == AMBIGCMD)
-					(void) fputs("?Ambiguous command\n",
-					    stderr);
-				else if (c == NULL)
-					(void) fputs("?Invalid command\n",
-					    stderr);
-				else
-					(*c->handler)(argc, argv);
-			}
-		}
+		makeargv(buf, &argc, &argv);
+		c = getcmd(argv[0]);
+		if (c == AMBIGCMD)
+			(void) fputs("?Ambiguous command\n", stderr);
+		else if (c == NULL)
+			(void) fputs("?Invalid command\n", stderr);
+		else
+			(*c->handler)(argc, argv);
 	}
 }
 
@@ -731,7 +779,7 @@ getcmd(char *name)
 	for (c = cmdtab; (p = c->name) != NULL; c++) {
 		for (q = name; *q == *p++; q++)
 			if (*q == '\0')		/* exact match? */
-			    return (c);
+				return (c);
 		if (*q == '\0')		/* the name was a prefix */
 			found = (found == NULL) ? c : AMBIGCMD;
 	}
@@ -747,14 +795,14 @@ getcmd(char *name)
 static char *
 finddelimiter(char *str)
 {
-	boolean_t is_bracket_open = B_FALSE;
+	bool is_bracket_open = false;
 	char *cp;
 
 	for (cp = str; *cp != '\0'; cp++) {
 		if (*cp == '[')
-			is_bracket_open = B_TRUE;
+			is_bracket_open = true;
 		else if (*cp == ']')
-			is_bracket_open = B_FALSE;
+			is_bracket_open = false;
 		else if (*cp == ':' && !is_bracket_open)
 			return (cp);
 	}
@@ -784,7 +832,7 @@ removebrackets(char *str)
  * Slice a string up into argc/argv.
  */
 static void
-makeargv(int *argcp, char ***argvp)
+makeargv(char *buf, int *argcp, char ***argvp)
 {
 	char *cp;
 	char **argp;
@@ -801,7 +849,7 @@ makeargv(int *argcp, char ***argvp)
 	}
 	argc = 0;
 	argp = argv;
-	for (cp = line; *cp != '\0'; ) {
+	for (cp = buf; *cp != '\0'; ) {
 		while (isspace(*cp))
 			cp++;
 		if (*cp == '\0')
@@ -886,20 +934,24 @@ static void
 setblksize(int argc, char **argv)
 {
 	int b;
+	char *endp;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "value") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc != 2) {
 		(void) fprintf(stderr, "usage: %s value\n", argv[0]);
 		return;
 	}
-	b = atoi(argv[1]);
 
 	/* RFC 2348 specifies valid blksize range, allow 0 to turn option off */
-	if ((b < MIN_BLKSIZE || b > MAX_BLKSIZE) && b != 0)
+	errno = 0;
+	b = strtol(argv[1], &endp, 10);
+	if (errno != 0 || *endp != '\0' ||
+	    ((b < MIN_BLKSIZE || b > MAX_BLKSIZE) && b != 0))
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		blksize = b;
@@ -909,20 +961,24 @@ static void
 setsrexmt(int argc, char **argv)
 {
 	int t;
+	char *endp;
 
 	if (argc < 2) {
+		(void) strcat(line, argv[0]);
 		if (prompt_for_arg(line, sizeof (line), "value") == -1)
 			return;
-		makeargv(&argc, &argv);
+		makeargv(line, &argc, &argv);
 	}
 	if (argc != 2) {
 		(void) fprintf(stderr, "usage: %s value\n", argv[0]);
 		return;
 	}
-	t = atoi(argv[1]);
 
 	/* RFC 2349 specifies valid timeout range, allow 0 to turn option off */
-	if ((t < MIN_TIMEOUT || t > MAX_TIMEOUT) && t != 0)
+	errno = 0;
+	t = strtol(argv[1], &endp, 10);
+	if (errno != 0 || ((t < MIN_TIMEOUT || t > MAX_TIMEOUT) && t != 0) ||
+	    *endp != '\0')
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		srexmtval = t;
