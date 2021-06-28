@@ -25,7 +25,7 @@
  */
 
 /*	Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * University Copyright- Copyright (c) 1982, 1986, 1988
@@ -36,8 +36,6 @@
  * software developed by the University of California, Berkeley, and its
  * contributors.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * Simple minded read-ahead/write-behind subroutines for tftp user and
@@ -302,7 +300,7 @@ int
 synchnet(int socket)
 {
 	struct pollfd	pfd;
-	int 		packets;
+	int		packets;
 
 	pfd.fd = socket;
 	pfd.events = POLLRDNORM;

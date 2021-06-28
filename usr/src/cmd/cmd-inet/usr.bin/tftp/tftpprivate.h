@@ -27,8 +27,6 @@
 #ifndef _TFTP_PRIVATE_H
 #define	_TFTP_PRIVATE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Global definitions for the implementation of tftp(1).
  */
@@ -50,6 +48,8 @@ extern int			maxtimeout;
 extern int			blksize;
 extern int			srexmtval;
 extern int			tsize_opt;
+extern int			windowsize;
+extern int			windowsize_offer;
 extern jmp_buf			toplevel;
 
 extern void	tftp_sendfile(int, char *, char *);

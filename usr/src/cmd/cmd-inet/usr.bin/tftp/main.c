@@ -72,6 +72,8 @@ int			srexmtval;
 int			blksize;
 int			rexmtval = TIMEOUT;
 int			tsize_opt;
+int			windowsize = WINDOWSIZE_MIN;
+int			windowsize_offer = WINDOWSIZE_MIN;
 jmp_buf			toplevel;
 
 static int			default_port, port;
@@ -99,6 +101,7 @@ static void		setascii(int, char **);
 static void		setblksize(int, char **);
 static void		setsrexmt(int, char **);
 static void		settsize(int, char **);
+static void		setwindowsize(int, char **);
 static void		setmode(char *);
 static void		putusage(char *);
 static void		getusage(char *);
@@ -137,6 +140,7 @@ static char	srhelp[] =	"set preferred per-packet retransmission "
 				"timeout for server";
 static char	tshelp[] =	"toggle sending the transfer size option to "
 				"the server";
+static char	whelp[] =	"set windowsize to size blocks";
 
 static struct cmd	cmdtab[] = {
 	{ "connect",	chelp,		setpeer },
@@ -154,6 +158,7 @@ static struct cmd	cmdtab[] = {
 	{ "blksize",	bshelp,		setblksize },
 	{ "srexmt",	srhelp,		setsrexmt },
 	{ "tsize",	tshelp,		settsize },
+	{ "windowsize",	whelp,		setwindowsize },
 	{ "help",	hhelp,		help },
 	{ "?",		hhelp,		help },
 	{ NULL }
@@ -241,7 +246,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	(void) strlcpy(mode, "netascii", sizeof (mode));
+	setmode("octet");
 
 	gl = new_GetLine(LINELEN, HISTORY);
 	if (gl == NULL) {
@@ -310,7 +315,10 @@ setpeer(int argc, char **argv)
 	struct in6_addr ipv6addr;
 	struct in_addr ipv4addr;
 	char *hostnameinput;
-	char *endp;
+
+	/* windowsize settings for new connection */
+	windowsize = WINDOWSIZE_MIN;
+	windowsize_offer = 64;
 
 	if (argc < 2) {
 		(void) strcat(line, argv[0]);
@@ -355,10 +363,8 @@ setpeer(int argc, char **argv)
 
 	port = default_port;
 	if (argc == 3) {
-		errno = 0;
-		port = strtol(argv[2], &endp, 10);
-		if (errno != 0 || *endp != '\0' ||
-		    (port < 1) || (port > 65535)) {
+		port = strtonum(argv[2], 1, UINT16_MAX, NULL);
+		if (errno != 0) {
 			(void) fprintf(stderr, "%s: bad port number\n",
 			    argv[2]);
 			connected = 0;
@@ -644,7 +650,6 @@ static void
 setrexmt(int argc, char **argv)
 {
 	int t;
-	char *endp;
 
 	if (argc < 2) {
 		(void) strcat(line, argv[0]);
@@ -657,8 +662,8 @@ setrexmt(int argc, char **argv)
 		return;
 	}
 	errno = 0;
-	t = strtol(argv[1], &endp, 10);
-	if (errno != 0 || t < 0 || *endp != '\0')
+	t = strtonum(argv[1], 0, UINT32_MAX, NULL);
+	if (errno != 0)
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		rexmtval = t;
@@ -668,7 +673,6 @@ static void
 settimeout(int argc, char **argv)
 {
 	int t;
-	char *endp;
 
 	if (argc < 2) {
 		(void) strcat(line, argv[0]);
@@ -680,9 +684,8 @@ settimeout(int argc, char **argv)
 		(void) fprintf(stderr, "usage: %s value\n", argv[0]);
 		return;
 	}
-	errno = 0;
-	t = strtol(argv[1], &endp, 10);
-	if (errno != 0 || t < 0 || *endp != '\0')
+	t = strtonum(argv[1], 0, UINT32_MAX, NULL);
+	if (errno != 0)
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		maxtimeout = t;
@@ -711,6 +714,8 @@ status(int argc, char **argv)
 	else
 		(void) printf("%d seconds\n", srexmtval);
 	(void) printf("Transfer size option: %s\n", tsize_opt ? "on" : "off");
+	(void) printf("Transfer window size: %d\n", windowsize);
+	(void) printf("Transfer window size offer: %d\n", windowsize_offer);
 }
 
 /*ARGSUSED*/
@@ -934,7 +939,6 @@ static void
 setblksize(int argc, char **argv)
 {
 	int b;
-	char *endp;
 
 	if (argc < 2) {
 		(void) strcat(line, argv[0]);
@@ -948,10 +952,8 @@ setblksize(int argc, char **argv)
 	}
 
 	/* RFC 2348 specifies valid blksize range, allow 0 to turn option off */
-	errno = 0;
-	b = strtol(argv[1], &endp, 10);
-	if (errno != 0 || *endp != '\0' ||
-	    ((b < MIN_BLKSIZE || b > MAX_BLKSIZE) && b != 0))
+	b = strtonum(argv[1], 0, MAX_BLKSIZE, NULL);
+	if (errno != 0 || (b < MIN_BLKSIZE && b != 0))
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		blksize = b;
@@ -961,7 +963,6 @@ static void
 setsrexmt(int argc, char **argv)
 {
 	int t;
-	char *endp;
 
 	if (argc < 2) {
 		(void) strcat(line, argv[0]);
@@ -975,10 +976,8 @@ setsrexmt(int argc, char **argv)
 	}
 
 	/* RFC 2349 specifies valid timeout range, allow 0 to turn option off */
-	errno = 0;
-	t = strtol(argv[1], &endp, 10);
-	if (errno != 0 || ((t < MIN_TIMEOUT || t > MAX_TIMEOUT) && t != 0) ||
-	    *endp != '\0')
+	t = strtonum(argv[1], 0, MAX_TIMEOUT, NULL);
+	if (errno != 0 || (t < MIN_TIMEOUT && t != 0))
 		(void) fprintf(stderr, "%s: bad value\n", argv[1]);
 	else
 		srexmtval = t;
@@ -993,4 +992,34 @@ settsize(int argc, char **argv)
 	}
 	tsize_opt = !tsize_opt;
 	(void) printf("Transfer size option %s.\n", tsize_opt ? "on" : "off");
+}
+
+static void
+setwindowsize(int argc, char **argv)
+{
+	int w;
+
+	if (argc < 2) {
+		(void) strcat(line, argv[0]);
+		if (prompt_for_arg(line, sizeof (line), "value") == -1)
+			return;
+		makeargv(line, &argc, &argv);
+	}
+	if (argc != 2) {
+		(void) fprintf(stderr, "usage: %s value\n", argv[0]);
+		return;
+	}
+
+	/* RFC 7440 specifies valid windowsize range */
+	w = strtonum(argv[1], WINDOWSIZE_MIN, WINDOWSIZE_MAX, NULL);
+	if (errno != 0) {
+		(void) fprintf(stderr, "%s: bad value, windowsize should be "
+		    "between %d and %d\n", argv[1], WINDOWSIZE_MIN,
+		    WINDOWSIZE_MAX);
+	} else {
+		windowsize_offer = w;
+		/* Set default here, we will not get OACK for it from server */
+		if (w == 1)
+			windowsize = w;
+	}
 }

@@ -60,9 +60,11 @@
 static char	*blksize_str(void);
 static char	*timeout_str(void);
 static char	*tsize_str(void);
+static char	*windowsize_str(void);
 static int	blksize_handler(char *);
 static int	timeout_handler(char *);
 static int	tsize_handler(char *);
+static int	windowsize_handler(char *);
 static int	add_options(char *, char *);
 static int	process_oack(tftpbuf *, int);
 static void	nak(int);
@@ -80,6 +82,7 @@ static struct options {
 	{ "blksize",	blksize_str, blksize_handler },
 	{ "timeout",	timeout_str, timeout_handler },
 	{ "tsize",	tsize_str, tsize_handler },
+	{ "windowsize",	windowsize_str, windowsize_handler },
 	{ NULL }
 };
 
@@ -106,6 +109,11 @@ timer(int signum)
 	longjmp(timeoutbuf, 1);
 }
 
+struct data {
+	off_t		d_offset;
+	uint16_t	d_block;
+};
+
 /*
  * Send the requested file.
  */
@@ -115,7 +123,7 @@ tftp_sendfile(int fd, char *name, char *mode)
 	struct tftphdr *ap;	/* data and ack packets */
 	struct tftphdr *dp;
 	volatile int count = 0, size, n;
-	volatile ushort_t block = 0;
+	volatile ushort_t block = 0, windowblock;
 	volatile off_t amount = 0;
 	struct sockaddr_in6 from;
 	socklen_t fromlen;
@@ -123,6 +131,7 @@ tftp_sendfile(int fd, char *name, char *mode)
 	FILE *file;
 	struct stat statb;
 	int errcode;
+	struct data window[WINDOWSIZE_MAX];
 
 	startclock();	/* start stat's clock */
 	dp = r_init();	/* reset fillbuf/read-ahead code */
@@ -134,7 +143,9 @@ tftp_sendfile(int fd, char *name, char *mode)
 	if (tsize_set)
 		tsize = statb.st_size;
 
+	windowblock = 0;
 	do {
+read_block:
 		(void) signal(SIGALRM, timer);
 		if (count == 0) {
 			if ((size = makerequest(WRQ, name, dp, mode)) == -1) {
@@ -146,6 +157,9 @@ tftp_sendfile(int fd, char *name, char *mode)
 			}
 			size -= 4;
 		} else {
+			window[windowblock].d_offset = ftello(file);
+			window[windowblock].d_block = block;
+			windowblock++;
 			size = readit(file, &dp, convert);
 			if (size < 0) {
 				nak(errno + 100);
@@ -164,11 +178,10 @@ tftp_sendfile(int fd, char *name, char *mode)
 			perror("tftp: sendto");
 			goto abort;
 		}
-		/* Can't read-ahead first block as OACK may change blocksize */
-		if (count != 0)
-			read_ahead(file, convert);
+
 		(void) alarm(rexmtval);
-		for (; ; ) {
+		/* Only check for ACK for last block in window. */
+		while (windowblock + 1 == windowsize || size != blocksize) {
 			(void) sigrelse(SIGALRM);
 			do {
 				fromlen = (socklen_t)sizeof (from);
@@ -208,8 +221,34 @@ tftp_sendfile(int fd, char *name, char *mode)
 				break;
 			}
 			if (ap->th_opcode == ACK) {
+				ushort_t i;
+
 				ap->th_block = ntohs(ap->th_block);
+
+				for (i = 0; i < windowblock; i++) {
+					if (ap->th_block == window[i].d_block)
+						break;
+				}
+
+				if (i == windowblock) {
+					/* unknown ACK, outside of our window */
+					if (trace)
+						(void) printf("ACK %d out of "
+						    "window\n", ap->th_block);
+
+					/* synchronize both sides. */
+					(void) synchnet(f);
+					(void) fseeko(file,
+					    window[0].d_offset, SEEK_SET);
+					block = window[0].d_block;
+					windowblock = 0;
+					cancel_alarm();
+					goto read_block;
+				}
+
 				if (ap->th_block == block) {
+					/* New window */
+					windowblock = 0;
 					break;
 				}
 				/*
@@ -241,8 +280,8 @@ tftp_recvfile(int fd, char *name, char *mode)
 {
 	struct tftphdr *ap;
 	struct tftphdr *dp;
-	volatile ushort_t block = 1;
-	int n, size;
+	volatile ushort_t block = 1, windowstart;
+	int n, size, windowblock;
 	volatile unsigned long amount = 0;
 	struct sockaddr_in6 from;
 	socklen_t fromlen;
@@ -268,28 +307,34 @@ tftp_recvfile(int fd, char *name, char *mode)
 		return;
 	}
 
+	windowstart = 0;
+	windowblock = 0;
+
 	do {
 		(void) signal(SIGALRM, timer);
-		if (firsttrip) {
-			firsttrip = false;
-		} else {
+		if (!firsttrip) {
 			ap->th_opcode = htons((ushort_t)ACK);
 			ap->th_block = htons((ushort_t)(block));
 			size = 4;
 			block++;
+			windowblock++;
 		}
 
 send_oack_ack:
 		timeout = 0;
 		(void) setjmp(timeoutbuf);
 send_ack:
-		if (trace)
-			tpacket("sent", ap, size);
-		if (sendto(f, ackbuf.tb_data, size, 0, (struct sockaddr *)&sin6,
-		    sizeof (sin6)) != size) {
-			(void) alarm(0);
-			perror("tftp: sendto");
-			goto abort;
+		if (firsttrip || windowblock >= windowsize) {
+			if (trace)
+				tpacket("sent", ap, size);
+			firsttrip = false;
+			windowblock = 0;
+			if (sendto(f, ackbuf.tb_data, size, 0,
+			    (struct sockaddr *)&sin6, sizeof (sin6)) != size) {
+				(void) alarm(0);
+				perror("tftp: sendto");
+				goto abort;
+			}
 		}
 		if (write_behind(file, convert) < 0) {
 			nak(errno + 100);
@@ -337,6 +382,7 @@ send_ack:
 				ap->th_opcode = htons((ushort_t)ACK);
 				ap->th_block = htons(0);
 				size = 4;
+				firsttrip = true;
 				goto send_oack_ack;
 			}
 			if (dp->th_opcode == DATA) {
@@ -346,6 +392,22 @@ send_ack:
 				if (dp->th_block == block) {
 					break;	/* have next packet */
 				}
+
+				if (block > windowsize)
+					windowstart = block - windowsize;
+				else
+					windowstart = 0;
+
+				if (dp->th_block > windowstart &&
+				    dp->th_block < block) {
+					if (trace)
+						(void) printf("ignoring "
+						    "duplicate DATA block %d",
+						    dp->th_block);
+					windowblock++;
+					continue;
+				}
+
 				/*
 				 * On an error, try to synchronize
 				 * both sides.
@@ -474,22 +536,32 @@ tsize_str(void)
 }
 
 /*
+ * Return the windowsize option value string to include in the request packet.
+ */
+static char *
+windowsize_str(void)
+{
+	if (windowsize_offer == WINDOWSIZE_MIN)
+		return (NULL);
+
+	(void) snprintf(optbuf, sizeof (optbuf), "%d", windowsize_offer);
+	return (optbuf);
+}
+
+/*
  * Validate and action the blksize option value string from the OACK packet.
  * Returns -1 on success or an error code on failure.
  */
 static int
 blksize_handler(char *optstr)
 {
-	char *endp;
 	int value;
 
 	/* Make sure the option was requested */
 	if (blksize == 0)
 		return (EOPTNEG);
-	errno = 0;
-	value = (int)strtol(optstr, &endp, 10);
-	if (errno != 0 || value < MIN_BLKSIZE || value > blksize ||
-	    *endp != '\0')
+	value = strtonum(optstr, MIN_BLKSIZE, blksize, NULL);
+	if (errno != 0)
 		return (EOPTNEG);
 	blocksize = value;
 	return (-1);
@@ -502,15 +574,11 @@ blksize_handler(char *optstr)
 static int
 timeout_handler(char *optstr)
 {
-	char *endp;
-	int value;
-
 	/* Make sure the option was requested */
 	if (srexmtval == 0)
 		return (EOPTNEG);
-	errno = 0;
-	value = (int)strtol(optstr, &endp, 10);
-	if (errno != 0 || value != srexmtval || *endp != '\0')
+	(void) strtonum(optstr, srexmtval, srexmtval, NULL);
+	if (errno != 0)
 		return (EOPTNEG);
 	/*
 	 * Nothing to set, client and server retransmission intervals are
@@ -526,15 +594,13 @@ timeout_handler(char *optstr)
 static int
 tsize_handler(char *optstr)
 {
-	char *endp;
 	longlong_t value;
 
 	/* Make sure the option was requested */
 	if (tsize_set == false)
 		return (EOPTNEG);
-	errno = 0;
-	value = strtoll(optstr, &endp, 10);
-	if (errno != 0 || value < 0 || *endp != '\0')
+	value = strtonum(optstr, 0, INT64_MAX, NULL);
+	if (errno != 0)
 		return (EOPTNEG);
 #if _FILE_OFFSET_BITS == 32
 	if (value > MAXOFF_T)
@@ -546,6 +612,25 @@ tsize_handler(char *optstr)
 	 */
 	if (tsize == 0)
 		tsize = value;
+	return (-1);
+}
+
+/*
+ * Validate and action the windowsize option value string from the OACK packet.
+ * Returns -1 on success or an error code on failure.
+ */
+static int
+windowsize_handler(char *optstr)
+{
+	int value;
+
+	/* Make sure the option was requested */
+	if (windowsize_offer == WINDOWSIZE_MIN)
+		return (EOPTNEG);
+	value = strtonum(optstr, WINDOWSIZE_MIN, windowsize_offer,  NULL);
+	if (errno != 0)
+		return (EOPTNEG);
+	windowsize = value;
 	return (-1);
 }
 

@@ -27,8 +27,6 @@
 #ifndef _TFTPCOMMON_H
 #define	_TFTPCOMMON_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Defines and function declarations common to tftp and in.tftpd.
  */
@@ -43,6 +41,8 @@ extern "C" {
 #define	MAX_BLKSIZE	65464			/* RFC 2348 */
 #define	MIN_TIMEOUT	1			/* RFC 2349 */
 #define	MAX_TIMEOUT	255			/* RFC 2349 */
+#define	WINDOWSIZE_MIN	1			/* RFC 7440 */
+#define	WINDOWSIZE_MAX	65535			/* RFC 7440 */
 #define	PKTSIZE		(MAX_BLKSIZE + 4)	/* DATA packet max size */
 #define	MAX_OPTVAL_LEN	32			/* Option value max length */
 

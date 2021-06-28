@@ -61,6 +61,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
@@ -95,7 +96,7 @@ static int			reqsock = -1;
 static socklen_t		fromlen;
 static socklen_t		fromplen;
 static struct sockaddr_storage	client;
-static struct sockaddr_in6 	*sin6_ptr;
+static struct sockaddr_in6	*sin6_ptr;
 static struct sockaddr_in	*sin_ptr;
 static struct sockaddr_in6	*from6_ptr;
 static struct sockaddr_in	*from_ptr;
@@ -106,6 +107,7 @@ static tftpbuf			ackbuf;
 static struct sockaddr_storage	from;
 static boolean_t		tsize_set;
 static pid_t			child;
+static uint16_t			windowsize = WINDOWSIZE_MIN;
 				/* pid of child handling delayed replys */
 static int			delay_fd [2];
 				/* pipe for communicating with child */
@@ -153,6 +155,7 @@ static void	nak(int);
 static char	*blksize_handler(int, char *, int *);
 static char	*timeout_handler(int, char *, int *);
 static char	*tsize_handler(int, char *, int *);
+static char	*windowsize_handler(int, char *, int *);
 
 static struct formats formats[] = {
 	{ "netascii",	validate_filename, tftpd_sendfile, tftpd_recvfile, 1 },
@@ -169,6 +172,7 @@ static struct options options[] = {
 	{ "blksize",	blksize_handler },
 	{ "timeout",	timeout_handler },
 	{ "tsize",	tsize_handler },
+	{ "windowsize",	windowsize_handler },
 	{ NULL }
 };
 
@@ -312,7 +316,7 @@ usage:
 
 
 	/*
-	 * Top level handling of incomming tftp requests.  Read a request
+	 * Top level handling of incoming tftp requests.  Read a request
 	 * and pass it off to be handled.  If request is valid, handling
 	 * forks off and parent returns to this loop.  If no new requests
 	 * are received for DALLYSECS, exit and return to inetd.
@@ -565,13 +569,11 @@ delayed_responder(void)
 static char *
 blksize_handler(int opcode, char *optval, int *errcode)
 {
-	char *endp;
 	int value;
 
 	*errcode = -1;
-	errno = 0;
-	value = (int)strtol(optval, &endp, 10);
-	if (errno != 0 || value < MIN_BLKSIZE || *endp != '\0')
+	value = strtonum(optval, MIN_BLKSIZE, INT32_MAX, NULL);
+	if (errno != 0)
 		return (NULL);
 	/*
 	 * As the blksize value in the OACK reply can be less than the value
@@ -594,20 +596,16 @@ blksize_handler(int opcode, char *optval, int *errcode)
 static char *
 timeout_handler(int opcode, char *optval, int *errcode)
 {
-	char *endp;
 	int value;
 
 	*errcode = -1;
-	errno = 0;
-	value = (int)strtol(optval, &endp, 10);
-	if (errno != 0 || *endp != '\0')
-		return (NULL);
 	/*
 	 * The timeout value in the OACK reply must match the value specified
 	 * by the client, so if an invalid timeout is requested don't include
 	 * the timeout option in the OACK reply.
 	 */
-	if (value < MIN_TIMEOUT || value > MAX_TIMEOUT)
+	value = strtonum(optval, MIN_TIMEOUT, MAX_TIMEOUT, NULL);
+	if (errno != 0)
 		return (NULL);
 
 	rexmtval = value;
@@ -623,13 +621,11 @@ timeout_handler(int opcode, char *optval, int *errcode)
 static char *
 tsize_handler(int opcode, char *optval, int *errcode)
 {
-	char *endp;
 	longlong_t value;
 
 	*errcode = -1;
-	errno = 0;
-	value = strtoll(optval, &endp, 10);
-	if (errno != 0 || value < 0 || *endp != '\0')
+	value = strtonum(optval, 0, INT64_MAX, NULL);
+	if (errno != 0)
 		return (NULL);
 
 	if (opcode == RRQ) {
@@ -654,6 +650,25 @@ tsize_handler(int opcode, char *optval, int *errcode)
 }
 
 /*
+ * Handle Window size option.
+ */
+static char *
+windowsize_handler(int opcode, char *optval, int *errcode)
+{
+	longlong_t value;
+
+	*errcode = -1;
+	value = strtonum(optval, WINDOWSIZE_MIN, WINDOWSIZE_MAX, NULL);
+	if (errno != 0)
+		return (NULL);
+
+	windowsize = value;
+	(void) snprintf(optbuf, sizeof (optbuf), "%hu", windowsize);
+	return (optbuf);
+}
+
+
+/*
  * Process any options included by the client in the request packet.
  * Return the size of the OACK reply packet built or 0 for no OACK reply.
  */
@@ -663,6 +678,9 @@ process_options(int opcode, char *opts, char *endopts)
 	char *cp, *optname, *optval, *ostr, *oackend;
 	struct tftphdr *oackp;
 	int i, errcode;
+
+	/* Default for windowsize */
+	windowsize = WINDOWSIZE_MIN;
 
 	/*
 	 * To continue to interoperate with broken TFTP clients, ignore
@@ -1005,6 +1023,11 @@ timer(int signum)
 	siglongjmp(timeoutbuf, 1);
 }
 
+struct data {
+	off_t		d_offset;
+	uint16_t	d_block;
+};
+
 /*
  * Send the requested file.
  */
@@ -1012,8 +1035,9 @@ static void
 tftpd_sendfile(struct formats *pf, int oacklen)
 {
 	struct tftphdr *dp;
-	volatile ushort_t block = 1;
+	volatile ushort_t block = 1, windowblock;
 	int size, n, serrno;
+	struct data window[WINDOWSIZE_MAX];
 
 	if (oacklen != 0) {
 		(void) sigset(SIGALRM, timer);
@@ -1087,21 +1111,33 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 		}
 		cancel_alarm();
 	}
+
 	dp = r_init();
+	windowblock = 0;
+
 	do {
+read_block:
+		if (debug && standalone) {
+			(void) fprintf(stderr,
+			    "Sending DATA block %u (window block %u)\n",
+			    block, windowblock);
+		}
+
+		window[windowblock].d_offset = ftello(file);
+		window[windowblock].d_block = block;
+
 		(void) sigset(SIGALRM, timer);
 		size = readit(file, &dp, pf->f_convert);
 		if (size < 0) {
 			nak(errno + 100);
 			goto abort;
 		}
+		windowblock++;
+
 		dp->th_opcode = htons((ushort_t)DATA);
 		dp->th_block = htons((ushort_t)block);
 		timeout = 0;
 		(void) sigsetjmp(timeoutbuf, 1);
-		if (debug && standalone)
-			(void) fprintf(stderr, "Sending DATA block %d\n",
-			    block);
 		if (sendto(peer, dp, size + 4, 0,
 		    (struct sockaddr *)&from,  fromplen) != size + 4) {
 			if (debug && standalone) {
@@ -1112,7 +1148,12 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 			SYSLOG_MSG("sendto (data): %m");
 			goto abort;
 		}
-		read_ahead(file, pf->f_convert);
+
+		/* Only check for ACK for last block in window. */
+		if (windowblock != windowsize && size == blocksize) {
+			block++;
+			continue;
+		}
 		(void) alarm(rexmtval); /* read the ack */
 		for (;;) {
 			(void) sigrelse(SIGALRM);
@@ -1149,11 +1190,38 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 			}
 
 			if (ackbuf.tb_hdr.th_opcode == ACK) {
+				ushort_t i;
+
+				for (i = 0; i < windowblock; i++) {
+					if (ackbuf.tb_hdr.th_block ==
+					    window[i].d_block)
+						break;
+				}
+
+				if (i == windowblock) {
+					/* unknown ACK */
+					(void) fprintf(stderr,
+					    "ACK %d out of window\n",
+					    ackbuf.tb_hdr.th_block);
+
+					/* synchronize both sides. */
+					(void) synchnet(peer);
+					(void) fseeko(file,
+					    window[0].d_offset, SEEK_SET);
+					block = window[0].d_block;
+					windowblock = 0;
+					cancel_alarm();
+					goto read_block;
+				}
+
 				if (debug && standalone)
 					(void) fprintf(stderr,
 					    "received ACK for block %d\n",
 					    ackbuf.tb_hdr.th_block);
+
+
 				if (ackbuf.tb_hdr.th_block == block) {
+					windowblock = 0;
 					break;
 				}
 				/*
@@ -1187,11 +1255,16 @@ tftpd_recvfile(struct formats *pf, int oacklen)
 {
 	struct tftphdr *dp;
 	struct tftphdr *ap;    /* ack buffer */
-	ushort_t block = 0;
-	int n, size, acklen, serrno;
+	ushort_t block = 0, windowstart;
+	int n, size, acklen, serrno, windowblock;
+	volatile bool firsttrip = true;
 
 	dp = w_init();
 	ap = &ackbuf.tb_hdr;
+
+	windowstart = 0;
+	windowblock = 0;
+
 	do {
 		(void) sigset(SIGALRM, timer);
 		timeout = 0;
@@ -1206,38 +1279,47 @@ tftpd_recvfile(struct formats *pf, int oacklen)
 			oacklen = 0;
 		}
 		block++;
+		windowblock++;
 		(void) sigsetjmp(timeoutbuf, 1);
 send_ack:
-		if (debug && standalone) {
-			if (ap->th_opcode == htons((ushort_t)ACK)) {
-				(void) fprintf(stderr,
-				    "Sending ACK for block %d\n", block - 1);
-			} else {
-				(void) fprintf(stderr, "Sending OACK ");
-				print_options(stderr, (char *)&ap->th_stuff,
-				    acklen - 2);
-				(void) putc('\n', stderr);
-			}
-		}
-		if (sendto(peer, &ackbuf, acklen, 0, (struct sockaddr *)&from,
-		    fromplen) != acklen) {
-			if (ap->th_opcode == htons((ushort_t)ACK)) {
-				if (debug && standalone) {
-					serrno = errno;
-					perror("sendto (ack)");
-					errno = serrno;
+		if (firsttrip || windowblock >= windowsize) {
+			if (debug && standalone) {
+				if (ap->th_opcode == htons((ushort_t)ACK)) {
+					(void) fprintf(stderr,
+					    "Sending ACK for block %d\n",
+					    block - 1);
+				} else {
+					(void) fprintf(stderr, "Sending OACK ");
+					print_options(stderr,
+					    (char *)&ap->th_stuff,
+					    acklen - 2);
+					(void) putc('\n', stderr);
 				}
-				syslog(LOG_ERR, "sendto (ack): %m\n");
-			} else {
-				if (debug && standalone) {
-					serrno = errno;
-					perror("sendto (oack)");
-					errno = serrno;
-				}
-				syslog(LOG_ERR, "sendto (oack): %m\n");
 			}
-			goto abort;
+			firsttrip = false;
+			if (sendto(peer, &ackbuf, acklen, 0,
+			    (struct sockaddr *)&from, fromplen) != acklen) {
+				if (ap->th_opcode == htons((ushort_t)ACK)) {
+					if (debug && standalone) {
+						serrno = errno;
+						perror("sendto (ack)");
+						errno = serrno;
+					}
+					syslog(LOG_ERR, "sendto (ack): %m\n");
+				} else {
+					if (debug && standalone) {
+						serrno = errno;
+						perror("sendto (oack)");
+						errno = serrno;
+					}
+					syslog(LOG_ERR, "sendto (oack): %m\n");
+				}
+				goto abort;
+			}
+			if (ap->th_opcode == htons((ushort_t)ACK))
+				windowblock = 0;
 		}
+
 		if (write_behind(file, pf->f_convert) < 0) {
 			nak(errno + 100);
 			goto abort;
@@ -1275,12 +1357,28 @@ send_ack:
 				if (dp->th_block == block) {
 					break;   /* normal */
 				}
+
+				if (block > windowsize)
+					windowstart = block - windowsize;
+				else
+					windowstart = 0;
+
+				if (dp->th_block > windowstart &&
+				    dp->th_block < block) {
+					if (debug && standalone)
+						(void) fprintf(stderr,
+						    "ignoring duplicate "
+						    "DATA block %d",
+						    dp->th_block);
+					windowblock++;
+					continue;
+				}
 				/* Re-synchronize with the other side */
 				if (synchnet(peer) < 0) {
 					nak(errno + 100);
 					goto abort;
 				}
-				if (dp->th_block == (block-1))
+				if (dp->th_block == (block - 1))
 					goto send_ack; /* rexmit */
 			}
 		}
