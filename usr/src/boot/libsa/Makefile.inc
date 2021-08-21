@@ -168,10 +168,10 @@ SRCS +=	$(SASRC)/closeall.c $(SASRC)/dev.c \
 	$(SASRC)/ioctl.c $(SASRC)/nullfs.c \
 	$(SASRC)/stat.c $(SASRC)/fstat.c $(SASRC)/close.c \
 	$(SASRC)/lseek.c $(SASRC)/open.c $(SASRC)/read.c \
-	$(SASRC)/write.c $(SASRC)/readdir.c
+	$(SASRC)/write.c $(SASRC)/readdir.c $(SASRC)/mount.c
 
 OBJECTS += closeall.o dev.o ioctl.o nullfs.o stat.o fstat.o close.o lseek.o \
-	open.o read.o write.o readdir.o
+	open.o read.o write.o readdir.o mount.o
 
 # SMBios routines
 SRCS += smbios.c
@@ -206,6 +206,10 @@ OBJECTS += cd9660.o
 OBJECTS += tftp.o
 OBJECTS += gzipfs.o
 OBJECTS += dosfs.o
+pics/dosfs.o := CPPFLAGS += -I../../common
+objs/dosfs.o := CPPFLAGS += -I../../common
+pics/ufs.o := CPPFLAGS += -I../../common
+objs/ufs.o := CPPFLAGS += -I../../common
 
 # utility
 SRCS += $(SRC)/common/util/explicit_bzero.c

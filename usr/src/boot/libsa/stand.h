@@ -114,6 +114,8 @@ struct fs_ops {
 	off_t (*fo_seek)(struct open_file *f, off_t offset, int where);
 	int (*fo_stat)(struct open_file *f, struct stat *sb);
 	int (*fo_readdir)(struct open_file *f, struct dirent *d);
+	int (*fo_mount)(const char *, const char *, void **);
+	int (*fo_unmount)(const char *, void *);
 };
 
 /*
@@ -174,6 +176,7 @@ struct devdesc {
 struct open_file {
 	int		f_flags;	/* see F_* below */
 	struct devsw	*f_dev;		/* pointer to device operations */
+	void		*f_mount;	/* mount data */
 	void		*f_devdata;	/* device specific data */
 	struct fs_ops	*f_ops;		/* pointer to file system operations */
 	void		*f_fsdata;	/* file system specific data */
@@ -287,6 +290,8 @@ extern void	ngets(char *, int);
 #define	gets(x)	ngets((x), 0)
 extern int	fgetstr(char *buf, int size, int fd);
 
+extern int	mount(const char *, const char *, int, ...);
+extern int	unmount(const char *, int);
 extern int	open(const char *, int);
 #define	O_RDONLY	0x0
 #define	O_WRONLY	0x1
