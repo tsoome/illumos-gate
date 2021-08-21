@@ -43,10 +43,15 @@
 
 
 struct zfsmount {
-	const spa_t	*spa;
-	objset_phys_t	objset;
-	uint64_t	rootobj;
+	char			*path;
+	const spa_t		*spa;
+	objset_phys_t		objset;
+	uint64_t		rootobj;
+	STAILQ_ENTRY(zfsmount)	next;
 };
+
+typedef STAILQ_HEAD(zfs_mnt_list, zfsmount) zfs_mnt_list_t;
+static zfs_mnt_list_t zfsmount = STAILQ_HEAD_INITIALIZER(zfsmount);
 
 /*
  * The indirect_child_t represents the vdev that we will read from, when we
@@ -3341,7 +3346,7 @@ zfs_get_root(const spa_t *spa, uint64_t *objid)
 }
 
 static int
-zfs_mount(const spa_t *spa, uint64_t rootobj, struct zfsmount *mnt)
+zfs_mount_impl(const spa_t *spa, uint64_t rootobj, struct zfsmount *mnt)
 {
 
 	mnt->spa = spa;

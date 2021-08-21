@@ -57,18 +57,22 @@ static int	zfs_read(struct open_file *, void *, size_t, size_t *);
 static off_t	zfs_seek(struct open_file *, off_t, int);
 static int	zfs_stat(struct open_file *, struct stat *);
 static int	zfs_readdir(struct open_file *, struct dirent *);
+static int	zfs_mount(const char *dev, const char *path, void **data);
+static int	zfs_unmount(const char *dev, void *data);
 
 struct devsw zfs_dev;
 
 struct fs_ops zfs_fsops = {
-	"zfs",
-	zfs_open,
-	zfs_close,
-	zfs_read,
-	null_write,
-	zfs_seek,
-	zfs_stat,
-	zfs_readdir
+	.fs_name = "zfs",
+	.fo_open = zfs_open,
+	.fo_close = zfs_close,
+	.fo_read = zfs_read,
+	.fo_write = null_write,
+	.fo_seek = zfs_seek,
+	.fo_stat = zfs_stat,
+	.fo_readdir = zfs_readdir,
+	.fo_mount = zfs_mount,
+	.fo_unmount = zfs_unmount
 };
 
 /*
@@ -96,7 +100,6 @@ struct zfs_be_entry {
 static int
 zfs_open(const char *upath, struct open_file *f)
 {
-	struct zfsmount *mount = (struct zfsmount *)f->f_devdata;
 	struct file *fp;
 	int rc;
 
@@ -109,7 +112,7 @@ zfs_open(const char *upath, struct open_file *f)
 		return (ENOMEM);
 	f->f_fsdata = fp;
 
-	rc = zfs_lookup(mount, upath, &fp->f_dnode);
+	rc = zfs_lookup(f->f_mount, upath, &fp->f_dnode);
 	fp->f_seekp = 0;
 	if (rc) {
 		f->f_fsdata = NULL;
@@ -121,12 +124,11 @@ zfs_open(const char *upath, struct open_file *f)
 static int
 zfs_close(struct open_file *f)
 {
-	struct file *fp = (struct file *)f->f_fsdata;
 
 	dnode_cache_obj = NULL;
+	free(f->f_fsdata);
 	f->f_fsdata = NULL;
 
-	free(fp);
 	return (0);
 }
 
@@ -137,7 +139,7 @@ zfs_close(struct open_file *f)
 static int
 zfs_read(struct open_file *f, void *start, size_t size, size_t *resid)
 {
-	const spa_t *spa = ((struct zfsmount *)f->f_devdata)->spa;
+	const spa_t *spa = ((struct zfsmount *)f->f_mount)->spa;
 	struct file *fp = (struct file *)f->f_fsdata;
 	struct stat sb;
 	size_t n;
@@ -151,14 +153,13 @@ zfs_read(struct open_file *f, void *start, size_t size, size_t *resid)
 		n = sb.st_size - fp->f_seekp;
 
 	rc = dnode_read(spa, &fp->f_dnode, fp->f_seekp, start, n);
-	if (rc)
-		return (rc);
+	if (rc == 0) {
+		fp->f_seekp += n;
+		if (resid)
+			*resid = size - n;
+	}
 
-	fp->f_seekp += n;
-	if (resid)
-		*resid = size - n;
-
-	return (0);
+	return (rc);
 }
 
 static off_t
@@ -193,8 +194,8 @@ zfs_seek(struct open_file *f, off_t offset, int where)
 static int
 zfs_stat(struct open_file *f, struct stat *sb)
 {
-	const spa_t *spa = ((struct zfsmount *)f->f_devdata)->spa;
-	struct file *fp = (struct file *)f->f_fsdata;
+	const spa_t *spa = ((struct zfsmount *)f->f_mount)->spa;
+	struct file *fp = f->f_fsdata;
 
 	return (zfs_dnode_stat(spa, &fp->f_dnode, sb));
 }
@@ -202,8 +203,8 @@ zfs_stat(struct open_file *f, struct stat *sb)
 static int
 zfs_readdir(struct open_file *f, struct dirent *d)
 {
-	const spa_t *spa = ((struct zfsmount *)f->f_devdata)->spa;
-	struct file *fp = (struct file *)f->f_fsdata;
+	const spa_t *spa = ((struct zfsmount *)f->f_mount)->spa;
+	struct file *fp = f->f_fsdata;
 	mzap_ent_phys_t mze;
 	struct stat sb;
 	size_t bsize = fp->f_dnode.dn_datablkszsec << SPA_MINBLOCKSHIFT;
@@ -339,6 +340,82 @@ zfs_readdir(struct open_file *f, struct dirent *d)
 
 		return (0);
 	}
+}
+
+/*
+ * if path is NULL, create mount structure, but do not add it to list.
+ */
+static int
+zfs_mount(const char *dev, const char *path, void **data)
+{
+	struct zfs_devdesc *zfsdev;
+	spa_t *spa;
+	struct zfsmount *mnt;
+	int rv;
+
+	errno = 0;
+	zfsdev = malloc(sizeof (*zfsdev));
+	if (zfsdev == NULL)
+		return (errno);
+
+	rv = zfs_parsedev(zfsdev, dev + 3, NULL);
+	if (rv != 0) {
+		free(zfsdev);
+		return (rv);
+	}
+
+	spa = spa_find_by_dev(zfsdev);
+	if (spa == NULL) {
+		free(zfsdev);
+		return (ENXIO);
+	}
+
+	mnt = calloc(1, sizeof (*mnt));
+	if (mnt == NULL) {
+		free(zfsdev);
+		return (ENOMEM);
+	}
+
+	if (path != NULL) {
+		mnt->path = strdup(path);
+		if (mnt->path == NULL) {
+			free(mnt);
+			free(zfsdev);
+			return (ENOMEM);
+		}
+	}
+
+	rv = zfs_mount_impl(spa, zfsdev->root_guid, mnt);
+	free(zfsdev);
+
+	if (rv == 0 && mnt->objset.os_type != DMU_OST_ZFS) {
+		printf("Unexpected object set type %ju\n",
+		    (uintmax_t)mnt->objset.os_type);
+		rv = EIO;
+	}
+
+	if (rv != 0) {
+		free(mnt->path);
+		free(mnt);
+		return (rv);
+	}
+
+	*data = mnt;
+	if (path != NULL)
+		STAILQ_INSERT_TAIL(&zfsmount, mnt, next);
+
+	return (rv);
+}
+
+static int
+zfs_unmount(const char *dev __unused, void *data)
+{
+	struct zfsmount *mnt = data;
+
+	STAILQ_REMOVE(&zfsmount, mnt, zfsmount, next);
+	free(mnt->path);
+	free(mnt);
+	return (0);
 }
 
 static int
@@ -1500,35 +1577,45 @@ zfs_dev_open(struct open_file *f, ...)
 	dev = va_arg(args, struct zfs_devdesc *);
 	va_end(args);
 
+	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
+		return (ENXIO);
+
 	if ((spa = spa_find_by_dev(dev)) == NULL)
 		return (ENXIO);
 
-	mount = malloc(sizeof (*mount));
+	STAILQ_FOREACH(mount, &zfsmount, next) {
+		if (spa->spa_guid == mount->spa->spa_guid)
+			break;
+	}
+
+	rv = 0;
+	/* This device is not set as currdev, mount us private copy. */
 	if (mount == NULL)
-		rv = ENOMEM;
-	else
-		rv = zfs_mount(spa, dev->root_guid, mount);
-	if (rv != 0) {
-		free(mount);
-		return (rv);
-	}
-	if (mount->objset.os_type != DMU_OST_ZFS) {
-		printf("Unexpected object set type %ju\n",
-		    (uintmax_t)mount->objset.os_type);
-		free(mount);
-		return (EIO);
-	}
-	f->f_devdata = mount;
-	free(dev);
-	return (0);
+		rv = zfs_mount(zfs_fmtdev(dev), NULL, (void **)&mount);
+
+	f->f_mount = mount;
+
+	return (rv);
 }
 
 static int
 zfs_dev_close(struct open_file *f)
 {
+	struct zfsmount *mnt, *mount;
 
-	free(f->f_devdata);
-	f->f_devdata = NULL;
+	mnt = f->f_mount;
+	/* is mnt private copy? */
+	STAILQ_FOREACH(mount, &zfsmount, next) {
+		if (mnt->spa->spa_guid == mount->spa->spa_guid)
+			break;
+	}
+
+	/* free the private copy */
+	if (mount == NULL)
+		free(mnt);
+
+	f->f_mount = NULL;
+
 	return (0);
 }
 

@@ -80,6 +80,7 @@
 #include <ufs/ufs/dir.h>
 #include <ufs/ffs/fs.h>
 #include "stand.h"
+#include "disk.h"
 #include "string.h"
 
 static int	ufs_open(const char *, struct open_file *);
@@ -89,16 +90,20 @@ static int	ufs_read(struct open_file *, void *, size_t, size_t *);
 static off_t	ufs_seek(struct open_file *, off_t, int);
 static int	ufs_stat(struct open_file *, struct stat *);
 static int	ufs_readdir(struct open_file *, struct dirent *);
+static int	ufs_mount(const char *, const char *, void **);
+static int	ufs_unmount(const char *, void *);
 
 struct fs_ops ufs_fsops = {
-	"ufs",
-	ufs_open,
-	ufs_close,
-	ufs_read,
-	ufs_write,
-	ufs_seek,
-	ufs_stat,
-	ufs_readdir
+	.fs_name = "ufs",
+	.fo_open = ufs_open,
+	.fo_close = ufs_close,
+	.fo_read = ufs_read,
+	.fo_write = ufs_write,
+	.fo_seek = ufs_seek,
+	.fo_stat = ufs_stat,
+	.fo_readdir = ufs_readdir,
+	.fo_mount = ufs_mount,
+	.fo_unmount = ufs_unmount
 };
 
 /*
@@ -130,6 +135,15 @@ struct file {
 #define	DIP(fp, field) \
 	((fp)->f_fs->fs_magic == FS_UFS1_MAGIC ? \
 	(fp)->f_di.di1.field : (fp)->f_di.di2.field)
+
+typedef struct ufs_mnt {
+	char			*um_dev;
+	int			um_fd;
+	STAILQ_ENTRY(ufs_mnt)	um_link;
+} ufs_mnt_t;
+
+typedef STAILQ_HEAD(ufs_mnt_list, ufs_mnt) ufs_mnt_list_t;
+static ufs_mnt_list_t mnt_list = STAILQ_HEAD_INITIALIZER(mnt_list);
 
 static int	read_inode(ino_t, struct open_file *);
 static int	block_map(struct open_file *, ufs2_daddr_t, ufs2_daddr_t *);
@@ -339,7 +353,7 @@ buf_write_file(struct open_file *f, const char *buf_p, size_t *size_p)
 	if (((off > 0) || (*size_p + off < block_size)) &&
 	    (file_block != fp->f_buf_blkno)) {
 
-		if (fp->f_buf == (char *)0)
+		if (fp->f_buf == NULL)
 			fp->f_buf = malloc(fs->fs_bsize);
 
 		twiddle(8);
@@ -388,7 +402,7 @@ buf_read_file(struct open_file *f, char **buf_p, size_t *size_p)
 	block_size = sblksize(fs, DIP(fp, di_size), file_block);
 
 	if (file_block != fp->f_buf_blkno) {
-		if (fp->f_buf == (char *)0)
+		if (fp->f_buf == NULL)
 			fp->f_buf = malloc(fs->fs_bsize);
 
 		rc = block_map(f, file_block, &disk_block);
@@ -472,6 +486,47 @@ search_directory(char *name, struct open_file *f, ino_t *inumber_p)
 
 static int sblock_try[] = SBLOCKSEARCH;
 
+static int
+ufs_read_superblock(struct open_file *f, struct fs **fsp)
+{
+	struct fs *fs;
+	size_t buf_size;
+	int i, rc;
+
+	*fsp = NULL;
+	/* allocate space and read super block */
+	errno = 0;
+	fs = malloc(SBLOCKSIZE);
+	if (fs == NULL)
+		return (errno);
+	/*
+	 * Try reading the superblock in each of its possible locations.
+	 */
+	for (i = 0; sblock_try[i] != -1; i++) {
+		rc = (f->f_dev->dv_strategy)(f->f_devdata, F_READ,
+		    sblock_try[i] / DEV_BSIZE, SBLOCKSIZE,
+		    (char *)fs, &buf_size);
+		if (rc)
+			break;
+		if ((fs->fs_magic == FS_UFS1_MAGIC ||
+		    (fs->fs_magic == FS_UFS2_MAGIC &&
+		    fs->fs_sblockloc == sblock_try[i])) &&
+		    buf_size == SBLOCKSIZE &&
+		    fs->fs_bsize <= MAXBSIZE &&
+		    fs->fs_bsize >= sizeof (struct fs))
+			break;
+	}
+	if (sblock_try[i] == -1)
+		rc = EINVAL;
+
+	if (rc == 0)
+		*fsp = fs;
+	else
+		free(fs);
+
+	return (rc);
+}
+
 /*
  * Open a file.
  */
@@ -483,43 +538,48 @@ ufs_open(const char *upath, struct open_file *f)
 	ino_t inumber, parent_inumber;
 	struct file *fp;
 	struct fs *fs;
-	int i, rc;
-	size_t buf_size;
-	int nlinks = 0;
+	int  rc, nlinks = 0;
 	char namebuf[MAXPATHLEN+1];
 	char *buf = NULL;
 	char *path = NULL;
+	const char *dev;
+	ufs_mnt_t *mnt;
+
+	/* ufs is stored on disk device */
+	if (f->f_dev == NULL || f->f_dev->dv_type != DEVT_DISK)
+		return (ENXIO);
 
 	/* allocate file system specific data structure */
-	fp = malloc(sizeof (struct file));
-	bzero(fp, sizeof (struct file));
-	f->f_fsdata = (void *)fp;
+	errno = 0;
+	fp = calloc(1, sizeof (struct file));
+	if (fp == NULL)
+		return (errno);
+	f->f_fsdata = fp;
 
-	/* allocate space and read super block */
-	fs = malloc(SBLOCKSIZE);
-	fp->f_fs = fs;
-	twiddle(1);
-	/*
-	 * Try reading the superblock in each of its possible locations.
-	 */
-	for (i = 0; sblock_try[i] != -1; i++) {
-		rc = (f->f_dev->dv_strategy)(f->f_devdata, F_READ,
-		    sblock_try[i] / DEV_BSIZE, SBLOCKSIZE,
-		    (char *)fs, &buf_size);
-		if (rc)
-			goto out;
-		if ((fs->fs_magic == FS_UFS1_MAGIC ||
-		    (fs->fs_magic == FS_UFS2_MAGIC &&
-		    fs->fs_sblockloc == sblock_try[i])) &&
-		    buf_size == SBLOCKSIZE &&
-		    fs->fs_bsize <= MAXBSIZE &&
-		    fs->fs_bsize >= sizeof (struct fs))
+	dev = disk_fmtdev(f->f_devdata);
+	/* Is this device mounted? */
+	STAILQ_FOREACH(mnt, &mnt_list, um_link) {
+		if (strcmp(dev, mnt->um_dev) == 0)
 			break;
 	}
-	if (sblock_try[i] == -1) {
-		rc = EINVAL;
-		goto out;
+
+	if (mnt == NULL) {
+		/* read super block */
+		twiddle(1);
+		rc = ufs_read_superblock(f, &fs);
+		if (rc != 0)
+			goto out;
+	} else {
+		struct open_file *sbf;
+		struct file *sfp;
+
+		/* get superblock from mounted file system */
+		sbf = fd2open_file(mnt->um_fd);
+		sfp = sbf->f_fsdata;
+		fs = sfp->f_fs;
 	}
+	fp->f_fs = fs;
+
 	/*
 	 * Calculate indirect block levels.
 	 */
@@ -663,14 +723,13 @@ ufs_open(const char *upath, struct open_file *f)
 	rc = 0;
 	fp->f_seekp = 0;
 out:
-	if (buf)
-		free(buf);
-	if (path)
-		free(path);
-	if (rc) {
-		if (fp->f_buf)
-			free(fp->f_buf);
-		free(fp->f_fs);
+	free(buf);
+	free(path);
+	if (rc != 0) {
+		free(fp->f_buf);
+		if (mnt == NULL) {
+			free(fp->f_fs);
+		}
 		free(fp);
 	}
 	return (rc);
@@ -679,20 +738,29 @@ out:
 static int
 ufs_close(struct open_file *f)
 {
+	ufs_mnt_t *mnt;
 	struct file *fp = (struct file *)f->f_fsdata;
 	int level;
+	char *dev;
 
-	f->f_fsdata = (void *)0;
-	if (fp == (struct file *)0)
+	f->f_fsdata = NULL;
+	if (fp == NULL)
 		return (0);
 
 	for (level = 0; level < NIADDR; level++) {
-		if (fp->f_blk[level])
-			free(fp->f_blk[level]);
+		free(fp->f_blk[level]);
 	}
-	if (fp->f_buf)
-		free(fp->f_buf);
-	free(fp->f_fs);
+	free(fp->f_buf);
+
+	dev = disk_fmtdev(f->f_devdata);
+	STAILQ_FOREACH(mnt, &mnt_list, um_link) {
+		if (strcmp(dev, mnt->um_dev) == 0)
+			break;
+	}
+
+	if (mnt == NULL)
+		free(fp->f_fs);
+
 	free(fp);
 	return (0);
 }
@@ -827,5 +895,61 @@ again:
 
 	d->d_type = 0;		/* illumos ufs does not have type in direct */
 	strcpy(d->d_name, dp->d_name);
+	return (0);
+}
+
+static int
+ufs_mount(const char *dev, const char *path, void **data)
+{
+	char *fs;
+	ufs_mnt_t *mnt;
+	struct open_file *f;
+
+	errno = 0;
+	mnt = calloc(1, sizeof (*mnt));
+	if (mnt == NULL)
+		return (errno);
+	mnt->um_fd = -1;
+	mnt->um_dev = strdup(dev);
+	if (mnt->um_dev == NULL)
+		goto done;
+
+	if (asprintf(&fs, "%s%s", dev, path) < 0)
+		goto done;
+
+	mnt->um_fd = open(fs, O_RDONLY);
+	free(fs);
+	if (mnt->um_fd == -1)
+		goto done;
+
+	/* Is it ufs file system? */
+	f = fd2open_file(mnt->um_fd);
+	if (strcmp(f->f_ops->fs_name, "ufs") == 0)
+		STAILQ_INSERT_TAIL(&mnt_list, mnt, um_link);
+	else
+		errno = ENXIO;
+
+done:
+	if (errno != 0) {
+		free(mnt->um_dev);
+		if (mnt->um_fd >= 0)
+			close(mnt->um_fd);
+		free(mnt);
+	} else {
+		*data = mnt;
+	}
+
+	return (errno);
+}
+
+static int
+ufs_unmount(const char *dev __unused, void *data)
+{
+	ufs_mnt_t *mnt = data;
+
+	STAILQ_REMOVE(&mnt_list, mnt, ufs_mnt, um_link);
+	free(mnt->um_dev);
+	close(mnt->um_fd);
+	free(mnt);
 	return (0);
 }
