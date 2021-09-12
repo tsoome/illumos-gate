@@ -293,7 +293,6 @@ MANFILES=	acctcom.1			\
 		praliases.1			\
 		prctl.1				\
 		preap.1				\
-		prex.1				\
 		print.1				\
 		printf.1			\
 		priocntl.1			\
@@ -376,8 +375,6 @@ MANFILES=	acctcom.1			\
 		times.1				\
 		timex.1				\
 		tip.1				\
-		tnfdump.1			\
-		tnfxtract.1			\
 		touch.1				\
 		tput.1				\
 		tr.1				\

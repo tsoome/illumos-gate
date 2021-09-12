@@ -25,7 +25,6 @@ file path=usr/share/man/man4/pseudo.4
 file path=usr/share/man/man4/scsi.4
 file path=usr/share/man/man4/sock2path.d.4
 file path=usr/share/man/man4/system.4
-file path=usr/share/man/man4/tnf_kernel_probes.4
 file path=usr/share/man/man4/ts_dptbl.4
 link path=usr/share/man/man4/dir.4 target=dir_ufs.4
 link path=usr/share/man/man4/pcie.4 target=pci.4

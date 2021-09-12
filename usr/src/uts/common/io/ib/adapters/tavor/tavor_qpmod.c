@@ -88,8 +88,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 	int			status;
 	char			*errormsg;
 
-	TAVOR_TNF_ENTER(tavor_qp_modify);
-
 	/*
 	 * Lock the QP so that we can modify it atomically.  After grabbing
 	 * the lock, get the current QP state.  We will use this current QP
@@ -119,10 +117,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 	 */
 	if (!(TAVOR_QP_TYPE_VALID(info_p->qp_trans, qp->qp_serv_type))) {
 		mutex_exit(&qp->qp_lock);
-		TNF_PROBE_1(tavor_qp_modify_inv_qp_trans_fail,
-		    TAVOR_TNF_ERROR, "", tnf_uint, qptrans,
-		    info_p->qp_trans);
-		TAVOR_TNF_EXIT(tavor_qp_modify);
 		return (IBT_QP_SRV_TYPE_INVALID);
 	}
 
@@ -158,10 +152,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			break;
 		default:
 			mutex_exit(&qp->qp_lock);
-			TNF_PROBE_1(tavor_qp_modify_inv_currqpstate_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, qpstate,
-			    info_p->qp_current_state);
-			TAVOR_TNF_EXIT(tavor_qp_modify);
 			return (IBT_QP_STATE_INVALID);
 		}
 	} else {
@@ -181,8 +171,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		if (flags & ~okflags) {
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_ATTR_RO, "reset: invalid flag");
 			goto qpmod_fail;
 		}
 
@@ -195,9 +183,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		    (mod_state != IBT_STATE_INIT)) {
 			/* Invalid transition - ambiguous flags */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "reset: ambiguous flags");
 			goto qpmod_fail;
 
 		} else if ((flags & IBT_CEP_SET_RESET_INIT) ||
@@ -209,8 +194,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_reset2init(state, qp, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "reset to init");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_INIT;
@@ -229,9 +212,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			 *    _out_ of the "Reset" state.
 			 */
 			mutex_exit(&qp->qp_lock);
-			TNF_PROBE_0_DEBUG(tavor_qp_modify_rst2rst,
-			    TAVOR_TNF_TRACE, "");
-			TAVOR_TNF_EXIT(tavor_qp_modify);
 			return (DDI_SUCCESS);
 
 		} else if ((flags & IBT_CEP_SET_STATE) &&
@@ -242,8 +222,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_reset2err(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "reset to error");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_ERR;
@@ -251,9 +229,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "reset: invalid transition");
 			goto qpmod_fail;
 		}
 
@@ -274,8 +249,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			qp->qp_state = TAVOR_QP_RESET;
 
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(status, "reset: wrid_from_reset hdl");
 			goto qpmod_fail;
 		}
 		break;
@@ -294,8 +267,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		if (flags & ~okflags) {
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_ATTR_RO, "init: invalid flag");
 			goto qpmod_fail;
 		}
 
@@ -308,9 +279,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		    (mod_state != IBT_STATE_RTR)) {
 			/* Invalid transition - ambiguous flags */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "init: ambiguous flags");
 			goto qpmod_fail;
 
 		} else if ((flags & IBT_CEP_SET_INIT_RTR) ||
@@ -322,8 +290,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_init2rtr(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "init to rtr");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RTR;
@@ -336,8 +302,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_init2init(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "init to init");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_INIT;
@@ -350,8 +314,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_reset(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "init to reset");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RESET;
@@ -371,8 +333,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_error(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "init to error");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_ERR;
@@ -380,9 +340,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "init: invalid transition");
 			goto qpmod_fail;
 		}
 		break;
@@ -402,8 +359,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		if (flags & ~okflags) {
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_ATTR_RO, "rtr: invalid flag");
 			goto qpmod_fail;
 		}
 
@@ -416,9 +371,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		    (mod_state != IBT_STATE_RTS)) {
 			/* Invalid transition - ambiguous flags */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "reset: ambiguous flags");
 			goto qpmod_fail;
 
 		} else if ((flags & IBT_CEP_SET_RTR_RTS) ||
@@ -430,8 +382,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_rtr2rts(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rtr to rts");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RTS;
@@ -444,8 +394,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_reset(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rtr to reset");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RESET;
@@ -465,8 +413,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_error(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rtr to error");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_ERR;
@@ -474,9 +420,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "rtr: invalid transition");
 			goto qpmod_fail;
 		}
 		break;
@@ -494,8 +437,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		if (flags & ~okflags) {
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_ATTR_RO, "rts: invalid flag");
 			goto qpmod_fail;
 		}
 
@@ -511,8 +452,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_rts2rts(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rts to rts");
 				goto qpmod_fail;
 			}
 			/* qp->qp_state = TAVOR_QP_RTS; */
@@ -525,8 +464,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_rts2sqd(state, qp, flags);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rts to sqd");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_SQD;
@@ -539,8 +476,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_reset(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rts to reset");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RESET;
@@ -560,8 +495,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_error(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "rts to error");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_ERR;
@@ -569,9 +502,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "rts: invalid transition");
 			goto qpmod_fail;
 		}
 		break;
@@ -587,8 +517,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		if (flags & ~okflags) {
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_ATTR_RO, "sqerr: invalid flag");
 			goto qpmod_fail;
 		}
 
@@ -604,8 +532,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_sqerr2rts(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqerr to rts");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RTS;
@@ -618,8 +544,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_reset(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqerr to reset");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RESET;
@@ -639,8 +563,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_error(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqerr to error");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_ERR;
@@ -648,9 +570,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "sqerr: invalid transition");
 			goto qpmod_fail;
 		}
 		break;
@@ -671,8 +590,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		if (flags & ~okflags) {
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_ATTR_RO, "sqd: invalid flag");
 			goto qpmod_fail;
 		}
 
@@ -689,8 +606,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_sqd2sqd(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqd to sqd");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_SQD;
@@ -703,9 +618,7 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			 */
 			if (qp->qp_sqd_still_draining) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
 				status = IBT_QP_STATE_INVALID;
-				TAVOR_TNF_FAIL(status, "sqd to rts; draining");
 				goto qpmod_fail;
 			}
 
@@ -715,8 +628,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_sqd2rts(state, qp, flags, info_p);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqd to rts");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RTS;
@@ -729,8 +640,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_reset(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqd to reset");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RESET;
@@ -750,8 +659,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_error(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "sqd to error");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_ERR;
@@ -759,9 +666,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "sqd: invalid transition");
 			goto qpmod_fail;
 		}
 		break;
@@ -779,8 +683,6 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_qp_to_reset(state, qp);
 			if (status != DDI_SUCCESS) {
 				mutex_exit(&qp->qp_lock);
-				/* Set "status"/"errormsg", goto failure */
-				TAVOR_TNF_FAIL(status, "error to reset");
 				goto qpmod_fail;
 			}
 			qp->qp_state = TAVOR_QP_RESET;
@@ -802,17 +704,11 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 			 *
 			 */
 			mutex_exit(&qp->qp_lock);
-			TNF_PROBE_0_DEBUG(tavor_qp_modify_err2err,
-			    TAVOR_TNF_TRACE, "");
-			TAVOR_TNF_EXIT(tavor_qp_modify);
 			return (DDI_SUCCESS);
 
 		} else {
 			/* Invalid transition - return error */
 			mutex_exit(&qp->qp_lock);
-			/* Set "status" and "errormsg" and goto failure */
-			TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID,
-			    "error: invalid transition");
 			goto qpmod_fail;
 		}
 		break;
@@ -825,19 +721,13 @@ tavor_qp_modify(tavor_state_t *state, tavor_qphdl_t qp,
 		 */
 		mutex_exit(&qp->qp_lock);
 		TAVOR_WARNING(state, "unknown QP state in modify");
-		/* Set "status" and "errormsg" and goto failure */
-		TAVOR_TNF_FAIL(IBT_QP_STATE_INVALID, "invalid curr QP state");
 		goto qpmod_fail;
 	}
 
 	mutex_exit(&qp->qp_lock);
-	TAVOR_TNF_EXIT(tavor_qp_modify);
 	return (DDI_SUCCESS);
 
 qpmod_fail:
-	TNF_PROBE_1(tavor_qp_modify_fail, TAVOR_TNF_ERROR, "",
-	    tnf_string, msg, errormsg);
-	TAVOR_TNF_EXIT(tavor_qp_modify);
 	return (status);
 }
 
@@ -856,8 +746,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 	ibt_qp_uc_attr_t	*uc;
 	uint_t			portnum, pkeyindx;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_reset2init);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -911,9 +799,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 		if (tavor_portnum_is_valid(state, portnum)) {
 			qpc->pri_addr_path.portnum = portnum;
 		} else {
-			TNF_PROBE_1(tavor_qp_reset2init_inv_port_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, port, portnum);
-			TAVOR_TNF_EXIT(tavor_qp_reset2init);
 			return (IBT_HCA_PORT_INVALID);
 		}
 
@@ -923,9 +808,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 			qpc->pri_addr_path.pkey_indx = pkeyindx;
 			qp->qp_pkeyindx = pkeyindx;
 		} else {
-			TNF_PROBE_1(tavor_qp_reset2init_inv_pkey_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx, pkeyindx);
-			TAVOR_TNF_EXIT(tavor_qp_reset2init);
 			return (IBT_PKEY_IX_ILLEGAL);
 		}
 
@@ -942,9 +824,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 		if (tavor_portnum_is_valid(state, portnum)) {
 			qpc->pri_addr_path.portnum = portnum;
 		} else {
-			TNF_PROBE_1(tavor_qp_reset2init_inv_port_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, port, portnum);
-			TAVOR_TNF_EXIT(tavor_qp_reset2init);
 			return (IBT_HCA_PORT_INVALID);
 		}
 
@@ -953,9 +832,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 		if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 			qpc->pri_addr_path.pkey_indx = pkeyindx;
 		} else {
-			TNF_PROBE_1(tavor_qp_reset2init_inv_pkey_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx, pkeyindx);
-			TAVOR_TNF_EXIT(tavor_qp_reset2init);
 			return (IBT_PKEY_IX_ILLEGAL);
 		}
 
@@ -973,9 +849,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 		if (tavor_portnum_is_valid(state, portnum)) {
 			qpc->pri_addr_path.portnum = portnum;
 		} else {
-			TNF_PROBE_1(tavor_qp_reset2init_inv_port_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, port, portnum);
-			TAVOR_TNF_EXIT(tavor_qp_reset2init);
 			return (IBT_HCA_PORT_INVALID);
 		}
 
@@ -984,9 +857,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 		if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 			qpc->pri_addr_path.pkey_indx = pkeyindx;
 		} else {
-			TNF_PROBE_1(tavor_qp_reset2init_inv_pkey_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx, pkeyindx);
-			TAVOR_TNF_EXIT(tavor_qp_reset2init);
 			return (IBT_PKEY_IX_ILLEGAL);
 		}
 	} else {
@@ -996,9 +866,6 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in rst2init");
-		TNF_PROBE_0(tavor_qp_reset2init_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_reset2init);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -1015,13 +882,9 @@ tavor_qp_reset2init(tavor_state_t *state, tavor_qphdl_t qp,
 	if (status != TAVOR_CMD_SUCCESS) {
 		cmn_err(CE_CONT, "Tavor: RST2INIT_QP command failed: %08x\n",
 		    status);
-		TNF_PROBE_1(tavor_qp_reset2init_cmd_fail, TAVOR_TNF_ERROR, "",
-		    tnf_uint, status, status);
-		TAVOR_TNF_EXIT(tavor_qp_reset2init);
 		return (ibc_get_ci_failure(0));
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_reset2init);
 	return (DDI_SUCCESS);
 }
 
@@ -1041,8 +904,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 	uint_t			portnum, pkeyindx;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_init2init);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -1069,10 +930,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->pri_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2init_inv_port_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, port,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_init2init);
 				return (IBT_HCA_PORT_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PRIM_PORT;
@@ -1090,10 +947,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 				qp->qp_pkeyindx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2init_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2init);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -1121,10 +974,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->pri_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2init_inv_port_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, port,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_init2init);
 				return (IBT_HCA_PORT_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PRIM_PORT;
@@ -1141,10 +990,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 				qpc->pri_addr_path.pkey_indx = pkeyindx;
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2init_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2init);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -1169,10 +1014,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->pri_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2init_inv_port_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, port,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_init2init);
 				return (IBT_HCA_PORT_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PRIM_PORT;
@@ -1189,10 +1030,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 				qpc->pri_addr_path.pkey_indx = pkeyindx;
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2init_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2init);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -1214,9 +1051,6 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in init2init");
-		TNF_PROBE_0(tavor_qp_init2init_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_init2init);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -1234,19 +1068,12 @@ tavor_qp_init2init(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: INIT2INIT_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_init2init_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_init2init);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_init2init_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_init2init);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_init2init);
 	return (DDI_SUCCESS);
 }
 
@@ -1269,8 +1096,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 	uint_t			mtu;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_init2rtr);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -1322,10 +1147,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 				qp->qp_pkeyindx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -1351,9 +1172,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		status = tavor_set_addr_path(state, adds_vect, qpc_path,
 		    TAVOR_ADDRPATH_QP, qp);
 		if (status != DDI_SUCCESS) {
-			TNF_PROBE_0(tavor_qp_init2rtr_setaddrpath_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (status);
 		}
 
@@ -1384,9 +1202,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		qpc->ric = (qp->qp_srq_en == TAVOR_QP_SRQ_ENABLED) ? 1 : 0;
 		mtu = rc->rc_path_mtu;
 		if (tavor_qp_validate_mtu(state, mtu) != DDI_SUCCESS) {
-			TNF_PROBE_1(tavor_qp_init2rtr_inv_mtu_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, mtu, mtu);
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (IBT_HCA_PORT_MTU_EXCEEDED);
 		}
 		qpc->mtu = mtu;
@@ -1415,10 +1230,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		rdma_ra_in = rc->rc_rdma_ra_in;
 		if (tavor_qp_validate_resp_rsrc(state, rc, &rra_max) !=
 		    DDI_SUCCESS) {
-			TNF_PROBE_1(tavor_qp_init2rtr_inv_rdma_in_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, rdma_ra_in,
-			    rdma_ra_in);
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (IBT_INVALID_PARAM);
 		}
 		qpc->rra_max = rra_max;
@@ -1435,10 +1246,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 				qpc->pri_addr_path.pkey_indx = pkeyindx;
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -1462,9 +1269,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_init2rtr_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (status);
 			}
 			qpc_path->ack_timeout = rc->rc_alt_path.cep_timeout;
@@ -1484,10 +1288,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -1499,10 +1299,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= (TAVOR_CMD_OP_ALT_PATH |
@@ -1520,9 +1316,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		status = tavor_set_addr_path(state, adds_vect, qpc_path,
 		    TAVOR_ADDRPATH_QP, qp);
 		if (status != DDI_SUCCESS) {
-			TNF_PROBE_0(tavor_qp_init2rtr_setaddrpath_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (status);
 		}
 
@@ -1537,9 +1330,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		qpc->msg_max	  = TAVOR_QP_LOG_MAX_MSGSZ;
 		mtu = uc->uc_path_mtu;
 		if (tavor_qp_validate_mtu(state, mtu) != DDI_SUCCESS) {
-			TNF_PROBE_1(tavor_qp_init2rtr_inv_mtu_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, mtu, mtu);
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (IBT_HCA_PORT_MTU_EXCEEDED);
 		}
 		qpc->mtu = mtu;
@@ -1562,10 +1352,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 				qpc->pri_addr_path.pkey_indx = pkeyindx;
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -1593,9 +1379,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_init2rtr_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (status);
 			}
 
@@ -1607,10 +1390,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -1622,10 +1401,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_init2rtr_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -1637,9 +1412,6 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in init2rtr");
-		TNF_PROBE_0(tavor_qp_init2rtr_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -1657,19 +1429,12 @@ tavor_qp_init2rtr(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: INIT2RTR_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_init2rtr_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_init2rtr_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_init2rtr);
 	return (DDI_SUCCESS);
 }
 
@@ -1691,8 +1456,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 	uint_t			portnum, pkeyindx, rdma_ra_out, sra_max;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_rtr2rts);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -1750,10 +1513,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		rdma_ra_out = rc->rc_rdma_ra_out;
 		if (tavor_qp_validate_init_depth(state, rc, &sra_max) !=
 		    DDI_SUCCESS) {
-			TNF_PROBE_1(tavor_qp_rtr2rts_inv_rdma_out_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, rdma_ra_out,
-			    rdma_ra_out);
-			TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 			return (IBT_INVALID_PARAM);
 		}
 		qpc->sra_max = sra_max;
@@ -1785,10 +1544,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (rc->rc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_rtr2rts_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    rc->rc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -1816,9 +1571,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_rtr2rts_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (status);
 			}
 
@@ -1839,10 +1591,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_rtr2rts_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -1854,10 +1602,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_rtr2rts_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= (TAVOR_CMD_OP_ALT_PATH |
@@ -1898,10 +1642,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (uc->uc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_rtr2rts_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    uc->uc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -1919,9 +1659,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_rtr2rts_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (status);
 			}
 
@@ -1933,10 +1670,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_rtr2rts_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -1948,10 +1681,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_rtr2rts_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -1963,9 +1692,6 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in rtr2rts");
-		TNF_PROBE_0(tavor_qp_rtr2rts_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -1983,19 +1709,12 @@ tavor_qp_rtr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: RTR2RTS_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_rtr2rts_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_rtr2rts_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_rtr2rts);
 	return (DDI_SUCCESS);
 }
 
@@ -2017,8 +1736,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 	uint_t			portnum, pkeyindx;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_rts2rts);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -2066,10 +1783,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (rc->rc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_rts2rts_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    rc->rc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -2097,9 +1810,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_rts2rts_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (status);
 			}
 			qpc_path->ack_timeout = rc->rc_alt_path.cep_timeout;
@@ -2112,10 +1822,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_rts2rts_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -2127,10 +1833,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_rts2rts_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -2161,10 +1863,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (uc->uc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_rts2rts_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    uc->uc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -2182,9 +1880,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_rts2rts_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (status);
 			}
 
@@ -2196,10 +1891,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_rts2rts_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -2211,10 +1902,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_rts2rts_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -2226,9 +1913,6 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in rts2rts");
-		TNF_PROBE_0(tavor_qp_rts2rts_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -2246,19 +1930,12 @@ tavor_qp_rts2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: RTS2RTS_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_rts2rts_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_rts2rts_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_rts2rts);
 	return (DDI_SUCCESS);
 }
 
@@ -2272,8 +1949,6 @@ tavor_qp_rts2sqd(tavor_state_t *state, tavor_qphdl_t qp,
     ibt_cep_modify_flags_t flags)
 {
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_rts2sqd);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -2300,14 +1975,8 @@ tavor_qp_rts2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: RTS2SQD_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_rts2sqd_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_rts2sqd);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_rts2sqd_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_rts2sqd);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
@@ -2319,7 +1988,6 @@ tavor_qp_rts2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 	 */
 	qp->qp_sqd_still_draining = 1;
 
-	TAVOR_TNF_EXIT(tavor_qp_rts2sqd);
 	return (DDI_SUCCESS);
 }
 
@@ -2341,8 +2009,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 	uint_t			portnum, pkeyindx;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_sqd2rts);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -2390,10 +2056,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (rc->rc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2rts_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    rc->rc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -2411,9 +2073,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_sqd2rts_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (status);
 			}
 			qpc_path->ack_timeout = rc->rc_alt_path.cep_timeout;
@@ -2426,10 +2085,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2rts_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -2441,10 +2096,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2rts_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -2485,10 +2136,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (uc->uc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2rts_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    uc->uc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -2506,9 +2153,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_sqd2rts_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (status);
 			}
 
@@ -2520,10 +2164,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2rts_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -2535,10 +2175,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2rts_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -2550,9 +2186,6 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in sqd2rts");
-		TNF_PROBE_0(tavor_qp_sqd2rts_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -2570,19 +2203,12 @@ tavor_qp_sqd2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: SQD2RTS_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_sqd2rts_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_sqd2rts_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_sqd2rts);
 	return (DDI_SUCCESS);
 }
 
@@ -2605,8 +2231,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 	uint_t			rra_max, sra_max;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_sqd2sqd);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -2635,10 +2259,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 				qp->qp_pkeyindx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -2675,9 +2295,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_sqd2sqd_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (status);
 			}
 			qpc_path->rnr_retry = rc->rc_rnr_retry_cnt;
@@ -2707,10 +2324,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (rc->rc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    rc->rc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -2727,10 +2340,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 				qpc->pri_addr_path.pkey_indx = pkeyindx;
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_pkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -2745,10 +2354,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->pri_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_port_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, port,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_HCA_PORT_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PRIM_PORT;
@@ -2766,9 +2371,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_sqd2sqd_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (status);
 			}
 			qpc_path->ack_timeout = rc->rc_alt_path.cep_timeout;
@@ -2781,10 +2383,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -2796,10 +2394,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -2815,10 +2409,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			rdma_ra_out = rc->rc_rdma_ra_out;
 			if (tavor_qp_validate_init_depth(state, rc,
 			    &sra_max) != DDI_SUCCESS) {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_rdma_out_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, rdma_ra_out,
-				    rdma_ra_out);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_INVALID_PARAM);
 			}
 			qpc->sra_max = sra_max;
@@ -2836,10 +2426,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			rdma_ra_in = rc->rc_rdma_ra_in;
 			if (tavor_qp_validate_resp_rsrc(state, rc,
 			    &rra_max) != DDI_SUCCESS) {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_rdma_in_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, rdma_ra_in,
-				    rdma_ra_in);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_INVALID_PARAM);
 			}
 			qpc->rra_max = rra_max;
@@ -2916,9 +2502,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_sqd2sqd_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (status);
 			}
 
@@ -2943,10 +2526,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			} else if (uc->uc_mig_state == IBT_STATE_REARMED) {
 				qpc->pm_state = TAVOR_QP_PMSTATE_REARM;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_mig_state_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, mig_state,
-				    uc->uc_mig_state);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_QP_APM_STATE_INVALID);
 			}
 			opmask |= TAVOR_CMD_OP_PM_STATE;
@@ -2963,10 +2542,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 				qpc->pri_addr_path.pkey_indx = pkeyindx;
 				opmask |= TAVOR_CMD_OP_PKEYINDX;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_pkey,
-				    TAVOR_TNF_ERROR, "", tnf_uint, pkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 		}
@@ -2983,9 +2558,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			status = tavor_set_addr_path(state, adds_vect, qpc_path,
 			    TAVOR_ADDRPATH_QP, qp);
 			if (status != DDI_SUCCESS) {
-				TNF_PROBE_0(tavor_qp_sqd2sqd_setaddrpath_fail,
-				    TAVOR_TNF_ERROR, "");
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (status);
 			}
 
@@ -2997,10 +2569,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_portnum_is_valid(state, portnum)) {
 				qpc->alt_addr_path.portnum = portnum;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_altport_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altport,
-				    portnum);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_HCA_PORT_INVALID);
 			}
 
@@ -3012,10 +2580,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 			if (tavor_pkeyindex_is_valid(state, pkeyindx)) {
 				qpc->alt_addr_path.pkey_indx = pkeyindx;
 			} else {
-				TNF_PROBE_1(tavor_qp_sqd2sqd_inv_altpkey_fail,
-				    TAVOR_TNF_ERROR, "", tnf_uint, altpkeyindx,
-				    pkeyindx);
-				TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 				return (IBT_PKEY_IX_ILLEGAL);
 			}
 			opmask |= TAVOR_CMD_OP_ALT_PATH;
@@ -3027,9 +2591,6 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in sqd2sqd");
-		TNF_PROBE_0(tavor_qp_sqd2sqd_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -3047,19 +2608,12 @@ tavor_qp_sqd2sqd(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: SQD2SQD_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_sqd2sqd_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_sqd2sqd_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_sqd2sqd);
 	return (DDI_SUCCESS);
 }
 
@@ -3076,8 +2630,6 @@ tavor_qp_sqerr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 	ibt_qp_ud_attr_t	*ud;
 	uint32_t		opmask = 0;
 	int			status;
-
-	TAVOR_TNF_ENTER(tavor_qp_sqerr2rts);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -3123,9 +2675,6 @@ tavor_qp_sqerr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in sqerr2rts");
-		TNF_PROBE_0(tavor_qp_sqerr2rts_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_sqerr2rts);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -3143,19 +2692,12 @@ tavor_qp_sqerr2rts(tavor_state_t *state, tavor_qphdl_t qp,
 		if (status != TAVOR_CMD_BAD_QP_STATE) {
 			cmn_err(CE_CONT, "Tavor: SQERR2RTS_QP command failed: "
 			    "%08x\n", status);
-			TNF_PROBE_1(tavor_qp_sqerr2rts_cmd_fail,
-			    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-			TAVOR_TNF_EXIT(tavor_qp_sqerr2rts);
 			return (ibc_get_ci_failure(0));
 		} else {
-			TNF_PROBE_0(tavor_qp_sqerr2rts_inv_qpstate_fail,
-			    TAVOR_TNF_ERROR, "");
-			TAVOR_TNF_EXIT(tavor_qp_sqerr2rts);
 			return (IBT_QP_STATE_INVALID);
 		}
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_sqerr2rts);
 	return (DDI_SUCCESS);
 }
 
@@ -3168,8 +2710,6 @@ static int
 tavor_qp_to_error(tavor_state_t *state, tavor_qphdl_t qp)
 {
 	int	status;
-
-	TAVOR_TNF_ENTER(tavor_qp_to_error);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -3186,13 +2726,9 @@ tavor_qp_to_error(tavor_state_t *state, tavor_qphdl_t qp)
 	if (status != TAVOR_CMD_SUCCESS) {
 		cmn_err(CE_CONT, "Tavor: TOERR_QP command failed: %08x\n",
 		    status);
-		TNF_PROBE_1(tavor_qp_to_error_cmd_fail,
-		    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-		TAVOR_TNF_EXIT(tavor_qp_to_error);
 		return (ibc_get_ci_failure(0));
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_to_error);
 	return (DDI_SUCCESS);
 }
 
@@ -3206,8 +2742,6 @@ tavor_qp_to_reset(tavor_state_t *state, tavor_qphdl_t qp)
 {
 	tavor_hw_qpc_t	*qpc;
 	int		status;
-
-	TAVOR_TNF_ENTER(tavor_qp_to_reset);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -3229,13 +2763,9 @@ tavor_qp_to_reset(tavor_state_t *state, tavor_qphdl_t qp)
 	if (status != TAVOR_CMD_SUCCESS) {
 		cmn_err(CE_CONT, "Tavor: TORST_QP command failed: %08x\n",
 		    status);
-		TNF_PROBE_1(tavor_qp_to_reset_cmd_fail,
-		    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-		TAVOR_TNF_EXIT(tavor_qp_to_reset);
 		return (ibc_get_ci_failure(0));
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_to_reset);
 	return (DDI_SUCCESS);
 }
 
@@ -3249,8 +2779,6 @@ tavor_qp_reset2err(tavor_state_t *state, tavor_qphdl_t qp)
 {
 	tavor_hw_qpc_t	*qpc;
 	int		status;
-
-	TAVOR_TNF_ENTER(tavor_qp_reset2err);
 
 	ASSERT(MUTEX_HELD(&qp->qp_lock));
 
@@ -3331,9 +2859,6 @@ tavor_qp_reset2err(tavor_state_t *state, tavor_qphdl_t qp)
 		 * and return failure
 		 */
 		TAVOR_WARNING(state, "unknown QP transport type in rst2err");
-		TNF_PROBE_0(tavor_qp_reset2err_inv_transtype_fail,
-		    TAVOR_TNF_ERROR, "");
-		TAVOR_TNF_EXIT(tavor_qp_reset2err);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -3350,9 +2875,6 @@ tavor_qp_reset2err(tavor_state_t *state, tavor_qphdl_t qp)
 	if (status != TAVOR_CMD_SUCCESS) {
 		cmn_err(CE_CONT, "Tavor: RST2INIT_QP command failed: %08x\n",
 		    status);
-		TNF_PROBE_1(tavor_qp_reset2err_rst2init_cmd_fail,
-		    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-		TAVOR_TNF_EXIT(tavor_qp_reset2err);
 		return (ibc_get_ci_failure(0));
 	}
 
@@ -3373,13 +2895,9 @@ tavor_qp_reset2err(tavor_state_t *state, tavor_qphdl_t qp)
 		if (tavor_qp_to_reset(state, qp) != DDI_SUCCESS) {
 			TAVOR_WARNING(state, "failed to reset QP context");
 		}
-		TNF_PROBE_1(tavor_qp_reset2err_toerr_cmd_fail,
-		    TAVOR_TNF_ERROR, "", tnf_uint, status, status);
-		TAVOR_TNF_EXIT(tavor_qp_reset2err);
 		return (ibc_get_ci_failure(0));
 	}
 
-	TAVOR_TNF_EXIT(tavor_qp_reset2err);
 	return (DDI_SUCCESS);
 }
 
