@@ -727,7 +727,7 @@ get_pci_card_model(Prom_node *card_node, char *model)
 		if (strlen(model) == 0)
 			(void) sprintf(model, "%s", "pci-bridge");
 		else
-			(void) sprintf(model, "%s/pci-bridge", model);
+			(void) strcat(model, "/pci-bridge");
 	}
 }
 
