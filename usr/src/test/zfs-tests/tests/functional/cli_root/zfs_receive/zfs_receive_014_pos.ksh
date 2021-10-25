@@ -51,8 +51,8 @@ function cleanup
 	log_must rm $streamfile_full
 	log_must rm $streamfile_incr
 	log_must rm $streamfile_trun
-	log_must zfs destroy -rf $orig
-	log_must zfs destroy -rf $dest
+	datasetexists $orig && destroy_dataset $orig -rf
+	datasetexists $dest && destroy_dataset $dest -rf
 }
 
 #

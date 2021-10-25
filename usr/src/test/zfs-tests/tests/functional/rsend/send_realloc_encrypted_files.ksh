@@ -43,8 +43,8 @@ function cleanup
 {
 	rm -f $BACKDIR/fs@*
 	rm -f $keyfile
-	destroy_dataset $POOL/fs "-rR"
-	destroy_dataset $POOL/newfs "-rR"
+	datasetexists $POOL/fs && destroy_dataset $POOL/fs "-rR"
+	datasetexists $POOL/newfs && destroy_dataset $POOL/newfs "-rR"
 }
 
 log_onexit cleanup

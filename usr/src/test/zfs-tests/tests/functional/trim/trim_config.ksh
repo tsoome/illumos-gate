@@ -73,9 +73,9 @@ typeset VDEV_MIN_MB=$(( floor(4 * MINVDEVSIZE * 0.30 / 1024 / 1024) ))
 
 for type in "" "mirror" "raidz2"; do
 
-	if [[ "$type" = "" ]]; then
+	if [[ "$type" == "" ]]; then
 		VDEVS="$TRIM_VDEV1"
-	elif [[ "$type" = "mirror" ]]; then
+	elif [[ "$type" == "mirror" ]]; then
 		VDEVS="$TRIM_VDEV1 $TRIM_VDEV2"
 	else
 		VDEVS="$TRIM_VDEV1 $TRIM_VDEV2 $TRIM_VDEV3"

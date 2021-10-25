@@ -47,9 +47,7 @@
 
 function cleanup
 {
-	if datasetexists $snapfs; then
-		log_must zfs destroy $snapfs
-	fi
+	snapexists $snapfs && destroy_dataset $snapfs
 
 	log_must rm -f ${QFILE}_*
 	log_must cleanup_quota
@@ -87,9 +85,9 @@ log_must eval "zfs userspace $snapfs >/dev/null 2>&1"
 
 for fs in "$QFS" "$snapfs"; do
 	log_note "check the user used objects in zfs userspace $fs"
-	[[ $(user_object_count $fs $QUSER1) -eq $user1_cnt ]] ||
+	(( $(user_object_count $fs $QUSER1) == user1_cnt )) || \
 		log_fail "expected $user1_cnt"
-	[[ $(user_object_count $fs $QUSER2) -eq $user2_cnt ]] ||
+	(( $(user_object_count $fs $QUSER2) == user2_cnt )) || \
 		log_fail "expected $user2_cnt"
 done
 
@@ -97,20 +95,20 @@ log_note "change the owner of files"
 log_must chown $QUSER2 ${QFILE}_1*
 sync_pool
 
-[[ $(user_object_count $QFS $QUSER1) -eq 0 ]] ||
+(( $(user_object_count $QFS $QUSER1) == 0 )) || \
 	log_fail "expected 0 files for $QUSER1"
 
-[[ $(user_object_count $snapfs $QUSER1) -eq $user1_cnt ]] ||
+(( $(user_object_count $snapfs $QUSER1) == user1_cnt )) || \
 	log_fail "expected $user_cnt files for $QUSER1 in snapfs"
 
-[[ $(user_object_count $QFS $QUSER2) -eq $((user1_cnt+user2_cnt)) ]] ||
+(( $(user_object_count $QFS $QUSER2) == $((user1_cnt+user2_cnt)) )) || \
 	log_fail "expected $((user1_cnt+user2_cnt)) files for $QUSER2"
 
 log_note "file removal"
 log_must rm ${QFILE}_*
 sync_pool
 
-[[ $(user_object_count $QFS $QUSER2) -eq 0 ]] ||
+(( $(user_object_count $QFS $QUSER2) == 0 )) || \
         log_fail "expected 0 files for $QUSER2"
 
 cleanup

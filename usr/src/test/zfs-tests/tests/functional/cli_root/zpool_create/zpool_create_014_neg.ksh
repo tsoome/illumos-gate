@@ -49,12 +49,12 @@ function cleanup
 {
 	if datasetexists $vol_name; then
 		swap -l | grep $TMP_FILE > /dev/null 2>&1
-		if [[ $? -eq 0 ]]; then
+		if (( $? == 0 )); then
 			log_must swap -d $TMP_FILE
 		fi
 		rm -f $TMP_FILE
 		log_must umount $mntp
-		zfs destroy $vol_name
+		destroy_dataset $vol_name
 	fi
 
 	if poolexists $TESTPOOL; then

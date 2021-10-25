@@ -55,9 +55,9 @@ log_assert "Verify reducing reservation allows other datasets to use space"
 function cleanup
 {
 	typeset -i loop=0
-	while (($loop < $RESV_NUM_FS)); do
+	while ((loop < RESV_NUM_FS)); do
 		datasetexists $TESTPOOL/${TESTFS}$loop && \
-		    log_must zfs destroy -f $TESTPOOL/${TESTFS}$loop
+		    destroy_dataset $TESTPOOL/${TESTFS}$loop -f
 
 		[[ -d ${TESTDIR}$loop ]] && log_must rm -r ${TESTDIR}$loop
 
@@ -69,8 +69,8 @@ log_onexit cleanup
 
 log_must create_multiple_fs $RESV_NUM_FS $TESTPOOL/$TESTFS $TESTDIR
 
-space_avail=`get_prop available $TESTPOOL`
-space_used=`get_prop used $TESTPOOL`
+space_avail=$(get_prop available $TESTPOOL)
+space_used=$(get_prop used $TESTPOOL)
 
 #
 # To make sure this test doesn't take too long to execute on
@@ -79,9 +79,9 @@ space_used=`get_prop used $TESTPOOL`
 # ensure we have RESV_FREE_SPACE left free in the pool, which we will
 # be able to quickly fill.
 #
-resv_space_avail=`expr $space_avail - $RESV_FREE_SPACE`
-num_resv_fs=`expr $RESV_NUM_FS - 1` # Number of FS to which resv will be applied
-resv_size_set=`expr $resv_space_avail / $num_resv_fs`
+resv_space_avail=$((space_avail - RESV_FREE_SPACE))
+num_resv_fs=$((RESV_NUM_FS - 1)) # Number of FS to which resv will be applied
+resv_size_set=$((resv_space_avail / num_resv_fs))
 
 #
 # We set the reservations now, rather than when we created the filesystems
@@ -91,15 +91,15 @@ resv_size_set=`expr $resv_space_avail / $num_resv_fs`
 # hence num=1 rather than zero below.
 #
 typeset -i num=1
-while (($num < $RESV_NUM_FS)); do
+while ((num < RESV_NUM_FS)); do
 	log_must zfs set reservation=$resv_size_set $TESTPOOL/$TESTFS$num
 	((num = num + 1))
 done
 
-space_avail_still=`get_prop available $TESTPOOL`
+space_avail_still=$(get_prop available $TESTPOOL)
 
-fill_size=`expr $space_avail_still + $RESV_TOLERANCE`
-write_count=`expr $fill_size / $BLOCK_SIZE`
+fill_size=$((space_avail_still + RESV_TOLERANCE))
+write_count=$((fill_size / BLOCK_SIZE))
 
 # Now fill up the first filesystem (which doesn't have a reservation set
 # and thus will use up whatever free space is left in the pool).
@@ -109,7 +109,7 @@ log_note "Writing to $TESTDIR$num/$TESTFILE1"
 file_write -o create -f $TESTDIR$num/$TESTFILE1 -b $BLOCK_SIZE \
     -c $write_count -d 0
 ret=$?
-if (($ret != $ENOSPC)); then
+if ((ret != ENOSPC)); then
 	log_fail "Did not get ENOSPC as expected (got $ret)."
 fi
 

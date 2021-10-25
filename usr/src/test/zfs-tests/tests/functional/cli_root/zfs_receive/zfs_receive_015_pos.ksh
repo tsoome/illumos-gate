@@ -47,8 +47,10 @@ function cleanup
 {
 	log_must rm $streamfile_full
 	log_must rm $streamfile_incr
-	log_must zfs destroy -rf $TESTPOOL/$TESTFS1
-	log_must zfs destroy -rf $TESTPOOL/$TESTFS2
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -rf
+	datasetexists $TESTPOOL/$TESTFS2 && \
+		destroy_dataset $TESTPOOL/$TESTFS2 -rf
 }
 
 log_assert "ZFS can receive custom properties."

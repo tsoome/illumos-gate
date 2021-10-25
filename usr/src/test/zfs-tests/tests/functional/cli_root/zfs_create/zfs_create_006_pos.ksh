@@ -49,8 +49,8 @@ verify_runnable "global"
 
 function cleanup
 {
-	datasetexists $TESTPOOL/$TESTVOL1 && \
-		log_must zfs destroy -f $TESTPOOL/$TESTVOL1
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTVOL1 -f
 }
 
 log_onexit cleanup
@@ -60,7 +60,7 @@ log_assert "'zfs create -o property=value -V size volume' can successfully \
 	   create a ZFS volume with correct property set."
 
 typeset -i i=0
-while (( $i < ${#RW_VOL_PROP[*]} )); do
+while (( i < ${#RW_VOL_PROP[*]} )); do
 	log_must zfs create -o ${RW_VOL_PROP[$i]} -V $VOLSIZE \
 		$TESTPOOL/$TESTVOL1
 	datasetexists $TESTPOOL/$TESTVOL1 || \

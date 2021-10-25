@@ -55,9 +55,8 @@ function cleanup
 	fi
 
 	for i in 1 2 3; do
-		if datasetexists $VFS/vol$i; then
-			log_must zfs destroy $VFS/vol$i
-		fi
+		datasetexists $VFS/vol$i && \
+			destroy_dataset $VFS/vol$i
 	done
 }
 

@@ -51,13 +51,8 @@ verify_runnable "both"
 
 function cleanup
 {
-	snapexists $SNAPFS.1
-	[[ $? -eq 0 ]] && \
-		log_must zfs destroy $SNAPFS.1
-
-	snapexists $SNAPFS
-	[[ $? -eq 0 ]] && \
-		log_must zfs destroy $SNAPFS
+	snapexists $SNAPFS.1 && destroy_dataset $SNAPFS.1
+	snapexists $SNAPFS && destroy_dataset $SNAPFS
 
 	[[ -e $TESTDIR ]] && \
 		log_must rm -rf $TESTDIR/* > /dev/null 2>&1
@@ -74,7 +69,7 @@ typeset -i COUNT=10
 
 log_note "Populate the $TESTDIR directory (prior to first snapshot)"
 typeset -i i=1
-while [[ $i -le $COUNT ]]; do
+while (( i <= COUNT )); do
 	log_must file_write -o create -f $TESTDIR/original_file$i \
 	   -b $BLOCKSZ -c $NUM_WRITES -d $i
 
@@ -84,14 +79,14 @@ done
 log_must zfs snapshot $SNAPFS
 
 FILE_COUNT=`ls -Al $SNAPDIR | grep -v "total" | wc -l`
-if [[ $FILE_COUNT -ne $COUNT ]]; then
+if (( FILE_COUNT != COUNT )); then
         ls -Al $SNAPDIR
         log_fail "AFTER: $SNAPFS contains $FILE_COUNT files(s)."
 fi
 
 log_note "Populate the $TESTDIR directory (prior to second snapshot)"
 typeset -i i=1
-while [[ $i -le $COUNT ]]; do
+while (( i <= COUNT )); do
         log_must file_write -o create -f $TESTDIR/afterfirst_file$i \
            -b $BLOCKSZ -c $NUM_WRITES -d $i
 
@@ -102,7 +97,7 @@ log_must zfs snapshot $SNAPFS.1
 
 log_note "Populate the $TESTDIR directory (Post second snapshot)"
 typeset -i i=1
-while [[ $i -le $COUNT ]]; do
+while (( i <= COUNT )); do
         log_must file_write -o create -f $TESTDIR/aftersecond_file$i \
            -b $BLOCKSZ -c $NUM_WRITES -d $i
 
@@ -119,13 +114,13 @@ log_must zfs rollback $SNAPFS.1
 
 FILE_COUNT=`ls -Al $TESTDIR/aftersecond* 2> /dev/null \
     | grep -v "total" | wc -l`
-if [[ $FILE_COUNT -ne 0 ]]; then
+if (( FILE_COUNT != 0 )); then
         ls -Al $TESTDIR
         log_fail "$TESTDIR contains $FILE_COUNT aftersecond* files(s)."
 fi
 
 FILE_COUNT=`ls -Al $TESTDIR/original* $TESTDIR/afterfirst*| grep -v "total" | wc -l`
-if [[ $FILE_COUNT -ne 20 ]]; then
+if (( FILE_COUNT != 20 )); then
         ls -Al $TESTDIR
         log_fail "$TESTDIR contains $FILE_COUNT original* files(s)."
 fi

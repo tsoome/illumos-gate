@@ -49,10 +49,7 @@ function cleanup
 {
 	typeset -i i=1
 	while [ $i -lt $COUNT ]; do
-		snapexists $SNAPFS.$i
-		if [[ $? -eq 0 ]]; then
-			log_must zfs destroy $SNAPFS.$i
-		fi
+		snapexists $SNAPFS.$i && destroy_dataset $SNAPFS.$i
 
 		if [[ -e $SNAPDIR.$i ]]; then
 			log_must rm -rf $SNAPDIR.$i > /dev/null 2>&1
@@ -77,7 +74,7 @@ typeset -i COUNT=10
 
 log_note "Create some files in the $TESTDIR directory..."
 typeset -i i=1
-while [[ $i -lt $COUNT ]]; do
+while (( i < COUNT )); do
 	log_must file_write -o create -f $TESTDIR/file$i \
 	   -b $BLOCKSZ -c $NUM_WRITES -d $i
 	log_must zfs snapshot $SNAPFS.$i
@@ -90,10 +87,10 @@ log_note "Remove all of the original files"
     log_must rm -rf $TESTDIR/file* > /dev/null 2>&1
 
 i=1
-while [[ $i -lt $COUNT ]]; do
+while (( i < COUNT )); do
 	FILECOUNT=`ls $SNAPDIR.$i/file* | wc -l`
 	typeset j=1
-	while [ $j -lt $FILECOUNT ]; do
+	while (( j < FILECOUNT )); do
 		log_must file_check $SNAPDIR.$i/file$j $j
 		(( j = j + 1 ))
 	done

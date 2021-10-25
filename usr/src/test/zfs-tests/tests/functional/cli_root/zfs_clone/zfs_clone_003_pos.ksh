@@ -48,9 +48,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	if snapexists $SNAPFS ; then
-		log_must zfs destroy -Rf $SNAPFS
-	fi
+	snapexists $SNAPFS && destroy_dataset $SNAPFS -Rf
 }
 
 log_onexit cleanup
@@ -62,7 +60,7 @@ log_assert "'zfs clone -o property=value filesystem' can successfully create" \
 log_must zfs snapshot $SNAPFS
 
 typeset -i i=0
-while (( $i < ${#RW_FS_PROP[*]} )); do
+while (( i < ${#RW_FS_PROP[*]} )); do
 	log_must zfs clone -o ${RW_FS_PROP[$i]} $SNAPFS $TESTPOOL/$TESTCLONE
 	datasetexists $TESTPOOL/$TESTCLONE || \
 		log_fail "zfs clone $TESTPOOL/$TESTCLONE fail."

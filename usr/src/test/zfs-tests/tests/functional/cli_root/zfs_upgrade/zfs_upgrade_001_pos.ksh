@@ -50,9 +50,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	if datasetexists $rootfs ; then
-		log_must zfs destroy -Rf $rootfs
-	fi
+	datasetexists $rootfs && destroy_dataset $rootfs -Rf
 	log_must zfs create $rootfs
 
 	for file in $output $oldoutput ; do
@@ -87,7 +85,7 @@ for version in $ZFS_ALL_VERSIONS ; do
 	log_must zfs snapshot ${current_snap}
 	log_must zfs clone ${current_snap} ${current_clone}
 
-	if (( version != $ZFS_VERSION )); then
+	if (( version != ZFS_VERSION )); then
 		old_datasets="$old_datasets ${current_fs} ${current_clone}"
 	fi
 done
@@ -106,7 +104,7 @@ COUNT=$( wc -l $output | awk '{print $1}' )
 
 typeset -i i=0
 for fs in ${old_datasets}; do
-	log_must grep "^$fs$" $output
+	log_must grep "^$fs\$" $output
 	(( i = i + 1 ))
 done
 
@@ -116,9 +114,7 @@ if (( i != COUNT - OLDCOUNT )); then
 fi
 
 for fs in $old_datasets ; do
-	if datasetexists $fs ; then
-		log_must zfs destroy -Rf $fs
-	fi
+	datasetexists $fs && destroy_dataset $fs -Rf
 done
 
 log_must eval 'zfs upgrade > $output 2>&1'

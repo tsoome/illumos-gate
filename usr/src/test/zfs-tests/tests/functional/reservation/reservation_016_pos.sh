@@ -56,7 +56,7 @@ log_assert "Destroying a regular volume with reservation allows more data to" \
 function cleanup
 {
 	datasetexists $TESTPOOL/$TESTVOL && \
-	    log_must zfs destroy $TESTPOOL/$TESTVOL
+	    destroy_dataset $TESTPOOL/$TESTVOL
 
 	[[ -e $TESTDIR/$TESTFILE1 ]] && log_must rm -rf $TESTDIR/$TESTFILE1
 	[[ -e $TESTDIR/$TESTFILE2 ]] && log_must rm -rf $TESTDIR/$TESTFILE2
@@ -85,7 +85,7 @@ write_count=$((fill_size / BLOCK_SIZE))
 # and thus will use up whatever free space is left in the pool).
 file_write -o create -f $TESTDIR/$TESTFILE1 -b $BLOCK_SIZE -c $write_count -d 0
 ret=$?
-if (($ret != $ENOSPC)); then
+if ((ret != ENOSPC)); then
 	log_fail "Did not get ENOSPC as expected (got $ret)."
 fi
 

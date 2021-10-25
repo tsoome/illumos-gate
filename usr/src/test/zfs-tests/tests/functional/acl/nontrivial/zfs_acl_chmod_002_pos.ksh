@@ -43,13 +43,13 @@
 
 verify_runnable "both"
 
-function acl_upgrade_cleannup
+function acl_upgrade_cleanup
 {
-	log_must zfs destroy -rR $ACL_UPGRADE_FS
+	datasetexists $ACL_UPGRADE_FS && destroy_dataset $ACL_UPGRADE_FS -rR
 }
 
 log_assert "Verify acl after upgrading."
-log_onexit acl_upgrade_cleannup
+log_onexit acl_upgrade_cleanup
 
 ACL_UPGRADE_FS=$TESTPOOL/acl_upgrade_fs.$$
 

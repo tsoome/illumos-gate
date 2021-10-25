@@ -34,7 +34,7 @@ log_onexit cleanup
 
 function cleanup
 {
-	datasetexists $origin && log_must zfs destroy -R $origin
+	datasetexists $origin && destroy_dataset $origin -R
 	log_must zfs create -o mountpoint=$TESTDIR $origin
 }
 
@@ -56,9 +56,9 @@ atime=$(ls -E% all $TESTDIR/clone/file | awk '/atime/ {print $4}')
 ctime=$(ls -E% all $TESTDIR/clone/file | awk '/ctime/ {print $4}')
 mtime=$(ls -E% all $TESTDIR/clone/file | awk '/mtime/ {print $4}')
 
-[[ $o_atime = $atime ]] || log_fail "atime changed: $o_atime $atime"
-[[ $o_ctime = $ctime ]] && log_fail "ctime unchanged: $o_ctime $ctime"
-[[ $o_mtime = $mtime ]] && log_fail "mtime unchanged: $o_mtime $mtime"
+[[ $o_atime == $atime ]] || log_fail "atime changed: $o_atime $atime"
+[[ $o_ctime == $ctime ]] && log_fail "ctime unchanged: $o_ctime $ctime"
+[[ $o_mtime == $mtime ]] && log_fail "mtime unchanged: $o_mtime $mtime"
 
 log_must verify_nopwrite $origin $origin@a $origin/clone
 

@@ -31,8 +31,10 @@ verify_runnable "both"
 
 function cleanup
 {
-	destroy_dataset "$TESTPOOL/$TESTFS1" "-r"
-	destroy_dataset "$TESTPOOL/$TESTFS2" "-r"
+	datasetexists "$TESTPOOL/$TESTFS1" && \
+		destroy_dataset "$TESTPOOL/$TESTFS1" "-r"
+	datasetexists "$TESTPOOL/$TESTFS2" && \
+		destroy_dataset "$TESTPOOL/$TESTFS2" "-r"
 }
 
 log_assert "'zfs diff' should work with encrypted datasets"

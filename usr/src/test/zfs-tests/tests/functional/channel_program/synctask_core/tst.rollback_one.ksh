@@ -23,8 +23,9 @@ file=$TESTDIR/$TESTFILE0
 
 function cleanup
 {
-	datasetexists $snap && log_must zfs destroy $snap && \
-	    log_must rm $file
+	datasetexists $snap && \
+		destroy_dataset $snap && \
+		log_must rm $file
 
 }
 

@@ -38,9 +38,7 @@ fs=$TESTPOOL/$TESTFS/$(basename $0).$$
 
 function cleanup
 {
-	if datasetexists "$fs"; then
-		log_must zfs destroy -f "$fs"
-	fi
+	datasetexists "$fs" && destroy_dataset "$fs" -f
 }
 
 log_onexit cleanup

@@ -49,7 +49,7 @@ volsize=$(zfs get -H -o value volsize $TESTPOOL/$TESTVOL)
 function cleanup
 {
 	snapexists $TESTPOOL/$TESTVOL@snap && \
-		zfs destroy $TESTPOOL/$TESTVOL@snap
+		destroy_dataset $TESTPOOL/$TESTVOL@snap
 
 	ismounted $TESTDIR ufs
 	(( $? == 0 )) && log_must umount $TESTDIR
@@ -80,7 +80,7 @@ while (( 1 )); do
 	file_write -o create -f $TESTDIR/testfile$$.$fn \
 	    -b $BLOCKSZ -c $NUM_WRITES
 	retval=$?
-	if (( $retval != 0 )); then
+	if (( retval != 0 )); then
 		break
 	fi
 	(( fn = fn + 1 ))
@@ -92,6 +92,6 @@ log_must zfs snapshot $TESTPOOL/$TESTVOL@snap
 
 fsck -n /dev/zvol/rdsk/$TESTPOOL/$TESTVOL@snap >/dev/null 2>&1
 retval=$?
-(( $retval == 39 )) || log_fail "fsck exited with wrong value $retval "
+(( retval == 39 )) || log_fail "fsck exited with wrong value $retval "
 
 log_pass "Verify that ZFS volume snapshot could be fscked"

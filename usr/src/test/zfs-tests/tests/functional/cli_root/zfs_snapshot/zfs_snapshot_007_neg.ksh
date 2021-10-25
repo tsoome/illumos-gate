@@ -46,9 +46,7 @@ function cleanup
 {
 	for fs in $TESTPOOL/$TESTFS $TESTPOOL/$TESTVOL $TESTPOOL/$TESTCTR $TESTPOOL ; do
 		typeset fssnap=$fs@snap
-		if datasetexists $fssnap ; then
-			log_must zfs destroy -rf $fssnap
-		fi
+		snapexists $fssnap && destroy_dataset $fssnap -rf
 	done
 	cleanup_user_prop $TESTPOOL
 }
@@ -77,7 +75,7 @@ typeset snap_ro_props="volsize recordsize recsize quota reservation reserv mount
 	setuid zoned"
 
 zfs upgrade -v > /dev/null 2>&1
-if [[ $? -eq 0 ]]; then
+if (( $? == 0 )); then
 	snap_ro_props="$snap_ro_props version"
 fi
 

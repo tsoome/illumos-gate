@@ -49,9 +49,8 @@ verify_runnable "both"
 
 function cleanup
 {
-	if datasetexists $TESTPOOL/$TESTFS1; then
-		log_must zfs destroy -f $TESTPOOL/$TESTFS1
-	fi
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -f
 	[[ -d $TESTDIR1 ]] && log_must rm -rf $TESTDIR1
 	[[ -d $TESTDIR ]] && log_must rm -rf $TESTDIR/*
 }

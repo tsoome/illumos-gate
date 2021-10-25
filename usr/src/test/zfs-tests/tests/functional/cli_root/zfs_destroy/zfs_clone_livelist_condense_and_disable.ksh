@@ -34,7 +34,8 @@
 
 function cleanup
 {
-	log_must zfs destroy -Rf $TESTPOOL/$TESTFS1
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -Rf
 	# reset the livelist sublist size to the original value
 	set_tunable64 zfs_livelist_max_entries $ORIGINAL_MAX
 	# reset the minimum percent shared to 75

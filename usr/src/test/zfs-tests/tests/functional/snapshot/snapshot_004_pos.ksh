@@ -48,9 +48,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	snapexists $SNAPFS
-	[[ $? -eq 0 ]] && \
-		log_must zfs destroy $SNAPFS
+	snapexists $SNAPFS && destroy_dataset $SNAPFS
 
 	[[ -e $TESTDIR ]] && \
 		log_must rm -rf $TESTDIR/* > /dev/null 2>&1
@@ -65,7 +63,7 @@ log_onexit cleanup
 
 log_must zfs snapshot $SNAPFS
 FILE_COUNT=`ls -Al $SNAPDIR | grep -v "total 0" | wc -l`
-if [[ $FILE_COUNT -ne 0 ]]; then
+if (( FILE_COUNT != 0 )); then
 	ls $SNAPDIR
 	log_fail "BEFORE: $SNAPDIR contains $FILE_COUNT files(s)."
 fi
@@ -74,7 +72,7 @@ typeset -i COUNT=10
 
 log_note "Populate the $TESTDIR directory"
 typeset -i i=1
-while [[ $i -lt $COUNT ]]; do
+while (( i < COUNT )); do
 	log_must file_write -o create -f $TESTDIR/file$i \
 	   -b $BLOCKSZ -c $NUM_WRITES -d $i
 
@@ -82,7 +80,7 @@ while [[ $i -lt $COUNT ]]; do
 done
 
 FILE_COUNT=`ls -Al $SNAPDIR | grep -v "total 0" | wc -l`
-if [[ $FILE_COUNT -ne 0 ]]; then
+if (( FILE_COUNT != 0 )); then
         ls $SNAPDIR
         log_fail "AFTER: $SNAPDIR contains $FILE_COUNT files(s)."
 fi

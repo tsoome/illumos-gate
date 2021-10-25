@@ -47,9 +47,12 @@ verify_runnable "both"
 
 function cleanup
 {
-	destroy_dataset $TESTPOOL/recv "-r"
-	destroy_dataset $TESTPOOL/crypt "-r"
-	destroy_dataset $TESTPOOL/ds "-r"
+	datasetexists $TESTPOOL/recv && \
+		destroy_dataset $TESTPOOL/recv "-r"
+	datasetexists $TESTPOOL/crypt && \
+		destroy_dataset $TESTPOOL/crypt "-r"
+	datasetexists $TESTPOOL/ds && \
+		destroy_dataset $TESTPOOL/ds "-r"
 	[[ -f $sendfile ]] && log_must rm $sendfile
 	[[ -f $keyfile ]] && log_must rm $keyfile
 }

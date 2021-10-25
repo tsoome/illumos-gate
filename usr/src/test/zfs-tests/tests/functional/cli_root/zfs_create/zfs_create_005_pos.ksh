@@ -49,7 +49,7 @@ verify_runnable "both"
 function cleanup
 {
 	datasetexists $TESTPOOL/$TESTFS1 && \
-		log_must zfs destroy -f $TESTPOOL/$TESTFS1
+		destroy_dataset $TESTPOOL/$TESTFS1 -f
 }
 
 log_onexit cleanup
@@ -61,7 +61,7 @@ log_assert "'zfs create -o property=value filesystem' can successfully create \
 typeset -i i=0
 typeset opts=""
 
-while (( $i < ${#RW_FS_PROP[*]} )); do
+while (( i < ${#RW_FS_PROP[*]} )); do
         if [[ ${RW_FS_PROP[$i]} != *"checksum"* ]]; then
 		opts="$opts -o ${RW_FS_PROP[$i]}"
 	fi
@@ -73,7 +73,7 @@ datasetexists $TESTPOOL/$TESTFS1 || \
 	log_fail "zfs create $TESTPOOL/$TESTFS1 fail."
 
 i=0
-while (( $i < ${#RW_FS_PROP[*]} )); do
+while (( i < ${#RW_FS_PROP[*]} )); do
         if [[ ${RW_FS_PROP[$i]} != *"checksum"* ]]; then
 		propertycheck $TESTPOOL/$TESTFS1 ${RW_FS_PROP[i]} || \
 			log_fail "${RW_FS_PROP[i]} is failed to set."

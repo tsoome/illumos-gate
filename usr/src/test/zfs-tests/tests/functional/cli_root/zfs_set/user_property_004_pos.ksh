@@ -46,9 +46,7 @@ function cleanup
 {
 	for fs in $TESTPOOL/$TESTFS $TESTPOOL/$TESTVOL $TESTPOOL ; do
 		typeset fssnap=$fs@snap
-		if datasetexists $fssnap ; then
-			log_must zfs destroy -f $fssnap
-		fi
+		snapexists $fssnap && destroy_dataset $fssnap -f
 	done
 	cleanup_user_prop $TESTPOOL
 }

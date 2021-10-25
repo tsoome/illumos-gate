@@ -39,7 +39,8 @@
 
 function cleanup
 {
-	datasetexists $TESTPOOL/$TESTFS1 && destroy_dataset $TESTPOOL/$TESTFS1 -R
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -R
 	# reset the livelist sublist size to its original value
 	set_tunable64 zfs_livelist_max_entries $ORIGINAL_MAX
 	log_must zfs inherit compression $TESTPOOL

@@ -46,9 +46,7 @@
 
 function cleanup
 {
-	if datasetexists $snapfs; then
-		log_must zfs destroy $snapfs
-	fi
+	snapexists $snapfs && destroy_dataset $snapfs
 
 	log_must rm -f ${QFILE}_*
 	log_must cleanup_quota
@@ -86,7 +84,7 @@ log_must eval "zfs groupspace $snapfs >/dev/null 2>&1"
 
 for fs in "$QFS" "$snapfs"; do
 	log_note "check the object count in zfs groupspace $fs"
-        [[ $(group_object_count $fs $QGROUP) -eq $grp_cnt ]] ||
+	(( $(group_object_count $fs $QGROUP) == grp_cnt )) ||
                 log_fail "expected $grp_cnt"
 done
 
@@ -94,10 +92,10 @@ log_note "file removal"
 log_must rm ${QFILE}_*
 sync_pool
 
-[[ $(group_object_count $QFS $QGROUP) -eq 0 ]] ||
+(( $(group_object_count $QFS $QGROUP) == 0 )) || \
         log_fail "expected 0 files for $QGROUP"
 
-[[ $(group_object_count $snapfs $QGROUP) -eq $grp_cnt ]] ||
+(( $(group_object_count $snapfs $QGROUP) == grp_cnt )) || \
         log_fail "expected $grp_cnt files for $QGROUP"
 
 cleanup

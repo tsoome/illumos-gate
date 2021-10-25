@@ -51,13 +51,13 @@ function cleanup
 	datasetexists $new_vol && log_must zfs rename $new_vol $vol
 
 	typeset dtst
-	for dtst in $new_fsclone $new_volclone $fsclone $volclone \
-	    $fssnap $volsnap; do
-		if datasetexists $dtst; then
-			log_must zfs destroy -f $dtst
-		fi
+	for dtst in $new_fsclone $new_volclone $fsclone $volclone; do
+		datasetexists $dtst && destroy_dataset $dtst -f
 	done
 
+	for dtst in $fssnap $volsnap; do
+		snapexists $dtst && destroy_dataset $dtst -f
+	done
 	cleanup_user_prop $pool
 }
 

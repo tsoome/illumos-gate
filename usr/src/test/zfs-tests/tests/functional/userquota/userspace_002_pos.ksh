@@ -46,9 +46,7 @@
 
 function cleanup
 {
-	if datasetexists $snapfs; then
-		log_must zfs destroy $snapfs
-	fi
+	snapexists $snapfs && destroy_dataset $snapfs
 
 	log_must cleanup_quota
 }

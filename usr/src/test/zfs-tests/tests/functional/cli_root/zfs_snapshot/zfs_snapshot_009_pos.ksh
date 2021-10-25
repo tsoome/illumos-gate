@@ -31,9 +31,10 @@ ZFS_MAX_DATASET_NAME_LEN=256
 function cleanup
 {
 	for ds in $datasets; do
-		datasetexists $ds && log_must zfs destroy -r $ds
+		datasetexists $ds && destroy_dataset $ds -r
 	done
-	zfs destroy -r $TESTPOOL/TESTFS4
+	datasetexists $TESTPOOL/TESTFS4 && \
+		destroy_dataset $TESTPOOL/TESTFS4 -r
 }
 datasets="$TESTPOOL/$TESTFS1 $TESTPOOL/$TESTFS2
     $TESTPOOL/$TESTFS3"
@@ -42,14 +43,14 @@ datasets="$TESTPOOL/$TESTFS1 $TESTPOOL/$TESTFS2
 SNAPSHOT_XXX=$(printf 'x%.0s' \
     {1..$(($ZFS_MAX_DATASET_NAME_LEN - ${#TESTPOOL} - ${#TESTFS1} - 3))})
 
-invalid_args=("$TESTPOOL/$TESTFS1@now $TESTPOOL/$TESTFS2@now \
-    $TESTPOOL/$TESTFS@blah?" "$TESTPOOL/$TESTFS1@blah* \
-    $TESTPOOL/$TESTFS2@blah? $TESTPOOL/$TESTFS3@blah%" \
-    "$TESTPOOL/$TESTFS1@x$SNAPSHOT_XXX $TESTPOOL/$TESTFS2@300 \
+invalid_args=("$TESTPOOL/$TESTFS1@now $TESTPOOL/$TESTFS2@now
+    $TESTPOOL/$TESTFS@blah?" "$TESTPOOL/$TESTFS1@blah*
+    $TESTPOOL/$TESTFS2@blah? $TESTPOOL/$TESTFS3@blah%"
+    "$TESTPOOL/$TESTFS1@x$SNAPSHOT_XXX $TESTPOOL/$TESTFS2@300
     $TESTPOOL/$TESTFS3@300")
 
-valid_args=("$TESTPOOL/$TESTFS1@snap $TESTPOOL/$TESTFS2@snap \
-    $TESTPOOL/$TESTFS3@snap" "$TESTPOOL/$TESTFS1@$SNAPSHOT_XXX \
+valid_args=("$TESTPOOL/$TESTFS1@snap $TESTPOOL/$TESTFS2@snap
+    $TESTPOOL/$TESTFS3@snap" "$TESTPOOL/$TESTFS1@$SNAPSHOT_XXX
     $TESTPOOL/$TESTFS2@2 $TESTPOOL/$TESTFS3@s")
 
 log_assert "verify zfs supports multiple consistent snapshots"
@@ -66,8 +67,7 @@ i=0
 while (( i < ${#valid_args[*]} )); do
 	log_must zfs snapshot ${valid_args[i]}
 	for token in ${valid_args[i]}; do
-		log_must snapexists $token && \
-		    log_must zfs destroy $token
+		snapexists $token && destroy_dataset $token
 	done
 	((i = i + 1))
 done

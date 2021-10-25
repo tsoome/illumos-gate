@@ -48,9 +48,7 @@ verify_runnable "global"
 
 function cleanup
 {
-	if snapexists $SNAPFS1 ; then
-		log_must zfs destroy -Rf $SNAPFS1
-	fi
+	snapexists $SNAPFS1 && destroy_dataset $SNAPFS1 -Rf
 }
 
 log_onexit cleanup
@@ -60,7 +58,7 @@ log_assert "Verify 'zfs clone -o <volume>' fails with bad <volume> argument."
 log_must zfs snapshot $SNAPFS1
 
 typeset -i i=0
-while (( $i < ${#RW_VOL_PROP[*]} )); do
+while (( i < ${#RW_VOL_PROP[*]} )); do
 	log_mustnot zfs clone -o ${RW_VOL_PROP[i]} -o ${RW_VOL_PROP[i]} \
 		$SNAPFS1 $TESTPOOL/$TESTCLONE
 	log_mustnot zfs clone -p -o ${RW_VOL_PROP[i]} -o ${RW_VOL_PROP[i]} \
@@ -69,7 +67,7 @@ while (( $i < ${#RW_VOL_PROP[*]} )); do
 done
 
 i=0
-while (( $i < ${#FS_ONLY_PROP[*]} )); do
+while (( i < ${#FS_ONLY_PROP[*]} )); do
 	log_mustnot zfs clone  -o ${FS_ONLY_PROP[i]} \
 		$SNAPFS1 $TESTPOOL/$TESTCLONE
 	log_mustnot zfs clone -p -o ${FS_ONLY_PROP[i]} \

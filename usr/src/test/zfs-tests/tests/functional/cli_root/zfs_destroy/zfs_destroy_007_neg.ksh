@@ -48,11 +48,9 @@ verify_runnable "both"
 
 function cleanup
 {
-	if datasetexists $clonesnap; then
-		log_must zfs promote $fs
-	fi
-	datasetexists $clone && log_must zfs destroy $clone
-	datasetexists $fssnap && log_must zfs destroy $fssnap
+	datasetexists $clonesnap && log_must zfs promote $fs
+	datasetexists $clone && destroy_dataset $clone
+	datasetexists $fssnap && destroy_dataset $fssnap
 }
 
 log_assert "Destroy dataset which is namespace-parent of origin should failed."

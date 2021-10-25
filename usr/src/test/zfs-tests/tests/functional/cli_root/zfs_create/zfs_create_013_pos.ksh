@@ -47,9 +47,9 @@ verify_runnable "global"
 function cleanup
 {
 	typeset -i j=0
-	while [[ $j -lt ${#size[*]} ]]; do
+	while (( j < ${#size[*]} )); do
 		datasetexists $TESTPOOL/${LONGFSNAME}${size[j]} && \
-		    log_must zfs destroy $TESTPOOL/${LONGFSNAME}${size[j]}
+			destroy_dataset $TESTPOOL/${LONGFSNAME}${size[j]}
 		((j = j + 1))
 	done
 }
@@ -60,7 +60,7 @@ log_onexit cleanup
 log_assert "'zfs create -s -V <size> <volume>' succeeds"
 
 typeset -i j=0
-while (( $j < ${#size[*]} )); do
+while (( j < ${#size[*]} )); do
 	typeset cmdline="zfs create -s -V ${size[j]} \
 			 $TESTPOOL/${LONGFSNAME}${size[j]}"
 

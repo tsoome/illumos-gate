@@ -49,10 +49,10 @@ function cleanup
 	typeset -i i=0
 
 	datasetexists $rst_root && \
-		log_must zfs destroy -Rf $rst_root
+		destroy_dataset $rst_root -Rf
 	while (( i < 2 )); do
 		snapexists ${orig_snap[$i]} && \
-			log_must zfs destroy -f ${orig_snap[$i]}
+			destroy_dataset ${orig_snap[$i]} -f
 		log_must rm -f ${bkup[$i]}
 
 		(( i = i + 1 ))

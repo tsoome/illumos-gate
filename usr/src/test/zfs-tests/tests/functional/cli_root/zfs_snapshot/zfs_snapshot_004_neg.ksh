@@ -44,9 +44,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	if datasetexists $initfs ; then
-		log_must zfs destroy -rf $initfs
-	fi
+	datasetexists $initfs && destroy_dataset $initfs -rf
 }
 
 log_assert "Verify recursive snapshotting could not break ZFS."

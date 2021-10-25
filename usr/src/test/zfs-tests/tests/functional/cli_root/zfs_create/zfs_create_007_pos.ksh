@@ -49,10 +49,10 @@ verify_runnable "global"
 
 function cleanup
 {
-        datasetexists $TESTPOOL/$TESTVOL && \
-                log_must zfs destroy -f $TESTPOOL/$TESTVOL
+	datasetexists $TESTPOOL/$TESTVOL && \
+		destroy_dataset $TESTPOOL/$TESTVOL -f
 	datasetexists $TESTPOOL/$TESTVOL1 && \
-		log_must zfs destroy -f $TESTPOOL/$TESTVOL1
+		destroy_dataset $TESTPOOL/$TESTVOL1 -f
 }
 
 log_onexit cleanup
@@ -64,7 +64,7 @@ log_assert "'zfs create -o property=value -V size volume' can successfully \
 typeset -i i=0
 typeset opts=""
 
-while (( $i < ${#RW_VOL_PROP[*]} )); do
+while (( i < ${#RW_VOL_PROP[*]} )); do
 	if [[ ${RW_VOL_PROP[$i]} != *"checksum"* ]]; then
 		opts="$opts -o ${RW_VOL_PROP[$i]}"
 	fi
@@ -79,7 +79,7 @@ datasetexists $TESTPOOL/$TESTVOL1 || \
 	log_fail "zfs create $TESTPOOL/$TESTVOL1 fail."
 
 i=0
-while (( $i < ${#RW_VOL_PROP[*]} )); do
+while (( i < ${#RW_VOL_PROP[*]} )); do
 	if [[ ${RW_VOL_PROP[$i]} != *"checksum"* ]]; then
 		propertycheck $TESTPOOL/$TESTVOL ${RW_VOL_PROP[i]} || \
 			log_fail "${RW_VOL_PROP[i]} is failed to set."

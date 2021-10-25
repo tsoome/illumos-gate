@@ -35,8 +35,8 @@
 #
 # DESCRIPTION:
 #	use 'snapshot -r' to create a snapshot tree, add some files to one child
-#	filesystem, rollback the child filesystem snapshot, verify that the child
-# 	filesystem gets back to the status while taking the snapshot.
+#	filesystem, rollback the child filesystem snapshot, verify that the
+#	child filesystem gets back to the status while taking the snapshot.
 #
 # STRATEGY:
 #	1. Add some files to a target child filesystem
@@ -51,8 +51,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	snapexists $SNAPPOOL && \
-		log_must zfs destroy -r $SNAPPOOL
+	snapexists $SNAPPOOL && destroy_dataset $SNAPPOOL -r
 
 	[[ -e $TESTDIR ]] && \
 		log_must rm -rf $TESTDIR/* > /dev/null 2>&1
@@ -105,7 +104,7 @@ fi
 
 FILE_COUNT=`ls -Al $TESTDIR/before* 2> /dev/null \
     | grep -v "total" | wc -l`
-if (( FILE_COUNT != $COUNT )); then
+if (( FILE_COUNT != COUNT )); then
 	ls -Al $TESTDIR
 	log_fail "$TESTDIR contains $FILE_COUNT before* files(s)."
 fi

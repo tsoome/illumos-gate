@@ -46,9 +46,9 @@ verify_runnable "both"
 function cleanup
 {
 	typeset -i i=0
-	while (( $i < ${#datasets[*]} )); do
+	while (( i < ${#datasets[*]} )); do
 		datasetexists ${datasets[$i]} && \
-			log_must zfs destroy -f ${datasets[$i]}
+			destroy_dataset ${datasets[$i]} -f
 		((i = i + 1))
 	done
 }
@@ -61,7 +61,7 @@ set -A datasets "$TESTPOOL/$TESTFS1" "$TESTPOOL/$LONGFSNAME" "$TESTPOOL/..." \
 log_assert "'zfs create <filesystem>' can create a ZFS filesystem in the namespace."
 
 typeset -i i=0
-while (( $i < ${#datasets[*]} )); do
+while (( i < ${#datasets[*]} )); do
 	log_must zfs create ${datasets[$i]}
 	datasetexists ${datasets[$i]} || \
 		log_fail "zfs create ${datasets[$i]} fail."

@@ -49,10 +49,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	snapexists $SNAPCTR
-	if [[ $? -eq 0 ]]; then
-		log_must zfs destroy $SNAPCTR
-	fi
+	snapexists $SNAPCTR && destroy_dataset $SNAPCTR
 
 	if [[ -e $SNAPDIR1 ]]; then
 		log_must rm -rf $SNAPDIR1 > /dev/null 2>&1
@@ -83,7 +80,7 @@ log_must file_write -o append -f $TESTDIR1/$TESTFILE -b $BLOCKSZ \
     -c $NUM_WRITES -d $DATA
 
 SNAP_FILE_SUM=`sum -r $SNAPDIR1/$TESTFILE | awk '{ print $1 }'`
-if [[ $SNAP_FILE_SUM -ne $FILE_SUM ]]; then
+if (( SNAP_FILE_SUM != FILE_SUM )); then
 	log_fail "Sums do not match, aborting!! ($SNAP_FILE_SUM != $FILE_SUM)"
 fi
 

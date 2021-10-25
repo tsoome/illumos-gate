@@ -63,7 +63,8 @@ DLDS="dl_race"
 function cleanup
 {
 	log_must kill -9 $DLOOP_PID
-	log_must zfs destroy -fR $TESTPOOL/$TESTFS/$DLDS
+	datasetexists $TESTPOOL/$TESTFS/$DLDS && \
+		destroy_dataset $TESTPOOL/$TESTFS/$DLDS -fr
 }
 
 function setup

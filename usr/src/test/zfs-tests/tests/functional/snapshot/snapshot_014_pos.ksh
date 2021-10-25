@@ -51,12 +51,10 @@ function cleanup
 	[[ -e $TESTDIR1 ]] && \
 		log_must rm -rf $TESTDIR1/* > /dev/null 2>&1
 
-	snapexists $SNAPCTR && \
-		log_must zfs destroy $SNAPCTR
+	snapexists $SNAPCTR && destroy_dataset $SNAPCTR
 
 	datasetexists $TESTPOOL/$TESTCTR/$TESTFS1 && \
 		log_must zfs set quota=none $TESTPOOL/$TESTCTR/$TESTFS1
-
 }
 
 log_assert "Verify creating/destroying snapshots do things clean"

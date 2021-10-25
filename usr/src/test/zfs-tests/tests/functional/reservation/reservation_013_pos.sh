@@ -58,7 +58,7 @@ log_assert "Reservation properties preserved across exports and imports"
 function cleanup
 {
 	for obj in $OBJ_LIST; do
-                datasetexists $obj && log_must zfs destroy -f $obj
+                datasetexists $obj && destroy_dataset $obj -f
         done
 
 	log_must zero_reservation $TESTPOOL/$TESTFS
@@ -72,7 +72,7 @@ log_must zfs create $TESTPOOL/$TESTFS1
 log_must zfs create $TESTPOOL/$TESTFS1/$TESTFS2
 
 space_avail=$(get_prop available $TESTPOOL)
-[[ $? -ne 0 ]] && \
+(( $? != 0 )) && \
     log_fail "Unable to get space available property for $TESTPOOL"
 
 ((resv_set = space_avail / 5))

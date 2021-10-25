@@ -30,7 +30,7 @@ verify_runnable "both"
 
 function cleanup
 {
-	log_must zfs destroy -r "$DATASET"
+	datasetexists "$DATASET" && destroy_dataset "$DATASET" -r
 	rm -f "$FILEDIFF"
 }
 

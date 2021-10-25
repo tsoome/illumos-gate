@@ -46,7 +46,8 @@ verify_runnable "global"
 
 function cleanup
 {
-	log_must zfs destroy -rf $TESTPOOL/$TESTFS
+	datasetexists $TESTPOOL/$TESTFS && \
+		destroy_dataset $TESTPOOL/$TESTFS -rf
 	log_must zfs create $TESTPOOL/$TESTFS
 	log_must zfs set mountpoint=$TESTDIR $TESTPOOL/$TESTFS
 }

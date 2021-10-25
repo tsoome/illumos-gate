@@ -38,7 +38,7 @@ function cleanup
 {
 	set_tunable64 zfs_override_estimate_recordsize 8192
 	for ds in $datasets; do
-                datasetexists $ds && zfs destroy -rf $ds
+                datasetexists $ds && destroy_dataset $ds -rf
 	done
 }
 

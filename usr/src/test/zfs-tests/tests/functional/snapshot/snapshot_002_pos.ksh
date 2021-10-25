@@ -55,10 +55,7 @@ function cleanup
 		cd $CWD || log_fail "Could not cd $CWD"
 	fi
 
-        snapexists $SNAPFS
-        if [[ $? -eq 0 ]]; then
-                log_must zfs destroy $SNAPFS
-        fi
+        snapexists $SNAPFS && destroy_dataset $SNAPFS
 
         if [[ -e $SNAPDIR ]]; then
                 log_must rm -rf $SNAPDIR > /dev/null 2>&1
@@ -127,7 +124,7 @@ cd $CWD || log_fail "Could not cd $CWD"
 
 dircmp $TESTDIR/original $TESTDIR/snapshot > /tmp/zfs_snapshot2.$$
 grep different /tmp/zfs_snapshot2.$$ >/dev/null 2>&1
-if [[ $? -ne 1 ]]; then
+if (( $? != 1 )); then
 	log_fail "Directory structures differ."
 fi
 
