@@ -118,13 +118,13 @@ function cleanup_pool
 	log_must rm -rf $BACKDIR/*
 
 	if is_global_zone ; then
-		log_must zfs destroy -Rf $pool
+		log_must_busy zfs destroy -Rf $pool
 	else
 		typeset list=$(zfs list -H -r -t all -o name $pool)
 		for ds in $list ; do
 			if [[ $ds != $pool ]] ; then
 				if datasetexists $ds ; then
-					log_must zfs destroy -Rf $ds
+					log_must_busy zfs destroy -Rf $ds
 				fi
 			fi
 		done

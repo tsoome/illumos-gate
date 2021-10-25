@@ -55,7 +55,7 @@ function cleanup
 		log_must zfs umount -f $TESTDIR2
 
 	datasetexists $TESTPOOL/$TESTFS2 && \
-		log_must zfs destroy $TESTPOOL/$TESTFS2
+		destroy_dataset $TESTPOOL/$TESTFS2
 
 	[[ -d $TESTDIR2 ]] && \
 		log_must rm -rf $TESTDIR2
@@ -97,11 +97,11 @@ log_assert "Verify the u[n]mount [-f] sub-command."
 typeset -i i=0
 typeset -i j=0
 typeset -i k=0
-while [[ $i -lt ${#cmd[*]} ]]; do
+while (( i < ${#cmd[*]} )); do
 	j=0
-	while [[ $j -lt ${#options[*]} ]]; do
+	while (( j < ${#options[*]} )); do
 		k=0
-		while [[ $k -lt ${#dev[*]} ]]; do
+		while (( k < ${#dev[*]} )); do
 			do_unmount "${cmd[i]}" "${options[j]}" \
 			    "${dev[k]}"
 

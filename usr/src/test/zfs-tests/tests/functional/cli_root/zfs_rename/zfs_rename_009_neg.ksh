@@ -60,11 +60,13 @@ function cleanup
 		pool_name=$(echo "$snap" | awk -F/ '{print $1}')
 		if [[ -n $exclude ]]; then
 			echo "$pool_name" | egrep -v "$exclude" > /dev/null 2>&1
-			if [[ $? -eq 0 ]]; then
-				log_must zfs destroy $snap
+			if (( $? == 0 )); then
+				snapexists $snap && \
+					destroy_dataset $snap
 			fi
 		else
-			log_must zfs destroy $snap
+			snapexists $snap && \
+				destroy_dataset $snap
 		fi
 	done
 }

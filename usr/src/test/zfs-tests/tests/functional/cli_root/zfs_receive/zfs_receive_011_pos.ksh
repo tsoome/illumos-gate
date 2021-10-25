@@ -48,8 +48,10 @@ typeset streamfile=/var/tmp/streamfile.$$
 function cleanup
 {
 	log_must rm $streamfile
-	log_must zfs destroy -rf $TESTPOOL/$TESTFS1
-	log_must zfs destroy -rf $TESTPOOL/$TESTFS2
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -rf
+	datasetexists $TESTPOOL/$TESTFS2 && \
+		destroy_dataset -rf $TESTPOOL/$TESTFS2 -rf
 }
 
 log_assert "refquota is properly sent-and-received, regardless of any " \

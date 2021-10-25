@@ -46,10 +46,7 @@
 
 function cleanup
 {
-	if datasetexists $snapfs; then
-		log_must zfs destroy $snapfs
-	fi
-
+	snapexists $snapfs && destroy_dataset $snapfs
 	log_must cleanup_projectquota
 }
 
@@ -83,10 +80,10 @@ log_must eval "zfs projectspace $snapfs >/dev/null 2>&1"
 for fs in "$QFS" "$snapfs"; do
 	log_note "check the project used objects in zfs projectspace $fs"
 	prjused=$(project_obj_count $fs $PRJID1)
-	[[ $prjused -ge $prj_cnt1 ]] ||
+	(( prjused >= prj_cnt1 )) ||
 		log_fail "($PRJID1) expected $prj_cnt1, got $prjused"
 	prjused=$(project_obj_count $fs $PRJID2)
-	[[ $prjused -ge $prj_cnt2 ]] ||
+	(( prjused >= prj_cnt2 )) ||
 		log_fail "($PRJID2) expected $prj_cnt2, got $prjused"
 done
 
@@ -96,15 +93,15 @@ log_must zfs project -s -p $PRJID2 $PRJDIR1/qf*
 sync_pool
 
 prjused=$(project_obj_count $QFS $PRJID1)
-[[ $prjused -lt 10 ]] ||
+(( prjused < 10 )) ||
 	log_fail "expected less than 10 for project $PRJID1, got $prjused"
 
 prjused=$(project_obj_count $snapfs $PRJID1)
-[[ $prjused -ge $prj_cnt1 ]] ||
+(( prjused >= prj_cnt1 )) ||
 	log_fail "expected $prj_cnt1 for $PRJID1 in snapfs, got $prjused"
 
 prjused=$(project_obj_count $QFS $PRJID2)
-[[ $prjused -ge $((prj_cnt1 + prj_cnt2 - 1)) ]] ||
+(( prjused >= (prj_cnt1 + prj_cnt2 - 1) )) ||
 	log_fail "($PRJID2) expected $((prj_cnt1 + prj_cnt2 - 1)), got $prjused"
 
 log_note "file removal"
@@ -112,7 +109,7 @@ log_must rm -rf $PRJDIR1
 sync_pool
 
 prjused=$(project_obj_count $QFS $PRJID1)
-[[ $prjused -lt 10 ]] || log_fail "expected less than 10 for $PRJID1, " \
+(( prjused < 10 )) || log_fail "expected less than 10 for $PRJID1, " \
 	"got $prjused"
 
 cleanup

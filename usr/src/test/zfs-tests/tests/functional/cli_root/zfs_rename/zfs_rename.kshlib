@@ -93,27 +93,24 @@ function cleanup
                 if [[ ${dataset[i]}-new != *@* ]] ; then
                         zfs rename ${dataset[i]}-new ${dataset[i]}
                         if [[ $? -ne 0 ]]; then
-                                typeset newfs=${dataset[i]}-new
-                                typeset oldfs=${dataset[i]}
-                                typeset mntp=$(get_prop mountpoint  $newfs)
-                                log_must zfs destroy -f $newfs
-                                log_must zfs create -p $oldfs
-                                log_must zfs set mountpoint=$mntp $oldfs
+				typeset newfs=${dataset[i]}-new
+				typeset oldfs=${dataset[i]}
+				typeset mntp=$(get_prop mountpoint $newfs)
+				destroy_dataset $newfs -f
+				log_must zfs create -p $oldfs
+				log_must zfs set mountpoint=$mntp $oldfs
                         fi
                 else
-                        log_must zfs destroy -fR ${dataset[i]}-new
+                        destroy_dataset ${dataset[i]}-new -fR
                 fi
 
                 ((i = i + 1))
 	done
 
-	if snapexists $TESTPOOL/$TESTFS@snapshot; then
-		log_must zfs destroy -fR $TESTPOOL/$TESTFS@snapshot
-	fi
-
-	if datasetexists $TESTPOOL/$RECVFS; then
-		log_must zfs destroy -r $TESTPOOL/$RECVFS
-	fi
+	snapexists $TESTPOOL/$TESTFS@snapshot && \
+		destroy_dataset $TESTPOOL/$TESTFS@snapshot -fR
+	datasetexists $TESTPOOL/$RECVFS && \
+		destroy_dataset $TESTPOOL/$RECVFS -r
 }
 
 function cmp_data #<$1 src data, $2 tgt data>

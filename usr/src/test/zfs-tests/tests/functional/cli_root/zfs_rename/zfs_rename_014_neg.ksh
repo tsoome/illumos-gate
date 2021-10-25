@@ -73,9 +73,12 @@ dsB15A47B=$(printf 'b/%.0s' {1..15})$(printf 'a/%.0s' {1..47})"b"
 
 function nesting_cleanup
 {
-	log_must zfs destroy -fR $TESTPOOL/$dsA01
-	log_must zfs destroy -fR $TESTPOOL/$dsB01
-	log_must zfs destroy -fR $TESTPOOL/$dsC01
+	datasetexists $TESTPOOL/$dsA01 && \
+		destroy_dataset $TESTPOOL/$dsA01 -fR
+	datasetexists $TESTPOOL/$dsB01 && \
+		destroy_dataset $TESTPOOL/$dsB01 -fR
+	datasetexists $TESTPOOL/$dsC01 && \
+		destroy_dataset $TESTPOOL/$dsC01 -fR
 
 	# If the test fails after increasing the limit and
 	# before resetting it, it will be left at the modified

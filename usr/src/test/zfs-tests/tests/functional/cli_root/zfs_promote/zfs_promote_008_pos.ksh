@@ -49,7 +49,7 @@ function cleanup
 		log_must zfs promote $vol
 	fi
 
-	destroy_dataset "$snap" "-rR"
+	snapexists $snap && destroy_dataset "$snap" "-rR"
 }
 
 log_assert "'zfs promote' can promote a volume clone."

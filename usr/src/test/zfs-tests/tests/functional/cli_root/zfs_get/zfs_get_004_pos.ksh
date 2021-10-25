@@ -48,10 +48,10 @@ function cleanup
 	[[ -e $propfile ]] && rm -f $propfile
 
 	datasetexists $clone  && \
-		log_must zfs destroy $clone
+		destroy_dataset $clone
 	for snap in $fssnap $volsnap ; do
 		snapexists $snap && \
-			log_must zfs destroy $snap
+			destroy_dataset $snap
 	done
 
 	if [[ -n $globalzone ]] ; then
@@ -65,7 +65,7 @@ function cleanup
 	else
 		for fs in $TESTPOOL/$TESTFS1 $TESTPOOL/$TESTFS2 $TESTPOOL/$TESTFS3; do
 			datasetexists $fs && \
-				log_must zfs destroy -rf $fs
+				destroy_dataset $fs -rf
 		done
 	fi
 }
@@ -108,7 +108,7 @@ allds="$fs $clone $fssnap $volsnap"
 #create pool and datasets to guarantee testing under multiple pools and datasets.
 file=$TESTDIR1/poolfile
 typeset FILESIZE=$MINVDEVSIZE
-(( DFILESIZE = $FILESIZE * 2 ))
+(( DFILESIZE = FILESIZE * 2 ))
 typeset -i VOLSIZE=10485760
 availspace=$(get_prop available $TESTPOOL)
 typeset -i i=0

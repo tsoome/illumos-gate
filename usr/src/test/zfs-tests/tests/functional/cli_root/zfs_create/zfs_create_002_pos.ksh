@@ -50,9 +50,8 @@ function cleanup
 {
 	typeset -i j=0
 	while (( j < ${#size[*]} )); do
-		if datasetexists $TESTPOOL/${TESTVOL}${size[j]}; then
-			log_must zfs destroy $TESTPOOL/${TESTVOL}${size[j]}
-		fi
+		datasetexists $TESTPOOL/${TESTVOL}${size[j]} && \
+			destroy_dataset $TESTPOOL/${TESTVOL}${size[j]}
 		((j = j + 1))
 	done
 }

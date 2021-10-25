@@ -32,10 +32,10 @@ TESTCHILD3=$TESTCHILD-3
 
 function cleanup
 {
-	datasetexists $TESTCHILD && log_must zfs destroy $TESTCHILD
-	datasetexists $TESTCHILD1 && log_must zfs destroy $TESTCHILD1
-	datasetexists $TESTCHILD2 && log_must zfs destroy $TESTCHILD2
-	datasetexists $TESTCHILD3 && log_must zfs destroy $TESTCHILD3
+	datasetexists $TESTCHILD && destroy_dataset $TESTCHILD
+	datasetexists $TESTCHILD1 && destroy_dataset $TESTCHILD1
+	datasetexists $TESTCHILD2 && destroy_dataset $TESTCHILD2
+	datasetexists $TESTCHILD3 && destroy_dataset $TESTCHILD3
 }
 
 log_onexit cleanup

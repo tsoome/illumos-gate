@@ -49,7 +49,7 @@ function cleanup
 {
 	for dataset in $all_datasets; do
 		snapexists ${dataset}@snap && \
-			log_must zfs destroy ${dataset}@snap
+			destroy_dataset ${dataset}@snap
 	done
 }
 
@@ -103,7 +103,7 @@ for dataset in $all_datasets; do
 			set_n_check_prop "$value" "snapdir" \
 				"$dataset"
 			verify_snapdir_visible $dataset $value
-			[[ $? -eq 0 ]] || \
+			(( $? == 0 )) || \
 				log_fail "$dataset/.zfs is not $value as expect."
 		fi
 	done

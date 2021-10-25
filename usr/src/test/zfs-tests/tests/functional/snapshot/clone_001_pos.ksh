@@ -39,12 +39,12 @@
 #	from the snapshot and verify new files can be written.
 #
 # STRATEGY:
-# 	1. Create snapshot use 3 combination:
+#	1. Create snapshot use 3 combination:
 #		- Regular filesystem
 #		- Regular volume
 #		- Filesystem upon volume
-# 	2. Clone a new file system from the snapshot
-# 	3. Verify the cloned file system is writable
+#	2. Clone a new file system from the snapshot
+#	3. Verify the cloned file system is writable
 #
 
 verify_runnable "both"
@@ -75,7 +75,7 @@ function cleanup_all
 	i=0
 	while (( i < ${#args[*]} )); do
 		snapexists ${args[i]} && \
-			log_must zfs destroy -Rf ${args[i]}
+			destroy_dataset ${args[i]} -Rf
 
 		[[ -d ${args[i+3]} ]] && \
 			log_must rm -rf ${args[i+3]}
@@ -87,7 +87,7 @@ function cleanup_all
 	done
 
 	datasetexists $TESTPOOL1/$TESTFS  && \
-		log_must zfs destroy -f $TESTPOOL1/$TESTFS
+		destroy_dataset $TESTPOOL1/$TESTFS -f
 
 	destroy_pool $TESTPOOL1
 
@@ -112,7 +112,7 @@ typeset -i i=0
 for mtpt in $TESTDIR $TESTDIR2 ; do
 	log_note "Populate the $mtpt directory (prior to snapshot)"
 	typeset -i j=1
-	while [[ $j -le $COUNT ]]; do
+	while (( j <= COUNT )); do
 		log_must file_write -o create -f $mtpt/before_file$j \
 			-b $BLOCKSZ -c $NUM_WRITES -d $j
 
@@ -135,21 +135,21 @@ while (( i < ${#args[*]} )); do
 
 		FILE_COUNT=`ls -Al ${args[i+3]} | grep -v "total" \
 		    | grep -v "\.zfs" | wc -l`
-		if [[ $FILE_COUNT -ne $COUNT ]]; then
+		if (( FILE_COUNT != COUNT )); then
 			ls -Al ${args[i+3]}
 			log_fail "AFTER: ${args[i+3]} contains $FILE_COUNT files(s)."
 		fi
 
 		log_note "Verify the ${args[i+3]} directory is writable"
 		j=1
-		while [[ $j -le $COUNT ]]; do
+		while (( j <= COUNT )); do
 			log_must file_write -o create -f ${args[i+3]}/after_file$j \
 			-b $BLOCKSZ -c $NUM_WRITES -d $j
 			(( j = j + 1 ))
 		done
 
 		FILE_COUNT=`ls -Al ${args[i+3]}/after* | grep -v "total" | wc -l`
-		if [[ $FILE_COUNT -ne $COUNT ]]; then
+		if (( FILE_COUNT != COUNT )); then
 			ls -Al ${args[i+3]}
 			log_fail "${args[i+3]} contains $FILE_COUNT after* files(s)."
 		fi

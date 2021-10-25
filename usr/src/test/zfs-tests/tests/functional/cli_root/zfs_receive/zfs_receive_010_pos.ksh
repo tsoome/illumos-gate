@@ -76,7 +76,8 @@ function create_pair
 
 function cleanup
 {
-	zfs destroy -Rf $TESTPOOL/$TESTFS/base
+	datasetexists $TESTPOOL/$TESTFS/base && \
+	destroy_dataset $TESTPOOL/$TESTFS/base -Rf
 	rm /tmp/zr010p*
 }
 
@@ -156,7 +157,7 @@ log_must zfs send $fs2@s1 > /tmp/zr010p2
 cat /tmp/zr010p | log_must zfs receive -o origin=$fs@s1 $rfs
 size=$(get_prop used $rfs)
 size2=$(get_prop used $fs)
-if [[ $size -ge $(($size2 / 10)) ]] then
+if (( size >= (size2 / 10) )) then
         log_fail "nop-write failure; expected usage less than "\
 		"$(($size2 / 10)), but is using $size"
 fi

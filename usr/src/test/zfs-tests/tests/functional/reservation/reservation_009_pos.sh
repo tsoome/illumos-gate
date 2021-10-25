@@ -58,7 +58,8 @@ function cleanup
 {
 	log_must rm -rf $TESTDIR/$TESTFILE1
 	log_must rm -rf $TESTDIR/$TESTFILE2
-	log_must zfs destroy -f $TESTPOOL/$TESTFS1
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -f
 }
 
 log_onexit cleanup
@@ -87,7 +88,7 @@ write_count=`expr $fill_size / $BLOCK_SIZE`
 file_write -o create -f $TESTDIR/$TESTFILE1 -b $BLOCK_SIZE \
         -c $write_count -d 0
 ret=$?
-if (($ret != $ENOSPC)); then
+if ((ret != ENOSPC)); then
 	log_fail "Did not get ENOSPC as expected (got $ret)."
 fi
 

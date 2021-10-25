@@ -46,9 +46,8 @@ verify_runnable "both"
 
 function cleanup
 {
-	if datasetexists $TESTPOOL/$TESTFS1 ; then
-		log_must zfs destroy -f $TESTPOOL/$TESTFS1
-	fi
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -f
 }
 
 log_onexit cleanup
@@ -92,7 +91,7 @@ set -A args "ab" "-?" "-cV" "-Vc" "-c -V" "c" "V" "--c" "-e" "-s" \
 log_assert "'zfs create' should return an error with badly-formed parameters."
 
 typeset -i i=0
-while [[ $i -lt ${#args[*]} ]]; do
+while (( i < ${#args[*]} )); do
 	log_mustnot zfs create ${args[i]} $TESTPOOL/$TESTFS1
 	log_mustnot zfs create -p ${args[i]} $TESTPOOL/$TESTFS1
 	((i = i + 1))

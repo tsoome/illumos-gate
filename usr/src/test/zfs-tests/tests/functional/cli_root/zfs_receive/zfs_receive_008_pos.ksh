@@ -46,10 +46,13 @@
 #
 function cleanup
 {
-	for dset in $rst_snap $rst_fs $orig_snap; do
-		if datasetexists $dset; then
-			log_must zfs destroy -fr $dset
-		fi
+	for dset in $rst_snap $orig_snap; do
+		snapexists $dset && destroy_dataset $dset -rf
+	done
+
+	for dset in $rst_fs; do
+		datasetexists $dset && \
+			destroy_dataset $dset -rf
 	done
 
 	for file in $fbackup $mnt_file $tmp_out; do
@@ -59,7 +62,7 @@ function cleanup
 	done
 
 	if datasetexists $TESTPOOL/$TESTFS; then
-		log_must zfs destroy -Rf $TESTPOOL/$TESTFS
+		destroy_dataset $TESTPOOL/$TESTFS -Rf
 		log_must zfs create $TESTPOOL/$TESTFS
 		log_must zfs set mountpoint=$TESTDIR $TESTPOOL/$TESTFS
 	fi
@@ -88,7 +91,7 @@ for orig_fs in $datasets ; do
 
 	typeset mntpnt
 	mntpnt=$(get_prop mountpoint $orig_fs)
-	if [[ $? -ne 0 ]] ; then
+	if (( $? != 0 )) ; then
 		log_fail "get_prop mountpoint $orig_fs failed"
 	fi
 

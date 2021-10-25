@@ -38,8 +38,8 @@ verify_runnable "both"
 
 function cleanup
 {
-	zfs destroy -rf $TESTPOOL/fs
-	zfs destroy -rf $TESTPOOL/recvfs
+	datasetexists $TESTPOOL/fs && destroy_dataset $TESTPOOL/fs -rf
+	datasetexists $TESTPOOL/recvfs && destroy_dataset $TESTPOOL/recvfs -rf
 	rm $streamfile
 	rm $vdev
 	zpool destroy tmp_pool

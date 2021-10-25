@@ -49,7 +49,7 @@ set -A sharesmb_prop "off" "on"
 
 function cleanup
 {
-	log_must zfs destroy -rR $CS_FS
+	datasetexists $CS_FS && destroy_dataset $CS_FS -rR
 }
 
 function assert_unmounted

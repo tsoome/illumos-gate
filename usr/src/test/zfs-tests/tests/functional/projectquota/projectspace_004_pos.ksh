@@ -45,10 +45,7 @@
 
 function cleanup
 {
-	if datasetexists $snap_fs; then
-		log_must zfs destroy $snap_fs
-	fi
-
+	snapexists $snap_fs && destroy_dataset $snap_fs
 	log_must cleanup_projectquota
 }
 
@@ -66,7 +63,7 @@ log_must user_run $PUSER mkfile 50m $PRJDIR/qf
 sync_pool
 
 total=$(df -b $PRJDIR | tail -n 1 | awk '{ print $2 }')
-[[ $total -ge 9590000 && $total -le 9598900 ]] || \
+(( total >= 9590000 && total <= 9598900 )) || \
     log_fail "expect '9590000-9598900' resource, but got '$total'"
 
 # -i invalid on illumos

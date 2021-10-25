@@ -47,12 +47,8 @@ verify_runnable "global"
 
 function cleanup
 {
-	if datasetexists bpool ; then
-		log_must zpool destroy -f bpool
-	fi
-	if datasetexists spool ; then
-		log_must zpool destroy -f spool
-	fi
+	datasetexists bpool && log_must zpool destroy -f bpool
+	datasetexists spool && log_must zpool destroy -f spool
 }
 
 log_assert "Verify zfs receive can handle out of space correctly."

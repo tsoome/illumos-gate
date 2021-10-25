@@ -46,9 +46,9 @@ verify_runnable "both"
 function cleanup
 {
 	datasetexists $TESTPOOL/$TESTFS2 && \
-		log_must zfs destroy -r $TESTPOOL/$TESTFS2
+		destroy_dataset $TESTPOOL/$TESTFS2 -r
 	datasetexists $TESTPOOL/recv && \
-		log_must zfs destroy -r $TESTPOOL/recv
+		destroy_dataset $TESTPOOL/recv -r
 	[[ -f $keyfile ]] && log_must rm $keyfile
 	[[ -f $sendfile ]] && log_must rm $sendfile
 }
@@ -92,7 +92,7 @@ log_must zfs set xattr=on $TESTPOOL/$TESTFS2
 # log_must zfs set compression=on xattr=sa $TESTPOOL/$TESTFS2
 # log_must touch /$TESTPOOL/$TESTFS2/attrs
 # log_must eval "python -c 'print \"a\" * 4096' | \
-# 	attr -s bigval /$TESTPOOL/$TESTFS2/attrs"
+#	attr -s bigval /$TESTPOOL/$TESTFS2/attrs"
 # log_must zfs set compression=off xattr=on $TESTPOOL/$TESTFS2
 
 log_must zfs snapshot $TESTPOOL/$TESTFS2@snap1

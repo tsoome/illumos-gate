@@ -66,7 +66,7 @@ function cleanup
 		awk '{print $1}' | grep / ); do
 		found=false
 		i=0
-		while (( $i < ${#existed_fs[*]} )); do
+		while (( i < ${#existed_fs[*]} )); do
 			if [[ $dset == ${existed_fs[i]} ]]; then
 				found=true
 				break
@@ -78,7 +78,8 @@ function cleanup
 		# new fs created during the test, cleanup it
 		#
 		if [[ $found == "false" ]]; then
-			log_must zfs destroy -f $dset
+			datasetexists $dset && \
+				destroy_dataset $dset -f
 		fi
 	done
 }
@@ -126,7 +127,7 @@ while (( i < ${#options[*]} )); do
 	done
 
 	j=0
-	while (( $j < ${#RW_VOL_PROP[*]} )); do
+	while (( j < ${#RW_VOL_PROP[*]} )); do
 		log_mustnot zfs create ${options[$i]} -o ${RW_VOL_PROP[j]} \
 		    -o ${RW_VOL_PROP[j]} -V $VOLSIZE $TESTPOOL/$TESTVOL1
 		log_mustnot zfs create -p ${options[$i]} -o ${RW_VOL_PROP[j]} \
@@ -135,7 +136,7 @@ while (( i < ${#options[*]} )); do
 	done
 
 	j=0
-	while (( $j < ${#FS_ONLY_PROP[*]} )); do
+	while (( j < ${#FS_ONLY_PROP[*]} )); do
 		log_mustnot zfs create ${options[$i]} -o ${FS_ONLY_PROP[j]} \
 		    -V $VOLSIZE $TESTPOOL/$TESTVOL1
 		log_mustnot zfs create -p ${options[$i]} -o ${FS_ONLY_PROP[j]} \

@@ -36,7 +36,7 @@
 function cleanup
 {
 	for ds in $datasets; do
-		datasetexists $ds && log_must zfs destroy -R $TESTPOOL/$TESTFS1
+		datasetexists $ds && destroy_dataset $TESTPOOL/$TESTFS1 -R
 	done
 }
 function get_prop_mb
@@ -85,7 +85,7 @@ log_note "verify written property statistics for snapshots"
 blocks=0
 for i in 1 2 3; do
 	written=$(get_prop written $TESTPOOL/$TESTFS1@snap$i)
-	if [[ $blocks -eq 0 ]]; then
+	if (( blocks == 0 )); then
 		# Written value for the frist non-clone snapshot is
 		# expected to be equal to the referenced value.
 		expected_written=$( \
@@ -119,7 +119,7 @@ snap3_size=0
 log_must sync
 written=$(get_prop written $TESTPOOL/$TESTFS1)
 writtenat3=$(get_prop written@snap3 $TESTPOOL/$TESTFS1)
-[[ $written -eq $writtenat3 ]] || \
+(( written == writtenat3 )) || \
     log_fail "Written and written@ dont match $written $writtenat3"
 within_percent $written $before_written 0.1 && \
     log_fail "Unexpected written value after delete $written $before_written"
@@ -145,7 +145,7 @@ writtenat2=$(get_prop written@snap2 $TESTPOOL/$TESTFS1)
 writtenat3=$(get_prop written@snap3 $TESTPOOL/$TESTFS1)
 ((snap3_size = snap3_size + blocks))
 ((expected_writtenat = snap3_size * mb_block))
-[[ $written -eq $writtenat3 ]] || \
+(( written == writtenat3 )) || \
     log_fail "Unexpected_written value"
 within_percent $writtenat3 $expected_writtenat 99.0 || \
     log_fail "Unexpected_written@ value for snap3"
@@ -164,7 +164,7 @@ log_must zfs clone $TESTPOOL/$TESTFS1@snap1 $TESTPOOL/$TESTFS1/snap1.clone
 log_must dd if=/dev/urandom of=/$TESTPOOL/$TESTFS1/snap1.clone/testfile bs=1M \
     count=40
 after_clone=$(get_prop written $TESTPOOL/$TESTFS1)
-[[ $before_clone -eq $after_clone ]] || \
+(( before_clone == after_clone )) || \
     log_fail "unexpected written for clone $before_clone $after_clone"
 
 log_note "deleted snapshot"
@@ -177,7 +177,7 @@ log_mustnot snapexists $TESTPOOL/$TESTFS1@snap2
 log_must sync
 written1=$(get_prop_mb written@snap1 $TESTPOOL/$TESTFS1)
 written3=$(get_prop_mb written@snap3 $TESTPOOL/$TESTFS1)
-[[ $before_written1 -eq $written1 && $before_written3 -eq $written3 ]] || \
+(( before_written1 == written1 && before_written3 == written3 )) || \
     log_fail "unexpected written values $before_written1 $written1"
 typeset -l expected_written3
 ((expected_written3 = snap_before_written2 + snap_before_written3))
@@ -189,7 +189,7 @@ log_must zfs destroy $TESTPOOL/$TESTFS1@snap3
 log_mustnot snapexists $TESTPOOL/$TESTFS1@snap3
 written=$(get_prop written $TESTPOOL/$TESTFS1)
 writtenat1=$(get_prop written@snap1 $TESTPOOL/$TESTFS1)
-[[ $written -ne $writtenat1 ]] && \
+(( written != writtenat1 )) && \
     log_fail "Unexpected last snapshot written value"
 
 log_note "verify written@ property for recursive datasets"
@@ -197,7 +197,7 @@ blocks=10
 log_must zfs snapshot -r $TESTPOOL/$TESTFS1@now
 for ds in $datasets; do
 	writtenat=$(get_prop written@now $ds)
-	[[ $writtenat -ne 0 ]] && \
+	(( writtenat != 0 )) && \
 	    log_fail "Unexpected written@ value"
 	log_must dd if=/dev/urandom of=/$ds/testfile bs=1M count=$blocks
 	log_must sync

@@ -55,8 +55,8 @@ verify_runnable "both"
 
 function cleanup
 {
-	datasetexists $TESTPOOL/128k && log_must zfs destroy $TESTPOOL/128k
-	datasetexists $TESTPOOL/1m && log_must zfs destroy $TESTPOOL/1m
+	datasetexists $TESTPOOL/128k && destroy_dataset $TESTPOOL/128k
+	datasetexists $TESTPOOL/1m && destroy_dataset $TESTPOOL/1m
 	cleanup_pool $POOL2
 	destroy_pool $POOL3
 }
@@ -75,9 +75,9 @@ function check_recsize
 	typeset read_file_bs=$(stat $file | sed -n \
 	    's/.*IO Block: \([0-9]*\).*/\1/p')
 
-	[[ $read_recsize = $expected_recsize ]] || log_fail \
+	[[ $read_recsize == $expected_recsize ]] || log_fail \
 	    "read_recsize: $read_recsize expected_recsize: $expected_recsize"
-	[[ $read_file_bs = $expected_file_bs ]] || log_fail \
+	[[ $read_file_bs == $expected_file_bs ]] || log_fail \
 	    "read_file_bs: $read_file_bs expected_file_bs: $expected_file_bs"
 }
 
@@ -115,7 +115,7 @@ function check
 		esac
 	done
 	shift $(($OPTIND - 1))
-	[[ ${#flags} -eq 1 ]] && flags=''
+	(( ${#flags} == 1 )) && flags=''
 
 	typeset recsize=$1
 	typeset verify=$2
@@ -141,12 +141,12 @@ function check
 	# verification would fail.
 	#
 	typeset do_size_test=true
-	[[ $recsize = $large && $flags =~ 'c' && ! $flags =~ 'L' ]] && \
+	[[ $recsize == $large && $flags =~ 'c' && ! $flags =~ 'L' ]] && \
 	    do_size_test=false
 
 	$do_size_test && verify_stream_size $stream $send_ds
 
-	if [[ $verify = "log_mustnot" ]]; then
+	if [[ $verify == "log_mustnot" ]]; then
 		datasetnonexists $recv_ds || log_fail "$recv_ds shouldn't exist"
 		return
 	fi

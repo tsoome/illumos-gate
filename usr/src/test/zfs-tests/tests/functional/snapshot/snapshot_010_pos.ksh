@@ -49,15 +49,13 @@ function cleanup
 {
 	typeset snap
 
-	datasetexists $ctrvol && \
-		log_must zfs destroy -f $ctrvol
+	datasetexists $ctrvol && destroy_dataset $ctrvol -f
 
 	for snap in $ctrfs@$TESTSNAP1 \
 		$snappool $snapvol $snapctr $snapctrvol \
 		$snapctrclone $snapctrfs
 	do
-		snapexists $snap && \
-			log_must zfs destroy -rf $snap
+		snapexists $snap && destroy_dataset $snap -rf
 	done
 
 }

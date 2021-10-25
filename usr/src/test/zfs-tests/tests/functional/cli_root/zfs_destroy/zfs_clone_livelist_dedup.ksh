@@ -33,7 +33,8 @@
 
 function cleanup
 {
-	log_must zfs destroy -Rf $TESTPOOL/$TESTFS1
+	datasetexists $TESTPOOL/$TESTFS1 && \
+		destroy_dataset $TESTPOOL/$TESTFS1 -Rf
 	# Reset the minimum percent shared to 75
 	set_tunable32 zfs_livelist_min_percent_shared $ORIGINAL_MIN_SHARED
 }

@@ -49,9 +49,7 @@ function cleanup
 	typeset ds
 
 	for ds in $fs1 $fs2 $vol1 $vol2; do
-		if datasetexists $ds; then
-			log_must zfs destroy $ds
-		fi
+		datasetexists $ds && destroy_dataset $ds
 	done
 }
 

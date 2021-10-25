@@ -38,9 +38,9 @@ function local_cleanup
 {
 	typeset -i i=1
 	for ds in $datasets; do
-                datasetexists $ds/$TESTCLONE.$i && \
-		    log_must zfs destroy -rf $ds/$TESTCLONE.$i
-                datasetexists $ds && log_must zfs destroy -Rf $ds
+		datasetexists $ds/$TESTCLONE.$i && \
+		    destroy_dataset $ds/$TESTCLONE.$i -rf
+		datasetexists $ds && destroy_dataset $ds -Rf
 		((i=i+1))
 	done
 }
@@ -91,12 +91,12 @@ function verify_clones
 			clones=( "${clones[@]}" "$token" )
 		done
 		IFS=$save
-		[[ ${#clones[*]} -ne $no_clones ]] && \
+		(( ${#clones[*]} != no_clones )) && \
 		    log_fail "$snapshot has unexpected number of clones" \
 		        " ${#clones[*]}"
 		expected_clone=""
 		unexpected_clone=""
-		if [[ $unexpected -eq 1 ]]; then
+		if (( unexpected == 1 )); then
 			for fs in $datasets; do
 				if [[ $fs == $ds ]]; then
 					if [[ -z $clone_snap ]]; then
@@ -226,7 +226,7 @@ while((i < 7)); do
 done
 clone_list=$(zfs list -o clones $fs@snap)
 char_count=$(echo "$clone_list" | tail -1 | wc | awk '{print $3}')
-[[ $char_count -eq 1024 ]] || \
+(( char_count == 1024 )) || \
     log_fail "Clone list not truncated correctly. Unexpected character count" \
         "$char_count"
 

@@ -30,9 +30,9 @@
 function cleanup
 {
 	datasetexists $TESTPOOL/$TESTFS1 && \
-	    log_must zfs destroy -R $TESTPOOL/$TESTFS1
+	    destroy_dataset $TESTPOOL/$TESTFS1 -R
 	datasetexists $TESTPOOL/$TESTVOL && \
-	    log_must zfs destroy -Rf $TESTPOOL/$TESTVOL
+	    destroy_dataset $TESTPOOL/$TESTVOL -Rf
 }
 
 function setup_snapshots

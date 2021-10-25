@@ -50,8 +50,7 @@ verify_runnable "both"
 function cleanup
 {
 	for obj in $ctr2 $ctr1 $ctr; do
-		datasetexists $obj && \
-			log_must zfs destroy -Rf $obj
+		datasetexists $obj && destroy_dataset $obj -Rf
 	done
 
 	for mntp in $TESTDIR1 $TESTDIR2; do

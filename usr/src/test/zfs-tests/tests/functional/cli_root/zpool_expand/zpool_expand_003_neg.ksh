@@ -55,9 +55,8 @@ function cleanup
         fi
 
 	for i in 1 2 3; do
-		if datasetexists $VFS/vol$i; then
-			log_must zfs destroy $VFS/vol$i
-		fi
+		datasetexists $VFS/vol$i && \
+			destroy_dataset $VFS/vol$i
 	done
 }
 
@@ -93,7 +92,7 @@ for type in " " mirror raidz raidz2; do
 	zpool history -il $TESTPOOL1 | grep "pool '$TESTPOOL1' size:" | \
 	    grep "vdev online" >/dev/null 2>&1
 
-	if [[ $? -eq 0 ]]; then
+	if (( $? == 0 )); then
 		log_fail "pool $TESTPOOL1 is not autoexpand after LUN " \
 		    "expansion"
 	fi

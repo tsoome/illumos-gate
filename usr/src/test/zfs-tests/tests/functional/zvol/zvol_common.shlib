@@ -57,9 +57,8 @@ function default_zvol_setup # disk_device volume_size
 #
 function default_zvol_cleanup
 {
-        if datasetexists $TESTPOOL/$TESTVOL ; then
-		log_must zfs destroy $TESTPOOL/$TESTVOL
-	fi
+        datasetexists $TESTPOOL/$TESTVOL && \
+		destroy_dataset $TESTPOOL/$TESTVOL
 
         destroy_pool $TESTPOOL
 }

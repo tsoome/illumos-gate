@@ -54,7 +54,7 @@ function cleanup
 		fi
 		rm -f $TMP_FILE
 		log_must umount $mntp
-		zfs destroy $vol_name
+		destroy_dataset $vol_name
 	fi
 
 	if poolexists $TESTPOOL; then

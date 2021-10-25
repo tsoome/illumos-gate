@@ -51,7 +51,7 @@ function cleanup
 		destroy_pool "$TESTPOOL"
 
 	datasetexists $TESTPOOL1/$TESTVOL && \
-		log_must zfs destroy -f $TESTPOOL1/$TESTVOL
+		destroy_dataset $TESTPOOL1/$TESTVOL -f
 	poolexists $TESTPOOL1 && \
 		destroy_pool "$TESTPOOL1"
 

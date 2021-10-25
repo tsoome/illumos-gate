@@ -50,7 +50,7 @@ function cleanup
 
 	for snap in $init_snap $inc_snap $init_topsnap $inc_topsnap ; do
 		snapexists $snap && \
-			log_must zfs destroy -Rf $snap
+			destroy_dataset $snap -Rf
 	done
 
 	for bkup in $full_bkup $inc_bkup $full_topbkup $inc_topbkup; do

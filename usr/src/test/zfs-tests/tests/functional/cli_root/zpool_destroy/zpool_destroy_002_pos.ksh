@@ -57,9 +57,9 @@ function cleanup
 	fi
 
 	typeset -i i=0
-	while (( $i < ${#datasets[*]} )); do
+	while (( i < ${#datasets[*]} )); do
 		datasetexists ${datasets[i]} && \
-			log_must zfs destroy ${datasets[i]}
+			destroy_dataset ${datasets[i]}
 		(( i = i + 1 ))
 	done
 
@@ -84,7 +84,7 @@ log_must zfs create $TESTPOOL/$TESTCTR/$TESTFS1
 log_must zfs create -V $VOLSIZE $TESTPOOL/$TESTVOL
 
 typeset -i i=0
-while (( $i < ${#datasets[*]} )); do
+while (( i < ${#datasets[*]} )); do
 	datasetexists "${datasets[i]}" || \
 		log_fail "Create datasets fail."
 	((i = i + 1))

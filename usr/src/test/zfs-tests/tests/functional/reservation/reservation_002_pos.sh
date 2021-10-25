@@ -54,7 +54,7 @@ verify_runnable "both"
 function cleanup
 {
 	for obj in $OBJ_LIST; do
-		datasetexists $obj && log_must zfs destroy -f $obj
+		datasetexists $obj && destroy_dataset $obj -f
 	done
 
 	log_must zero_reservation $TESTPOOL/$TESTFS
@@ -98,9 +98,9 @@ for obj in $TESTPOOL/$TESTFS $OBJ_LIST ; do
 	log_must zero_reservation $obj
 	log_mustnot zfs set reservation=$resv_size_set $obj
 
-	resv_size_get=`get_prop reservation $obj`
+	resv_size_get=$(get_prop reservation $obj)
 
-	if (($resv_size_get != 0)); then
+	if ((resv_size_get != 0)); then
 		log_fail "Reservation value non-zero ($resv_size_get)"
 	fi
 done
