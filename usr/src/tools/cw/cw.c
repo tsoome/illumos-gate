@@ -37,7 +37,7 @@
  */
 
 /* If you modify this file, you must increment CW_VERSION */
-#define	CW_VERSION	"7.1"
+#define	CW_VERSION	"8.1"
 
 /*
  * -#		Verbose mode
@@ -284,6 +284,7 @@ struct aelist {
 typedef enum {
 	GNU,
 	SUN,
+	CLANG,
 	SMATCH
 } compiler_style_t;
 
@@ -464,12 +465,17 @@ warnings(struct aelist *h)
 }
 
 static void
-optim_disable(struct aelist *h, int level)
+optim_disable(cw_ictx_t *ctx, int level)
 {
-	if (level >= 2) {
-		newae(h, "-fno-strict-aliasing");
-		newae(h, "-fno-unit-at-a-time");
-		newae(h, "-fno-optimize-sibling-calls");
+	/*
+	 * For gcc-3.4.x at -O2 we
+	 * need to disable optimizations
+	 * that break ON.
+	 */
+	if (ctx->i_compiler->c_style == GNU && level >= 2) {
+		newae(ctx->i_ae, "-fno-strict-aliasing");
+		newae(ctx->i_ae, "-fno-unit-at-a-time");
+		newae(ctx->i_ae, "-fno-optimize-sibling-calls");
 	}
 }
 
@@ -1081,12 +1087,7 @@ do_gcc(cw_ictx_t *ctx)
 					if (level > 5)
 						error(arg);
 					if (level >= 2) {
-						/*
-						 * For gcc-3.4.x at -O2 we
-						 * need to disable optimizations
-						 * that break ON.
-						 */
-						optim_disable(ctx->i_ae, level);
+						optim_disable(ctx, level);
 						/*
 						 * limit -xO3 to -O2 as well.
 						 */
@@ -1286,6 +1287,608 @@ do_smatch(cw_ictx_t *ctx)
 }
 
 static void
+do_clang(cw_ictx_t *ctx)
+{
+	int c;
+	int nolibc = 0;
+	int in_output = 0, seen_o = 0, c_files = 0;
+	cw_op_t op = CW_O_LINK;
+	char *model = NULL;
+	char *nameflag;
+	int mflag = 0;
+
+	if (ctx->i_flags & CW_F_PROG) {
+		newae(ctx->i_ae, "--version");
+		return;
+	}
+
+	newae(ctx->i_ae, "-fno-builtin");
+	newae(ctx->i_ae, "-fno-asm");
+	newae(ctx->i_ae, "-fdiagnostics-show-option");
+	newae(ctx->i_ae, "-nodefaultlibs");
+
+	/*
+	 * This is needed because 'u' is defined
+	 * under a conditional on 'sun'.  Should
+	 * probably just remove the conditional,
+	 * or make it be dependent on '__sun'.
+	 *
+	 * -Dunix is also missing in enhanced ANSI mode
+	 */
+	newae(ctx->i_ae, "-D__sun");
+
+	if (asprintf(&nameflag, "-_%s=", ctx->i_compiler->c_name) == -1)
+		nomem();
+
+	/*
+	 * Walk the argument list, translating as we go ..
+	 */
+	while (--ctx->i_oldargc > 0) {
+		char *arg = *++ctx->i_oldargv;
+		size_t arglen = strlen(arg);
+
+		if (*arg == '-') {
+			arglen--;
+		} else {
+			if (!in_output && is_source_file(arg))
+				c_files++;
+
+			/*
+			 * Otherwise, filenames and partial arguments
+			 * are passed through for gcc to chew on.  However,
+			 * output is always discarded for the secondary
+			 * compiler.
+			 */
+			if ((ctx->i_flags & CW_F_SHADOW) && in_output) {
+				newae(ctx->i_ae, discard_file_name(ctx, arg));
+			} else {
+				newae(ctx->i_ae, arg);
+			}
+			in_output = 0;
+			continue;
+		}
+
+		if (ctx->i_flags & CW_F_CXX) {
+			if (strncmp(arg, "-_g++=", 6) == 0) {
+				newae(ctx->i_ae, strchr(arg, '=') + 1);
+				continue;
+			}
+			if (strncmp(arg, "-compat=", 8) == 0) {
+				/* discard -compat=4 and -compat=5 */
+				continue;
+			}
+			if (strcmp(arg, "-Qoption") == 0) {
+				/* discard -Qoption and its two arguments */
+				if (ctx->i_oldargc < 3)
+					error(arg);
+				ctx->i_oldargc -= 2;
+				ctx->i_oldargv += 2;
+				continue;
+			}
+			if (strcmp(arg, "-xwe") == 0) {
+				/* turn warnings into errors */
+				newae(ctx->i_ae, "-Werror");
+				continue;
+			}
+			if (strcmp(arg, "-norunpath") == 0) {
+				/* gcc has no corresponding option */
+				continue;
+			}
+			if (strcmp(arg, "-nolib") == 0) {
+				/* -nodefaultlibs is on by default */
+				nolibc = 1;
+				continue;
+			}
+		}
+
+		switch ((c = arg[1])) {
+		case '_':
+			if ((strncmp(arg, nameflag, strlen(nameflag)) == 0) ||
+			    (strncmp(arg, "-_clang=", 6) == 0)) {
+				newae(ctx->i_ae, strchr(arg, '=') + 1);
+			}
+			break;
+		case '#':
+			if (arglen == 1) {
+				newae(ctx->i_ae, "-v");
+				break;
+			}
+			error(arg);
+			break;
+		case 'f':
+			if ((strcmp(arg, "-fpic") == 0) ||
+			    (strcmp(arg, "-fPIC") == 0)) {
+				newae(ctx->i_ae, arg);
+				break;
+			}
+			error(arg);
+			break;
+		case 'E':
+			if (arglen == 1) {
+				newae(ctx->i_ae, "-xc");
+				newae(ctx->i_ae, arg);
+				op = CW_O_PREPROCESS;
+				nolibc = 1;
+				break;
+			}
+			error(arg);
+			break;
+		case 'c':
+		case 'S':
+			if (arglen == 1) {
+				op = CW_O_COMPILE;
+				nolibc = 1;
+			}
+			/* FALLTHROUGH */
+		case 'C':
+		case 'H':
+		case 'p':
+			if (arglen == 1) {
+				newae(ctx->i_ae, arg);
+				break;
+			}
+			error(arg);
+			break;
+		case 'A':
+		case 'g':
+		case 'h':
+		case 'I':
+		case 'i':
+		case 'L':
+		case 'l':
+		case 'R':
+		case 'U':
+		case 'u':
+		case 'w':
+			newae(ctx->i_ae, arg);
+			break;
+		case 'o':
+			seen_o = 1;
+			if (arglen == 1) {
+				in_output = 1;
+				newae(ctx->i_ae, arg);
+			} else if (ctx->i_flags & CW_F_SHADOW) {
+				newae(ctx->i_ae, "-o");
+				newae(ctx->i_ae, discard_file_name(ctx, arg));
+			} else {
+				newae(ctx->i_ae, arg);
+			}
+			break;
+		case 'D':
+			newae(ctx->i_ae, arg);
+			/*
+			 * XXX	Clearly a hack ... do we need _KADB too?
+			 */
+			if (strcmp(arg, "-D_KERNEL") == 0 ||
+			    strcmp(arg, "-D_BOOT") == 0)
+				newae(ctx->i_ae, "-ffreestanding");
+			break;
+		case 'd':
+			if (strcmp(arg, "-dalign") == 0) {
+				/*
+				 * -dalign forces alignment in some cases;
+				 * gcc does not need any flag to do this.
+				 */
+				break;
+			}
+			error(arg);
+			break;
+		case 'e':
+			if (strcmp(arg,
+			    "-erroff=E_EMPTY_TRANSLATION_UNIT") == 0) {
+				/*
+				 * Accept but ignore this -- gcc doesn't
+				 * seem to complain about empty translation
+				 * units
+				 */
+				break;
+			}
+			/* XX64 -- ignore all -erroff= options, for now */
+			if (strncmp(arg, "-erroff=", 8) == 0)
+				break;
+			if (strcmp(arg, "-errtags=yes") == 0) {
+				warnings(ctx->i_ae);
+				break;
+			}
+			if (strcmp(arg, "-errwarn=%all") == 0) {
+				newae(ctx->i_ae, "-Werror");
+				break;
+			}
+			error(arg);
+			break;
+		case 'k':
+			if (strcmp(arg, "-keeptmp") == 0) {
+				newae(ctx->i_ae, "-save-temps");
+				break;
+			}
+			error(arg);
+			break;
+		case 'm':
+			if (strcmp(arg, "-mt") == 0) {
+				newae(ctx->i_ae, "-D_REENTRANT");
+				break;
+			}
+			if (strcmp(arg, "-m64") == 0) {
+				newae(ctx->i_ae, "-m64");
+#if defined(__x86)
+				newae(ctx->i_ae, "-mtune=opteron");
+#endif
+				mflag |= M64;
+				break;
+			}
+			if (strcmp(arg, "-m32") == 0) {
+				newae(ctx->i_ae, "-m32");
+				mflag |= M32;
+				break;
+			}
+			error(arg);
+			break;
+		case 'O':
+			if (arglen == 1) {
+				newae(ctx->i_ae, "-O");
+				break;
+			}
+			error(arg);
+			break;
+		case 'P':
+			/*
+			 * We could do '-E -o filename.i', but that's hard,
+			 * and we don't need it for the case that's triggering
+			 * this addition.  We'll require the user to specify
+			 * -o in the Makefile.  If they don't they'll find out
+			 * in a hurry.
+			 */
+			newae(ctx->i_ae, "-E");
+			op = CW_O_PREPROCESS;
+			nolibc = 1;
+			break;
+		case 's':
+			if (strcmp(arg, "-shared") == 0) {
+				newae(ctx->i_ae, "-shared");
+				nolibc = 1;
+				break;
+			}
+			error(arg);
+			break;
+
+		case 'V':
+			if (arglen == 1) {
+				ctx->i_flags &= ~CW_F_ECHO;
+				newae(ctx->i_ae, "--version");
+				break;
+			}
+			error(arg);
+			break;
+		case 'v':
+			if (arglen == 1) {
+				warnings(ctx->i_ae);
+				break;
+			}
+			error(arg);
+			break;
+		case 'W':
+			if (strncmp(arg, "-Wp,-xc99", 9) == 0) {
+				/*
+				 * gcc's preprocessor will accept c99
+				 * regardless, so accept and ignore.
+				 */
+				break;
+			}
+			if (strncmp(arg, "-Wa,", 4) == 0 ||
+			    strncmp(arg, "-Wp,", 4) == 0 ||
+			    strncmp(arg, "-Wl,", 4) == 0) {
+				newae(ctx->i_ae, arg);
+				break;
+			}
+			if (strcmp(arg, "-W0,-noglobal") == 0 ||
+			    strcmp(arg, "-W0,-xglobalstatic") == 0) {
+				/*
+				 * gcc doesn't prefix local symbols
+				 * in debug mode, so this is not needed.
+				 */
+				break;
+			}
+			if (strcmp(arg, "-W0,-Lt") == 0) {
+				/*
+				 * Generate tests at the top of loops.
+				 * There is no direct gcc equivalent, ignore.
+				 */
+				break;
+			}
+			if (strcmp(arg, "-W0,-xdbggen=no%usedonly") == 0) {
+				newae(ctx->i_ae,
+				    "-fno-eliminate-unused-debug-symbols");
+				newae(ctx->i_ae,
+				    "-fno-eliminate-unused-debug-types");
+				newae(ctx->i_ae,
+				    "-Wno-unused-command-line-argument");
+				break;
+			}
+			if (strcmp(arg, "-W2,-xwrap_int") == 0) {
+				/*
+				 * Use the legacy behaviour (pre-SS11)
+				 * for integer wrapping.
+				 * gcc does not need this.
+				 */
+				break;
+			}
+			if (strcmp(arg, "-Wd,-xsafe=unboundsym") == 0) {
+				/*
+				 * Prevents optimizing away checks for
+				 * unbound weak symbol addresses.  gcc does
+				 * not do this, so it's not needed.
+				 */
+				break;
+			}
+			if (strncmp(arg, "-Wc,-xcode=", 11) == 0) {
+				xlate(ctx->i_ae, arg + 11, xcode_tbl);
+				break;
+			}
+			if (strncmp(arg, "-Wc,-Qiselect", 13) == 0) {
+				/*
+				 * Prevents insertion of register symbols.
+				 * gcc doesn't do this, so ignore it.
+				 */
+				break;
+			}
+			if (strcmp(arg, "-Wc,-Qassembler-ounrefsym=0") == 0) {
+				/*
+				 * Prevents optimizing away of static variables.
+				 * gcc does not do this, so it's not needed.
+				 */
+				break;
+			}
+#if defined(__x86)
+			if (strcmp(arg, "-Wu,-save_args") == 0) {
+				/* clang currently does not support this */
+				/* newae(ctx->i_ae, "-msave-args"); */
+				break;
+			}
+#endif	/* __x86 */
+			error(arg);
+			break;
+		case 'X':
+			if (strcmp(arg, "-Xa") == 0 ||
+			    strcmp(arg, "-Xt") == 0) {
+				break;
+			}
+			if (strcmp(arg, "-Xs") == 0) {
+				Xsmode(ctx->i_ae);
+				break;
+			}
+			error(arg);
+			break;
+		case 'x':
+			if (arglen == 1)
+				error(arg);
+			switch (arg[2]) {
+			case 'a':
+				if (strncmp(arg, "-xarch=", 7) == 0) {
+					mflag |= xlate_xtb(ctx->i_ae, arg + 7);
+					break;
+				}
+				error(arg);
+				break;
+			case 'b':
+				if (strncmp(arg, "-xbuiltin=", 10) == 0) {
+					if (strcmp(arg + 10, "%all"))
+						newae(ctx->i_ae, "-fbuiltin");
+					break;
+				}
+				error(arg);
+				break;
+			case 'C':
+				/* Accept C++ style comments -- ignore */
+				if (strcmp(arg, "-xCC") == 0)
+					break;
+				error(arg);
+				break;
+			case 'c':
+				if (strncmp(arg, "-xc99=%all", 10) == 0) {
+					newae(ctx->i_ae, "-std=gnu99");
+					break;
+				}
+				if (strncmp(arg, "-xc99=%none", 11) == 0) {
+					newae(ctx->i_ae, "-std=gnu89");
+					break;
+				}
+				if (strncmp(arg, "-xchip=", 7) == 0) {
+					xlate(ctx->i_ae, arg + 7, xchip_tbl);
+					break;
+				}
+				if (strncmp(arg, "-xcode=", 7) == 0) {
+					xlate(ctx->i_ae, arg + 7, xcode_tbl);
+					break;
+				}
+				if (strncmp(arg, "-xcrossfile", 11) == 0)
+					break;
+				error(arg);
+				break;
+			case 'F':
+				/*
+				 * Compile for mapfile reordering, or unused
+				 * section elimination, syntax can be -xF or
+				 * more complex, like -xF=%all -- ignore.
+				 */
+				if (strncmp(arg, "-xF", 3) == 0)
+					break;
+				error(arg);
+				break;
+			case 'i':
+				if (strncmp(arg, "-xinline", 8) == 0)
+					/* No inlining; ignore */
+					break;
+				if (strcmp(arg, "-xildon") == 0 ||
+				    strcmp(arg, "-xildoff") == 0)
+					/* No incremental linking; ignore */
+					break;
+				error(arg);
+				break;
+#if defined(__x86)
+			case 'm':
+				if (strcmp(arg, "-xmodel=kernel") == 0) {
+					newae(ctx->i_ae, "-ffreestanding");
+					newae(ctx->i_ae, "-mno-red-zone");
+					model = "-mcmodel=kernel";
+					nolibc = 1;
+					break;
+				}
+				error(arg);
+				break;
+#endif	/* __x86 */
+			case 'O':
+				if (strncmp(arg, "-xO", 3) == 0) {
+					size_t len = strlen(arg);
+					char *s = NULL;
+					int c = *(arg + 3);
+					int level;
+
+					if (len != 4 || !isdigit(c))
+						error(arg);
+
+					level = atoi(arg + 3);
+					if (level > 5)
+						error(arg);
+					if (level >= 2) {
+						optim_disable(ctx, level);
+						/*
+						 * limit -xO3 to -O2 as well.
+						 */
+						level = 2;
+					}
+					if (asprintf(&s, "-O%d", level) == -1)
+						nomem();
+					newae(ctx->i_ae, s);
+					free(s);
+					break;
+				}
+				error(arg);
+				break;
+			case 'r':
+				if (strncmp(arg, "-xregs=", 7) == 0) {
+					xlate(ctx->i_ae, arg + 7, xregs_tbl);
+					break;
+				}
+				error(arg);
+				break;
+			case 's':
+				if (strcmp(arg, "-xs") == 0 ||
+				    strcmp(arg, "-xspace") == 0 ||
+				    strcmp(arg, "-xstrconst") == 0)
+					break;
+				error(arg);
+				break;
+			case 't':
+				if (strncmp(arg, "-xtarget=", 9) == 0) {
+					xlate(ctx->i_ae, arg + 9, xtarget_tbl);
+					break;
+				}
+				error(arg);
+				break;
+			case 'e':
+			case 'h':
+			case 'l':
+			default:
+				error(arg);
+				break;
+			}
+			break;
+		case 'Y':
+			if (arglen == 1) {
+				if ((arg = *++ctx->i_oldargv) == NULL ||
+				    *arg == '\0')
+					error("-Y");
+				ctx->i_oldargc--;
+				arglen = strlen(arg + 1);
+			} else {
+				arg += 2;
+			}
+			/* Just ignore -YS,... for now */
+			if (strncmp(arg, "S,", 2) == 0)
+				break;
+			if (strncmp(arg, "I,", 2) == 0) {
+				char *s = strdup(arg);
+				s[0] = '-';
+				s[1] = 'I';
+				newae(ctx->i_ae, "-nostdinc");
+				newae(ctx->i_ae, s);
+				free(s);
+				break;
+			}
+			error(arg);
+			break;
+		case 'Q':
+			/*
+			 * We could map -Qy into -Wl,-Qy etc.
+			 */
+		default:
+			error(arg);
+			break;
+		}
+	}
+
+	free(nameflag);
+
+	/*
+	 * When compiling multiple source files in a single invocation some
+	 * compilers output objects into the current directory with
+	 * predictable and conventional names.
+	 *
+	 * We prevent any attempt to compile multiple files at once so that
+	 * any such objects created by a shadow can't escape into a later
+	 * link-edit.
+	 */
+	if (c_files > 1 && op != CW_O_PREPROCESS) {
+		errx(2, "multiple source files are "
+		    "allowed only with -E or -P");
+	}
+
+	/*
+	 * Make sure that we do not have any unintended interactions between
+	 * the xarch options passed in and the version of the Studio compiler
+	 * used.
+	 */
+	if ((mflag & (SS11|SS12)) == (SS11|SS12)) {
+		errx(2,
+		    "Conflicting \"-xarch=\" flags (both Studio 11 and 12)\n");
+	}
+
+	switch (mflag) {
+	case 0:
+		/* FALLTHROUGH */
+	case M32:
+	case M64:
+	case SS12:
+	case SS11:
+	case (SS11|M32):
+	case (SS11|M64):
+	case (SS12|M32):
+	case (SS12|M64):
+		break;
+	default:
+		(void) fprintf(stderr,
+		    "Incompatible -xarch= and/or -m32/-m64 options used.\n");
+		exit(2);
+	}
+
+	if (ctx->i_flags & CW_F_SHADOW) {
+		if (op == CW_O_PREPROCESS)
+			exit(0);
+		else if (op == CW_O_LINK && c_files == 0)
+			exit(0);
+	}
+
+	if (model != NULL)
+		newae(ctx->i_ae, model);
+	if (!nolibc)
+		newae(ctx->i_ae, "-lc");
+	if (!seen_o && (ctx->i_flags & CW_F_SHADOW)) {
+		newae(ctx->i_ae, "-o");
+		newae(ctx->i_ae, discard_file_name(ctx, NULL));
+	}
+}
+
+static void
 do_cc(cw_ictx_t *ctx)
 {
 	int in_output = 0, seen_o = 0, c_files = 0;
@@ -1405,6 +2008,9 @@ prepctx(cw_ictx_t *ctx)
 		return;
 
 	switch (ctx->i_compiler->c_style) {
+	case CLANG:
+		do_clang(ctx);
+		break;
 	case SUN:
 		do_cc(ctx);
 		break;
@@ -1607,6 +2213,8 @@ parse_compiler(const char *spec, cw_compiler_t *compiler)
 	} else if ((strcasecmp(token, "sun") == 0) ||
 	    (strcasecmp(token, "cc") == 0)) {
 		compiler->c_style = SUN;
+	} else if ((strcasecmp(token, "clang") == 0)) {
+		compiler->c_style = CLANG;
 	} else if ((strcasecmp(token, "smatch") == 0)) {
 		compiler->c_style = SMATCH;
 	} else {
