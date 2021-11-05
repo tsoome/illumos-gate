@@ -33,10 +33,10 @@
     No prototype was ever made public.
     There is no implementation of any use at all. */
 
-/*ARGSUSED*/ int
-dwarf_nextglob(Dwarf_Debug dbg,
-    Dwarf_Global glob,
-    Dwarf_Global * returned_nextglob, Dwarf_Error * error)
+int
+dwarf_nextglob(Dwarf_Debug dbg __unused,
+    Dwarf_Global glob __unused,
+    Dwarf_Global *returned_nextglob __unused, Dwarf_Error *error __unused)
 {
     return (DW_DLV_NO_ENTRY);
 }
