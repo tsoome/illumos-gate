@@ -25,10 +25,12 @@ SPARSE_VERSION = 0.6.1-rc1-il-7
 include ../Makefile.tools
 
 # We have to build smatch before we can use cw
-i386_CC = $(GNUC_ROOT)/bin/gcc
-sparc_CC = $(GNUC_ROOT)/bin/gcc
+$(__GNUC)i386_CC = $(GNUC_ROOT)/bin/gcc
+$(__GNUC)sparc_CC = $(GNUC_ROOT)/bin/gcc
+$(__CLANG)i386_CC = $(CLANG_ROOT)/bin/clang
+
 # sparc doesn't recognise -msave-args
-i386_SMATCHFLAGS = -msave-args
+$(__GNUC)i386_SMATCHFLAGS = -msave-args
 sparc_SMATCHFLAGS =
 
 # When we use builtins, then ld's -zguidance will complain that libm is
