@@ -45,7 +45,7 @@ SMATCH=off
 all: $(PROG)
 
 $(PROG):	$(PROG).c
-	$(LINK.c) -o $@ $(PROG).c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $(PROG).c $(LDLIBS)
 	$(POST_PROCESS)
 
 install: all $(ROOTPROG)

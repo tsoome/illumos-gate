@@ -130,7 +130,8 @@ $(LDAPADD):	$(LDAPMOD)
 		@$(RM) $(LDAPADD); $(LN) $(LDAPMOD) $(LDAPADD)
 
 $(LDAPPROG):	../common/$$@.c $(LDAPCOMMOBJS)
-		$(LINK.c) -o $@ ../common/$@.c $(LDAPCOMMOBJS) $(LDLIBS)
+		$(LINK.c) $(CPPFLAGS) -o $@ ../common/$@.c $(LDAPCOMMOBJS) \
+			$(LDLIBS)
 		$(POST_PROCESS)
 
 %.o:		../common/%.c

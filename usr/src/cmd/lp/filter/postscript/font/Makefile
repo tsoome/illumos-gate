@@ -31,8 +31,6 @@ PROG =			makedev
 
 SRCS =			makedev.c
 
-OBJS =			$(SRCS:%.c=%.o)
-
 SUBDIRS =		devpost
 
 COMMONDIR =		../common
@@ -66,13 +64,10 @@ clobber :		$(SUBDIRS) clean
 strip:
 			$(STRIP) $(PROG)
 
-lint:
-			$(LINT.c) $(SRCS)
-
 include		../Makefile.msg
 
 $(NATIVEPROG) :		$(NATIVEDIR) $(SRCS)
-			$(LINK.c) -o $@ $(SRCS) $(LDLIBS)
+			$(LINK.c) $(CPPFLAGS) -o $@ $(SRCS) $(LDLIBS)
 
 $(NATIVEDIR) :
 			-@mkdir -p $@
@@ -81,7 +76,7 @@ $(ROOTLIBFONT)/%:	%
 			$(INS.file)
 
 $(PROG) :		$(SRCS)
-			$(LINK.c) -o $@ $(SRCS) $(LDLIBS)
+			$(LINK.c) $(CPPFLAGS) -o $@ $(SRCS) $(LDLIBS)
 			$(POST_PROCESS)
 
 $(SUBDIRS):		FRC

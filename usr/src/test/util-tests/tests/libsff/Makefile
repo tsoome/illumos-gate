@@ -41,8 +41,6 @@ PROGS = $(DIFF_PROGS) \
 	$(ERR_PROGS) \
 	libsff_strings
 
-LINTS = $(PROGS:%=%.ln)
-
 SCRIPTS = libsff
 
 include $(SRC)/cmd/Makefile.cmd
@@ -70,11 +68,6 @@ all: $(PROGS)
 
 install: all $(CMDS) $(OUTFILES)
 
-lint: $(LINTS)
-
-%.ln: %.c
-	$(LINT.c) -erroff=E_NAME_USED_NOT_DEF2 $< $(LDLIBS)
-
 clobber: clean
 	-$(RM) $(PROGS) $(LINTS)
 
@@ -92,5 +85,5 @@ $(TESTDIR)/%: %.ksh
 	$(INS.rename)
 
 %: %.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)

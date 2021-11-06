@@ -74,7 +74,7 @@ all:	$(BINPROGS) $(SBINPROGS)
 
 #	each program needs common.o as well
 $(BINPROGS) $(SBINPROGS) $(LIBPRINTPROGS):	$(BINPROGS:%=%.c) $(SBINPROGS:%=%.c)  $(LIBPRINTPROGS:%=%.c) common.o
-	$(LINK.c) -o $@ $@.c common.o $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $@.c common.o $(LDLIBS)
 	$(POST_PROCESS)
 
 #	ucb links (lptest is handled in usr/src/cmd/lp/cmd/Makefile)

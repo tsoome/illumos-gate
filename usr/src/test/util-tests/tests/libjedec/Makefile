@@ -20,8 +20,6 @@ TESTDIR = $(ROOTOPTPKG)/tests/
 
 PROGS = libjedec_test
 
-LINTS = $(PROGS:%=%.ln)
-
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 
@@ -38,10 +36,8 @@ all: $(PROGS)
 
 install: all $(CMDS) $(OUTFILES)
 
-lint:
-
 clobber: clean
-	-$(RM) $(PROGS) $(LINTS)
+	-$(RM) $(PROGS)
 
 clean:
 
@@ -54,5 +50,5 @@ $(TESTDIR)/%: %
 	$(INS.file)
 
 %: %.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)

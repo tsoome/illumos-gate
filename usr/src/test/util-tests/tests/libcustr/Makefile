@@ -46,5 +46,5 @@ $(TESTDIR)/%: %
 	$(INS.file)
 
 %: %.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)

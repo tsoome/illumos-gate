@@ -57,13 +57,13 @@ clean:
 include ../../Makefile.targ
 
 %.xpg4: ../%.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)
 
 %.xpg6: ../%.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)
 
 %: ../%.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)

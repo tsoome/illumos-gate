@@ -56,6 +56,4 @@ $(POFILE):	$(POFILES) $(POFILES_XPG4)
 
 clean:
 
-lint:	lint_PROG
-
 include ../Makefile.targ

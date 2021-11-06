@@ -880,12 +880,12 @@ NATIVE_LIBS=
 LDCHECKS		= $(ZASSERTDEFLIB) $(ZGUIDANCE) $(ZFATALWARNINGS)
 LDCHECKS		+= $(NATIVE_LIBS:%=$(ZASSERTDEFLIB)=%)
 
-LINK.c=			$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LDCHECKS)
-LINK64.c=		$(CC) $(CFLAGS64) $(CPPFLAGS) $(LDFLAGS) $(LDCHECKS)
+LINK.c=			$(CC) $(CFLAGS) $(LDFLAGS) $(LDCHECKS)
+LINK64.c=		$(CC) $(CFLAGS64) $(LDFLAGS) $(LDCHECKS)
 NORUNPATH=		-norunpath -nolib
-LINK.cc=		$(CCC) $(CCFLAGS) $(CPPFLAGS) $(NORUNPATH) \
+LINK.cc=		$(CCC) $(CCFLAGS) $(NORUNPATH) \
 			$(LDFLAGS) $(CCNEEDED) $(LDCHECKS)
-LINK64.cc=		$(CCC) $(CCFLAGS64) $(CPPFLAGS) $(NORUNPATH) \
+LINK64.cc=		$(CCC) $(CCFLAGS64) $(NORUNPATH) \
 			$(LDFLAGS) $(CCNEEDED64) $(LDCHECKS)
 
 # For some future builds, NATIVE_MACH and MACH might be different.
@@ -1165,7 +1165,7 @@ PKGPUBLISHER_NONREDIST=	on-extra
 #	Default build rules which perform comment section post-processing.
 #
 .c:
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)
 .c.o:
 	$(COMPILE.c) $(OUTPUT_OPTION) $< $(CTFCONVERT_HOOK)
@@ -1184,7 +1184,7 @@ PKGPUBLISHER_NONREDIST=	on-extra
 	$(AR) $(ARFLAGS) $@ $%
 	$(RM) $%
 .cc:
-	$(LINK.cc) -o $@ $< $(LDLIBS)
+	$(LINK.cc) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)
 .cc.o:
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
@@ -1196,7 +1196,7 @@ PKGPUBLISHER_NONREDIST=	on-extra
 	$(RM) $%
 .y:
 	$(YACC.y) $<
-	$(LINK.c) -o $@ y.tab.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ y.tab.c $(LDLIBS)
 	$(POST_PROCESS)
 	$(RM) y.tab.c
 .y.o:
@@ -1207,7 +1207,7 @@ PKGPUBLISHER_NONREDIST=	on-extra
 .l:
 	$(RM) $*.c
 	$(LEX.l) $< > $*.c
-	$(LINK.c) -o $@ $*.c -ll $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $*.c -ll $(LDLIBS)
 	$(POST_PROCESS)
 	$(RM) $*.c
 .l.o:

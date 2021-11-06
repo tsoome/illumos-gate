@@ -116,11 +116,11 @@ $(ROOTOPTDIR)/%: %.ksh
 	$(INS.rename)
 
 %.64: %.c
-	$(LINK64.c) -o $@ $< $(LDLIBS64)
+	$(LINK64.c) $(CPPFLAGS) -o $@ $< $(LDLIBS64)
 	$(POST_PROCESS)
 
 %.32: %.c
-	$(LINK.c) -o $@ $< $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $< $(LDLIBS)
 	$(POST_PROCESS)
 
 clobber: $(SUBDIRS)

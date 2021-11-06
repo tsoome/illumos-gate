@@ -116,46 +116,48 @@ hal-storage-unmount: hal-storage-unmount.o $(STORAGE_SHAREDOBJS)
 
 hal-storage-cleanup-mountpoint: hal-storage-cleanup-mountpoint.c \
 		$(STORAGE_SHAREDOBJS)
-	$(LINK.c) hal-storage-cleanup-mountpoint.c \
+	$(LINK.c) $(CPPFLAGS) hal-storage-cleanup-mountpoint.c \
 		$(STORAGE_SHAREDOBJS) -o $@ $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-storage-cleanup-all-mountpoints: hal-storage-cleanup-all-mountpoints.c \
 		$(STORAGE_SHAREDOBJS)
-	$(LINK.c) hal-storage-cleanup-all-mountpoints.c \
+	$(LINK.c) $(CPPFLAGS) hal-storage-cleanup-all-mountpoints.c \
 		$(STORAGE_SHAREDOBJS) -o $@ $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-storage-zpool-export: hal-storage-zpool.c $(STORAGE_SHAREDOBJS)
-	$(LINK.c) -o $@ $(STORAGE_SHAREDOBJS) -DZPOOL_SUBCMD=\"export\" hal-storage-zpool.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $(STORAGE_SHAREDOBJS) \
+		-DZPOOL_SUBCMD=\"export\" hal-storage-zpool.c $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-storage-zpool-import: hal-storage-zpool.c $(STORAGE_SHAREDOBJS)
-	$(LINK.c) -o $@ $(STORAGE_SHAREDOBJS) -DZPOOL_SUBCMD=\"import\" hal-storage-zpool.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $(STORAGE_SHAREDOBJS) \
+		-DZPOOL_SUBCMD=\"import\" hal-storage-zpool.c $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-device: hal-device.c
-	$(LINK.c) -o $@ hal-device.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ hal-device.c $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-find-by-capability: hal_find_by_capability.c
-	$(LINK.c) -o $@ hal_find_by_capability.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ hal_find_by_capability.c $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-find-by-property: hal_find_by_property.c
-	$(LINK.c) -o $@ hal_find_by_property.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ hal_find_by_property.c $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-get-property: hal_get_property.c
-	$(LINK.c) -o $@ hal_get_property.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ hal_get_property.c $(LDLIBS)
 	$(POST_PROCESS)
 
 hal-set-property: hal_set_property.c
-	$(LINK.c) -o $@ hal_set_property.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ hal_set_property.c $(LDLIBS)
 	$(POST_PROCESS)
 
 lshal: lshal.c
-	$(LINK.c) -o $@ lshal.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ lshal.c $(LDLIBS)
 	$(POST_PROCESS)
 
 install: all $(ROOTUSRSBINPROG) $(ROOTCMD) $(SUBDIR)

@@ -90,7 +90,7 @@ msgcpp.po:
 	$(TOUCH) $(@)
 
 $(CPROG):
-	$(LINK.c) -o $@ $(ASTSRC)/$@.c $(LDLIBS)
+	$(LINK.c) $(CPPFLAGS) -o $@ $(ASTSRC)/$@.c $(LDLIBS)
 	$(POST_PROCESS)
 
 FRC:
