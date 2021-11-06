@@ -117,6 +117,7 @@ INTEL_BLD=      $(INTEL_BLD_1:i386=)
 __SUNC=			$(POUND_SIGN)
 $(__SUNC)__GNUC=	$(POUND_SIGN)
 __GNUC64=		$(__GNUC)
+$(__GNUC)__CLANG=	$(POUND_SIGN)
 
 # Allow build-time "configuration" to enable or disable some things.
 # The default is POUND_SIGN, meaning "not enabled". If the environment
@@ -141,6 +142,8 @@ BLD_JAVA_11=	$(POUND_SIGN)
 GNUC_ROOT=	/usr/gcc/7
 GCCLIBDIR=	$(GNUC_ROOT)/lib
 GCCLIBDIR64=	$(GNUC_ROOT)/lib/$(MACH64)
+
+CLANG_ROOT=	/opt/clang/13
 
 DOCBOOK_XSL_ROOT=	/usr/share/sgml/docbook/xsl-stylesheets
 
@@ -189,7 +192,8 @@ YACC=		/usr/bin/yacc
 BISON=		/usr/bin/bison
 CPP=		/usr/lib/cpp
 SH=		/usr/bin/sh
-ANSI_CPP=	$(GNUC_ROOT)/bin/cpp
+$(__GNUC)ANSI_CPP=	$(GNUC_ROOT)/bin/cpp
+$(__CLANG)ANSI_CPP=	$(CLANG_ROOT)/bin/clang-cpp
 JAVAC=		$(JAVA_ROOT)/bin/javac
 JAVADOC=	$(JAVA_ROOT)/bin/javadoc
 JAR=		$(JAVA_ROOT)/bin/jar
@@ -516,6 +520,8 @@ CERRWARN += -_gcc=-Wno-unknown-pragmas
 CERRWARN += -_gcc=-Wno-unused-parameter
 CERRWARN += -_gcc=-Wno-missing-field-initializers
 
+CERRWARN += -_clang=-Wno-unknown-pragmas
+
 # Unfortunately, this option can misfire very easily and unfixably.
 CERRWARN +=	-_gcc=-Wno-array-bounds
 
@@ -578,7 +584,8 @@ CGLOBALSTATIC= -W0,-xglobalstatic
 # Sometimes we want all symbols and types in debugging information even
 # if they aren't used.
 CALLSYMS=	-_gcc=-fno-eliminate-unused-debug-symbols \
-		-_gcc=-fno-eliminate-unused-debug-types
+		-_gcc=-fno-eliminate-unused-debug-types \
+		-_clang=-fno-eliminate-unused-debug-types
 
 #
 # We force the compilers to generate the debugging information best understood
@@ -587,6 +594,7 @@ CALLSYMS=	-_gcc=-fno-eliminate-unused-debug-symbols \
 #
 DEBUGFORMAT=	-_cc=-xdebugformat=stabs -_gcc=-gdwarf-2 \
 		-_gcc10=-gstrict-dwarf -_gcc11=-gstrict-dwarf
+DEBUGFORMAT +=	-_clang=-gdwarf-2
 
 #
 # Ask the compiler to include debugging information
@@ -866,6 +874,9 @@ NATIVECCNEEDED		= -lC
 $(__GNUC)CCNEEDED	= -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 $(__GNUC)CCEXTNEEDED	= $(CCNEEDED)
 $(__GNUC)NATIVECCNEEDED	= -R$(GCCLIBDIR) -L$(GCCLIBDIR) -lstdc++ -lgcc_s
+$(__CLANG)CCNEEDED	= -L$(GCCLIBDIR) -lstdc++ -lgcc_s
+$(__CLANG)CCEXTNEEDED	= $(CCNEEDED)
+$(__CLANG)NATIVECCNEEDED	= -R$(GCCLIBDIR) -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 
 CCNEEDED64		= -lCrun
 CCEXTNEEDED64		= -lCrun -lCstd
@@ -873,6 +884,9 @@ NATIVECCNEEDED64	= -lCrun
 $(__GNUC64)CCNEEDED64	= -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 $(__GNUC64)NATIVECCNEEDED64 = -R$(GCCLIBDIR) -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 $(__GNUC64)CCEXTNEEDED	= $(CCNEEDED64)
+$(__CLANG)CCNEEDED64	= -L$(GCCLIBDIR) -lstdc++ -lgcc_s
+$(__CLANG)CCEXTNEEDED64	= $(CCNEEDED)
+$(__CLANG)NATIVECCNEEDED64	= -R$(GCCLIBDIR) -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 
 # Libraries we expect to use natively on the build machine
 NATIVE_LIBS=
@@ -908,8 +922,10 @@ GNU_ROOT=		/usr
 
 $(__GNUC)PRIMARY_CC=	gcc7,$(GNUC_ROOT)/bin/gcc,gnu
 $(__SUNC)PRIMARY_CC=	studio12,$(SPRO_VROOT)/bin/cc,sun
+$(__CLANG)PRIMARY_CC=	clang,$(CLANG_ROOT)/bin/clang,clang
 $(__GNUC)PRIMARY_CCC=	gcc7,$(GNUC_ROOT)/bin/g++,gnu
 $(__SUNC)PRIMARY_CCC=	studio12,$(SPRO_VROOT)/bin/CC,sun
+$(__CLANG)PRIMARY_CCC=	clang,$(CLANG_ROOT)/bin/clang++,clang
 
 CW_CC_COMPILERS=	$(PRIMARY_CC:%=--primary %) $(SHADOW_CCS:%=--shadow %)
 CW_CCC_COMPILERS=	$(PRIMARY_CCC:%=--primary %) $(SHADOW_CCCS:%=--shadow %)
@@ -938,8 +954,7 @@ $(MACH64)_LD=		$(BUILD_LD)
 sparc_AS=		/usr/bin/as -xregsym=no
 sparcv9_AS=		$($(MACH)_AS)
 
-i386_AS=		/usr/bin/as
-$(__GNUC)i386_AS=	$(ONBLD_TOOLS)/bin/$(MACH)/aw
+i386_AS=		$(ONBLD_TOOLS)/bin/$(MACH)/aw
 amd64_AS=		$(ONBLD_TOOLS)/bin/$(MACH)/aw
 
 NATIVECC=		$($(NATIVE_MACH)_CC)
@@ -1030,8 +1045,8 @@ C_BIGPICFLAGS64 =	$($(MACH64)_C_BIGPICFLAGS)
 # and does not support -f
 sparc_CC_PICFLAGS =	-_cc=-Kpic -_gcc=-fpic
 sparcv9_CC_PICFLAGS =	-_cc=-KPIC -_gcc=-fPIC
-i386_CC_PICFLAGS =	-_cc=-Kpic -_gcc=-fpic
-amd64_CC_PICFLAGS =	-_cc=-Kpic -_gcc=-fpic
+i386_CC_PICFLAGS =	-_cc=-Kpic -_gcc=-fpic -_clang=-fpic
+amd64_CC_PICFLAGS =	-_cc=-Kpic -_gcc=-fpic -_clang=-fpic
 CC_PICFLAGS =		$($(MACH)_CC_PICFLAGS)
 CC_PICFLAGS64 =		$($(MACH64)_CC_PICFLAGS)
 
