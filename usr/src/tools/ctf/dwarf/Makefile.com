@@ -97,7 +97,7 @@ SRCDIR =	$(SRC)/lib/libdwarf/common/
 SRCS =		$(PICS:%.o=$(SRCDIR)/%.c)
 
 CPPFLAGS +=	-I$(SRCDIR) -DELF_TARGET_ALL=1
-CERRWARN +=	-_gcc=-Wno-unused
+CERRWARN +=	-_gcc=-Wno-unused -_clang=-Wno-unused
 CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 
 # libdwarf not clean
@@ -128,4 +128,3 @@ $(DYNLIB) := CTFMERGE_POST= :
 CTFCONVERT_O= :
 
 include $(SRC)/lib/Makefile.targ
-
