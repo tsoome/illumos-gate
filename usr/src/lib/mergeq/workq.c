@@ -250,7 +250,8 @@ workq_thr_work(void *arg)
 int
 workq_work(workq_t *wqp, workq_proc_f *func, void *arg, int *errp)
 {
-	int i, ret;
+	uint_t i;
+	int ret;
 	boolean_t seterr = B_FALSE;
 
 	if (wqp == NULL || func == NULL)

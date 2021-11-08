@@ -82,7 +82,7 @@ get_vlen_v2(ushort_t info)
 }
 
 static const ctf_fileops_t ctf_fileops[] = {
-	{ NULL, NULL },
+	{ NULL, NULL, NULL },
 	{ get_kind_v1, get_root_v1, get_vlen_v1 },
 	{ get_kind_v2, get_root_v2, get_vlen_v2 },
 };

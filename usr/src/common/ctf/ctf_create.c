@@ -61,7 +61,8 @@ static const char _CTF_STRTAB_TEMPLATE[] = "\0PARENT";
 ctf_file_t *
 ctf_create(int *errp)
 {
-	static const ctf_header_t hdr = { { CTF_MAGIC, CTF_VERSION, 0 } };
+	static const ctf_header_t hdr = { .cth_preamble =
+	    { CTF_MAGIC, CTF_VERSION, 0 } };
 
 	const ulong_t hashlen = 128;
 	ctf_dtdef_t **hash = ctf_alloc(hashlen * sizeof (ctf_dtdef_t *));
@@ -99,7 +100,8 @@ ctf_file_t *
 ctf_fdcreate(int fd, int *errp)
 {
 	ctf_file_t *fp;
-	static const ctf_header_t hdr = { { CTF_MAGIC, CTF_VERSION, 0 } };
+	static const ctf_header_t hdr = { .cth_preamble =
+	    { CTF_MAGIC, CTF_VERSION, 0 } };
 
 	const ulong_t hashlen = 128;
 	ctf_dtdef_t **hash;
@@ -474,7 +476,7 @@ ctf_update(ctf_file_t *fp)
 	 * we should make sure to note our parent's name here.
 	 */
 	if (plen != 0) {
-		VERIFY(s + plen - s0 <= hdr.cth_strlen);
+		VERIFY((uint_t)(s + plen - s0) <= hdr.cth_strlen);
 		bcopy(fp->ctf_parname, s, plen);
 		bhdr->cth_parname = s - s0;
 		s += plen;
@@ -487,7 +489,7 @@ ctf_update(ctf_file_t *fp)
 	    dld = ctf_list_next(dld), label++) {
 		size_t len = strlen(dld->dld_name) + 1;
 
-		VERIFY(s + len - s0 <= hdr.cth_strlen);
+		VERIFY((uint_t)(s + len - s0) <= hdr.cth_strlen);
 		bcopy(dld->dld_name, s, len);
 		label->ctl_typeidx = dld->dld_type;
 		label->ctl_label = s - s0;
@@ -514,7 +516,7 @@ ctf_update(ctf_file_t *fp)
 		if (dtd->dtd_name != NULL) {
 			dtd->dtd_data.ctt_name = (uint_t)(s - s0);
 			len = strlen(dtd->dtd_name) + 1;
-			VERIFY(s + len - s0 <= hdr.cth_strlen);
+			VERIFY((uint_t)(s + len - s0) <= hdr.cth_strlen);
 			bcopy(dtd->dtd_name, s, len);
 			s += len;
 		} else
@@ -626,7 +628,7 @@ ctf_update(ctf_file_t *fp)
 				*func = data;
 				func++;
 			} else {
-				int j;
+				uint_t j;
 				ushort_t data = CTF_TYPE_INFO(CTF_K_FUNCTION, 0,
 				    dsd->dsd_nargs);
 
@@ -937,7 +939,7 @@ ctf_discard(ctf_file_t *fp)
 
 	for (dtd = ctf_list_prev(&fp->ctf_dtdefs); dtd != NULL; dtd = ntd) {
 		ntd = ctf_list_prev(dtd);
-		if (dtd->dtd_type <= fp->ctf_dtoldid)
+		if (dtd->dtd_type <= (long)fp->ctf_dtoldid)
 			continue; /* skip types that have been committed */
 
 		ctf_dtd_delete(fp, dtd);
@@ -1134,7 +1136,7 @@ ctf_add_funcptr(ctf_file_t *fp, uint_t flag,
 	ctf_dtdef_t *dtd;
 	ctf_id_t type;
 	uint_t vlen;
-	int i;
+	uint_t i;
 	ctf_id_t *vdat = NULL;
 	ctf_file_t *fpd;
 
@@ -1641,9 +1643,8 @@ enumadd(const char *name, int value, void *arg)
 	    name, value) == CTF_ERR);
 }
 
-/*ARGSUSED*/
 static int
-membcmp(const char *name, ctf_id_t type, ulong_t offset, void *arg)
+membcmp(const char *name, ctf_id_t type __unused, ulong_t offset, void *arg)
 {
 	ctf_bundle_t *ctb = arg;
 	ctf_membinfo_t ctm;
@@ -1772,7 +1773,7 @@ ctf_add_type(ctf_file_t *dst_fp, ctf_file_t *src_fp, ctf_id_t src_type)
 	 */
 	if (dst_type == CTF_ERR && name[0] != '\0') {
 		for (dtd = ctf_list_prev(&dst_fp->ctf_dtdefs); dtd != NULL &&
-		    dtd->dtd_type > dst_fp->ctf_dtoldid;
+		    dtd->dtd_type > (long)dst_fp->ctf_dtoldid;
 		    dtd = ctf_list_prev(dtd)) {
 			if (CTF_INFO_KIND(dtd->dtd_data.ctt_info) == kind &&
 			    dtd->dtd_name != NULL &&
@@ -1990,7 +1991,7 @@ int
 ctf_add_function(ctf_file_t *fp, ulong_t idx, const ctf_funcinfo_t *fip,
     const ctf_id_t *argc)
 {
-	int i;
+	uint_t i;
 	ctf_dsdef_t *dsd;
 	ctf_file_t *afp;
 	uintptr_t symbase = (uintptr_t)fp->ctf_symtab.cts_data;

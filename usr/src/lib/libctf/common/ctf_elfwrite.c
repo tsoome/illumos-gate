@@ -52,11 +52,10 @@ ctf_write_elf(ctf_file_t *fp, Elf *src, Elf *dst, int flags)
 	off_t ctfnameoff = 0;
 	int compress = (flags & CTF_ELFWRITE_F_COMPRESS);
 	int *secxlate = NULL;
-	int srcidx, dstidx, pad, i;
-	int curnmoff = 0;
+	int dstidx, pad;
 	int changing = 0;
 	int ret;
-	size_t nshdr, nphdr, strndx;
+	size_t i, srcidx, nshdr, nphdr, strndx;
 	void *strdatabuf = NULL, *symdatabuf = NULL;
 	size_t strdatasz = 0, symdatasz = 0;
 
@@ -147,7 +146,6 @@ ctf_write_elf(ctf_file_t *fp, Elf *src, Elf *dst, int flags)
 			secxlate[srcidx] = -1;
 		} else {
 			secxlate[srcidx] = dstidx++;
-			curnmoff += strlen(sname) + 1;
 		}
 
 		new_offset = (off_t)dehdr.e_phoff;
@@ -230,7 +228,7 @@ ctf_write_elf(ctf_file_t *fp, Elf *src, Elf *dst, int flags)
 		}
 
 		if (shdr.sh_type == SHT_SYMTAB && shdr.sh_entsize != 0) {
-			int nsym = shdr.sh_size / shdr.sh_entsize;
+			size_t nsym = shdr.sh_size / shdr.sh_entsize;
 
 			symtab_idx = secxlate[srcidx];
 

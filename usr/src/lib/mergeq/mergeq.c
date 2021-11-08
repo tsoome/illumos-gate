@@ -529,7 +529,8 @@ int
 mergeq_merge(mergeq_t *mqp, mergeq_proc_f *func, void *arg, void **outp,
     int *errp)
 {
-	int ret, i;
+	uint_t i;
+	int ret;
 	boolean_t seterr = B_FALSE;
 
 	if (mqp == NULL || func == NULL || outp == NULL) {

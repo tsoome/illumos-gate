@@ -935,7 +935,8 @@ static const ctf_dwarf_fpmap_t ctf_dwarf_fpmaps[] = {
  * complex or similar.
  */
 static int
-ctf_dwarf_fixup_complex(ctf_cu_t *cup, ctf_encoding_t *enc, char **namep)
+ctf_dwarf_fixup_complex(ctf_cu_t *cup __unused, ctf_encoding_t *enc,
+    char **namep)
 {
 	const char *name;
 	*namep = NULL;
@@ -2282,7 +2283,7 @@ ctf_dwarf_convert_fargs(ctf_cu_t *cup, Dwarf_Die die, ctf_funcinfo_t *fip,
     ctf_id_t *argv)
 {
 	int ret;
-	int i = 0;
+	uint_t i = 0;
 	Dwarf_Die child, sib, arg;
 
 	if ((ret = ctf_dwarf_child(cup, die, &child)) != 0)
@@ -2819,7 +2820,7 @@ typedef struct ctf_dwarf_weak_arg {
 
 static int
 ctf_dwarf_conv_check_weak(const Elf64_Sym *symp, ulong_t idx, const char *file,
-    const char *name, boolean_t primary, void *arg)
+    const char *name, boolean_t primary __unused, void *arg)
 {
 	ctf_dwarf_weak_arg_t *cweak = arg;
 
@@ -2924,7 +2925,7 @@ ctf_dwarf_duplicate_func(ctf_cu_t *cup, ulong_t idx, ulong_t matchidx)
 
 static int
 ctf_dwarf_conv_weaks_cb(const Elf64_Sym *symp, ulong_t idx, const char *file,
-    const char *name, boolean_t primary, void *arg)
+    const char *name, boolean_t primary __unused, void *arg)
 {
 	int ret, type;
 	ctf_dwarf_weak_arg_t cweak;
@@ -2983,7 +2984,7 @@ ctf_dwarf_conv_weaks(ctf_cu_t *cup)
 }
 
 static int
-ctf_dwarf_convert_one(void *arg, void *unused)
+ctf_dwarf_convert_one(void *arg, void *unused __unused)
 {
 	int ret;
 	ctf_file_t *dedup;

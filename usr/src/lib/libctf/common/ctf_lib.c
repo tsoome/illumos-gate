@@ -444,7 +444,7 @@ ctf_fdcreate_int(int fd, int *errp, ctf_sect_t *ctfp)
 	 * If we have read enough bytes to form a CTF header and the magic
 	 * string matches, attempt to interpret the file as raw CTF.
 	 */
-	if (nbytes >= sizeof (ctf_preamble_t) &&
+	if ((size_t)nbytes >= sizeof (ctf_preamble_t) &&
 	    hdr.ctf.ctp_magic == CTF_MAGIC) {
 		if (ctfp != NULL)
 			return (ctf_set_open_errno(errp, EINVAL));
@@ -477,7 +477,7 @@ ctf_fdcreate_int(int fd, int *errp, ctf_sect_t *ctfp)
 	 * do our own largefile ELF processing, and convert everything to
 	 * GElf structures so that clients can operate on any data model.
 	 */
-	if (nbytes >= sizeof (Elf32_Ehdr) &&
+	if ((size_t)nbytes >= sizeof (Elf32_Ehdr) &&
 	    bcmp(&hdr.e32.e_ident[EI_MAG0], ELFMAG, SELFMAG) == 0) {
 #ifdef	_BIG_ENDIAN
 		uchar_t order = ELFDATA2MSB;
@@ -496,7 +496,7 @@ ctf_fdcreate_int(int fd, int *errp, ctf_sect_t *ctfp)
 			return (ctf_set_open_errno(errp, ECTF_ELFVERS));
 
 		if (hdr.e32.e_ident[EI_CLASS] == ELFCLASS64) {
-			if (nbytes < sizeof (GElf_Ehdr))
+			if ((size_t)nbytes < sizeof (GElf_Ehdr))
 				return (ctf_set_open_errno(errp, ECTF_FMT));
 		} else {
 			Elf32_Ehdr e32 = hdr.e32;

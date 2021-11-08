@@ -115,7 +115,8 @@ static ctf_file_t *
 ctf_elfconvert(ctf_convert_t *cch, int fd, Elf *elf, int *errp, char *errbuf,
     size_t errlen)
 {
-	int err, i;
+	int err;
+	unsigned i;
 	ctf_file_t *fp = NULL;
 	boolean_t no_c_src = B_FALSE;
 

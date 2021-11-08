@@ -463,7 +463,7 @@ char *
 ctf_type_name(ctf_file_t *fp, ctf_id_t type, char *buf, size_t len)
 {
 	ssize_t rv = ctf_type_qlname(fp, type, buf, len, NULL, NULL);
-	return (rv >= 0 && rv < len ? buf : NULL);
+	return (rv >= 0 && (size_t)rv < len ? buf : NULL);
 }
 
 char *
@@ -471,7 +471,7 @@ ctf_type_qname(ctf_file_t *fp, ctf_id_t type, char *buf, size_t len,
     const char *qname)
 {
 	ssize_t rv = ctf_type_qlname(fp, type, buf, len, NULL, qname);
-	return (rv >= 0 && rv < len ? buf : NULL);
+	return (rv >= 0 && (size_t)rv < len ? buf : NULL);
 }
 
 char *
@@ -479,7 +479,7 @@ ctf_type_cname(ctf_file_t *fp, ctf_id_t type, char *buf, size_t len,
     const char *cname)
 {
 	ssize_t rv = ctf_type_qlname(fp, type, buf, len, cname, NULL);
-	return (rv >= 0 && rv < len ? buf : NULL);
+	return (rv >= 0 && (size_t)rv < len ? buf : NULL);
 }
 
 /*
@@ -593,13 +593,17 @@ ctf_type_align(ctf_file_t *fp, ctf_id_t type)
 			const ctf_member_t *mp = vmp;
 			for (; n != 0; n--, mp++) {
 				ssize_t am = ctf_type_align(fp, mp->ctm_type);
-				align = MAX(align, am);
+
+				if (am > 0)
+					align = MAX(align, (size_t)am);
 			}
 		} else {
 			const ctf_lmember_t *lmp = vmp;
 			for (; n != 0; n--, lmp++) {
 				ssize_t am = ctf_type_align(fp, lmp->ctlm_type);
-				align = MAX(align, am);
+
+				if (am > 0)
+					align = MAX(align, (size_t)am);
 			}
 		}
 
@@ -1070,7 +1074,7 @@ ctf_func_args_by_id(ctf_file_t *fp, ctf_id_t type, uint_t argc, ctf_id_t *argv)
 	ctf_file_t *ofp = fp;
 	const ctf_type_t *tp;
 	const ushort_t *dp;
-	int nargs;
+	uint_t nargs;
 	ssize_t increment;
 
 	if ((tp = ctf_lookup_by_id(&fp, type)) == NULL)
@@ -1096,7 +1100,8 @@ ctf_func_args_by_id(ctf_file_t *fp, ctf_id_t type, uint_t argc, ctf_id_t *argv)
 int
 ctf_object_iter(ctf_file_t *fp, ctf_object_f *func, void *arg)
 {
-	int i, ret;
+	ulong_t i;
+	int ret;
 	ctf_id_t id;
 	uintptr_t symbase = (uintptr_t)fp->ctf_symtab.cts_data;
 	uintptr_t strbase = (uintptr_t)fp->ctf_strtab.cts_data;
@@ -1145,7 +1150,8 @@ ctf_object_iter(ctf_file_t *fp, ctf_object_f *func, void *arg)
 int
 ctf_function_iter(ctf_file_t *fp, ctf_function_f *func, void *arg)
 {
-	int i, ret;
+	ulong_t i;
+	int ret;
 	uintptr_t symbase = (uintptr_t)fp->ctf_symtab.cts_data;
 	uintptr_t strbase = (uintptr_t)fp->ctf_strtab.cts_data;
 
@@ -1288,7 +1294,7 @@ ctf_string_iter(ctf_file_t *fp, ctf_string_f *func, void *arg)
  * format, the valid values for kind will change.
  */
 const char *
-ctf_kind_name(ctf_file_t *fp, int kind)
+ctf_kind_name(ctf_file_t *fp __unused, int kind)
 {
 	switch (kind) {
 	case CTF_K_INTEGER:

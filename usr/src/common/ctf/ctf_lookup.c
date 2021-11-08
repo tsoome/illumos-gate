@@ -63,7 +63,7 @@ isqualifier(const char *s, size_t len)
 	int h = s[len - 1] + (int)len - 105;
 	const struct qual *qp = &qhash[h];
 
-	return (h >= 0 && h < sizeof (qhash) / sizeof (qhash[0]) &&
+	return (h >= 0 && (unsigned)h < sizeof (qhash) / sizeof (qhash[0]) &&
 	    len == qp->q_len && strncmp(qp->q_name, s, qp->q_len) == 0);
 }
 
@@ -227,7 +227,7 @@ ctf_lookup_by_id(ctf_file_t **fpp, ctf_id_t type)
 	}
 
 	type = CTF_TYPE_TO_INDEX(type);
-	if (type > 0 && type <= fp->ctf_typemax) {
+	if (type > 0 && (ulong_t)type <= fp->ctf_typemax) {
 		*fpp = fp; /* function returns ending CTF container */
 		return (LCTF_INDEX_TO_TYPEPTR(fp, type));
 	}

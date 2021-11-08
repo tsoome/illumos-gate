@@ -370,7 +370,8 @@ ctf_merge_add_enum(ctf_merge_types_t *cmp, ctf_id_t id)
 static int
 ctf_merge_add_func(ctf_merge_types_t *cmp, ctf_id_t id)
 {
-	int ret, flags, i;
+	uint_t i;
+	int ret, flags;
 	const ctf_type_t *tp;
 	ctf_funcinfo_t ctc;
 	ctf_id_t *argv;
@@ -666,7 +667,7 @@ ctf_merge_fixup_type(ctf_merge_types_t *cmp, ctf_id_t id)
 static void
 ctf_merge_dedup_remap(ctf_merge_types_t *cmp)
 {
-	int i;
+	ulong_t i;
 
 	for (i = 1; i < cmp->cm_src->ctf_typemax + 1; i++) {
 		ctf_id_t tid;
@@ -707,7 +708,8 @@ ctf_merge_dedup_remap(ctf_merge_types_t *cmp)
 static int
 ctf_merge_common(ctf_merge_types_t *cmp)
 {
-	int ret, i;
+	ulong_t i;
+	int ret;
 
 	ctf_phase_dump(cmp->cm_src, "merge-common-src", NULL);
 	ctf_phase_dump(cmp->cm_out, "merge-common-dest", NULL);
@@ -764,7 +766,8 @@ ctf_merge_common(ctf_merge_types_t *cmp)
 static int
 ctf_merge_uniquify_types(ctf_merge_types_t *cmp)
 {
-	int i, ret;
+	ulong_t i;
+	int ret;
 
 	for (i = 1; i <= cmp->cm_src->ctf_typemax; i++) {
 		if (cmp->cm_tmap[i].cmt_missing == B_FALSE)
@@ -827,7 +830,7 @@ ctf_merge_fixup_symmaps(ctf_merge_types_t *cmp, ctf_merge_input_t *cmi)
 
 	for (cmf = list_head(&cmi->cmi_fmap); cmf != NULL;
 	    cmf = list_next(&cmi->cmi_fmap, cmf)) {
-		int i;
+		uint_t i;
 
 		VERIFY(cmp->cm_tmap[cmf->cmf_rtid].cmt_map != 0);
 		cmf->cmf_rtid = cmp->cm_tmap[cmf->cmf_rtid].cmt_map;
@@ -845,7 +848,7 @@ ctf_merge_fixup_symmaps(ctf_merge_types_t *cmp, ctf_merge_input_t *cmi)
  * writeable.
  */
 static int
-ctf_merge_types(void *arg, void *arg2, void **outp, void *unsued)
+ctf_merge_types(void *arg, void *arg2, void **outp, void *unsued __unused)
 {
 	int ret;
 	ctf_merge_types_t cm;
@@ -1137,7 +1140,7 @@ ctf_merge_add_object(ctf_merge_input_t *cmi, ctf_id_t id, ulong_t idx,
 
 static int
 ctf_merge_add_symbol(const Elf64_Sym *symp, ulong_t idx, const char *file,
-    const char *name, boolean_t primary, void *arg)
+    const char *name, boolean_t primary __unused, void *arg)
 {
 	ctf_merge_input_t *cmi = arg;
 	ctf_file_t *fp = cmi->cmi_input;
@@ -1370,7 +1373,7 @@ ctf_merge_symbol_match(const char *ctf_file, const char *ctf_name,
  */
 static int
 ctf_merge_symbols(const Elf64_Sym *symp, ulong_t idx, const char *file,
-    const char *name, boolean_t primary, void *arg)
+    const char *name, boolean_t primary __unused, void *arg)
 {
 	int err;
 	uint_t type, bind;
@@ -1561,8 +1564,8 @@ ctf_merge_merge(ctf_merge_t *cmh, ctf_file_t **outp)
  * to the extant ones.
  */
 static void
-ctf_dedup_cb(ctf_file_t *ifp, ctf_id_t iid, boolean_t same, ctf_file_t *ofp,
-    ctf_id_t oid, void *arg)
+ctf_dedup_cb(ctf_file_t *ifp __unused, ctf_id_t iid, boolean_t same,
+    ctf_file_t *ofp __unused, ctf_id_t oid, void *arg)
 {
 	ctf_merge_types_t *cmp = arg;
 	ctf_merge_tinfo_t *cmt = cmp->cm_tmap;

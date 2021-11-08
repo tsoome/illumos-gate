@@ -253,7 +253,8 @@ static int
 ctf_diff_fptr(ctf_diff_t *cds, ctf_file_t *ifp, ctf_id_t iid, ctf_file_t *ofp,
     ctf_id_t oid)
 {
-	int ret, i;
+	uint_t i;
+	int ret;
 	ctf_funcinfo_t ifunc, ofunc;
 	ctf_id_t *iids, *oids;
 
@@ -445,9 +446,8 @@ typedef struct ctf_diff_union_fp {
 	int cduf_ret;
 } ctf_diff_union_fp_t;
 
-/* ARGSUSED */
 static int
-ctf_diff_union_check_member(const char *name, ctf_id_t id, ulong_t off,
+ctf_diff_union_check_member(const char *name, ctf_id_t id, ulong_t off __unused,
     void *arg)
 {
 	int ret;
@@ -472,9 +472,9 @@ ctf_diff_union_check_member(const char *name, ctf_id_t id, ulong_t off,
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-ctf_diff_union_check_fp(const char *name, ctf_id_t id, ulong_t off, void *arg)
+ctf_diff_union_check_fp(const char *name, ctf_id_t id, ulong_t off __unused,
+    void *arg)
 {
 	int ret;
 	ctf_diff_union_member_t cdum;
@@ -901,20 +901,12 @@ void
 ctf_diff_fini(ctf_diff_t *cds)
 {
 	ctf_diff_guess_t *cdg;
-	size_t fsize, rsize;
 
 	if (cds == NULL)
 		return;
 
 	cds->cds_ifp->ctf_refcnt--;
 	cds->cds_ofp->ctf_refcnt--;
-
-	fsize = sizeof (ctf_id_t) * cds->cds_ifp->ctf_typemax;
-	rsize = sizeof (ctf_id_t) * cds->cds_ofp->ctf_typemax;
-	if (cds->cds_ifp->ctf_flags & LCTF_CHILD)
-		fsize += CTF_CHILD_START * sizeof (ctf_id_t);
-	if (cds->cds_ofp->ctf_flags & LCTF_CHILD)
-		rsize += CTF_CHILD_START * sizeof (ctf_id_t);
 
 	if (cds->cds_ifuncs != NULL)
 		ctf_free(cds->cds_ifuncs,
@@ -982,17 +974,16 @@ ctf_diff_symid(ctf_diff_t *cds, ctf_id_t iid, ctf_id_t oid)
 	return (ctf_diff_type(cds, ifp, iid, ofp, oid));
 }
 
-/* ARGSUSED */
 static void
-ctf_diff_void_cb(ctf_file_t *ifp, ctf_id_t iid, boolean_t same, ctf_file_t *ofp,
-    ctf_id_t oid, void *arg)
+ctf_diff_void_cb(ctf_file_t *ifp __unused, ctf_id_t iid __unused,
+    boolean_t same __unused, ctf_file_t *ofp __unused,
+    ctf_id_t oid __unused, void *arg __unused)
 {
 }
 
-/* ARGSUSED */
 static int
-ctf_diff_func_count(const char *name, ulong_t symidx, ctf_funcinfo_t *fip,
-    void *arg)
+ctf_diff_func_count(const char *name __unused, ulong_t symidx __unused,
+    ctf_funcinfo_t *fip __unused, void *arg)
 {
 	uint32_t *ip = arg;
 
@@ -1000,10 +991,9 @@ ctf_diff_func_count(const char *name, ulong_t symidx, ctf_funcinfo_t *fip,
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-ctf_diff_func_fill_cb(const char *name, ulong_t symidx, ctf_funcinfo_t *fip,
-    void *arg)
+ctf_diff_func_fill_cb(const char *name, ulong_t symidx,
+    ctf_funcinfo_t *fip __unused, void *arg)
 {
 	uint_t *next, max;
 	ctf_diff_func_t *funcptr;
@@ -1241,9 +1231,9 @@ ctf_diff_obj_fill_cb(const char *name, ctf_id_t id, ulong_t symidx, void *arg)
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-ctf_diff_obj_count(const char *name, ctf_id_t id, ulong_t symidx, void *arg)
+ctf_diff_obj_count(const char *name __unused, ctf_id_t id __unused,
+    ulong_t symidx __unused, void *arg)
 {
 	uint32_t *count = arg;
 

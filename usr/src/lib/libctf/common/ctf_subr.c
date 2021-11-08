@@ -66,23 +66,20 @@ workq_alloc(size_t size)
 	return (malloc(size));
 }
 
-/*ARGSUSED*/
 void
-ctf_free(void *buf, size_t size)
+ctf_free(void *buf, size_t size __unused)
 {
 	free(buf);
 }
 
-/*ARGSUSED*/
 void
-mergeq_free(void *buf, size_t size)
+mergeq_free(void *buf, size_t size __unused)
 {
 	free(buf);
 }
 
-/*ARGSUSED*/
 void
-workq_free(void *buf, size_t size)
+workq_free(void *buf, size_t size __unused)
 {
 	free(buf);
 }
