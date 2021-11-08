@@ -24,9 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"@(#)lintdump.c	1.6	06/06/04 SMI (from meem)"
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Tool for dumping lint libraries.
  */
@@ -166,7 +163,7 @@ print_lintmod(const char *lnname, FILE *fp, FLENS *hp)
 	    hp->f1, hp->f2, hp->f3, hp->f4, hp->f1 + hp->f2 + hp->f3 + hp->f4);
 
 	for (pass = 1; pass <= 4; pass++) {
-		if ((justpass < 0 || justpass == pass) && pass < 4) {
+		if ((justpass < 0 || justpass == (int)pass) && pass < 4) {
 			infohdr("SECTION", "PASS%u: %lu bytes\n", pass,
 			    psizes[pass]);
 			print_pass(lnname, fp);
@@ -227,7 +224,8 @@ print_pass(const char *lnname, FILE *fp)
 			if (args == NULL)
 				die("cannot allocate argument information");
 
-			if (fread(args, sizeof (atype), nargs, fp) != nargs)
+			if ((int)fread(args, sizeof (atype), nargs, fp) !=
+			    nargs)
 				die("%s: unexpected end of file\n", lnname);
 
 			print_atype(&line.type, line.nargs, args, name);
