@@ -588,7 +588,8 @@ write_glyph_source(const void *ptr, size_t size, size_t nitems, FILE *stream)
 
 /* Write to buffer */
 static size_t
-write_glyph_buf(const void *ptr, size_t size, size_t nitems, FILE *stream)
+write_glyph_buf(const void *ptr, size_t size, size_t nitems,
+    FILE *stream __unused)
 {
 	static size_t index = 0;
 
