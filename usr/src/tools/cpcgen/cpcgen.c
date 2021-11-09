@@ -120,7 +120,7 @@ static cpc_whitelist_t cpcgen_intel_whitelist[] = {
 	{ "GLM", "glm", CPC_FILE_CORE },
 	{ "GLP", "glp", CPC_FILE_CORE },
 	{ "SNR", "snr", CPC_FILE_CORE },
-	{ NULL }
+	{ NULL, NULL, 0 }
 };
 
 typedef struct cpc_papi {
@@ -158,8 +158,8 @@ static cpc_papi_t cpcgen_intel_papi_map[] = {
 	{ "PAGE_WALKS.I_SIDE_WALKS", "PAPI_tlb_im" },
 	{ "PAGE_WALKS.WALKS", "PAPI_tlb_tl" },
 	{ "INST_QUEUE_WRITES", "PAPI_tot_iis" },
-	{ "MEM_INST_RETIRED.STORES" "PAPI_sr_ins" },
-	{ "MEM_INST_RETIRED.LOADS" "PAPI_ld_ins" },
+	{ "MEM_INST_RETIRED.STORES", "PAPI_sr_ins" },
+	{ "MEM_INST_RETIRED.LOADS", "PAPI_ld_ins" },
 	{ NULL, NULL }
 };
 
@@ -1214,7 +1214,7 @@ cpcgen_common_intel_files(int dirfd)
 	FILE *f;
 	cpc_map_t *map;
 
-	if (asprintf(&tmpname, ".%s.%d", fname, getpid()) == -1) {
+	if (asprintf(&tmpname, ".%s.%ld", fname, getpid()) == -1) {
 		err(EXIT_FAILURE, "failed to construct temporary file name");
 	}
 
@@ -1283,7 +1283,7 @@ cpcgen_common_intel_files(int dirfd)
 
 	/* Now again for the .c file. */
 	fname = "core_pcbe_cpcgen.c";
-	if (asprintf(&tmpname, ".%s.%d", fname, getpid()) == -1) {
+	if (asprintf(&tmpname, ".%s.%ld", fname, getpid()) == -1) {
 		err(EXIT_FAILURE, "failed to construct temporary file name");
 	}
 
@@ -1622,7 +1622,7 @@ cpcgen_common_amd_files(int dirfd)
 	FILE *f;
 	cpc_map_t *map;
 
-	if (asprintf(&tmpname, ".%s.%d", fname, getpid()) == -1) {
+	if (asprintf(&tmpname, ".%s.%ld", fname, getpid()) == -1) {
 		err(EXIT_FAILURE, "failed to construct temporary file name");
 	}
 
@@ -1831,7 +1831,7 @@ cpcgen_gen(int dirfd)
 			exit(EXIT_FAILURE);
 		}
 
-		if (asprintf(&tmpname, ".%s.%d", name, getpid()) == -1) {
+		if (asprintf(&tmpname, ".%s.%ld", name, getpid()) == -1) {
 			err(EXIT_FAILURE, "failed to construct temporary file "
 			    "name");
 		}

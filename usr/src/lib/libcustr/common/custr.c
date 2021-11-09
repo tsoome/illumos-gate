@@ -192,7 +192,7 @@ custr_append_vprintf(custr_t *cus, const char *fmt, va_list ap)
 		return (len);
 	}
 
-	while (chunksz < len) {
+	while (chunksz < (size_t)len) {
 		chunksz *= 2;
 	}
 
