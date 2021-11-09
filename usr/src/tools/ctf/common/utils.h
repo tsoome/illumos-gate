@@ -27,8 +27,6 @@
 #ifndef	_UTILS_H
 #define	_UTILS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdarg.h>
 
 #ifdef	__cplusplus
@@ -41,8 +39,8 @@ extern "C" {
 
 extern void vwarn(const char *, va_list);
 extern void warn(const char *, ...);
-extern void vdie(const char  *, va_list);
-extern void die(const char *, ...);
+extern void vdie(const char  *, va_list) __NORETURN;
+extern void die(const char *, ...) __NORETURN;
 
 extern const char *getpname(void);
 

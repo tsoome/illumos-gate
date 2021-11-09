@@ -238,7 +238,7 @@ ga_member_cb(const char *name, ctf_id_t type, ulong_t off, void *arg)
 	}
 
 	if (md->gmcb_offdef == NULL) {
-		int i;
+		size_t i;
 
 		label = md->gmcb_memname;
 		for (i = 0; i < strlen(label); i++)

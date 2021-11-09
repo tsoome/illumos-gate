@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Used to dump enums in forth mode.
  *
@@ -51,17 +49,15 @@ fth_enum_header(ctf_id_t tid)
 	return (0);
 }
 
-/*ARGSUSED*/
 static int
-fth_enum_members(char *memfilter, char *format)
+fth_enum_members(char *memfilter __unused, char *format __unused)
 {
 	return (parse_warn("Member-specific mode cannot be used for "
 	    " enums"));
 }
 
-/*ARGSUSED2*/
 static int
-fth_enum_cb(const char *name, int value, void *arg)
+fth_enum_cb(const char *name, int value, void *arg __unused)
 {
 	(void) fprintf(out, "here ,\" %s\" %x\n", name, value);
 	fth_enum_curnmems++;

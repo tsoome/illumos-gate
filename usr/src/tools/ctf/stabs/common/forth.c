@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * In this mode, we generate forthdebug macros as requested by the input
  * template, the format of which is given below.
@@ -124,16 +122,14 @@ fth_init(char *model)
 	return (0);
 }
 
-/*ARGSUSED*/
 static int
-fth_null_header(ctf_id_t tid)
+fth_null_header(ctf_id_t tid __unused)
 {
 	return (0);
 }
 
-/*ARGSUSED*/
 static int
-fth_null_members(char *memfilter, char *format)
+fth_null_members(char *memfilter __unused, char *format __unused)
 {
 	return (0);
 }
@@ -150,9 +146,9 @@ static fth_type_ops_t fth_null_ops = {
 	fth_null_trailer
 };
 
-/*ARGSUSED2*/
 static int
-find_member_cb(const char *memname, ctf_id_t tid, ulong_t off, void *arg)
+find_member_cb(const char *memname, ctf_id_t tid, ulong_t off __unused,
+    void *arg)
 {
 	char *memtofind = arg;
 

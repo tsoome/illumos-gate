@@ -172,10 +172,9 @@ ctfdump_title(ctfdump_arg_t arg, const char *header)
 }
 
 static int
-ctfdump_objects_cb(const char *name, ctf_id_t id, ulong_t symidx, void *arg)
+ctfdump_objects_cb(const char *name, ctf_id_t id, ulong_t symidx,
+    void *arg __unused)
 {
-	_NOTE(ARGUNUSED(arg));
-
 	int len;
 
 	len = snprintf(NULL, 0, "  [%lu] %ld", g_stats.cs_ndata, id);
@@ -210,10 +209,9 @@ ctfdump_fargs_grow(int nargs)
 
 static int
 ctfdump_functions_cb(const char *name, ulong_t symidx, ctf_funcinfo_t *ctc,
-    void *arg)
+    void *arg __unused)
 {
-	_NOTE(ARGUNUSED(arg));
-	int i;
+	uint_t i;
 
 	if (ctc->ctc_argc != 0) {
 		ctfdump_fargs_grow(ctc->ctc_argc);
@@ -287,9 +285,8 @@ ctfdump_header(void)
 }
 
 static int
-ctfdump_labels_cb(const char *name, const ctf_lblinfo_t *li, void *arg)
+ctfdump_labels_cb(const char *name, const ctf_lblinfo_t *li, void *arg __unused)
 {
-	_NOTE(ARGUNUSED(arg));
 	ctfdump_printf(CTFDUMP_LABELS, "  %5ld %s\n", li->ctb_typeidx, name);
 	return (0);
 }
@@ -500,10 +497,10 @@ ctfdump_enum_cb(const char *name, int value, void *arg)
 }
 
 static int
-ctfdump_types_cb(ctf_id_t id, boolean_t root, void *arg)
+ctfdump_types_cb(ctf_id_t id, boolean_t root, void *arg __unused)
 {
-	_NOTE(ARGUNUSED(arg));
-	int kind, i, count;
+	uint_t i, count;
+	int kind;
 	ctf_id_t ref;
 	char name[MAX_NAMELEN], ienc[128];
 	const char *encn;
@@ -605,7 +602,8 @@ ctfdump_types_cb(ctf_id_t id, boolean_t root, void *arg)
 			g_stats.cs_nsmembs += count;
 			g_stats.cs_nsmax = MAX(count, g_stats.cs_nsmax);
 			g_stats.cs_structsz += size;
-			g_stats.cs_sszmax = MAX(size, g_stats.cs_sszmax);
+			g_stats.cs_sszmax = MAX((ulong_t)size,
+			    g_stats.cs_sszmax);
 		} else {
 			g_stats.cs_numembs += count;
 			g_stats.cs_numax = MAX(count, g_stats.cs_numax);
@@ -709,9 +707,9 @@ ctfsrc_refname(ctf_id_t id, char *buf, size_t bufsize)
 }
 
 static int
-ctfsrc_member_cb(const char *member, ctf_id_t type, ulong_t off, void *arg)
+ctfsrc_member_cb(const char *member, ctf_id_t type, ulong_t off,
+    void *arg __unused)
 {
-	_NOTE(ARGUNUSED(arg));
 	char name[MAX_NAMELEN];
 
 	if (ctf_type_cname(g_fp, type, name, sizeof (name), member) == NULL) {
@@ -738,9 +736,8 @@ ctfsrc_member_cb(const char *member, ctf_id_t type, ulong_t off, void *arg)
 }
 
 static int
-ctfsrc_enum_cb(const char *name, int value, void *arg)
+ctfsrc_enum_cb(const char *name, int value, void *arg __unused)
 {
-	_NOTE(ARGUNUSED(arg));
 	printf("\t%s = %d,\n", name, value);
 	return (0);
 }
@@ -754,9 +751,9 @@ is_anon_refname(const char *refname)
 }
 
 static int
-ctfsrc_collect_types_cb(ctf_id_t id, boolean_t root, void *arg)
+ctfsrc_collect_types_cb(ctf_id_t id, boolean_t root __unused,
+    void *arg __unused)
 {
-	_NOTE(ARGUNUSED(root, arg));
 	(void) ctf_type_name(g_fp, id, idnames[id].ci_name,
 	    sizeof (idnames[id].ci_name));
 	idnames[id].ci_id = id;
@@ -1084,7 +1081,7 @@ ctfdump_source(void)
 	 * Prep for any unknown types (most likely, they exist in the parent,
 	 * but we weren't given the -p option).
 	 */
-	for (size_t i = 0; i <= max_id; i++) {
+	for (ctf_id_t i = 0; i <= max_id; i++) {
 		(void) strlcpy(idnames[i].ci_name, "unknown_t",
 		    sizeof (idnames[i].ci_name));
 	}
@@ -1098,7 +1095,7 @@ ctfdump_source(void)
 
 	qsort(idnames, max_id, sizeof (ctf_idname_t), idname_compare);
 
-	for (size_t i = 0; i <= max_id; i++) {
+	for (ctf_id_t i = 0; i <= max_id; i++) {
 		if (idnames[i].ci_id != 0)
 			ctfsrc_type(idnames[i].ci_id, idnames[i].ci_name);
 	}

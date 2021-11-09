@@ -87,10 +87,9 @@ ctfdiff_fp_to_name(ctf_file_t *fp)
 	return (NULL);
 }
 
-/* ARGSUSED */
 static void
 ctfdiff_func_cb(ctf_file_t *ifp, ulong_t iidx, boolean_t similar,
-    ctf_file_t *ofp, ulong_t oidx, void *arg)
+    ctf_file_t *ofp __unused, ulong_t oidx __unused, void *arg __unused)
 {
 	char namebuf[CTFDIFF_NAMELEN];
 
@@ -119,10 +118,10 @@ ctfdiff_func_cb(ctf_file_t *ifp, ulong_t iidx, boolean_t similar,
 	g_different = B_TRUE;
 }
 
-/* ARGSUSED */
 static void
-ctfdiff_obj_cb(ctf_file_t *ifp, ulong_t iidx, ctf_id_t iid, boolean_t similar,
-    ctf_file_t *ofp, ulong_t oidx, ctf_id_t oid, void *arg)
+ctfdiff_obj_cb(ctf_file_t *ifp, ulong_t iidx, ctf_id_t iid __unused,
+    boolean_t similar, ctf_file_t *ofp __unused, ulong_t oidx __unused,
+    ctf_id_t oid __unused, void *arg __unused)
 {
 	char namebuf[CTFDIFF_NAMELEN];
 
@@ -151,10 +150,9 @@ ctfdiff_obj_cb(ctf_file_t *ifp, ulong_t iidx, ctf_id_t iid, boolean_t similar,
 	g_different = B_TRUE;
 }
 
-/* ARGSUSED */
 static void
-ctfdiff_cb(ctf_file_t *ifp, ctf_id_t iid, boolean_t similar, ctf_file_t *ofp,
-    ctf_id_t oid, void *arg)
+ctfdiff_cb(ctf_file_t *ifp, ctf_id_t iid, boolean_t similar,
+    ctf_file_t *ofp __unused, ctf_id_t oid __unused, void *arg __unused)
 {
 	if (similar == B_TRUE)
 		return;
@@ -195,9 +193,9 @@ ctfdiff_cb(ctf_file_t *ifp, ctf_id_t iid, boolean_t similar, ctf_file_t *ofp,
 	    ctfdiff_fp_to_name(ifp), iid);
 }
 
-/* ARGSUSED */
 static int
-ctfdiff_labels_count(const char *name, const ctf_lblinfo_t *li, void *arg)
+ctfdiff_labels_count(const char *name __unused,
+    const ctf_lblinfo_t *li __unused, void *arg)
 {
 	uint32_t *count = arg;
 	*count = *count + 1;
@@ -205,9 +203,9 @@ ctfdiff_labels_count(const char *name, const ctf_lblinfo_t *li, void *arg)
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-ctfdiff_labels_fill(const char *name, const ctf_lblinfo_t *li, void *arg)
+ctfdiff_labels_fill(const char *name, const ctf_lblinfo_t *li __unused,
+    void *arg)
 {
 	ctfdiff_label_t *dil = arg;
 

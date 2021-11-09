@@ -54,7 +54,7 @@ ctfconvert_fatal(const char *fmt, ...)
 }
 
 static void
-ctfconvert_warning(void *arg, const char *fmt, ...)
+ctfconvert_warning(void *arg __unused, const char *fmt, ...)
 {
 	va_list ap;
 	char *buf;
@@ -129,10 +129,9 @@ typedef struct ctfconvert_fixup {
 	ulong_t		cf_padoff;	/* offset of the pad */
 } ctfconvert_fixup_t;
 
-/* ARGSUSED */
 static int
-ctfconvert_fixup_genunix_cb(const char *name, ctf_id_t tid, ulong_t off,
-    void *arg)
+ctfconvert_fixup_genunix_cb(const char *name, ctf_id_t tid __unused,
+    ulong_t off, void *arg)
 {
 	ctfconvert_fixup_t *cfp = arg;
 
@@ -192,7 +191,7 @@ ctfconvert_fixup_genunix(ctf_file_t *fp)
 		return;
 	}
 
-	if (cf.cf_padoff + ptrsz * NBBY != sz * NBBY) {
+	if (cf.cf_padoff + ptrsz * NBBY != (ulong_t)sz * NBBY) {
 		return;
 	}
 
