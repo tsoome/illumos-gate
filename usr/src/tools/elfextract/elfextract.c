@@ -57,7 +57,7 @@ extract32(Elf32_Ehdr *eh)
 	Elf32_Phdr *phdr;
 	caddr_t allphdrs;
 	int i;
-	int c;
+	Elf32_Word c;
 	unsigned char *bytes;
 	uint_t cnt = 10;
 
@@ -127,7 +127,7 @@ extract64(Elf64_Ehdr *eh)
 	Elf64_Phdr *phdr;
 	caddr_t allphdrs;
 	int i;
-	int c;
+	Elf64_Xword c;
 	unsigned char *bytes;
 	uint_t cnt = 10;
 
@@ -198,7 +198,6 @@ main(int argc, char **argv)
 	uchar_t *ident;
 	void *hdr = NULL;
 	struct stat stats;
-	ssize_t r;
 	size_t pgsz;
 	uint_t len;
 
