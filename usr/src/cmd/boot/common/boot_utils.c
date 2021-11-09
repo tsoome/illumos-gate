@@ -56,7 +56,7 @@ boot_gdebug(const char *funcname, char *format, ...)
 int
 write_out(int fd, void *buffer, size_t size, off_t off)
 {
-	int		ret;
+	ssize_t		ret;
 	char		*buf = buffer;
 
 	if (size % SECTOR_SIZE != 0)
@@ -75,7 +75,7 @@ write_out(int fd, void *buffer, size_t size, off_t off)
 			else
 				return (BC_ERROR);
 			}
-		if (ret < size) {
+		if ((size_t)ret < size) {
 			size -= ret;
 			off += ret;
 			buf += ret;
@@ -89,7 +89,7 @@ write_out(int fd, void *buffer, size_t size, off_t off)
 int
 read_in(int fd, void *buffer, size_t size, off_t off)
 {
-	int		ret;
+	ssize_t		ret;
 	char		*buf = buffer;
 
 	if (size % SECTOR_SIZE != 0)
@@ -104,7 +104,7 @@ read_in(int fd, void *buffer, size_t size, off_t off)
 			else
 				return (BC_ERROR);
 			}
-		if (ret < size) {
+		if ((size_t)ret < size) {
 			size -= ret;
 			off += ret;
 			buf += ret;

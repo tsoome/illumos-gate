@@ -346,7 +346,7 @@ gethdr(int fd, struct hdr *hdr)
     memset(hdr, 0, sizeof(*hdr));
     if (fstat(fd, &sb))
 	err(2, "%s", fname);
-    if (sb.st_size > UINT32_MAX)
+    if (sb.st_size > INT32_MAX)
 	errx(1, "%s: Too big", fname);
     hdr->size = sb.st_size;
     if (!hdr->size)

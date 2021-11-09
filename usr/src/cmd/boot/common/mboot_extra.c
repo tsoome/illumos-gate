@@ -46,7 +46,7 @@ compute_checksum(char *data, uint32_t size)
 {
 	uint32_t	*ck_ptr;
 	uint32_t	cksum = 0;
-	int		i;
+	uint32_t	i;
 
 	ck_ptr = (uint32_t *)data;
 	for (i = 0; i < size; i += sizeof (uint32_t))
@@ -63,7 +63,7 @@ find_multiboot(char *buffer, uint32_t buf_size, uint32_t *mboot_off)
 	uint32_t		*iter;
 	uint32_t		cksum;
 	uint32_t		boundary;
-	int			i = 0;
+	uint32_t		i = 0;
 
 	iter = (uint32_t *)buffer;
 	*mboot_off = 0;
