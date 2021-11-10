@@ -345,7 +345,7 @@ generate_member(ndr_typeinfo_t *ti, ndr_member_t *mem)
 	int		is_reference = 0;
 	char		*memkind = 0;
 	int		cond_pending = 0;
-	int		i;
+	unsigned	i;
 
 	if (ti->advice.a_operation)
 		memkind = "TOPMOST_";
@@ -482,9 +482,8 @@ generate_aggregate_common_begin(ndr_typeinfo_t *ti)
 	(void) printf("\n");
 }
 
-/* ARGSUSED */
 static void
-generate_aggregate_common_finish(ndr_typeinfo_t *ti)
+generate_aggregate_common_finish(ndr_typeinfo_t *ti __unused)
 {
 	(void) printf("\n");
 	(void) printf("	return 1;\n");

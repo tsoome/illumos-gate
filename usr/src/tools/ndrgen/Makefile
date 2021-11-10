@@ -35,7 +35,7 @@ include ../Makefile.tools
 
 CFLAGS += $(CCVERBOSE)
 CERRWARN += $(CNOWARN_UNINIT)
-CERRWARN += -_gcc=-Wno-unused
+CERRWARN += -_gcc=-Wno-unused -_clang=-Wno-unused-label
 
 CLEANFILES += $(OBJS) y.tab.c y.tab.h
 
