@@ -374,9 +374,8 @@ atfield(void)
 
 /* search for the symbol or text pattern */
 
-/*ARGSUSED*/
 SIGTYPE
-jumpback(int sig)
+jumpback(int sig __unused)
 {
 	longjmp(env, 1);
 }

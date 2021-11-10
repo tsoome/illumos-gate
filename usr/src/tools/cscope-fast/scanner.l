@@ -33,7 +33,6 @@
  *
  *	C symbol scanner
  */
-#ident	"@(#)scanner.l	1.2	93/06/07 SMI"
 #include "global.h"
 
 /* the line counting has been moved from character reading for speed */
@@ -100,6 +99,7 @@ static	BOOL	asy;			/* assembly file */
 
 void multicharconstant(char terminator);
 int do_assembly(int token);
+int comment(void);
 %}
 identifier	[a-zA-Z_][a-zA-Z_0-9]*
 number		\.?[0-9][.0-9a-fA-FlLuUxX]*
@@ -278,7 +278,7 @@ number		\.?[0-9][.0-9a-fA-FlLuUxX]*
 				return (ESUEND);
 			}
 			/* if the end of a function */
-			if ((braces == 0 || braces == 1 && classdef == YES) &&
+			if ((braces == 0 || (braces == 1 && classdef == YES)) &&
 			    fcndef == YES) {
 				fcndef = NO;
 				globalscope = YES;
@@ -410,8 +410,8 @@ class[ \t]+{identifier}[ \t\n\ra-zA-Z0-9_():]*\{	{
 			 * note: "#define a (b) {" and "#if defined(a)\n#"
 			 * are not
 			 */
-			if (braces == 0 && notpp() && rules == NO ||
-			    braces == 1 && classdef == YES) {
+			if ((braces == 0 && notpp() && rules == NO) ||
+			    (braces == 1 && classdef == YES)) {
 				fcndef = YES;
 				token = FCNDEF;
 				globalscope = NO;

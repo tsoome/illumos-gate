@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	cscope - interactive C symbol cross-reference
  *
@@ -319,11 +317,11 @@ issrcfile(char *file)
 				return (YES);
 			}
 		} else if (s[2] == '\0') {	/* 2 character suffix */
-			if (*s == 'b' && s[1] == 'p' ||	/* breakpoint listing */
-			    *s == 'q' &&
-				(s[1] == 'c' || s[1] == 'h') || /* Ingres */
-			    *s == 'p' && s[1] == 'r' ||	/* SDL */
-			    *s == 's' && s[1] == 'd') {	/* SDL */
+			if ((*s == 'b' && s[1] == 'p') || /* breakpoint listing */
+			    (*s == 'q' &&
+				(s[1] == 'c' || s[1] == 'h')) || /* Ingres */
+			    (*s == 'p' && s[1] == 'r') ||	/* SDL */
+			    (*s == 's' && s[1] == 'd')) {	/* SDL */
 
 				/*
 				 * some directories have 2 character

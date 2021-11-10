@@ -42,9 +42,8 @@ static	int	prevchar;	/* previous, ungotten character */
 
 /* catch the interrupt signal */
 
-/*ARGSUSED*/
 SIGTYPE
-catchint(int sig)
+catchint(int sig __unused)
 {
 	(void) signal(SIGINT, catchint);
 	longjmp(env, 1);
@@ -90,8 +89,8 @@ mygetch(void)
 int
 getaline(char s[], size_t size, int firstchar, BOOL iscaseless)
 {
-	int	c, i = 0;
-	int	j;
+	int	c;
+	unsigned i = 0, j;
 
 	/* if a character already has been typed */
 	if (firstchar != '\0') {

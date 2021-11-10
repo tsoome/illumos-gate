@@ -28,8 +28,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	cscope - interactive C symbol cross-reference
  *
@@ -104,7 +102,7 @@ static	struct	keystruct *hashtab[HASHMOD]; /* pointer table */
 void
 initsymtab(void)
 {
-	int	i, j;
+	unsigned	i, j;
 	struct	keystruct *p;
 
 	for (i = 1; i < KEYWORDS; ++i) {

@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -387,7 +385,7 @@ invnewterm(void)
 #endif
 		}
 		/* check that room for the offset as well */
-		if ((numlogblk + 10) > supintsize) {
+		if ((unsigned)(numlogblk + 10) > supintsize) {
 			i = supint - SUPINT;
 			supintsize += SUPERINC;
 			if ((SUPINT = realloc((char *)SUPINT,

@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	cscope - interactive C symbol cross-reference
  *
@@ -357,8 +355,8 @@ main(int argc, char **argv)
 			}
 			/* if there is a file of source file names */
 			if (namefile != NULL &&
-			    (names = vpfopen(namefile, "r")) != NULL ||
-			    (names = vpfopen(NAMEFILE, "r")) != NULL) {
+			    ((names = vpfopen(namefile, "r")) != NULL ||
+			    (names = vpfopen(NAMEFILE, "r")) != NULL)) {
 
 				/* read any -p option from it */
 				while (fscanf(names, "%s", path) == 1 &&
@@ -1055,7 +1053,7 @@ build(void)
 		if (samelist(oldrefs, srcdirs, nsrcdirs) == NO ||
 		    samelist(oldrefs, incdirs, nincdirs) == NO ||
 		    fscanf(oldrefs, "%d", &oldnum) != 1 ||
-		    fileversion >= 9 && fscanf(oldrefs, "%*s") != 0) {
+		    (fileversion >= 9 && fscanf(oldrefs, "%*s") != 0)) {
 			/* skip the string space size */
 			goto outofdate;
 		}

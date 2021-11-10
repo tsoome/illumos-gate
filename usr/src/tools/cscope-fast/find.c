@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * 	cscope - interactive C symbol or text cross-reference
  *
@@ -1097,7 +1095,7 @@ putsource(FILE *output)
 	blockp = cp;
 	setmark(' ');	/* so getrefchar doesn't skip the last block char */
 	if (*blockp != '\n' || getrefchar() != '\n' ||
-	    !isdigit(getrefchar()) && fileversion >= 12) {
+	    (!isdigit(getrefchar()) && fileversion >= 12)) {
 		putmsg("Internal error: cannot get source line from database");
 		myexit(1);
 	}

@@ -28,8 +28,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	compath(pathname)
  *
@@ -131,10 +129,10 @@ compath(char *pathname)
 			 *	is not "." or ".."
 			 */
 
-			if ((*nextchar == '.') &&
-			    (*(nextchar + 1) == '/') ||
-			    ((*(nextchar + 1) == '.') &&
-			    (*(nextchar + 2) == '/'))) {
+			if ((*nextchar == '.' &&
+			    *(nextchar + 1) == '/') ||
+			    (*(nextchar + 1) == '.' &&
+			    *(nextchar + 2) == '/')) {
 				/* EMPTY */;
 			} else {
 

@@ -28,8 +28,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	cscope - interactive C symbol cross-reference
  *
@@ -39,22 +37,22 @@
 #include "global.h"	/* changing */
 
 static	MOUSEMENU mainmenu[] = {
-	"Send",		"##\033s##\r",
-	"Repeat",	"\01",
-	"Rebuild",	"\022",
-	"Help",		"?",
-	"Exit",		"\04",
-	0,		0
+	{ "Send",	"##\033s##\r" },
+	{ "Repeat",	"\01" },
+	{ "Rebuild",	"\022" },
+	{ "Help",	"?" },
+	{ "Exit",	"\04" },
+	{ NULL,		NULL }
 };
 
 static	MOUSEMENU changemenu[] = {
-	"Mark Screen",	"*",
-	"Mark All",	"a",
-	"Change",	"\04",
-	"Continue",	"\b",	/* key that will be ignored at Select prompt */
-	"Help",		"?",
-	"Exit",		"\r",
-	0,		0
+	{ "Mark Screen", "*" },
+	{ "Mark All",	"a" },
+	{ "Change",	"\04" },
+	{ "Continue",	"\b" },	/* key that will be ignored at Select prompt */
+	{ "Help",	"?" },
+	{ "Exit",	"\r" },
+	{ NULL,		NULL }
 };
 
 /* initialize the mouse menu */
