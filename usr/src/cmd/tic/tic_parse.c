@@ -179,7 +179,7 @@ void init_structure(short *, short *, short *);
  */
 
 void
-compile()
+compile(void)
 {
 	char			line[1024];
 	int			token_type;
