@@ -925,7 +925,8 @@ conv_bnd_type(uint_t flags, Conv_bnd_type_buf_t *bnd_type_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (bnd_type_buf->buf) };
+	    .bufsize = sizeof (bnd_type_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_STR_EMPTY));
@@ -974,7 +975,8 @@ conv_bnd_obj(uint_t flags, Conv_bnd_obj_buf_t *bnd_obj_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (bnd_obj_buf->buf) };
+	    .bufsize = sizeof (bnd_obj_buf->buf)
+	};
 
 	if ((flags & (LML_FLG_OBJADDED | LML_FLG_OBJREEVAL |
 	    LML_FLG_OBJDELETED | LML_FLG_ATEXIT)) == 0)

@@ -479,7 +479,7 @@ update_osym(Ofl_desc *ofl)
 	 * DT_REGISTER .dynamic entries must have a symbol to reference.
 	 */
 	if (ofl->ofl_regsyms && dynsym) {
-		int	ndx;
+		Word	ndx;
 
 		for (ndx = 0; ndx < ofl->ofl_regsymsno; ndx++) {
 			Sym_desc	*rsdp;
@@ -1568,8 +1568,7 @@ update_osym(Ofl_desc *ofl)
 					hashval =
 					    sap->sa_hash % ofl->ofl_hashbkts;
 
-					/* LINTED */
-					if (_hashndx = hashbkt[hashval]) {
+					if ((_hashndx = hashbkt[hashval])) {
 						while (hashchain[_hashndx]) {
 							_hashndx =
 							    hashchain[_hashndx];
@@ -2550,7 +2549,7 @@ update_odynamic(Ofl_desc *ofl)
 			dyn++;
 		}
 		if (ofl->ofl_regsymcnt) {
-			int	ndx;
+			Word	ndx;
 
 			for (ndx = 0; ndx < ofl->ofl_regsymsno; ndx++) {
 				if ((sdp = ofl->ofl_regsyms[ndx]) == NULL)
@@ -4512,16 +4511,16 @@ ld_update_outfile(Ofl_desc *ofl)
 		return (S_ERROR);
 	if (!(flags & FLG_OF_NOVERSEC)) {
 		if ((flags & FLG_OF_VERDEF) &&
-		    (update_overdef(ofl) == S_ERROR))
+		    ((uintptr_t)update_overdef(ofl) == S_ERROR))
 			return (S_ERROR);
 		if ((flags & FLG_OF_VERNEED) &&
-		    (update_overneed(ofl) == S_ERROR))
+		    ((uintptr_t)update_overneed(ofl) == S_ERROR))
 			return (S_ERROR);
 		if (flags & (FLG_OF_VERNEED | FLG_OF_VERDEF))
 			update_oversym(ofl);
 	}
 	if (flags & FLG_OF_DYNAMIC) {
-		if (update_odynamic(ofl) == S_ERROR)
+		if ((uintptr_t)update_odynamic(ofl) == S_ERROR)
 			return (S_ERROR);
 	}
 	if (ofl->ofl_ossyminfo) {

@@ -42,9 +42,9 @@
 /*
  * Search the GOT index list for a GOT entry with a matching reference.
  */
-/* ARGSUSED3 */
 static Gotndx *
-ld_find_got_ndx(Alist *alp, Gotref gref, Ofl_desc *ofl, Rel_desc *rdesc)
+ld_find_got_ndx(Alist *alp, Gotref gref, Ofl_desc *ofl,
+    Rel_desc *rdesc __unused)
 {
 	Aliste	idx;
 	Gotndx	*gnp;
@@ -1434,10 +1434,9 @@ ld_reloc_TLS(Boolean local, Rel_desc * rsp, Ofl_desc * ofl)
 	return (ld_add_actrel(FLG_REL_DTLS, rsp, ofl));
 }
 
-/* ARGSUSED4 */
 static uintptr_t
 ld_assign_got_ndx(Alist **alpp, Gotndx *pgnp, Gotref gref, Ofl_desc *ofl,
-    Rel_desc *rsp, Sym_desc *sdp)
+    Rel_desc *rsp __unused, Sym_desc *sdp __unused)
 {
 	Gotndx	gn, *gnp;
 	uint_t	gotents;

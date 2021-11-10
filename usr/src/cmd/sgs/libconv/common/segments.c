@@ -87,7 +87,8 @@ conv_seg_flags(sg_flags_t flags, Conv_seg_flags_buf_t *seg_flags_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (seg_flags_buf->buf) };
+	    .bufsize = sizeof (seg_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));

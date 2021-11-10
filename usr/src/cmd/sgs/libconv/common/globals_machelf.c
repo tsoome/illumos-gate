@@ -100,7 +100,7 @@ cef_cp(CONV_EXPN_FIELD_ARG *arg, CONV_EXPN_FIELD_STATE *state,
 	int list_item, const char *str)
 {
 	Conv_inv_buf_t inv_buf;
-	int n;
+	size_t n;
 
 	if (list_item) {	/* This is a list item */
 		/*
@@ -108,7 +108,7 @@ cef_cp(CONV_EXPN_FIELD_ARG *arg, CONV_EXPN_FIELD_STATE *state,
 		 * then insert the separator.
 		 */
 		if (state->list_cnt != 0) {
-			if (state->sep_str_len < state->room) {
+			if ((size_t)state->sep_str_len < state->room) {
 				(void) memcpy(state->cur, state->sep_str,
 				    state->sep_str_len);
 				state->cur += state->sep_str_len;

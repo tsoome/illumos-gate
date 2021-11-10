@@ -48,8 +48,7 @@ remove_local(Ofl_desc *ofl, Sym_desc *sdp, int allow_ldynsym)
 {
 	Sym	*sym = sdp->sd_sym;
 	uchar_t	type = ELF_ST_TYPE(sym->st_info);
-	/* LINTED - only used for assert() */
-	int	err;
+	int	err __unused;
 
 	if ((ofl->ofl_flags & FLG_OF_REDLSYM) == 0) {
 		ofl->ofl_locscnt--;
@@ -74,8 +73,7 @@ remove_scoped(Ofl_desc *ofl, Sym_desc *sdp, int allow_ldynsym)
 {
 	Sym	*sym = sdp->sd_sym;
 	uchar_t	type = ELF_ST_TYPE(sym->st_info);
-	/* LINTED - only used for assert() */
-	int	err;
+	int	err __unused;
 
 	ofl->ofl_scopecnt--;
 	ofl->ofl_elimcnt++;
@@ -241,8 +239,7 @@ adjust_os_count(Ofl_desc *ofl)
 			 * the count and remove the name from .shstrtab.
 			 */
 			if (keep == 0) {
-				/* LINTED - only used for assert() */
-				int err;
+				int err __unused;
 
 				ofl->ofl_shdrcnt--;
 				err = st_delstring(ofl->ofl_shdrsttab,
@@ -2390,7 +2387,7 @@ make_dynstr(Ofl_desc *ofl)
 	 * required for reference from DT_REGISTER .dynamic entries.
 	 */
 	if (ofl->ofl_regsyms) {
-		int	ndx;
+		Word	ndx;
 
 		for (ndx = 0; ndx < ofl->ofl_regsymsno; ndx++) {
 			Sym_desc	*sdp;
@@ -3545,7 +3542,7 @@ ld_make_text(Ofl_desc *ofl, size_t size)
 void
 ld_comdat_validate(Ofl_desc *ofl, Ifl_desc *ifl)
 {
-	int i;
+	Word i;
 
 	for (i = 0; i < ifl->ifl_shnum; i++) {
 		Is_desc *isp = ifl->ifl_isdesc[i];

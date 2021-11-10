@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -65,7 +63,7 @@ _elf_read(int fd, off_t off, size_t fsz)
 		return (0);
 	}
 
-	if (read(fd, p, fsz) != fsz) {
+	if ((size_t)read(fd, p, fsz) != fsz) {
 		_elf_seterr(EIO_READ, errno);
 		free(p);
 		return (0);

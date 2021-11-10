@@ -210,11 +210,10 @@ const Rel_entry	reloc_table[R_386_NUM] = {
  */
 /* BEGIN CSTYLED */
 #if defined(DO_RELOC_LIBLD)
-/*ARGSUSED5*/
 int
 do_reloc_ld(Rel_desc *rdesc, uchar_t *off, Xword *value,
     rel_desc_sname_func_t rel_desc_sname_func,
-    const char *file, int bswap, void *lml)
+    const char *file, int bswap __unused, void *lml)
 #else
 int
 do_reloc_rtld(uchar_t rtype, uchar_t *off, Xword *value, const char *sym,

@@ -60,7 +60,8 @@ conv_la_bind(uint_t bind, Conv_la_bind_buf_t *la_bind_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (la_bind_buf->buf), NULL };
+	    .bufsize = sizeof (la_bind_buf->buf)
+	};
 
 	if (bind == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -113,7 +114,8 @@ conv_la_search(uint_t search, Conv_la_search_buf_t *la_search_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (la_search_buf->buf), NULL };
+	    .bufsize = sizeof (la_search_buf->buf)
+	};
 
 	if (search == 0)
 		return (MSG_ORIG(MSG_GBL_NULL));
@@ -189,7 +191,8 @@ conv_la_symbind(uint_t symbind, Conv_la_symbind_buf_t *la_symbind_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (la_symbind_buf->buf), NULL };
+	    .bufsize = sizeof (la_symbind_buf->buf)
+	};
 
 	if (symbind == 0)
 		return (MSG_ORIG(MSG_GBL_NULL));

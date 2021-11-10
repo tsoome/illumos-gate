@@ -77,7 +77,8 @@ conv_config_feat(int features, Conv_config_feat_buf_t *config_feat_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (config_feat_buf->buf) };
+	    .bufsize = sizeof (config_feat_buf->buf)
+	};
 
 	conv_arg.buf = config_feat_buf->buf;
 	conv_arg.oflags = conv_arg.rflags = features;
@@ -142,7 +143,9 @@ conv_config_obj(ushort_t flags, Conv_config_obj_buf_t *config_obj_buf)
 	};
 	static const char *leading_str_arr[2];
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (config_obj_buf->buf), leading_str_arr };
+	    .bufsize = sizeof (config_obj_buf->buf),
+	    .lead_str = leading_str_arr
+	};
 
 	const char **lstr = leading_str_arr;
 

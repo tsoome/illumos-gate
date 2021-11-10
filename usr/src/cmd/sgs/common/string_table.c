@@ -366,13 +366,17 @@ st_string_hash(const char *str)
 {
 	uint_t hashval = HASHSEED;
 	size_t stlen = strlen(str);
+	int i;
 
 	/* We should never be hashing the NUL string */
 	assert(stlen > 0);
 
-	for (int i = stlen; i >= 0; i--) {
-		assert(i <= stlen); /* not unsigned->signed truncated */
+	i = stlen;
+	assert(i > 0);	/* not unsigned->signed truncated */
+
+	while (i >= 0) {
 		hashval = st_string_hashround(hashval, str[i]);
+		i--;
 	}
 
 	return (hashval);
@@ -727,7 +731,7 @@ st_setallstrings(Str_tbl *stp)
 
 	for (Str_master *str = stp->st_mstrlist; str != NULL;
 	    str = str->sm_next) {
-		int res = 0;
+		int res __unused;
 
 		res = st_setstring(stp, str->sm_str, NULL);
 		assert(res == 0);

@@ -89,7 +89,7 @@ vers_visit_children(Ofl_desc *ofl, Ver_desc *vp, int flag)
 {
 	Aliste			idx;
 	Ver_desc		*vdp;
-	static int		err = 0;
+	static uintptr_t	err = 0;
 	static Ver_Stack	ver_stk = {0, 0, 0};
 	int			tmp_sp;
 
@@ -247,7 +247,7 @@ ld_vers_check_defs(Ofl_desc *ofl)
 		else
 			bind = STB_GLOBAL;
 
-		if (sdp = ld_sym_find(name, vdp->vd_hash, &where, ofl)) {
+		if ((sdp = ld_sym_find(name, vdp->vd_hash, &where, ofl))) {
 			/*
 			 * If the symbol already exists and is undefined or was
 			 * defined in a shared library, convert it to an
@@ -791,7 +791,7 @@ ld_vers_def_process(Is_desc *isp, Ifl_desc *ifl, Ofl_desc *ofl)
 		}
 	} else {
 		Ver_index	*vip;
-		int		cnt;
+		Word		cnt;
 
 		for (cnt = VER_NDX_GLOBAL; cnt <= ifl->ifl_vercnt; cnt++) {
 			vip = &ifl->ifl_verndx[cnt];

@@ -100,11 +100,11 @@ static const char	fmag[] = ARFMAG;
 unsigned long
 _elf_number(char *p, char *end, int base)
 {
-	register unsigned	c;
-	register unsigned long	n = 0;
+	unsigned	c;
+	unsigned long	n = 0;
 
 	while (p < end) {
-		if ((c = *p - '0') >= base) {
+		if ((c = *p - '0') >= (unsigned)base) {
 			while (*p++ == ' ')
 				if (p >= end)
 					return (n);
@@ -125,10 +125,10 @@ _elf_number(char *p, char *end, int base)
 Member *
 _elf_armem(Elf *elf, char *file, size_t fsz)
 {
-	register struct ar_hdr	*f = (struct ar_hdr *)file;
-	register Member		*m;
-	register Memlist	*l, * ol;
-	register Memident	*i;
+	struct ar_hdr	*f = (struct ar_hdr *)file;
+	Member		*m;
+	Memlist	*l, * ol;
+	Memident	*i;
 
 	if (fsz < sizeof (struct ar_hdr)) {
 		_elf_seterr(EFMT_ARHDRSZ, 0);
@@ -193,7 +193,7 @@ _elf_armem(Elf *elf, char *file, size_t fsz)
 	 */
 
 	if (f->ar_name[0] != '/') {	/* regular name */
-		register char	*p;
+		char	*p;
 
 		p = &m->m_name[sizeof (m->m_name)];
 		while (*--p != '/')
@@ -201,7 +201,7 @@ _elf_armem(Elf *elf, char *file, size_t fsz)
 				break;
 		*p = '\0';
 	} else if (f->ar_name[1] >= '0' && f->ar_name[1] <= '9') { /* strtab */
-		register unsigned long	j;
+		unsigned long	j;
 
 		j = _elf_number(&f->ar_name[1],
 		    &f->ar_name[ARSZ(ar_name)], 10);
@@ -273,10 +273,10 @@ void
 _elf_arinit(Elf * elf)
 {
 	char				*base = elf->ed_ident;
-	register char			*end = base + elf->ed_fsz;
-	register struct ar_hdr		*a;
-	register char			*hdr = base + SARMAG;
-	register char			*mem;
+	char			*end = base + elf->ed_fsz;
+	struct ar_hdr		*a;
+	char			*hdr = base + SARMAG;
+	char			*mem;
 	int				j;
 	size_t				sz = SARMAG;
 
@@ -285,7 +285,7 @@ _elf_arinit(Elf * elf)
 	for (j = 0; j < 2; ++j)	 {	/* 2 special members */
 		unsigned long	n;
 
-		if (((end - hdr) < sizeof (struct ar_hdr)) ||
+		if (((end - hdr) < (int)sizeof (struct ar_hdr)) ||
 		    (_elf_vm(elf, (size_t)(SARMAG),
 		    sizeof (struct ar_hdr)) != OK_YES))
 			return;
@@ -293,7 +293,7 @@ _elf_arinit(Elf * elf)
 		a = (struct ar_hdr *)hdr;
 		mem = (char *)a + sizeof (struct ar_hdr);
 		n = _elf_number(a->ar_size, &a->ar_size[ARSZ(ar_size)], 10);
-		if ((end - mem < n) || (a->ar_name[0] != '/') ||
+		if ((end - mem < (long)n) || (a->ar_name[0] != '/') ||
 		    ((sz = n) != n)) {
 			return;
 		}
@@ -305,8 +305,6 @@ _elf_arinit(Elf * elf)
 			elf->ed_arsymoff = (char *)a - base;
 		} else if (a->ar_name[1] == '/' && a->ar_name[2] == ' ') {
 						/* Long name string table */
-			int	k;
-
 			if (_elf_vm(elf, (size_t)(mem - elf->ed_ident),
 			    sz) != OK_YES)
 				return;
@@ -324,7 +322,7 @@ _elf_arinit(Elf * elf)
 			elf->ed_arstr = mem;
 			elf->ed_arstrsz = sz;
 			elf->ed_arstroff = (char *)a - base;
-			for (k = 0; k < sz; k++) {
+			for (size_t k = 0; k < sz; k++) {
 				if (*mem == '/')
 					*mem = '\0';
 				++mem;

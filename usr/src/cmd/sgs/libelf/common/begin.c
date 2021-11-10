@@ -70,7 +70,7 @@ _elf_member(int fd, Elf * ref, unsigned flags)
 		return (0);
 
 	base = ref->ed_nextoff + sizeof (struct ar_hdr);
-	if (ref->ed_fsz - base < mh->m_hdr.ar_size) {
+	if (ref->ed_fsz - base < (unsigned long)mh->m_hdr.ar_size) {
 		_elf_seterr(EFMT_ARMEMSZ, 0);
 		return (0);
 	}

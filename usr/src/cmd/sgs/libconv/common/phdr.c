@@ -269,7 +269,8 @@ conv_phdr_flags(uchar_t osabi, Word flags, Conv_fmt_flags_t fmt_flags,
     Conv_phdr_flags_buf_t *phdr_flags_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (phdr_flags_buf->buf) };
+	    .bufsize = sizeof (phdr_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));

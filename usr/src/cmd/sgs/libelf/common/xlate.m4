@@ -185,11 +185,11 @@ define(tomw, `(((((((Elf32_Word)($1)[$2`'3]<<8)
 		+($1)[$2`'2])<<8)
 		+($1)[$2`'1])<<8)
 		+($1)[$2`'0])')dnl
-define(toml, `(((((((((((Elf32_Lword)($1)[$2`'7]<<8)
-		+($1)[$2`'6]<<8)
-		+($1)[$2`'5]<<8)
-		+($1)[$2`'4]<<8)
-		+($1)[$2`'3]<<8)
+define(toml, `(((((((((((((((Elf32_Lword)($1)[$2`'7]<<8)
+		+($1)[$2`'6])<<8)
+		+($1)[$2`'5])<<8)
+		+($1)[$2`'4])<<8)
+		+($1)[$2`'3])<<8)
 		+($1)[$2`'2])<<8)
 		+($1)[$2`'1])<<8)
 		+($1)[$2`'0])')dnl
@@ -654,7 +654,7 @@ static const struct {
  */
 
 static const Elf_Type	mtype[EV_CURRENT][SHT_NUM] =
-{ 
+{
 	{			/* [1-1][.] */
 /* NULL */		ELF_T_BYTE,
 /* PROGBITS */		ELF_T_BYTE,
@@ -788,7 +788,7 @@ _elf32_entsz(Elf *elf, Elf32_Word shtype, unsigned ver)
 	Elf_Type	ttype;
 
 	ttype = _elf32_mtype(elf, shtype, ver);
-	return ((ttype == ELF_T_BYTE) ? 0 : fmsize[ver - 1][ttype].s_filesz); 
+	return ((ttype == ELF_T_BYTE) ? 0 : fmsize[ver - 1][ttype].s_filesz);
 }
 
 

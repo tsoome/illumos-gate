@@ -224,7 +224,10 @@ gelf_getphdr(Elf *elf, int ndx, GElf_Phdr *dst)
 	if (elf_getphdrnum(elf, &phnum) == -1)
 		return (NULL);
 
-	if (phnum <= ndx) {
+	if (ndx < 0)
+		return (0);
+
+	if (phnum <= (size_t)ndx) {
 		_elf_seterr(EREQ_RAND, 0);
 		return (NULL);
 	}
@@ -271,7 +274,10 @@ gelf_update_phdr(Elf *elf, int ndx, GElf_Phdr *src)
 	if (elf_getphdrnum(elf, &phnum) == -1)
 		return (0);
 
-	if (phnum < ndx) {
+	if (ndx < 0)
+		return (0);
+
+	if (phnum < (size_t)ndx) {
 		_elf_seterr(EREQ_RAND, 0);
 		return (0);
 	}
@@ -1099,16 +1105,16 @@ _gelf_getdynval(Elf *elf, GElf_Sxword tag)
 	GElf_Dyn dyn;
 	int i, n;
 
-	while (scn = elf_nextscn(elf, scn)) {
+	while ((scn = elf_nextscn(elf, scn))) {
 		if (gelf_getshdr(scn, &shdr) == NULL)
 			break;
 		if (shdr.sh_type != SHT_DYNAMIC)
 			continue;
-		if (data = elf_getdata(scn, NULL)) {
+		if ((data = elf_getdata(scn, NULL))) {
 			n = shdr.sh_size / shdr.sh_entsize;
 			for (i = 0; i < n; i++) {
 				(void) gelf_getdyn(data, i, &dyn);
-				if (dyn.d_tag == tag) {
+				if (dyn.d_tag == (Elf64_Xword)tag) {
 					return (dyn.d_un.d_val);
 				}
 			}

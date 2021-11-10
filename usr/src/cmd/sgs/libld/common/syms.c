@@ -419,8 +419,7 @@ ld_sym_enter(const char *name, Sym *osym, Word hash, Ifl_desc *ifl,
 	 * Enter Symbol in AVL tree.
 	 */
 	if (where == 0) {
-		/* LINTED */
-		Sym_avlnode	*_savl;
+		Sym_avlnode	*_savl __unused;
 		/*
 		 * If a previous ld_sym_find() hasn't initialized 'where' do it
 		 * now.
@@ -681,7 +680,7 @@ sym_add_spec(const char *name, const char *uname, Word sdaux_id,
 
 	/* LINTED */
 	hash = (Word)elf_hash(uname);
-	if (usdp = ld_sym_find(uname, hash, &where, ofl)) {
+	if ((usdp = ld_sym_find(uname, hash, &where, ofl))) {
 		/*
 		 * If the underscore symbol exists and is undefined, or was
 		 * defined in a shared library, convert it to a local symbol.
@@ -1517,10 +1516,10 @@ ld_sym_validate(Ofl_desc *ofl)
 			 * would be incorrect.
 			 */
 			if (!(sdp->sd_flags & FLG_SY_REGSYM) &&
-			    ((sym->st_shndx == SHN_UNDEF) &&
+			    (((sym->st_shndx == SHN_UNDEF) &&
 			    ((ELF_ST_BIND(sym->st_info) != STB_WEAK) &&
 			    ((sdp->sd_flags &
-			    (FLG_SY_PARENT | FLG_SY_EXTERN)) == 0)) ||
+			    (FLG_SY_PARENT | FLG_SY_EXTERN)) == 0))) ||
 			    ((sdp->sd_flags &
 			    (FLG_SY_MAPREF | FLG_SY_MAPUSED | FLG_SY_HIDDEN |
 			    FLG_SY_PROTECT)) == FLG_SY_MAPREF))) {
@@ -1802,7 +1801,7 @@ ld_sym_validate(Ofl_desc *ofl)
 	 * output file.
 	 */
 	if (ofl->ofl_regsyms) {
-		int	ndx;
+		Word	ndx;
 
 		for (ndx = 0; ndx < ofl->ofl_regsymsno; ndx++) {
 			if ((sdp = ofl->ofl_regsyms[ndx]) == NULL)
@@ -2372,7 +2371,8 @@ ld_sym_process(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
 				 */
 				if (type == STT_FILE) {
 					int toss = (last_file_sdp != NULL) &&
-					    ((ndx - 1) == last_file_ndx) &&
+					    ((ndx - 1) ==
+					    (Word)last_file_ndx) &&
 					    (sym->st_name ==
 					    last_file_sdp->sd_sym->st_name);
 
@@ -2422,9 +2422,9 @@ ld_sym_process(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
 			 * against it.
 			 */
 			if (((sdp->sd_flags & FLG_SY_SPECSEC) &&
-			    ((sym->st_shndx == SHN_COMMON)) ||
+			    (sym->st_shndx == SHN_COMMON)) ||
 			    ((type == STT_FILE) &&
-			    (sym->st_shndx != SHN_ABS))) ||
+			    (sym->st_shndx != SHN_ABS)) ||
 			    (sdp->sd_isc && (sdp->sd_isc->is_osdesc == NULL))) {
 				ld_eprintf(ofl, ERR_WARNING,
 				    MSG_INTL(MSG_SYM_INVSHNDX),
@@ -2943,7 +2943,7 @@ ld_sym_process(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
 		for (ndx = 0; ndx < (total - local); ndx++) {
 			Sym_desc	*wsdp = sort[ndx];
 			Sym		*wsym;
-			int		sndx;
+			Word		sndx;
 
 			/*
 			 * Ignore any empty symbol descriptor, or the case where

@@ -41,7 +41,8 @@ conv_dyn_posflag1(Xword flags, Conv_fmt_flags_t fmt_flags,
     Conv_dyn_posflag1_buf_t *dyn_posflag1_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (dyn_posflag1_buf->buf) };
+	    .bufsize = sizeof (dyn_posflag1_buf->buf)
+	};
 	static CONV_EXPN_FIELD_ARG conv_arg_alt = {
 	    NULL, sizeof (dyn_posflag1_buf->buf), NULL, 0, 0,
 	    MSG_ORIG(MSG_STR_EMPTY), NULL, MSG_ORIG(MSG_STR_EMPTY) };
@@ -67,7 +68,8 @@ conv_dyn_flag(Xword flags, Conv_fmt_flags_t fmt_flags,
     Conv_dyn_flag_buf_t *dyn_flag_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (dyn_flag_buf->buf) };
+	    .bufsize = sizeof (dyn_flag_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -91,7 +93,8 @@ conv_dyn_flag1(Xword flags, Conv_fmt_flags_t fmt_flags,
     Conv_dyn_flag1_buf_t *dyn_flag1_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (dyn_flag1_buf->buf) };
+	    .bufsize = sizeof (dyn_flag1_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -110,7 +113,8 @@ conv_dyn_feature1(Xword flags, Conv_fmt_flags_t fmt_flags,
     Conv_dyn_feature1_buf_t *dyn_feature1_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (dyn_feature1_buf->buf) };
+	    .bufsize = sizeof (dyn_feature1_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));

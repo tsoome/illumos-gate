@@ -73,7 +73,9 @@ conv_dl_mode(int mode, int fabricate, Conv_dl_mode_buf_t *dl_mode_buf)
 	};
 	static const char *leading_str_arr[3];
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (dl_mode_buf->buf), leading_str_arr };
+	    .bufsize = sizeof (dl_mode_buf->buf),
+	    .lead_str = leading_str_arr
+	};
 
 	const char **lstr = leading_str_arr;
 
@@ -159,7 +161,9 @@ conv_dl_flag(int flags, Conv_fmt_flags_t fmt_flags,
 	};
 	static const char *leading_str_arr[2];
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (dl_flag_buf->buf), leading_str_arr };
+	    .bufsize = sizeof (dl_flag_buf->buf),
+	    .lead_str = leading_str_arr
+	};
 
 	const char **lstr = leading_str_arr;
 

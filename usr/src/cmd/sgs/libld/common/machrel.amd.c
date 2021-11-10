@@ -59,9 +59,8 @@ static Rel_desc rdesc_r_amd64_32 = {
 static Rel_desc rdesc_r_amd64_pc32 = {
     NULL, NULL, NULL, 0, 0, 0, R_AMD64_PC32 };
 
-/*ARGSUSED*/
 static const char *
-syn_rdesc_sym_name(Rel_desc *rdesc)
+syn_rdesc_sym_name(Rel_desc *rdesc __unused)
 {
 	return (MSG_ORIG(MSG_SYM_PLTENT));
 }
@@ -82,7 +81,7 @@ ld_find_got_ndx(Alist *alp, Gotref gref, Ofl_desc *ofl, Rel_desc *rdesc)
 		return (ofl->ofl_tlsldgotndx);
 
 	for (ALIST_TRAVERSE(alp, idx, gnp)) {
-		if ((rdesc->rel_raddend == gnp->gn_addend) &&
+		if (((Xword)rdesc->rel_raddend == gnp->gn_addend) &&
 		    (gnp->gn_gotref == gref)) {
 			return (gnp);
 		}
@@ -1408,10 +1407,9 @@ ld_reloc_TLS(Boolean local, Rel_desc * rsp, Ofl_desc * ofl)
 	return (ld_add_actrel(FLG_REL_DTLS, rsp, ofl));
 }
 
-/* ARGSUSED5 */
 static uintptr_t
 ld_assign_got_ndx(Alist **alpp, Gotndx *pgnp, Gotref gref, Ofl_desc *ofl,
-    Rel_desc *rsp, Sym_desc *sdp)
+    Rel_desc *rsp, Sym_desc *sdp __unused)
 {
 	Xword		raddend;
 	Gotndx		gn, *gnp;

@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
@@ -203,7 +201,7 @@ _elf_locked_getdata(Elf_Scn * scn, Elf_Data * data)
 	 * validate the region
 	 */
 
-	if ((d->db_off < 0) || (d->db_off >= elf->ed_fsz) ||
+	if ((d->db_off < 0) || ((size_t)d->db_off >= elf->ed_fsz) ||
 	    (elf->ed_fsz - d->db_off < d->db_fsz)) {
 		_elf_seterr(EFMT_DATA, 0);
 		return (0);

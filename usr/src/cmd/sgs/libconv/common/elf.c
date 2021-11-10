@@ -924,7 +924,9 @@ conv_ehdr_flags(Half mach, Word flags, Conv_fmt_flags_t fmt_flags,
 {
 	static const char *leading_str_arr[2];
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (flags_buf->buf), leading_str_arr };
+	    .bufsize = sizeof (flags_buf->buf),
+	    .lead_str = leading_str_arr
+	};
 
 	const char **lstr;
 	const conv_ds_msg_t	*mm_msg;

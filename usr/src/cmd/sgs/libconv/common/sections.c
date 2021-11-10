@@ -508,7 +508,7 @@ conv_sec_flags_strings(Conv_fmt_flags_t fmt_flags)
 		{ SHF_EXCLUDE,		SOL,	MSG_SHF_EXCLUDE_CF },
 		{ SHF_ORDERED,		SOL,	MSG_SHF_ORDERED_CF },
 		{ SHF_AMD64_LARGE,	AMD,	MSG_SHF_AMD64_LARGE_CF },
-		{ 0,			0 }
+		{ 0 }
 	};
 	static const Val_desc2 vda_nf[] = {
 		{ SHF_WRITE,		ALL,	MSG_SHF_WRITE_NF },
@@ -524,7 +524,7 @@ conv_sec_flags_strings(Conv_fmt_flags_t fmt_flags)
 		{ SHF_EXCLUDE,		SOL,	MSG_SHF_EXCLUDE_NF },
 		{ SHF_ORDERED,		SOL,	MSG_SHF_ORDERED_NF },
 		{ SHF_AMD64_LARGE,	AMD,	MSG_SHF_AMD64_LARGE_NF },
-		{ 0,			0 }
+		{ 0 }
 	};
 
 	return ((CONV_TYPE_FMT_ALT(fmt_flags) == CONV_FMT_ALT_NF) ?

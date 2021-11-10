@@ -91,7 +91,7 @@ _elf_outsync(int fd, char *p, size_t sz, unsigned int flag)
 		return (0);
 	}
 	if ((lseek(fd, 0L, SEEK_SET) == 0) &&
-	    (write(fd, p, sz) == sz)) {
+	    ((size_t)write(fd, p, sz) == sz)) {
 		(void) free(p);
 		return (sz);
 	}

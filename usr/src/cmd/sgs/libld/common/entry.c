@@ -61,11 +61,11 @@
 #ifdef _ELF64
 #define	SG_DESC_INIT(id, p_type, p_flags, sg_name, sg_flags) \
 	{ id, { p_type, p_flags, 0, 0, 0, 0, 0, 0}, \
-	    sg_name, 0, 0, NULL, NULL, NULL, sg_flags, NULL, 0, NULL}
+	    sg_name, 0, 0, NULL, NULL, NULL, sg_flags, NULL, 0, NULL, { 0 }}
 #else
 #define	SG_DESC_INIT(id, p_type, p_flags, sg_name, sg_flags) \
 	{ id, { p_type, 0, 0, 0, 0, 0, p_flags, 0}, \
-	    sg_name, 0, 0, NULL, NULL, NULL, sg_flags, NULL, 0, NULL}
+	    sg_name, 0, 0, NULL, NULL, NULL, sg_flags, NULL, 0, NULL, { 0 }}
 #endif
 
 /*
@@ -195,7 +195,7 @@ static predef_seg_t sg_desc = {
 #define	EC_DESC_INIT(ec_is_name, ec_type, ec_attrmask, ec_attrbits, \
     _seg_field, ec_flags) \
 	{ NULL, NULL, ec_is_name, ec_type, ec_attrmask, ec_attrbits, \
-	    &sg_desc.psg_ ## _seg_field, 0, FLG_EC_BUILTIN | ec_flags }
+	    &sg_desc.psg_ ## _seg_field, 0, FLG_EC_BUILTIN | ec_flags, { 0 } }
 
 static const Ent_desc	ent_desc[] = {
 	EC_DESC_INIT(NULL, SHT_NOTE, 0, 0, note, 0),

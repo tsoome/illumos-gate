@@ -529,17 +529,10 @@ Dbg_setup(dbg_setup_caller_t caller, const char *string, Dbg_desc *dbp,
  */
 /* PRINTFLIKE2 */
 void
-dbg_print(Lm_list *lml, const char *format, ...)
+dbg_print(Lm_list *lml __unused, const char *format, ...)
 {
 	va_list ap;
 
-#if	defined(lint)
-	/*
-	 * The lml argument is only meaningful for diagnostics sent to ld.so.1.
-	 * Supress the lint error by making a dummy assignment.
-	 */
-	lml = 0;
-#endif
 	va_start(ap, format);
 	(void) vprintf(format, ap);
 	(void) printf(MSG_ORIG(MSG_STR_NL));

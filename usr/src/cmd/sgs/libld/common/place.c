@@ -736,7 +736,7 @@ ld_place_section(Ofl_desc *ofl, Is_desc *isp, Place_path_info *path_info,
 	Sg_desc		*sgp;
 	Os_desc		*osp;
 	Aliste		idx1, iidx;
-	int		os_ndx;
+	Word		os_ndx;
 	Shdr		*shdr = isp->is_shdr;
 	Xword		shflagmask, shflags = shdr->sh_flags;
 	Ifl_desc	*ifl = isp->is_file;
@@ -1093,8 +1093,8 @@ ld_place_section(Ofl_desc *ofl, Is_desc *isp, Place_path_info *path_info,
 		 * -	The input section is COMDAT, and the output section
 		 *	is SHT_PROGBITS.
 		 */
-		if ((ident == osp->os_identndx) &&
-		    (ident != ld_targ.t_id.id_rel) &&
+		if (((Word)ident == osp->os_identndx) &&
+		    ((Word)ident != ld_targ.t_id.id_rel) &&
 		    (onamehash == osp->os_namehash) &&
 		    (shdr->sh_type != SHT_GROUP) &&
 		    (((shdr->sh_flags & SHF_GROUP) == 0) ||
@@ -1192,7 +1192,7 @@ ld_place_section(Ofl_desc *ofl, Is_desc *isp, Place_path_info *path_info,
 		 * present input section we need to insert the new section
 		 * at this point.
 		 */
-		if (ident < osp->os_identndx)
+		if ((Word)ident < osp->os_identndx)
 			break;
 
 		iidx = idx1 + 1;

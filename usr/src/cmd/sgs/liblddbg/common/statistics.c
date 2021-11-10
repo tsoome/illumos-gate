@@ -33,11 +33,11 @@ fmt_human_units(size_t bytes, char *buf, size_t bufsize)
 {
 	static int	unit_arr[] = { 'K', 'M', 'G', 'T' };
 
-	int		i, unit_ch;
+	int		unit_ch;
 	size_t		unit_bytes = bytes;
 
 	/* Convert to human readable units */
-	for (i = 0; i < sizeof (unit_arr) / sizeof (unit_arr[0]); i++) {
+	for (size_t i = 0; i < sizeof (unit_arr) / sizeof (unit_arr[0]); i++) {
 		if (unit_bytes < 1024)
 			break;
 		unit_ch = unit_arr[i];

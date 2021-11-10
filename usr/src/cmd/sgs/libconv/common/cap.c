@@ -158,9 +158,8 @@ conv_iter_cap_val_hw1(Half mach, Conv_fmt_flags_t fmt_flags,
 }
 
 conv_iter_ret_t
-/* ARGSUSED0 */
-conv_iter_cap_val_hw2(Half mach, Conv_fmt_flags_t fmt_flags,
-    conv_iter_cb_t func, void *uvalue)
+conv_iter_cap_val_hw2(Half mach __unused, Conv_fmt_flags_t fmt_flags __unused,
+    conv_iter_cb_t func __unused, void *uvalue __unused)
 {
 	if ((mach == EM_386) || (mach == EM_486) ||
 	    (mach == EM_AMD64) || (mach == CONV_MACH_ALL))

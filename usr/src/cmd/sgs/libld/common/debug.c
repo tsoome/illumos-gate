@@ -135,7 +135,7 @@ dbg_setup(Ofl_desc *ofl, const char *options, int phase)
 
 /* PRINTFLIKE2 */
 void
-dbg_print(Lm_list *lml, const char *format, ...)
+dbg_print(Lm_list *lml __unused, const char *format, ...)
 {
 	static char	*prestr = NULL;
 	va_list		args;

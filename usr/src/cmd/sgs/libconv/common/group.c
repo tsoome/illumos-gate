@@ -70,7 +70,8 @@ conv_grphdl_flags(uint_t flags, Conv_grphdl_flags_buf_t *grphdl_flags_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (grphdl_flags_buf->buf) };
+	    .bufsize = sizeof (grphdl_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_NULL));
@@ -123,7 +124,8 @@ conv_grpdesc_flags(uint_t flags, Conv_grpdesc_flags_buf_t *grpdesc_flags_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (grpdesc_flags_buf->buf) };
+	    .bufsize = sizeof (grpdesc_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_NULL));

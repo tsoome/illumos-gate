@@ -311,7 +311,7 @@ map_equal(Mapfile *mf, Sg_desc *sgp)
 		{ MSG_ORIG(MSG_MAP_NOTE),	PT_NOTE,	FLG_SG_P_TYPE },
 
 		/* Array must be NULL terminated */
-		{ NULL }
+		{ NULL, 0, 0 }
 	};
 
 
@@ -1389,6 +1389,8 @@ ld_map_parse_v1(Mapfile *mf)
 					continue;
 				case SEG_INS_FAIL:
 					return (FALSE);
+				default:
+					break;
 				}
 			} else {
 				/* Not new. Show what's changed */
@@ -1414,6 +1416,8 @@ ld_map_parse_v1(Mapfile *mf)
 					continue;
 				case SEG_INS_FAIL:
 					return (FALSE);
+				default:
+					break;
 				}
 			} else if (sgp1->sg_flags & FLG_SG_EMPTY) {
 				mf_fatal0(mf, MSG_INTL(MSG_MAP_SEGEMPSEC));
@@ -1443,6 +1447,8 @@ ld_map_parse_v1(Mapfile *mf)
 					continue;
 				case SEG_INS_FAIL:
 					return (FALSE);
+				default:
+					break;
 				}
 			}
 			if (!map_atsign(mf, sgp1))

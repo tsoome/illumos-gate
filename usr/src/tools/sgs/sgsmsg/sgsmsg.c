@@ -659,13 +659,13 @@ output_data(void)
 }
 
 static int
-file()
+file(void)
 {
 	char	buffer[LINE_MAX], * token;
 	uint_t	bufsize;
 	char	*token_buffer;
 	int	escape = 0;
-	int	len = 0;
+	uint_t	len = 0;
 
 	if ((token_buffer = malloc(LINE_MAX)) == 0) {
 		(void) fprintf(stderr, Errmsg_nmem, strerror(errno));

@@ -47,7 +47,10 @@ Dbg_tls_modent(Lm_list *lml, TLS_modinfo * tmodent)
 		{ TM_FLG_STATICTLS,	MSG_TLS_FLAG_STATIC },
 		{ 0,			0 }
 	};
-	static CONV_EXPN_FIELD_ARG conv_arg = { flagstr, sizeof (flagstr) };
+	static CONV_EXPN_FIELD_ARG conv_arg = {
+	    .buf = flagstr,
+	    .bufsize = sizeof (flagstr)
+	};
 
 	ulong_t	flags;
 

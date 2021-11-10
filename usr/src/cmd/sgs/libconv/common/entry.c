@@ -63,7 +63,8 @@ conv_ent_flags(ec_flags_t flags, Conv_ent_flags_buf_t *ent_flags_buf)
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (ent_flags_buf->buf) };
+	    .bufsize = sizeof (ent_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -119,7 +120,9 @@ conv_ent_files_flags(Word flags, Conv_fmt_flags_t fmt_flags,
 
 	static const char *leading_str_arr[2];
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (flags_buf->buf), leading_str_arr };
+	    .bufsize = sizeof (flags_buf->buf),
+	    .lead_str = leading_str_arr
+	};
 
 	Word	type_idx;
 

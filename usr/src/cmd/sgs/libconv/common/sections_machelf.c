@@ -41,7 +41,8 @@ conv_sec_flags(uchar_t osabi, Half mach, Xword flags,
     Conv_fmt_flags_t fmt_flags, Conv_sec_flags_buf_t *sec_flags_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (sec_flags_buf->buf) };
+	    .bufsize = sizeof (sec_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));

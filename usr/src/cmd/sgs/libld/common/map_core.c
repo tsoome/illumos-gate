@@ -1420,6 +1420,8 @@ restart:
 				tail--;
 			*tail = '\0';
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -1614,7 +1616,7 @@ error_reqarg:
 void
 ld_map_lowercase(char *str)
 {
-	while (*str = tolower(*str))
+	while ((*str = tolower(*str)))
 		str++;
 }
 #endif
@@ -1807,6 +1809,9 @@ gettoken_ident(Mapfile *mf, int flags, ld_map_tkval_t *tkv)
 		mf_fatal(mf, MSG_INTL(MSG_MAP_WSNEEDED), mf->mf_next);
 		null_patch_undo(&np);
 		return (TK_ERROR);
+
+	default:
+		break;
 	}
 
 	/* Null terminate, saving the replaced character */

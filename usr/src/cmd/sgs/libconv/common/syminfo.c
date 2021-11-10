@@ -121,7 +121,8 @@ conv_syminfo_flags(Half flags, Conv_fmt_flags_t fmt_flags,
     Conv_syminfo_flags_buf_t *syminfo_flags_buf)
 {
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (syminfo_flags_buf->buf) };
+	    .bufsize = sizeof (syminfo_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));

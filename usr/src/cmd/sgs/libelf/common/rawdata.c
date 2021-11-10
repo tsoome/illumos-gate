@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include "libelf.h"
 #include "decl.h"
@@ -100,7 +98,7 @@ elf_rawdata(Elf_Scn * scn, Elf_Data * data)
 	 */
 
 	if ((d->db_off < 0) ||
-	    (d->db_off >= elf->ed_fsz) ||
+	    ((size_t)d->db_off >= elf->ed_fsz) ||
 	    (elf->ed_fsz - d->db_off < d->db_fsz)) {
 		_elf_seterr(EFMT_DATA, 0);
 		free(raw);

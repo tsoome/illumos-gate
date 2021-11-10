@@ -611,12 +611,12 @@ cap_names_match(Alist *alp1, Alist *alp2)
 {
 	Capstr		*capstr1;
 	Aliste		idx1;
-	int		match = 0;
-	Word		nitems;
+	Word		nitems, match;
 
 	if ((nitems = alist_nitems(alp1)) != alist_nitems(alp2))
 		return (1);
 
+	match = 0;
 	for (ALIST_TRAVERSE(alp1, idx1, capstr1)) {
 		Capstr		*capstr2;
 		Aliste		idx2;

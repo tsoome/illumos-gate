@@ -68,9 +68,13 @@ static char	def_Plibpath[] = "/usr/ccs/lib:/lib:/usr/lib";
 /*
  * A default elf header provides for simplifying diagnostic processing.
  */
-static Ehdr	def_ehdr = { { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3,
-			    ELFCLASSNONE, ELFDATANONE }, 0, EM_NONE,
-			    EV_CURRENT };
+static Ehdr	def_ehdr = {
+	.e_ident = { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3, ELFCLASSNONE,
+	    ELFDATANONE },
+	.e_type = 0,
+	.e_machine = EM_NONE,
+	.e_version = EV_CURRENT
+};
 
 /*
  * ld-centric wrapper on top of veprintf():

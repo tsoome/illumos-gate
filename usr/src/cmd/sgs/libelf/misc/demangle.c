@@ -188,7 +188,7 @@ demangle(char *c)
 		 * automatically calls second, since
 		 * all operator functions are overloaded.
 		 */
-		if (x = findop(c, &oplen)) {
+		if ((x = findop(c, &oplen))) {
 			s = app_String(s, MSG_ORIG(MSG_STR_OPERATOR_1));
 			s = app_String(s, x);
 			c += oplen;

@@ -627,7 +627,7 @@ wrt(Elf * elf, Xword outsz, unsigned fill, int update_cmd)
 			 * and a fill function has been registered, use the
 			 * function. Otherwise, use the fill byte.
 			 */
-			if (fill && (d->db_data.d_off > off)) {
+			if (fill && (d->db_data.d_off > (off_t)off)) {
 				sz = (Xword)(d->db_data.d_off - off);
 				if (execfill != NULL)
 					(* execfill)(start,

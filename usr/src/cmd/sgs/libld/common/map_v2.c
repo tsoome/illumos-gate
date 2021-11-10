@@ -162,12 +162,16 @@ gettoken_eq(Mapfile *mf, attr_fmt_t eq_type, const char *lhs)
 		case ATTR_FMT_EQ_PEQ:
 		case ATTR_FMT_EQ_ALL:
 			return (tok);
+		default:
+			break;
 		}
 		break;
 
 	case TK_MINUSEQ:
 		if (eq_type == ATTR_FMT_EQ_ALL)
 			return (tok);
+		break;
+	default:
 		break;
 	}
 
@@ -460,6 +464,8 @@ gettoken_optattr(Mapfile *mf, const char *lhs)
 	case TK_SEMICOLON:
 	case TK_LEFTBKT:
 		return (tok);
+	default:
+		break;
 	}
 
 	mf_fatal(mf, MSG_INTL(MSG_MAP_EXP_SEMLBKT), lhs,
@@ -490,6 +496,8 @@ gettoken_term(Mapfile *mf, const char *lhs)
 	case TK_SEMICOLON:
 	case TK_RIGHTBKT:
 		return (tok);
+	default:
+		break;
 	}
 
 	mf_fatal(mf, MSG_INTL(MSG_MAP_EXP_SEMRBKT), lhs,
@@ -518,6 +526,8 @@ gettoken_semicolon(Mapfile *mf, const char *lhs)
 	case TK_ERROR:
 	case TK_SEMICOLON:
 		return (tok);
+	default:
+		break;
 	}
 
 	mf_fatal(mf, MSG_INTL(MSG_MAP_EXP_SEM), lhs,
@@ -547,6 +557,8 @@ gettoken_leftbkt(Mapfile *mf, const char *lhs)
 	case TK_ERROR:
 	case TK_LEFTBKT:
 		return (tok);
+	default:
+		break;
 	}
 
 	mf_fatal(mf, MSG_INTL(MSG_MAP_EXP_LBKT), lhs,
@@ -638,6 +650,8 @@ gettoken_int(Mapfile *mf, const char *lhs, ld_map_tkval_t *tkv, int flags)
 		}
 
 		return (tok);
+	default:
+		break;
 	}
 	mf_fatal(mf, MSG_INTL(MSG_MAP_EXP_INT), lhs,
 	    ld_map_tokenstr(tok, tkv, &inv_buf));
@@ -666,10 +680,12 @@ gettoken_str(Mapfile *mf, int flags, ld_map_tkval_t *tkv, gts_efunc_t efunc)
 	case TK_ERROR:
 	case TK_STRING:
 		return (tok);
+	default:
+		break;
 	}
 
 	/* User supplied function reports the error */
-	(* efunc)(mf, tok, tkv);
+	(*efunc)(mf, tok, tkv);
 
 	return (TK_ERROR);
 }
@@ -1058,7 +1074,7 @@ parse_cap_list(Mapfile *mf, Token eq_tok, Caplist *caplist,
  * -------------------------^
  */
 static Token
-at_cap_hw(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_hw(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	int		done;
 	Token		tok;
@@ -1121,7 +1137,7 @@ at_cap_hw(Mapfile *mf, Token eq_tok, void *uvalue)
  * ---------------------------^
  */
 static Token
-at_cap_hw_1(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_hw_1(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	return (parse_cap_mask(mf, eq_tok, &mf->mf_ofl->ofl_ocapset.oc_hw_1,
 	    CA_SUNW_HW_1, elfcap_hw1_from_str));
@@ -1132,7 +1148,7 @@ at_cap_hw_1(Mapfile *mf, Token eq_tok, void *uvalue)
  * ---------------------------^
  */
 static Token
-at_cap_hw_2(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_hw_2(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	return (parse_cap_mask(mf, eq_tok, &mf->mf_ofl->ofl_ocapset.oc_hw_2,
 	    CA_SUNW_HW_2, elfcap_hw2_from_str));
@@ -1143,7 +1159,7 @@ at_cap_hw_2(Mapfile *mf, Token eq_tok, void *uvalue)
  * -------------------------^
  */
 static Token
-at_cap_sf(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_sf(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	int		done;
 	Token		tok;
@@ -1190,7 +1206,7 @@ at_cap_sf(Mapfile *mf, Token eq_tok, void *uvalue)
  * ---------------------------^
  */
 static Token
-at_cap_sf_1(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_sf_1(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	return (parse_cap_mask(mf, eq_tok, &mf->mf_ofl->ofl_ocapset.oc_sf_1,
 	    CA_SUNW_SF_1, elfcap_sf1_from_str));
@@ -1201,7 +1217,7 @@ at_cap_sf_1(Mapfile *mf, Token eq_tok, void *uvalue)
  * ------------------------------^
  */
 static Token
-at_cap_mach(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_mach(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	return (parse_cap_list(mf, eq_tok, &mf->mf_ofl->ofl_ocapset.oc_mach,
 	    CA_SUNW_MACH));
@@ -1212,7 +1228,7 @@ at_cap_mach(Mapfile *mf, Token eq_tok, void *uvalue)
  * -------------------------------^
  */
 static Token
-at_cap_plat(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_plat(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	return (parse_cap_list(mf, eq_tok, &mf->mf_ofl->ofl_ocapset.oc_plat,
 	    CA_SUNW_PLAT));
@@ -1350,7 +1366,7 @@ gts_efunc_at_dv_allow(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * -------------------------------------^
  */
 static Token
-at_dv_allow(Mapfile *mf, Token eq_tok, void *uvalue)
+at_dv_allow(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	ld_map_tkval_t	tkv;
 
@@ -1382,7 +1398,7 @@ gts_efunc_at_dv_require(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * --------------------------------------^
  */
 static Token
-at_dv_require(Mapfile *mf, Token eq_tok, void *uvalue)
+at_dv_require(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	ld_map_tkval_t	tkv;
 
@@ -1518,7 +1534,7 @@ dir_phdr_add_null(Mapfile *mf)
  * ----------------------------------------^
  */
 static Token
-at_seg_align(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_align(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -1553,7 +1569,7 @@ gts_efunc_at_seg_assign_file_basename(Mapfile *mf, Token tok,
  * ---------------------------------------------------------^
  */
 static Token
-at_seg_assign_file_basename(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign_file_basename(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Ent_desc	*enp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -1589,7 +1605,7 @@ gts_efunc_at_seg_assign_file_objname(Mapfile *mf, Token tok,
  * --------------------------------------------------------^
  */
 static Token
-at_seg_assign_file_objname(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign_file_objname(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Ent_desc	*enp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -1624,7 +1640,7 @@ gts_efunc_at_seg_assign_file_path(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * -----------------------------------------------------^
  */
 static Token
-at_seg_assign_file_path(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign_file_path(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Ent_desc	*enp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -1646,7 +1662,7 @@ at_seg_assign_file_path(Mapfile *mf, Token eq_tok, void *uvalue)
  * -------------------------------------------------^
  */
 static Token
-at_seg_assign_flags(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign_flags(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	typedef struct {
 		const char	*name;
@@ -1763,7 +1779,7 @@ gts_efunc_at_seg_assign_is_name(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * ---------------------------------------------------^
  */
 static Token
-at_seg_assign_is_name(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign_is_name(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Ent_desc	*enp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -1795,7 +1811,7 @@ gts_efunc_at_seg_assign_type(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * ------------------------------------------------^
  */
 static Token
-at_seg_assign_type(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign_type(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Ent_desc		*enp = uvalue;
 	ld_map_tkval_t		tkv;
@@ -1842,7 +1858,7 @@ at_seg_assign_type(Mapfile *mf, Token eq_tok, void *uvalue)
  * -----------------------------------------^
  */
 static Token
-at_seg_assign(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_assign(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	/* segment_directive ASSIGN sub-attributes */
 	static attr_t attr_list[] = {
@@ -1895,6 +1911,8 @@ at_seg_assign(Mapfile *mf, Token eq_tok, void *uvalue)
 		name = tkv.tkv_str;
 		tok = ld_map_gettoken(mf, 0, &tkv);
 		break;
+	default:
+		break;
 	}
 
 	/* Add a new entrance criteria descriptor to the segment */
@@ -1938,7 +1956,7 @@ at_seg_assign(Mapfile *mf, Token eq_tok, void *uvalue)
  * ----------------------------------------^
  */
 static Token
-at_seg_disable(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_disable(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue;
 
@@ -2061,7 +2079,7 @@ at_seg_is_order(Mapfile *mf, Token eq_tok, void *uvalue)
  * -------------------------------------------^
  */
 static Token
-at_seg_max_size(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_max_size(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -2082,7 +2100,7 @@ at_seg_max_size(Mapfile *mf, Token eq_tok, void *uvalue)
  * --------------------------------------^
  */
 static Token
-at_seg_nohdr(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_nohdr(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue;
 
@@ -2155,7 +2173,7 @@ at_seg_os_order(Mapfile *mf, Token eq_tok, void *uvalue)
  * ----------------------------------------^
  */
 static Token
-at_seg_paddr(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_paddr(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue, *sgp2;
 	Aliste		idx;
@@ -2187,7 +2205,7 @@ at_seg_paddr(Mapfile *mf, Token eq_tok, void *uvalue)
  * ----------------------------------------^
  */
 static Token
-at_seg_round(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_round(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue;
 	ld_map_tkval_t	tkv;
@@ -2267,7 +2285,7 @@ at_seg_size_symbol(Mapfile *mf, Token eq_tok, void *uvalue)
  * ----------------------------------------^
  */
 static Token
-at_seg_vaddr(Mapfile *mf, Token eq_tok, void *uvalue)
+at_seg_vaddr(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	Sg_desc		*sgp = uvalue, *sgp2;
 	Aliste		idx;
@@ -2717,7 +2735,7 @@ gts_efunc_at_sym_aux(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * -------------------------------------------------^
  */
 static Token
-at_sym_aux(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_aux(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	ld_map_tkval_t	tkv;
@@ -2750,7 +2768,7 @@ gts_efunc_at_sym_filter(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * ----------------------------------------------^
  */
 static Token
-at_sym_filter(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_filter(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	ld_map_tkval_t	tkv;
@@ -2771,7 +2789,7 @@ at_sym_filter(Mapfile *mf, Token eq_tok, void *uvalue)
  * ---------------------------------------------^
  */
 static Token
-at_sym_flags(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_flags(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	typedef struct {
 		const char	*name;
@@ -2917,7 +2935,7 @@ at_sym_flags(Mapfile *mf, Token eq_tok, void *uvalue)
  * --------------------------------------------^
  */
 static Token
-at_sym_size(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_size(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	ld_map_tkval_t	tkv;
@@ -2978,7 +2996,7 @@ gts_efunc_at_sym_type(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
  * --------------------------------------------^
  */
 static Token
-at_sym_type(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_type(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	at_sym_type_t	*type;
@@ -3009,7 +3027,7 @@ at_sym_type(Mapfile *mf, Token eq_tok, void *uvalue)
  * ---------------------------------------------^
  */
 static Token
-at_sym_value(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_value(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	ld_map_tkval_t	tkv;
@@ -3094,7 +3112,7 @@ gts_efunc_at_ass_shattr(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
 }
 
 static Token
-at_ass_shattr(Mapfile *mf, Token eq_tok, void *uvalue)
+at_ass_shattr(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	at_ass_shattr_t	*shattr;
@@ -3148,7 +3166,7 @@ gts_efunc_at_ass_bind(Mapfile *mf, Token tok, ld_map_tkval_t *tkv)
 }
 
 static Token
-at_ass_bind(Mapfile *mf, Token eq_tok, void *uvalue)
+at_ass_bind(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	at_ass_bind_t	*bind;
@@ -3173,7 +3191,7 @@ at_ass_bind(Mapfile *mf, Token eq_tok, void *uvalue)
 }
 
 static Token
-at_ass_size(Mapfile *mf, Token eq_tok, void *uvalue)
+at_ass_size(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	ld_map_tkval_t	tkv;
@@ -3189,7 +3207,7 @@ at_ass_size(Mapfile *mf, Token eq_tok, void *uvalue)
 }
 
 static Token
-at_ass_alias(Mapfile *mf, Token eq_tok, void *uvalue)
+at_ass_alias(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	symbol_state_t	*ss = uvalue;
 	ld_map_tkval_t	tkv;
@@ -3206,7 +3224,7 @@ at_ass_alias(Mapfile *mf, Token eq_tok, void *uvalue)
 }
 
 static Token
-at_ass_type(Mapfile *mf, Token eq_tok, void *uvalue)
+at_ass_type(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	ld_map_tkval_t	 tkv;
 	at_ass_type_t	*type;
@@ -3231,7 +3249,7 @@ at_ass_type(Mapfile *mf, Token eq_tok, void *uvalue)
 }
 
 static Token
-at_sym_assert(Mapfile *mf, Token eq_tok, void *uvalue)
+at_sym_assert(Mapfile *mf, Token eq_tok __unused, void *uvalue)
 {
 	static attr_t	attr_list[] = {
 		{ MSG_ORIG(MSG_MAPKW_ALIAS),	at_ass_alias,	ATTR_FMT_EQ },
@@ -3477,6 +3495,8 @@ parse_symbol_attributes(Mapfile *mf, const char *dir_name, symbol_state_t *ss)
 				return (TK_ERROR);
 			case TK_RIGHTBKT:
 				done = 1;
+				break;
+			default:
 				break;
 			}
 			break;

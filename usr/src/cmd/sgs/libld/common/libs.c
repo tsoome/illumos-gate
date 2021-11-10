@@ -80,7 +80,7 @@ process_member(Ar_mem *amp, const char *name, Sym_desc *sdp, Ofl_desc *ofl)
 		Shdr		*shdr;
 		Elf_Data	*data;
 
-		while (scn = elf_nextscn(amp->am_elf, scn)) {
+		while ((scn = elf_nextscn(amp->am_elf, scn))) {
 			if ((shdr = elf_getshdr(scn)) == NULL) {
 				ld_eprintf(ofl, ERR_ELF,
 				    MSG_INTL(MSG_ELF_GETSHDR), amp->am_path);

@@ -1213,7 +1213,7 @@ process_capinfo(Ofl_desc *ofl, Ifl_desc *ifl, Is_desc *isp)
 		return (0);
 
 	for (cndx = 1, capinfo++; cndx < capinfonum; cndx++, capinfo++) {
-		Sym_desc	*sdp, *lsdp;
+		Sym_desc	*sdp, *lsdp = NULL;
 		Word		lndx;
 		uchar_t		gndx;
 
@@ -1316,9 +1316,8 @@ process_capinfo(Ofl_desc *ofl, Ifl_desc *ifl, Is_desc *isp)
  * symtab and relocation).
  */
 static uintptr_t
-/* ARGSUSED5 */
 process_input(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
-    Word ndx, int ident, Ofl_desc *ofl)
+    Word ndx, int ident __unused, Ofl_desc *ofl)
 {
 	return (process_section(name, ifl, shdr, scn, ndx,
 	    ld_targ.t_id.id_null, ofl));
@@ -1331,9 +1330,8 @@ process_input(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
  * has a displacement relocation against it.
  */
 static uintptr_t
-/* ARGSUSED5 */
 process_reloc(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
-    Word ndx, int ident, Ofl_desc *ofl)
+    Word ndx, int ident __unused, Ofl_desc *ofl)
 {
 	if (process_section(name, ifl,
 	    shdr, scn, ndx, ld_targ.t_id.id_null, ofl) == S_ERROR)
@@ -1371,7 +1369,7 @@ process_strtab(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
 	 */
 	if (((ofl->ofl_flags & FLG_OF_STRIP) && ident &&
 	    (strncmp(name, MSG_ORIG(MSG_SCN_STAB), MSG_SCN_STAB_SIZE) == 0)) ||
-	    (strcmp(name, MSG_ORIG(MSG_SCN_STABEXCL)) == 0) && ident)
+	    ((strcmp(name, MSG_ORIG(MSG_SCN_STABEXCL)) == 0) && ident))
 		return (1);
 
 	/*
@@ -1379,7 +1377,7 @@ process_strtab(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
 	 * be null.  Otherwise make sure we don't have a .strtab section as this
 	 * should not be added to the output section list either.
 	 */
-	if ((ident != ld_targ.t_id.id_null) &&
+	if (((Word)ident != ld_targ.t_id.id_null) &&
 	    (strcmp(name, MSG_ORIG(MSG_SCN_STRTAB)) == 0))
 		ident = ld_targ.t_id.id_null;
 
@@ -1411,9 +1409,8 @@ process_strtab(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
  * Invalid sections produce a warning and are skipped.
  */
 static uintptr_t
-/* ARGSUSED3 */
-invalid_section(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
-    Word ndx, int ident, Ofl_desc *ofl)
+invalid_section(const char *name, Ifl_desc *ifl, Shdr *shdr,
+    Elf_Scn *scn __unused, Word ndx, int ident __unused, Ofl_desc *ofl)
 {
 	Conv_inv_buf_t inv_buf;
 
@@ -1470,11 +1467,10 @@ is_name_cmp(const char *is_name, const char *match_name, size_t match_len)
  *	are updated as necessary to reflect the changes. Returns TRUE
  *	for success, FALSE for failure.
  */
-/*ARGSUSED*/
 inline static Boolean
-process_progbits_alloc(const char *name, Ifl_desc *ifl, Shdr *shdr,
-    Word ndx, int *ident, Ofl_desc *ofl, Boolean is_stab_index,
-    Word *is_flags)
+process_progbits_alloc(const char *name, Ifl_desc *ifl __unused,
+    Shdr *shdr __unused, Word ndx __unused, int *ident, Ofl_desc *ofl __unused,
+    Boolean is_stab_index, Word *is_flags)
 {
 	Boolean done = FALSE;
 
@@ -1692,8 +1688,7 @@ process_array(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
 }
 
 static uintptr_t
-/* ARGSUSED1 */
-array_process(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
+array_process(Is_desc *isc, Ifl_desc *ifl __unused, Ofl_desc *ofl)
 {
 	Os_desc	*osp;
 	Shdr	*shdr;
@@ -1774,10 +1769,9 @@ sym_shndx_process(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
  *	 dlopen()ing a relocatable object (thus FLG_OF1_RELDYN can only get
  *	 set when libld is called from ld.so.1).
  */
-/*ARGSUSED*/
 static uintptr_t
-process_rel_dynamic(const char *name, Ifl_desc *ifl, Shdr *shdr, Elf_Scn *scn,
-    Word ndx, int ident, Ofl_desc *ofl)
+process_rel_dynamic(const char *name __unused, Ifl_desc *ifl, Shdr *shdr,
+    Elf_Scn *scn, Word ndx __unused, int ident __unused, Ofl_desc *ofl)
 {
 	Dyn		*dyn;
 	Elf_Scn		*strscn;
@@ -2356,9 +2350,8 @@ process_dynamic(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
  * Process a progbits section from a relocatable object (ET_REL).
  * This is used on non-amd64 objects to recognize .eh_frame sections.
  */
-/*ARGSUSED1*/
 static uintptr_t
-process_progbits_final(Is_desc *isc, Ifl_desc *ifl, Ofl_desc *ofl)
+process_progbits_final(Is_desc *isc, Ifl_desc *ifl __unused, Ofl_desc *ofl)
 {
 	if (isc->is_osdesc && (isc->is_flags & FLG_IS_EHFRAME) &&
 	    (ld_unwind_register(isc->is_osdesc, ofl) == S_ERROR))
@@ -2515,25 +2508,25 @@ typedef uintptr_t	(* initial_func_t)(const char *, Ifl_desc *, Shdr *,
 static initial_func_t Initial[SHT_NUM][2] = {
 /*			ET_REL			ET_DYN			*/
 
-/* SHT_NULL	*/	invalid_section,	invalid_section,
-/* SHT_PROGBITS	*/	process_progbits,	process_progbits,
-/* SHT_SYMTAB	*/	process_input,		process_input,
-/* SHT_STRTAB	*/	process_strtab,		process_strtab,
-/* SHT_RELA	*/	process_reloc,		process_reloc,
-/* SHT_HASH	*/	invalid_section,	NULL,
-/* SHT_DYNAMIC	*/	process_rel_dynamic,	process_dynamic_isgnu,
-/* SHT_NOTE	*/	process_section,	NULL,
-/* SHT_NOBITS	*/	process_nobits,		process_nobits,
-/* SHT_REL	*/	process_reloc,		process_reloc,
-/* SHT_SHLIB	*/	process_section,	invalid_section,
-/* SHT_DYNSYM	*/	invalid_section,	process_input,
-/* SHT_UNKNOWN12 */	process_progbits,	process_progbits,
-/* SHT_UNKNOWN13 */	process_progbits,	process_progbits,
-/* SHT_INIT_ARRAY */	process_array,		NULL,
-/* SHT_FINI_ARRAY */	process_array,		NULL,
-/* SHT_PREINIT_ARRAY */	process_array,		NULL,
-/* SHT_GROUP */		process_group,		invalid_section,
-/* SHT_SYMTAB_SHNDX */	process_sym_shndx,	NULL
+/* SHT_NULL	*/	{ invalid_section,	invalid_section },
+/* SHT_PROGBITS	*/	{ process_progbits,	process_progbits },
+/* SHT_SYMTAB	*/	{ process_input,		process_input },
+/* SHT_STRTAB	*/	{ process_strtab,		process_strtab },
+/* SHT_RELA	*/	{ process_reloc,		process_reloc },
+/* SHT_HASH	*/	{ invalid_section,	NULL },
+/* SHT_DYNAMIC	*/	{ process_rel_dynamic,	process_dynamic_isgnu },
+/* SHT_NOTE	*/	{ process_section,	NULL },
+/* SHT_NOBITS	*/	{ process_nobits,		process_nobits },
+/* SHT_REL	*/	{ process_reloc,		process_reloc },
+/* SHT_SHLIB	*/	{ process_section,	invalid_section },
+/* SHT_DYNSYM	*/	{ invalid_section,	process_input },
+/* SHT_UNKNOWN12 */	{ process_progbits,	process_progbits },
+/* SHT_UNKNOWN13 */	{ process_progbits,	process_progbits },
+/* SHT_INIT_ARRAY */	{ process_array,		NULL },
+/* SHT_FINI_ARRAY */	{ process_array,		NULL },
+/* SHT_PREINIT_ARRAY */	{ process_array,		NULL },
+/* SHT_GROUP */		{ process_group,		invalid_section },
+/* SHT_SYMTAB_SHNDX */	{ process_sym_shndx,	NULL }
 };
 
 typedef uintptr_t	(* final_func_t)(Is_desc *, Ifl_desc *, Ofl_desc *);
@@ -2541,25 +2534,25 @@ typedef uintptr_t	(* final_func_t)(Is_desc *, Ifl_desc *, Ofl_desc *);
 static final_func_t Final[SHT_NUM][2] = {
 /*			ET_REL			ET_DYN			*/
 
-/* SHT_NULL	*/	NULL,			NULL,
-/* SHT_PROGBITS	*/	process_progbits_final,	NULL,
-/* SHT_SYMTAB	*/	ld_sym_process,		ld_sym_process,
-/* SHT_STRTAB	*/	NULL,			NULL,
-/* SHT_RELA	*/	rel_process,		NULL,
-/* SHT_HASH	*/	NULL,			NULL,
-/* SHT_DYNAMIC	*/	NULL,			process_dynamic,
-/* SHT_NOTE	*/	NULL,			NULL,
-/* SHT_NOBITS	*/	NULL,			NULL,
-/* SHT_REL	*/	rel_process,		NULL,
-/* SHT_SHLIB	*/	NULL,			NULL,
-/* SHT_DYNSYM	*/	NULL,			ld_sym_process,
-/* SHT_UNKNOWN12 */	NULL,			NULL,
-/* SHT_UNKNOWN13 */	NULL,			NULL,
-/* SHT_INIT_ARRAY */	array_process,		NULL,
-/* SHT_FINI_ARRAY */	array_process,		NULL,
-/* SHT_PREINIT_ARRAY */	array_process,		NULL,
-/* SHT_GROUP */		NULL,			NULL,
-/* SHT_SYMTAB_SHNDX */	sym_shndx_process,	NULL
+/* SHT_NULL	*/	{ NULL,			NULL },
+/* SHT_PROGBITS	*/	{ process_progbits_final, NULL },
+/* SHT_SYMTAB	*/	{ ld_sym_process,	ld_sym_process },
+/* SHT_STRTAB	*/	{ NULL,			NULL },
+/* SHT_RELA	*/	{ rel_process,		NULL },
+/* SHT_HASH	*/	{ NULL,			NULL },
+/* SHT_DYNAMIC	*/	{ NULL,			process_dynamic },
+/* SHT_NOTE	*/	{ NULL,			NULL },
+/* SHT_NOBITS	*/	{ NULL,			NULL },
+/* SHT_REL	*/	{ rel_process,		NULL },
+/* SHT_SHLIB	*/	{ NULL,			NULL },
+/* SHT_DYNSYM	*/	{ NULL,			ld_sym_process },
+/* SHT_UNKNOWN12 */	{ NULL,			NULL },
+/* SHT_UNKNOWN13 */	{ NULL,			NULL },
+/* SHT_INIT_ARRAY */	{ array_process,	NULL },
+/* SHT_FINI_ARRAY */	{ array_process,	NULL },
+/* SHT_PREINIT_ARRAY */	{ array_process,	NULL },
+/* SHT_GROUP */		{ NULL,			NULL },
+/* SHT_SYMTAB_SHNDX */	{ sym_shndx_process,	NULL }
 };
 
 #define	MAXNDXSIZE	10
@@ -2653,7 +2646,7 @@ process_elf(Ifl_desc *ifl, Elf *elf, Ofl_desc *ofl)
 	ndx = 0;
 	vdfisp = vndisp = vsyisp = sifisp = capinfoisp = capisp = NULL;
 	scn = NULL;
-	while (scn = elf_nextscn(elf, scn)) {
+	while ((scn = elf_nextscn(elf, scn))) {
 		ndx++;
 
 		/*
@@ -2833,7 +2826,7 @@ process_elf(Ifl_desc *ifl, Elf *elf, Ofl_desc *ofl)
 			default:
 			do_default:
 				if (process_section(name, ifl, shdr, scn, ndx,
-				    ((ident == ld_targ.t_id.id_null) ?
+				    (((Word)ident == ld_targ.t_id.id_null) ?
 				    ident : ld_targ.t_id.id_user), ofl) ==
 				    S_ERROR)
 					return (S_ERROR);

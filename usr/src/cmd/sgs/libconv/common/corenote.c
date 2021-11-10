@@ -909,7 +909,7 @@ conv_cnote_si_code(Half mach, int sig, int si_code,
 			if ((si_code == 0) && (sig == 0))
 				return (MSG_ORIG(MSG_GBL_ZERO));
 
-			if (ndx >= ARRAY_NELTS(user_arr)) {
+			if (ndx >= (int)ARRAY_NELTS(user_arr)) {
 				const char *fmt;
 
 				fmt = (fmt_flags & CONV_FMT_DECIMAL) ?
@@ -973,6 +973,8 @@ conv_cnote_si_code(Half mach, int sig, int si_code,
 		case ARCH_X86:
 			return (conv_map_ds(ELFOSABI_NONE, EM_NONE, si_code,
 			    ds_emt_arr_x86, fmt_flags, inv_buf));
+		default:
+			break;
 		}
 		break;
 
@@ -984,6 +986,8 @@ conv_cnote_si_code(Half mach, int sig, int si_code,
 		case ARCH_X86:
 			return (conv_map_ds(ELFOSABI_NONE, EM_NONE, si_code,
 			    ds_fpe_arr_x86, fmt_flags, inv_buf));
+		default:
+			break;
 		}
 		break;
 
@@ -1035,7 +1039,8 @@ conv_cnote_auxv_af(Word flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_auxv_af_buf->buf) };
+	    .bufsize = sizeof (cnote_auxv_af_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -1126,7 +1131,8 @@ conv_cnote_cc_content(Lword flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_cc_content_buf->buf) };
+	    .bufsize = sizeof (cnote_cc_content_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -1214,7 +1220,8 @@ conv_cnote_pr_flags(int flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_pr_flags_buf->buf) };
+	    .bufsize = sizeof (cnote_pr_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -1292,7 +1299,8 @@ conv_cnote_old_pr_flags(int flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_old_pr_flags_buf->buf) };
+	    .bufsize = sizeof (cnote_old_pr_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -1351,7 +1359,8 @@ conv_cnote_proc_flag(int flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_proc_flag_buf->buf) };
+	    .bufsize = sizeof (cnote_proc_flag_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -1405,7 +1414,8 @@ conv_cnote_sa_flags(int flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_sa_flags_buf->buf) };
+	    .bufsize = sizeof (cnote_sa_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -1449,7 +1459,8 @@ conv_cnote_ss_flags(int flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (cnote_ss_flags_buf->buf) };
+	    .bufsize = sizeof (cnote_ss_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_ZERO));
@@ -2637,7 +2648,7 @@ conv_prsecflags(secflagset_t flags, Conv_fmt_flags_t fmt_flags,
 		{ 0, 0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (secflags_buf->buf)
+	    .bufsize = sizeof (secflags_buf->buf)
 	};
 	int i;
 
@@ -2692,7 +2703,7 @@ conv_prupanic(uint32_t flags, Conv_fmt_flags_t fmt_flags,
 		{ 0, 0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (upanic_buf->buf)
+	    .bufsize = sizeof (upanic_buf->buf)
 	};
 
 	if (flags == 0)

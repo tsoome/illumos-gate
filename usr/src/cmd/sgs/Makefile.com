@@ -86,7 +86,7 @@ SGSRPATH64 =	$(SGSRPATH)/$(MACH64)
 #
 # Macros to be used to include link against libconv and include vernote.o
 #
-VERSREF =	-ulink_ver_string
+VERSREF =	-Wl,-ulink_ver_string
 
 LDLIBDIR =	-L$(SGSHOME)/libld/$(MACH)
 LDLIBDIR64 =	-L$(SGSHOME)/libld/$(MACH64)

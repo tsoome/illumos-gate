@@ -50,10 +50,10 @@ typedef	enum {
 /*
  * Do nothing.
  */
-/* ARGSUSED0 */
 static void
-sym_null(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
-    int ndx, Word nshndx, sd_flag_t nsdflags)
+sym_null(Sym_desc *sdp __unused, Sym *nsym __unused, Ifl_desc *ifl __unused,
+    Ofl_desc *ofl __unused, int ndx __unused, Word nshndx __unused,
+    sd_flag_t nsdflags __unused)
 {
 }
 
@@ -263,10 +263,9 @@ sym_visibility(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl)
 /*
  * Check if two symbols types are compatible
  */
-/*ARGSUSED4*/
 static void
 sym_typecheck(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
-    int ndx, Word nshndx, sd_flag_t nsdflags)
+    int ndx __unused, Word nshndx __unused, sd_flag_t nsdflags __unused)
 {
 	uchar_t		otype = ELF_ST_TYPE(sdp->sd_sym->st_info);
 	uchar_t		ntype = ELF_ST_TYPE(nsym->st_info);
@@ -295,10 +294,9 @@ sym_typecheck(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
 	    conv_sym_info_type(ofl->ofl_dehdr->e_machine, ntype, 0, &inv_buf2));
 }
 
-/*ARGSUSED4*/
 static void
 sym_mach_check(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
-    int ndx, Word nshndx, sd_flag_t nsdflags)
+    int ndx __unused, Word nshndx __unused, sd_flag_t nsdflags __unused)
 {
 	/*
 	 * Perform any machine specific type checking.
@@ -536,7 +534,7 @@ sym_twoundefs(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
 	 * take the other.
 	 */
 	if (((obind == STB_WEAK) && (nbind != STB_WEAK)) ||
-	    (otype == STT_NOTYPE) && (ntype != STT_NOTYPE)) {
+	    ((otype == STT_NOTYPE) && (ntype != STT_NOTYPE))) {
 		sym_override(sdp, nsym, ifl, ofl, ndx, nshndx, nsdflags);
 		return;
 	}
@@ -871,11 +869,11 @@ sym_twotent(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
 	 * we can only test this for two relocatable objects.
 	 */
 	/* BEGIN CSTYLED */
-	if ((osym->st_value != nsym->st_value) &&
-	    ((sdp->sd_flags & FLG_SY_SPECSEC) &&
+#if	defined(_ELF64)
+	if (((osym->st_value != nsym->st_value) &&
+	    (sdp->sd_flags & FLG_SY_SPECSEC) &&
 	    (sdp->sd_sym->st_shndx == SHN_COMMON) &&
 	    (nsdflags & FLG_SY_SPECSEC) &&
-#if	defined(_ELF64)
 	    (nsym->st_shndx == SHN_COMMON)) ||
 	    ((ld_targ.t_m.m_mach == EM_AMD64) &&
 	    (sdp->sd_flags & FLG_SY_SPECSEC) &&
@@ -883,6 +881,10 @@ sym_twotent(Sym_desc *sdp, Sym *nsym, Ifl_desc *ifl, Ofl_desc *ofl,
 	    (nsdflags & FLG_SY_SPECSEC) &&
 	    (nsym->st_shndx == SHN_X86_64_LCOMMON))) {
 #else
+	if ((osym->st_value != nsym->st_value) &&
+	    ((sdp->sd_flags & FLG_SY_SPECSEC) &&
+	    (sdp->sd_sym->st_shndx == SHN_COMMON) &&
+	    (nsdflags & FLG_SY_SPECSEC) &&
 	    (nsym->st_shndx == SHN_COMMON))) {
 #endif
 	/* END CSTYLED */
@@ -1053,28 +1055,28 @@ static void (*Action[REF_NUM * SYM_NUM * 2][SYM_NUM])(Sym_desc *,
 /*				defined		undef		tent	*/
 /*				ET_REL		ET_REL		ET_REL	*/
 
-/*  0 defined REF_DYN_SEEN */	sym_tworeals,	sym_promote,	sym_realtent,
-/*  1   undef REF_DYN_SEEN */	sym_override,	sym_override,	sym_override,
-/*  2    tent REF_DYN_SEEN */	sym_realtent,	sym_promote,	sym_twotent,
-/*  3 defined REF_DYN_NEED */	sym_tworeals,	sym_typecheck,	sym_realtent,
-/*  4   undef REF_DYN_NEED */	sym_override,	sym_override,	sym_override,
-/*  5    tent REF_DYN_NEED */	sym_realtent,	sym_typecheck,	sym_twotent,
-/*  6 defined REF_REL_NEED */	sym_tworeals,	sym_typecheck,	sym_realtent,
-/*  7   undef REF_REL_NEED */	sym_override,	sym_twoundefs,	sym_override,
-/*  8    tent REF_REL_NEED */	sym_realtent,	sym_null,	sym_twotent,
+/*  0 defined REF_DYN_SEEN */	{sym_tworeals,	sym_promote,	sym_realtent},
+/*  1   undef REF_DYN_SEEN */	{sym_override,	sym_override,	sym_override},
+/*  2    tent REF_DYN_SEEN */	{sym_realtent,	sym_promote,	sym_twotent},
+/*  3 defined REF_DYN_NEED */	{sym_tworeals,	sym_typecheck,	sym_realtent},
+/*  4   undef REF_DYN_NEED */	{sym_override,	sym_override,	sym_override},
+/*  5    tent REF_DYN_NEED */	{sym_realtent,	sym_typecheck,	sym_twotent},
+/*  6 defined REF_REL_NEED */	{sym_tworeals,	sym_typecheck,	sym_realtent},
+/*  7   undef REF_REL_NEED */	{sym_override,	sym_twoundefs,	sym_override},
+/*  8    tent REF_REL_NEED */	{sym_realtent,	sym_null,	sym_twotent},
 
 /*				defined		undef		tent	*/
 /*				ET_DYN		ET_DYN		ET_DYN	*/
 
-/*  9 defined REF_DYN_SEEN */	sym_tworeals,	sym_null,	sym_realtent,
-/* 10   undef REF_DYN_SEEN */	sym_override,	sym_mach_check,	sym_override,
-/* 11    tent REF_DYN_SEEN */	sym_realtent,	sym_null,	sym_twotent,
-/* 12 defined REF_DYN_NEED */	sym_tworeals,	sym_null,	sym_realtent,
-/* 13   undef REF_DYN_NEED */	sym_override,	sym_null,	sym_override,
-/* 14    tent REF_DYN_NEED */	sym_realtent,	sym_null,	sym_twotent,
-/* 15 defined REF_REL_NEED */	sym_tworeals,	sym_null,	sym_realtent,
-/* 16   undef REF_REL_NEED */	sym_override,	sym_mach_check,	sym_override,
-/* 17    tent REF_REL_NEED */	sym_realtent,	sym_null,	sym_twotent
+/*  9 defined REF_DYN_SEEN */	{sym_tworeals,	sym_null,	sym_realtent},
+/* 10   undef REF_DYN_SEEN */	{sym_override,	sym_mach_check,	sym_override},
+/* 11    tent REF_DYN_SEEN */	{sym_realtent,	sym_null,	sym_twotent},
+/* 12 defined REF_DYN_NEED */	{sym_tworeals,	sym_null,	sym_realtent},
+/* 13   undef REF_DYN_NEED */	{sym_override,	sym_null,	sym_override},
+/* 14    tent REF_DYN_NEED */	{sym_realtent,	sym_null,	sym_twotent},
+/* 15 defined REF_REL_NEED */	{sym_tworeals,	sym_null,	sym_realtent},
+/* 16   undef REF_REL_NEED */	{sym_override,	sym_mach_check,	sym_override},
+/* 17    tent REF_REL_NEED */	{sym_realtent,	sym_null,	sym_twotent}
 
 };
 

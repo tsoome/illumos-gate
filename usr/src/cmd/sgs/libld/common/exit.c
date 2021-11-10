@@ -88,8 +88,7 @@ static Ofl_desc	*Ofl = NULL;
  * Define our signal handler.
  */
 static void
-/* ARGSUSED2 */
-handler(int sig, siginfo_t *sip, void *utp)
+handler(int sig, siginfo_t *sip, void *utp __unused)
 {
 	struct sigaction	nact;
 	Signals *		sigs;

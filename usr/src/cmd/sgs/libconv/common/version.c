@@ -63,7 +63,8 @@ conv_ver_flags(Half flags, Conv_fmt_flags_t fmt_flags,
 		{ 0,			0 }
 	};
 	static CONV_EXPN_FIELD_ARG conv_arg = {
-	    NULL, sizeof (ver_flags_buf->buf) };
+	    .bufsize = sizeof (ver_flags_buf->buf)
+	};
 
 	if (flags == 0)
 		return (MSG_ORIG(MSG_GBL_NULL));

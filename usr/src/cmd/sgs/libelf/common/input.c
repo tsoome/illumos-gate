@@ -82,7 +82,7 @@ static unsigned long	_elf_pagesize = 0;
 Okay
 _elf_vm(Elf * elf, size_t base, size_t sz)
 {
-	register unsigned	*hdreg, hdbit;
+	unsigned	*hdreg, hdbit;
 	unsigned		*tlreg, tlbit;
 	size_t			tail;
 	off_t			off;
@@ -151,7 +151,7 @@ _elf_vm(Elf * elf, size_t base, size_t sz)
 					sz = elf->ed_imagesz - off;
 				if ((lseek(elf->ed_fd, off,
 				    SEEK_SET) != off) ||
-				    (read(elf->ed_fd, iop, sz) != sz)) {
+				    ((size_t)read(elf->ed_fd, iop, sz) != sz)) {
 					_elf_seterr(EIO_VM, errno);
 					return (OK_NO);
 				}
@@ -182,7 +182,7 @@ _elf_vm(Elf * elf, size_t base, size_t sz)
 		if ((elf->ed_imagesz - off) < sz)
 			sz = elf->ed_imagesz - off;
 		if ((lseek(elf->ed_fd, off, SEEK_SET) != off) ||
-		    (read(elf->ed_fd, iop, sz) != sz)) {
+		    ((size_t)read(elf->ed_fd, iop, sz) != sz)) {
 			_elf_seterr(EIO_VM, errno);
 			return (OK_NO);
 		}
@@ -194,11 +194,11 @@ _elf_vm(Elf * elf, size_t base, size_t sz)
 Okay
 _elf_inmap(Elf * elf)
 {
-	int		fd = elf->ed_fd;
-	register size_t	sz;
+	int fd = elf->ed_fd;
+	size_t	sz;
 
 	{
-		register off_t	off = lseek(fd, (off_t)0, SEEK_END);
+		off_t off = lseek(fd, 0, SEEK_END);
 
 		if (off == 0)
 			return (OK_YES);
@@ -208,7 +208,7 @@ _elf_inmap(Elf * elf)
 			return (OK_NO);
 		}
 
-		if ((sz = (size_t)off) != off) {
+		if ((off_t)(sz = (size_t)off) != off) {
 			_elf_seterr(EIO_FBIG, 0);
 			return (OK_NO);
 		}
@@ -230,7 +230,7 @@ _elf_inmap(Elf * elf)
 	 */
 
 	{
-		register char	*p;
+		char	*p;
 
 		if ((elf->ed_myflags & EDF_WRITE) == 0 &&
 		    (p = mmap((char *)0, sz, PROT_READ,
@@ -248,7 +248,7 @@ _elf_inmap(Elf * elf)
 	 * If mmap fails, try read.  Some file systems don't mmap
 	 */
 	{
-		register size_t	vmsz = sizeof (unsigned) * (REGNUM(sz) + 1);
+		size_t	vmsz = sizeof (unsigned) * (REGNUM(sz) + 1);
 
 		if (vmsz % sizeof (Elf64) != 0)
 			vmsz += sizeof (Elf64) - vmsz % sizeof (Elf64);

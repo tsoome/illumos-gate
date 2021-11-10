@@ -905,9 +905,8 @@ avl_create(avl_tree_t *tree, int (*compar) (const void *, const void *),
 /*
  * Delete a tree.
  */
-/* ARGSUSED */
 void
-avl_destroy(avl_tree_t *tree)
+avl_destroy(avl_tree_t *tree __unused)
 {
 	ASSERT(tree);
 	ASSERT(tree->avl_numnodes == 0);

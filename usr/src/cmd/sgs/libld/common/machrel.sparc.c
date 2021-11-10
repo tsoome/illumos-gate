@@ -62,7 +62,7 @@ ld_find_got_ndx(Alist *alp, Gotref gref, Ofl_desc *ofl, Rel_desc *rdesc)
 		return (ofl->ofl_tlsldgotndx);
 
 	for (ALIST_TRAVERSE(alp, idx, gnp)) {
-		if ((rdesc->rel_raddend == gnp->gn_addend) &&
+		if (((Xword)rdesc->rel_raddend == gnp->gn_addend) &&
 		    (gref == gnp->gn_gotref))
 			return (gnp);
 	}
@@ -1310,6 +1310,8 @@ ld_do_activerelocs(Ofl_desc *ofl)
 				gref = GOT_REF_TLSGD;
 			else if (arsp->rel_flags & FLG_REL_MTLS)
 				gref = GOT_REF_TLSLD;
+			else
+				gref = GOT_REF_GENERIC;
 
 			gnp = ld_find_got_ndx(sdp->sd_GOTndxs, gref, ofl, arsp);
 			assert(gnp);

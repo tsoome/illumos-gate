@@ -25,8 +25,6 @@
  * Copyright 2022 Oxide Computer Company
  */
 
-/* LINTLIBRARY */
-
 /*
  * String conversion routine for hardware capabilities types.
  */
@@ -678,7 +676,7 @@ elfcap_hw3_to_str(elfcap_style_t style, elfcap_mask_t val, char *str,
 elfcap_err_t
 /* ARGSUSED4 */
 elfcap_sf1_to_str(elfcap_style_t style, elfcap_mask_t val, char *str,
-    size_t len, elfcap_fmt_t fmt, ushort_t mach)
+    size_t len, elfcap_fmt_t fmt, ushort_t mach __unused)
 {
 	/*
 	 * Initialize the string buffer, and validate the format request.
@@ -749,7 +747,8 @@ value(elfcap_style_t style, const char *str, const elfcap_desc_t *cdp,
 }
 
 elfcap_mask_t
-elfcap_sf1_from_str(elfcap_style_t style, const char *str, ushort_t mach)
+elfcap_sf1_from_str(elfcap_style_t style, const char *str,
+    ushort_t mach __unused)
 {
 	return (value(style, str, &sf1[0], ELFCAP_NUM_SF1));
 }

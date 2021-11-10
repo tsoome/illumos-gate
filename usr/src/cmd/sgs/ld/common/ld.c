@@ -87,7 +87,7 @@ typedef union {
  * Print a message to stdout
  */
 void
-veprintf(Lm_list *lml, Error error, const char *format, va_list args)
+veprintf(Lm_list *lml __unused, Error error, const char *format, va_list args)
 {
 	static const char	*strings[ERR_NUM];
 
@@ -122,6 +122,8 @@ veprintf(Lm_list *lml, Error error, const char *format, va_list args)
 	case ERR_ELF:
 		if (strings[ERR_ELF] == NULL)
 			strings[ERR_ELF] = MSG_INTL(MSG_ERR_ELF);
+	default:
+		break;
 	}
 
 	/* If strings[] element for our error type is non-NULL, issue prefix */
@@ -212,6 +214,8 @@ archive(int fd, Elf *elf, uchar_t *class_ret, Half *mach_ret)
 					*mach_ret = ehdr->e_machine;
 				}
 				found = 1;
+				break;
+			default:
 				break;
 			}
 		}
@@ -447,11 +451,12 @@ getmore:
 	 * use the native machine.
 	 */
 	*mach = (class == ELFCLASS64) ? mach64 : mach32;
-	if (*mach == EM_NONE)
+	if (*mach == EM_NONE) {
 		if (ar_found)
 			*mach = ar_mach;
 		else
 			*mach = (class == ELFCLASS64) ? M_MACH_64 : M_MACH_32;
+	}
 
 	return (0);
 }

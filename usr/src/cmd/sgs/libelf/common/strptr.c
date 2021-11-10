@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "libelf.h"
 #include "decl.h"
 #include "msg.h"
@@ -82,7 +80,7 @@ elf_strptr(Elf * elf, size_t ndx, size_t off)
 		while ((d = _elf_locked_getdata(s, d)) != 0) {
 			if (d->d_buf == 0)
 				continue;
-			if ((off >= d->d_off) &&
+			if (((off_t)off >= d->d_off) &&
 			    (off < d->d_off + d->d_size)) {
 				rc = (char *)d->d_buf + off - d->d_off;
 				READUNLOCKS(elf, s)

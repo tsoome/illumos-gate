@@ -73,7 +73,7 @@ dbg_fmt_isec_name2(const char *name, Word scnndx, dbg_isec_name_buf_t buf,
 	 * Failing that, fall through and use the clipped one already
 	 * formatted into buf, as that's better than nothing.
 	 */
-	if ((cnt >= sizeof (dbg_isec_name_buf_t)) &&
+	if ((cnt >= (int)sizeof (dbg_isec_name_buf_t)) &&
 	    ((*alloc_mem = malloc(cnt + 1)) != NULL)) {
 		(void) snprintf(*alloc_mem, cnt + 1,
 		    MSG_ORIG(MSG_FMT_ISEC_NAME), EC_WORD(scnndx), name);
