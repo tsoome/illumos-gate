@@ -37,10 +37,9 @@
 
 #define	MAX_DEPTH	50
 
-/*ARGSUSED2*/
 static int
 visit_dir(const char *path, const struct stat *st,
-	int file_type, struct FTW *ft)
+	int file_type __unused, struct FTW *ft __unused)
 {
 	const char	*uid, *gid;
 	char	ftype;
@@ -94,7 +93,7 @@ visit_dir(const char *path, const struct stat *st,
 			return (0);
 
 		(void) strcpy(buffer, abs_name);
-		if (p = index(buffer, '/')) {
+		if ((p = index(buffer, '/'))) {
 			(void) strcpy(symsrc, abs_name);
 			*p++ = '\0';
 			(void) strcpy(name, p);
