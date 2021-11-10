@@ -152,7 +152,7 @@ print_file(char *file)
 		perror(need_add_file);
 	}
 
-	while (count = fread(buff, sizeof (char), BUF_SIZE, fp))
+	while ((count = fread(buff, sizeof (char), BUF_SIZE, fp)))
 		(void) fwrite(buff, sizeof (char), count, stdout);
 	(void) fclose(fp);
 }
@@ -572,10 +572,9 @@ read_in_file(const char *file_name, elem_list *list)
 	return (count);
 }
 
-/* ARGSUSED */
 static int
 set_values(const char *fname, const struct stat *sbp, int otype,
-    struct FTW *ftw)
+    struct FTW *ftw __unused)
 {
 	elem *ep;
 	uid_t uid;
@@ -615,25 +614,26 @@ set_values(const char *fname, const struct stat *sbp, int otype,
 			return (0);
 		}
 		if (!set_group) {
-			gid = -1;
+			gid = (gid_t)-1;
 		} else if (ep == NULL) {
 			gid = 0;
-		} else if ((gid = stdfind(ep->group, groupnames)) == -1) {
+		} else if ((gid = stdfind(ep->group, groupnames)) ==
+		    (gid_t)-1) {
 			(void) fprintf(stderr, "%s: %s: group '%s' unknown\n",
 			    myname, fname, ep->group);
 			return (1);
 		}
 		if (!set_user) {
-			uid = -1;
+			uid = (uid_t)-1;
 		} else if (ep == NULL) {
 			uid = 2;
-		} else if ((uid = stdfind(ep->owner, usernames)) == -1) {
+		} else if ((uid = stdfind(ep->owner, usernames)) == (uid_t)-1) {
 			(void) fprintf(stderr, "%s: %s: user '%s' unknown\n",
 			    myname, fname, ep->owner);
 			return (1);
 		}
-		if ((set_group && gid != -1 && gid != sbp->st_gid) ||
-		    (set_user && uid != -1 && uid != sbp->st_uid)) {
+		if ((set_group && gid != (gid_t)-1 && gid != sbp->st_gid) ||
+		    (set_user && uid != (uid_t)-1 && uid != sbp->st_uid)) {
 			if (verbose) {
 				const char *owner, *group;
 

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,8 +31,6 @@
 
 #include "list.h"
 #include "proto_list.h"
-
-/* LINTLIBRARY */
 
 int max_list_depth;
 
@@ -143,11 +139,12 @@ find_elem(elem_list *list, elem *key, int flag)
 
 	for (e = list->list[hash(key->name) % list->num_of_buckets]; e;
 	    e = e->next) {
-		if (!name_compare(e, key))
+		if (!name_compare(e, key)) {
 			if (e->link_parent && flag == FOLLOW_LINK)
 				return (e->link_parent);
 			else
 				return (e);
+		}
 	}
 
 	return (NULL);
@@ -184,11 +181,12 @@ find_elem_mach(elem_list *list, elem *key, int flag)
 
 	for (e = list->list[hash(key->name) % list->num_of_buckets]; e;
 	    e = e->next) {
-		if ((e->arch != P_ISA) && (strcmp(key->name, e->name) == 0))
+		if ((e->arch != P_ISA) && (strcmp(key->name, e->name) == 0)) {
 			if (e->link_parent && flag == FOLLOW_LINK)
 				return (e->link_parent);
 			else
 				return (e);
+		}
 	}
 
 	return (NULL);

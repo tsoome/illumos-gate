@@ -195,7 +195,7 @@ parse_line(char **v, elem *e)
 	else {
 		e->symsrc = malloc(strlen(v[SYM]) + 1);
 		(void) strcpy(e->symsrc, v[SYM]);
-		if (e->file_type != SYM_LINK_T)
+		if (e->file_type != SYM_LINK_T) {
 #if defined(__sparc)
 			if (strncmp(e->symsrc, "sun4/", 5) == 0)
 				e->arch = P_SUN4;
@@ -209,23 +209,25 @@ parse_line(char **v, elem *e)
 				e->arch = P_SUN4e;
 			else if (strncmp(e->symsrc, "sun4m/", 6) == 0)
 				e->arch = P_SUN4m;
-			else if (strncmp(e->symsrc, "sun4v/", 6) == 0)
+			else if (strncmp(e->symsrc, "sun4v/", 6) == 0) {
 				e->arch = P_SUN4v;
-#elif defined(__i386)
-			if (strncmp(e->symsrc, "i86pc/", 6) == 0)
-				e->arch = P_I86PC;
-#elif defined(__ppc)
-			if (strncmp(e->symsrc, "prep/", 5) == 0)
-				e->arch = P_PREP;
-#else
-#error "Unknown instruction set"
-#endif
-			else {
+			} else {
 				(void) fprintf(stderr,
 				    "warning: Unknown relocation architecture "
 				    "for %s\n", e->symsrc);
 			}
-
+#elif defined(__i386)
+			if (strncmp(e->symsrc, "i86pc/", 6) == 0) {
+				e->arch = P_I86PC;
+			} else {
+				(void) fprintf(stderr,
+				    "warning: Unknown relocation architecture "
+				    "for %s\n", e->symsrc);
+			}
+#else
+#error "Unknown instruction set"
+#endif
+		}
 	}
 }
 
