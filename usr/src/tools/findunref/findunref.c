@@ -362,9 +362,8 @@ chdir_hg(const char *path)
 	chdir_scmdata(path, ".hg", hg_manifest);
 }
 
-/* ARGSUSED */
 static int
-check_scmdata(const char *path, const struct FTW *ftwp)
+check_scmdata(const char *path, const struct FTW *ftwp __unused)
 {
 	/*
 	 * The manifest paths are relative to the manifest root; skip past it.
@@ -469,7 +468,11 @@ checkpath(const char *path, const struct stat *statp, int type,
 		 * Prune any directories in the exception list.
 		 */
 		if (pnset_check(exsetp, path)) {
+#if defined(_XPG4_2)
+			ftwp->__quit = FTW_PRUNE;
+#else
 			ftwp->quit = FTW_PRUNE;
+#endif
 			return (0);
 		}
 
