@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -658,23 +656,20 @@ fix_itmc_ref_reloc(itmc_ref_t	*ref, itm_place2_t place)
  * Analysis
  */
 static void
-analysis(itm_info_hdr_t	*info_header)
+analysis(itm_info_hdr_t	*info_header __unused)
 {
 	itmc_ref_t	*ref;
-	itm_place2_t	place;
 	itm_type_t	obj_type;
 	enum { ONEMAP, ZEROMAP}	onemap = ZEROMAP;
 
 	TRACE_MESSAGE('4', ("Analysis\n"));
 
-	place = info_header->str_sec.place.itm_ptr;
 	for (obj_type = ITMC_OBJ_FIRST; obj_type <= ITMC_OBJ_LAST; obj_type++) {
 		if (ITMC_OBJ_DIREC == obj_type) {
 			continue;
 		}
 
-		for (ref = ref_first[obj_type];
-		    ref; place += ref->size, ref = ref->next) {
+		for (ref = ref_first[obj_type]; ref != NULL; ref = ref->next) {
 			if ((NULL == ref->name) &&
 			    (NULL == ref->referencer)) {
 				itm_tbl_hdr_t	*tbl_hdr;

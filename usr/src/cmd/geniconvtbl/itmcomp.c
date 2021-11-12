@@ -786,7 +786,7 @@ str_to_data(int size, char *seq)
 	data = malloc_vital(sizeof (itm_data_t));
 
 	data->size = size;
-	if (size <= sizeof (data->place)) {
+	if (size <= (int)sizeof (data->place)) {
 		(void) memmove(&(data->place), seq, size);
 	} else {
 		data->place.itm_ptr = (itm_place2_t)malloc_vital(size);
@@ -839,10 +839,10 @@ data_to_hexadecimal(itm_data_t		*data)
 	static int index = 0;
 	static char	*ptr[ARGUMENTSMAX] = { NULL, NULL, NULL, NULL,
 						NULL, NULL, NULL, NULL};
-	static long	len[ARGUMENTSMAX] = { 0, 0, 0, 0, 0, 0, 0, 0};
+	static size_t	len[ARGUMENTSMAX] = { 0, 0, 0, 0, 0, 0, 0, 0};
 	char		*hdp;
 	char		*p;
-	long		i;
+	itm_size_t	i;
 	int		val;
 	size_t		req_len;
 

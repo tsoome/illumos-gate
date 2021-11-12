@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -189,75 +187,75 @@ typedef struct {
  * NOT: This table must be sorted alphabetically.
  */
 static at_name_token_t at_table[] = {
-	"@automatic",	MAPTYPE_AUTO,
-	"@binary",	MAPTYPE_BINARY,
-	"@between",	BETWEEN,
-	"@condition",	CONDITION,
-	"@default",	ITM_DEFAULT,
-	"@dense",	MAPTYPE_DENSE,
-	"@direction",	DIRECTION,
-	"@discard",	DISCARD,
-	"@else",	ITM_ELSE,
-	"@error",	ERROR,
-	"@escapeseq",	ESCAPESEQ,
-	"@false",	ITM_FALSE,
-	"@hash",	MAPTYPE_HASH,
-	"@identical",	ITM_IDENTICAL,
-	"@if",		ITM_IF,
-	"@in",		ITM_IN,
-	"@index",	MAPTYPE_INDEX,
-	"@init",	ITM_INIT,
-	"@input",	ITM_IN,
-	"@inputsize",	ITM_INSIZE,
-	"@map",		MAP,
-	"@maptype",	MAPTYPE,
-	"@no_change_copy",	ITM_IDENTICAL,
-	"@nop",		NOP,
-	"@operation",	OPERATION,
-	"@out",		ITM_OUT,
-	"@output",	ITM_OUT,
-	"@output_byte_length",	RESULTLEN,
-	"@outputsize",	ITM_OUTSIZE,
-	"@printchr",	PRINTCHR,
-	"@printhd",	PRINTHD,
-	"@printint",	PRINTINT,
-	"@reset",	RESET,
-	"@resultlen",	RESULTLEN,
-	"@return",	RETURN,
-	"@true",	ITM_TRUE,
-	"automatic",	MAPTYPE_AUTO,
-	"between",	BETWEEN,
-	"binary",	MAPTYPE_BINARY,
-	"break",	BREAK,
-	"condition",	CONDITION,
-	"default",	ITM_DEFAULT,
-	"dense",	MAPTYPE_DENSE,
-	"direction",	DIRECTION,
-	"discard",	DISCARD,
-	"else",		ITM_ELSE,
-	"error",	ERROR,
-	"escapeseq",	ESCAPESEQ,
-	"false",	ITM_FALSE,
-	"hash",		MAPTYPE_HASH,
-	"if",		ITM_IF,
-	"index",	MAPTYPE_INDEX,
-	"init",		ITM_INIT,
-	"input",	ITM_IN,
-	"inputsize",	ITM_INSIZE,
-	"map",		MAP,
-	"maptype",	MAPTYPE,
-	"no_change_copy",	ITM_IDENTICAL,
-	"nop",		NOP,
-	"operation",	OPERATION,
-	"output",	ITM_OUT,
-	"output_byte_length",	RESULTLEN,
-	"outputsize",	ITM_OUTSIZE,
-	"printchr",	PRINTCHR,
-	"printhd",	PRINTHD,
-	"printint",	PRINTINT,
-	"reset",	RESET,
-	"return",	RETURN,
-	"true",		ITM_TRUE,
+	{"@automatic",	MAPTYPE_AUTO},
+	{"@binary",	MAPTYPE_BINARY},
+	{"@between",	BETWEEN},
+	{"@condition",	CONDITION},
+	{"@default",	ITM_DEFAULT},
+	{"@dense",	MAPTYPE_DENSE},
+	{"@direction",	DIRECTION},
+	{"@discard",	DISCARD},
+	{"@else",	ITM_ELSE},
+	{"@error",	ERROR},
+	{"@escapeseq",	ESCAPESEQ},
+	{"@false",	ITM_FALSE},
+	{"@hash",	MAPTYPE_HASH},
+	{"@identical",	ITM_IDENTICAL},
+	{"@if",		ITM_IF},
+	{"@in",		ITM_IN},
+	{"@index",	MAPTYPE_INDEX},
+	{"@init",	ITM_INIT},
+	{"@input",	ITM_IN},
+	{"@inputsize",	ITM_INSIZE},
+	{"@map",	MAP},
+	{"@maptype",	MAPTYPE},
+	{"@no_change_copy",	ITM_IDENTICAL},
+	{"@nop",		NOP},
+	{"@operation",	OPERATION},
+	{"@out",	ITM_OUT},
+	{"@output",	ITM_OUT},
+	{"@output_byte_length",	RESULTLEN},
+	{"@outputsize",	ITM_OUTSIZE},
+	{"@printchr",	PRINTCHR},
+	{"@printhd",	PRINTHD},
+	{"@printint",	PRINTINT},
+	{"@reset",	RESET},
+	{"@resultlen",	RESULTLEN},
+	{"@return",	RETURN},
+	{"@true",	ITM_TRUE},
+	{"automatic",	MAPTYPE_AUTO},
+	{"between",	BETWEEN},
+	{"binary",	MAPTYPE_BINARY},
+	{"break",	BREAK},
+	{"condition",	CONDITION},
+	{"default",	ITM_DEFAULT},
+	{"dense",	MAPTYPE_DENSE},
+	{"direction",	DIRECTION},
+	{"discard",	DISCARD},
+	{"else",	ITM_ELSE},
+	{"error",	ERROR},
+	{"escapeseq",	ESCAPESEQ},
+	{"false",	ITM_FALSE},
+	{"hash",		MAPTYPE_HASH},
+	{"if",		ITM_IF},
+	{"index",	MAPTYPE_INDEX},
+	{"init",	ITM_INIT},
+	{"input",	ITM_IN},
+	{"inputsize",	ITM_INSIZE},
+	{"map",		MAP},
+	{"maptype",	MAPTYPE},
+	{"no_change_copy",	ITM_IDENTICAL},
+	{"nop",		NOP},
+	{"operation",	OPERATION},
+	{"output",	ITM_OUT},
+	{"output_byte_length",	RESULTLEN},
+	{"outputsize",	ITM_OUTSIZE},
+	{"printchr",	PRINTCHR},
+	{"printhd",	PRINTHD},
+	{"printint",	PRINTINT},
+	{"reset",	RESET},
+	{"return",	RETURN},
+	{"true",	ITM_TRUE}
 };
 
 int
@@ -292,11 +290,11 @@ hexadecimal_data(int seqsize, char *seq)
 {
 	itm_data_t	*data;
 	char		*binary;
-	int		i, j;
+	size_t		i, j;
 	int		val;
 	int		high;
 	int		low;
-	int		size;
+	size_t		size;
 
 	/* size is assured to be multiple of 2 */
 	assert(seqsize != 0);
@@ -310,6 +308,7 @@ hexadecimal_data(int seqsize, char *seq)
 	}
 	binary = malloc_vital(size);
 	i = j = 0;
+	val = 0;
 	if (seqsize % 2 != 0) {
 		low =  *(seq);
 		if (('0' <= low) && (low <= '9')) {
@@ -370,7 +369,7 @@ name_data(int size, char *seq)
 	data = malloc_vital(sizeof (itm_data_t));
 
 	data->size = size;
-	if (size <= sizeof (data->place)) {
+	if (size <= (int)sizeof (data->place)) {
 		(void) memmove(&(data->place), seq, size);
 	} else {
 		data->place.itm_ptr = (itm_place2_t)malloc_vital(size);

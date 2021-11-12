@@ -24,9 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -477,8 +474,8 @@ dump_map_i_f(itm_hdr_t		*itm_hdr, itm_place_t map_place, int standalone)
 {
 	itm_tbl_hdr_t		*tbl_hdr;
 	itm_map_idx_fix_hdr_t	*map_hdr;
-	itm_num_t		i;
-	itm_num_t		j;
+	itm_size_t		i;
+	itm_size_t		j;
 	unsigned char		*p;
 	unsigned char		*map_error;
 	char			*name;
@@ -592,7 +589,7 @@ dump_map_l_f(itm_hdr_t		*itm_hdr, itm_place_t map_place, int standalone)
 	itm_tbl_hdr_t		*tbl_hdr;
 	itm_map_lookup_hdr_t	*map_hdr;
 	itm_num_t		i;
-	itm_num_t		j;
+	itm_size_t		j;
 	unsigned char		*p;
 	char			*name;
 
@@ -682,7 +679,7 @@ dump_map_hash(itm_hdr_t		*itm_hdr, itm_place_t map_place, int standalone)
 	itm_tbl_hdr_t		*tbl_hdr;
 	itm_map_hash_hdr_t	*map_hdr;
 	itm_num_t		i;
-	itm_num_t		j;
+	itm_size_t		j;
 	unsigned char		*p;
 	unsigned char		*map_hash;
 	unsigned char		*map_error;
@@ -805,8 +802,8 @@ dump_map_dense_enc(itm_hdr_t	*itm_hdr, itm_place_t map_place, int standalone)
 {
 	itm_tbl_hdr_t			*tbl_hdr;
 	itm_map_dense_enc_hdr_t		*map_hdr;
-	itm_num_t			i;
-	itm_num_t			j;
+	itm_size_t			i;
+	itm_size_t			j;
 	unsigned char			*p;
 	unsigned char			*map_ptr;
 	unsigned char			*map_error;
@@ -898,7 +895,7 @@ dump_map_dense_enc(itm_hdr_t	*itm_hdr, itm_place_t map_place, int standalone)
 	}
 
 	error_flag = 0;
-	for (i = 0, p = map_ptr; i < tbl_hdr->number;
+	for (i = 0, p = map_ptr; i < (itm_size_t)tbl_hdr->number;
 	    i++, p += map_hdr->result_len) {
 		if ((NULL == map_error) || (0 == *(map_error + i))) {
 			printi(0, "%s\t",
@@ -3068,7 +3065,7 @@ dump_range(itm_hdr_t	*itm_hdr, itm_place_t range_place)
 	itm_range_hdr_t	*rtsh;
 	unsigned char	*p;
 	long		i;
-	long		j;
+	itm_size_t	j;
 
 	rth = (itm_tbl_hdr_t *)(ADDR(range_place));
 	rtsh = (itm_range_hdr_t *)(rth + 1);

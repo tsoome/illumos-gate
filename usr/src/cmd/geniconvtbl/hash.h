@@ -27,9 +27,6 @@
 #ifndef	_ICONV_TM_HASH_H
 #define	_ICONV_TM_HASH_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -63,7 +60,7 @@ hash_dense_encoding(
 	const unsigned char	*byte_seq_min,
 	const unsigned char	*byte_seq_max)
 {
-	long		i;
+	itm_size_t	i;
 	itm_num_t	num;
 
 	num = (*byte_seq - *byte_seq_min);

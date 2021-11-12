@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -36,6 +34,7 @@
 #include "itmcomp.h"
 #include "itm_util.h"
 
+extern void yyerror(char *);
 %}
 
 %start itm_def
@@ -148,7 +147,7 @@
 %token COMMA
 %token COLON
 
-%right ASSIGN 
+%right ASSIGN
 %left LOR
 %left LAND
 %left OR
@@ -256,30 +255,25 @@ direction_unit
 	}
 	| condition name SC
 	{
-		itm_direc_t	*direc;
 		TRACE_MESSAGE('y', ("direction_unit: condition NAME ;\n"));
 		$$ = direction_unit($1, NULL, NULL, $2);
 	}
 	| name action SC
 	{
-		itm_direc_t	*direc;
 		TRACE_MESSAGE('y', ("direction_unit: NAME action ;\n"));
 		$$ = direction_unit(NULL, $1, &($2), NULL);
 	}
 	| name name SC
 	{
-		itm_direc_t	*direc;
 		TRACE_MESSAGE('y', ("direction_unit: NAME NAME ;\n"));
 		$$ = direction_unit(NULL, $1, NULL, $2);
 	}
 	| ITM_TRUE action SC
 	{
-		itm_direc_t	*direc;
 		$$ = direction_unit(NULL, NULL, &($2), NULL);
 	}
 	| ITM_TRUE name SC
 	{
-		itm_direc_t	*direc;
 		TRACE_MESSAGE('y', ("direction_unit: TRUE NAME ;\n"));
 		$$ = direction_unit(NULL, NULL, NULL, $2);
 	}
@@ -743,13 +737,11 @@ op_unit	: /* */ SC
 	}
 	| OPERATION ITM_INIT SC
 	{
-		itm_op_t	*op;
 		TRACE_MESSAGE('y', ("operation init;\n"));
 		$$ = op_self(ITM_OP_INIT);
 	}
 	| OPERATION RESET SC
 	{
-		itm_op_t	*op;
 		TRACE_MESSAGE('y', ("operation reset;\n"));
 		$$ = op_self(ITM_OP_RESET);
 	}

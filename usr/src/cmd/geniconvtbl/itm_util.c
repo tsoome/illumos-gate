@@ -518,8 +518,8 @@ map_table(itm_data_t	*name, itmc_map_t	*map_list,
 	itmc_map_t		*ml;
 	itmc_data_pair_t	**tpp;
 	itm_tbl_hdr_t		*table;
-	long			source_len = 0;
-	long			result_len = 0;
+	itm_size_t		source_len = 0;
+	itm_size_t		result_len = 0;
 	long			source_fixed_len = 1;
 	long			pass_through = 0;
 	long			default_count = 0;
@@ -533,13 +533,13 @@ map_table(itm_data_t	*name, itmc_map_t	*map_list,
 	unsigned char		*byte_seq_min;
 	unsigned char		*byte_seq_max;
 	unsigned char		*p;
-	long			i;
+	itm_size_t		i;
 	itmc_map_type_t		map_type = ITMC_MAP_UNKNOWN;
 	itmc_map_name_type_t	*map_name_type;
 	long			hash_factor;
-	long			result_len_specfied = 0;
+	itm_size_t		result_len_specfied = 0;
 	size_t			j;
-	long			n;
+	itm_size_t		n;
 	itmc_data_pair_t	**dp1;
 	itm_num_t		error_count = 0;
 
@@ -911,6 +911,9 @@ map_table(itm_data_t	*name, itmc_map_t	*map_list,
 			    default_data,
 			    result_len, num2);
 			break;
+		default:
+			table = NULL;
+			break;
 		}
 	} else {
 		table = map_table_lookup_var();
@@ -1037,7 +1040,7 @@ map_table_indexed_fixed(
 
 	error_table = (table + (resultlen * entry_num));
 	if (-1 == sub_hdr->default_error) {
-		if (source->size != resultlen) {
+		if (source->size != (itm_size_t)resultlen) {
 			itm_error(
 			    gettext("\"default no_change_copy\" is "
 			    "specified, but size does not match\n"));
@@ -1047,7 +1050,7 @@ map_table_indexed_fixed(
 		for (i = 0, j = 0;
 		    i < (entry_num);
 		    i++, j += resultlen) {
-			for (k = 0; k < resultlen; k++) {
+			for (k = 0; k < (itm_size_t)resultlen; k++) {
 				*(table + j + k) =
 				    (((source_start + i) >>
 				    ((resultlen - k - 1) * 8)) &
@@ -1246,7 +1249,7 @@ map_table_lookup_fixed(
 					j += 1;
 					for (m = 0, dp = (uchar_t *)
 					    (result_data + resultlen - 1);
-					    m < resultlen;
+					    m < (itm_size_t)resultlen;
 					    m++, dp--) {
 						if (0xff != *dp) {
 							(*dp) += 1;
@@ -1540,7 +1543,7 @@ map_table_hash(
 					p += 1;
 					for (m = 0, dp = (uchar_t *)
 					    (result_data + resultlen - 1);
-					    m < resultlen;
+					    m < (itm_size_t)resultlen;
 					    m++, dp--) {
 						if (0xff != *dp) {
 							(*dp) += 1;
@@ -1668,7 +1671,7 @@ map_table_dense_encoding(
 	if (-1 == sub_hdr->default_error) {
 		byte_seq_def = malloc_vital((sizeof (unsigned char *)) *
 		    resultlen);
-		if (source->size != resultlen) {
+		if (source->size != (itm_size_t)resultlen) {
 			itm_error(
 			gettext("\"default no_change_copy\" is "
 			    "specified, but size does not match\n"));
@@ -2171,6 +2174,8 @@ expr_self(itm_expr_type_t type, itm_data_t	*data)
 			    &(expr->data.value.place), OBJ_REG_TAIL);
 		}
 		break;
+	default:
+		break;
 	}
 	return	(expr);
 }
@@ -2199,7 +2204,7 @@ expr_binary(itm_expr_type_t type,
 	itm_expr_t	*expr;
 	itm_num_t	num;
 	unsigned char	*p;
-	int		i;
+	itm_size_t	i;
 
 	expr = malloc_vital(sizeof (itm_expr_t));
 	expr->type = type;
@@ -2240,7 +2245,7 @@ expr_binary2(itm_expr_type_t type,
 	itm_expr_t	*expr;
 	itm_num_t	num;
 	unsigned char	*p;
-	int		i;
+	itm_size_t	i;
 
 	if ((NULL == data0) || (NULL == data1)) {
 		return (NULL);
@@ -2334,7 +2339,7 @@ expr_seq_to_int(itm_expr_t	*expr)
 {
 	itm_num_t	num;
 	unsigned char	*p;
-	int		i;
+	itm_size_t	i;
 
 	if (ITM_EXPR_SEQ == expr->type) {
 		if ((sizeof (itm_place_t)) < expr->data.value.size) {
@@ -2525,8 +2530,7 @@ data_pair_compare(itmc_data_pair_t	**p0, itmc_data_pair_t	**p1)
 	itm_data_t	*d1;
 	uchar_t		*c0;
 	uchar_t		*c1;
-	size_t		s;
-	int		i;
+	size_t		s, i;
 
 	d0 = &((*p0)->data0);
 	d1 = &((*p1)->data0);
@@ -2573,8 +2577,8 @@ data_pair_compare(itmc_data_pair_t	**p0, itmc_data_pair_t	**p1)
 static long
 data_to_long(itm_data_t		*data)
 {
-	long		l;
-	int		i;
+	itm_size_t	l;
+	itm_size_t	i;
 	unsigned char	*p;
 
 	if ((sizeof (itm_place_t)) < data->size) {
