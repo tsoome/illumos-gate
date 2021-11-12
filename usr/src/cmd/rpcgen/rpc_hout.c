@@ -94,6 +94,8 @@ print_datadef(definition *def)
 	case DEF_CONST:
 		pconstdef(def);
 		break;
+	default:
+		break;
 	}
 	if (def->def_kind != DEF_PROGRAM && def->def_kind != DEF_CONST)
 		storexdrfuncdecl(def->def_name, def->def_kind != DEF_TYPEDEF ||
@@ -108,6 +110,8 @@ print_funcdef(definition *def)
 	case DEF_PROGRAM:
 		f_print(fout, "\n");
 		pprogramdef(def);
+		break;
+	default:
 		break;
 	}
 }

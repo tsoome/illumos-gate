@@ -98,6 +98,8 @@ emit(definition *def)
 	case DEF_TYPEDEF:
 		emit_typedef(def);
 		break;
+	default:
+		break;
 	}
 	print_trailer();
 }
@@ -282,9 +284,8 @@ print_ifstat(int indent, char *prefix, char *type, relation rel,
 	print_ifclose(indent);
 }
 
-/* ARGSUSED */
 static void
-emit_enum(definition *def)
+emit_enum(definition *def __unused)
 {
 	print_ifopen(1, "enum");
 	print_ifarg("(enum_t *)objp");
@@ -524,7 +525,7 @@ inline_struct(decl_list *dl, decl_list *last, int flag, int indent)
 				sizestr = arraysize(sizestr, &dl->decl, size);
 			}
 		} else {
-			if (cur != NULL)
+			if (cur != NULL) {
 				if (sizestr == NULL && tsize < inlinelen) {
 					/*
 					 * don't expand into inline code
@@ -539,6 +540,7 @@ inline_struct(decl_list *dl, decl_list *last, int flag, int indent)
 					expand_inline(indent, sizestr,
 					    tsize, flag, dl, cur);
 				}
+			}
 			tsize = 0;
 			cur = NULL;
 			sizestr = NULL;
@@ -765,6 +767,8 @@ emit_inline(int indent, declaration *decl, int flag)
 		f_print(fout, "}\n");
 		tabify(fout, indent);
 		f_print(fout, "}\n");
+	default:
+		break;
 	}
 }
 
@@ -790,6 +794,8 @@ emit_inline64(int indent, declaration *decl, int flag)
 		f_print(fout, "}\n");
 		tabify(fout, indent);
 		f_print(fout, "}\n");
+	default:
+		break;
 	}
 }
 

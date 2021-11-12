@@ -423,7 +423,7 @@ c_output(char *infile, char *define, int extend, char *outfile)
 	f_print(fout, "#include <stdlib.h>\n");
 	f_print(fout, "#endif /* !_KERNEL */\n\n");
 	tell = ftell(fout);
-	while (def = get_definition()) {
+	while ((def = get_definition())) {
 		emit(def);
 	}
 	if (extend && tell == ftell(fout)) {
@@ -562,7 +562,7 @@ h_output(char *infile, char *define, int extend, char *outfile)
 	tell = ftell(fout);
 
 	/* print data definitions */
-	while (def = get_definition())
+	while ((def = get_definition()))
 		print_datadef(def);
 
 	/*
@@ -692,7 +692,7 @@ s_output(int argc, char *argv[], char *infile, char *define, int extend,
 	if (timerflag)
 		f_print(fout, "\n#define	_RPCSVC_CLOSEDOWN %s\n",
 		    svcclosetime);
-	while (def = get_definition())
+	while ((def = get_definition()))
 		foundprogram |= (def->def_kind == DEF_PROGRAM);
 	if (extend && !foundprogram) {
 		(void) unlink(outfilename);
@@ -737,7 +737,7 @@ l_output(char *infile, char *define, int extend, char *outfile)
 	f_print(fout, "#include <stdlib.h> /* getenv, exit */\n");
 	f_print(fout, "#endif /* !_KERNEL */\n");
 
-	while (def = get_definition())
+	while ((def = get_definition()))
 		foundprogram |= (def->def_kind == DEF_PROGRAM);
 	if (extend && !foundprogram) {
 		(void) unlink(outfilename);
@@ -760,7 +760,7 @@ t_output(char *infile, char *define, int extend, char *outfile)
 	outfilename = extend ? extendfile(infile, outfile) : outfile;
 	open_output(infile, outfilename);
 	add_warning();
-	while (def = get_definition()) {
+	while ((def = get_definition())) {
 		foundprogram |= (def->def_kind == DEF_PROGRAM);
 	}
 	if (extend && !foundprogram) {
@@ -800,7 +800,7 @@ svc_output(char *infile, char *define, int extend, char *outfile)
 	f_print(fout, "#include <signal.h>\n");
 
 	tell = ftell(fout);
-	while (def = get_definition())
+	while ((def = get_definition()))
 		write_sample_svc(def);
 	if (extend && tell == ftell(fout))
 		(void) unlink(outfilename);
@@ -836,7 +836,7 @@ clnt_output(char *infile, char *define, int extend, char *outfile)
 	f_print(fout, "#include <stdlib.h> /* getenv, exit */\n");
 
 	tell = ftell(fout);
-	while (def = get_definition())
+	while ((def = get_definition()))
 		has_program += write_sample_clnt(def);
 
 	if (has_program)
@@ -1035,7 +1035,7 @@ parseargs(int argc, char *argv[], struct commandline *cmd)
 {
 	int i;
 	int j;
-	char c, ch;
+	int c, ch;
 	char flag[(1 << 8 * sizeof (char))];
 	int nflags;
 

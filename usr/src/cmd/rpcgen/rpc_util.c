@@ -219,7 +219,7 @@ locase(char *str)
 	static char buf[100];
 	char *p = buf;
 
-	while (c = *str++)
+	while ((c = *str++))
 		*p++ = (c >= 'A' && c <= 'Z') ? (c - 'A' + 'a') : c;
 	*p = 0;
 	return (buf);
