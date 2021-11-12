@@ -25,6 +25,7 @@ OBJS +=		avl.o \
 		mkdirp.o
 
 CPPFLAGS +=	-I$(CMDDIR) -I.
+parser.tab.o := CERRWARN += -_clang=-Wno-unused-label
 
 .KEEP_STATE:
 

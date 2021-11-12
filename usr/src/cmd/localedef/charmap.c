@@ -270,8 +270,8 @@ add_charmap_range(char *s, char *e, int wc)
 
 	if (((si = strcspn(s, digits)) == 0) || (si == ls) ||
 	    (strncmp(s, e, si) != 0) ||
-	    (strspn(s + si, digits) != (ls - si)) ||
-	    (strspn(e + si, digits) != (le - si)) ||
+	    (strspn(s + si, digits) != (size_t)(ls - si)) ||
+	    (strspn(e + si, digits) != (size_t)(le - si)) ||
 	    ((sn = atoi(s + si)) > ((en = atoi(e + si))))) {
 		errf(_("malformed charmap range"));
 		return;

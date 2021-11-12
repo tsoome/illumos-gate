@@ -446,7 +446,7 @@ get_wide(void)
 	int c;
 	wchar_t	wc;
 
-	if (mb_cur_max >= sizeof (mbs)) {
+	if (mb_cur_max >= (int)sizeof (mbs)) {
 		yyerror(_("max multibyte character size too big"));
 		mbi = 0;
 		return (T_NULL);

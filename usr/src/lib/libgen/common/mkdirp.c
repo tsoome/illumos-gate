@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Creates directory and it's parents if the parents do not
  * exist yet.
@@ -137,7 +135,7 @@ mkdirp(const char *d, mode_t mode)
 static char *
 simplify(const char *str)
 {
-	int i;
+	size_t i;
 	size_t mbPathlen;	/* length of multi-byte path */
 	size_t wcPathlen;	/* length of wide-character path */
 	wchar_t *wptr;		/* scratch pointer */

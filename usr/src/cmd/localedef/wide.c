@@ -118,7 +118,7 @@ static struct {
 	 */
 	{ "GB2312",	"GB2312",	16, towide_gb2312, tomb_mbs },
 
-	{ NULL, NULL },
+	{ NULL, NULL, 0, NULL, NULL },
 };
 
 static char *
@@ -162,10 +162,8 @@ werr(const char *fmt, ...)
  * This is used for 8-bit encodings.
  */
 int
-towide_none(wchar_t *c, const char *mb, unsigned n)
+towide_none(wchar_t *c, const char *mb, unsigned n __unused)
 {
-	_NOTE(ARGUNUSED(n));
-
 	if (mb_cur_max != 1) {
 		werr("invalid or unsupported multibyte locale");
 		return (-1);
@@ -193,9 +191,9 @@ int
 towide_utf8(wchar_t *wc, const char *mb, unsigned n)
 {
 	wchar_t	c;
-	int	nb;
+	unsigned nb;
 	int	lv;	/* lowest legal value */
-	int	i;
+	unsigned i;
 	const uint8_t *s = (const uint8_t *)mb;
 
 	c = *s;
@@ -463,8 +461,8 @@ static int
 towide_euc_impl(wchar_t *wc, const char *mb, unsigned n,
     uint8_t cs2, uint8_t cs2width, uint8_t cs3, uint8_t cs3width)
 {
-	int i;
-	int width = 2;
+	unsigned i;
+	unsigned width = 2;
 	wchar_t	c;
 
 	c = *(uint8_t *)mb;
