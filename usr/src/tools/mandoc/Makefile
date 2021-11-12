@@ -20,9 +20,12 @@ LCDIR=		$(SRC)/lib/libc/port
 include		$(SRC)/tools/Makefile.tools
 include		$(CMDDIR)/Makefile.common
 
-CPPFLAGS +=	-_gcc=-nostdinc
+<<<<<<< HEAD
+CPPFLAGS +=	-_gcc=-nostdinc -_clang=-nostdinc
 CPPFLAGS +=	-I$(NATIVE_ADJUNCT)/include
 LDFLAGS +=	-L$(NATIVE_ADJUNCT)/lib -R$(NATIVE_ADJUNCT)/lib
+
+CERRWARN += -_clang=-Wno-unused-parameter
 
 # 3rd party code
 SMATCH=off
