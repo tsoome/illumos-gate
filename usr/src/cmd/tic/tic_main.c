@@ -213,12 +213,12 @@ check_dir(char dirletter)
 	static char	dirnames[128];
 	static char	dir[2] = " ";
 
-	if (dirnames[dirletter] == 0) {
+	if (dirnames[(int)dirletter] == 0) {
 	    dir[0] = dirletter;
 	    if (stat64(dir, &statbuf) < 0) {
 		if (mkdir(dir, 0755) < 0)
 			syserr_abort("mkdir %s returned bad status", dir);
-		dirnames[dirletter] = 1;
+		dirnames[(int)dirletter] = 1;
 	    } else if (access(dir, 7) < 0) {
 			fprintf(stderr, "%s: %s/%s: Permission denied\n",
 			    progname, destination, dir);

@@ -717,8 +717,9 @@ write_object(FILE *fp, short Booleans[], short Numbers[], short Strings[])
 		cBooleans[i] = Booleans[i];
 
 	if (fwrite(&header, sizeof (header), 1, fp) != 1 ||
-	    fwrite(namelist, sizeof (char), namelen, fp) != namelen ||
-	    fwrite(cBooleans, sizeof (char), BoolCount, fp) != BoolCount)
+	    fwrite(namelist, sizeof (char), namelen, fp) != (size_t)namelen ||
+	    fwrite(cBooleans, sizeof (char), BoolCount, fp) !=
+	    (size_t)BoolCount)
 		return (-1);
 
 	if ((namelen+BoolCount) % 2 != 0 &&
@@ -732,11 +733,12 @@ write_object(FILE *fp, short Booleans[], short Numbers[], short Strings[])
 			Strings[i] = swap(Strings[i]);
 	}
 
-	if (fwrite((char *)Numbers, sizeof (short), NumCount, fp) != NumCount ||
-		    fwrite((char *)Strings, sizeof (short), StrCount, fp)
-							!= StrCount ||
-		    fwrite(string_table, sizeof (char), l_next_free, fp)
-							!= l_next_free)
+	if (fwrite((char *)Numbers, sizeof (short), NumCount, fp) !=
+	    (size_t)NumCount ||
+	    fwrite((char *)Strings, sizeof (short), StrCount, fp) !=
+	    (size_t)StrCount ||
+	    fwrite(string_table, sizeof (char), l_next_free, fp) !=
+	    (size_t)l_next_free)
 		return (-1);
 
 	return (0);
