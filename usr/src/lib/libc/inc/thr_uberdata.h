@@ -993,8 +993,7 @@ typedef struct uberdata {
 #define	callout_lock	_callout_lock.pad_lock
 #define	tdb_hash_lock	_tdb_hash_lock.pad_lock
 
-#pragma align 64(__uberdata)
-extern	uberdata_t	__uberdata;
+extern	uberdata_t	__uberdata __aligned(64);
 extern	uberdata_t	**__tdb_bootstrap;	/* known to libc_db and mdb */
 extern	int		primary_link_map;
 

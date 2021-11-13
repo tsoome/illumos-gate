@@ -90,15 +90,22 @@ __curthread(void)
 extern __GNU_INLINE greg_t
 stkptr(void)
 {
+	greg_t __value;
+
 #if defined(__amd64)
-	register greg_t __value __asm__("rsp");
+	__asm__("movq %%rsp, %0\n\t"
 #elif defined(__i386)
-	register greg_t __value __asm__("esp");
+	__asm__("movl %%esp, %0\n\t"
+#elif defined(__sparcv9)
+	__asm__(".register %%sp, " SPARC_REG_SPEC "\n\t"
+	    "ldx %%sp, %0"
 #elif defined(__sparc)
-	register greg_t __value __asm__("sp");
+	__asm__(".register %%sp, " SPARC_REG_SPEC "\n\t"
+	    "ld %%sp, %0"
 #else
 #error	"port me"
 #endif
+	    : "=r" (__value));
 	return (__value);
 }
 
