@@ -28,6 +28,7 @@
      bzBuffToBuffDecompress.  Fixed.
 */
 
+#include <sys/ccompile.h>
 #include "bzlib_private.h"
 
 #ifndef BZ_NO_COMPRESS
@@ -153,7 +154,7 @@ typedef struct {
 } bzap;
 
 static
-void* default_bzalloc ( void* opaque, Int32 items, Int32 size )
+void* default_bzalloc ( void* opaque __unused, Int32 items, Int32 size )
 {
 	size_t sz = sizeof (bzap) + BZ2_BZALLOC_ALIGN + (items * size);
 	uintptr_t p = (uintptr_t)kmem_alloc(sz, KM_SLEEP);
@@ -169,7 +170,7 @@ void* default_bzalloc ( void* opaque, Int32 items, Int32 size )
 }
 
 static
-void default_bzfree ( void* opaque, void* addr )
+void default_bzfree ( void* opaque __unused, void* addr )
 {
 	if (addr != NULL) {
 		bzap *pp = (bzap *)addr - 1;
