@@ -46,11 +46,12 @@ extern "C" {
 #define	DB_FLAGS(mp)	((mp)->b_datap->db_flags)
 
 #define	_PTRDIFF(p1, p2)	((intptr_t)((uintptr_t)(p1) - (uintptr_t)(p2)))
-#define	MBLKL(mp)		_PTRDIFF((mp)->b_wptr, (mp)->b_rptr)
-#define	MBLKSIZE(mp)		_PTRDIFF(DB_LIM(mp), DB_BASE(mp))
-#define	MBLKHEAD(mp)		_PTRDIFF((mp)->b_rptr, DB_BASE(mp))
-#define	MBLKTAIL(mp)		_PTRDIFF(DB_LIM(mp), (mp)->b_wptr)
-#define	MBLKIN(mp, off, len) (((off) <= MBLKL(mp)) && \
+#define	_PTRDIFFU(p1, p2)	((uintptr_t)((uintptr_t)(p1) - (uintptr_t)(p2)))
+#define	MBLKL(mp)		_PTRDIFFU((mp)->b_wptr, (mp)->b_rptr)
+#define	MBLKSIZE(mp)		_PTRDIFFU(DB_LIM(mp), DB_BASE(mp))
+#define	MBLKHEAD(mp)		_PTRDIFFU((mp)->b_rptr, DB_BASE(mp))
+#define	MBLKTAIL(mp)		_PTRDIFFU(DB_LIM(mp), (mp)->b_wptr)
+#define	MBLKIN(mp, off, len) (((uintptr_t)(off) <= MBLKL(mp)) && \
 	(((mp)->b_rptr + (off) + (len)) <= (mp)->b_wptr))
 
 #ifdef	_KERNEL
