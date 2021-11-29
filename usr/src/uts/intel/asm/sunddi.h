@@ -45,7 +45,7 @@ inb(int port)
 	uint8_t value;
 
 	__asm__ __volatile__(
-	    "inb (%1)"		/* value in %al */
+	    "inb (%w1), %0"		/* value in %al */
 	    : "=a" (value)
 	    : "d" (port16));
 	return (value);
@@ -58,9 +58,9 @@ inw(int port)
 	uint16_t value;
 
 	__asm__ __volatile__(
-	    "inw (%1)"		/* value in %ax */
+	    "inw (%w1), %0"		/* value in %ax */
 	    : "=a" (value)
-	    : "d" (port16));
+	    : "Nd" (port16));
 	return (value);
 }
 
@@ -71,9 +71,9 @@ inl(int port)
 	uint32_t value;
 
 	__asm__ __volatile__(
-	    "inl (%1)"		/* value in %eax */
+	    "inl (%w1), %0"		/* value in %eax */
 	    : "=a" (value)
-	    : "d" (port16));
+	    : "Nd" (port16));
 	return (value);
 }
 
@@ -83,7 +83,7 @@ outb(int port, uint8_t value)
 	uint16_t port16 = (uint16_t)port;
 
 	__asm__ __volatile__(
-	    "outb (%1)"
+	    "outb %0, (%w1)"
 	    : /* no output */
 	    : "a" (value), "d" (port16));
 }
@@ -94,7 +94,7 @@ outw(int port, uint16_t value)
 	uint16_t port16 = (uint16_t)port;
 
 	__asm__ __volatile__(
-	    "outw (%1)"
+	    "outw %0, (%w1)"
 	    : /* no output */
 	    : "a" (value), "d" (port16));
 }
@@ -105,7 +105,7 @@ outl(int port, uint32_t value)
 	uint16_t port16 = (uint16_t)port;
 
 	__asm__ __volatile__(
-	    "outl (%1)"
+	    "outl %0, (%w1)"
 	    : /* no output */
 	    : "a" (value), "d" (port16));
 }
