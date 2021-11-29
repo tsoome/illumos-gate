@@ -68,7 +68,7 @@ extern void exit(int);
 #define	OFFSET	OFFSET...
 
 int
-main(int argc, char *argv[])
+main(int argc __unused, char *argv[] __unused)
 {
 	printf("#define\tLOCK_LEVEL 0x%x\n", LOCK_LEVEL);
 	printf("#define\tCLOCK_LEVEL 0x%x\n", CLOCK_LEVEL);

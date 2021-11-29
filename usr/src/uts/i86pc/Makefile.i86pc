@@ -195,7 +195,8 @@ ALL_DEFS	 = $(MACHINE_DEFS) $(WORKAROUND_DEFS) $(DEBUG_DEFS) \
 		   $(OPTION_DEFS)
 GENASSYM_DEFS	 = $(MACHINE_DEFS) $(OPTION_DEFS) \
 			-_gcc=-fno-eliminate-unused-debug-symbols \
-			-_gcc=-fno-eliminate-unused-debug-types
+			-_gcc=-fno-eliminate-unused-debug-types \
+			-U__EXTENSIONS__ -U_XOPEN_SOURCE
 
 #
 # ----- TRANSITIONAL SECTION --------------------------------------------------
