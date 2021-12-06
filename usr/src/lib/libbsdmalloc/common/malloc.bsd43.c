@@ -35,7 +35,6 @@
  * or 2^n-8 bytes long (LP64).
  */
 
-/*LINTLIBRARY*/
 #include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -87,7 +86,7 @@ union	overhead {
 #endif
 static	union overhead *nextf[NBUCKETS];
 
-static	int	pagesz;			/* page size */
+static	size_t	pagesz;			/* page size */
 static	long	sbrk_adjust;		/* in case sbrk() does alignment */
 static	int	pagebucket;		/* page size bucket */
 static	void	morecore(int);
@@ -98,7 +97,7 @@ malloc(size_t nbytes)
 {
 	union overhead *op;
 	int bucket;
-	ssize_t	n;
+	ssize_t	n, pgz;
 	size_t amt;
 
 	/*
@@ -107,8 +106,9 @@ malloc(size_t nbytes)
 	 */
 	if (pagesz == 0) {
 		pagesz = getpagesize();
+		pgz = pagesz;
 		op = sbrk(0);
-		n = pagesz - sizeof (*op) - ((uintptr_t)op & (pagesz - 1));
+		n = pgz - sizeof (*op) - ((uintptr_t)op & (pagesz - 1));
 		if (n < 0)
 			n += pagesz;
 		if (n) {
@@ -139,7 +139,8 @@ malloc(size_t nbytes)
 	 * stored in hash buckets which satisfies request.
 	 * Account for space used per block for accounting.
 	 */
-	if (nbytes <= (n = pagesz - sizeof (*op))) {
+	n = pagesz - sizeof (*op);
+	if (n > 0 && nbytes <= (size_t)n) {
 		amt = (1UL << EXP);	/* size of first bucket */
 		bucket = 0;
 		n = -(ssize_t)(sizeof (*op));
