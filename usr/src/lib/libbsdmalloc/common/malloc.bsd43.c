@@ -312,13 +312,14 @@ realloc(void *cp, size_t nbytes)
 		}
 		if (nbytes <= onb && nbytes > sz) {
 			return (cp);
-		} else
-			free(cp);
+		}
 	}
 	if ((res = malloc(nbytes)) == NULL)
 		return (NULL);
 	if (cp != res)		/* common optimization if "compacting" */
 		(void) memmove(res, cp, (nbytes < onb) ? nbytes : onb);
+	if (was_alloced)
+		free(cp);
 	return (res);
 }
 
