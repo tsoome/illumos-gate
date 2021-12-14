@@ -98,17 +98,12 @@ static struct sockaddr_storage	client;
 static struct sockaddr_in6 	*sin6_ptr;
 static struct sockaddr_in	*sin_ptr;
 static struct sockaddr_in6	*from6_ptr;
-static struct sockaddr_in	*from_ptr;
 static int			addrfmly;
 static int			peer;
 static off_t			tsize;
 static tftpbuf			ackbuf;
 static struct sockaddr_storage	from;
 static boolean_t		tsize_set;
-static pid_t			child;
-				/* pid of child handling delayed replys */
-static int			delay_fd [2];
-				/* pipe for communicating with child */
 static FILE			*file;
 static char			*filename;
 
@@ -121,12 +116,6 @@ static union {
 	struct tftphdr	hdr;
 	char		data[SEGSIZE];
 } oackbuf;
-
-struct	delay_info {
-	long	timestamp;		/* time request received */
-	int	ecode;			/* error code to return */
-	struct	sockaddr_storage from;	/* address of client */
-};
 
 int	blocksize = SEGSIZE;	/* Number of data bytes in a DATA packet */
 
@@ -144,7 +133,6 @@ struct formats {
 	int	f_convert;
 };
 
-static void	delayed_responder(void);
 static void	tftp(struct tftphdr *, int);
 static int	validate_filename(int);
 static void	tftpd_sendfile(struct formats *, int);
@@ -157,7 +145,7 @@ static char	*tsize_handler(int, char *, int *);
 static struct formats formats[] = {
 	{ "netascii",	validate_filename, tftpd_sendfile, tftpd_recvfile, 1 },
 	{ "octet",	validate_filename, tftpd_sendfile, tftpd_recvfile, 0 },
-	{ NULL }
+	{ NULL, NULL, NULL, NULL, 0 }
 };
 
 struct options {
@@ -169,12 +157,28 @@ static struct options options[] = {
 	{ "blksize",	blksize_handler },
 	{ "timeout",	timeout_handler },
 	{ "tsize",	tsize_handler },
-	{ NULL }
+	{ NULL, NULL }
 };
 
 static char		optbuf[MAX_OPTVAL_LEN];
 static int		timeout;
 static sigjmp_buf	timeoutbuf;
+
+/* Output current timestamp */
+static void
+print_time(void)
+{
+	struct timeval t;
+	struct tm *tm;
+
+	if (gettimeofday(&t, NULL) < 0)
+		return;
+
+	tm = localtime(&t.tv_sec);
+
+	(void) fprintf(stderr, "%02d:%02d:%02d.%05d ", tm->tm_hour, tm->tm_min,
+	    tm->tm_sec, (int)t.tv_usec / 10);
+}
 
 int
 main(int argc, char **argv)
@@ -243,15 +247,11 @@ usage:
 			exit(1);
 		}
 
-	if (optind < argc)
+	if (optind < argc) {
 		if (optind == argc - 1 && *argv [optind] == '/')
 			homedir = argv [optind];
 		else
 			goto usage;
-
-	if (pipe(delay_fd) < 0) {
-		syslog(LOG_ERR, "pipe (main): %m");
-		exit(1);
 	}
 
 	(void) sigset(SIGCHLD, SIG_IGN); /* no zombies please */
@@ -282,7 +282,7 @@ usage:
 		    NULL);
 
 		if (debug)
-			(void) puts("running in standalone mode...");
+			(void) puts("Running in standalone mode...");
 	} else {
 		/* request socket passed on fd 0 by inetd */
 		reqsock = 0;
@@ -295,21 +295,6 @@ usage:
 	}
 
 	(void) chdir(homedir);
-
-	(void) priv_set(PRIV_ON, PRIV_EFFECTIVE, PRIV_PROC_FORK, NULL);
-	if ((child = fork()) < 0) {
-		syslog(LOG_ERR, "fork (main): %m");
-		exit(1);
-	}
-	(void) priv_set(PRIV_OFF, PRIV_EFFECTIVE, PRIV_PROC_FORK, NULL);
-
-	if (child == 0) {
-		delayed_responder();
-	} /* child */
-
-	/* close read side of pipe */
-	(void) close(delay_fd[0]);
-
 
 	/*
 	 * Top level handling of incomming tftp requests.  Read a request
@@ -332,15 +317,13 @@ usage:
 			if (errno == EINTR)
 				continue;
 			syslog(LOG_ERR, "select: %m");
-			(void) kill(child, SIGKILL);
 			exit(1);
 		}
 		if (n == 0) {
 			/* Select timed out.  Its time to die. */
-			if (standalone)
+			if (standalone) {
 				continue;
-			else {
-				(void) kill(child, SIGKILL);
+			} else {
 				exit(0);
 			}
 		}
@@ -374,7 +357,6 @@ usage:
 				perror("recvfrom");
 			else
 				syslog(LOG_ERR, "recvfrom: %m");
-			(void) kill(child, SIGKILL);
 			exit(1);
 		}
 
@@ -406,7 +388,6 @@ usage:
 				perror("socket (main)");
 			else
 				syslog(LOG_ERR, "socket (main): %m");
-			(void) kill(child, SIGKILL);
 			exit(1);
 		}
 		if (debug) {
@@ -421,7 +402,6 @@ usage:
 				perror("bind (main)");
 			else
 				syslog(LOG_ERR, "bind (main): %m");
-			(void) kill(child, SIGKILL);
 			exit(1);
 		}
 		if (standalone && debug) {
@@ -441,8 +421,9 @@ usage:
 			if (getsockname(peer, (struct sockaddr *)&client,
 			    &fromplen) < 0)
 				perror("getsockname (main)");
+			print_time();
 			(void) fprintf(stderr,
-			    "request from %s port %d; local port %d\n",
+			    "Request from %s port %d; local port %d\n",
 			    abuf, from6_ptr->sin6_port, sin6_ptr->sin6_port);
 		}
 		tp = &buf.hdr;
@@ -458,112 +439,12 @@ usage:
 	return (0);
 }
 
-static void
-delayed_responder(void)
-{
-	struct delay_info dinfo;
-	long now;
-
-	/* we don't use the descriptors passed in to the parent */
-	(void) close(0);
-	(void) close(1);
-	if (standalone)
-		(void) close(reqsock);
-
-	/* close write side of pipe */
-	(void) close(delay_fd[1]);
-
-	for (;;) {
-		int n;
-
-		if ((n = read(delay_fd[0], &dinfo,
-		    sizeof (dinfo))) != sizeof (dinfo)) {
-			if (n < 0) {
-				if (errno == EINTR)
-					continue;
-				if (standalone)
-					perror("read from pipe "
-					    "(delayed responder)");
-				else
-					syslog(LOG_ERR, "read from pipe: %m");
-			}
-			exit(1);
-		}
-		switch (dinfo.from.ss_family) {
-		case AF_INET:
-			addrfmly = AF_INET;
-			fromplen = sizeof (struct sockaddr_in);
-			sin_ptr = (struct sockaddr_in *)&client;
-			(void) memset(&client, 0, fromplen);
-			sin_ptr->sin_family = AF_INET;
-			break;
-		case AF_INET6:
-			addrfmly = AF_INET6;
-			fromplen = sizeof (struct sockaddr_in6);
-			sin6_ptr = (struct sockaddr_in6 *)&client;
-			(void) memset(&client, 0, fromplen);
-			sin6_ptr->sin6_family = AF_INET6;
-			break;
-		}
-		peer = socket(addrfmly, SOCK_DGRAM, 0);
-		if (peer == -1) {
-			if (standalone)
-				perror("socket (delayed responder)");
-			else
-				syslog(LOG_ERR, "socket (delay): %m");
-			exit(1);
-		}
-		if (debug) {
-			int on = 1;
-
-			(void) setsockopt(peer, SOL_SOCKET, SO_DEBUG,
-			    (char *)&on, sizeof (on));
-		}
-
-		if (bind(peer, (struct sockaddr *)&client, fromplen) < 0) {
-			if (standalone)
-				perror("bind (delayed responder)");
-			else
-				syslog(LOG_ERR, "bind (delay): %m");
-			exit(1);
-		}
-		if (client.ss_family == AF_INET) {
-			from_ptr = (struct sockaddr_in *)&dinfo.from;
-			from_ptr->sin_family = AF_INET;
-		} else {
-			from6_ptr = (struct sockaddr_in6 *)&dinfo.from;
-			from6_ptr->sin6_family = AF_INET6;
-		}
-		/*
-		 * Since a request hasn't been received from the client
-		 * before the delayed responder process is forked, the
-		 * from variable is uninitialized.  So set it to contain
-		 * the client address.
-		 */
-		from = dinfo.from;
-
-		/*
-		 * only sleep if DELAY_SECS has not elapsed since
-		 * original request was received.  Ensure that `now'
-		 * is not earlier than `dinfo.timestamp'
-		 */
-		now = time(0);
-		if ((uint_t)(now - dinfo.timestamp) < DELAY_SECS)
-			(void) sleep(DELAY_SECS - (now - dinfo.timestamp));
-		nak(dinfo.ecode);
-		(void) close(peer);
-	} /* for */
-
-	/* NOTREACHED */
-}
-
 /*
  * Handle the Blocksize option.
  * Return the blksize option value string to include in the OACK reply.
  */
-/*ARGSUSED*/
 static char *
-blksize_handler(int opcode, char *optval, int *errcode)
+blksize_handler(int opcode __unused, char *optval, int *errcode)
 {
 	char *endp;
 	int value;
@@ -590,9 +471,8 @@ blksize_handler(int opcode, char *optval, int *errcode)
  * Handle the Timeout Interval option.
  * Return the timeout option value string to include in the OACK reply.
  */
-/*ARGSUSED*/
 static char *
-timeout_handler(int opcode, char *optval, int *errcode)
+timeout_handler(int opcode __unused, char *optval, int *errcode)
 {
 	char *endp;
 	int value;
@@ -725,43 +605,17 @@ process_options(int opcode, char *opts, char *endopts)
  */
 
 static void
-delay_exit(int ecode)
+respond_and_exit(int ecode)
 {
-	struct delay_info dinfo;
-
-	/*
-	 * The most likely cause of an error here is that
-	 * something has broadcast an RRQ packet because it's
-	 * trying to boot and doesn't know who the server is.
-	 * Rather then sending an ERROR packet immediately, we
-	 * wait a while so that the real server has a better chance
-	 * of getting through (in case client has lousy Ethernet
-	 * interface).  We write to a child that handles delayed
-	 * ERROR packets to avoid delaying service to new
-	 * requests.  Of course, we would rather just not answer
-	 * RRQ packets that are broadcasted, but there's no way
-	 * for a user process to determine this.
-	 */
-
-	dinfo.timestamp = time(0);
-
 	/*
 	 * If running in secure mode, we map all errors to EACCESS
 	 * so that the client gets no information about which files
 	 * or directories exist.
 	 */
 	if (securetftp)
-		dinfo.ecode = EACCESS;
-	else
-		dinfo.ecode = ecode;
+		ecode = EACCESS;
 
-	dinfo.from = from;
-	if (write(delay_fd[1], &dinfo, sizeof (dinfo)) !=
-	    sizeof (dinfo)) {
-		syslog(LOG_ERR, "delayed write failed.");
-		(void) kill(child, SIGKILL);
-		exit(1);
-	}
+	nak(ecode);
 	exit(0);
 }
 
@@ -789,6 +643,7 @@ tftp(struct tftphdr *tp, int size)
 		exit(1);
 	}
 	if (debug && standalone) {
+		print_time();
 		(void) fprintf(stderr, "%s for %s %s ",
 		    readmode ? "RRQ" : "WRQ", filename, mode);
 		print_options(stderr, cp, size + buf.data - cp);
@@ -834,7 +689,7 @@ tftp(struct tftphdr *tp, int size)
 			syslog(LOG_ERR,
 			    "tftpd: cannot chroot to directory %s: %m\n",
 			    homedir);
-			delay_exit(EACCESS);
+			respond_and_exit(EACCESS);
 		}
 		else
 		{
@@ -849,7 +704,7 @@ tftp(struct tftphdr *tp, int size)
 
 	ecode = (*pf->f_validate)(tp->th_opcode);
 	if (ecode != 0)
-		delay_exit(ecode);
+		respond_and_exit(ecode);
 
 	/* we don't use the descriptors passed in to the parent */
 	(void) close(STDIN_FILENO);
@@ -862,15 +717,15 @@ tftp(struct tftphdr *tp, int size)
 	fd = open(filename,
 	    (readmode ? O_RDONLY : (O_WRONLY|O_TRUNC)) | O_NONBLOCK);
 	if ((fd < 0) || (fstat(fd, &statb) < 0))
-		delay_exit((errno == ENOENT) ? ENOTFOUND : EACCESS);
+		respond_and_exit((errno == ENOENT) ? ENOTFOUND : EACCESS);
 
 	if (((statb.st_mode & ((readmode) ? S_IROTH : S_IWOTH)) == 0) ||
 	    ((statb.st_mode & S_IFMT) != S_IFREG))
-		delay_exit(EACCESS);
+		respond_and_exit(EACCESS);
 
 	file = fdopen(fd, readmode ? "r" : "w");
 	if (file == NULL)
-		delay_exit(errno + 100);
+		respond_and_exit(errno + 100);
 
 	/* Don't know the size of transfers which involve conversion */
 	tsize_set = (readmode && (pf->f_convert == 0));
@@ -995,9 +850,8 @@ validate_filename(int mode)
 	return (0);
 }
 
-/* ARGSUSED */
 static void
-timer(int signum)
+timer(int signum __unused)
 {
 	timeout += rexmtval;
 	if (timeout >= maxtimeout)
@@ -1020,6 +874,7 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 		timeout = 0;
 		(void) sigsetjmp(timeoutbuf, 1);
 		if (debug && standalone) {
+			print_time();
 			(void) fputs("Sending OACK ", stderr);
 			print_options(stderr, (char *)&oackbuf.hdr.th_stuff,
 			    oacklen - 2);
@@ -1058,8 +913,9 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 
 			if (ackbuf.tb_hdr.th_opcode == ERROR) {
 				if (debug && standalone) {
+					print_time();
 					(void) fprintf(stderr,
-					    "received ERROR %d",
+					    "Received ERROR %d",
 					    ackbuf.tb_hdr.th_code);
 					if (n > 4)
 						(void) fprintf(stderr,
@@ -1071,10 +927,12 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 			}
 
 			if (ackbuf.tb_hdr.th_opcode == ACK) {
-				if (debug && standalone)
+				if (debug && standalone) {
+					print_time();
 					(void) fprintf(stderr,
-					    "received ACK for block %d\n",
+					    "Received ACK for block %d\n",
 					    ackbuf.tb_hdr.th_block);
+				}
 				if (ackbuf.tb_hdr.th_block == 0)
 					break;
 				/*
@@ -1099,9 +957,11 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 		dp->th_block = htons((ushort_t)block);
 		timeout = 0;
 		(void) sigsetjmp(timeoutbuf, 1);
-		if (debug && standalone)
+		if (debug && standalone) {
+			print_time();
 			(void) fprintf(stderr, "Sending DATA block %d\n",
 			    block);
+		}
 		if (sendto(peer, dp, size + 4, 0,
 		    (struct sockaddr *)&from,  fromplen) != size + 4) {
 			if (debug && standalone) {
@@ -1136,8 +996,9 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 
 			if (ackbuf.tb_hdr.th_opcode == ERROR) {
 				if (debug && standalone) {
+					print_time();
 					(void) fprintf(stderr,
-					    "received ERROR %d",
+					    "Received ERROR %d",
 					    ackbuf.tb_hdr.th_code);
 					if (n > 4)
 						(void) fprintf(stderr,
@@ -1149,10 +1010,12 @@ tftpd_sendfile(struct formats *pf, int oacklen)
 			}
 
 			if (ackbuf.tb_hdr.th_opcode == ACK) {
-				if (debug && standalone)
+				if (debug && standalone) {
+					print_time();
 					(void) fprintf(stderr,
-					    "received ACK for block %d\n",
+					    "Received ACK for block %d\n",
 					    ackbuf.tb_hdr.th_block);
+				}
 				if (ackbuf.tb_hdr.th_block == block) {
 					break;
 				}
@@ -1172,9 +1035,8 @@ abort:
 	(void) fclose(file);
 }
 
-/* ARGSUSED */
 static void
-justquit(int signum)
+justquit(int signum __unused)
 {
 	exit(0);
 }
@@ -1183,12 +1045,13 @@ justquit(int signum)
  * Receive a file.
  */
 static void
-tftpd_recvfile(struct formats *pf, int oacklen)
+tftpd_recvfile(struct formats *pf, int oack_len)
 {
 	struct tftphdr *dp;
 	struct tftphdr *ap;    /* ack buffer */
-	ushort_t block = 0;
-	int n, size, acklen, serrno;
+	int n, size, serrno;
+	volatile ushort_t block = 0;
+	volatile int acklen, oacklen = oack_len;
 
 	dp = w_init();
 	ap = &ackbuf.tb_hdr;
@@ -1210,6 +1073,7 @@ tftpd_recvfile(struct formats *pf, int oacklen)
 send_ack:
 		if (debug && standalone) {
 			if (ap->th_opcode == htons((ushort_t)ACK)) {
+				print_time();
 				(void) fprintf(stderr,
 				    "Sending ACK for block %d\n", block - 1);
 			} else {
@@ -1258,8 +1122,9 @@ send_ack:
 			if (dp->th_opcode == ERROR) {
 				cancel_alarm();
 				if (debug && standalone) {
+					print_time();
 					(void) fprintf(stderr,
-					    "received ERROR %d", dp->th_code);
+					    "Received ERROR %d", dp->th_code);
 					if (n > 4)
 						(void) fprintf(stderr,
 						    " %.*s", n - 4, dp->th_msg);
@@ -1268,10 +1133,12 @@ send_ack:
 				return;
 			}
 			if (dp->th_opcode == DATA) {
-				if (debug && standalone)
+				if (debug && standalone) {
+					print_time();
 					(void) fprintf(stderr,
 					    "Received DATA block %d\n",
 					    dp->th_block);
+				}
 				if (dp->th_block == block) {
 					break;   /* normal */
 				}
@@ -1305,8 +1172,10 @@ send_ack:
 
 	ap->th_opcode = htons((ushort_t)ACK);    /* send the "final" ack */
 	ap->th_block = htons((ushort_t)(block));
-	if (debug && standalone)
+	if (debug && standalone) {
+		print_time();
 		(void) fprintf(stderr, "Sending ACK for block %d\n", block);
+	}
 	if (sendto(peer, &ackbuf, 4, 0, (struct sockaddr *)&from,
 	    fromplen) == -1) {
 		if (debug && standalone)
@@ -1323,6 +1192,7 @@ send_ack:
 	    dp->th_opcode == DATA && /* and got a data block */
 	    block == dp->th_block) {	/* then my last ack was lost */
 		if (debug && standalone) {
+			print_time();
 			(void) fprintf(stderr, "Sending ACK for block %d\n",
 			    block);
 		}
@@ -1369,8 +1239,10 @@ nak(int error)
 	    sizeof (buf) - sizeof (struct tftphdr));
 	length = strlen(tp->th_msg);
 	length += sizeof (struct tftphdr);
-	if (debug && standalone)
+	if (debug && standalone) {
+		print_time();
 		(void) fprintf(stderr, "Sending NAK: %s\n", tp->th_msg);
+	}
 
 	ret = sendto(peer, &buf, length, 0, (struct sockaddr *)&from,
 	    fromplen);
