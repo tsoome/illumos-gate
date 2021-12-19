@@ -67,6 +67,19 @@ CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-type-limits
 
+CERRWARN	+= -_clang=-Wno-unknown-pragmas
+CERRWARN	+= -_clang=-Wno-sign-compare
+CERRWARN	+= -_clang=-Wno-logical-op-parentheses
+CERRWARN	+= -_clang=-Wno-switch
+CERRWARN	+= -_clang=-Wno-missing-field-initializers
+CERRWARN	+= -_clang=-Wno-unused-parameter
+CERRWARN	+= -_clang=-Wno-unused-but-set-parameter
+CERRWARN	+= -_clang=-Wno-missing-braces
+CERRWARN	+= -_clang=-Wno-parentheses
+CERRWARN	+= -_clang=-Wno-format-security
+CERRWARN	+= -_clang=-Wno-non-literal-null-conversion
+CERRWARN	+= -_clang=-Wno-sometimes-uninitialized
+
 # false positives
 SMOFF += index_overflow
 

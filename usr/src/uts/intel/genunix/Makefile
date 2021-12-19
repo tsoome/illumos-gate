@@ -79,20 +79,10 @@ CPPFLAGS	+= -I$(SRC)/uts/common/fs/zfs
 
 CPPFLAGS	+= -I$(UTSBASE)/i86pc
 
-CERRWARN	+= -_gcc=-Wno-unused-variable
-CERRWARN	+= -_gcc=-Wno-unused-value
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-clobbered
 CERRWARN	+= -_gcc=-Wno-empty-body
-
-#
-# Some compilers default to stripping unused debug information from
-# objects. Since genunix is used as the uniquification source for CTF data
-# in the kernel, explicitly keep as much debug data as possible.
-#
-CFLAGS		+= $(CALLSYMS)
 
 # very hairy
 $(OBJS_DIR)/u8_textprep.o := SMATCH=off
