@@ -960,7 +960,7 @@ static void
 devmap_handle_reduce_len(devmap_handle_t *dhp, size_t len)
 {
 	struct ddi_umem_cookie *cp;
-	struct devmap_pmem_cookie *pcp;
+	struct devmap_pmem_cookie *pcp __unused;
 	/*
 	 * adjust devmap handle fields
 	 */

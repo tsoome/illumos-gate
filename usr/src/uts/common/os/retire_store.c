@@ -157,7 +157,7 @@ retire_store_read(void)
 static void
 rio_store_free(rio_store_t *rsp)
 {
-	int flag_mask = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
+	int flag_mask __unused = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
 
 	ASSERT(rsp);
 	ASSERT(rsp->rst_devpath);
@@ -264,8 +264,9 @@ rio_store_encode(nvf_handle_t nvfh, nvlist_t **ret_nvl)
 
 	listp = nvf_list(nvfh);
 	for (rsp = list_head(listp); rsp; rsp = list_next(listp, rsp)) {
-		int flag_mask = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
+		int flag_mask __unused = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
 		int flags;
+
 		ASSERT(rsp->rst_devpath);
 		ASSERT(!(rsp->rst_flags & ~flag_mask));
 
@@ -332,7 +333,8 @@ e_ddi_retire_persist(char *devpath)
 
 	listp = nvf_list(rio_store_handle);
 	for (rsp = list_head(listp); rsp; rsp = list_next(listp, rsp)) {
-		int flag_mask = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
+		int flag_mask __unused = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
+
 		ASSERT(!(rsp->rst_flags & ~flag_mask));
 
 		/* already there */
@@ -414,7 +416,8 @@ e_ddi_device_retired(char *devpath)
 
 	listp = nvf_list(rio_store_handle);
 	for (rsp = list_head(listp); rsp; rsp = list_next(listp, rsp)) {
-		int flag_mask = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
+		int flag_mask __unused = RIO_STORE_F_RETIRED|RIO_STORE_F_BYPASS;
+
 		ASSERT(!(rsp->rst_flags & ~flag_mask));
 
 		/*

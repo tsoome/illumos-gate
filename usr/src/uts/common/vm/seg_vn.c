@@ -4119,7 +4119,9 @@ segvn_fault_vnodepages(struct hat *hat, struct seg *seg, caddr_t lpgaddr,
 			}
 			if (amp != NULL &&
 			    anon_get_ptr(amp->ahp, aindx) != NULL) {
-				ulong_t taindx = P2ALIGN(aindx, maxpages);
+				ulong_t taindx __unused;
+
+				taindx = P2ALIGN(aindx, maxpages);
 
 				SEGVN_VMSTAT_FLTVNPAGES(25);
 				ASSERT(anon_pages(amp->ahp, taindx,
@@ -6487,8 +6489,7 @@ segvn_claim_pages(
 	struct segvn_data *svd = (struct segvn_data *)seg->s_data;
 	struct anon_map *amp = svd->amp;
 	struct vpage *evp = svp + pgcnt;
-	caddr_t addr = ((uintptr_t)(svp - svd->vpage) << PAGESHIFT)
-	    + seg->s_base;
+	caddr_t addr __unused;
 	struct anon *ap;
 	struct vnode *vp = svd->vp;
 	page_t *pp;
@@ -6497,6 +6498,7 @@ segvn_claim_pages(
 	anoff_t aoff;
 	int anon = (amp != NULL) ? 1 : 0;
 
+	addr = ((uintptr_t)(svp - svd->vpage) << PAGESHIFT) + seg->s_base;
 	ASSERT(svd->type == MAP_PRIVATE);
 	ASSERT(svd->vpage != NULL);
 	ASSERT(seg->s_szc != 0);
@@ -6673,7 +6675,7 @@ segvn_split_seg(struct seg *seg, caddr_t addr)
 		nsvd->anon_index = 0;
 		ANON_LOCK_EXIT(&oamp->a_rwlock);
 	} else if (svd->amp != NULL) {
-		pgcnt_t pgcnt = page_get_pagecnt(seg->s_szc);
+		pgcnt_t pgcnt __unused = page_get_pagecnt(seg->s_szc);
 		ASSERT(svd->amp == nsvd->amp);
 		ASSERT(seg->s_szc <= svd->amp->a_szc);
 		nsvd->anon_index = svd->anon_index + seg_pages(seg);
@@ -6693,7 +6695,7 @@ segvn_split_seg(struct seg *seg, caddr_t addr)
 		 * segment.
 		 */
 		if (svd->flags & MAP_NORESERVE) {
-			size_t	oswresv;
+			size_t	oswresv __unused;
 
 			ASSERT(svd->amp);
 			oswresv = svd->swresv;
@@ -6740,7 +6742,7 @@ segvn_demote_range(
 	struct seg *badseg1 = NULL;
 	struct seg *badseg2 = NULL;
 	size_t pgsz;
-	struct segvn_data *svd = (struct segvn_data *)seg->s_data;
+	struct segvn_data *svd __unused = (struct segvn_data *)seg->s_data;
 	int err;
 	uint_t szc = seg->s_szc;
 	uint_t tszcvec;

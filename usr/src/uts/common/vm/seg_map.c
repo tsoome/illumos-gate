@@ -601,7 +601,6 @@ segmap_fault(
 	int hat_flag;
 
 	if (segmap_kpm && IS_KPM_ADDR(addr)) {
-		int newpage;
 		kmutex_t *smtx;
 
 		/*
@@ -624,7 +623,8 @@ segmap_fault(
 
 		smtx = SMAPMTX(smp);
 #ifdef	DEBUG
-		newpage = smp->sm_flags & SM_KPM_NEWPAGE;
+		int newpage = smp->sm_flags & SM_KPM_NEWPAGE;
+
 		if (newpage) {
 			cmn_err(CE_WARN, "segmap_fault: newpage? smp %p",
 			    (void *)smp);
@@ -780,9 +780,6 @@ segmap_faulta(struct seg *seg, caddr_t addr)
 	int err;
 
 	if (segmap_kpm && IS_KPM_ADDR(addr)) {
-		int	newpage;
-		kmutex_t *smtx;
-
 		/*
 		 * Pages are successfully prefaulted and locked in
 		 * segmap_getmapflt and can't be unlocked until
@@ -797,8 +794,8 @@ segmap_faulta(struct seg *seg, caddr_t addr)
 			/*NOTREACHED*/
 		}
 
-		smtx = SMAPMTX(smp);
-		newpage = smp->sm_flags & SM_KPM_NEWPAGE;
+		kmutex_t *smtx = SMAPMTX(smp);
+		int	newpage = smp->sm_flags & SM_KPM_NEWPAGE;
 		mutex_exit(smtx);
 		if (newpage)
 			cmn_err(CE_WARN, "segmap_faulta: newpage? smp %p",

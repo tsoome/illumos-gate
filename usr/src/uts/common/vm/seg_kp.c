@@ -1461,7 +1461,7 @@ static kphysm_setup_vector_t segkp_mem_config_vec = {
 static void
 segkpinit_mem_config(struct seg *seg)
 {
-	int ret;
+	int ret __unused;
 
 	ret = kphysm_setup_func_register(&segkp_mem_config_vec, (void *)seg);
 	ASSERT(ret == 0);

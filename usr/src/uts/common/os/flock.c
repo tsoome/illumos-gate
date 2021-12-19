@@ -1300,7 +1300,7 @@ block:
 int
 flk_execute_request(lock_descriptor_t *request)
 {
-	graph_t	*gp = request->l_graph;
+	graph_t	*gp __unused = request->l_graph;
 	vnode_t	*vp = request->l_vnode;
 	lock_descriptor_t	*lock, *lock1;
 	int done_searching = 0;
@@ -1620,7 +1620,7 @@ flk_relation(lock_descriptor_t *lock, lock_descriptor_t *request)
 	int nvertex = 0;
 	int i;
 	edge_t	*ep;
-	graph_t	*gp = (lock->l_graph);
+	graph_t	*gp  __unused= (lock->l_graph);
 
 
 	CHECK_SLEEPING_LOCKS(gp);
@@ -1884,7 +1884,7 @@ static void
 flk_delete_active_lock(lock_descriptor_t *lock, int free_lock)
 {
 	vnode_t *vp = lock->l_vnode;
-	graph_t	*gp = lock->l_graph;
+	graph_t	*gp __unused = lock->l_graph;
 
 	ASSERT(MUTEX_HELD(&gp->gp_mutex));
 	if (free_lock)
@@ -2113,7 +2113,7 @@ static void
 flk_wakeup(lock_descriptor_t *lock, int adj_list_remove)
 {
 	edge_t	*ep;
-	graph_t	*gp = lock->l_graph;
+	graph_t	*gp __unused = lock->l_graph;
 	lock_descriptor_t	*lck;
 
 	ASSERT(MUTEX_HELD(&gp->gp_mutex));

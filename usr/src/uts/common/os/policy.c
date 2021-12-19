@@ -369,18 +369,6 @@ priv_policy_override_set(const cred_t *cr, const priv_set_t *req, va_list ap)
 	return (-1);
 }
 
-static int
-priv_policy_override_set_va(const cred_t *cr, const priv_set_t *req, ...)
-{
-	va_list ap;
-	int ret;
-
-	va_start(ap, req);
-	ret = priv_policy_override_set(cr, req, ap);
-	va_end(ap);
-	return (ret);
-}
-
 /*
  * Audit failure, log error message.
  */

@@ -715,8 +715,6 @@ cyclic_coverage(char *why, int level, uint64_t arg0, uint64_t arg1)
 
 #else
 
-static int cyc_trace_enabled = 0;
-
 #define	CYC_TRACE(cpu, level, why, arg0, arg1)
 #define	CYC_PTRACE(why, arg0, arg1)
 
@@ -1130,7 +1128,7 @@ cyclic_softint(cpu_t *c, cyc_level_t level)
 {
 	cyc_cpu_t *cpu = c->cpu_cyclic;
 	cyc_softbuf_t *softbuf;
-	int soft, *buf, consndx, resized = 0, intr_resized = 0;
+	int soft, *buf, consndx, resized = 0, intr_resized __unused = 0;
 	cyc_pcbuffer_t *pc;
 	cyclic_t *cyclics = cpu->cyp_cyclics;
 	int sizemask;
@@ -1450,7 +1448,7 @@ cyclic_expand(cyc_cpu_t *cpu)
 	cyclic_t *new_cyclics, *old_cyclics;
 	cyc_xcallarg_t arg;
 	cyc_backend_t *be = cpu->cyp_backend;
-	char old_hard;
+	char old_hard __unused;
 	int i;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
@@ -1904,7 +1902,7 @@ cyclic_remove_here(cyc_cpu_t *cpu, cyc_index_t ndx, cyc_time_t *when, int wait)
 	cyc_backend_t *be = cpu->cyp_backend;
 	cyc_xcallarg_t arg;
 	cyclic_t *cyclic = &cpu->cyp_cyclics[ndx];
-	cyc_level_t level = cyclic->cy_level;
+	cyc_level_t level __unused = cyclic->cy_level;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
 	ASSERT(cpu->cyp_rpend == 0);
@@ -2218,7 +2216,7 @@ cyclic_unbind_cpu(cyclic_id_t id)
 	 * interrupts disabled.
 	 */
 	if (!(c->cpu_flags & CPU_ENABLE)) {
-		int res = cyclic_juggle_one(idp);
+		int res __unused = cyclic_juggle_one(idp);
 
 		ASSERT((res && idp->cyi_cpu != cpu) ||
 		    (!res && (cyclic->cy_flags & CYF_PART_BOUND)));
@@ -2275,7 +2273,7 @@ cyclic_unbind_cpupart(cyclic_id_t id)
 	 * isn't bound to the CPU), we need to juggle away.
 	 */
 	if (!(c->cpu_flags & CPU_ENABLE) && !(cyc->cy_flags & CYF_CPU_BOUND)) {
-		int res = cyclic_juggle_one(idp);
+		int res __unused = cyclic_juggle_one(idp);
 
 		ASSERT(res && idp->cyi_cpu != cpu);
 	}
@@ -2419,7 +2417,7 @@ cyclic_cpu_setup(cpu_setup_t what, int id, void *arg __unused)
 	 * cpu array for this CPU.
 	 */
 	cpu_t *c = cpu[id];
-	cyc_cpu_t *cyp = c->cpu_cyclic;
+	cyc_cpu_t *cyp __unused = c->cpu_cyclic;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
 

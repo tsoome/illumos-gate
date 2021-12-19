@@ -612,7 +612,8 @@ cv_signal(kcondvar_t *cvp)
 		disp_lock_enter(&sqh->sq_lock);
 		ASSERT(CPU_ON_INTR(CPU) == 0);
 		if (cp->cv_waiters & CV_WAITERS_MASK) {
-			kthread_t *t;
+			kthread_t *t __unused;
+
 			cp->cv_waiters--;
 			t = sleepq_wakeone_chan(&sqh->sq_queue, cp);
 			/*

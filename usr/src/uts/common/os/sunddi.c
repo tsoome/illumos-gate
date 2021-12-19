@@ -7626,28 +7626,6 @@ ddi_debug_devid_devts(char *msg, int ndevs, dev_t *devs)
 	}
 }
 
-static void
-ddi_debug_devid_paths(char *msg, int npaths, char **paths)
-{
-	int i;
-
-	cmn_err(CE_CONT, "%s:\n", msg);
-	for (i = 0; i < npaths; i++) {
-		cmn_err(CE_CONT, "    %s\n", paths[i]);
-	}
-}
-
-static void
-ddi_debug_devid_devts_per_path(char *path, int ndevs, dev_t *devs)
-{
-	int i;
-
-	cmn_err(CE_CONT, "dev_ts per path %s\n", path);
-	for (i = 0; i < ndevs; i++) {
-		cmn_err(CE_CONT, "    0x%lx\n", devs[i]);
-	}
-}
-
 #endif	/* DEBUG */
 
 /*
@@ -9415,7 +9393,7 @@ static int
 sid_node_create(dev_info_t *pdip, devi_branch_t *bp, dev_info_t **rdipp)
 {
 	int			rv, circ, len;
-	int			i, flags, ret;
+	int			i, flags, ret __unused;
 	dev_info_t		*dip;
 	char			*nbuf;
 	char			*path;

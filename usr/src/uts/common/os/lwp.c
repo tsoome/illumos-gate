@@ -1800,7 +1800,7 @@ forklwp(klwp_t *lwp, proc_t *cp, id_t lwpid)
 	int cid;
 	void *bufp;
 	void *brand_data;
-	int val;
+	int val __unused;
 
 	ASSERT(p == curproc);
 	ASSERT(t == curthread || (SUSPENDED(t) && lwp->lwp_asleep == 0));

@@ -394,7 +394,6 @@ tune(pgcnt_t initval, pgcnt_t initval_ceiling, pgcnt_t defval)
 void
 setupclock(void)
 {
-	pgcnt_t defval;
 	bool half = (pageout_threshold_style == 1);
 	bool recalc = true;
 

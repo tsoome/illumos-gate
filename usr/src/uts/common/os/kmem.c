@@ -1061,8 +1061,6 @@ static vmem_t		*kmem_default_arena;
 static vmem_t		*kmem_firewall_va_arena;
 static vmem_t		*kmem_firewall_arena;
 
-static int		kmem_zerosized;		/* # of zero-sized allocs */
-
 /*
  * kmem slab consolidator thresholds (tunables)
  */
@@ -2730,7 +2728,7 @@ static void
 kmem_slab_prefill(kmem_cache_t *cp, kmem_slab_t *sp)
 {
 	kmem_cpu_cache_t *ccp = KMEM_CPU_CACHE(cp);
-	int cache_flags = cp->cache_flags;
+	int cache_flags __unused = cp->cache_flags;
 
 	kmem_bufctl_t *next, *head;
 	size_t nbufs;

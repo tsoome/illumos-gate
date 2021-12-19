@@ -305,7 +305,6 @@
  */
 
 static int stdout_is_framebuffer;
-static kmutex_t	e_pm_power_lock;
 static kmutex_t pm_loan_lock;
 kmutex_t	pm_scan_lock;
 callb_id_t	pm_cpr_cb_id;
@@ -783,6 +782,7 @@ cur_power(pm_component_t *cp)
 	return (cp->pmc_comp.pmc_lvals[cp->pmc_cur_pwr]);
 }
 
+#ifdef	DEBUG
 static char *
 pm_decode_direction(int direction)
 {
@@ -800,6 +800,7 @@ pm_decode_direction(int direction)
 		return ("INVALID DIRECTION");
 	}
 }
+#endif
 
 char *
 pm_decode_op(pm_bus_power_op_t op)
@@ -1394,6 +1395,7 @@ pm_scan_stop_walk(dev_info_t *dip, void *arg)
 	return (DDI_WALK_CONTINUE);
 }
 
+#ifdef	DEBUG
 /*
  * Converts a power level value to its index
  */
@@ -1430,6 +1432,7 @@ power_val_to_string(pm_component_t *cp, int val)
 
 	return (cp->pmc_comp.pmc_lnames[index]);
 }
+#endif
 
 /*
  * Return true if this node has been claimed by a ppm.
@@ -2473,7 +2476,7 @@ pm_power(dev_info_t *dip, int comp, int level)
 	int		(*fn)(dev_info_t *, int, int);
 	struct pm_component *cp = PM_CP(dip, comp);
 	int retval;
-	pm_info_t *info = PM_GET_PM_INFO(dip);
+	pm_info_t *info __unused = PM_GET_PM_INFO(dip);
 
 	PMD(PMD_KIDSUP, ("%s: %s@%s(%s#%d), comp=%d, level=%d\n", pmf,
 	    PM_DEVICE(dip), comp, level))
@@ -6299,6 +6302,7 @@ pm_keeper_walk(dev_info_t *dip, void *arg)
 	return (DDI_WALK_CONTINUE);
 }
 
+#ifdef DEBUG
 static char *
 pdw_type_decode(int type)
 {
@@ -6334,6 +6338,7 @@ pdw_type_decode(int type)
 	}
 
 }
+#endif
 
 static void
 pm_rele_dep(char *keeper)
@@ -7815,7 +7820,7 @@ pm_cfb_check_and_hold(void)
 void
 pm_cfb_powerup(void)
 {
-	pm_info_t *info;
+	pm_info_t *info __unused;
 	int norm;
 	int ccount, ci;
 	int unused;
@@ -8654,7 +8659,6 @@ pm_busop_set_power(dev_info_t *dip, void *impl_arg, pm_bus_power_op_t op,
 	int circ_db, ccirc_db;
 #endif
 	int ret = DDI_SUCCESS;
-	dev_info_t *cdip;
 	pm_bp_child_pwrchg_t *bpc = (pm_bp_child_pwrchg_t *)arg;
 	pm_sp_misc_t *pspm = (pm_sp_misc_t *)bpc->bpc_private;
 	pm_canblock_t canblock = pspm->pspm_canblock;
@@ -8859,8 +8863,8 @@ pm_busop_set_power(dev_info_t *dip, void *impl_arg, pm_bus_power_op_t op,
 			pdpchk.pdpc_dip = dip;
 			pdpchk.pdpc_par_involved = PM_WANTS_NOTIFICATION(dip);
 			ndi_devi_enter(dip, &circ_db);
-			for (cdip = ddi_get_child(dip); cdip != NULL;
-			    cdip = ddi_get_next_sibling(cdip)) {
+			for (dev_info_t *cdip = ddi_get_child(dip);
+			    cdip != NULL; cdip = ddi_get_next_sibling(cdip)) {
 				ndi_devi_enter(cdip, &ccirc_db);
 				ddi_walk_devs(cdip, pm_desc_pwrchk_walk,
 				    (void *)&pdpchk);
@@ -9348,8 +9352,7 @@ pm_ppm_searchlist(pm_searchargs_t *sp)
 {
 	power_req_t power_req;
 	int result = 0;
-	/* LINTED */
-	int ret;
+	int ret __unused;
 
 	power_req.request_type = PMR_PPM_SEARCH_LIST;
 	power_req.req.ppm_search_list_req.searchlist = sp;

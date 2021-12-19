@@ -373,7 +373,7 @@ static int
 ddihp_cn_req_handler(ddi_hp_cn_handle_t *hdlp,
     ddi_hp_cn_state_t target_state)
 {
-	dev_info_t	*dip = hdlp->cn_dip;
+	dev_info_t	*dip __unused = hdlp->cn_dip;
 	int		ret = DDI_SUCCESS;
 
 	DDI_HP_NEXDBG((CE_CONT, "ddihp_cn_req_handler:"

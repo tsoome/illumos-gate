@@ -1224,7 +1224,7 @@ static int
 mod_installsched(struct modlsched *modl, struct modlinkage *modlp)
 {
 	sclass_t *clp;
-	int status;
+	int status __unused;
 	id_t cid;
 
 	/*

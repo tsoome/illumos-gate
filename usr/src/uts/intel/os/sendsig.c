@@ -131,7 +131,6 @@ sendsig(int sig, k_siginfo_t *sip, void (*hdlr)())
 	volatile caddr_t sp;
 	caddr_t fp;
 	volatile struct regs *rp;
-	volatile greg_t upc;
 	volatile proc_t *p = ttoproc(curthread);
 	struct as *as = p->p_as;
 	klwp_t *lwp = ttolwp(curthread);
@@ -151,7 +150,9 @@ sendsig(int sig, k_siginfo_t *sip, void (*hdlr)())
 #endif
 
 	rp = lwptoregs(lwp);
-	upc = rp->r_pc;
+#ifdef DEBUG
+	volatile greg_t upc = rp->r_pc;
+#endif
 
 	/*
 	 * Since we're setting up to run the signal handler we have to
@@ -394,7 +395,6 @@ sendsig32(int sig, k_siginfo_t *sip, void (*hdlr)())
 	volatile caddr_t sp;
 	caddr_t fp;
 	volatile struct regs *rp;
-	volatile greg_t upc;
 	volatile proc_t *p = ttoproc(curthread);
 	klwp_t *lwp = ttolwp(curthread);
 	ucontext32_t *volatile tuc = NULL;
@@ -403,7 +403,9 @@ sendsig32(int sig, k_siginfo_t *sip, void (*hdlr)())
 	volatile int watched;
 
 	rp = lwptoregs(lwp);
-	upc = rp->r_pc;
+#ifdef DEBUG
+	volatile greg_t upc = rp->r_pc;
+#endif
 
 	minstacksz = SA32(sizeof (struct sigframe32)) + SA32(sizeof (*uc));
 	if (sip != NULL)

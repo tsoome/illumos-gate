@@ -84,8 +84,6 @@ static krwlock_t	fmodsw_lock;
 
 uint32_t	fmodsw_debug_flags = 0x00000000;
 
-static void fmodsw_dprintf(uint_t flag, const char *fmt, ...) __KPRINTFLIKE(2);
-
 /* PRINTFLIKE2 */
 static void
 i_fmodsw_dprintf(uint_t flag, const char *fmt, ...)

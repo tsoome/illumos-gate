@@ -617,6 +617,7 @@ upi_mylist_del(struct upimutex *upimutex)
 	t->t_nupinest--;
 }
 
+#ifdef DEBUG
 /*
  * Returns true if upimutex is owned. Should be called only when upim points
  * to kmem which cannot disappear from underneath.
@@ -626,6 +627,7 @@ upi_owned(upimutex_t *upim)
 {
 	return (upim->upi_owner == curthread);
 }
+#endif
 
 /*
  * Returns pointer to kernel object (upimutex_t *) if lp is owned.

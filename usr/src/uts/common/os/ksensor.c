@@ -340,7 +340,7 @@ ksensor_avl_compare(const void *l, const void *r)
 static ksensor_t *
 ksensor_find_by_id(id_t id)
 {
-	ksensor_t k, *ret;
+	ksensor_t k;
 
 	ASSERT(MUTEX_HELD(&ksensor_g_mutex));
 
@@ -638,9 +638,6 @@ ksensor_remove(dev_info_t *dip, id_t id)
 static void
 ksensor_release(ksensor_t *sensor)
 {
-	int circ;
-	dev_info_t *pdip;
-
 	ddi_release_devi(sensor->ksensor_ksdip->ksdip_dip);
 
 	mutex_enter(&sensor->ksensor_mutex);

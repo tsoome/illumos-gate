@@ -401,7 +401,7 @@ static kphysm_setup_vector_t swap_mem_config_vec = {
 static void
 swap_init_mem_config(void)
 {
-	int ret;
+	int ret __unused;
 
 	ret = kphysm_setup_func_register(&swap_mem_config_vec, (void *)NULL);
 	ASSERT(ret == 0);

@@ -1226,7 +1226,7 @@ pool_change_class(proc_t *p, id_t cid)
 	void **bufs;
 	void **buf;
 	int nlwp;
-	int ret;
+	int ret __unused;
 	int i;
 
 	/*

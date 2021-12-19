@@ -1105,7 +1105,7 @@ do_alloc:
 			vmp->vm_nsegfree -= resv;	/* reserve our segs */
 			mutex_exit(&vmp->vm_lock);
 			if (vmp->vm_cflags & VMC_XALLOC) {
-				size_t oasize = asize;
+				size_t oasize __unused = asize;
 				vmem_ximport_t *vmem_ximport;
 
 				vmem_ximport = (vmem_ximport_t *)

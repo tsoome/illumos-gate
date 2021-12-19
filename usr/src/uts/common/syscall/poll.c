@@ -333,7 +333,6 @@ poll_common(pollfd_t *fds, nfds_t nfds, timespec_t *tsp, k_sigset_t *ksetp)
 	klwp_t *lwp = ttolwp(t);
 	proc_t *p = ttoproc(t);
 	int fdcnt = 0;
-	int i;
 	hrtime_t deadline; /* hrtime value when we want to return */
 	pollfd_t *pollfdp;
 	pollstate_t *ps;
@@ -636,7 +635,7 @@ pollout:
 	if (fdcnt) {
 		int	reventcnt = 0;
 
-		for (i = 0; i < nfds; i++) {
+		for (nfds_t i = 0; i < nfds; i++) {
 			if (pollfdp[i].fd < 0) {
 				ASSERT(pollfdp[i].revents == 0);
 				continue;
@@ -647,7 +646,7 @@ pollout:
 		}
 		ASSERT(fdcnt == reventcnt);
 	} else {
-		for (i = 0; i < nfds; i++) {
+		for (nfds_t i = 0; i < nfds; i++) {
 			ASSERT(pollfdp[i].revents == 0);
 		}
 	}

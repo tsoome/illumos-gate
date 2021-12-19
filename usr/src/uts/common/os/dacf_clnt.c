@@ -347,14 +347,12 @@ kmod_test_postattach(dacf_infohdl_t info_hdl, dacf_arghdl_t arg_hdl, int flags)
 	}
 	return (0);
 }
-#endif
 
 static dacf_op_t kmod_op_test[] = {
-#ifdef DEBUG
 	{ DACF_OPID_POSTATTACH, kmod_test_postattach },
-#endif
 	{ DACF_OPID_END,	NULL },
 };
+#endif
 
 static dacf_opset_t kmod_opsets[] = {
 #ifdef DEBUG

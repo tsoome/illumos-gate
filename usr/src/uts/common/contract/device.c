@@ -364,8 +364,10 @@ static cont_device_t *contract_device_create(ctmpl_device_t *dtmpl, dev_t dev,
 /* barrier routines */
 static void ct_barrier_acquire(dev_info_t *dip);
 static void ct_barrier_release(dev_info_t *dip);
+#ifdef DEBUG
 static int ct_barrier_held(dev_info_t *dip);
 static int ct_barrier_empty(dev_info_t *dip);
+#endif
 static void ct_barrier_wait_for_release(dev_info_t *dip);
 static int ct_barrier_wait_for_empty(dev_info_t *dip, int secs);
 static void ct_barrier_decr(dev_info_t *dip);
@@ -2155,6 +2157,7 @@ ct_barrier_release(dev_info_t *dip)
 	CT_DEBUG((CE_NOTE, "ct_barrier_release: Released barrier"));
 }
 
+#ifdef DEBUG
 static int
 ct_barrier_held(dev_info_t *dip)
 {
@@ -2169,6 +2172,7 @@ ct_barrier_empty(dev_info_t *dip)
 	ASSERT(DEVI(dip)->devi_ct_count != -1);
 	return (DEVI(dip)->devi_ct_count == 0);
 }
+#endif
 
 static void
 ct_barrier_wait_for_release(dev_info_t *dip)

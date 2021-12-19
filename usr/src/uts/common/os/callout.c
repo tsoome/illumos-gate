@@ -54,8 +54,8 @@ static ulong_t callout_counter_low;		/* callout ID increment */
 static ulong_t callout_table_bits;		/* number of table bits in ID */
 static ulong_t callout_table_mask;		/* mask for the table bits */
 static callout_cache_t *callout_caches;		/* linked list of caches */
-#pragma align 64(callout_table)
-static callout_table_t *callout_table;		/* global callout table array */
+/* global callout table array */
+static callout_table_t *callout_table __aligned(64);
 
 /*
  * We run 'realtime' callouts at PIL 1 (CY_LOW_LEVEL). For 'normal'

@@ -155,7 +155,7 @@ turnstile_constructor(void *buf, void *cdrarg, int kmflags)
 static void
 turnstile_destructor(void *buf, void *cdrarg)
 {
-	turnstile_t *ts = buf;
+	turnstile_t *ts __unused = buf;
 
 	ASSERT(ts->ts_free == NULL);
 	ASSERT(ts->ts_waiters == 0);
@@ -1477,7 +1477,7 @@ thread_unpin()
 {
 	kthread_t	*t = curthread;	/* current thread */
 	kthread_t	*itp;		/* interrupted thread */
-	int		i;		/* interrupt level */
+	int		i __unused;	/* interrupt level */
 	extern int	intr_passivate();
 
 	ASSERT(t->t_intr != NULL);

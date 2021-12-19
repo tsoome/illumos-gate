@@ -771,7 +771,7 @@ log_cons_constructor(void *buf, void *cdrarg, int kmflags)
 static void
 log_cons_destructor(void *buf, void *cdrarg)
 {
-	struct log *lp = buf;
+	struct log *lp __unused = buf;
 
 	ASSERT(lp->log_zoneid == GLOBAL_ZONEID);
 	ASSERT(lp->log_major == LOG_CONSMIN);

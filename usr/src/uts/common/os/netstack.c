@@ -1063,7 +1063,7 @@ static void
 netstack_reap(void *arg)
 {
 	netstack_t **nsp, *ns = (netstack_t *)arg;
-	boolean_t found;
+	boolean_t found __unused;
 	int i;
 
 	/*

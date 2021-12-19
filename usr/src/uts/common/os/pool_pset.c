@@ -160,7 +160,7 @@ pool_pset_cpu_setup(cpu_setup_t what, int id, void *arg)
 {
 	processorid_t cpuid = id;
 	struct setup_arg sarg;
-	int error;
+	int error __unused;
 	cpu_t *c;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
@@ -221,7 +221,7 @@ pool_pset_zone_pset_set(zone_t *zone, void *arg)
 int
 pool_pset_enable(void)
 {
-	int error;
+	int error __unused;
 	nvlist_t *props;
 
 	ASSERT(pool_lock_held());
@@ -287,7 +287,7 @@ pool_pset_disable(void)
 {
 	processorid_t cpuid;
 	cpu_t *cpu;
-	int error;
+	int error __unused;
 
 	ASSERT(pool_lock_held());
 	ASSERT(INGLOBALZONE(curproc));
@@ -574,7 +574,7 @@ void
 pool_pset_bind(proc_t *p, psetid_t psetid, void *projbuf, void *zonebuf)
 {
 	kthread_t *t;
-	int ret;
+	int ret __unused;
 
 	ASSERT(pool_lock_held());
 	ASSERT(MUTEX_HELD(&cpu_lock));

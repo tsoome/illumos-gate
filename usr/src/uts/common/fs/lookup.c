@@ -979,23 +979,6 @@ localpath(char *path, struct vnode *vrootp, cred_t *cr)
 }
 
 /*
- * Clean a stale v_path from a vnode.  This is only performed if the v_path has
- * not been altered since it was found to be stale
- */
-static void
-vnode_clear_vpath(vnode_t *vp, char *vpath_old)
-{
-	mutex_enter(&vp->v_lock);
-	if (vp->v_path != vn_vpath_empty && vp->v_path == vpath_old) {
-		vp->v_path = vn_vpath_empty;
-		mutex_exit(&vp->v_lock);
-		kmem_free(vpath_old, strlen(vpath_old) + 1);
-	} else {
-		mutex_exit(&vp->v_lock);
-	}
-}
-
-/*
  * Validate that a pathname refers to a given vnode.
  */
 static int

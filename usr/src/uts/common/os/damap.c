@@ -44,10 +44,6 @@
 #include <sys/damap.h>
 #include <sys/damap_impl.h>
 
-#ifdef DEBUG
-static int damap_debug = 0;
-#endif /* DEBUG */
-
 extern taskq_t *system_taskq;
 
 static void dam_addrset_activate(dam_t *, bitset_t *);

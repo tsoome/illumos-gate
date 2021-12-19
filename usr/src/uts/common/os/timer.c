@@ -487,7 +487,7 @@ timer_fire(itimer_t *it)
 static boolean_t
 timer_get_id(proc_t *p, timer_t *id)
 {
-	itimer_t **itp = NULL, **itp_new;
+	itimer_t **itp_new;
 	uint_t target_sz;
 	uint_t i;
 

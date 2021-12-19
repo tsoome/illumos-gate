@@ -121,11 +121,13 @@ evch_dl_fini(evch_dlist_t *hp)
 	hp->dh_head.dl_prev = hp->dh_head.dl_next = NULL;
 }
 
+#ifdef DEBUG
 static int
 evch_dl_is_init(evch_dlist_t *hp)
 {
 	return (hp->dh_head.dl_next != NULL ? 1 : 0);
 }
+#endif
 
 /*
  * Add an element at the end of the list.

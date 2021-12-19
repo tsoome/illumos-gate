@@ -113,7 +113,6 @@ static void vfs_createopttbl_extend(mntopts_t *, const char *,
 static char **vfs_copycancelopt_extend(char **const, int);
 static void vfs_freecancelopt(char **);
 static void getrootfs(char **, char **);
-static int getmacpath(dev_info_t *, void *);
 static void vfs_mnttabvp_setup(void);
 
 struct ipmnt {

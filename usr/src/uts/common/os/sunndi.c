@@ -1192,9 +1192,9 @@ e_ddi_tryenter_driver_list(struct devnames *dnp, int *listcnt)	/* obsolete */
  * generating the callback will typically be one of the device driver's
  * ancestors in the tree.
  */
+#ifdef DEBUG
 static int ndi_event_debug = 0;
 
-#ifdef DEBUG
 #define	NDI_EVENT_DEBUG	ndi_event_debug
 #endif /* DEBUG */
 

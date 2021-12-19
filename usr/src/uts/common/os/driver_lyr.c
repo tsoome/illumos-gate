@@ -1592,7 +1592,7 @@ void
 ldi_ident_release(ldi_ident_t li)
 {
 	struct ldi_ident	*ident = (struct ldi_ident *)li;
-	char			*name;
+	char			*name __unused;
 
 	if (li == NULL)
 		return;
@@ -2923,6 +2923,7 @@ ldi_remove_event_handler(ldi_handle_t lh, ldi_callback_id_t id)
  * These events are therefore *not* native events.
  */
 
+#ifdef DEBUG
 static int
 ldi_native_event(const char *evname)
 {
@@ -2937,6 +2938,7 @@ ldi_native_event(const char *evname)
 
 	return (0);
 }
+#endif
 
 static uint_t
 ldi_ev_sync_event(const char *evname)

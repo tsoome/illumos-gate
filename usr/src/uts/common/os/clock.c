@@ -2437,7 +2437,7 @@ uint_t
 lbolt_ev_to_cyclic(caddr_t arg1, caddr_t arg2)
 {
 	hrtime_t ts, exp;
-	int ret;
+	int ret __unused;
 
 	ASSERT(lbolt_hybrid != lbolt_cyclic_driven);
 
@@ -2472,7 +2472,7 @@ lbolt_event_driven(void)
 {
 	hrtime_t ts;
 	int64_t lb;
-	int ret, cpu = CPU->cpu_seqid;
+	int ret __unused, cpu = CPU->cpu_seqid;
 
 	ts = gethrtime();
 	ASSERT(ts > 0);
@@ -2573,7 +2573,7 @@ lbolt_cyclic_driven(void)
 static void
 lbolt_cyclic(void)
 {
-	int ret;
+	int ret __unused;
 
 	lb_info->lbi_internal++;
 

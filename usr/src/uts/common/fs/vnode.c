@@ -2058,8 +2058,8 @@ struct  vn_vfslocks_bucket {
  * Total number of buckets will be NUM_BUCKETS + 1 .
  */
 
-#pragma	align	64(vn_vfslocks_buckets)
-static	struct vn_vfslocks_bucket	vn_vfslocks_buckets[NUM_BUCKETS + 1];
+static	struct vn_vfslocks_bucket vn_vfslocks_buckets[NUM_BUCKETS + 1]
+	__aligned(64);
 
 #define	VN_VFSLOCKS_SHIFT	9
 

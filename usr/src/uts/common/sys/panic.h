@@ -118,8 +118,7 @@ typedef struct summary_dump {
 /*
  * Kernel panic data; preserved in crash dump for debuggers.
  */
-#pragma align 8(panicbuf)
-extern char panicbuf[PANICBUFSIZE];
+extern char panicbuf[PANICBUFSIZE] __aligned(8);
 extern kthread_t *panic_thread;
 extern cpu_t panic_cpu;
 extern hrtime_t panic_hrtime;

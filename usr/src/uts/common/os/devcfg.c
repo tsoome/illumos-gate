@@ -1764,7 +1764,7 @@ ddi_uninitchild(dev_info_t *dip)
 static int
 i_ddi_attachchild(dev_info_t *dip)
 {
-	dev_info_t	*parent = ddi_get_parent(dip);
+	dev_info_t	*parent __unused = ddi_get_parent(dip);
 	int		ret;
 
 	ASSERT(parent && DEVI_BUSY_OWNED(parent));
@@ -1797,7 +1797,7 @@ i_ddi_attachchild(dev_info_t *dip)
 static int
 i_ddi_detachchild(dev_info_t *dip, uint_t flags)
 {
-	dev_info_t	*parent = ddi_get_parent(dip);
+	dev_info_t	*parent __unused = ddi_get_parent(dip);
 	int		ret;
 
 	ASSERT(parent && DEVI_BUSY_OWNED(parent));
@@ -5293,7 +5293,7 @@ init_bound_node_ev(dev_info_t *pdip, dev_info_t *dip, int flags)
 static int
 devi_attach_node(dev_info_t *dip, uint_t flags)
 {
-	dev_info_t *pdip = ddi_get_parent(dip);
+	dev_info_t *pdip __unused = ddi_get_parent(dip);
 
 	ASSERT(pdip && DEVI_BUSY_OWNED(pdip));
 
@@ -8755,7 +8755,7 @@ static int
 i_ddi_check_retire(dev_info_t *dip)
 {
 	char		*path;
-	dev_info_t	*pdip;
+	dev_info_t	*pdip __unused;
 	int		circ;
 	int		phci_only;
 	int		constraint;

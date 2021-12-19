@@ -510,8 +510,6 @@ cred_t *
 msg_getcred(const mblk_t *mp, pid_t *cpidp)
 {
 	cred_t *cr = NULL;
-	cred_t *cr2;
-	mblk_t *mp2;
 
 	while (mp != NULL) {
 		dblk_t *dbp = mp->b_datap;
@@ -537,6 +535,9 @@ msg_getcred(const mblk_t *mp, pid_t *cpidp)
 		 * cred_t can have a NULL cr_zone, and we skip the comparison
 		 * in that case.
 		 */
+		cred_t *cr2;
+		mblk_t *mp2;
+
 		mp2 = mp->b_cont;
 		while (mp2 != NULL) {
 			cr2 = DB_CRED(mp2);
@@ -572,8 +573,6 @@ cred_t *
 msg_extractcred(mblk_t *mp, pid_t *cpidp)
 {
 	cred_t *cr = NULL;
-	cred_t *cr2;
-	mblk_t *mp2;
 
 	while (mp != NULL) {
 		dblk_t *dbp = mp->b_datap;
@@ -600,6 +599,9 @@ msg_extractcred(mblk_t *mp, pid_t *cpidp)
 		 * cred_t can have a NULL cr_zone, and we skip the comparison
 		 * in that case.
 		 */
+		cred_t *cr2;
+		mblk_t *mp2;
+
 		mp2 = mp->b_cont;
 		while (mp2 != NULL) {
 			cr2 = DB_CRED(mp2);

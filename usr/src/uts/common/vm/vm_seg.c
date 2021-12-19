@@ -140,10 +140,6 @@ static kmutex_t seg_pcache_mtx;	/* protects seg_pdisabled counter */
 static kmutex_t seg_pasync_mtx;	/* protects async thread scheduling */
 static kcondvar_t seg_pasync_cv;
 
-#pragma align 64(pctrl1)
-#pragma align 64(pctrl2)
-#pragma align 64(pctrl3)
-
 /*
  * Keep frequently used variables together in one cache line.
  */
@@ -158,7 +154,7 @@ static struct p_ctrl1 {
 #ifdef _LP64
 	ulong_t pad[1];
 #endif /* _LP64 */
-} pctrl1;
+} pctrl1 __aligned(64);
 
 static struct p_ctrl2 {
 	kmutex_t p_mem_mtx;	/* protects window counter and p_halinks */
@@ -167,7 +163,7 @@ static struct p_ctrl2 {
 	uchar_t	 p_ahcur;	/* current active links for insert/delete */
 	uchar_t  p_athr_on;	/* async reclaim thread is running. */
 	pcache_link_t p_ahhead[2]; /* active buckets linkages */
-} pctrl2;
+} pctrl2 __aligned(64);
 
 static struct p_ctrl3 {
 	clock_t	p_pcp_maxage;		/* max pcp age in ticks */
@@ -178,7 +174,7 @@ static struct p_ctrl3 {
 #ifdef _LP64
 	ulong_t pad[3];
 #endif /* _LP64 */
-} pctrl3;
+} pctrl3 __aligned(64);
 
 #define	seg_pdisabled			pctrl1.p_disabled
 #define	seg_pmaxwindow			pctrl1.p_maxwin
@@ -528,7 +524,7 @@ seg_pinactive(struct seg *seg, struct anon_map *amp, caddr_t addr,
 	struct seg_pcache *pcp;
 	struct seg_phash *hp;
 	kmutex_t *pmtx = NULL;
-	pcache_link_t *pheadp;
+	pcache_link_t *pheadp __unused;
 	void *htag0;
 	pgcnt_t npages = 0;
 	int keep = 0;
@@ -1057,7 +1053,7 @@ again:
 
 		for (pcp = hp->p_hnext; pcp != (struct seg_pcache *)hp;
 		    pcp = pcp->p_hnext) {
-			pcache_link_t *pheadp;
+			pcache_link_t *pheadp __unused;
 			pcache_link_t *plinkp;
 			void *htag0;
 			kmutex_t *pmtx;
@@ -1676,7 +1672,7 @@ void
 seg_free(struct seg *seg)
 {
 	register struct as *as = seg->s_as;
-	struct seg *tseg = as_removeseg(as, seg);
+	struct seg *tseg __unused = as_removeseg(as, seg);
 
 	ASSERT(tseg == seg);
 
@@ -1800,7 +1796,7 @@ static kphysm_setup_vector_t seg_p_mem_config_vec = {
 static void
 seg_pinit_mem_config(void)
 {
-	int ret;
+	int ret __unused;
 
 	ret = kphysm_setup_func_register(&seg_p_mem_config_vec, (void *)NULL);
 	/*

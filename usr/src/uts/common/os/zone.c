@@ -3983,12 +3983,12 @@ zsched(void *arg)
 	 * removed.
 	 */
 	while ((nvp = nvlist_next_nvpair(nvl, nvp)) != NULL) {
-		rctl_dict_entry_t *rde;
+		rctl_dict_entry_t *rde __unused;
 		rctl_hndl_t hndl;
 		char *name;
 		nvlist_t **nvlarray;
 		uint_t i, nelem;
-		int error;	/* For ASSERT()s */
+		int error __unused;	/* For ASSERT()s */
 
 		name = nvpair_name(nvp);
 		hndl = rctl_hndl_lookup(name);

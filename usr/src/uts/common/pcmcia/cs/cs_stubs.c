@@ -1122,10 +1122,6 @@ csx_GetMappedAddr(acc_handle_t handle, void **addr)
 int32_t
 csx_GetPhysAddr(acc_handle_t handle, void **addr)
 {
-#ifndef	lint
-	ddi_acc_hdl_t *hp = impl_acc_hdl_get(handle);
-#endif	/* lint */
-
 #ifdef	CS_STUBS_DEBUG
 	if (cs_stubs_debug > 3)
 	    cmn_err(CE_CONT, "csx_GetPhysAddr: handle: 0x%p\n", handle);
@@ -1140,28 +1136,12 @@ csx_GetPhysAddr(acc_handle_t handle, void **addr)
 int32_t
 csx_DupHandle(acc_handle_t handle, acc_handle_t *dup, uint32_t flags)
 {
-#ifndef	lint
-	ddi_acc_hdl_t *hp = impl_acc_hdl_get(handle);
-#endif	/* lint */
-
 #ifdef	CS_STUBS_DEBUG
 	if (cs_stubs_debug > 3)
 	    cmn_err(CE_CONT, "csx_DupHandle: handle: 0x%p\n", handle);
 #endif
 
 	return (CS_BAD_HANDLE);
-
-#ifdef	XXX
-	*dup = (acc_handle_t)kmem_alloc(sizeof (acc_hdl_t), KM_SLEEP);
-	((acc_hdl_t *)*dup)->ddi_handle =
-		(ddi_acc_handle_t *)kmem_alloc(sizeof (ddi_acc_impl_t),
-		    KM_SLEEP);
-
-	bcopy((caddr_t)hp, (caddr_t)((acc_hdl_t *)*dup)->ddi_handle,
-	    sizeof (ddi_acc_impl_t));
-
-	return (CS_SUCCESS);
-#endif
 }
 
 int32_t
@@ -1172,15 +1152,6 @@ csx_FreeHandle(acc_handle_t *handle)
 	    cmn_err(CE_CONT, "csx_FreeHandle: handle: 0x%p\n", *handle);
 #endif
 	return (CS_BAD_HANDLE);
-
-#ifdef	XXX
-
-	kmem_free((void *)((acc_hdl_t *)*handle)->ddi_handle,
-		sizeof (ddi_acc_impl_t));
-	kmem_free((void *)(acc_hdl_t *)*handle, sizeof (acc_hdl_t));
-
-	return (CS_SUCCESS);
-#endif
 }
 
 /*
