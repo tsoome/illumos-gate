@@ -742,7 +742,7 @@ ncec_lookup_illgrp_v4(ill_t *ill, const in_addr_t *addr)
 ncec_t *
 ncec_lookup_illgrp(ill_t *ill, const in6_addr_t *addr, ncec_t *ncec)
 {
-	ndp_g_t		*ndp;
+	ndp_g_t		*ndp __unused;
 	ip_stack_t	*ipst = ill->ill_ipst;
 
 	if (ill->ill_isv6)
@@ -1409,7 +1409,7 @@ ip_ndp_resolve(ncec_t *ncec)
 	} else {
 		nce_restart_timer(ncec, (clock_t)ms);
 	}
-done:
+
 	ill_refrele(src_ill);
 }
 
@@ -2854,7 +2854,7 @@ nce_timer(void *arg)
 		mutex_exit(&ncec->ncec_lock);
 		break;
 	}
-done:
+
 	ncec_refrele(ncec);
 	ill_refrele(src_ill);
 }
@@ -3936,7 +3936,7 @@ nce_add_v4(ill_t *ill, uchar_t *hw_addr, uint_t hw_addr_len,
     const in_addr_t *addr, uint16_t flags, uint16_t state, nce_t **newnce)
 {
 	int		err;
-	boolean_t	is_multicast = (flags & NCE_F_MCAST);
+	boolean_t	is_multicast __unused = (flags & NCE_F_MCAST);
 	struct in6_addr	addr6;
 	nce_t		*nce;
 
@@ -4633,7 +4633,7 @@ nce_add_common(ill_t *ill, uchar_t *hw_addr, uint_t hw_addr_len,
 	ip_stack_t		*ipst = ill->ill_ipst;
 	uint16_t		state;
 	boolean_t		fastprobe = B_FALSE;
-	struct ndp_g_s		*ndp;
+	struct ndp_g_s		*ndp __unused;
 	nce_t			*nce = NULL;
 	list_t			graveyard;
 	mblk_t			*dlur_mp = NULL;

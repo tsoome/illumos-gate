@@ -1303,7 +1303,7 @@ tcp_ixa_cleanup_wait_and_finish(conn_t *connp)
 void
 conn_ixa_cleanup(conn_t *connp, void *arg)
 {
-	boolean_t tryhard = (boolean_t)arg;
+	boolean_t tryhard = (boolean_t)(uintptr_t)arg;
 
 	if (IPCL_IS_TCP(connp)) {
 		mblk_t		*mp;

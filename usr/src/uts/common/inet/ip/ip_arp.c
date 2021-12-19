@@ -1195,7 +1195,7 @@ bail:
 	}
 	if (need_ill_refrele)
 		ill_refrele(ill);
-done:
+
 	freemsg(mp);
 	freemsg(mp1);
 }
@@ -2159,7 +2159,7 @@ arp_dlpi_send(arl_t *arl, mblk_t *mp)
 {
 	mblk_t **mpp;
 	t_uscalar_t prim;
-	arl_ill_common_t *ai;
+	arl_ill_common_t *ai __unused;
 
 	ASSERT(DB_TYPE(mp) == M_PROTO || DB_TYPE(mp) == M_PCPROTO);
 

@@ -2292,7 +2292,7 @@ void
 ip_ire_init(ip_stack_t *ipst)
 {
 	ire_t	*ire;
-	int	error;
+	int	error __unused;
 
 	mutex_init(&ipst->ips_ire_ft_init_lock, NULL, MUTEX_DEFAULT, 0);
 
@@ -2581,7 +2581,7 @@ retry:
 		mutex_exit(&ill->ill_lock);
 		rw_exit(&ill->ill_ipst->ips_ill_g_lock);
 	}
-done:
+
 	ASSERT(nce->nce_ill == ill);
 	if (need_refrele)
 		ill_refrele(ill);
@@ -2852,7 +2852,7 @@ ire_dep_verify(ire_t *ire)
 void
 ire_dep_remove(ire_t *ire)
 {
-	ip_stack_t	*ipst = ire->ire_ipst;
+	ip_stack_t	*ipst __unused = ire->ire_ipst;
 	ire_t		*parent = ire->ire_dep_parent;
 	ire_t		*next;
 	nce_t		*nce;
@@ -2916,7 +2916,7 @@ ire_dep_remove(ire_t *ire)
 static void
 ire_dep_parent_insert(ire_t *child, ire_t *parent)
 {
-	ip_stack_t	*ipst = child->ire_ipst;
+	ip_stack_t	*ipst __unused = child->ire_ipst;
 	ire_t		*next;
 
 	ASSERT(RW_WRITE_HELD(&ipst->ips_ire_dep_lock));
@@ -3245,7 +3245,7 @@ ire_dep_invalidate_generations(ire_t *ire)
 static void
 ire_dep_invalidate_children(ire_t *child)
 {
-	ip_stack_t	*ipst = child->ire_ipst;
+	ip_stack_t	*ipst __unused = child->ire_ipst;
 
 	ASSERT(RW_WRITE_HELD(&ipst->ips_ire_dep_lock));
 	/* Depth first */
@@ -3263,7 +3263,7 @@ ire_dep_invalidate_children(ire_t *child)
 static void
 ire_dep_increment_children(ire_t *child)
 {
-	ip_stack_t	*ipst = child->ire_ipst;
+	ip_stack_t	*ipst __unused = child->ire_ipst;
 
 	ASSERT(RW_READ_HELD(&ipst->ips_ire_dep_lock));
 	/* Depth first */

@@ -2060,7 +2060,7 @@ udp_conn_destructor(void *buf, void *cdrarg)
 {
 	itc_t	*itc = (itc_t *)buf;
 	conn_t	*connp = &itc->itc_conn;
-	udp_t	*udp = (udp_t *)&itc[1];
+	udp_t	*udp __unused = (udp_t *)&itc[1];
 
 	ASSERT(connp->conn_flags & IPCL_UDPCONN);
 	ASSERT(udp->udp_connp == connp);
@@ -2111,7 +2111,7 @@ rawip_conn_destructor(void *buf, void *cdrarg)
 {
 	itc_t	*itc = (itc_t *)buf;
 	conn_t	*connp = &itc->itc_conn;
-	icmp_t	*icmp = (icmp_t *)&itc[1];
+	icmp_t	*icmp __unused = (icmp_t *)&itc[1];
 
 	ASSERT(connp->conn_flags & IPCL_RAWIPCONN);
 	ASSERT(icmp->icmp_connp == connp);
@@ -2160,7 +2160,7 @@ rts_conn_destructor(void *buf, void *cdrarg)
 {
 	itc_t	*itc = (itc_t *)buf;
 	conn_t	*connp = &itc->itc_conn;
-	rts_t	*rts = (rts_t *)&itc[1];
+	rts_t	*rts __unused = (rts_t *)&itc[1];
 
 	ASSERT(connp->conn_flags & IPCL_RTSCONN);
 	ASSERT(rts->rts_connp == connp);

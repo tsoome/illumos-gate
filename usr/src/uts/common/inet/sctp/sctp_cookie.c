@@ -1232,7 +1232,7 @@ sctp_process_cookie(sctp_t *sctp, sctp_chunk_hdr_t *ch, mblk_t *cmp,
 	uint32_t		*fttag;
 	uint32_t		ports;
 	sctp_stack_t		*sctps = sctp->sctp_sctps;
-	conn_t			*connp = sctp->sctp_connp;
+	conn_t			*connp __unused = sctp->sctp_connp;
 
 	BUMP_LOCAL(sctp->sctp_ibchunks);
 	/* Verify the ICV */

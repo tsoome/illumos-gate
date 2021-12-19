@@ -1455,7 +1455,7 @@ tsol_ip_forward(ire_t *ire, mblk_t *mp, const ip_recv_attr_t *ira)
 	ipha_t		*ipha;
 	ip6_t		*ip6h;
 	const void	*pdst;
-	const void	*psrc;
+	const void	*psrc __unused;
 	boolean_t	off_link;
 	tsol_tpc_t	*dst_rhtp, *gw_rhtp;
 	tsol_ip_label_t label_type;

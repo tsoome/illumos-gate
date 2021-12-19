@@ -538,7 +538,7 @@ rts_opt_default(queue_t *q, t_scalar_t level, t_scalar_t name, uchar_t *ptr)
 static int
 rts_opt_get(conn_t *connp, int level, int name, uchar_t *ptr)
 {
-	rts_t	*rts = connp->conn_rts;
+	rts_t	*rts __unused = connp->conn_rts;
 	conn_opt_arg_t	coas;
 	int retval;
 
@@ -1252,7 +1252,7 @@ rts_stack_init(netstackid_t stackid, netstack_t *ns)
 {
 	rts_stack_t	*rtss;
 	rtsparam_t	*pa;
-	int		error = 0;
+	int		error __unused;
 	major_t		major;
 
 	rtss = (rts_stack_t *)kmem_zalloc(sizeof (*rtss), KM_SLEEP);

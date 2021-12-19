@@ -121,10 +121,6 @@ typedef struct ipft_s {
 #define	IPFT_F_NO_REPLY		0x1	/* IP ioctl does not expect any reply */
 #define	IPFT_F_SELF_REPLY	0x2	/* ioctl callee does the ioctl reply */
 
-static int	nd_ill_forward_get(queue_t *, mblk_t *, caddr_t, cred_t *);
-static int	nd_ill_forward_set(queue_t *q, mblk_t *mp,
-		    char *value, caddr_t cp, cred_t *ioc_cr);
-
 static boolean_t ill_is_quiescent(ill_t *);
 static boolean_t ip_addr_ok_v4(ipaddr_t addr, ipaddr_t subnet_mask);
 static ip_m_t	*ip_m_lookup(t_uscalar_t mac_type);
@@ -1454,11 +1450,10 @@ static void
 ill_capability_id_ack(ill_t *ill, mblk_t *mp, dl_capability_sub_t *outers)
 {
 	dl_capab_id_t *id_ic;
-	uint_t sub_dl_cap = outers->dl_cap;
 	dl_capability_sub_t *inners;
 	uint8_t *capend;
 
-	ASSERT(sub_dl_cap == DL_CAPAB_ID_WRAPPER);
+	ASSERT(outers->dl_cap == DL_CAPAB_ID_WRAPPER);
 
 	/*
 	 * Note: range checks here are not absolutely sufficient to
@@ -1559,11 +1554,10 @@ static void
 ill_capability_vrrp_ack(ill_t *ill, mblk_t *mp, dl_capability_sub_t *isub)
 {
 	dl_capab_vrrp_t	*vrrp;
-	uint_t		sub_dl_cap = isub->dl_cap;
 	uint8_t		*capend;
 
 	ASSERT(IAM_WRITER_ILL(ill));
-	ASSERT(sub_dl_cap == DL_CAPAB_VRRP);
+	ASSERT(isub->dl_cap == DL_CAPAB_VRRP);
 
 	/*
 	 * Note: range checks here are not absolutely sufficient to
@@ -1601,10 +1595,9 @@ ill_capability_hcksum_ack(ill_t *ill, mblk_t *mp, dl_capability_sub_t *isub)
 	dl_capab_hcksum_t	*ihck, *ohck;
 	ill_hcksum_capab_t	**ill_hcksum;
 	mblk_t			*nmp = NULL;
-	uint_t			sub_dl_cap = isub->dl_cap;
 	uint8_t			*capend;
 
-	ASSERT(sub_dl_cap == DL_CAPAB_HCKSUM);
+	ASSERT(isub->dl_cap == DL_CAPAB_HCKSUM);
 
 	ill_hcksum = (ill_hcksum_capab_t **)&ill->ill_hcksum_capab;
 
@@ -1761,10 +1754,9 @@ ill_capability_zerocopy_ack(ill_t *ill, mblk_t *mp, dl_capability_sub_t *isub)
 	dl_capability_req_t *oc;
 	dl_capab_zerocopy_t *zc_ic, *zc_oc;
 	ill_zerocopy_capab_t **ill_zerocopy_capab;
-	uint_t sub_dl_cap = isub->dl_cap;
 	uint8_t *capend;
 
-	ASSERT(sub_dl_cap == DL_CAPAB_ZEROCOPY);
+	ASSERT(isub->dl_cap == DL_CAPAB_ZEROCOPY);
 
 	ill_zerocopy_capab = (ill_zerocopy_capab_t **)&ill->ill_zerocopy_capab;
 
@@ -1898,12 +1890,11 @@ static void
 ill_capability_dld_ack(ill_t *ill, mblk_t *mp, dl_capability_sub_t *isub)
 {
 	dl_capab_dld_t		*dld_ic, dld;
-	uint_t			sub_dl_cap = isub->dl_cap;
 	uint8_t			*capend;
 	ill_dld_capab_t		*idc;
 
 	ASSERT(IAM_WRITER_ILL(ill));
-	ASSERT(sub_dl_cap == DL_CAPAB_DLD);
+	ASSERT(isub->dl_cap == DL_CAPAB_DLD);
 
 	/*
 	 * Note: range checks here are not absolutely sufficient to
@@ -1975,7 +1966,7 @@ static void
 ill_mac_perim_enter(ill_t *ill, mac_perim_handle_t *mphp)
 {
 	ill_dld_capab_t		*idc = ill->ill_dld_capab;
-	int			err;
+	int			err __unused;
 
 	err = idc->idc_capab_df(idc->idc_capab_dh, DLD_CAPAB_PERIM, mphp,
 	    DLD_ENABLE);
@@ -1986,7 +1977,7 @@ static void
 ill_mac_perim_exit(ill_t *ill, mac_perim_handle_t mph)
 {
 	ill_dld_capab_t		*idc = ill->ill_dld_capab;
-	int			err;
+	int			err __unused;
 
 	err = idc->idc_capab_df(idc->idc_capab_dh, DLD_CAPAB_PERIM, mph,
 	    DLD_DISABLE);
@@ -2668,7 +2659,7 @@ ill_frag_free_pkts(ill_t *ill, ipfb_t *ipfb, ipf_t *ipf, int free_cnt)
 static void
 ill_forward_set_on_ill(ill_t *ill, boolean_t enable)
 {
-	ip_stack_t	*ipst = ill->ill_ipst;
+	ip_stack_t	*ipst __unused  = ill->ill_ipst;
 
 	ASSERT(IAM_WRITER_ILL(ill) || RW_READ_HELD(&ipst->ips_ill_g_lock));
 
@@ -2696,7 +2687,7 @@ int
 ill_forward_set(ill_t *ill, boolean_t enable)
 {
 	ipmp_illgrp_t *illg;
-	ip_stack_t *ipst = ill->ill_ipst;
+	ip_stack_t *ipst __unused = ill->ill_ipst;
 
 	ASSERT(IAM_WRITER_ILL(ill) || RW_READ_HELD(&ipst->ips_ill_g_lock));
 
@@ -6657,7 +6648,7 @@ ipsq_try_enter_internal(ill_t *ill, queue_t *q, mblk_t *mp, ipsq_func_t func,
 {
 	ipsq_t	*ipsq;
 	ipxop_t	*ipx;
-	ip_stack_t *ipst = ill->ill_ipst;
+	ip_stack_t *ipst __unused = ill->ill_ipst;
 
 	/*
 	 * lock ordering:
@@ -12347,7 +12338,7 @@ ill_restart_dad(ill_t *ill, boolean_t went_up)
 static void
 ipsq_delete(ipsq_t *ipsq)
 {
-	ipxop_t *ipx = ipsq->ipsq_xop;
+	ipxop_t *ipx __unused = ipsq->ipsq_xop;
 
 	ipsq->ipsq_ipst = NULL;
 	ASSERT(ipsq->ipsq_phyint == NULL);
@@ -13215,7 +13206,6 @@ ill_mcast_send_queued(ill_t *ill)
 	}
 	mutex_exit(&ill->ill_lock);
 
-done:
 	if (release_ill != NULL)
 		ill_refrele(release_ill);
 }
@@ -16297,7 +16287,7 @@ static void
 ill_disband_usesrc_group(ill_t *uill)
 {
 	ill_t *next_ill, *tmp_ill;
-	ip_stack_t	*ipst = uill->ill_ipst;
+	ip_stack_t	*ipst __unused = uill->ill_ipst;
 
 	ASSERT(RW_WRITE_HELD(&ipst->ips_ill_g_usesrc_lock));
 	next_ill = uill->ill_usesrc_grp_next;
@@ -16320,7 +16310,7 @@ int
 ill_relink_usesrc_ills(ill_t *ucill, ill_t *uill, uint_t ifindex)
 {
 	ill_t *ill, *tmp_ill;
-	ip_stack_t	*ipst = ucill->ill_ipst;
+	ip_stack_t	*ipst __unused = ucill->ill_ipst;
 
 	ASSERT((ucill != NULL) && (ucill->ill_usesrc_grp_next != NULL) &&
 	    (uill != NULL) && RW_WRITE_HELD(&ipst->ips_ill_g_usesrc_lock));
@@ -17851,7 +17841,7 @@ ill_set_phys_addr(ill_t *ill, mblk_t *mp)
 void
 ill_set_allowed_ips(ill_t *ill, mblk_t *mp)
 {
-	ipsq_t *ipsq = ill->ill_phyint->phyint_ipsq;
+	ipsq_t *ipsq __unused = ill->ill_phyint->phyint_ipsq;
 	dl_notify_ind_t	*dlip = (dl_notify_ind_t *)mp->b_rptr;
 	mac_protect_t *mrp;
 	int i;
@@ -18954,7 +18944,7 @@ ip_sioctl_ilb_cmd(ipif_t *ipif, sin_t *sin, queue_t *q, mblk_t *mp,
 		ret = EINVAL;
 		break;
 	}
-done:
+
 	return (ret);
 }
 

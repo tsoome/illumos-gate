@@ -1918,7 +1918,7 @@ expire_upcalls(void *arg)
 {
 	struct mfc *mfc_rt = arg;
 	uint_t hash;
-	struct mfc *prev_mfc, *mfc0;
+	struct mfc *prev_mfc __unused, *mfc0;
 	ip_stack_t	*ipst;
 	conn_t		*mrouter;
 

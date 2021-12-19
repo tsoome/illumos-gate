@@ -115,7 +115,6 @@ static void	icmp_icmp_error_ipv6(conn_t *connp, mblk_t *mp,
     ip_recv_attr_t *);
 static void	icmp_info_req(queue_t *q, mblk_t *mp);
 static void	icmp_input(void *, mblk_t *, void *, ip_recv_attr_t *);
-static conn_t	*icmp_open(int family, cred_t *credp, int *err, int flags);
 static int	icmp_openv4(queue_t *q, dev_t *devp, int flag, int sflag,
 		    cred_t *credp);
 static int	icmp_openv6(queue_t *q, dev_t *devp, int flag, int sflag,
@@ -141,7 +140,6 @@ static int	icmp_wput(queue_t *q, mblk_t *mp);
 static int	icmp_wput_fallback(queue_t *q, mblk_t *mp);
 static void	icmp_wput_other(queue_t *q, mblk_t *mp);
 static void	icmp_wput_iocdata(queue_t *q, mblk_t *mp);
-static void	icmp_wput_restricted(queue_t *q, mblk_t *mp);
 static void	icmp_ulp_recv(conn_t *, mblk_t *, uint_t);
 
 static void	*rawip_stack_init(netstackid_t stackid, netstack_t *ns);
@@ -150,7 +148,6 @@ static void	rawip_stack_fini(netstackid_t stackid, void *arg);
 static void	*rawip_kstat_init(netstackid_t stackid);
 static void	rawip_kstat_fini(netstackid_t stackid, kstat_t *ksp);
 static int	rawip_kstat_update(kstat_t *kp, int rw);
-static void	rawip_stack_shutdown(netstackid_t stackid, void *arg);
 
 /* Common routines for TPI and socket module */
 static conn_t	*rawip_do_open(int, cred_t *, int *, int);
@@ -1278,7 +1275,7 @@ static void
 icmp_icmp_error_ipv6(conn_t *connp, mblk_t *mp, ip_recv_attr_t *ira)
 {
 	icmp6_t		*icmp6;
-	ip6_t		*ip6h, *outer_ip6h;
+	ip6_t		*ip6h, *outer_ip6h __unused;
 	uint16_t	iph_hdr_length;
 	uint8_t		*nexthdrp;
 	sin6_t		sin6;
@@ -2253,7 +2250,6 @@ icmp_opt_set(conn_t *connp, uint_t optset_context, int level, int name,
 	err = icmp_do_opt_set(coa, level, name, inlen, invalp,
 	    cr, checkonly);
 	if (err != 0) {
-errout:
 		if (!coa->coa_ancillary)
 			ixa_refrele(coa->coa_ixa);
 		*outlenp = 0;
@@ -2417,11 +2413,11 @@ icmp_prepend_hdr(conn_t *connp, ip_xmit_attr_t *ixa, const ip_pkt_t *ipp,
 	ASSERT(cksum < 0x10000);
 
 	if (ixa->ixa_flags & IXAF_IS_IPV4) {
-		ipha_t	*ipha = (ipha_t *)mp->b_rptr;
+		ipha_t	*ipha __unused = (ipha_t *)mp->b_rptr;
 
 		ASSERT(ntohs(ipha->ipha_length) == ixa->ixa_pktlen);
 	} else {
-		ip6_t	*ip6h = (ip6_t *)mp->b_rptr;
+		ip6_t	*ip6h __unused = (ip6_t *)mp->b_rptr;
 		uint_t	cksum_offset = 0;
 
 		ASSERT(ntohs(ip6h->ip6_plen) + IPV6_HDR_LEN == ixa->ixa_pktlen);
@@ -5000,7 +4996,7 @@ static void *
 rawip_stack_init(netstackid_t stackid, netstack_t *ns)
 {
 	icmp_stack_t	*is;
-	int		error = 0;
+	int		error __unused;
 	size_t		arrsz;
 	major_t		major;
 
@@ -5236,7 +5232,7 @@ rawip_connect(sock_lower_handle_t proto_handle, const struct sockaddr *sa,
 
 	error = rawip_do_connect(connp, sa, len, cr, pid);
 	if (error != 0 && did_bind) {
-		int unbind_err;
+		int unbind_err __unused;
 
 		unbind_err = rawip_unbind(connp);
 		ASSERT(unbind_err == 0);

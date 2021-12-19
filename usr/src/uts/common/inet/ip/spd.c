@@ -924,7 +924,7 @@ ipsec_copy_policy(const ipsec_policy_t *src)
 void
 ipsec_insert_always(avl_tree_t *tree, void *new_node)
 {
-	void *node;
+	void *node __unused;
 	avl_index_t where;
 
 	node = avl_find(tree, new_node, &where);
@@ -4708,7 +4708,7 @@ ipsec_alg_fix_min_max(ipsec_alginfo_t *alg, ipsec_algtype_t alg_type,
 	uint_t nmech_infos;
 	int crypto_rc, i;
 	crypto_mech_usage_t mask;
-	ipsec_stack_t	*ipss = ns->netstack_ipsec;
+	ipsec_stack_t	*ipss __unused = ns->netstack_ipsec;
 
 	ASSERT(RW_WRITE_HELD(&ipss->ipsec_alg_lock));
 

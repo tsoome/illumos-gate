@@ -144,7 +144,6 @@ static squeue_set_t *ip_squeue_set_create(processorid_t);
 static int ip_squeue_cpu_setup(cpu_setup_t, int, void *);
 static void ip_squeue_set_move(squeue_t *, squeue_set_t *);
 static void ip_squeue_set_destroy(cpu_t *);
-static void ip_squeue_clean(void *, mblk_t *, void *);
 
 #define	CPU_ISON(c) (c != NULL && CPU_ACTIVE(c) && (c->cpu_flags & CPU_EXISTS))
 
@@ -303,7 +302,7 @@ void
 ip_squeue_init(void (*callback)(squeue_t *))
 {
 	int i;
-	squeue_set_t	*sqs;
+	squeue_set_t	*sqs __unused;
 
 	ASSERT(sqset_global_list == NULL);
 

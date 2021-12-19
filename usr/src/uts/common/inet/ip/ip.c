@@ -669,7 +669,6 @@ static void	icmp_send_reply_v4(mblk_t *, ipha_t *, icmph_t *,
 mblk_t		*ip_dlpi_alloc(size_t, t_uscalar_t);
 char		*ip_dot_addr(ipaddr_t, char *);
 mblk_t		*ip_carve_mp(mblk_t **, ssize_t);
-static char	*ip_dot_saddr(uchar_t *, char *);
 static int	ip_lrput(queue_t *, mblk_t *);
 ipaddr_t	ip_net_mask(ipaddr_t);
 char		*ip_nv_lookup(nv_t *, int);
@@ -721,7 +720,6 @@ static void	conn_drain_fini(ip_stack_t *);
 static void	conn_drain(conn_t *connp, boolean_t closing);
 
 static void	conn_walk_drain(ip_stack_t *, idl_tx_list_t *);
-static void	conn_walk_sctp(pfv_t, void *, zoneid_t, netstack_t *);
 
 static void	*ip_stack_init(netstackid_t stackid, netstack_t *ns);
 static void	ip_stack_shutdown(netstackid_t stackid, void *arg);
@@ -2545,7 +2543,7 @@ ip_opt_get_user(conn_t *connp, uchar_t *buf)
 			break;
 		}
 	}
-done:
+
 	/* Pad the resulting options */
 	while (len & 0x3) {
 		*buf++ = IPOPT_EOL;
@@ -4013,7 +4011,7 @@ ip_carve_mp(mblk_t **mpp, ssize_t len)
 int
 ip_modclose(ill_t *ill)
 {
-	boolean_t success;
+	boolean_t success __unused;
 	ipsq_t	*ipsq;
 	ipif_t	*ipif;
 	queue_t	*q = ill->ill_rq;
@@ -4537,6 +4535,7 @@ ip_stack_fini(netstackid_t stackid, void *arg)
 	kmem_free(ipst, sizeof (*ipst));
 }
 
+#ifdef DEBUG
 /*
  * This function is called from the TSD destructor, and is used to debug
  * reference count issues in IP. See block comment in <inet/ip_if.h> for
@@ -4553,6 +4552,7 @@ ip_thread_exit(void *phash)
 	mod_hash_destroy_hash(thh->thh_hash);
 	kmem_free(thh, sizeof (*thh));
 }
+#endif
 
 /*
  * Called when the IP kernel module is loaded into the kernel
@@ -4782,8 +4782,7 @@ ip_dlnotify_alloc2(uint_t notification, uint_t data1, uint_t data2)
 
 /*
  * Debug formatting routine.  Returns a character string representation of the
- * addr in buf, of the form xxx.xxx.xxx.xxx.  This routine takes the address
- * in the form of a ipaddr_t and calls ip_dot_saddr with a pointer.
+ * addr in buf, of the form xxx.xxx.xxx.xxx.
  *
  * Once the ndd table-printing interfaces are removed, this can be changed to
  * standard dotted-decimal form.
@@ -4924,7 +4923,7 @@ ip_fanout_send_icmp_v4(mblk_t *mp, uint_t icmp_type, uint_t icmp_code,
 void
 ip_proto_not_sup(mblk_t *mp, ip_recv_attr_t *ira)
 {
-	ipha_t		*ipha;
+	ipha_t		*ipha __unused;
 
 	ipha = (ipha_t *)mp->b_rptr;
 	if (ira->ira_flags & IRAF_IS_IPV4) {
@@ -6679,7 +6678,7 @@ ip_ire_unbind_walker(ire_t *ire, void *notused)
 void
 conn_ire_revalidate(conn_t *connp, void *arg)
 {
-	boolean_t isv6 = (boolean_t)arg;
+	boolean_t isv6 = (boolean_t)(uintptr_t)arg;
 
 	if ((isv6 && connp->conn_ipversion != IPV6_VERSION) ||
 	    (!isv6 && connp->conn_ipversion != IPV4_VERSION))
@@ -8954,7 +8953,7 @@ void
 ip_rput_other(ipsq_t *ipsq, queue_t *q, mblk_t *mp, void *dummy_arg)
 {
 	ill_t		*ill = q->q_ptr;
-	struct iocblk	*iocp;
+	struct iocblk	*iocp __unused;
 
 	ip1dbg(("ip_rput_other "));
 	if (ipsq != NULL) {
@@ -13348,7 +13347,7 @@ conn_drain_remove(conn_t *connp)
 static void
 conn_drain(conn_t *connp, boolean_t closing)
 {
-	idl_t *idl;
+	idl_t *idl __unused;
 	conn_t *next_connp;
 
 	/*
@@ -14475,7 +14474,7 @@ ip_xmit(mblk_t *mp, nce_t *nce, iaflags_t ixaflags, uint_t pkt_len,
 	ill_t		*ill = nce->nce_ill;
 	ip_stack_t	*ipst = ill->ill_ipst;
 	uint64_t	delta;
-	boolean_t	isv6 = ill->ill_isv6;
+	boolean_t	isv6 __unused = ill->ill_isv6;
 	boolean_t	fp_mp;
 	ncec_t		*ncec = nce->nce_common;
 	int64_t		now = LBOLT_FASTPATH64;

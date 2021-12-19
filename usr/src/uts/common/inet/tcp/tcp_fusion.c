@@ -702,9 +702,9 @@ boolean_t
 tcp_fuse_rcv_drain(queue_t *q, tcp_t *tcp, mblk_t **sigurg_mpp)
 {
 	mblk_t *mp;
-	conn_t	*connp = tcp->tcp_connp;
 
 #ifdef DEBUG
+	conn_t	*connp = tcp->tcp_connp;
 	uint_t cnt = 0;
 #endif
 	tcp_stack_t	*tcps = tcp->tcp_tcps;

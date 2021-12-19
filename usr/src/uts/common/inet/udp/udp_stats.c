@@ -163,8 +163,9 @@ udp_snmp_get(queue_t *q, mblk_t *mpctl, boolean_t legacy_req)
 
 		while ((connp = ipcl_get_next_conn(connfp, connp,
 		    IPCL_UDPCONN))) {
-			sonode_t *so = (sonode_t *)connp->conn_upper_handle;
+			sonode_t *so __unused;
 
+			so = (sonode_t *)connp->conn_upper_handle;
 			udp = connp->conn_udp;
 			if (zoneid != connp->conn_zoneid)
 				continue;

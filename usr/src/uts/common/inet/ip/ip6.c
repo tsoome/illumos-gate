@@ -3038,7 +3038,6 @@ ip_rput_v6(queue_t *q, mblk_t *mp)
 static int
 ipsec_needs_processing_v6(mblk_t *mp, uint8_t *nexthdr)
 {
-	uint_t	length;
 	uint_t	ehdrlen;
 	uint8_t *whereptr;
 	uint8_t *endptr;
@@ -3057,7 +3056,6 @@ ipsec_needs_processing_v6(mblk_t *mp, uint8_t *nexthdr)
 	}
 
 	ip6h = (ip6_t *)mp->b_rptr;
-	length = IPV6_HDR_LEN;
 	whereptr = ((uint8_t *)&ip6h[1]); /* point to next hdr */
 	endptr = mp->b_wptr;
 
@@ -3116,7 +3114,6 @@ ipsec_needs_processing_v6(mblk_t *mp, uint8_t *nexthdr)
 		default:
 			return (IPSEC_HDR_DONT_PROCESS);
 		}
-		length += ehdrlen;
 		whereptr += ehdrlen;
 	}
 	/*

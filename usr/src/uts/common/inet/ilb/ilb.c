@@ -135,23 +135,15 @@ static ilb_rule_t *ilb_rule_hash(ilb_stack_t *, int, int, in6_addr_t *,
 
 static void ilb_rule_g_add(ilb_stack_t *, ilb_rule_t *);
 static void ilb_rule_g_del(ilb_stack_t *, ilb_rule_t *);
-static void ilb_del_rule_common(ilb_stack_t *, ilb_rule_t *);
 static ilb_rule_t *ilb_find_rule_locked(ilb_stack_t *, zoneid_t, const char *,
     int *);
 static boolean_t ilb_match_rule(ilb_stack_t *, zoneid_t, const char *, int,
     int, in_port_t, in_port_t, const in6_addr_t *);
 
-/* Back end server handling routines. */
-static void ilb_server_free(ilb_server_t *);
-
 /* Network stack handling routines. */
 static void *ilb_stack_init(netstackid_t, netstack_t *);
 static void ilb_stack_shutdown(netstackid_t, void *);
 static void ilb_stack_fini(netstackid_t, void *);
-
-/* Sticky connection handling routines. */
-static void ilb_rule_sticky_init(ilb_rule_t *);
-static void ilb_rule_sticky_fini(ilb_rule_t *);
 
 /* Handy macro to check for unspecified address. */
 #define	IS_ADDR_UNSPEC(addr)						\

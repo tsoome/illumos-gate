@@ -294,7 +294,7 @@ void
 ipmp_grp_info(const ipmp_grp_t *grp, lifgroupinfo_t *lifgr)
 {
 	ill_t *ill;
-	ip_stack_t *ipst = IPMP_GRP_TO_IPST(grp);
+	ip_stack_t *ipst __unused = IPMP_GRP_TO_IPST(grp);
 
 	ASSERT(RW_LOCK_HELD(&ipst->ips_ipmp_lock));
 
@@ -404,7 +404,7 @@ ipmp_grp_rename(ipmp_grp_t *grp, const char *grname)
 void
 ipmp_grp_destroy(ipmp_grp_t *grp)
 {
-	ip_stack_t *ipst = IPMP_GRP_TO_IPST(grp);
+	ip_stack_t *ipst __unused = IPMP_GRP_TO_IPST(grp);
 
 	ASSERT(RW_WRITE_HELD(&ipst->ips_ipmp_lock));
 
@@ -438,7 +438,7 @@ ipmp_grp_destroy(ipmp_grp_t *grp)
 static int
 ipmp_grp_vet_ill(ipmp_grp_t *grp, ill_t *ill)
 {
-	ip_stack_t *ipst = IPMP_GRP_TO_IPST(grp);
+	ip_stack_t *ipst __unused = IPMP_GRP_TO_IPST(grp);
 
 	ASSERT(IAM_WRITER_ILL(ill));
 	ASSERT(RW_LOCK_HELD(&ipst->ips_ipmp_lock));
@@ -511,7 +511,7 @@ int
 ipmp_grp_vet_phyint(ipmp_grp_t *grp, phyint_t *phyi)
 {
 	int err = 0;
-	ip_stack_t *ipst = IPMP_GRP_TO_IPST(grp);
+	ip_stack_t *ipst __unused = IPMP_GRP_TO_IPST(grp);
 
 	ASSERT(IAM_WRITER_IPSQ(phyi->phyint_ipsq));
 	ASSERT(RW_LOCK_HELD(&ipst->ips_ipmp_lock));
@@ -976,8 +976,8 @@ ill_t *
 ipmp_illgrp_find_ill(ipmp_illgrp_t *illg, uchar_t *physaddr, uint_t paddrlen)
 {
 	ill_t *ill;
-	ill_t *ipmp_ill = illg->ig_ipmp_ill;
-	ip_stack_t *ipst = IPMP_ILLGRP_TO_IPST(illg);
+	ill_t *ipmp_ill __unused = illg->ig_ipmp_ill;
+	ip_stack_t *ipst __unused = IPMP_ILLGRP_TO_IPST(illg);
 
 	ASSERT(IAM_WRITER_ILL(ipmp_ill) || RW_LOCK_HELD(&ipst->ips_ill_g_lock));
 
@@ -1058,7 +1058,7 @@ ipmp_illgrp_refresh_mtu(ipmp_illgrp_t *illg)
 void
 ipmp_illgrp_link_grp(ipmp_illgrp_t *illg, ipmp_grp_t *grp)
 {
-	ip_stack_t *ipst = IPMP_ILLGRP_TO_IPST(illg);
+	ip_stack_t *ipst __unused = IPMP_ILLGRP_TO_IPST(illg);
 
 	ASSERT(RW_WRITE_HELD(&ipst->ips_ipmp_lock));
 
@@ -1079,7 +1079,7 @@ int
 ipmp_illgrp_unlink_grp(ipmp_illgrp_t *illg)
 {
 	ipmp_grp_t *grp = illg->ig_ipmp_ill->ill_phyint->phyint_grp;
-	ip_stack_t *ipst = IPMP_ILLGRP_TO_IPST(illg);
+	ip_stack_t *ipst __unused = IPMP_ILLGRP_TO_IPST(illg);
 
 	ASSERT(RW_WRITE_HELD(&ipst->ips_ipmp_lock));
 

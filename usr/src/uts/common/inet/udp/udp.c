@@ -136,12 +136,6 @@ static void	udp_err_ack(queue_t *q, mblk_t *mp, t_scalar_t t_error,
     int sys_error);
 static void	udp_err_ack_prim(queue_t *q, mblk_t *mp, t_scalar_t primitive,
     t_scalar_t tlierr, int sys_error);
-static int	udp_extra_priv_ports_get(queue_t *q, mblk_t *mp, caddr_t cp,
-		    cred_t *cr);
-static int	udp_extra_priv_ports_add(queue_t *q, mblk_t *mp,
-		    char *value, caddr_t cp, cred_t *cr);
-static int	udp_extra_priv_ports_del(queue_t *q, mblk_t *mp,
-		    char *value, caddr_t cp, cred_t *cr);
 static void	udp_icmp_input(void *, mblk_t *, void *, ip_recv_attr_t *);
 static void	udp_icmp_error_ipv6(conn_t *connp, mblk_t *mp,
     ip_recv_attr_t *ira);
@@ -1140,7 +1134,7 @@ static void
 udp_icmp_error_ipv6(conn_t *connp, mblk_t *mp, ip_recv_attr_t *ira)
 {
 	icmp6_t		*icmp6;
-	ip6_t		*ip6h, *outer_ip6h;
+	ip6_t		*ip6h, *outer_ip6h __unused;
 	uint16_t	iph_hdr_length;
 	uint8_t		*nexthdrp;
 	udpha_t		*udpha;
@@ -2165,7 +2159,7 @@ udp_prepend_hdr(conn_t *connp, ip_xmit_attr_t *ixa, const ip_pkt_t *ipp,
 	ASSERT(cksum < 0x10000);
 
 	if (ixa->ixa_flags & IXAF_IS_IPV4) {
-		ipha_t	*ipha = (ipha_t *)mp->b_rptr;
+		ipha_t	*ipha __unused = (ipha_t *)mp->b_rptr;
 
 		ASSERT(ntohs(ipha->ipha_length) == ixa->ixa_pktlen);
 
@@ -2179,7 +2173,7 @@ udp_prepend_hdr(conn_t *connp, ip_xmit_attr_t *ixa, const ip_pkt_t *ipp,
 			udpha->uha_checksum = 0;
 		}
 	} else {
-		ip6_t *ip6h = (ip6_t *)mp->b_rptr;
+		ip6_t *ip6h __unused = (ip6_t *)mp->b_rptr;
 
 		ASSERT(ntohs(ip6h->ip6_plen) + IPV6_HDR_LEN == ixa->ixa_pktlen);
 		if (cksum == 0)
@@ -4505,7 +4499,7 @@ udp_stack_init(netstackid_t stackid, netstack_t *ns)
 {
 	udp_stack_t	*us;
 	int		i;
-	int		error = 0;
+	int		error __unused;
 	major_t		major;
 	size_t		arrsz;
 
@@ -4799,7 +4793,7 @@ udp_create(int family, int type, int proto, sock_downcalls_t **sock_downcalls,
     uint_t *smodep, int *errorp, int flags, cred_t *credp)
 {
 	udp_t		*udp = NULL;
-	udp_stack_t	*us;
+	udp_stack_t	*us __unused;
 	conn_t		*connp;
 	boolean_t	isv6;
 
@@ -6019,7 +6013,7 @@ udp_connect(sock_lower_handle_t proto_handle, const struct sockaddr *sa,
 	error = udp_do_connect(connp, sa, len, cr, pid);
 
 	if (error != 0 && did_bind) {
-		int unbind_err;
+		int unbind_err __unused;
 
 		unbind_err = udp_do_unbind(connp);
 		ASSERT(unbind_err == 0);

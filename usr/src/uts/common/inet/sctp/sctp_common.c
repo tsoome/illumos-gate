@@ -1847,7 +1847,7 @@ faddr_constructor(void *buf, void *arg, int flags)
 static void
 faddr_destructor(void *buf, void *arg)
 {
-	sctp_faddr_t *fp = buf;
+	sctp_faddr_t *fp __unused = buf;
 
 	ASSERT(fp->sf_timer_mp == NULL);
 	ASSERT(fp->sf_timer_running == 0);

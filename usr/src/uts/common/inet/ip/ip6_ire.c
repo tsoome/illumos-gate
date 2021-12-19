@@ -646,7 +646,7 @@ ire_flush_cache_v6(ire_t *ire, int flag)
 		in6_addr_t	addr;
 		in6_addr_t	mask;
 		ip_stack_t	*ipst = ire->ire_ipst;
-		uint_t		masklen;
+		uint_t		masklen __unused;
 
 		/*
 		 * Find an IRE which is a shorter match than the ire to be added

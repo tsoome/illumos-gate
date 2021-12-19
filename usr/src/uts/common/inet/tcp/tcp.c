@@ -961,7 +961,7 @@ void
 tcp_stop_lingering(tcp_t *tcp)
 {
 	clock_t	delta = 0;
-	tcp_stack_t	*tcps = tcp->tcp_tcps;
+	tcp_stack_t	*tcps __unused = tcp->tcp_tcps;
 	conn_t		*connp = tcp->tcp_connp;
 
 	tcp->tcp_linger_tid = 0;
@@ -3755,7 +3755,7 @@ tcp_stack_init(netstackid_t stackid, netstack_t *ns)
 {
 	tcp_stack_t	*tcps;
 	int		i;
-	int		error = 0;
+	int		error __unused;
 	major_t		major;
 	size_t		arrsz;
 
