@@ -99,14 +99,13 @@ int fipe_pm_throttle_level = 1;
 #define	CPU_IDLE_CB_PRIO_FIPE		(CPU_IDLE_CB_PRIO_LOW_BASE + 0x4000000)
 
 /* Structure to support power management profile. */
-#pragma align CPU_CACHE_COHERENCE_SIZE(fipe_profiles)
 static struct fipe_profile {
 	uint32_t			idle_count;
 	uint32_t			busy_threshold;
 	uint32_t			intr_threshold;
 	uint32_t			intr_busy_threshold;
 	uint32_t			intr_busy_throttle;
-} fipe_profiles[FIPE_PM_POLICY_MAX] = {
+} fipe_profiles[FIPE_PM_POLICY_MAX] __aligned(CPU_CACHE_COHERENCE_SIZE) = {
 	{ 0,	0,	0,	0,	0 },
 	{ 5,	30,	20,	50,	5 },
 	{ 10,	40,	40,	75,	4 },
@@ -114,7 +113,6 @@ static struct fipe_profile {
 };
 
 /* Structure to store memory controller relative data. */
-#pragma align CPU_CACHE_COHERENCE_SIZE(fipe_mc_ctrl)
 static struct fipe_mc_ctrl {
 	ddi_acc_handle_t		mc_pci_hdl;
 	unsigned char			mc_thrtctrl;
@@ -122,10 +120,9 @@ static struct fipe_mc_ctrl {
 	unsigned char			mc_gblact;
 	dev_info_t			*mc_dip;
 	boolean_t			mc_initialized;
-} fipe_mc_ctrl;
+} fipe_mc_ctrl __aligned(CPU_CACHE_COHERENCE_SIZE);
 
 /* Structure to store IOAT relative information. */
-#pragma align CPU_CACHE_COHERENCE_SIZE(fipe_ioat_ctrl)
 static struct fipe_ioat_control {
 	kmutex_t			ioat_lock;
 	boolean_t			ioat_ready;
@@ -147,9 +144,8 @@ static struct fipe_ioat_control {
 	boolean_t			ioat_failed;
 	boolean_t			ioat_cancel;
 	boolean_t			ioat_try_alloc;
-} fipe_ioat_ctrl;
+} fipe_ioat_ctrl __aligned(CPU_CACHE_COHERENCE_SIZE);
 
-#pragma align CPU_CACHE_COHERENCE_SIZE(fipe_idle_ctrl)
 static struct fipe_idle_ctrl {
 	boolean_t			idle_ready;
 	cpu_idle_callback_handle_t	cb_handle;
@@ -161,14 +157,13 @@ static struct fipe_idle_ctrl {
 
 	/* Put here for cache efficiency, it should be in fipe_global_ctrl. */
 	hrtime_t			tick_interval;
-} fipe_idle_ctrl;
+} fipe_idle_ctrl __aligned(CPU_CACHE_COHERENCE_SIZE);
 
 /*
  * Global control structure.
  * Solaris idle thread has no reentrance issue, so it's enough to count CPUs
  * in idle state. Otherwise cpuset_t bitmap should be used to track idle CPUs.
  */
-#pragma align CPU_CACHE_COHERENCE_SIZE(fipe_gbl_ctrl)
 static struct fipe_global_ctrl {
 	kmutex_t			lock;
 	boolean_t			pm_enabled;
@@ -182,7 +177,7 @@ static struct fipe_global_ctrl {
 #ifdef	FIPE_KSTAT_SUPPORT
 	kstat_t				*fipe_kstat;
 #endif	/* FIPE_KSTAT_SUPPORT */
-} fipe_gbl_ctrl;
+} fipe_gbl_ctrl __aligned(CPU_CACHE_COHERENCE_SIZE);
 
 #define	FIPE_CPU_STATE_PAD		(128 - \
 	2 * sizeof (boolean_t) -  4 * sizeof (hrtime_t) - \
@@ -206,7 +201,6 @@ typedef struct fipe_cpu_state {
 #pragma pack()
 
 #ifdef	FIPE_KSTAT_SUPPORT
-#pragma align CPU_CACHE_COHERENCE_SIZE(fipe_kstat)
 static struct fipe_kstat_s {
 	kstat_named_t		fipe_enabled;
 	kstat_named_t		fipe_policy;
@@ -225,7 +219,7 @@ static struct fipe_kstat_s {
 	kstat_named_t		ioat_start_fail_cnt;
 	kstat_named_t		ioat_stop_fail_cnt;
 #endif	/* FIPE_KSTAT_DETAIL */
-} fipe_kstat = {
+} fipe_kstat __aligned(CPU_CACHE_COHERENCE_SIZE) = {
 	{ "fipe_enabled",	KSTAT_DATA_INT32 },
 	{ "fipe_policy",	KSTAT_DATA_INT32 },
 	{ "fipe_pm_time",	KSTAT_DATA_UINT64 },
