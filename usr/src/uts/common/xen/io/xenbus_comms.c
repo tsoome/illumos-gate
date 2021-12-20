@@ -271,7 +271,7 @@ xb_setup_intr(void)
 void
 xb_init(void)
 {
-	int err;
+	int err __unused;
 
 	if (DOMAIN_IS_INITDOMAIN(xen_info)) {
 
