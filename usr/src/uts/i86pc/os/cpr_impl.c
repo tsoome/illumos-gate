@@ -144,7 +144,7 @@ i_cpr_enable_intr(void)
 void
 i_cpr_save_machdep_info(void)
 {
-	int notcalled = 0;
+	int notcalled __unused = 0;
 	ASSERT(notcalled);
 }
 
@@ -181,7 +181,7 @@ i_cpr_save_context(void *arg)
 	long	index = (long)arg;
 	psm_state_request_t *papic_state;
 	int resuming;
-	int	ret;
+	int	ret __unused;
 	wc_cpu_t	*wc_cpu = wc_other_cpus + index;
 
 	PMD(PMD_SX, ("i_cpr_save_context() index = %ld\n", index))
@@ -291,14 +291,9 @@ i_cpr_pre_resume_cpus()
 	int boot_cpuid = i_cpr_bootcpuid();
 	uint32_t		code_length = 0;
 	caddr_t			wakevirt = rm_platter_va;
-	/*LINTED*/
 	wakecode_t		*wp = (wakecode_t *)wakevirt;
-	char *str = "i_cpr_pre_resume_cpus";
 	extern int get_tsc_ready();
 	int err;
-
-	/*LINTED*/
-	rm_platter_t *real_mode_platter = (rm_platter_t *)rm_platter_va;
 
 	/*
 	 * If startup wasn't able to find a page under 1M, we cannot
@@ -347,7 +342,7 @@ i_cpr_pre_resume_cpus()
 		if (!CPU_IN_SET(mp_cpus, who))
 			continue;
 
-		PMD(PMD_SX, ("%s() waking up %d cpu\n", str, who))
+		PMD(PMD_SX, ("%s() waking up %d cpu\n", __func__, who))
 
 		bcopy(cpup, &(wp->wc_cpu), sizeof (wc_cpu_t));
 
@@ -368,21 +363,24 @@ i_cpr_pre_resume_cpus()
 			continue;
 		}
 
-		PMD(PMD_SX, ("%s() #1 waiting for %d in procset\n", str, who))
+		PMD(PMD_SX, ("%s() #1 waiting for %d in procset\n",
+		    __func__, who))
 
 		if (!wait_for_set(&procset, who))
 			continue;
 
-		PMD(PMD_SX, ("%s() %d cpu started\n", str, who))
+		PMD(PMD_SX, ("%s() %d cpu started\n", __func__, who))
 
-		PMD(PMD_SX, ("%s() tsc_ready = %d\n", str, get_tsc_ready()))
+		PMD(PMD_SX, ("%s() tsc_ready = %d\n", __func__,
+		    get_tsc_ready()))
 
 		if (tsc_gethrtime_enable) {
-			PMD(PMD_SX, ("%s() calling tsc_sync_master\n", str))
+			PMD(PMD_SX, ("%s() calling tsc_sync_master\n",
+			    __func__))
 			tsc_sync_master(who);
 		}
 
-		PMD(PMD_SX, ("%s() waiting for %d in cpu_ready_set\n", str,
+		PMD(PMD_SX, ("%s() waiting for %d in cpu_ready_set\n", __func__,
 		    who))
 		/*
 		 * Wait for cpu to declare that it is ready, we want the
@@ -396,12 +394,12 @@ i_cpr_pre_resume_cpus()
 		 * do not need to re-initialize dtrace using dtrace_cpu_init
 		 * function
 		 */
-		PMD(PMD_SX, ("%s() cpu %d now ready\n", str, who))
+		PMD(PMD_SX, ("%s() cpu %d now ready\n", __func__, who))
 	}
 
 	affinity_clear();
 
-	PMD(PMD_SX, ("%s() all cpus now ready\n", str))
+	PMD(PMD_SX, ("%s() all cpus now ready\n", __func__))
 
 }
 
@@ -482,7 +480,7 @@ prt_other_cpus()
 
 	for (who = 0; who < max_ncpus; who++) {
 
-		wc_cpu_t	*cpup = wc_other_cpus + who;
+		wc_cpu_t *cpup __unused = wc_other_cpus + who;
 
 		if (!CPU_IN_SET(mp_cpus, who))
 			continue;
@@ -508,16 +506,12 @@ i_cpr_power_down(int sleeptype)
 	ulong_t		saved_intr;
 	uint32_t	code_length = 0;
 	wc_desctbr_t	gdt;
-	/*LINTED*/
 	wakecode_t	*wp = (wakecode_t *)wakevirt;
-	/*LINTED*/
-	rm_platter_t	*wcpp = (rm_platter_t *)wakevirt;
+	rm_platter_t	*wcpp __unused = (rm_platter_t *)wakevirt;
 	wc_cpu_t	*cpup = &(wp->wc_cpu);
 	dev_info_t	*ppm;
 	int		ret = 0;
 	power_req_t	power_req;
-	char *str =	"i_cpr_power_down";
-	/*LINTED*/
 	rm_platter_t *real_mode_platter = (rm_platter_t *)rm_platter_va;
 	extern int	cpr_suspend_succeeded;
 	extern void	kernel_wc_code();
@@ -526,11 +520,11 @@ i_cpr_power_down(int sleeptype)
 	ASSERT(CPU->cpu_id == 0);
 
 	if ((ppm = PPM(ddi_root_node())) == NULL) {
-		PMD(PMD_SX, ("%s: root node not claimed\n", str))
+		PMD(PMD_SX, ("%s: root node not claimed\n", __func__))
 		return (ENOTTY);
 	}
 
-	PMD(PMD_SX, ("Entering %s()\n", str))
+	PMD(PMD_SX, ("Entering %s()\n", __func__))
 
 	PT(PT_IC);
 	saved_intr = intr_clear();
@@ -595,7 +589,8 @@ i_cpr_power_down(int sleeptype)
 			return (ret);
 
 		ret = i_cpr_save_apic(&(wc_other_cpus->wc_apic_state));
-		PMD(PMD_SX, ("%s: i_cpr_save_apic() returned %d\n", str, ret))
+		PMD(PMD_SX, ("%s: i_cpr_save_apic() returned %d\n",
+		    __func__, ret))
 		if (ret != 0)
 			return (ret);
 
@@ -653,11 +648,11 @@ i_cpr_power_down(int sleeptype)
 		    cpr_test_point;
 		power_req.req.ppm_power_enter_sx_req.wakephys = wakephys;
 
-		PMD(PMD_SX, ("%s: pm_ctlops PMR_PPM_ENTER_SX\n", str))
+		PMD(PMD_SX, ("%s: pm_ctlops PMR_PPM_ENTER_SX\n", __func__))
 		PT(PT_PPMCTLOP);
 		(void) pm_ctlops(ppm, ddi_root_node(), DDI_CTLOPS_POWER,
 		    &power_req, &ret);
-		PMD(PMD_SX, ("%s: returns %d\n", str, ret))
+		PMD(PMD_SX, ("%s: returns %d\n", __func__, ret))
 
 		/*
 		 * If it works, we get control back to the else branch below
@@ -675,11 +670,11 @@ i_cpr_power_down(int sleeptype)
 		power_req.request_type = PMR_PPM_EXIT_SX;
 		power_req.req.ppm_power_enter_sx_req.sx_state = S3;
 
-		PMD(PMD_SX, ("%s: pm_ctlops PMR_PPM_EXIT_SX\n", str))
+		PMD(PMD_SX, ("%s: pm_ctlops PMR_PPM_EXIT_SX\n", __func__))
 		PT(PT_PPMCTLOP);
 		(void) pm_ctlops(ppm, ddi_root_node(), DDI_CTLOPS_POWER,
 		    &power_req, &ret);
-		PMD(PMD_SX, ("%s: returns %d\n", str, ret))
+		PMD(PMD_SX, ("%s: returns %d\n", __func__, ret))
 
 		ret = i_cpr_restore_apic(&(wc_other_cpus->wc_apic_state));
 		/*
@@ -897,22 +892,20 @@ init_real_mode_platter(int cpun, uint32_t offset, uint_t cr4, wc_desctbr_t gdt)
 void
 i_cpr_start_cpu(void)
 {
-
 	struct cpu *cp = CPU;
 
-	char *str = "i_cpr_start_cpu";
 	extern void init_cpu_syscall(struct cpu *cp);
 
-	PMD(PMD_SX, ("%s() called\n", str))
+	PMD(PMD_SX, ("%s() called\n", __func__))
 
-	PMD(PMD_SX, ("%s() #0 cp->cpu_base_spl %d\n", str,
+	PMD(PMD_SX, ("%s() #0 cp->cpu_base_spl %d\n", __func__,
 	    cp->cpu_base_spl))
 
 	mutex_enter(&cpu_lock);
 	if (cp == i_cpr_bootcpu()) {
 		mutex_exit(&cpu_lock);
 		PMD(PMD_SX,
-		    ("%s() called on bootcpu nothing to do!\n", str))
+		    ("%s() called on bootcpu nothing to do!\n", __func__))
 		return;
 	}
 	mutex_exit(&cpu_lock);
@@ -935,7 +928,8 @@ i_cpr_start_cpu(void)
 	 */
 	init_cpu_syscall(cp);
 
-	PMD(PMD_SX, ("%s() #1 cp->cpu_base_spl %d\n", str, cp->cpu_base_spl))
+	PMD(PMD_SX, ("%s() #1 cp->cpu_base_spl %d\n", __func__,
+	    cp->cpu_base_spl))
 
 	/*
 	 * Do not need to call cpuid_pass2(), cpuid_pass3(), cpuid_pass4() or
@@ -948,22 +942,22 @@ i_cpr_start_cpu(void)
 	CPUSET_ADD(procset, cp->cpu_id);
 	mutex_exit(&cpu_lock);
 
-	PMD(PMD_SX, ("%s() #2 cp->cpu_base_spl %d\n", str,
+	PMD(PMD_SX, ("%s() #2 cp->cpu_base_spl %d\n", __func__,
 	    cp->cpu_base_spl))
 
 	if (tsc_gethrtime_enable) {
-		PMD(PMD_SX, ("%s() calling tsc_sync_slave\n", str))
+		PMD(PMD_SX, ("%s() calling tsc_sync_slave\n", __func__))
 		tsc_sync_slave();
 	}
 
-	PMD(PMD_SX, ("%s() cp->cpu_id %d, cp->cpu_intr_actv %d\n", str,
+	PMD(PMD_SX, ("%s() cp->cpu_id %d, cp->cpu_intr_actv %d\n", __func__,
 	    cp->cpu_id, cp->cpu_intr_actv))
-	PMD(PMD_SX, ("%s() #3 cp->cpu_base_spl %d\n", str,
+	PMD(PMD_SX, ("%s() #3 cp->cpu_base_spl %d\n", __func__,
 	    cp->cpu_base_spl))
 
 	(void) spl0();		/* enable interrupts */
 
-	PMD(PMD_SX, ("%s() #4 cp->cpu_base_spl %d\n", str,
+	PMD(PMD_SX, ("%s() #4 cp->cpu_base_spl %d\n", __func__,
 	    cp->cpu_base_spl))
 
 	/*
@@ -982,7 +976,7 @@ i_cpr_start_cpu(void)
 		cmi_mca_init();
 #endif
 
-	PMD(PMD_SX, ("%s() returning\n", str))
+	PMD(PMD_SX, ("%s() returning\n", __func__))
 
 	/* return; */
 }
@@ -990,9 +984,7 @@ i_cpr_start_cpu(void)
 void
 i_cpr_alloc_cpus(void)
 {
-	char *str = "i_cpr_alloc_cpus";
-
-	PMD(PMD_SX, ("%s() CPU->cpu_id %d\n", str, CPU->cpu_id))
+	PMD(PMD_SX, ("%s() CPU->cpu_id %d\n", __func__, CPU->cpu_id))
 	/*
 	 * we allocate this only when we actually need it to save on
 	 * kernel memory
@@ -1048,7 +1040,6 @@ static int
 wait_for_set(cpuset_t *set, int who)
 {
 	int delays;
-	char *str = "wait_for_set";
 
 	for (delays = 0; !CPU_IN_SET(*set, who); delays++) {
 		if (delays == 500) {
@@ -1060,14 +1051,14 @@ wait_for_set(cpuset_t *set, int who)
 			    "but not running in the kernel yet", who);
 			PMD(PMD_SX, ("%s() %d cpu started "
 			    "but not running in the kernel yet\n",
-			    str, who))
+			    __func__, who))
 		} else if (delays > 2000) {
 			/*
 			 * We waited at least 20 seconds, bail ..
 			 */
 			cmn_err(CE_WARN, "cpu%d: timed out", who);
 			PMD(PMD_SX, ("%s() %d cpu timed out\n",
-			    str, who))
+			    __func__, who))
 			return (0);
 		}
 

@@ -1986,7 +1986,7 @@ set_prop_cleanup:
 static void
 pciehpc_issue_hpc_command(pcie_hp_ctrl_t *ctrl_p, uint16_t control)
 {
-	pcie_hp_slot_t	*slot_p = ctrl_p->hc_slots[0];
+	pcie_hp_slot_t	*slot_p __unused = ctrl_p->hc_slots[0];
 	pcie_bus_t	*bus_p = PCIE_DIP2BUS(ctrl_p->hc_dip);
 	uint16_t	status;
 	uint32_t	slot_cap;

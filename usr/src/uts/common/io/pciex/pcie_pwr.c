@@ -108,8 +108,8 @@ int
 pcie_power(dev_info_t *dip, int component, int level)
 {
 	pcie_pwr_t *pwr_p = PCIE_NEXUS_PMINFO(dip);
-	int *counters = pwr_p->pwr_counters;
-	int pmcaps = pwr_p->pwr_pmcaps;
+	int *counters __unused = pwr_p->pwr_counters;
+	int pmcaps __unused = pwr_p->pwr_pmcaps;
 	int ret = DDI_FAILURE;
 
 #if defined(__x86)

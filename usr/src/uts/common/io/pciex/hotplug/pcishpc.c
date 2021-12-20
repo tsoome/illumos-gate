@@ -95,8 +95,6 @@ static int	pcishpc_led_shpc_to_hpc(int state);
 static int	pcishpc_led_hpc_to_shpc(int state);
 static int	pcishpc_slot_shpc_to_hpc(int shpc_state);
 static int	pcishpc_slot_hpc_to_shpc(int state);
-static char	*pcishpc_slot_textslotstate(ddi_hp_cn_state_t state);
-static char	*pcishpc_slot_textledstate(pcie_hp_led_state_t state);
 
 static uint32_t	pcishpc_read_reg(pcie_hp_ctrl_t *ctrl_p, int reg);
 static void	pcishpc_write_reg(pcie_hp_ctrl_t *ctrl_p, int reg,
@@ -116,6 +114,8 @@ static int	pcishpc_slot_poweroff(pcie_hp_slot_t *slot_p,
 static int	pcishpc_slot_probe(pcie_hp_slot_t *slot_p);
 static int	pcishpc_slot_unprobe(pcie_hp_slot_t *slot_p);
 #ifdef	DEBUG
+static char	*pcishpc_slot_textslotstate(ddi_hp_cn_state_t state);
+static char	*pcishpc_slot_textledstate(pcie_hp_led_state_t state);
 static void	pcishpc_dump_regs(pcie_hp_ctrl_t *ctrl_p);
 #endif	/* DEBUG */
 
@@ -134,7 +134,7 @@ static void	pcishpc_dump_regs(pcie_hp_ctrl_t *ctrl_p);
 int
 pcishpc_init(dev_info_t *dip)
 {
-	pcie_bus_t	*bus_p = PCIE_DIP2BUS(dip);
+	pcie_bus_t	*bus_p __unused = PCIE_DIP2BUS(dip);
 	pcie_hp_ctrl_t	*ctrl_p;
 	int		i;
 
@@ -2309,6 +2309,7 @@ pcishpc_slot_hpc_to_shpc(int state)
 	}
 }
 
+#ifdef DEBUG
 /*
  * pcishpc_slot_textslotstate()
  *
@@ -2350,7 +2351,7 @@ pcishpc_slot_textledstate(pcie_hp_led_state_t state)
 	}
 	return ("unknown");
 }
-
+#endif
 
 /*
  * pcishpc_read_reg()

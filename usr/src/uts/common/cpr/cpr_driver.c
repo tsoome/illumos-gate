@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * CPR driver support routines
  */
@@ -239,7 +237,7 @@ devi_string(dev_info_t *devi, char *buf)
 {
 	char *name;
 	char *address;
-	int size;
+	int size __unused;
 
 	name = ddi_node_name(devi);
 	address = ddi_get_name_addr(devi);

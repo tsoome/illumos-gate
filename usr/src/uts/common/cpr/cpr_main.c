@@ -946,17 +946,17 @@ cpr_resume(int sleeptype)
 		goto rb_others;
 	}
 
-rb_all:
+#if defined(__sparc)
 	/*
 	 * perform platform-dependent initialization
 	 */
 	if (cpr_suspend_succeeded)
 		i_cpr_machdep_setup();
+#endif
 
 	/*
 	 * system did not really go down if we jump here
 	 */
-rb_dump:
 	/*
 	 * IMPORTANT:  SENSITIVE RESUME SEQUENCE
 	 *
@@ -1352,15 +1352,13 @@ cpr_all_online(void)
 static void
 cpr_restore_offline(void)
 {
-
 #ifdef	__sparc
 	/*
 	 * do nothing
 	 */
 #else
-
 	cpu_t	*cp;
-	int	rc = 0;
+	int	rc __unused;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
 
@@ -1379,5 +1377,4 @@ cpr_restore_offline(void)
 	} while ((cp = cp->cpu_next) != cpu_list);
 
 #endif
-
 }

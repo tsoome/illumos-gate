@@ -434,7 +434,7 @@ cleanup:
 static ACPI_STATUS
 pciehpc_acpi_install_event_handler(pcie_hp_ctrl_t *ctrl_p)
 {
-	pcie_hp_slot_t *slot_p = ctrl_p->hc_slots[0];
+	pcie_hp_slot_t *slot_p __unused = ctrl_p->hc_slots[0];
 	int status = AE_OK;
 	pciehpc_acpi_t *acpi_p;
 
@@ -558,7 +558,7 @@ static void
 pciehpc_acpi_uninstall_event_handler(pcie_hp_ctrl_t *ctrl_p)
 {
 	pciehpc_acpi_t *acpi_p = ctrl_p->hc_misc_data;
-	pcie_hp_slot_t *slot_p = ctrl_p->hc_slots[0];
+	pcie_hp_slot_t *slot_p __unused = ctrl_p->hc_slots[0];
 
 	PCIE_DBG("Uninstall event handler for slot #%d\n",
 	    slot_p->hs_phy_slot_num);

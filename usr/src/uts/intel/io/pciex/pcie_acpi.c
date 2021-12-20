@@ -142,7 +142,7 @@ pcie_acpi_eval_osc(dev_info_t *dip, ACPI_HANDLE osc_hdl, uint32_t *osc_flags)
 	UINT32			caps_buffer[3];
 	ACPI_BUFFER		rb;
 	UINT32			*rbuf;
-	UINT32			tmp_ctrl;
+	UINT32			tmp_ctrl __unused;
 
 	/* construct argument list */
 	arglist.Count = 4;
