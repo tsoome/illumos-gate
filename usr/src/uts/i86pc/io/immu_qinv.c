@@ -167,10 +167,6 @@ static void qinv_iec_common(immu_t *immu, uint_t iidx,
     uint_t im, uint_t g);
 static void immu_qinv_inv_wait(immu_inv_wait_t *iwp);
 static void qinv_wait_sync(immu_t *immu, immu_inv_wait_t *iwp);
-/*LINTED*/
-static void qinv_dev_iotlb_common(immu_t *immu, uint16_t sid,
-    uint64_t addr, uint_t size, uint_t max_invs_pd);
-
 
 /* submit invalidation request descriptor to invalidation queue */
 static void
@@ -270,19 +266,6 @@ qinv_iotlb_common(immu_t *immu, uint_t domain_id,
 		ddi_err(DER_WARN, NULL, "incorrect iotlb flush type");
 		return;
 	}
-
-	qinv_submit_inv_dsc(immu, &dsc);
-}
-
-/* queued invalidation interface -- invalidate dev_iotlb */
-static void
-qinv_dev_iotlb_common(immu_t *immu, uint16_t sid,
-    uint64_t addr, uint_t size, uint_t max_invs_pd)
-{
-	qinv_dsc_t dsc;
-
-	dsc.lo = DEV_IOTLB_INV_DSC_LOW(sid, max_invs_pd);
-	dsc.hi = DEV_IOTLB_INV_DSC_HIGH(addr, size);
 
 	qinv_submit_inv_dsc(immu, &dsc);
 }
