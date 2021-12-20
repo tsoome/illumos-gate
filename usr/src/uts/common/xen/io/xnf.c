@@ -1301,7 +1301,7 @@ xnf_set_multicast(void *arg, boolean_t add, const uint8_t *mca)
 {
 	xnf_t *xnfp = arg;
 	xnf_txbuf_t *txp;
-	int n_slots;
+	int n_slots __unused;
 	RING_IDX slot;
 	xnf_txid_t *tidp;
 	netif_tx_request_t *txrp;
@@ -1558,9 +1558,9 @@ int
 xnf_pseudo_cksum(mblk_t *mp)
 {
 	struct ether_header *ehp;
-	uint16_t sap, iplen, *stuff;
+	uint16_t sap __unused, iplen, *stuff;
 	uint32_t cksum;
-	size_t len;
+	size_t len __unused;
 	ipha_t *ipha;
 	ipaddr_t src, dst;
 	uchar_t *ptr;
