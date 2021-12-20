@@ -117,13 +117,10 @@ ppm_manage_early_cpus(dev_info_t *dip, int new, int *result)
 int
 ppm_change_cpu_power(ppm_dev_t *ppmd, int newlevel)
 {
-#ifdef DEBUG
-	char *str = "ppm_change_cpu_power";
-#endif
-	ppm_unit_t *unitp;
+	ppm_unit_t *unitp __unused;
 	ppm_domain_t *domp;
 	ppm_dev_t *cpup;
-	dev_info_t *dip;
+	dev_info_t *dip __unused;
 	int oldlevel;
 	int ret;
 
@@ -137,7 +134,7 @@ ppm_change_cpu_power(ppm_dev_t *ppmd, int newlevel)
 
 	oldlevel = cpup->level;
 
-	PPMD(D_CPU, ("%s: old %d, new %d\n", str, oldlevel, newlevel))
+	PPMD(D_CPU, ("%s: old %d, new %d\n", __func__, oldlevel, newlevel))
 
 	if (newlevel == oldlevel)
 		return (DDI_SUCCESS);
@@ -146,7 +143,7 @@ ppm_change_cpu_power(ppm_dev_t *ppmd, int newlevel)
 	for (; cpup; cpup = cpup->next) {
 		ret = pm_power(cpup->dip, 0, newlevel);
 		PPMD(D_CPU, ("%s: \"%s\", changed to level %d, ret %d\n",
-		    str, cpup->path, newlevel, ret))
+		    __func__, cpup->path, newlevel, ret))
 		if (ret == DDI_SUCCESS) {
 			cpup->level = newlevel;
 			cpup->rplvl = PM_LEVEL_UNKNOWN;

@@ -1674,7 +1674,6 @@ ppm_manage_fet(dev_info_t *dip, power_req_t *reqp, int *result)
 static int
 ppm_fetset(ppm_domain_t *domp, uint8_t value)
 {
-	char	*str = "ppm_fetset";
 	int	key;
 	ppm_dc_t *dc;
 	int	ret;
@@ -1687,7 +1686,7 @@ ppm_fetset(ppm_domain_t *domp, uint8_t value)
 			break;
 	if (!dc || !dc->lh) {
 		PPMD(D_FET, ("%s: %s domain: NULL ppm_dc handle\n",
-		    str, domp->name))
+		    __func__, domp->name))
 		return (DDI_FAILURE);
 	}
 
@@ -1738,11 +1737,11 @@ ppm_fetset(ppm_domain_t *domp, uint8_t value)
 
 	default:
 		PPMD(D_FET, ("\t%s: unsupported domain control method %d\n",
-		    str, domp->dc->method))
+		    __func__, domp->dc->method))
 		return (DDI_FAILURE);
 	}
 
-	PPMD(D_FET, ("%s: %s domain(%s) FET from %s to %s\n", str,
+	PPMD(D_FET, ("%s: %s domain(%s) FET from %s to %s\n", __func__,
 	    (ret == 0) ? "turned" : "failed to turn",
 	    domp->name,
 	    (domp->status == PPMD_ON) ? "ON" : "OFF",
@@ -2592,7 +2591,6 @@ ppm_power_up_domain(dev_info_t *dip)
 {
 	int		ret = DDI_SUCCESS;
 	ppm_domain_t	*domp;
-	char		*str = "ppm_power_up_domain";
 
 	domp = ppm_lookup_dev(dip);
 	ASSERT(domp);
@@ -2603,10 +2601,10 @@ ppm_power_up_domain(dev_info_t *dip)
 			if ((ret = ppm_fetset(domp,  PPMD_ON)) ==
 			    DDI_SUCCESS) {
 				PPMD(D_FET, ("%s: turned on fet for %s@%s\n",
-				    str, PM_NAME(dip), PM_ADDR(dip)))
+				    __func__, PM_NAME(dip), PM_ADDR(dip)))
 			} else {
 				PPMD(D_FET, ("%s: couldn't turn on fet "
-				    "for %s@%s\n", str, PM_NAME(dip),
+				    "for %s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			}
 		}
@@ -2618,11 +2616,11 @@ ppm_power_up_domain(dev_info_t *dip)
 			if ((ret = ppm_switch_clock(domp, PPMD_ON)) ==
 			    DDI_SUCCESS) {
 				PPMD(D_PCI, ("%s: turned on clock for "
-				    "%s@%s\n", str, PM_NAME(dip),
+				    "%s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			} else {
 				PPMD(D_PCI, ("%s: couldn't turn on clock "
-				    "for %s@%s\n", str, PM_NAME(dip),
+				    "for %s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			}
 		}
@@ -2633,11 +2631,11 @@ ppm_power_up_domain(dev_info_t *dip)
 			if ((ret = ppm_pcie_pwr(domp, PPMD_ON)) ==
 			    DDI_SUCCESS) {
 				PPMD(D_PCI, ("%s: turned on link for "
-				    "%s@%s\n", str, PM_NAME(dip),
+				    "%s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			} else {
 				PPMD(D_PCI, ("%s: couldn't turn on link "
-				    "for %s@%s\n", str, PM_NAME(dip),
+				    "for %s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			}
 		}
@@ -2660,7 +2658,6 @@ static int
 ppm_power_down_domain(dev_info_t *dip)
 {
 	int		ret = DDI_SUCCESS;
-	char		*str = "ppm_power_down_domain";
 	ppm_domain_t	*domp;
 
 	domp = ppm_lookup_dev(dip);
@@ -2676,10 +2673,10 @@ ppm_power_down_domain(dev_info_t *dip)
 			if ((ret = ppm_fetset(domp, PPMD_OFF)) ==
 			    DDI_SUCCESS) {
 				PPMD(D_FET, ("%s: turned off FET for %s@%s \n",
-				    str, PM_NAME(dip), PM_ADDR(dip)))
+				    __func__, PM_NAME(dip), PM_ADDR(dip)))
 			} else {
 				PPMD(D_FET, ("%s: couldn't turn off FET for "
-				    " %s@%s\n", str, PM_NAME(dip),
+				    " %s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			}
 		}
@@ -2693,10 +2690,10 @@ ppm_power_down_domain(dev_info_t *dip)
 			if ((ret = ppm_switch_clock(domp, PPMD_OFF)) ==
 			    DDI_SUCCESS) {
 				PPMD(D_PCI, ("%s: turned off clock for %s@%s\n",
-				    str, PM_NAME(dip), PM_ADDR(dip)))
+				    __func__, PM_NAME(dip), PM_ADDR(dip)))
 			} else {
 				PPMD(D_PCI, ("%s: couldn't turn off clock "
-				    "for %s@%s\n", str, PM_NAME(dip),
+				    "for %s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			}
 		}
@@ -2709,10 +2706,10 @@ ppm_power_down_domain(dev_info_t *dip)
 			if ((ret = ppm_pcie_pwr(domp, PPMD_OFF)) ==
 			    DDI_SUCCESS) {
 				PPMD(D_PCI, ("%s: turned off link for %s@%s\n",
-				    str, PM_NAME(dip), PM_ADDR(dip)))
+				    __func__, PM_NAME(dip), PM_ADDR(dip)))
 			} else {
 				PPMD(D_PCI, ("%s: couldn't turn off link "
-				    "for %s@%s\n", str, PM_NAME(dip),
+				    "for %s@%s\n", __func__, PM_NAME(dip),
 				    PM_ADDR(dip)))
 			}
 		}
