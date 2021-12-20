@@ -1246,7 +1246,7 @@ amd_iommu_setup(dev_info_t *dip, amd_iommu_state_t *statep)
 	uint16_t cap_base;
 	uint32_t caphdr;
 	uint8_t cap_type;
-	uint8_t cap_id;
+	uint8_t cap_id __unused;
 	amd_iommu_t *iommu;
 	const char *f = "amd_iommu_setup";
 

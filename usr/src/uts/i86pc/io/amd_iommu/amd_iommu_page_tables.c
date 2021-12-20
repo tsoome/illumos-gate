@@ -1162,7 +1162,7 @@ static pdte_tear_t
 amd_iommu_teardown_pdte(amd_iommu_t *iommu,
     amd_iommu_page_table_t *pt, int index)
 {
-	uint8_t next_level;
+	uint8_t next_level __unused;
 	pdte_tear_t retval;
 	uint64_t *ptdep = &(pt->pt_pgtblva[index]);
 
@@ -1334,7 +1334,7 @@ amd_iommu_destroy_pgtables(amd_iommu_t *iommu, dev_info_t *rdip,
 
 	if (level == 0) {
 		uint64_t *ptep;
-		uint64_t pa_4K;
+		uint64_t pa_4K __unused;
 
 		ASSERT(pt);
 		ASSERT(pt == ppt);
@@ -1446,7 +1446,7 @@ amd_iommu_map_pa2va(amd_iommu_t *iommu, dev_info_t *rdip, ddi_dma_attr_t *attrp,
 	uint64_t start_va;
 	uint64_t end_va;
 	uint64_t pg_start;
-	uint64_t pg_end;
+	uint64_t pg_end __unused;
 	uint64_t pg;
 	uint64_t va_sz;
 	char *path;
