@@ -394,7 +394,6 @@ tzmon_discard_buffers(thermal_zone_t *tzp)
 static void
 tzmon_enumerate_zone(ACPI_HANDLE obj, thermal_zone_t *tzp, int enum_flag)
 {
-	ACPI_STATUS status;
 	ACPI_BUFFER zone_name;
 	int	level;
 	int	instance = 0;
@@ -405,6 +404,8 @@ tzmon_enumerate_zone(ACPI_HANDLE obj, thermal_zone_t *tzp, int enum_flag)
 	 * some individual attention.
 	 */
 	if (tzp == NULL) {
+		ACPI_STATUS status __unused;
+
 		/* New zone required */
 		tzp = tzmon_alloc_zone();
 		mutex_enter(&zone_list_lock);
@@ -560,7 +561,7 @@ tzmon_zone_callback(ACPI_HANDLE obj, UINT32 nest, void *ctx, void **rv)
 static void
 tzmon_find_zones()
 {
-	ACPI_STATUS status;
+	ACPI_STATUS status __unused;
 	int retval;
 
 	status = AcpiWalkNamespace(ACPI_TYPE_THERMAL, ACPI_ROOT_OBJECT,
