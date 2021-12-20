@@ -968,7 +968,7 @@ cpudrv_monitor(void *arg)
 	cpudrv_pm_t		*cpupm;
 	cpudrv_pm_spd_t		*cur_spd, *new_spd;
 	dev_info_t		*dip;
-	uint_t			idle_cnt, user_cnt, system_cnt;
+	uint_t			idle_cnt, user_cnt, system_cnt __unused;
 	clock_t			ticks;
 	uint_t			tick_cnt;
 	hrtime_t		msnsecs[NCMSTATES];
