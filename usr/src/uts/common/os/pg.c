@@ -461,7 +461,7 @@ pg_destroy(pg_t *pg)
 void
 pg_cpu_add(pg_t *pg, cpu_t *cp, cpu_pg_t *cpu_pg)
 {
-	int	err;
+	int	err __unused;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
 
@@ -488,7 +488,7 @@ pg_cpu_add(pg_t *pg, cpu_t *cp, cpu_pg_t *cpu_pg)
 void
 pg_cpu_delete(pg_t *pg, cpu_t *cp, cpu_pg_t *cpu_pg)
 {
-	int	err;
+	int	err __unused;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
 

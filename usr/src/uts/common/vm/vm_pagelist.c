@@ -72,11 +72,10 @@ extern uint_t	vac_colors;
 /* vm_cpu_data0 for the boot cpu before kmem is initialized */
 
 #if L2CACHE_ALIGN_MAX <= MAX_PRAGMA_ALIGN
-#pragma align	L2CACHE_ALIGN_MAX(vm_cpu_data0)
+char	vm_cpu_data0[VM_CPU_DATA_PADSIZE] __aligned(L2CACHE_ALIGN_MAX);
 #else
-#pragma align	MAX_PRAGMA_ALIGN(vm_cpu_data0)
+char	vm_cpu_data0[VM_CPU_DATA_PADSIZE] __aligned(MAX_PRAGMA_ALIGN);
 #endif
-char		vm_cpu_data0[VM_CPU_DATA_PADSIZE];
 
 /*
  * number of page colors equivalent to reqested color in page_get routines.
@@ -3311,7 +3310,7 @@ int
 trimkcage(struct memseg *mseg, pfn_t *lo, pfn_t *hi, pfn_t pfnlo, pfn_t pfnhi)
 {
 	pfn_t	kcagepfn;
-	int	decr;
+	int	decr __unused;
 	int	rc = 0;
 
 	if (PP_ISNORELOC(mseg->pages)) {
@@ -3376,7 +3375,7 @@ page_geti_contig_pages(int mnode, uint_t bin, uchar_t szc, int flags,
 {
 	struct memseg *mseg;
 	pgcnt_t	szcpgcnt = page_get_pagecnt(szc);
-	pgcnt_t szcpgmask = szcpgcnt - 1;
+	pgcnt_t szcpgmask __unused = szcpgcnt - 1;
 	pfn_t	randpfn;
 	page_t *pp, *randpp, *endpp;
 	uint_t colors, ceq_mask;

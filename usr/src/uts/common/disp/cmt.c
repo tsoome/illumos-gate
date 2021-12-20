@@ -147,7 +147,6 @@ static char		*pg_cmt_policy_name(pg_t *);
 static void		pg_cmt_hier_sort(pg_cmt_t **, int);
 static pg_cmt_t		*pg_cmt_hier_rank(pg_cmt_t *, pg_cmt_t *);
 static int		pg_cmt_cpu_belongs(pg_t *, cpu_t *);
-static int		pg_cmt_hw(pghw_type_t);
 static cmt_lgrp_t	*pg_cmt_find_lgrp(lgrp_handle_t);
 static cmt_lgrp_t	*pg_cmt_lgrp_create(lgrp_handle_t);
 static void		cmt_ev_thread_swtch(pg_t *, cpu_t *, hrtime_t,
@@ -335,8 +334,8 @@ cmt_hier_promote(pg_cmt_t *pg, cpu_pg_t *pgdata)
 	cpu_t		*cpu;
 	group_iter_t	iter;
 	pg_cpu_itr_t	cpu_iter;
-	int		r;
-	int		err;
+	int		r __unused;
+	int		err __unused;
 	int		nchildren;
 
 	ASSERT(MUTEX_HELD(&cpu_lock));
@@ -683,7 +682,7 @@ pg_cmt_cpu_init(cpu_t *cp, cpu_pg_t *pgdata)
 	 */
 	for (level = 0; level < levels; level++) {
 		uint_t		children;
-		int		err;
+		int		err __unused;
 
 		pg = cpu_cmt_hier[level];
 		err = group_add_at(cmt_pgs, pg, levels - level - 1);
@@ -971,7 +970,7 @@ pg_cmt_cpupart_move(cpu_t *cp, cpupart_t *oldpp, cpupart_t *newpp)
 static void
 pg_cmt_cpu_active(cpu_t *cp)
 {
-	int		err;
+	int		err __unused;
 	group_iter_t	i;
 	pg_cmt_t	*pg;
 	group_t		*pgs;
@@ -1041,7 +1040,7 @@ pg_cmt_cpu_active(cpu_t *cp)
 static void
 pg_cmt_cpu_inactive(cpu_t *cp)
 {
-	int		err;
+	int		err __unused;
 	group_t		*pgs;
 	pg_cmt_t	*pg;
 	cpu_t		*cpp;
@@ -1465,7 +1464,7 @@ static int
 pg_cmt_prune(pg_cmt_t *pg_bad, pg_cmt_t **lineage, int *sz, cpu_pg_t *pgdata)
 {
 	group_t		*hwset, *children;
-	int		i, j, r, size = *sz;
+	int		i, j, r __unused, size = *sz;
 	group_iter_t	hw_iter, child_iter;
 	pg_cpu_itr_t	cpu_iter;
 	pg_cmt_t	*pg, *child;

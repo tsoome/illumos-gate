@@ -246,6 +246,7 @@ rw_destroy(krwlock_t *rwlp)
 	lp->rw_wwwh = RW_DOUBLE_LOCK;
 }
 
+#ifdef DEBUG
 /*
  * Verify that an rwlock is held correctly.
  */
@@ -262,6 +263,7 @@ rw_locked(rwlock_impl_t *lp, krw_t rw)
 
 	return (0);
 }
+#endif
 
 uint_t (*rw_lock_backoff)(uint_t) = NULL;
 void (*rw_lock_delay)(uint_t) = NULL;

@@ -931,19 +931,6 @@ page_retire_init(void)
 }
 
 /*
- * page_retire_hunt() callback for the retire thread.
- */
-static void
-page_retire_thread_cb(page_t *pp)
-{
-	PR_DEBUG(prd_tctop);
-	if (!PP_ISKAS(pp) && page_trylock(pp, SE_EXCL)) {
-		PR_DEBUG(prd_tclocked);
-		page_unlock(pp);
-	}
-}
-
-/*
  * Callback used by page_trycapture() to finish off retiring a page.
  * The page has already been cleaned and we've been given sole access to
  * it.

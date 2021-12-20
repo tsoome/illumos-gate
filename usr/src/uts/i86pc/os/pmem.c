@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * PMEM - Direct mapping physical memory pages to userland process
  *
@@ -420,7 +418,6 @@ devmap_pmem_free(devmap_pmem_cookie_t cookie)
 {
 	struct	devmap_pmem_cookie *pcp = (struct devmap_pmem_cookie *)cookie;
 	pgcnt_t		i;
-	pgcnt_t		tpages = 0;
 	page_t		*pp;
 	pmem_lpg_t 	*pl1, *plp;
 	pmem_lpg_t	*pf_lpgs = NULL;
@@ -484,7 +481,6 @@ devmap_pmem_free(devmap_pmem_cookie_t cookie)
 			/* Remove associated allocation records. */
 			pmem_lpg_sub(&pf_lpgs, pl1);
 			pmem_lpg_free(&pf_lpgs, pl1);
-			tpages -= pmem_pgcnt;
 		} else
 			pl1->pl_pfree = 0;
 	}

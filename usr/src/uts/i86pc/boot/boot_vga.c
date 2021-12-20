@@ -64,20 +64,22 @@ extern unsigned short *video_fb;
 
 static int cons_color = CONS_COLOR;
 
+#if defined(_BOOT)
 static void vga_init(void);
+static void vga_clear(int);
+static void vga_set_atr(int index, unsigned char val);
+static unsigned char vga_get_atr(int index);
+#endif
 static void vga_drawc(int);
 static void vga_setpos(int, int);
 static void vga_getpos(int *, int *);
 static void vga_scroll(int);
-static void vga_clear(int);
 static void vga_shiftline(int);
 static void vga_eraseline(void);
 static void vga_cursor_display(boolean_t);
 
 static void vga_set_crtc(int index, unsigned char val);
 static unsigned char vga_get_crtc(int index);
-static void vga_set_atr(int index, unsigned char val);
-static unsigned char vga_get_atr(int index);
 
 static int
 get_vga_color(void)
@@ -129,6 +131,7 @@ boot_vga_init(bcons_dev_t *bcons_dev)
 	bcons_dev->bd_shift = vga_shiftline;
 }
 
+#if defined(_BOOT)
 static void
 vga_init(void)
 {
@@ -140,6 +143,7 @@ vga_init(void)
 	val &= ~VGA_ATR_MODE_9WIDE;
 	vga_set_atr(VGA_ATR_MODE, val);
 }
+#endif
 
 static void
 vga_cursor_display(boolean_t visible)
@@ -231,6 +235,7 @@ vga_shiftline(int chars)
 	}
 }
 
+#if defined(_BOOT)
 static void
 vga_clear(int color)
 {
@@ -239,6 +244,7 @@ vga_clear(int color)
 	for (i = 0; i < VGA_TEXT_ROWS; i++)
 		vga_eraseline_impl(0, i, color);
 }
+#endif
 
 static void
 vga_drawc(int c)
@@ -315,6 +321,7 @@ vga_getpos(int *row, int *col)
 	*col = off % VGA_TEXT_COLS;
 }
 
+#if defined(_BOOT)
 static void
 vga_set_atr(int index, unsigned char val)
 {
@@ -340,6 +347,7 @@ vga_get_atr(int index)
 
 	return (val);
 }
+#endif
 
 static void
 vga_set_crtc(int index, unsigned char val)

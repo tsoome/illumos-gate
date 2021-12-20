@@ -513,7 +513,7 @@ static kphysm_setup_vector_t page_mem_config_vec = {
 static void
 page_init_mem_config(void)
 {
-	int ret;
+	int ret __unused;
 
 	ret = kphysm_setup_func_register(&page_mem_config_vec, (void *)NULL);
 	ASSERT(ret == 0);
@@ -2599,36 +2599,6 @@ fail:
 }
 
 /*
- * One or more constituent pages of this large page has been marked
- * toxic. Simply demote the large page to PAGESIZE pages and let
- * page_free() handle it. This routine should only be called by
- * large page free routines (page_free_pages() and page_destroy_pages().
- * All pages are locked SE_EXCL and have already been marked free.
- */
-static void
-page_free_toxic_pages(page_t *rootpp)
-{
-	page_t	*tpp;
-	pgcnt_t	i, pgcnt = page_get_pagecnt(rootpp->p_szc);
-	uint_t	szc = rootpp->p_szc;
-
-	for (i = 0, tpp = rootpp; i < pgcnt; i++, tpp = tpp->p_next) {
-		ASSERT(tpp->p_szc == szc);
-		ASSERT((PAGE_EXCL(tpp) &&
-		    !page_iolock_assert(tpp)) || panicstr);
-		tpp->p_szc = 0;
-	}
-
-	while (rootpp != NULL) {
-		tpp = rootpp;
-		page_sub(&rootpp, tpp);
-		ASSERT(PP_ISFREE(tpp));
-		PP_CLRFREE(tpp);
-		page_free(tpp, 1);
-	}
-}
-
-/*
  * Put page on the "free" list.
  * The free list is really two lists maintained by
  * the PSM of whatever machine we happen to be on.
@@ -2784,7 +2754,7 @@ page_free_pages(page_t *pp)
 	page_t	*tpp, *rootpp = NULL;
 	pgcnt_t	pgcnt = page_get_pagecnt(pp->p_szc);
 	pgcnt_t	i;
-	uint_t	szc = pp->p_szc;
+	uint_t	szc __unused = pp->p_szc;
 
 	VM_STAT_ADD(pagecnt.pc_free_pages);
 	TRACE_1(TR_FAC_VM, TR_PAGE_FREE_FREE,
@@ -3128,7 +3098,7 @@ page_destroy_pages(page_t *pp)
 	page_t	*tpp, *rootpp = NULL;
 	pgcnt_t	pgcnt = page_get_pagecnt(pp->p_szc);
 	pgcnt_t	i, pglcks = 0;
-	uint_t	szc = pp->p_szc;
+	uint_t	szc __unused = pp->p_szc;
 
 	ASSERT(pp->p_szc != 0 && pp->p_szc < page_num_pagesizes());
 
@@ -3255,7 +3225,8 @@ page_rename(page_t *opp, vnode_t *vp, u_offset_t off)
 	 * large pages left lying around.
 	 */
 	if (opp->p_szc != 0) {
-		vnode_t *ovp = opp->p_vnode;
+		vnode_t *ovp __unused = opp->p_vnode;
+
 		ASSERT(ovp != NULL);
 		ASSERT(!IS_SWAPFSVP(ovp));
 		ASSERT(!VN_ISKAS(ovp));
@@ -5222,7 +5193,7 @@ page_try_demote_pages(page_t *pp)
 	page_t *tpp, *rootpp = pp;
 	pfn_t	pfn = page_pptonum(pp);
 	spgcnt_t i, npgs;
-	uint_t	szc = pp->p_szc;
+	uint_t	szc __unused = pp->p_szc;
 	vnode_t *vp = pp->p_vnode;
 
 	ASSERT(PAGE_EXCL(pp));

@@ -2585,7 +2585,7 @@ impl_setup_ddi(void)
 #endif
 	dev_info_t *xdip, *isa_dip;
 	rd_existing_t rd_mem_prop;
-	int err;
+	int err __unused;
 
 	ndi_devi_alloc_sleep(ddi_root_node(), "ramdisk",
 	    (pnode_t)DEVI_SID_NODEID, &xdip);

@@ -580,7 +580,7 @@ mapalloc:
 static void
 kphysm_addmem_error_undospan(pfn_t pt_base, pgcnt_t tpgs)
 {
-	int mlret;
+	int mlret __unused;
 
 	/* Unreserve memory span. */
 	memlist_write_lock();
@@ -1725,7 +1725,7 @@ delete_memory_thread(caddr_t amhp)
 	int comp_code;
 	int ret;
 	int first_scan;
-	uint_t szc;
+	uint_t szc __unused;
 #ifdef MEM_DEL_STATS
 	uint64_t start_total, ntick_total;
 	uint64_t start_pgrp, ntick_pgrp;
@@ -2709,7 +2709,7 @@ kphysm_del_cleanup(struct mem_handle *mhp)
 		pfn_t mseg_start;
 		pfn_t mseg_base, mseg_end;
 		pgcnt_t mseg_npgs;
-		int mlret;
+		int mlret __unused;
 
 		seglist = seg->lnext;
 

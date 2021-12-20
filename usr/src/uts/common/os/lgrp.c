@@ -248,7 +248,6 @@ static int	lpl_rset_contains(lpl_t *, lpl_t *);
 static void	lpl_cpu_adjcnt(lpl_act_t, struct cpu *);
 static void	lpl_child_update(lpl_t *, struct cpupart *);
 static int	lpl_pick(lpl_t *, lpl_t *);
-static void	lpl_verify_wrapper(struct cpupart *);
 
 /*
  * defines for lpl topology verifier return codes
@@ -717,7 +716,6 @@ static void
 lgrp_cpu_init(struct cpu *cp)
 {
 	klgrpset_t	changed;
-	int		count;
 	lgrp_handle_t	hand;
 	int		first_cpu;
 	lgrp_t		*my_lgrp;
@@ -761,9 +759,8 @@ lgrp_cpu_init(struct cpu *cp)
 		klgrpset_add(my_lgrp->lgrp_leaves, lgrpid);
 		klgrpset_add(my_lgrp->lgrp_set[LGRP_RSRC_CPU], lgrpid);
 
-		count = 0;
 		klgrpset_clear(changed);
-		count += lgrp_leaf_add(my_lgrp, lgrp_table, lgrp_alloc_max + 1,
+		(void) lgrp_leaf_add(my_lgrp, lgrp_table, lgrp_alloc_max + 1,
 		    &changed);
 		/*
 		 * May have added new intermediate lgroups, so need to add
@@ -783,7 +780,7 @@ lgrp_cpu_init(struct cpu *cp)
 		if (!klgrpset_ismember(my_lgrp->lgrp_set[LGRP_RSRC_CPU],
 		    lgrpid))
 			klgrpset_add(my_lgrp->lgrp_set[LGRP_RSRC_CPU], lgrpid);
-		count = lgrp_leaf_add(my_lgrp, lgrp_table, lgrp_alloc_max + 1,
+		(void) lgrp_leaf_add(my_lgrp, lgrp_table, lgrp_alloc_max + 1,
 		    &changed);
 
 		/*
@@ -1058,7 +1055,6 @@ lgrp_cpu_fini(struct cpu *cp, lgrp_id_t lgrpid)
 	 */
 	if (my_lgrp->lgrp_cpucnt == 0) {
 		klgrpset_t	changed;
-		int		count;
 		int		i;
 
 		my_lgrp->lgrp_cpu = NULL;
@@ -1070,9 +1066,8 @@ lgrp_cpu_fini(struct cpu *cp, lgrp_id_t lgrpid)
 		 */
 		klgrpset_del(my_lgrp->lgrp_set[LGRP_RSRC_CPU], lgrpid);
 		if (lgrp_rsets_empty(my_lgrp->lgrp_set)) {
-			count = 0;
 			klgrpset_clear(changed);
-			count += lgrp_leaf_delete(my_lgrp, lgrp_table,
+			(void) lgrp_leaf_delete(my_lgrp, lgrp_table,
 			    lgrp_alloc_max + 1, &changed);
 			return;
 		}
@@ -1393,7 +1388,7 @@ void
 lgrp_mem_fini(int mnode, lgrp_handle_t hand, boolean_t is_copy_rename)
 {
 	klgrpset_t	changed;
-	int		count;
+	int		count __unused;
 	int		i;
 	lgrp_t		*my_lgrp;
 	lgrp_id_t	lgrpid;
@@ -2666,7 +2661,7 @@ lgrp_part_del_cpu(cpu_t *cp)
 {
 	lpl_t		*lpl;
 	lpl_t		*leaf_lpl;
-	lgrp_t		*lgrp_leaf;
+	lgrp_t		*lgrp_leaf __unused;
 
 	/* called sometimes w/ cpus paused - grab no locks */
 

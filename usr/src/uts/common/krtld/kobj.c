@@ -110,7 +110,6 @@ static char *basename(char *);
 static void attr_val(val_t *);
 static char *find_libmacro(char *);
 static char *expand_libmacro(char *, char *, char *);
-static int read_bootflags(void);
 static int kobj_comp_setup(struct _buf *, struct compinfo *);
 static int kobj_uncomp_blk(struct _buf *, caddr_t, uint_t);
 static int kobj_read_blks(struct _buf *, caddr_t, uint_t, uint_t);
@@ -317,14 +316,6 @@ get_weakish_int(int *ip)
 	if (standalone)
 		return (0);
 	return (ip == NULL ? 0 : *ip);
-}
-
-static void *
-get_weakish_pointer(void **ptrp)
-{
-	if (standalone)
-		return (0);
-	return (ptrp == NULL ? 0 : *ptrp);
 }
 
 /*

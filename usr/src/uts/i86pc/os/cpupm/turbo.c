@@ -47,7 +47,6 @@ typedef struct turbo_kstat_s {
 static int turbo_kstat_update(kstat_t *, int);
 static void get_turbo_info(cpupm_mach_turbo_info_t *);
 static void reset_turbo_info(void);
-static void record_turbo_info(cpupm_mach_turbo_info_t *, uint32_t, uint32_t);
 static void update_turbo_info(cpupm_mach_turbo_info_t *);
 
 static kmutex_t turbo_mutex;

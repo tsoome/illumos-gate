@@ -63,8 +63,6 @@ struct cpio_file {
 extern void *bkmem_alloc(size_t);
 extern void bkmem_free(void *, size_t);
 
-static void cpio_closeall(int flag);
-
 static bool mounted;
 static SLIST_HEAD(cpio_file_list, cpio_file)
     open_files = SLIST_HEAD_INITIALIZER(open_files);

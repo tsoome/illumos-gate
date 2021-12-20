@@ -154,8 +154,8 @@
  * debugging tools; the inconsistent use of 'panic' versus 'panic_' in
  * the variable naming is historical and allows legacy tools to work.
  */
-#pragma align STACK_ALIGN(panic_stack)
-char panic_stack[PANICSTKSIZE];		/* reserved stack for panic_thread */
+/* reserved stack for panic_thread */
+char panic_stack[PANICSTKSIZE] __aligned(STACK_ALIGN);
 kthread_t *panic_thread;		/* first thread to call panicsys() */
 cpu_t panic_cpu;			/* cpu from first call to panicsys() */
 label_t panic_regs;			/* setjmp label from panic_thread */

@@ -2702,7 +2702,7 @@ cpu_bind_thread(kthread_id_t tp, processorid_t bind, processorid_t *obind,
 			if (tp->t_state == TS_ONPROC) {
 				cpu_surrender(tp);
 			} else if (tp->t_state == TS_RUN) {
-				cpu_t *ocp = tp->t_cpu;
+				cpu_t *ocp __unused = tp->t_cpu;
 
 				(void) dispdeq(tp);
 				setbackdq(tp);

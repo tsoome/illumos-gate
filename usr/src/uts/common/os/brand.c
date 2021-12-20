@@ -333,8 +333,9 @@ brand_setbrand(proc_t *p)
 void
 brand_clearbrand(proc_t *p, boolean_t no_lwps)
 {
-	brand_t *bp = p->p_zone->zone_brand;
+	brand_t *bp __unused = p->p_zone->zone_brand;
 	klwp_t *lwp = NULL;
+
 	ASSERT(bp != NULL);
 	ASSERT(!no_lwps || (p->p_tlist == NULL));
 
@@ -1093,7 +1094,7 @@ brand_solaris_initlwp(klwp_t *l, struct brand *pbrand)
 void
 brand_solaris_lwpexit(klwp_t *l, struct brand *pbrand)
 {
-	proc_t  *p = l->lwp_procp;
+	proc_t  *p __unused = l->lwp_procp;
 
 	ASSERT(l->lwp_procp->p_brand == pbrand);
 	ASSERT(l->lwp_procp->p_brand_data != NULL);

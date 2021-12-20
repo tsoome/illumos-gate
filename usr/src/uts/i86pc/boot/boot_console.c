@@ -107,9 +107,9 @@ static int serial_getchar(void);
 static void serial_putchar(int);
 static void serial_adjust_prop(void);
 
+#if !defined(_BOOT)
 static void defcons_putchar(int);
 
-#if !defined(_BOOT)
 static boolean_t bootprop_set_tty_mode;
 #endif
 

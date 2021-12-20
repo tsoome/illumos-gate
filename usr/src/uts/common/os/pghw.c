@@ -397,7 +397,7 @@ static group_t	*
 pghw_set_create(pghw_type_t hw)
 {
 	group_t	*g;
-	int	ret;
+	int	ret __unused;
 
 	/*
 	 * Create the top level PG hw group if it doesn't already exist
@@ -453,7 +453,7 @@ pghw_set_add(group_t *hwset, pghw_t *pg)
 static void
 pghw_set_remove(group_t *hwset, pghw_t *pg)
 {
-	int result;
+	int result __unused;
 
 	result = group_remove(hwset, pg, GRP_RESIZE);
 	ASSERT(result == 0);

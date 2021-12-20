@@ -719,7 +719,7 @@ hment_steal(void)
 	page_t *last = last_page;
 	page_t *pp = last;
 	hment_t *hm = NULL;
-	hment_t *hm2;
+	hment_t *hm2 __unused;
 	htable_t *ht;
 	uint_t found_one = 0;
 

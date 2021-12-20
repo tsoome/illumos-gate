@@ -110,7 +110,7 @@ COPTFLAG_32		= $(COPTFLAG)
 COPTFLAG_64		= $(COPTFLAG64)
 COPTIMIZE		= $(COPTFLAG_$(CLASS))
 
-CFLAGS			= $(CFLAGS_XARCH)
+CFLAGS			= -U__EXTENSIONS__ -U_XOPEN_SOURCE $(CFLAGS_XARCH)
 CFLAGS			+= $(COPTIMIZE)
 CFLAGS			+= -D_ASM_INLINES
 CFLAGS			+= $(CCMODE)
@@ -126,6 +126,18 @@ ASFLAGS_XARCH		= $(ASFLAGS_XARCH_$(CLASS))
 ASFLAGS			+= $(ASFLAGS_XARCH)
 
 AS_INC_PATH		+= -I$(DSF_DIR)/$(OBJS_DIR)
+
+CERRWARN		+= -_clang=-Wno-unknown-pragmas
+CERRWARN		+= -_clang=-Wno-sign-compare
+CERRWARN		+= -_clang=-Wno-missing-braces
+CERRWARN		+= -_clang=-Wno-unused-parameter
+CERRWARN		+= -_clang=-Wno-missing-field-initializers
+CERRWARN		+= -_clang=-Wno-shift-op-parentheses
+CERRWARN		+= -_clang=-Wno-logical-op-parentheses
+CERRWARN		+= -_clang=-Wno-parentheses
+CERRWARN		+= -_clang=-Wno-char-subscripts
+CERRWARN		+= -_clang=-Wno-uninitialized
+CERRWARN		+= -_clang=-Wno-format-security
 
 #
 #	The following must be defined for all implementations:

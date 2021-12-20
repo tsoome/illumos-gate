@@ -2082,7 +2082,7 @@ hat_kmap_load(
  * entry are controlled under the same lock. It's derived from the
  * page_t being mapped.
  */
-static uint_t supported_memload_flags =
+static uint_t supported_memload_flags __unused =
 	HAT_LOAD | HAT_LOAD_LOCK | HAT_LOAD_ADV | HAT_LOAD_NOCONSIST |
 	HAT_LOAD_SHARE | HAT_NO_KALLOC | HAT_LOAD_REMAP | HAT_LOAD_TEXT;
 
@@ -4440,7 +4440,7 @@ hat_mempte_remap(
 	uint_t		attr,
 	uint_t		flags)
 {
-	uintptr_t	va = (uintptr_t)addr;
+	uintptr_t	va __unused = (uintptr_t)addr;
 	x86pte_t	pte;
 
 	/*
@@ -4537,9 +4537,9 @@ clear_boot_mappings(uintptr_t low, uintptr_t high)
 {
 	uintptr_t vaddr = low;
 	htable_t *ht = NULL;
-	level_t level;
+	level_t level __unused;
 	uint_t entry;
-	x86pte_t pte;
+	x86pte_t pte __unused;
 
 	/*
 	 * On 1st CPU we can unload the prom mappings, basically we blow away

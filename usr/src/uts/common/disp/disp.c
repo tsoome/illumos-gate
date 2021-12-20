@@ -2504,7 +2504,7 @@ disp_cpu_inactive(cpu_t *cp)
 	disp_t		*dp = cp->cpu_disp;
 	dispq_t		*dq;
 	pri_t		pri;
-	int		wasonq;
+	int		wasonq __unused;
 
 	disp_lock_enter(&dp->disp_lock);
 	while ((pri = dp->disp_max_unbound_pri) != -1) {
