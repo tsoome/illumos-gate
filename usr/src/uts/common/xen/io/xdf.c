@@ -959,7 +959,7 @@ xdf_intr_locked(xdf_t *vdp)
 	blkif_response_t *resp;
 	int bioerr;
 	uint64_t id;
-	uint8_t op;
+	uint8_t op __unused;
 	uint16_t status;
 	ddi_acc_handle_t acchdl;
 
@@ -1634,8 +1634,9 @@ errout2:
 	ec_unbind_evtchn(vdp->xdf_evtchn);
 #else /* !XPV_HVM_DRIVER */
 	(void) ddi_remove_intr(vdp->xdf_dip, 0, NULL);
-#endif /* !XPV_HVM_DRIVER */
 errout1:
+#endif /* !XPV_HVM_DRIVER */
+
 	xvdi_free_evtchn(dip);
 	vdp->xdf_evtchn = INVALID_EVTCHN;
 errout:
@@ -2122,7 +2123,7 @@ xdf_hvm_hold(const char *path)
 	i = i_xdf_hvm_find(path, NULL);
 	if (i == NULL) {
 		mutex_exit(&xdf_hvm_list_lock);
-		return (B_FALSE);
+		return (NULL);
 	}
 	ndi_hold_devi(dip = i->xdf_he_dip);
 	mutex_exit(&xdf_hvm_list_lock);
