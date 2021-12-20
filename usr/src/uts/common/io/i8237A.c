@@ -31,8 +31,6 @@
 /*	Copyright (c) 1988, 1989 Intel Corp.			*/
 /*	All Rights Reserved	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Set features for each architecture.  List of features:
  *	ADDR_32:	Address is 32 bits
@@ -554,12 +552,9 @@ d37A_get_chan_stat(int chnl, ulong_t *addressp, int *countp)
 static int
 d37A_set_mode(struct ddi_dmae_req *dmaereqp, int chnl)
 {
-	uchar_t mode = 0, emode = 0;
+	uchar_t mode = 0, emode __unused = 0;
 
 #ifdef ISA_MODE
-#if defined(lint)
-	emode = emode;
-#endif
 	mode = chnl & 3;
 
 	switch (dmaereqp->der_command) {
