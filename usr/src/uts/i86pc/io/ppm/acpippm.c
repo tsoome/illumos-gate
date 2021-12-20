@@ -387,42 +387,42 @@ appm_ioctl(dev_t dev, int cmd, intptr_t arg, int flag,
     cred_t *cred_p, int *rval_p)
 {
 	static boolean_t	acpi_initted = B_FALSE;
-	char			*str = "appm_ioctl";
 	int			ret;
 	s3a_t			*s3ap = (s3a_t *)arg;
 
-	PMD(PMD_SX, ("%s: called with %x\n", str, cmd))
+	PMD(PMD_SX, ("%s: called with %x\n", __func__, cmd))
 
 	if (drv_priv(cred_p) != 0) {
-		PMD(PMD_SX, ("%s: EPERM\n", str))
+		PMD(PMD_SX, ("%s: EPERM\n", __func__))
 		return (EPERM);
 	}
 
 	if (ddi_get_soft_state(appm_statep, getminor(dev)) == NULL) {
-		PMD(PMD_SX, ("%s: no soft state: EIO\n", str))
+		PMD(PMD_SX, ("%s: no soft state: EIO\n", __func__))
 		return (EIO);
 	}
 
 	if (!acpi_initted) {
-		PMD(PMD_SX, ("%s: !acpi_initted\n", str))
+		PMD(PMD_SX, ("%s: !acpi_initted\n", __func__))
 		if (acpica_init() == 0) {
 			acpi_initted = B_TRUE;
 		} else {
 			if (rval_p != NULL) {
 				*rval_p = EINVAL;
 			}
-			PMD(PMD_SX, ("%s: EINVAL\n", str))
+			PMD(PMD_SX, ("%s: EINVAL\n", __func__))
 			return (EINVAL);
 		}
 	}
 
-	PMD(PMD_SX, ("%s: looking for cmd %x\n", str, cmd))
+	PMD(PMD_SX, ("%s: looking for cmd %x\n", __func__, cmd))
 	switch (cmd) {
 	case APPMIOC_ENTER_S3:
 		/*
 		 * suspend to RAM (ie S3)
 		 */
-		PMD(PMD_SX, ("%s: cmd %x, arg %p\n", str, cmd, (void *)arg))
+		PMD(PMD_SX, ("%s: cmd %x, arg %p\n",
+		    __func__, cmd, (void *)arg))
 		acpica_use_safe_delay = 1;
 		ret = acpi_enter_sleepstate(s3ap);
 		break;
@@ -431,13 +431,15 @@ appm_ioctl(dev_t dev, int cmd, intptr_t arg, int flag,
 		/*
 		 * return from S3
 		 */
-		PMD(PMD_SX, ("%s: cmd %x, arg %p\n", str, cmd, (void *)arg))
+		PMD(PMD_SX, ("%s: cmd %x, arg %p\n",
+		    __func__, cmd, (void *)arg))
 		ret = acpi_exit_sleepstate(s3ap);
 		acpica_use_safe_delay = 0;
 		break;
 
 	default:
-		PMD(PMD_SX, ("%s: cmd %x unrecognized: ENOTTY\n", str, cmd))
+		PMD(PMD_SX, ("%s: cmd %x unrecognized: ENOTTY\n",
+		    __func__, cmd))
 		return (ENOTTY);
 	}
 

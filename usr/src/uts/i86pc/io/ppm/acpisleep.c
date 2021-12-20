@@ -80,9 +80,6 @@ int
 acpi_enter_sleepstate(s3a_t *s3ap)
 {
 	ACPI_PHYSICAL_ADDRESS	wakephys = s3ap->s3a_wakephys;
-	caddr_t			wakevirt = rm_platter_va;
-	/*LINTED*/
-	wakecode_t		*wp = (wakecode_t *)wakevirt;
 	uint_t			Sx = s3ap->s3a_state;
 
 	PT(PT_SWV);
