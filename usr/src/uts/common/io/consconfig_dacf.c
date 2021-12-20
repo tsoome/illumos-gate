@@ -647,7 +647,7 @@ static cons_state_t *
 consconfig_state_init(void)
 {
 	cons_state_t	*sp;
-	int		rval;
+	int		rval __unused;
 
 	/* Initialize console information */
 	sp = kmem_zalloc(sizeof (cons_state_t), KM_SLEEP);
