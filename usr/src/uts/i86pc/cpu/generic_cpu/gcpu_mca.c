@@ -1129,8 +1129,8 @@ gcpu_mca_init(cmi_hdl_t hdl)
 	gcpu_mca_t *mca = &gcpu->gcpu_mca;
 	int mcg_ctl_present;
 	uint_t nbanks;
-	uint32_t ctl_skip_mask = 0;
-	uint32_t status_skip_mask = 0;
+	uint32_t ctl_skip_mask __unused = 0;
+	uint32_t status_skip_mask __unused = 0;
 	size_t mslsz;
 	int i;
 #ifndef __xpv
