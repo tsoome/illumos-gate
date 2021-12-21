@@ -426,8 +426,6 @@ xenconsopen(queue_t *rq, dev_t *dev, int flag, int sflag, cred_t *cr)
 	async = xcp->priv;
 	mutex_enter(&xcp->excl);
 
-again:
-
 	if ((async->async_flags & ASYNC_ISOPEN) == 0) {
 		async->async_ttycommon.t_iflag = 0;
 		async->async_ttycommon.t_iocpending = NULL;
@@ -493,7 +491,6 @@ xenconsclose(queue_t *q, int flag, cred_t *credp)
 		freeb(async->async_xmitblk);
 	async->async_xmitblk = NULL;
 
-out:
 	ttycommon_close(&async->async_ttycommon);
 
 	/*
@@ -1434,7 +1431,7 @@ static void
 xcasync_flowcontrol_sw_output(struct xencons *xcp, async_flowc_action onoff)
 {
 	struct asyncline *async = xcp->priv;
-	int instance = xcp->unit;
+	int instance __unused = xcp->unit;
 
 	ASSERT(mutex_owned(&xcp->excl));
 
@@ -1480,7 +1477,7 @@ xcasync_flowcontrol_sw_input(struct xencons *xcp, async_flowc_action onoff,
     int type)
 {
 	struct asyncline *async = xcp->priv;
-	int instance = xcp->unit;
+	int instance __unused = xcp->unit;
 	int rval = B_FALSE;
 
 	ASSERT(mutex_owned(&xcp->excl));
