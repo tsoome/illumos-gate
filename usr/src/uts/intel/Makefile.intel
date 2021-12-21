@@ -133,6 +133,27 @@ ASFLAGS_XARCH		= $(ASFLAGS_XARCH_$(CLASS))
 
 ASFLAGS			+= $(ASFLAGS_XARCH)
 
+CERRWARN        += -_clang=-Wno-unknown-pragmas
+CERRWARN        += -_clang=-Wno-unused-parameter
+CERRWARN        += -_clang=-Wno-logical-op-parentheses
+CERRWARN        += -_clang=-Wno-parentheses
+CERRWARN        += -_clang=-Wno-sign-compare
+CERRWARN        += -_clang=-Wno-missing-braces
+CERRWARN        += -_clang=-Wno-missing-field-initializers
+CERRWARN        += -_clang=-Wno-unused-but-set-variable
+CERRWARN        += -_clang=-Wno-unused-but-set-parameter
+CERRWARN        += -_clang=-Wno-format-security
+CERRWARN        += -_clang=-Wno-switch
+CERRWARN        += -_clang=-Wno-sometimes-uninitialized
+CERRWARN        += -_clang=-Wno-varargs
+CERRWARN        += -_clang=-Wno-string-plus-int
+CERRWARN        += -_clang=-Wno-shift-count-negative
+CERRWARN        += -_clang=-Wno-char-subscripts
+CERRWARN        += -_clang=-Wno-implicit-const-int-float-conversion
+CERRWARN	+= -_clang=-Wno-uninitialized
+CERRWARN	+= -_clang=-Wno-pointer-bool-conversion
+CERRWARN	+= -_clang=-Wno-gnu-variable-sized-type-not-at-end
+
 #
 #	Define the base directory for installation.
 #
