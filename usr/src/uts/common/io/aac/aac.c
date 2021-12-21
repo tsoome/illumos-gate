@@ -2177,9 +2177,9 @@ aac_check_card_type(struct aac_softstate *softs)
 	}
 
 	/* Set card names */
-	(void *)strncpy(softs->vendor_name, aac_cards[card_index].vid,
+	(void)strncpy(softs->vendor_name, aac_cards[card_index].vid,
 	    AAC_VENDOR_LEN);
-	(void *)strncpy(softs->product_name, aac_cards[card_index].desc,
+	(void)strncpy(softs->product_name, aac_cards[card_index].desc,
 	    AAC_PRODUCT_LEN);
 
 	/* Set up quirks */
@@ -2894,15 +2894,15 @@ aac_common_attach(struct aac_softstate *softs)
 			while (p > p1 && (*p == ' ' || *p == '\t'))
 				*p-- = 0;
 			if (*p0 && *p1) {
-				(void *)strncpy(softs->vendor_name, p0,
+				(void)strncpy(softs->vendor_name, p0,
 				    AAC_VENDOR_LEN);
-				(void *)strncpy(softs->product_name, p1,
+				(void)strncpy(softs->product_name, p1,
 				    AAC_PRODUCT_LEN);
 			} else {
 				cmn_err(CE_WARN,
 				    "?adapter name mis-formatted\n");
 				if (*p0)
-					(void *)strncpy(softs->product_name,
+					(void)strncpy(softs->product_name,
 					    p0, AAC_PRODUCT_LEN);
 			}
 		}
