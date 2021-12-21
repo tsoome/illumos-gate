@@ -69,6 +69,7 @@
 #include "ath_hal.h"
 #include "ath_impl.h"
 
+#ifdef DEBUG
 static const char *acnames[] = {
 	"WME_AC_BE",
 	"WME_AC_BK",
@@ -76,6 +77,7 @@ static const char *acnames[] = {
 	"WME_AC_VO",
 	"WME_UPSD"
 };
+#endif
 
 extern void ath_setup_desc(ath_t *asc, struct ath_buf *bf);
 
@@ -246,7 +248,7 @@ ath_setcurmode(ath_t *asc, enum ieee80211_phymode mode)
 void
 ath_mode_init(ath_t *asc)
 {
-	ieee80211com_t *ic = (ieee80211com_t *)asc;
+	ieee80211com_t *ic __unused = (ieee80211com_t *)asc;
 	struct ath_hal *ah = asc->asc_ah;
 	uint32_t rfilt;
 

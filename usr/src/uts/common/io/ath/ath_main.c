@@ -509,6 +509,7 @@ ath_desc_alloc(dev_info_t *devinfo, ath_t *asc)
 	return (DDI_SUCCESS);
 }
 
+#ifdef DEBUG
 static void
 ath_printrxbuf(struct ath_buf *bf, int32_t done)
 {
@@ -523,6 +524,7 @@ ath_printrxbuf(struct ath_buf *bf, int32_t done)
 	    ds->ds_hw[0], ds->ds_hw[1],
 	    !done ? ' ' : (rs->rs_status == 0) ? '*' : '!'));
 }
+#endif
 
 static void
 ath_rx_handler(ath_t *asc)
@@ -643,6 +645,7 @@ rx_next:
 	ATH_HAL_RXMONITOR(ah, &hal_node_stats, &asc->asc_curchan);
 }
 
+#ifdef DEBUG
 static void
 ath_printtxbuf(struct ath_buf *bf, int done)
 {
@@ -657,6 +660,7 @@ ath_printtxbuf(struct ath_buf *bf, int done)
 	    ds->ds_hw[0], ds->ds_hw[1], ds->ds_hw[2], ds->ds_hw[3],
 	    !done ? ' ' : (ts->ts_status == 0) ? '*' : '!'));
 }
+#endif
 
 /*
  * The input parameter mp has following assumption:
@@ -1965,7 +1969,7 @@ ath_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	caddr_t regs;
 	uint32_t i, val;
 	uint16_t vendor_id, device_id;
-	const char *athname;
+	const char *athname __unused;
 	int32_t ath_countrycode = CTRY_DEFAULT;	/* country code */
 	int32_t err, ath_regdomain = 0; /* regulatory domain */
 	char strbuf[32];
