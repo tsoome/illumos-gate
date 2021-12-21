@@ -308,7 +308,7 @@ evtchn_bind_to_user(struct evtsoftdata *u, int port)
 static void
 evtchndrv_close_evtchn(int port)
 {
-	struct evtsoftdata *ep;
+	struct evtsoftdata *ep __unused;
 
 	ASSERT(MUTEX_HELD(&port_user_lock));
 	ep = port_user[port];
