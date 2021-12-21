@@ -707,6 +707,7 @@ msr_warning(cpu_t *cp, const char *rw, uint_t msr, int error)
 	    cp->cpu_id, rw, msr, error);
 }
 
+#ifndef __xpv
 /*
  * Determine the number of nodes in a Hammer / Greyhound / Griffin family
  * system.
@@ -749,6 +750,7 @@ opteron_get_nnodes(void)
 	}
 	return (nnodes);
 }
+#endif
 
 uint_t
 do_erratum_298(struct cpu *cpu)

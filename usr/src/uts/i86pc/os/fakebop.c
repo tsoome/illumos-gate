@@ -169,7 +169,9 @@ size_t saved_file_size[FASTBOOT_MAX_FILES_MAP];
  * Turn off fastreboot_onpanic to avoid panic loop.
  */
 char fastreboot_onpanic_cmdline[FASTBOOT_SAVED_CMDLINE_LEN];
+#ifndef	__xpv
 static const char fastreboot_onpanic_args[] = " -B fastreboot_onpanic=0";
+#endif
 
 /*
  * Pointers to where System Resource Affinity Table (SRAT), System Locality
@@ -1182,8 +1184,6 @@ setup_rarp_props(struct sol_netinfo *sip)
 	}
 }
 
-#endif	/* __xpv */
-
 static void
 build_panic_cmdline(const char *cmd, int cmdlen)
 {
@@ -1220,8 +1220,6 @@ build_panic_cmdline(const char *cmd, int cmdlen)
 	}
 }
 
-
-#ifndef	__xpv
 /*
  * Construct boot command line for Fast Reboot. The saved_cmdline
  * is also reported by "eeprom bootcmd".

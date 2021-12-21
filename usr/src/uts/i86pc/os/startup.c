@@ -642,6 +642,7 @@ perform_allocations(void)
 	}
 }
 
+#ifndef __xpv
 /*
  * Set up and enable SMAP now before we start other CPUs, but after the kernel's
  * VM has been set up so we can use hot_patch_kernel_text().
@@ -703,6 +704,7 @@ startup_smap(void)
 	setcr4(getcr4() | CR4_SMAP);
 	smap_enable();
 }
+#endif
 
 /*
  * Our world looks like this at startup time.

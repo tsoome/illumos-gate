@@ -109,7 +109,9 @@ void
 mlsetup(struct regs *rp)
 {
 	u_longlong_t prop_value;
+#if !defined(__xpv)
 	char prop_str[BP_MAX_STRLEN];
+#endif
 	extern struct classfuncs sys_classfuncs;
 	extern disp_t cpu0_disp;
 	extern char t0stack[];

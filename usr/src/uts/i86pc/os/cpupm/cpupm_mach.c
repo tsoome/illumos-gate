@@ -81,9 +81,11 @@ void (*cpupm_set_topspeed_callb)(void *, int);
  */
 int (*cpupm_get_topspeed_callb)(void *);
 
+#ifndef __xpv
 static void cpupm_event_notify_handler(ACPI_HANDLE, UINT32, void *);
 static void cpupm_free_notify_handlers(cpu_t *);
 static void cpupm_power_manage_notifications(void *);
+#endif
 
 /*
  * Until proven otherwise, all power states are manageable.
@@ -833,11 +835,11 @@ cpupm_add_notify_handler(cpu_t *cp, CPUPM_NOTIFY_HANDLER handler, void *ctx)
 #endif
 }
 
+#ifndef __xpv
 /*ARGSUSED*/
 static void
 cpupm_free_notify_handlers(cpu_t *cp)
 {
-#ifndef __xpv
 	cpupm_mach_state_t *mach_state =
 	    (cpupm_mach_state_t *)cp->cpu_m.mcpu_pm_mach_state;
 	cpupm_notification_t *entry;
@@ -860,8 +862,8 @@ cpupm_free_notify_handlers(cpu_t *cp)
 	}
 	mach_state->ms_handlers = NULL;
 	mutex_exit(&mach_state->ms_lock);
-#endif
 }
+#endif
 
 /*
  * Get the current max speed from the ACPI _PPC object
@@ -899,6 +901,7 @@ cpupm_get_top_speed(cpu_t *cp)
 #endif
 }
 
+#ifndef __xpv
 /*
  * This notification handler is called whenever the ACPI _PPC
  * object changes. The _PPC is a sort of governor on power levels.
@@ -921,7 +924,6 @@ cpupm_power_manage_notifications(void *ctx)
 static void
 cpupm_event_notify_handler(ACPI_HANDLE obj, UINT32 val, void *ctx)
 {
-#ifndef __xpv
 
 	cpu_t *cp = ctx;
 	cpupm_mach_state_t *mach_state =
@@ -943,8 +945,8 @@ cpupm_event_notify_handler(ACPI_HANDLE obj, UINT32 val, void *ctx)
 	    mach_state->ms_caps & CPUPM_P_STATES) {
 		cpupm_power_manage_notifications(ctx);
 	}
-#endif
 }
+#endif
 
 /*
  * Update cpupm cstate data each time CPU exits idle.

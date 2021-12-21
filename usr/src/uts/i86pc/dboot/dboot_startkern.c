@@ -231,7 +231,9 @@ typedef mb_memory_map_t mmap_t;
 uint_t prom_debug = 0;
 uint_t map_debug = 0;
 
+#if !defined(__xpv)
 static char noname[2] = "-";
+#endif
 
 /*
  * Either hypervisor-specific or grub-specific code builds the initial
@@ -453,6 +455,7 @@ map_pte(paddr_t table, uint_t index)
 	return ((x86pte_t *)(uintptr_t)(table + index * pte_size));
 }
 
+#ifndef __xpv
 /*
  * dump out the contents of page tables...
  */
@@ -539,6 +542,7 @@ recursion:
 		goto recursion;
 	}
 }
+#endif
 
 /*
  * Add a mapping for the machine page at the given virtual address.
@@ -546,7 +550,7 @@ recursion:
 static void
 map_ma_at_va(maddr_t ma, native_ptr_t va, uint_t level)
 {
-	x86pte_t *ptep;
+	x86pte_t *ptep __unused;
 	x86pte_t pteval;
 
 	pteval = ma | pte_bits;
@@ -581,7 +585,6 @@ map_ma_at_va(maddr_t ma, native_ptr_t va, uint_t level)
 	 * the pagetables which aren't in use yet.
 	 */
 #if defined(__xpv)
-	ptep = ptep;	/* shut lint up */
 	if (HYPERVISOR_update_va_mapping(va, pteval, UVMF_INVLPG | UVMF_LOCAL))
 		dboot_panic("mmu_update failed-map_pa_at_va va=0x%" PRIx64
 		    " l=%d ma=0x%" PRIx64 ", pte=0x%" PRIx64 "",
@@ -659,6 +662,7 @@ exclude_from_pci(uint64_t start, uint64_t end)
 	}
 }
 
+#if !defined(__xpv)
 /*
  * During memory allocation, find the highest address not used yet.
  */
@@ -670,6 +674,7 @@ check_higher(paddr_t a)
 	next_avail_addr = RNDUP(a + 1, MMU_PAGESIZE);
 	DBG(next_avail_addr);
 }
+#endif
 
 static int
 dboot_loader_mmap_entries(void)

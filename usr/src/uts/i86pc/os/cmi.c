@@ -653,6 +653,7 @@ cmi_mce_response(struct regs *rp, uint64_t disp)
 	return (CMI_RESPONSE_NONE);
 }
 
+#ifndef	__xpv
 int cma_mca_trap_panic_suppressed = 0;
 
 static void
@@ -665,7 +666,7 @@ cmi_mca_panic(void)
 		cma_mca_trap_panic_suppressed++;
 	}
 }
-
+#endif
 
 int cma_mca_trap_contract_kills = 0;
 int cma_mca_trap_ontrap_forgiven = 0;

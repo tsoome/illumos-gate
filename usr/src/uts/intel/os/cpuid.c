@@ -1695,12 +1695,12 @@ uint64_t xsave_bv_all = (XFEATURE_LEGACY_FP | XFEATURE_SSE);
 boolean_t xsave_force_disable = B_FALSE;
 extern int disable_smap;
 
+#if !defined(__xpv)
 /*
  * This is set to platform type we are running on.
  */
 static int platform_type = -1;
 
-#if !defined(__xpv)
 /*
  * Variable to patch if hypervisor platform detection needs to be
  * disabled (e.g. platform_type will always be HW_NATIVE if this is 0).

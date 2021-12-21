@@ -277,10 +277,12 @@ typedef	struct memnode_phys_addr_map {
 	uint_t		lgrphand;
 } memnode_phys_addr_map_t;
 
+#ifndef	__xpv
 /*
  * Number of CPUs for which we got APIC IDs
  */
 static int				lgrp_plat_apic_ncpus = 0;
+#endif
 
 /*
  * CPU to node ID mapping table (only used for SRAT) and its max number of
@@ -304,6 +306,13 @@ static int				lgrp_plat_mem_intrlv = 0;
  */
 static node_domain_map_t		lgrp_plat_node_domain[MAX_NODES];
 
+#ifndef	__xpv
+/*
+ * Error code from processing ACPI SLIT
+ */
+static int				lgrp_plat_slit_error = 0;
+#endif
+
 /*
  * Physical address range for memory in each node
  */
@@ -319,20 +328,17 @@ static lgrp_plat_probe_stats_t		lgrp_plat_probe_stats;
  */
 static lgrp_plat_probe_mem_config_t	lgrp_plat_probe_mem_config;
 
+#ifndef	__xpv
 /*
  * Lowest proximity domain ID seen in ACPI SRAT
  */
 static uint32_t				lgrp_plat_prox_domain_min = UINT32_MAX;
+#endif
 
 /*
  * Error code from processing ACPI SRAT
  */
 static int				lgrp_plat_srat_error = 0;
-
-/*
- * Error code from processing ACPI SLIT
- */
-static int				lgrp_plat_slit_error = 0;
 
 /*
  * Whether lgrp topology has been flattened to 2 levels.
@@ -447,17 +453,8 @@ lgrp_handle_t	lgrp_plat_root_hand(void);
  */
 static int	is_opteron(void);
 
-static int	lgrp_plat_cpu_node_update(node_domain_map_t *node_domain,
-    int node_cnt, cpu_node_map_t *cpu_node, int nentries, uint32_t apicid,
-    uint32_t domain);
-
 static int	lgrp_plat_cpu_to_node(cpu_t *cp, cpu_node_map_t *cpu_node,
     int cpu_node_nentries);
-
-static int	lgrp_plat_domain_to_node(node_domain_map_t *node_domain,
-    int node_cnt, uint32_t domain);
-
-static void	lgrp_plat_get_numa_config(void);
 
 static void	lgrp_plat_latency_adjust(memnode_phys_addr_map_t *memnode_info,
     lgrp_plat_latency_stats_t *lat_stats,
@@ -470,6 +467,26 @@ static void	lgrp_plat_main_init(void);
 
 static pgcnt_t	lgrp_plat_mem_size_default(lgrp_handle_t, lgrp_mem_query_t);
 
+static hrtime_t	lgrp_plat_probe_time(int to, cpu_node_map_t *cpu_node,
+    int cpu_node_nentries, lgrp_plat_probe_mem_config_t *probe_mem_config,
+    lgrp_plat_latency_stats_t *lat_stats, lgrp_plat_probe_stats_t *probe_stats);
+
+static void	lgrp_plat_release_bootstrap(void);
+
+static void	lgrp_plat_2level_setup(lgrp_plat_latency_stats_t *lat_stats);
+
+static hrtime_t	opt_probe_vendor(int dest_node, int nreads);
+
+#ifndef	__xpv
+static int	lgrp_plat_cpu_node_update(node_domain_map_t *node_domain,
+    int node_cnt, cpu_node_map_t *cpu_node, int nentries, uint32_t apicid,
+    uint32_t domain);
+
+static int	lgrp_plat_domain_to_node(node_domain_map_t *node_domain,
+    int node_cnt, uint32_t domain);
+
+static void	lgrp_plat_get_numa_config(void);
+
 static int	lgrp_plat_node_domain_update(node_domain_map_t *node_domain,
     int node_cnt, uint32_t domain);
 
@@ -481,27 +498,24 @@ static void	lgrp_plat_node_sort(node_domain_map_t *node_domain,
     int node_cnt, cpu_node_map_t *cpu_node, int cpu_count,
     memnode_phys_addr_map_t *memnode_info);
 
-static hrtime_t	lgrp_plat_probe_time(int to, cpu_node_map_t *cpu_node,
-    int cpu_node_nentries, lgrp_plat_probe_mem_config_t *probe_mem_config,
-    lgrp_plat_latency_stats_t *lat_stats, lgrp_plat_probe_stats_t *probe_stats);
-
-static int	lgrp_plat_process_cpu_apicids(cpu_node_map_t *cpu_node);
-
 static int	lgrp_plat_process_slit(ACPI_TABLE_SLIT *tp,
     node_domain_map_t *node_domain, uint_t node_cnt,
     memnode_phys_addr_map_t *memnode_info,
     lgrp_plat_latency_stats_t *lat_stats);
 
+static int	lgrp_plat_process_cpu_apicids(cpu_node_map_t *cpu_node);
+
 static int	lgrp_plat_process_sli(uint32_t domain, uchar_t *sli_info,
     uint32_t sli_cnt, node_domain_map_t *node_domain, uint_t node_cnt,
     lgrp_plat_latency_stats_t *lat_stats);
+
+static void	opt_get_numa_config(uint_t *node_cnt, int *mem_intrlv,
+    memnode_phys_addr_map_t *memnode_info);
 
 static int	lgrp_plat_process_srat(ACPI_TABLE_SRAT *tp, ACPI_TABLE_MSCT *mp,
     uint32_t *prox_domain_min, node_domain_map_t *node_domain,
     cpu_node_map_t *cpu_node, int cpu_count,
     memnode_phys_addr_map_t *memnode_info);
-
-static void	lgrp_plat_release_bootstrap(void);
 
 static int	lgrp_plat_srat_domains(ACPI_TABLE_SRAT *tp,
     uint32_t *prox_domain_min);
@@ -509,12 +523,7 @@ static int	lgrp_plat_srat_domains(ACPI_TABLE_SRAT *tp,
 static int	lgrp_plat_msct_domains(ACPI_TABLE_MSCT *tp,
     uint32_t *prox_domain_min);
 
-static void	lgrp_plat_2level_setup(lgrp_plat_latency_stats_t *lat_stats);
-
-static void	opt_get_numa_config(uint_t *node_cnt, int *mem_intrlv,
-    memnode_phys_addr_map_t *memnode_info);
-
-static hrtime_t	opt_probe_vendor(int dest_node, int nreads);
+#endif
 
 
 /*
@@ -1343,7 +1352,7 @@ lgrp_plat_root_hand(void)
  * INTERNAL ROUTINES
  */
 
-
+#ifndef	__xpv
 /*
  * Update CPU to node mapping for given CPU and proximity domain.
  * Return values:
@@ -1411,7 +1420,7 @@ lgrp_plat_cpu_node_update(node_domain_map_t *node_domain, int node_cnt,
 	 */
 	return (2);
 }
-
+#endif
 
 /*
  * Get node ID for given CPU
@@ -1451,6 +1460,7 @@ lgrp_plat_cpu_to_node(cpu_t *cp, cpu_node_map_t *cpu_node,
 }
 
 
+#if !defined(__xpv)
 /*
  * Return node number for given proximity domain/system locality
  */
@@ -1661,7 +1671,7 @@ lgrp_plat_get_numa_config(void)
 	    lgrp_topo_ht_limit_default())
 		(void) lgrp_topo_ht_limit_set(lgrp_plat_node_cnt - 1);
 }
-
+#endif
 
 /*
  * Latencies must be within 1/(2**LGRP_LAT_TOLERANCE_SHIFT) of each other to
@@ -2158,6 +2168,7 @@ lgrp_plat_mem_size_default(lgrp_handle_t lgrphand, lgrp_mem_query_t query)
 }
 
 
+#if !defined(__xpv)
 /*
  * Update node to proximity domain mappings for given domain and return node ID
  */
@@ -2432,7 +2443,7 @@ lgrp_plat_node_sort(node_domain_map_t *node_domain, int node_cnt,
 	}
 
 }
-
+#endif
 
 /*
  * Return time needed to probe from current CPU to memory in given node
@@ -2549,6 +2560,7 @@ lgrp_plat_probe_time(int to, cpu_node_map_t *cpu_node, int cpu_node_nentries,
 }
 
 
+#ifndef	__xpv
 /*
  * Read boot property with CPU to APIC ID array, fill in CPU to node ID
  * mapping table with APIC ID for each CPU (if pointer to table isn't NULL),
@@ -2624,7 +2636,6 @@ lgrp_plat_process_cpu_apicids(cpu_node_map_t *cpu_node)
 	 */
 	return (i);
 }
-
 
 /*
  * Read ACPI System Locality Information Table (SLIT) to determine how far each
@@ -2707,7 +2718,6 @@ lgrp_plat_process_slit(ACPI_TABLE_SLIT *tp,
 
 	return (retval);
 }
-
 
 /*
  * Update lgrp latencies according to information returned by ACPI _SLI method.
@@ -2795,7 +2805,6 @@ lgrp_plat_process_sli(uint32_t domain_id, uchar_t *sli_info,
 
 	return (0);
 }
-
 
 /*
  * Read ACPI System Resource Affinity Table (SRAT) to determine which CPUs
@@ -2992,7 +3001,7 @@ lgrp_plat_process_srat(ACPI_TABLE_SRAT *tp, ACPI_TABLE_MSCT *mp,
 
 	return (node_cnt);
 }
-
+#endif
 
 /*
  * Allocate permanent memory for any temporary memory that we needed to
@@ -3015,6 +3024,7 @@ lgrp_plat_release_bootstrap(void)
 }
 
 
+#ifndef	__xpv
 /*
  * Return number of proximity domains given in ACPI SRAT
  */
@@ -3257,6 +3267,7 @@ lgrp_plat_msct_domains(ACPI_TABLE_MSCT *tp, uint32_t *prox_domain_min)
 
 	return (tp->MaxProximityDomains + 1);
 }
+#endif
 
 
 /*
@@ -3468,6 +3479,7 @@ is_opteron(void)
 }
 
 
+#ifndef	__xpv
 /*
  * Determine NUMA configuration for Opteron from registers that live in PCI
  * configuration space
@@ -3618,7 +3630,7 @@ opt_get_numa_config(uint_t *node_cnt, int *mem_intrlv,
 			wrmsr(MSR_AMD_NB_CFG, nb_cfg_reg);
 	}
 }
-
+#endif
 
 /*
  * Return average amount of time to read vendor ID register on Northbridge

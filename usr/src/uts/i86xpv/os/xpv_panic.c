@@ -74,8 +74,8 @@ static uint32_t *xpv_apicadr = NULL;
 static uint_t	nsec_scale;
 
 /* IDT support */
-#pragma	align	16(xpv_panic_idt)
-static gate_desc_t	xpv_panic_idt[NIDT];	/* interrupt descriptor table */
+/* interrupt descriptor table */
+static gate_desc_t	xpv_panic_idt[NIDT] __aligned(16);
 
 /* Xen pagetables mapped into our HAT's ptable windows */
 static pfn_t ptable_pfn[MAX_NUM_LEVEL];

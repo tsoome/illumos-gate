@@ -456,7 +456,7 @@ ec_is_edge_pirq(int irq)
 static void
 unbind_evtchn(ushort_t *evtchnp)
 {
-	int err;
+	int err __unused;
 
 	ASSERT(MUTEX_HELD(&ec_lock));
 
@@ -690,7 +690,7 @@ ec_bind_evtchn_to_irq(int evtchn)
 int
 ec_bind_virq_to_irq(int virq, int cpu)
 {
-	int err;
+	int err __unused;
 	int evtchn;
 	mec_info_t *virqp;
 
@@ -1113,7 +1113,7 @@ virq_resume(int virq)
 {
 	mec_info_t *virqp = &virq_info[virq];
 	int evtchn;
-	int i, err;
+	int i, err __unused;
 
 	for (i = 0; i < NCPU; i++) {
 		cpuset_t tcpus;

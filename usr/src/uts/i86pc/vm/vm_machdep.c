@@ -244,7 +244,9 @@ static int mtypetop;
 static pgcnt_t	maxmem4g;
 static pgcnt_t	freemem4g;
 static int	physmax4g;
+#if !defined(__xpv)
 static int	desfree4gshift = 4;	/* maxmem4g shift to derive DESFREE4G */
+#endif
 
 /*
  * 16m memory management:
@@ -267,7 +269,9 @@ static int	desfree4gshift = 4;	/* maxmem4g shift to derive DESFREE4G */
 	    ((freemem >= (FREEMEM16M)) || \
 	    (FREEMEM16M  < (DESFREE16M + pgcnt))))
 
+#if !defined(__xpv)
 static pgcnt_t	desfree16m = 0x380;
+#endif
 
 /*
  * This can be patched via /etc/system to allow old non-PAE aware device
@@ -351,6 +355,7 @@ hw_pagesize_t hw_page_array[MAX_NUM_LEVEL + 1];
 kmutex_t	*fpc_mutex[NPC_MUTEX];
 kmutex_t	*cpc_mutex[NPC_MUTEX];
 
+#if !defined(__xpv)
 /* Lock to protect mnoderanges array for memory DR operations. */
 static kmutex_t mnoderange_lock;
 
@@ -361,6 +366,7 @@ static kmutex_t mnoderange_lock;
 static kmutex_t	contig_lock;
 #define	CONTIG_LOCK()	mutex_enter(&contig_lock);
 #define	CONTIG_UNLOCK()	mutex_exit(&contig_lock);
+#endif
 
 #define	PFN_16M		(mmu_btop((uint64_t)0x1000000))
 

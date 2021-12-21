@@ -222,6 +222,7 @@ static uint64_t cmi_pcicfg_flags =
 #define	CMI_MSR_FLAG_WR_HWOK		0x0004
 #define	CMI_MSR_FLAG_WR_INTERPOSEOK	0x0008
 
+#ifndef __xpv
 int cmi_call_func_ntv_tries = 3;
 
 static cmi_errno_t
@@ -260,6 +261,7 @@ call_func_ntv(int cpuid, xc_func_t func, xc_arg_t arg1, xc_arg_t arg2)
 
 	return (rc != -1 ? rc : CMIERR_DEADLOCK);
 }
+#endif
 
 static uint64_t injcnt;
 

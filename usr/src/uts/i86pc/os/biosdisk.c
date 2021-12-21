@@ -62,6 +62,7 @@ int biosdebug = 0;
 
 biosdev_data_t biosdev_info[BIOSDEV_NUM]; /* from 0x80 to 0x87 */
 
+#if !defined(__xpv)
 
 static int bios_check_extension_present(uchar_t);
 static int get_dev_params(uchar_t);
@@ -70,7 +71,6 @@ static int drive_present(uchar_t drivenum);
 static void reset_disk(uchar_t drivenum);
 static int is_eltorito(uchar_t drivenum);
 
-#if !defined(__xpv)
 void
 startup_bios_disk()
 {
@@ -116,7 +116,6 @@ startup_bios_disk()
 		}
 	}
 }
-#endif
 
 static int
 bios_check_extension_present(uchar_t drivenum)
@@ -322,3 +321,4 @@ is_eltorito(uchar_t drivenum)
 
 	return (1);
 }
+#endif

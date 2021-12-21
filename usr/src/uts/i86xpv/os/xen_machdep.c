@@ -722,13 +722,6 @@ taskq_t *xen_shutdown_tq;
 
 #define	SHUTDOWN_TIMEOUT_SECS (60 * 5)
 
-static const char *cmd_strings[SHUTDOWN_MAX] = {
-	"poweroff",
-	"reboot",
-	"suspend",
-	"halt"
-};
-
 static void
 xen_dirty_shutdown(void *arg)
 {

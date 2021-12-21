@@ -44,12 +44,14 @@ static int cursor_x = 136;
 
 #define	BAR_STEPS 46
 
-static uchar_t bar[BAR_STEPS];
+#if !defined(__xpv)
 static kthread_t *progressbar_tid;
 static kmutex_t pbar_lock;
 static kcondvar_t pbar_cv;
-static char *videomem = (caddr_t)VIDEOMEM;
 static int videomem_size;
+#endif
+static uchar_t bar[BAR_STEPS];
+static char *videomem = (caddr_t)VIDEOMEM;
 
 /* select the plane(s) to draw to */
 static void
@@ -115,6 +117,7 @@ progressbar_init()
 	progressbar_show();
 }
 
+#if !defined(__xpv)
 static void
 progressbar_step()
 {
@@ -148,6 +151,7 @@ progressbar_thread(void *arg)
 	}
 	mutex_exit(&pbar_lock);
 }
+#endif
 
 void
 progressbar_start(void)

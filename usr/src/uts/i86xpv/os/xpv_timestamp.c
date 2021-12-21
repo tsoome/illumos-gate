@@ -82,10 +82,13 @@ volatile timestruc_t hrestime;
  * fbt consideration.  Currently fbt ignores all weak symbols, so this will
  * achieve that.
  */
-#pragma weak xpv_gethrtime = dtrace_xpv_gethrtime
-#pragma weak xpv_getsystime = dtrace_xpv_getsystime
-#pragma weak dtrace_gethrtime = dtrace_xpv_gethrtime
-#pragma weak tsc_read = dtrace_xpv_gethrtime
+hrtime_t xpv_gethrtime(void)
+    __attribute__((weak,alias("dtrace_xpv_gethrtime")));
+hrtime_t xpv_getsystime(void)
+    __attribute__((weak,alias("dtrace_xpv_getsystime")));
+hrtime_t dtrace_gethrtime(void)
+    __attribute__((weak,alias("dtrace_xpv_gethrtime")));
+hrtime_t tsc_read(void) __attribute__((weak,alias("dtrace_xpv_gethrtime")));
 
 hrtime_t
 dtrace_xpv_getsystime(void)
@@ -141,7 +144,7 @@ dtrace_xpv_getsystime(void)
 hrtime_t
 dtrace_xpv_gethrtime(void)
 {
-	hrtime_t result = xpv_getsystime() + hrtime_addend;
+	hrtime_t result = dtrace_xpv_getsystime() + hrtime_addend;
 
 	if (hrtime_fake_mt) {
 		hrtime_t last;
@@ -159,13 +162,13 @@ dtrace_xpv_gethrtime(void)
 void
 xpv_time_suspend(void)
 {
-	hrtime_suspend_time = xpv_getsystime();
+	hrtime_suspend_time = dtrace_xpv_getsystime();
 }
 
 void
 xpv_time_resume(void)
 {
-	hrtime_t delta = xpv_getsystime() - hrtime_suspend_time;
+	hrtime_t delta = dtrace_xpv_getsystime() - hrtime_suspend_time;
 
 	if (delta < 0)
 		hrtime_addend += -delta;

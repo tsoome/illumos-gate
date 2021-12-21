@@ -53,11 +53,13 @@
 #include <sys/hypervisor.h>
 #endif
 
+#ifndef __xpv
 /*
  * AMD-specific equivalence table
  */
 static ucode_eqtbl_amd_t *ucode_eqtbl_amd;
 static uint_t ucode_eqtbl_amd_entries;
+#endif
 
 /*
  * mcpu_ucode_info for the boot CPU.  Statically allocated.
@@ -84,10 +86,10 @@ static int ucode_capable_amd(cpu_t *);
 static ucode_errno_t ucode_extract_amd(ucode_update_t *, uint8_t *, int);
 static void ucode_file_reset_amd(ucode_file_t *, processorid_t);
 static uint32_t ucode_load_amd(ucode_file_t *, cpu_ucode_info_t *, cpu_t *);
-static int ucode_equiv_cpu_amd(cpu_t *, uint16_t *);
 static ucode_errno_t ucode_locate_amd(cpu_t *, cpu_ucode_info_t *,
     ucode_file_t *);
 #ifndef __xpv
+static int ucode_equiv_cpu_amd(cpu_t *, uint16_t *);
 static ucode_errno_t ucode_match_amd(uint16_t, cpu_ucode_info_t *,
     ucode_file_amd_t *, int);
 #else
@@ -272,6 +274,7 @@ ucode_file_reset_intel(ucode_file_t *ufp, processorid_t id)
 	ucodefp->uf_header = NULL;
 }
 
+#ifndef __xpv
 /*
  * Find the equivalent CPU id in the equivalence table.
  */
@@ -370,13 +373,14 @@ ucode_equiv_cpu_amd(cpu_t *cp, uint16_t *eq_sig)
 
 	return (EM_OK);
 }
+#endif
 
+#ifdef __xpv
 /*
  * xVM cannot check for the presence of PCI devices. Look for chipset-
  * specific microcode patches in the container file and disable them
  * by setting their CPU revision to an invalid value.
  */
-#ifdef __xpv
 static void
 ucode_chipset_amd(uint8_t *buf, int size)
 {

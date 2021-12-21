@@ -208,7 +208,7 @@ balloon_init_new_pages(mfn_t framelist[], pgcnt_t count)
 	pfn_t	meta_start;
 	page_t	*page_array;
 	caddr_t	va;
-	int	i, rv, locked;
+	int	i, rv __unused, locked;
 	mem_structs_t *mem;
 	struct memseg *segp;
 

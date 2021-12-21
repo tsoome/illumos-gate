@@ -1383,6 +1383,7 @@ hat_pcp_update(cpu_t *cpu, const hat_t *hat)
 	}
 }
 
+#ifndef __xpv
 static void
 reset_kpti(struct kpti_frame *fr, uint64_t kcr3, uint64_t ucr3)
 {
@@ -1407,6 +1408,7 @@ reset_kpti(struct kpti_frame *fr, uint64_t kcr3, uint64_t ucr3)
 	fr->kf_middle_redzone = 0xdeadbeefdeadbeef;
 	fr->kf_upper_redzone = 0xdeadbeefdeadbeef;
 }
+#endif
 
 #ifdef __xpv
 static void

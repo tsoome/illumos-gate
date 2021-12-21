@@ -509,7 +509,7 @@ int
 update_sregs(struct regs *rp,  klwp_t *lwp)
 {
 	pcb_t *pcb = &lwp->lwp_pcb;
-	ulong_t	kgsbase;
+	ulong_t	kgsbase __unused;
 	on_trap_data_t	otd;
 	int rc;
 

@@ -441,7 +441,7 @@ void
 mach_cpucontext_restore(cpu_t *cp)
 {
 	vcpu_guest_context_t vgc;
-	int err;
+	int err __unused;
 
 	ASSERT(cp->cpu_thread == cp->cpu_pause_thread ||
 	    cp->cpu_thread == cp->cpu_idle_thread);
