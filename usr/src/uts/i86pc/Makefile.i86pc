@@ -138,6 +138,8 @@ CERRWARN		+= -_clang=-Wno-parentheses
 CERRWARN		+= -_clang=-Wno-char-subscripts
 CERRWARN		+= -_clang=-Wno-uninitialized
 CERRWARN		+= -_clang=-Wno-format-security
+CERRWARN		+= -_clang=-Wno-switch
+CERRWARN		+= -_clang=-Wno-null-pointer-arithmetic
 
 #
 #	The following must be defined for all implementations:
@@ -207,8 +209,7 @@ ALL_DEFS	 = $(MACHINE_DEFS) $(WORKAROUND_DEFS) $(DEBUG_DEFS) \
 		   $(OPTION_DEFS)
 GENASSYM_DEFS	 = $(MACHINE_DEFS) $(OPTION_DEFS) \
 			-_gcc=-fno-eliminate-unused-debug-symbols \
-			-_gcc=-fno-eliminate-unused-debug-types \
-			-U__EXTENSIONS__ -U_XOPEN_SOURCE
+			-_gcc=-fno-eliminate-unused-debug-types
 
 #
 # ----- TRANSITIONAL SECTION --------------------------------------------------
