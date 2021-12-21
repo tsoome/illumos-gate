@@ -59,7 +59,6 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
 #
-CFLAGS		+= $(CCVERBOSE)
 LDFLAGS		+= -Nmisc/mac -Nmisc/dls -Ndrv/ipnet -Nmisc/neti
 INC_PATH	+= -I$(UTSBASE)/common/io/bpf
 
@@ -69,7 +68,6 @@ INC_PATH	+= -I$(UTSBASE)/common/io/bpf
 # Please do not carry these forward to new Makefiles.
 #
 
-CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
