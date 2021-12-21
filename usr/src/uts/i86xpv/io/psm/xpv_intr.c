@@ -238,7 +238,7 @@ void
 apic_pci_msi_enable_vector(apic_irq_t *irq_ptr, int type, int inum, int vector,
     int count, int target_apic_id)
 {
-	uint64_t		msi_addr, msi_data;
+	uint64_t		msi_addr __unused, msi_data __unused;
 	ushort_t		msi_ctrl;
 	dev_info_t		*dip = irq_ptr->airq_dip;
 	int			cap_ptr = i_ddi_get_msi_msix_cap_ptr(dip);
