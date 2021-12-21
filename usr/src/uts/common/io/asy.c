@@ -1921,7 +1921,6 @@ nodrain:
 		    (icr & ~RIEN));
 	}
 	mutex_exit(&asy->asy_excl_hi);
-out:
 	ttycommon_close(&async->async_ttycommon);
 
 	/*
@@ -4242,7 +4241,7 @@ static int
 asymctl(struct asycom *asy, int bits, int how)
 {
 	int mcr_r, msr_r;
-	int instance = asy->asy_unit;
+	int instance __unused = asy->asy_unit;
 
 	ASSERT(mutex_owned(&asy->asy_excl_hi));
 	ASSERT(mutex_owned(&asy->asy_excl));
@@ -4593,7 +4592,7 @@ async_flowcontrol_sw_input(struct asycom *asy, async_flowc_action onoff,
     int type)
 {
 	struct asyncline *async = asy->asy_priv;
-	int instance = UNIT(async->async_dev);
+	int instance __unused = UNIT(async->async_dev);
 	int rval = B_FALSE;
 
 	ASSERT(mutex_owned(&asy->asy_excl_hi));
@@ -4667,7 +4666,7 @@ static void
 async_flowcontrol_sw_output(struct asycom *asy, async_flowc_action onoff)
 {
 	struct asyncline *async = asy->asy_priv;
-	int instance = UNIT(async->async_dev);
+	int instance __unused = UNIT(async->async_dev);
 
 	ASSERT(mutex_owned(&asy->asy_excl_hi));
 
@@ -4714,7 +4713,7 @@ async_flowcontrol_hw_input(struct asycom *asy, async_flowc_action onoff,
 	uchar_t	mcr;
 	uchar_t	flag;
 	struct asyncline *async = asy->asy_priv;
-	int instance = UNIT(async->async_dev);
+	int instance __unused = UNIT(async->async_dev);
 
 	ASSERT(mutex_owned(&asy->asy_excl_hi));
 
@@ -4767,7 +4766,7 @@ static void
 async_flowcontrol_hw_output(struct asycom *asy, async_flowc_action onoff)
 {
 	struct asyncline *async = asy->asy_priv;
-	int instance = UNIT(async->async_dev);
+	int instance __unused = UNIT(async->async_dev);
 
 	ASSERT(mutex_owned(&asy->asy_excl_hi));
 
