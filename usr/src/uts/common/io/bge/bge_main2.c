@@ -3559,7 +3559,6 @@ bge_read_bc_ver(bge_t *bgep)
 static void
 bge_read_fw_ver(bge_t *bgep)
 {
-	uint32_t val;
 	uint32_t magic;
 
 	*bgep->fw_version = 0;

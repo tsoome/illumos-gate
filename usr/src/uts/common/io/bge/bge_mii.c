@@ -559,7 +559,7 @@ bge_phy_bit_err_fix(bge_t *bgep)
 static int
 bge_restart_copper(bge_t *bgep, boolean_t powerdown)
 {
-	uint16_t phy_status;
+	uint16_t phy_status __unused;
 	boolean_t reset_ok;
 	uint16_t extctrl, auxctrl;
 	int i;

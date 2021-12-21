@@ -2577,15 +2577,8 @@ int bge_chip_id_init(bge_t *bgep);
 int
 bge_chip_id_init(bge_t *bgep)
 {
-	char buf[MAXPATHLEN];		/* any risk of stack overflow?	*/
 	boolean_t dev_ok;
 	chip_id_t *cidp;
-	uint32_t subid;
-	char *devname;
-	char *sysname;
-	int *ids;
-	int err;
-	uint_t i;
 
 	dev_ok = B_FALSE;
 	cidp = &bgep->chipid;
@@ -3791,8 +3784,6 @@ void bge_chip_stop(bge_t *bgep, boolean_t fault);
 void
 bge_chip_stop(bge_t *bgep, boolean_t fault)
 {
-	bge_regno_t regno;
-	bge_regno_t *rbp;
 	boolean_t ok = B_TRUE;
 
 	BGE_TRACE(("bge_chip_stop($%p)",
@@ -3889,7 +3880,7 @@ static uint64_t bge_poll_firmware(bge_t *bgep);
 static uint64_t
 bge_poll_firmware(bge_t *bgep)
 {
-	uint64_t magic;
+	uint64_t magic __unused;
 	uint64_t mac;
 	uint32_t gen, val;
 	uint32_t i;
@@ -4375,7 +4366,6 @@ bge_chip_start(bge_t *bgep, boolean_t reset_phys)
 	uint64_t ring;
 	uint32_t reg;
 	uint32_t regval;
-	uint32_t mhcr;
 	int retval = DDI_SUCCESS;
 	int i;
 
@@ -5094,15 +5084,15 @@ bge_wake_factotum(bge_t *bgep)
 static void
 bge_intr_error_handler(bge_t *bgep)
 {
-	uint32_t flow;
-	uint32_t rdma;
-	uint32_t wdma;
-	uint32_t tmac;
-	uint32_t rmac;
-	uint32_t rxrs;
-	uint32_t emac;
-	uint32_t msis;
-	uint32_t txrs = 0;
+	uint32_t flow __unused;
+	uint32_t rdma __unused;
+	uint32_t wdma __unused;
+	uint32_t tmac __unused;
+	uint32_t rmac __unused;
+	uint32_t rxrs __unused;
+	uint32_t emac __unused;
+	uint32_t msis __unused;
+	uint32_t txrs __unused = 0;
 
 	ASSERT(mutex_owned(bgep->genlock));
 
