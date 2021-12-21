@@ -46,14 +46,6 @@ ROOTMODULE	= $(ROOT_DRV_DIR)/$(MODULE)
 include $(UTSBASE)/intel/Makefile.intel
 
 #
-# For now, disable these warnings; maintainers should endeavor
-# to investigate and remove these for maximum coverage.
-# Please do not carry these forward to new Makefiles.
-#
-CFLAGS		+= $(CCVERBOSE)
-CERRWARN	+= -_gcc=-Wno-unused-label
-
-#
 #	Depends on misc/audiosup
 #
 LDFLAGS		+= -Ndrv/audio -Nmisc/ac97
