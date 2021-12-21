@@ -96,7 +96,7 @@
 #define	XENBUSDRV_INST2SOFTS(instance)	\
 	((xenbus_dev_t *)ddi_get_soft_state(xenbusdrv_statep, (instance)))
 
-static int xenbusdrv_debug = 0;
+static int xenbusdrv_debug __unused = 0;
 static int xenbusdrv_clone_tab[XENBUSDRV_NCLONES];
 static dev_info_t *xenbusdrv_dip;
 static kmutex_t xenbusdrv_clone_tab_mutex;
