@@ -134,7 +134,7 @@ MODEL		= $(MODEL_$(CLASS))
 #
 #	Build the compile/assemble lines:
 #
-EXTRA_OPTIONS		= -U__EXTENSIONS__ -U_XOPEN_SOURCE
+EXTRA_OPTIONS		=
 AS_DEFS			= -D_ASM -D__STDC__=0
 
 ALWAYS_DEFS_32		= -D_KERNEL -D_SYSCALL32 -D_DDI_STRICT
@@ -145,6 +145,7 @@ ALWAYS_DEFS_64		= -D_KERNEL -D_SYSCALL32 -D_SYSCALL32_IMPL -D_ELF64 \
 #
 ALWAYS_DEFS_64		+= -Dsun -D__sun -D__SVR4
 ALWAYS_DEFS		= $(ALWAYS_DEFS_$(CLASS))
+ALWAYS_DEFS		+= -U__EXTENSIONS__ -U_XOPEN_SOURCE
 
 #
 #	CPPFLAGS is deliberatly set with a "=" and not a "+=".  For the kernel
@@ -177,7 +178,6 @@ CNOWARN_UNINIT = -_gcc=-Wno-maybe-uninitialized
 
 # DEBUG v. -nd make for frequent unused variables, empty conditions, etc. in
 # -nd builds
-$(RELEASE_BUILD)CERRWARN += -_gcc=-Wno-unused
 $(RELEASE_BUILD)CERRWARN += -_gcc=-Wno-empty-body
 
 CERRWARN += -_smatch=-p=illumos_kernel
@@ -213,6 +213,7 @@ CFLAGS_uts		+= $(CSOURCEDEBUGFLAGS)
 CFLAGS_uts		+= $(CUSERFLAGS)
 CFLAGS_uts		+= $(CFLAGS_uts_$(MACH))
 CFLAGS_uts		+= -_gcc=-fno-asynchronous-unwind-tables
+CFLAGS_uts		+= $(CALLSYMS)
 
 #
 #	Declare that $(OBJECTS) can be compiled in parallel.  The DUMMY target
