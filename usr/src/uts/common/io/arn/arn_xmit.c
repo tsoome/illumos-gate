@@ -1859,12 +1859,12 @@ arn_tx_start(struct arn_softc *sc, struct ieee80211_node *in,
 	ieee80211com_t *ic = (ieee80211com_t *)sc;
 	struct ieee80211_frame *wh = (struct ieee80211_frame *)mp->b_rptr;
 	struct ath_hal *ah = sc->sc_ah;
-	struct ath_node *an;
+	struct ath_node *an __unused;
 	struct ath_desc *ds;
 	struct ath_txq *txq;
-	struct ath_rate_table *rt;
+	struct ath_rate_table *rt __unused;
 	enum ath9k_pkt_type atype;
-	boolean_t shortPreamble, is_padding = B_FALSE;
+	boolean_t shortPreamble __unused, is_padding = B_FALSE;
 	uint32_t subtype, keytype = ATH9K_KEY_TYPE_CLEAR;
 	int32_t keyix, iswep, hdrlen, pktlen, mblen, mbslen;
 	caddr_t dest;
@@ -2140,6 +2140,7 @@ bad:
 	return (error);
 }
 
+#ifdef DEBUG
 static void
 arn_printtxbuf(struct ath_buf *bf, int done)
 {
@@ -2154,6 +2155,7 @@ arn_printtxbuf(struct ath_buf *bf, int done)
 	    ds->ds_hw[0], ds->ds_hw[1], ds->ds_hw[2], ds->ds_hw[3],
 	    !done ? ' ' : (ts->ts_status == 0) ? '*' : '!'));
 }
+#endif
 
 /* ARGSUSED */
 static void

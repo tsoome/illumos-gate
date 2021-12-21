@@ -686,11 +686,10 @@ arn_setup_channels(struct arn_softc *sc)
 	if (!ath9k_regd_init_channels(ah, ATH_CHAN_MAX, (uint32_t *)&nchan,
 	    regclassids, ATH_REGCLASSIDS_MAX, &nregclass, CTRY_DEFAULT,
 	    B_FALSE, 1)) {
-		uint32_t rd = ah->ah_currentRD;
 		ARN_DBG((ARN_DBG_CHANNEL, "arn: arn_setup_channels(): "
 		    "unable to collect channel list; "
 		    "regdomain likely %u country code %u\n",
-		    rd, CTRY_DEFAULT));
+		    ah->ah_currentRD, CTRY_DEFAULT));
 		return (EINVAL);
 	}
 
@@ -1300,6 +1299,7 @@ arn_get_hal_qnum(uint16_t queue, struct arn_softc *sc)
 	return (qnum);
 }
 
+#ifdef DEBUG
 static struct {
 	uint32_t version;
 	const char *name;
@@ -1326,7 +1326,6 @@ static struct {
 /*
  * Return the MAC/BB name. "????" is returned if the MAC/BB is unknown.
  */
-
 static const char *
 arn_mac_bb_name(uint32_t mac_bb_version)
 {
@@ -1344,7 +1343,6 @@ arn_mac_bb_name(uint32_t mac_bb_version)
 /*
  * Return the RF name. "????" is returned if the RF is unknown.
  */
-
 static const char *
 arn_rf_name(uint16_t rf_version)
 {
@@ -1358,6 +1356,7 @@ arn_rf_name(uint16_t rf_version)
 
 	return ("????");
 }
+#endif
 
 static void
 arn_next_scan(void *arg)
@@ -2792,7 +2791,7 @@ arn_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	int		instance;
 	int		status;
 	int32_t		err;
-	uint16_t	vendor_id;
+	uint16_t	vendor_id __unused;
 	uint16_t	device_id;
 	uint32_t	i;
 	uint32_t	val;

@@ -152,7 +152,7 @@ arn_opmode_init(struct arn_softc *sc)
 	struct ath_hal *ah = sc->sc_ah;
 	uint32_t rfilt;
 	uint32_t mfilt[2];
-	ieee80211com_t *ic = (ieee80211com_t *)sc;
+	ieee80211com_t *ic __unused = (ieee80211com_t *)sc;
 
 	/* configure rx filter */
 	rfilt = arn_calcrxfilter(sc);
@@ -397,6 +397,7 @@ arn_recv_mgmt(struct ieee80211com *ic, mblk_t *mp, struct ieee80211_node *in,
 	ARN_UNLOCK(sc);
 }
 
+#ifdef DEBUG
 static void
 arn_printrxbuf(struct ath_buf *bf, int32_t done)
 {
@@ -411,6 +412,7 @@ arn_printrxbuf(struct ath_buf *bf, int32_t done)
 	    ds->ds_hw[0], ds->ds_hw[1],
 	    !done ? ' ' : (rs->rs_status == 0) ? '*' : '!'));
 }
+#endif
 
 static void
 arn_rx_handler(struct arn_softc *sc)

@@ -481,14 +481,6 @@ arn_rc_set_valid_txmask(struct ath_rate_priv *ath_rc_priv,
 	ath_rc_priv->valid_rate_index[index] = valid_tx_rate ? 1 : 0;
 }
 
-static inline int
-/* LINTED E_STATIC_UNUSED */
-arn_rc_isvalid_txmask(struct ath_rate_priv *ath_rc_priv, uint8_t index)
-{
-	ASSERT(index <= ath_rc_priv->rate_table_size);
-	return (ath_rc_priv->valid_rate_index[index]);
-}
-
 /* ARGSUSED */
 static inline int
 arn_rc_get_nextvalid_txrate(struct ath_rate_table *rate_table,

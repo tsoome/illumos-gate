@@ -1033,7 +1033,7 @@ ath9k_hw_setuprxdesc(struct ath_hal *ah, struct ath_desc *ds,
 boolean_t
 ath9k_hw_setrxabort(struct ath_hal *ah, boolean_t set)
 {
-	uint32_t reg;
+	uint32_t reg __unused;
 
 	if (set) {
 		REG_SET_BIT(ah, AR_DIAG_SW,

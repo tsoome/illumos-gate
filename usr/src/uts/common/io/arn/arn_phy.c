@@ -214,8 +214,7 @@ ath9k_hw_set_rf_regs(struct ath_hal *ah, struct ath9k_channel *chan,
 	uint32_t eepMinorRev;
 	uint32_t ob5GHz = 0, db5GHz = 0;
 	uint32_t ob2GHz = 0, db2GHz = 0;
-	/* LINTED E_FUNC_SET_NOT_USED */
-	int regWrites = 0;
+	int regWrites __unused = 0;
 
 	if (AR_SREV_9280_10_OR_LATER(ah))
 		return (B_TRUE);
@@ -403,8 +402,7 @@ ath9k_hw_init_rf(struct ath_hal *ah, int *status)
 void
 ath9k_hw_decrease_chain_power(struct ath_hal *ah, struct ath9k_channel *chan)
 {
-	/* LINTED E_FUNC_SET_NOT_USED */
-	int i, regWrites = 0;
+	int i, regWrites __unused = 0;
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	uint32_t bank6SelMask;
 	uint32_t *bank6Temp = ahp->ah_bank6Temp;

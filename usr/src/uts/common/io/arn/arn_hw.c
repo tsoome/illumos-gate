@@ -2913,13 +2913,15 @@ boolean_t
 ath9k_hw_setpower(struct ath_hal *ah, enum ath9k_power_mode mode)
 {
 	struct ath_hal_5416 *ahp = AH5416(ah);
+#ifdef DEBUG
 	static const char *modes[] = {
 		"AWAKE",
 		"FULL-SLEEP",
 		"NETWORK SLEEP",
 		"UNDEFINED"
 	};
-	int status = B_TRUE, setChip = B_TRUE;
+#endif
+	boolean_t status = B_TRUE, setChip = B_TRUE;
 	ARN_DBG((ARN_DBG_ANY, "arn: ath9k_hw_setpower(): "
 	    "%s -> %s (%s)\n",
 	    modes[ahp->ah_powerMode],
