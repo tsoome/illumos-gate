@@ -77,9 +77,11 @@ typedef struct lacp_misconfig_check_state_s {
 	boolean_t cs_found;
 } lacp_misconfig_check_state_t;
 
+#ifdef DEBUG
 static const char *lacp_receive_str[] = LACP_RECEIVE_STATE_STRINGS;
 static const char *lacp_periodic_str[] = LACP_PERIODIC_STRINGS;
 static const char *lacp_mux_str[] = LACP_MUX_STRINGS;
+#endif
 
 static uint16_t lacp_port_priority = 0x1000;
 static uint16_t lacp_system_priority = 0x1000;
@@ -240,7 +242,7 @@ lacp_port_select(aggr_port_t *portp)
 static void
 lacp_port_unselect(aggr_port_t *portp)
 {
-	aggr_grp_t	*grp = portp->lp_grp;
+	aggr_grp_t	*grp __unused = portp->lp_grp;
 
 	ASSERT((grp->lg_mh == NULL) || MAC_PERIM_HELD(grp->lg_mh));
 
@@ -534,9 +536,10 @@ periodic_timer_pop_handler(aggr_port_t *portp)
 static void
 lacp_periodic_sm(aggr_port_t *portp)
 {
-	lacp_periodic_state_t oldstate = portp->lp_lacp.sm.periodic_state;
+	lacp_periodic_state_t oldstate __unused;
 	aggr_lacp_port_t *pl = &portp->lp_lacp;
 
+	oldstate = portp->lp_lacp.sm.periodic_state;
 	ASSERT(MAC_PERIM_HELD(portp->lp_grp->lg_mh));
 
 	/* LACP_OFF state not in specification so check here.  */
@@ -746,7 +749,7 @@ lacp_mux_sm(aggr_port_t *portp)
 	aggr_grp_t *aggrp = portp->lp_grp;
 	boolean_t NTT_updated = B_FALSE;
 	aggr_lacp_port_t *pl = &portp->lp_lacp;
-	lacp_mux_state_t oldstate = pl->sm.mux_state;
+	lacp_mux_state_t oldstate __unused = pl->sm.mux_state;
 
 	ASSERT(MAC_PERIM_HELD(aggrp->lg_mh));
 
@@ -1658,7 +1661,7 @@ lacp_on(aggr_port_t *portp)
 		/* periodic_sm is started up from the receive machine */
 		lacp_selection_logic(portp);
 	}
-done:
+
 	mac_perim_exit(mph);
 } /* lacp_on */
 

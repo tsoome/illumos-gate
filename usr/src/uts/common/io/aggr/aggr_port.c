@@ -69,7 +69,7 @@ aggr_port_constructor(void *buf, void *arg, int kmflag)
 static void
 aggr_port_destructor(void *buf, void *arg)
 {
-	aggr_port_t *port = buf;
+	aggr_port_t *port __unused = buf;
 
 	ASSERT3P(port->lp_mnh, ==, NULL);
 	ASSERT(!port->lp_tx_grp_added);

@@ -2865,7 +2865,6 @@ update_ports:
 	if (avp != NULL)
 		list_insert_tail(&rx_group->arg_vlans, avp);
 
-done:
 	mac_perim_exit(mph);
 	return (err);
 }
@@ -3248,7 +3247,7 @@ try_again:
 static int
 aggr_sdu_update(aggr_grp_t *grp, uint32_t sdu)
 {
-	int			err = 0, i, rv;
+	int			err = 0, i, rv __unused;
 	aggr_port_t		*port;
 	uint32_t		*mtu;
 
