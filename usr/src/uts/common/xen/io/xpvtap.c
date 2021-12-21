@@ -964,15 +964,9 @@ xpvtap_user_thread_init(xpvtap_state_t *state)
 	(void) sprintf(taskqname, "xvptap_%d", state->bt_instance);
 	thread->ut_taskq = ddi_taskq_create(state->bt_dip, taskqname, 1,
 	    TASKQ_DEFAULTPRI, 0);
-	if (thread->ut_taskq == NULL) {
-		goto userinitthrfail_taskq_create;
-	}
+	if (thread->ut_taskq != NULL)
+		return (DDI_SUCCESS);
 
-	return (DDI_SUCCESS);
-
-userinitthrfail_taskq_dispatch:
-	ddi_taskq_destroy(thread->ut_taskq);
-userinitthrfail_taskq_create:
 	cv_destroy(&thread->ut_exit_done_cv);
 	cv_destroy(&thread->ut_wake_cv);
 	mutex_destroy(&thread->ut_mutex);
