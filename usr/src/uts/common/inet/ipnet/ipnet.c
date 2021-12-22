@@ -954,7 +954,7 @@ done:
 static void
 ipnet_leave_allmulti(ipnetif_t *ipnetif, ipnet_stack_t *ips)
 {
-	int		err;
+	int		err __unused;
 	ip_stack_t	*ipst = ips->ips_netstack->netstack_ip;
 	uint64_t	index = ipnetif->if_index;
 
