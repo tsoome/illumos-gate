@@ -65,7 +65,6 @@ SMATCH=off
 
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-switch
-CERRWARN	+= -_gcc=-Wno-unused-variable
 
 #
 #	Default build targets.
