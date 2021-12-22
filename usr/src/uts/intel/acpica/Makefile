@@ -49,10 +49,8 @@ DEBUG_DEFS	+= $(DEBUG_FLGS)
 #
 CFLAGS += $(CCVERBOSE)
 CERRWARN += -erroff=E_STATEMENT_NOT_REACHED
-CERRWARN += -_gcc=-Wno-unused-variable
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
-CERRWARN += -_gcc=-Wno-unused-function
 SMOFF += all_func_returns
 
 CFLAGS += -DPWRDMN -DACPI_USE_LOCAL_CACHE -DACPI_DEBUG_OUTPUT
