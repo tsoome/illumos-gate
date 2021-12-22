@@ -35,12 +35,6 @@ CPPFLAGS	+= -DVERSION=\"2.0.0\"
 CPPFLAGS	+= -DUSBGEM_CONFIG_GLDv3
 LDFLAGS		+= -N misc/mac -N drv/ip -N misc/usba -N misc/usbgem
 
-CERRWARN	+= -_gcc=-Wno-unused-value
-CERRWARN	+= -_gcc=-Wno-unused-function
-CERRWARN	+= -_gcc=-Wno-unused-variable
-CERRWARN	+= -_gcc=-Wno-unused-label
-
-
 # needs work
 $(OBJS_DIR)/udmf_usbgem.o := SMOFF += indenting
 
