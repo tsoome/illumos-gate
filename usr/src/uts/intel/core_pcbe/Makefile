@@ -128,7 +128,6 @@ ROOTSOFTLINKS	= $(SOFTLINKS:%=$(USR_PCBE_DIR)/%)
 include $(UTSBASE)/intel/Makefile.intel
 
 CERRWARN	+= $(CNOWARN_UNINIT)
-CERRWARN	+= -_gcc=-Wno-unused-variable
 
 CPPFLAGS	+= -I$(UTSBASE)/intel/core_pcbe
 CLEANFILES	+= $(CPCGEN_SRCS)
