@@ -64,7 +64,6 @@ LDFLAGS		+= -Nmisc/dadk -Nmisc/strategy -Nmisc/cmlb
 # Larger than 1TB VTOC support
 CPPFLAGS	+= -D_EXTVTOC
 
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= -_gcc=-Wno-type-limits

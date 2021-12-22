@@ -109,8 +109,6 @@ static void cmdk_bbh_reopen(struct cmdk *dkp);
 static opaque_t cmdk_bbh_gethandle(opaque_t bbh_data, struct buf *bp);
 static bbh_cookie_t cmdk_bbh_htoc(opaque_t bbh_data, opaque_t handle);
 static void cmdk_bbh_freehandle(opaque_t bbh_data, opaque_t handle);
-static void cmdk_bbh_close(struct cmdk *dkp);
-static void cmdk_bbh_setalts_idx(struct cmdk *dkp);
 static int cmdk_bbh_bsearch(struct alts_ent *buf, int cnt, daddr32_t key);
 
 static struct bbh_objops cmdk_bbh_ops = {
@@ -220,6 +218,7 @@ static cmlb_tg_ops_t cmdk_lb_ops = {
 	cmdk_lb_getinfo
 };
 
+#ifdef DEBUG
 static boolean_t
 cmdk_isopen(struct cmdk *dkp, dev_t dev)
 {
@@ -239,6 +238,7 @@ cmdk_isopen(struct cmdk *dkp, dev_t dev)
 			return (B_TRUE);
 	return (B_FALSE);
 }
+#endif
 
 int
 _init(void)
@@ -1805,17 +1805,6 @@ err:
 		ddi_devid_free(devid);
 
 	return (rc);
-}
-
-static void
-cmdk_bbh_free_alts(struct cmdk *dkp)
-{
-	if (dkp->dk_alts_hdl) {
-		(void) dadk_iob_free(DKTP_DATA, dkp->dk_alts_hdl);
-		kmem_free(dkp->dk_slc_cnt,
-		    NDKMAP * (sizeof (uint32_t) + sizeof (struct alts_ent *)));
-		dkp->dk_alts_hdl = NULL;
-	}
 }
 
 static void

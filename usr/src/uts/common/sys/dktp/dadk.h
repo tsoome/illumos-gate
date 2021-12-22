@@ -128,7 +128,6 @@ int dadk_dump(opaque_t objp, struct buf *bp);
 int dadk_getphygeom(opaque_t objp, struct tgdk_geom *dkgeom_p);
 int dadk_set_bbhobj(opaque_t objp, opaque_t bbhobjp);
 int dadk_check_media(opaque_t objp, int *state);
-static void dadk_watch_thread(struct dadk *dadkp);
 int dadk_inquiry(opaque_t objp, opaque_t *inqpp);
 void dadk_cleanup(struct tgdk_obj *dkobjp);
 

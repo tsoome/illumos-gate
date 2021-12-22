@@ -62,6 +62,7 @@ static int dadk_chkerr(struct cmpkt *pktp);
 static int dadk_ioprep(struct dadk *dadkp, struct cmpkt *pktp);
 static int dadk_iosetup(struct dadk *dadkp, struct cmpkt *pktp);
 static int dadk_ioretry(struct cmpkt *pktp, int action);
+static void dadk_watch_thread(struct dadk *dadkp);
 
 static struct cmpkt *dadk_pktprep(struct dadk *dadkp, struct cmpkt *in_pktp,
     struct buf *bp, void (*cb_func)(struct buf *), int (*func)(caddr_t),
