@@ -51,11 +51,6 @@ include $(UTSBASE)/intel/Makefile.intel
 #
 LDFLAGS += -Nsys/doorfs -Nstrmod/rpcmod
 
-# Function variables unused for rpcgen-generated code
-# Constant conditions for do { } while (0) macros
-#
-CERRWARN	+= -_gcc=-Wno-unused-variable
-
 #
 #	Define targets
 #
