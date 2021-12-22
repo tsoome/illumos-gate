@@ -67,7 +67,6 @@ LDFLAGS		+= -Ndrv/fcp -Nmisc/fctl -Nmisc/scsi
 # Please do not carry these forward to new Makefiles.
 #
 CERRWARN	+= $(CNOWARN_UNINIT)
-CERRWARN	+= -_gcc=-Wno-unused-function
 
 # needs work
 $(OBJS_DIR)/fp.o := SMOFF += all_func_returns,deref_check
