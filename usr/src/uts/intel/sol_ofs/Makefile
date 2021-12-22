@@ -58,7 +58,6 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= -_gcc=-Wno-type-limits
-CERRWARN	+= -_gcc=-Wno-unused-variable
 
 # needs work
 $(OBJS_DIR)/sol_cma.o := SMOFF += deref_check
