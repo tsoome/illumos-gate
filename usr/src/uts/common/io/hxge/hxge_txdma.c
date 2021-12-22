@@ -1710,14 +1710,6 @@ hxge_map_txdma_channel(p_hxge_t hxgep, uint16_t channel,
 	hxge_map_txdma_channel_cfg_ring(hxgep, channel, dma_cntl_p, *tx_desc_p,
 	    tx_mbox_p);
 
-	goto hxge_map_txdma_channel_exit;
-
-hxge_map_txdma_channel_fail1:
-	HXGE_DEBUG_MSG((hxgep, MEM3_CTL,
-	    "==> hxge_map_txdma_channel: unmap buf"
-	    "(status 0x%x channel %d)", status, channel));
-	hxge_unmap_txdma_channel_buf_ring(hxgep, *tx_desc_p);
-
 hxge_map_txdma_channel_exit:
 	HXGE_DEBUG_MSG((hxgep, MEM3_CTL,
 	    "<== hxge_map_txdma_channel: (status 0x%x channel %d)",
