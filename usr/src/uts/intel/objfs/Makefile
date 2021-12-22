@@ -66,7 +66,6 @@ CFLAGS		+= $(CCVERBOSE)
 #
 
 CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
