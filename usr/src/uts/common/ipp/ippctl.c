@@ -465,7 +465,7 @@ ippctl_close(
 	int	otyp,
 	cred_t	*credp)
 {
-	minor_t	minor = getminor(dev);
+	minor_t	minor __unused = getminor(dev);
 
 	DBG0(DBG_CBOPS, "close\n");
 
