@@ -63,7 +63,6 @@ LDFLAGS		+= -Nmisc/mac -Nmisc/net80211
 #
 
 CERRWARN	+= $(CNOWARN_UNINIT)
-CERRWARN	+= -_gcc=-Wno-unused-value
 
 # needs work
 SMOFF += return_cast
