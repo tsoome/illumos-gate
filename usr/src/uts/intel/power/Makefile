@@ -69,8 +69,6 @@ LDFLAGS += -N misc/acpica
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS += $(CCVERBOSE)
-CERRWARN += -_gcc=-Wno-unused-function
-CERRWARN += -_gcc=-Wno-unused-variable
 
 #
 #	Default build targets.
