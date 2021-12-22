@@ -64,7 +64,6 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
-CERRWARN	+= -_gcc=-Wno-unused-value
 
 # needs work
 $(OBJS_DIR)/tmp_vnops.o := SMOFF += signed
