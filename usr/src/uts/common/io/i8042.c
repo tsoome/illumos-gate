@@ -390,7 +390,9 @@ _info(struct modinfo *modinfop)
 
 #define	DRIVER_NAME(dip)	ddi_driver_name(dip)
 
+#ifdef __sparc
 static void i8042_timeout(void *arg);
+#endif
 static unsigned int i8042_intr(caddr_t arg);
 static void i8042_write_command_byte(struct i8042 *, unsigned char);
 static uint8_t i8042_get8(ddi_acc_impl_t *handlep, uint8_t *addr);
