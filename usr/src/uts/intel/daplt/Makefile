@@ -66,8 +66,6 @@ INCLUDE_PATH += -I$(UTSBASE)/common/sys/ib/clients/daplt
 #
 
 CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-unused-variable
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
