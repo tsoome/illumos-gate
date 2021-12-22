@@ -5569,7 +5569,7 @@ pc97317_unmap_regs(struct ecppunit *pp)
 static int
 pc97317_config_chip(struct ecppunit *pp)
 {
-	uint8_t conreg;
+	uint8_t conreg __unused;
 
 	/* set the logical device name */
 	pc87332_write_config_reg(pp, PC97317_CONFIG_DEV_NO, 0x4);
