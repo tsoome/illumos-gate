@@ -69,8 +69,6 @@ LDFLAGS		+= -Nmisc/busra -Nmisc/pcmcia -Nmisc/cardbus
 #
 
 CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-unused-variable
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
