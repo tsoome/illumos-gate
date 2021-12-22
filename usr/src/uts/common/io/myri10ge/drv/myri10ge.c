@@ -1695,130 +1695,6 @@ myri10ge_init_toeplitz(struct myri10ge_priv *mgp)
 	return (0);
 }
 
-static inline struct myri10ge_slice_state *
-myri10ge_toeplitz_send_hash(struct myri10ge_priv *mgp, struct ip *ip)
-{
-	struct tcphdr *hdr;
-	uint32_t saddr, daddr;
-	uint32_t hash, slice;
-	uint32_t *table = mgp->toeplitz_hash_table;
-	uint16_t src, dst;
-
-	/*
-	 * Note hashing order is reversed from how it is done
-	 * in the NIC, so as to generate the same hash value
-	 * for the connection to try to keep connections CPU local
-	 */
-
-	/* hash on IPv4 src/dst address */
-	saddr = ntohl(ip->ip_src.s_addr);
-	daddr = ntohl(ip->ip_dst.s_addr);
-	hash = table[(256 * 0) + ((daddr >> 24) & 0xff)];
-	hash ^= table[(256 * 1) + ((daddr >> 16) & 0xff)];
-	hash ^= table[(256 * 2) + ((daddr >> 8) & 0xff)];
-	hash ^= table[(256 * 3) + ((daddr) & 0xff)];
-	hash ^= table[(256 * 4) + ((saddr >> 24) & 0xff)];
-	hash ^= table[(256 * 5) + ((saddr >> 16) & 0xff)];
-	hash ^= table[(256 * 6) + ((saddr >> 8) & 0xff)];
-	hash ^= table[(256 * 7) + ((saddr) & 0xff)];
-	/* hash on TCP port, if required */
-	if ((myri10ge_rss_hash & MXGEFW_RSS_HASH_TYPE_TCP_IPV4) &&
-	    ip->ip_p == IPPROTO_TCP) {
-		hdr = (struct tcphdr *)(void *)
-		    (((uint8_t *)ip) +  (ip->ip_hl << 2));
-		src = ntohs(hdr->th_sport);
-		dst = ntohs(hdr->th_dport);
-
-		hash ^= table[(256 * 8) + ((dst >> 8) & 0xff)];
-		hash ^= table[(256 * 9) + ((dst) & 0xff)];
-		hash ^= table[(256 * 10) + ((src >> 8) & 0xff)];
-		hash ^= table[(256 * 11) + ((src) & 0xff)];
-	}
-	slice = (mgp->num_slices - 1) & hash;
-	return (&mgp->ss[slice]);
-
-}
-
-static inline struct myri10ge_slice_state *
-myri10ge_simple_send_hash(struct myri10ge_priv *mgp, struct ip *ip)
-{
-	struct tcphdr *hdr;
-	uint32_t slice, hash_val;
-
-
-	if (ip->ip_p != IPPROTO_TCP && ip->ip_p != IPPROTO_UDP) {
-		return (&mgp->ss[0]);
-	}
-	hdr = (struct tcphdr *)(void *)(((uint8_t *)ip) +  (ip->ip_hl << 2));
-
-	/*
-	 * Use the second byte of the *destination* address for
-	 * MXGEFW_RSS_HASH_TYPE_SRC_PORT, so as to match NIC's hashing
-	 */
-	hash_val = ntohs(hdr->th_dport) & 0xff;
-	if (myri10ge_rss_hash == MXGEFW_RSS_HASH_TYPE_SRC_DST_PORT)
-		hash_val += ntohs(hdr->th_sport) & 0xff;
-
-	slice = (mgp->num_slices - 1) & hash_val;
-	return (&mgp->ss[slice]);
-}
-
-static inline struct myri10ge_slice_state *
-myri10ge_send_hash(struct myri10ge_priv *mgp, mblk_t *mp)
-{
-	unsigned int slice = 0;
-	struct ether_header *eh;
-	struct ether_vlan_header *vh;
-	struct ip *ip;
-	int ehl, ihl;
-
-	if (mgp->num_slices == 1)
-		return (&mgp->ss[0]);
-
-	if (myri10ge_tx_hash == 0) {
-		slice = CPU->cpu_id & (mgp->num_slices - 1);
-		return (&mgp->ss[slice]);
-	}
-
-	/*
-	 *  ensure it is a TCP or UDP over IPv4 packet, and that the
-	 *  headers are in the 1st mblk.  Otherwise, punt
-	 */
-	ehl = sizeof (*eh);
-	ihl = sizeof (*ip);
-	if ((MBLKL(mp)) <  (ehl + ihl + 8))
-		return (&mgp->ss[0]);
-	eh = (struct ether_header *)(void *)mp->b_rptr;
-	ip = (struct ip *)(void *)(eh + 1);
-	if (eh->ether_type != BE_16(ETHERTYPE_IP)) {
-		if (eh->ether_type != BE_16(ETHERTYPE_VLAN))
-			return (&mgp->ss[0]);
-		vh = (struct ether_vlan_header *)(void *)mp->b_rptr;
-		if (vh->ether_type != BE_16(ETHERTYPE_IP))
-			return (&mgp->ss[0]);
-		ehl += 4;
-		ip = (struct ip *)(void *)(vh + 1);
-	}
-	ihl = ip->ip_hl << 2;
-	if (MBLKL(mp) <  (ehl + ihl + 8))
-		return (&mgp->ss[0]);
-	switch (myri10ge_rss_hash) {
-	case MXGEFW_RSS_HASH_TYPE_IPV4:
-		/* fallthru */
-	case MXGEFW_RSS_HASH_TYPE_TCP_IPV4:
-		/* fallthru */
-	case (MXGEFW_RSS_HASH_TYPE_IPV4|MXGEFW_RSS_HASH_TYPE_TCP_IPV4):
-		return (myri10ge_toeplitz_send_hash(mgp, ip));
-	case MXGEFW_RSS_HASH_TYPE_SRC_PORT:
-		/* fallthru */
-	case MXGEFW_RSS_HASH_TYPE_SRC_DST_PORT:
-		return (myri10ge_simple_send_hash(mgp, ip));
-	default:
-		break;
-	}
-	return (&mgp->ss[0]);
-}
-
 static int
 myri10ge_setup_slice(struct myri10ge_slice_state *ss)
 {
@@ -4052,8 +3928,7 @@ myri10ge_info_init(struct myri10ge_priv *mgp)
 	ksp->ks_lock = &myri10ge_info_template_lock;
 	if (MYRI10GE_VERSION_STR != NULL)
 		ksp->ks_data_size += strlen(MYRI10GE_VERSION_STR) + 1;
-	if (mgp->fw_version != NULL)
-		ksp->ks_data_size += strlen(mgp->fw_version) + 1;
+	ksp->ks_data_size += strlen(mgp->fw_version) + 1;
 	ksp->ks_data_size += strlen(mgp->fw_name) + 1;
 	ksp->ks_data_size += strlen(mgp->intr_type) + 1;
 	if (mgp->pc_str != NULL)
