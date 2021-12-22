@@ -64,8 +64,6 @@ LDFLAGS += -N misc/kgssapi -N misc/md5
 # Please do not carry these forward to new Makefiles.
 #
 
-CERRWARN	+= -_gcc=-Wno-unused-function
-CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-parentheses
 
