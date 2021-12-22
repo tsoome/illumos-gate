@@ -69,7 +69,6 @@ LDFLAGS += -Ndrv/ip
 # Please do not carry these forward to new Makefiles.
 #
 
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 
