@@ -78,9 +78,6 @@ LDFLAGS		+= -Nmisc/tlimod
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-switch
-CERRWARN	+= -_gcc=-Wno-unused-variable
-CERRWARN	+= -_gcc=-Wno-unused-label
-CERRWARN	+= -_gcc=-Wno-unused-function
 
 # needs work
 SMOFF += all_func_returns,indenting,no_if_block,deref_check
