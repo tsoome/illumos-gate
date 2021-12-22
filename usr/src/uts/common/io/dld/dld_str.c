@@ -602,7 +602,7 @@ dld_str_t *
 dld_str_create(queue_t *rq, uint_t type, major_t major, t_uscalar_t style)
 {
 	dld_str_t	*dsp;
-	int		err;
+	int		err __unused;
 
 	/*
 	 * Allocate an object from the cache.
