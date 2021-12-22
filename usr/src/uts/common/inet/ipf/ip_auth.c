@@ -122,10 +122,6 @@ extern struct ifqueue   ipintrq;		/* ip packet input queue */
 #endif
 /* END OF INCLUDES */
 
-#if !defined(lint)
-static const char rcsid[] = "@(#)$Id: ip_auth.c,v 2.73.2.5 2005/06/12 07:18:14 darrenr Exp $";
-#endif
-
 void fr_authderef __P((frauthent_t **));
 int fr_authgeniter __P((ipftoken_t *, ipfgeniter_t *, ipf_stack_t *));
 
@@ -522,12 +518,12 @@ fr_authioctlloop:
 		ifs->ifs_fr_authpkts[i] = NULL;
 		RWLOCK_EXIT(&ifs->ifs_ipf_auth);
 #ifdef	_KERNEL
-		if (fra->fra_info.fin_v == 4) { 
+		if (fra->fra_info.fin_v == 4) {
 			net_data_p = ifs->ifs_ipf_ipv4;
-		} else if (fra->fra_info.fin_v == 6) { 
+		} else if (fra->fra_info.fin_v == 6) {
 			net_data_p = ifs->ifs_ipf_ipv6;
-		} else { 
-			return (-1); 
+		} else {
+			return (-1);
 		}
 
 		/*
@@ -764,7 +760,7 @@ ipf_stack_t *ifs;
 
 	if ((cmd != SIOCADAFR) && (cmd != SIOCRMAFR))
 		return EIO;
-	
+
 	for (faep = &ifs->ifs_fae_list; ((fae = *faep) != NULL); ) {
 		if (&fae->fae_fr == fr)
 			break;

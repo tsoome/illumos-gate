@@ -35,8 +35,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #define	IPF_NETBIOS_PROXY
 
 typedef struct ifs_netbiospxy {
@@ -103,9 +101,6 @@ void *private;
 	udphdr_t *udp;
 	ip_t *ip;
 	mb_t *m;
-
-	aps = aps;	/* LINT */
-	nat = nat;	/* LINT */
 
 	m = fin->fin_m;
 	dlen = fin->fin_dlen - sizeof(*udp);

@@ -81,9 +81,6 @@ void *private;
 	if (aps->aps_data == NULL)
 		return -1;
 
-	fin = fin;	/* LINT */
-	nat = nat;	/* LINT */
-
 	bzero(aps->aps_data, sizeof(raudio_t));
 	rap = aps->aps_data;
 	aps->aps_psiz = sizeof(raudio_t);
@@ -106,8 +103,6 @@ void *private;
 	int off, dlen;
 	int len = 0;
 	mb_t *m;
-
-	nat = nat;	/* LINT */
 
 	/*
 	 * If we've already processed the start messages, then nothing left

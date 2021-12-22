@@ -308,8 +308,6 @@ void *private;
 	mb_t *m;
 	int off;
 
-	nat = nat;	/* LINT */
-
 	if ((fin->fin_dlen < sizeof(cookies)) || (fin->fin_flx & FI_FRAG))
 		return -1;
 

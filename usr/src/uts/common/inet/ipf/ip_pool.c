@@ -80,11 +80,6 @@ static int rn_freenode __P((struct radix_node *, void *));
 
 /* END OF INCLUDES */
 
-#if !defined(lint)
-static const char sccsid[] = "@(#)ip_fil.c	2.41 6/5/96 (C) 1993-2000 Darren Reed";
-static const char rcsid[] = "@(#)$Id: ip_pool.c,v 2.55.2.14 2005/06/12 07:18:26 darrenr Exp $";
-#endif
-
 #ifdef IPFILTER_LOOKUP
 
 /*
@@ -600,7 +595,7 @@ ipf_stack_t *ifs;
 				   ipo->ipo_head);
 	KFREE(n);
 
-	ifs->ifs_ipoolstat.ipls_nodes--;	
+	ifs->ifs_ipoolstat.ipls_nodes--;
 
 	return 0;
 }
@@ -855,7 +850,7 @@ ipf_stack_t *ifs;
 				ip_pool_deref(ipo, ifs);
 				RWLOCK_EXIT(&ifs->ifs_ip_poolrw);
 			}
-			if (nextipo->ipo_next == NULL) 
+			if (nextipo->ipo_next == NULL)
 				ipf_freetoken(token, ifs);
 		}
 		break;
@@ -872,7 +867,7 @@ ipf_stack_t *ifs;
 				ip_pool_node_deref(node, ifs);
 				RWLOCK_EXIT(&ifs->ifs_ip_poolrw);
 			}
-			if (nextnode->ipn_next == NULL) 
+			if (nextnode->ipn_next == NULL)
 				ipf_freetoken(token, ifs);
 		}
 		break;

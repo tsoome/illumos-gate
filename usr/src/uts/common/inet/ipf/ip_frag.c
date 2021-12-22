@@ -102,11 +102,6 @@ extern struct timeout fr_slowtimer_ch;
 #endif
 /* END OF INCLUDES */
 
-#if !defined(lint)
-static const char sccsid[] = "@(#)ip_frag.c	1.11 3/24/96 (C) 1993-2000 Darren Reed";
-static const char rcsid[] = "@(#)$Id: ip_frag.c,v 2.77.2.5 2005/08/11 14:33:10 darrenr Exp $";
-#endif
-
 static INLINE int ipfr_index __P((fr_info_t *, ipfr_t *));
 static ipfr_t *ipfr_newfrag __P((fr_info_t *, u_32_t, ipfr_t **));
 static ipfr_t *fr_fraglookup __P((fr_info_t *, ipfr_t **));

@@ -257,9 +257,6 @@ void *private;
 	if (irc == NULL)
 		return -1;
 
-	fin = fin;	/* LINT */
-	nat = nat;	/* LINT */
-
 	aps->aps_data = irc;
 	aps->aps_psiz = sizeof(ircinfo_t);
 
@@ -450,6 +447,5 @@ ap_session_t *aps;
 nat_t *nat;
 void *private;
 {
-	aps = aps;	/* LINT */
 	return ippr_irc_send(fin, nat, (ifs_ircpxy_t *)private);
 }

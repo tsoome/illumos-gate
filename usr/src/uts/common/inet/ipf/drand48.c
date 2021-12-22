@@ -94,7 +94,6 @@ static int	init48done = 0;
 #define	c	_drand48_c
 /* End way ugly */
 static unsigned x[3] = { X0, X1, X2 }, a[3] = { A0, A1, A2 }, c = C;
-static unsigned short lastx[3];
 static void next(void);
 
 static long
@@ -109,13 +108,6 @@ init48(void)
 {
 	mutex_init(&seed_lock, 0L, MUTEX_DRIVER, 0L);
 	init48done = 1;
-}
-
-static long
-ipf_r_mrand48_u(void)
-{
-	next();
-	return ((long)((int32_t)x[2] << N) + x[1]);
 }
 
 static void

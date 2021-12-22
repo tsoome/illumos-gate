@@ -163,9 +163,6 @@ void *private;
 	if (ftp == NULL)
 		return -1;
 
-	fin = fin;	/* LINT */
-	nat = nat;	/* LINT */
-
 	aps->aps_data = ftp;
 	aps->aps_psiz = sizeof(ftpinfo_t);
 
@@ -412,7 +409,7 @@ ifs_ftppxy_t *ifsftp;
 		is = nat2->nat_state;
 		if (is != NULL) {
 			MUTEX_ENTER(&is->is_lock);
-			(void)fr_tcp_age(&is->is_sti, &fi, ifs->ifs_ips_tqtqb, 
+			(void)fr_tcp_age(&is->is_sti, &fi, ifs->ifs_ips_tqtqb,
 				         is->is_flags);
 			MUTEX_EXIT(&is->is_lock);
 		}

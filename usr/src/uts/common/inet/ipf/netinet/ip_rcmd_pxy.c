@@ -82,9 +82,6 @@ void *private;
 {
 	tcphdr_t *tcp = (tcphdr_t *)fin->fin_dp;
 
-	fin = fin;	/* LINT */
-	nat = nat;	/* LINT */
-
 	aps->aps_psiz = sizeof(u_32_t);
 	KMALLOCS(aps->aps_data, u_32_t *, sizeof(u_32_t));
 	if (aps->aps_data == NULL) {

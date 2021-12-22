@@ -65,10 +65,6 @@ struct file;
 #include "netinet/ipf_stack.h"
 /* END OF INCLUDES */
 
-#if !defined(lint)
-static const char rcsid[] = "@(#)$Id: ip_lookup.c,v 2.35.2.7 2005/06/12 07:18:20 darrenr Exp $";
-#endif
-
 #ifdef	IPFILTER_LOOKUP
 static int iplookup_addnode __P((caddr_t, ipf_stack_t *));
 static int iplookup_delnode __P((caddr_t data, ipf_stack_t *));
@@ -145,8 +141,6 @@ ipf_stack_t *ifs;
 {
 	int err;
 	SPL_INT(s);
-
-	mode = mode;	/* LINT */
 
 	SPL_NET(s);
 
@@ -542,7 +536,7 @@ ipf_stack_t *ifs;
 	RWLOCK_EXIT(&ifs->ifs_ip_poolrw);
 }
 
-	
+
 int ip_lookup_iterate(data, uid, ctx, ifs)
 void *data;
 int uid;

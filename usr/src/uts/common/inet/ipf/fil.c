@@ -142,11 +142,6 @@ struct file;
 #endif
 /* END OF INCLUDES */
 
-#if !defined(lint)
-static const char sccsid[] = "@(#)fil.c	1.36 6/5/96 (C) 1993-2000 Darren Reed";
-static const char rcsid[] = "@(#)$Id: fil.c,v 2.243.2.64 2005/08/13 05:19:59 darrenr Exp $";
-#endif
-
 #ifndef	_KERNEL
 # include "ipf.h"
 # include "ipt.h"
@@ -192,7 +187,7 @@ int	fr_features = 0
 #endif
 	;
 
-#define	IPF_BUMP(x)	(x)++	
+#define	IPF_BUMP(x)	(x)++
 
 static	INLINE int	fr_ipfcheck __P((fr_info_t *, frentry_t *, int));
 static	INLINE int	fr_ipfcheck __P((fr_info_t *, frentry_t *, int));
@@ -795,7 +790,7 @@ fr_info_t *fin;
 	for (i = 0; ip6exthdr[i].ol_bit != 0; i++)
 		if (ip6exthdr[i].ol_val == IPPROTO_ESP) {
 			fin->fin_optmsk |= ip6exthdr[i].ol_bit;
-			break;			
+			break;
 		}
 }
 
@@ -824,7 +819,7 @@ fr_info_t *fin;
 	for (i = 0; ip6exthdr[i].ol_bit != 0; i++)
 		if (ip6exthdr[i].ol_val == IPPROTO_AH) {
 			fin->fin_optmsk |= ip6exthdr[i].ol_bit;
-			break;			
+			break;
 		}
 
 	ah = (authhdr_t *)fin->fin_dp;
@@ -1078,7 +1073,6 @@ fr_info_t *fin;
 	} else if ((flags & TH_URG) == 0 && (tcp->th_urp != 0)) {
 		/* Ignore this case, it shows up in "real" traffic with */
 		/* bogus values in the urgent pointer field. */
-		flags = flags; /* LINT */
 	} else if (((flags & (TH_SYN|TH_FIN)) != 0) &&
 		   ((flags & (TH_RST|TH_ACK)) == TH_RST)) {
 		/* TH_FIN|TH_RST|TH_ACK seems to appear "naturally" */
@@ -1100,7 +1094,6 @@ fr_info_t *fin;
 			 * achieved.
 			 */
 			/*fin->fin_flx |= FI_BAD*/;
-			flags = flags; /* LINT */
 		} else if (!(flags & (TH_RST|TH_SYN))) {
 			fin->fin_flx |= FI_BAD;
 		} else if ((flags & (TH_URG|TH_PUSH|TH_FIN)) != 0) {
@@ -1366,12 +1359,12 @@ fr_info_t *fin;
 		if (off != 0) {
 			fin->fin_flx |= FI_FRAGBODY;
 			off <<= 3;
-			if ((off + fin->fin_dlen > 65535) || 
+			if ((off + fin->fin_dlen > 65535) ||
 			    (fin->fin_dlen == 0) ||
 			    ((morefrag != 0) && ((fin->fin_dlen & 7) != 0))) {
-				/* 
+				/*
 				 * The length of the packet, starting at its
-				 * offset cannot exceed 65535 (0xffff) as the 
+				 * offset cannot exceed 65535 (0xffff) as the
 				 * length of an IP packet is only 16 bits.
 				 *
 				 * Any fragment that isn't the last fragment
@@ -2095,7 +2088,6 @@ u_32_t *passp;
 	u_32_t pass, rulen;
 	ipf_stack_t *ifs = fin->fin_ifs;
 
-	passp = passp;
 #ifdef	USE_INET6
 	if (fin->fin_v == 6)
 		fr = ifs->ifs_ipacct6[fin->fin_out][ifs->ifs_fr_active];
@@ -2647,7 +2639,7 @@ ipf_stack_t *ifs;
 						IPF_BUMP(
 						ifs->ifs_frstats[out].fr_ret);
 					}
-					/* 
+					/*
 					 * we drop packet silently in case we
 					 * failed assemble fake response for it
 					 */
@@ -2659,7 +2651,7 @@ ipf_stack_t *ifs;
 					IPF_BUMP(
 					    ifs->ifs_frstats[out].fr_block);
 					RWLOCK_EXIT(&ifs->ifs_ipf_mutex);
-					
+
 					return (0);
 				}
 #endif	/* _KERNEL && SOLARIS2 >= 10 */
@@ -2685,7 +2677,7 @@ ipf_stack_t *ifs;
 						ifs->ifs_frstats[out].fr_ret);
 					}
 					else if (mp != NULL) {
-					/* 
+					/*
 					 * we drop packet silently in case we
 					 * failed assemble fake response for it
 					 */
@@ -2696,7 +2688,7 @@ ipf_stack_t *ifs;
 					IPF_BUMP(
 					    ifs->ifs_frstats[out].fr_block);
 					RWLOCK_EXIT(&ifs->ifs_ipf_mutex);
-					
+
 					return (0);
 				 }
 #endif /* _KERNEL && _SOLARIS2 >= 10 */
@@ -2941,7 +2933,7 @@ ip_t *ip;
 int l4proto;
 void *l4hdr;
 {
-	u_short *sp, slen, sumsave, l4hlen, *csump;
+	u_short *sp, slen, sumsave, l4hlen __unused, *csump;
 	u_int sum, sum2;
 	int hlen;
 #ifdef	USE_INET6
@@ -3022,8 +3014,6 @@ void *l4hdr;
 		sumsave = *csump;
 		*csump = 0;
 	}
-
-	l4hlen = l4hlen;	/* LINT */
 
 #ifdef	_KERNEL
 # ifdef MENTAT
@@ -3535,7 +3525,7 @@ ipf_stack_t *ifs;
 			(void) frflushlist(set, unit, nfreedp, fp->fr_grp, ifs);
 		}
 
-		if (fp->fr_grhead != NULL) {
+		if (*fp->fr_grhead != '\0') {
 			fr_delgroup(fp->fr_grhead, unit, set, ifs);
 			*fp->fr_grhead = '\0';
 		}
@@ -3805,7 +3795,7 @@ ipf_stack_t *ifs;
 			rval = newifp;
 		break;
 	case IPFSYNC_OLDIFP :
-		/* 
+		/*
 		 * If interface gets unplumbed it must be invalidated, which
 		 * means set all existing references to the interface to -1.
 		 * We don't want to invalidate references for wildcard
@@ -4039,7 +4029,7 @@ ipf_stack_t *ifs;
 
 	for (i = 0; i < rules; i++) {
 		fr_syncindex(rule_lists[i], ifp, newifp);
-	} 
+	}
 
 	/*
 	 * Update rule groups.
@@ -7355,7 +7345,7 @@ ipf_stack_t *ifs;
 		 * Now that we have ref, it's save to give up lock.
 		 */
 		RWLOCK_EXIT(&ifs->ifs_ipf_mutex);
- 
+
 		/*
 		 * Copy out data and clean up references and token as needed.
 		 */
@@ -7382,7 +7372,7 @@ ipf_stack_t *ifs;
 				break;
 			}
 		}
- 
+
 		if ((count == 1) || (error != 0))
 			break;
 
