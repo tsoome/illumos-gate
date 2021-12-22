@@ -1125,7 +1125,7 @@ static int
 conskbdlrput(queue_t *q, mblk_t *mp)
 {
 	conskbd_lower_queue_t	*lqs;
-	struct iocblk	*iocp;
+	struct iocblk	*iocp __unused;
 	Firm_event	*fe;
 
 	DPRINTF(PRINT_L1, PRINT_MASK_ALL, ("conskbdlrput\n"));
