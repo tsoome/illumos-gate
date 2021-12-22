@@ -71,8 +71,6 @@ LDFLAGS	+=	-Nmisc/busra -Nmisc/pcmcia -Nmisc/hpcsvc
 CFLAGS		+= $(CCVERBOSE)
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-unused-function
-CERRWARN	+= -_gcc=-Wno-unused-variable
 
 SMOFF += indenting,no_if_block
 
