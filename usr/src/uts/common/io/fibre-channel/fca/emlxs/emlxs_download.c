@@ -3722,14 +3722,11 @@ emlxs_delete_load_entry(emlxs_hba_t *hba, PROG_ID *progId)
 		rval = 1;
 	}
 
-done:
-
 	if (mbox) {
 		kmem_free(mbox, sizeof (MAILBOXQ));
 	}
 
 	return (rval);
-
 } /* emlxs_delete_load_entry() */
 
 
@@ -3880,8 +3877,6 @@ emlxs_read_wakeup_parms(emlxs_hba_t *hba, PWAKE_UP_PARMS WakeUpParms,
 			    WakeUpParms->pci_cfg_lookup_sel);
 		}
 	}
-
-done:
 
 	if (mbox) {
 		kmem_free(mbox, sizeof (MAILBOXQ));

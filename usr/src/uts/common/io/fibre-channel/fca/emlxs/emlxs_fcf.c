@@ -13040,8 +13040,8 @@ emlxs_vpi_logi_cmpl_action(emlxs_port_t *port, VPIobj_t *vpip, uint32_t evt,
 			uint32_t new_topo;
 
 			/* Check for topology change (0=loop 1=fabric) */
-			old_topo = ((port->prev_did && 0xFFFF00) == 0)? 0:1;
-			new_topo = ((port->did && 0xFFFF00) == 0)? 0:1;
+			old_topo = ((port->prev_did & 0xFFFF00) == 0)? 0:1;
+			new_topo = ((port->did & 0xFFFF00) == 0)? 0:1;
 
 			if (old_topo != new_topo) {
 				new_config = 1;

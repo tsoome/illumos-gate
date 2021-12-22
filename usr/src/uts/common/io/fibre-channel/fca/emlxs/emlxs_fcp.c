@@ -2027,10 +2027,7 @@ emlxs_offline(emlxs_hba_t *hba, uint32_t reset_requested)
 
 	EMLXS_MSGF(EMLXS_CONTEXT, &emlxs_offline_msg, NULL);
 
-done:
-
 	return (rval);
-
 } /* emlxs_offline() */
 
 
@@ -3374,7 +3371,6 @@ emlxs_tx_move(NODELIST *ndlp, CHANNEL *from_chan, CHANNEL *to_chan,
 
 	hba = from_chan->hba;
 	port = &PPORT;
-	cmd = cmd; /* To pass lint */
 
 	fchanno = from_chan->channelno;
 	tchanno = to_chan->channelno;
