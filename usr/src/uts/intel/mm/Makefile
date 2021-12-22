@@ -63,7 +63,6 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 # Please do not carry these forward to new Makefiles.
 #
 
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-clobbered
 
 #
