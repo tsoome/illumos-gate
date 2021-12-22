@@ -168,6 +168,7 @@ static int handle_sge_egr_update(struct sge_iq *, const struct rss_header *,
 static int handle_fw_rpl(struct sge_iq *iq, const struct rss_header *rss,
     mblk_t *m);
 
+#ifdef TCP_OFFLOAD_ENABLE
 static inline int
 reclaimable(struct sge_eq *eq)
 {
@@ -181,6 +182,7 @@ reclaimable(struct sge_eq *eq)
 	else
 		return (cidx + eq->cap - eq->cidx);
 }
+#endif
 
 void
 t4_sge_init(struct adapter *sc)

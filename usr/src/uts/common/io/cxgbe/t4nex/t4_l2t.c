@@ -76,6 +76,7 @@
 	c -= a; c -= b; c ^= (b>>15); \
 }
 
+#ifdef TCP_OFFLOAD_ENABLE
 /* The golden ration: an arbitrary value */
 #define	JHASH_GOLDEN_RATIO	0x9e3779b9
 
@@ -103,6 +104,7 @@ jhash_2words(u32 a, u32 b, u32 initval)
 {
 	return (jhash_3words(a, b, 0, initval));
 }
+#endif
 
 #if defined(__GNUC__)
 #define	likely(x)	__builtin_expect((x), 1)
