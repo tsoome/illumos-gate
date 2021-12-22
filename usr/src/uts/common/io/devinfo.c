@@ -2026,7 +2026,6 @@ priv_data:
 
 pm_info: /* NOT implemented */
 
-subtree:
 	/* keep the stack aligned */
 	off = DI_ALIGN(off);
 
@@ -2035,7 +2034,6 @@ subtree:
 		return (off);
 	}
 
-child:
 	/*
 	 * If there is a visible child--push child onto stack.
 	 * Hold the parent (me) busy while doing so.
@@ -2051,7 +2049,6 @@ child:
 		}
 	}
 
-sibling:
 	/*
 	 * Done with any child nodes, unroll the stack till a visible
 	 * sibling of a parent node is found or root node is reached.
