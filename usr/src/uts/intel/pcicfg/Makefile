@@ -66,7 +66,6 @@ LDFLAGS		+= -Nmisc/busra -Nmisc/pcie
 # Please do not carry these forward to new Makefiles.
 #
 
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
