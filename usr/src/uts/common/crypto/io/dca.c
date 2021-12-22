@@ -563,7 +563,7 @@ dca_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	dca_t			*dca;
 	ushort_t		venid;
 	ushort_t		devid;
-	ushort_t		revid;
+	ushort_t		revid __unused;
 	ushort_t		subsysid;
 	ushort_t		subvenid;
 	int			i;
@@ -3689,7 +3689,7 @@ dca_encrypt(crypto_ctx_t *ctx, crypto_data_t *plaintext,
     crypto_data_t *ciphertext, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -3741,7 +3741,7 @@ dca_encrypt_update(crypto_ctx_t *ctx, crypto_data_t *plaintext,
     crypto_data_t *ciphertext, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -3784,7 +3784,7 @@ dca_encrypt_final(crypto_ctx_t *ctx, crypto_data_t *ciphertext,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -3820,7 +3820,7 @@ dca_encrypt_atomic(crypto_provider_handle_t provider,
     crypto_spi_ctx_template_t ctx_template, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc = (dca_t *)provider;
+	dca_t *softc __unused = (dca_t *)provider;
 
 	DBG(softc, DENTRY, "dca_encrypt_atomic: started");
 
@@ -3911,7 +3911,7 @@ dca_decrypt(crypto_ctx_t *ctx, crypto_data_t *ciphertext,
     crypto_data_t *plaintext, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -3964,7 +3964,7 @@ dca_decrypt_update(crypto_ctx_t *ctx, crypto_data_t *ciphertext,
     crypto_data_t *plaintext, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4007,7 +4007,7 @@ dca_decrypt_final(crypto_ctx_t *ctx, crypto_data_t *plaintext,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4043,7 +4043,7 @@ dca_decrypt_atomic(crypto_provider_handle_t provider,
     crypto_spi_ctx_template_t ctx_template, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc = (dca_t *)provider;
+	dca_t *softc __unused = (dca_t *)provider;
 
 	DBG(softc, DENTRY, "dca_decrypt_atomic: started");
 
@@ -4136,7 +4136,7 @@ dca_sign(crypto_ctx_t *ctx, crypto_data_t *data,
     crypto_data_t *signature, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4170,7 +4170,7 @@ dca_sign_update(crypto_ctx_t *ctx, crypto_data_t *data,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_MECHANISM_INVALID;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4192,7 +4192,7 @@ dca_sign_final(crypto_ctx_t *ctx, crypto_data_t *signature,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_MECHANISM_INVALID;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4215,7 +4215,7 @@ dca_sign_atomic(crypto_provider_handle_t provider,
     crypto_spi_ctx_template_t ctx_template, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc = (dca_t *)provider;
+	dca_t *softc __unused = (dca_t *)provider;
 
 	DBG(softc, DENTRY, "dca_sign_atomic: started\n");
 
@@ -4285,7 +4285,7 @@ dca_sign_recover(crypto_ctx_t *ctx, crypto_data_t *data,
     crypto_data_t *signature, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4317,7 +4317,7 @@ dca_sign_recover_atomic(crypto_provider_handle_t provider,
     crypto_spi_ctx_template_t ctx_template, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc = (dca_t *)provider;
+	dca_t *softc __unused = (dca_t *)provider;
 
 	DBG(softc, DENTRY, "dca_sign_recover_atomic: started\n");
 
@@ -4391,7 +4391,7 @@ dca_verify(crypto_ctx_t *ctx, crypto_data_t *data, crypto_data_t *signature,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4425,7 +4425,7 @@ dca_verify_update(crypto_ctx_t *ctx, crypto_data_t *data,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_MECHANISM_INVALID;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4447,7 +4447,7 @@ dca_verify_final(crypto_ctx_t *ctx, crypto_data_t *signature,
     crypto_req_handle_t req)
 {
 	int error = CRYPTO_MECHANISM_INVALID;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4470,7 +4470,7 @@ dca_verify_atomic(crypto_provider_handle_t provider,
     crypto_spi_ctx_template_t ctx_template, crypto_req_handle_t req)
 {
 	int error = CRYPTO_FAILED;
-	dca_t *softc = (dca_t *)provider;
+	dca_t *softc __unused = (dca_t *)provider;
 
 	DBG(softc, DENTRY, "dca_verify_atomic: started\n");
 
@@ -4539,7 +4539,7 @@ dca_verify_recover(crypto_ctx_t *ctx, crypto_data_t *signature,
     crypto_data_t *data, crypto_req_handle_t req)
 {
 	int error = CRYPTO_MECHANISM_INVALID;
-	dca_t *softc;
+	dca_t *softc __unused;
 
 	if (!ctx || !ctx->cc_provider || !ctx->cc_provider_private)
 		return (CRYPTO_OPERATION_NOT_INITIALIZED);
@@ -4570,7 +4570,7 @@ dca_verify_recover_atomic(crypto_provider_handle_t provider,
     crypto_spi_ctx_template_t ctx_template, crypto_req_handle_t req)
 {
 	int error = CRYPTO_MECHANISM_INVALID;
-	dca_t *softc = (dca_t *)provider;
+	dca_t *softc __unused = (dca_t *)provider;
 
 	DBG(softc, DENTRY, "dca_verify_recover_atomic: started\n");
 

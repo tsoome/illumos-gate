@@ -288,7 +288,7 @@ int
 dca_3desfinal(crypto_ctx_t *ctx, crypto_data_t *out, int mode)
 {
 	dca_request_t	*des_ctx = ctx->cc_provider_private;
-	dca_t		*dca = ctx->cc_provider;
+	dca_t		*dca __unused = ctx->cc_provider;
 	int		rv = CRYPTO_SUCCESS;
 
 	ASSERT(ctx->cc_provider_private != NULL);
