@@ -65,8 +65,6 @@ LDFLAGS	+= -Nmisc/ibtl -Nmisc/ibcm
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS		+= $(CCVERBOSE)
-CERRWARN	+= -_gcc=-Wno-unused-variable
-CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
