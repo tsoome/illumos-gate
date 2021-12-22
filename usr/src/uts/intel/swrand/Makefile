@@ -66,7 +66,6 @@ LDFLAGS += -Nmisc/kcf -Nmisc/sha1
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS		+= $(CCVERBOSE)
-CERRWARN	+= -_gcc=-Wno-unused-function
 
 #
 #	Default build targets.
