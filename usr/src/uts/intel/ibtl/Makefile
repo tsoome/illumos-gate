@@ -61,7 +61,6 @@ CERRWARN	+= -_gcc=-Wno-type-limits
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-parentheses
-CERRWARN	+= -_gcc=-Wno-unused-value
 
 # needs work
 $(OBJS_DIR)/ibtl_impl.o := SMOFF += precedence
