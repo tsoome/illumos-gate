@@ -49,14 +49,6 @@ CLOBBERFILES	+= $(MODULE)
 ALL_TARGET	= $(BINARY)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
-#
-# For now, disable these warnings; maintainers should endeavor
-# to investigate and remove these for maximum coverage.
-# Please do not carry these forward to new Makefiles.
-#
-
-CERRWARN	+= -_gcc=-Wno-unused-variable
-
 # needs work
 $(OBJS_DIR)/gen_drv.o := SMOFF += indenting,deref_check
 
