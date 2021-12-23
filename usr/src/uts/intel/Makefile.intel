@@ -153,6 +153,7 @@ CERRWARN        += -_clang=-Wno-implicit-const-int-float-conversion
 CERRWARN	+= -_clang=-Wno-uninitialized
 CERRWARN	+= -_clang=-Wno-pointer-bool-conversion
 CERRWARN	+= -_clang=-Wno-gnu-variable-sized-type-not-at-end
+CERRWARN	+= -_clang=-Wno-non-literal-null-conversion
 
 #
 #	Define the base directory for installation.
