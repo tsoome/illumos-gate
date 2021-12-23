@@ -23,7 +23,6 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include	<stdio.h>
 #include	<unistd.h>
@@ -56,9 +55,8 @@ conv_sys_eclass(void)
 }
 
 #if	defined(_LP64)
-/* ARGSUSED */
 uchar_t
-conv_check_native(char **argv, char **envp)
+conv_check_native(char **argv __unused, char **envp __unused)
 {
 	/* 64-bit version does nothing */
 	return (ELFCLASS64);
