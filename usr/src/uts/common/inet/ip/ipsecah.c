@@ -725,7 +725,7 @@ ah_inbound_restart(mblk_t *mp, ip_recv_attr_t *ira)
 {
 	ah_t		*ah;
 	netstack_t	*ns;
-	ipsecah_stack_t	*ahstack;
+	ipsecah_stack_t	*ahstack __unused;
 
 	ns = ira->ira_ill->ill_ipst->ips_netstack;
 	ahstack = ns->netstack_ipsecah;
@@ -1029,7 +1029,7 @@ ah_add_sa(mblk_t *mp, keysock_in_t *ksi, int *diagnostic, netstack_t *ns)
 	sadb_address_t *idstext =
 	    (sadb_address_t *)ksi->ks_in_extv[SADB_X_EXT_ADDRESS_INNER_DST];
 	sadb_key_t *key = (sadb_key_t *)ksi->ks_in_extv[SADB_EXT_KEY_AUTH];
-	struct sockaddr_in *src, *dst;
+	struct sockaddr_in *src __unused, *dst __unused;
 	/* We don't need sockaddr_in6 for now. */
 	sadb_lifetime_t *soft =
 	    (sadb_lifetime_t *)ksi->ks_in_extv[SADB_EXT_LIFETIME_SOFT];
