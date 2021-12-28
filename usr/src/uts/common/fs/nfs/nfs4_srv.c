@@ -9186,6 +9186,14 @@ rfs4_op_lock(nfs_argop4 *argop, nfs_resop4 *resop,
 			break;
 		}
 
+		/*
+		 * See RFC 8881 18.10.3. MUST be ignored by the server:
+		 * The clientid field of the lock_owner field of the
+		 * open_owner field (locker.open_owner.lock_owner.clientid).
+		 */
+		if (rfs4_has_session(cs))
+			olo->lock_owner.clientid = cs->client->rc_clientid;
+
 		lo = rfs4_findlockowner(&olo->lock_owner, &lcreate);
 		if (lo == NULL) {
 			NFS4_DEBUG(rfs4_debug,
@@ -9729,6 +9737,14 @@ rfs4_op_lockt(nfs_argop4 *argop, nfs_resop4 *resop,
 	} else if (posix_length == (length4)(~0)) {
 		posix_length = 0;	/* Posix to end of file  */
 	}
+
+	/*
+	 * See RFC 8881 18.11.3:
+	 * The clientid field of the owner MAY be set to any value
+	 * by the client and MUST be ignored by the server.
+	 */
+	if (rfs4_has_session(cs))
+		args->owner.clientid = cs->client->rc_clientid;
 
 	/* Find or create a lockowner */
 	lo = rfs4_findlockowner(&args->owner, &create);
