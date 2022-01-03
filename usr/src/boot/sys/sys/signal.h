@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -15,7 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,9 +32,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)signal.h	8.4 (Berkeley) 5/4/95
- * $FreeBSD$
  */
 
 #ifndef _SYS_SIGNAL_H_
@@ -41,9 +40,28 @@
 #include <sys/cdefs.h>
 #include <sys/_types.h>
 #include <sys/_sigset.h>
+#include <sys/_sigaltstack.h>
+#include <sys/_sigval.h>
 
 #include <machine/_limits.h>	/* __MINSIGSTKSZ */
 #include <machine/signal.h>	/* sig_atomic_t; trap codes; sigcontext */
+
+#if __POSIX_VISIBLE >= 200809
+
+#include <sys/_pthreadtypes.h>
+#include <sys/_timespec.h>
+
+#ifndef _SIZE_T_DECLARED
+typedef	__size_t	size_t;
+#define	_SIZE_T_DECLARED
+#endif
+
+#ifndef _UID_T_DECLARED
+typedef	__uid_t		uid_t;
+#define	_UID_T_DECLARED
+#endif
+
+#endif /* __POSIX_VISIBLE >= 200809 */
 
 /*
  * System defined signals.
@@ -148,18 +166,10 @@ typedef	__sigset_t	sigset_t;
 #endif
 #endif
 
-#if __POSIX_VISIBLE >= 199309 || __XSI_VISIBLE >= 500
-union sigval {
-	/* Members as suggested by Annex C of POSIX 1003.1b. */
-	int	sival_int;
-	void	*sival_ptr;
-	/* 6.0 compatibility */
-	int     sigval_int;
-	void    *sigval_ptr;
-};
-#endif
-
 #if __POSIX_VISIBLE >= 199309
+
+struct pthread_attr;
+
 struct sigevent {
 	int	sigev_notify;		/* Notification type */
 	int	sigev_signo;		/* Signal number */
@@ -168,7 +178,7 @@ struct sigevent {
 		__lwpid_t	_threadid;
 		struct {
 			void (*_function)(union sigval);
-			void *_attribute; /* pthread_attr_t * */
+			struct pthread_attr **_attribute;
 		} _sigev_thread;
 		unsigned short _kevent_flags;
 		long __spare__[8];
@@ -190,6 +200,7 @@ struct sigevent {
 #define	SIGEV_KEVENT	3		/* Generate a kevent. */
 #define	SIGEV_THREAD_ID	4		/* Send signal to a kernel thread. */
 #endif
+
 #endif /* __POSIX_VISIBLE >= 199309 */
 
 #if __POSIX_VISIBLE >= 199309 || __XSI_VISIBLE
@@ -223,6 +234,12 @@ typedef	struct __siginfo {
 			long	_band;		/* band event for SIGPOLL */
 		} _poll;			/* was this ever used ? */
 		struct {
+			int	_syscall;	/* Syscall number for signals
+						 * delivered as a result of
+						 * system calls denied by
+						 * Capsicum. */
+		} _capsicum;
+		struct {
 			long	__spare1__;
 			int	__spare2__[7];
 		} __spare__;
@@ -234,27 +251,62 @@ typedef	struct __siginfo {
 #define si_overrun	_reason._timer._overrun
 #define si_mqd		_reason._mesgq._mqd
 #define si_band		_reason._poll._band
+#define si_syscall	_reason._capsicum._syscall
+
+#if defined(_WANT_LWPINFO32) || (defined(_KERNEL) && defined(__LP64__))
+struct __siginfo32 {
+	int	si_signo;		/* signal number */
+	int	si_errno;		/* errno association */
+	int	si_code;		/* signal code */
+	__pid_t	si_pid;			/* sending process */
+	__uid_t	si_uid;			/* sender's ruid */
+	int	si_status;		/* exit value */
+	uint32_t si_addr;		/* faulting instruction */
+	union sigval32 si_value;	/* signal value */
+	union	{
+		struct {
+			int	_trapno;/* machine specific trap code */
+		} _fault;
+		struct {
+			int	_timerid;
+			int	_overrun;
+		} _timer;
+		struct {
+			int	_mqd;
+		} _mesgq;
+		struct {
+			int32_t	_band;		/* band event for SIGPOLL */
+		} _poll;			/* was this ever used ? */
+		struct {
+			int32_t	__spare1__;
+			int	__spare2__[7];
+		} __spare__;
+	} _reason;
+};
+#endif
 
 /** si_code **/
 /* codes for SIGILL */
-#define ILL_ILLOPC 	1	/* Illegal opcode.			*/
-#define ILL_ILLOPN 	2	/* Illegal operand.			*/
-#define ILL_ILLADR 	3	/* Illegal addressing mode.		*/
-#define ILL_ILLTRP 	4	/* Illegal trap.			*/
-#define ILL_PRVOPC 	5	/* Privileged opcode.			*/
-#define ILL_PRVREG 	6	/* Privileged register.			*/
-#define ILL_COPROC 	7	/* Coprocessor error.			*/
-#define ILL_BADSTK 	8	/* Internal stack error.		*/
+#define ILL_ILLOPC	1	/* Illegal opcode.			*/
+#define ILL_ILLOPN	2	/* Illegal operand.			*/
+#define ILL_ILLADR	3	/* Illegal addressing mode.		*/
+#define ILL_ILLTRP	4	/* Illegal trap.			*/
+#define ILL_PRVOPC	5	/* Privileged opcode.			*/
+#define ILL_PRVREG	6	/* Privileged register.			*/
+#define ILL_COPROC	7	/* Coprocessor error.			*/
+#define ILL_BADSTK	8	/* Internal stack error.		*/
 
 /* codes for SIGBUS */
 #define BUS_ADRALN	1	/* Invalid address alignment.		*/
 #define BUS_ADRERR	2	/* Nonexistent physical address.	*/
 #define BUS_OBJERR	3	/* Object-specific hardware error.	*/
+#define BUS_OOMERR	100	/* Non-standard: No memory.		*/
 
 /* codes for SIGSEGV */
 #define SEGV_MAPERR	1	/* Address not mapped to object.	*/
 #define SEGV_ACCERR	2	/* Invalid permissions for mapped	*/
 				/* object.				*/
+#define	SEGV_PKUERR	100	/* x86: PKU violation			*/
 
 /* codes for SIGFPE */
 #define FPE_INTOVF	1	/* Integer overflow.			*/
@@ -265,11 +317,13 @@ typedef	struct __siginfo {
 #define FPE_FLTRES	6	/* Floating point inexact result.	*/
 #define FPE_FLTINV	7	/* Invalid floating point operation.	*/
 #define FPE_FLTSUB	8	/* Subscript out of range.		*/
+#define FPE_FLTIDO	9	/* Input denormal operation		*/
 
 /* codes for SIGTRAP */
 #define TRAP_BRKPT	1	/* Process breakpoint.			*/
 #define TRAP_TRACE	2	/* Process trace trap.			*/
 #define	TRAP_DTRACE	3	/* DTrace induced trap.			*/
+#define	TRAP_CAP	4	/* Capabilities protective trap.	*/
 
 /* codes for SIGCHLD */
 #define CLD_EXITED	1	/* Child has exited			*/
@@ -318,7 +372,7 @@ struct sigaction {
 #define	SA_NOCLDSTOP	0x0008	/* do not generate SIGCHLD on child stop */
 #endif /* __POSIX_VISIBLE || __XSI_VISIBLE */
 
-#if __XSI_VISIBLE
+#if __XSI_VISIBLE || __POSIX_VISIBLE >= 200809
 #define	SA_ONSTACK	0x0001	/* take signal on signal stack */
 #define	SA_RESTART	0x0002	/* restart system call on signal return */
 #define	SA_RESETHAND	0x0004	/* reset to SIG_DFL when taking signal */
@@ -351,26 +405,6 @@ struct sigaction {
 #if __BSD_VISIBLE
 typedef	__sighandler_t	*sig_t;	/* type of pointer to a signal function */
 typedef	void __siginfohandler_t(int, struct __siginfo *, void *);
-#endif
-
-#if __XSI_VISIBLE
-/*
- * Structure used in sigaltstack call.
- */
-#if __BSD_VISIBLE
-typedef	struct sigaltstack {
-#else
-typedef	struct {
-#endif
-	void	*ss_sp;			/* signal stack base */
-	__size_t ss_size;		/* signal stack length */
-	int	ss_flags;		/* SS_DISABLE and/or SS_ONSTACK */
-} stack_t;
-
-#define	SS_ONSTACK	0x0001	/* take signal on alternate stack */
-#define	SS_DISABLE	0x0004	/* disable taking signals on alternate stack */
-#define	MINSIGSTKSZ	__MINSIGSTKSZ		/* minimum stack size */
-#define	SIGSTKSZ	(MINSIGSTKSZ + 32768)	/* recommended stack size */
 #endif
 
 #if __BSD_VISIBLE
@@ -421,6 +455,10 @@ struct sigstack {
 
 #if __BSD_VISIBLE
 #define	BADSIG		SIG_ERR
+
+/* sigqueue(2) signo high-bits flags */
+#define	__SIGQUEUE_TID	0x80000000	/* queue for tid, instead of pid */
+#define	__SIGQUEUE_RSRV	0x40000000	/* reserved */
 #endif
 
 #if __POSIX_VISIBLE || __XSI_VISIBLE

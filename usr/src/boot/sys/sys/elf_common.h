@@ -1,4 +1,7 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2017, 2018 Dell EMC
  * Copyright (c) 2000, 2001, 2008, 2011, David E. O'Brien
  * Copyright (c) 1998 John D. Polstra.
  * All rights reserved.
@@ -23,8 +26,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_ELF_COMMON_H_
@@ -43,11 +44,14 @@
  * not include the padding.
  */
 
+#if !defined(LOCORE) && !defined(__ASSEMBLER__)
 typedef struct {
 	u_int32_t	n_namesz;	/* Length of name. */
 	u_int32_t	n_descsz;	/* Length of descriptor. */
 	u_int32_t	n_type;		/* Type of this note. */
 } Elf_Note;
+typedef Elf_Note Elf_Nhdr;
+#endif
 
 /*
  * Option kinds.
@@ -108,12 +112,14 @@ typedef struct {
  * The header for GNU-style hash sections.
  */
 
+#if !defined(LOCORE) && !defined(__ASSEMBLER__)
 typedef struct {
 	u_int32_t	gh_nbuckets;	/* Number of hash buckets. */
 	u_int32_t	gh_symndx;	/* First visible symbol in .dynsym. */
 	u_int32_t	gh_maskwords;	/* #maskwords used in bloom filter. */
 	u_int32_t	gh_shift2;	/* Bloom filter shift count. */
 } Elf_GNU_Hash_Header;
+#endif
 
 /* Indexes into the e_ident array.  Keep synced with
    http://www.sco.com/developers/gabi/latest/ch4.eheader.html */
@@ -171,6 +177,8 @@ typedef struct {
 #define	ELFOSABI_AROS		15	/* Amiga Research OS */
 #define	ELFOSABI_FENIXOS	16	/* FenixOS */
 #define	ELFOSABI_CLOUDABI	17	/* Nuxi CloudABI */
+#define	ELFOSABI_OPENVOS	18	/* Stratus Technologies OpenVOS */
+#define	ELFOSABI_ARM_AEABI	64	/* ARM EABI */
 #define	ELFOSABI_ARM		97	/* ARM */
 #define	ELFOSABI_STANDALONE	255	/* Standalone (embedded) application */
 
@@ -298,6 +306,7 @@ typedef struct {
 				   and MPRC of Peking University */
 #define	EM_AARCH64	183	/* AArch64 (64-bit ARM) */
 #define	EM_RISCV	243	/* RISC-V */
+#define	EM_LOONGARCH	258	/* Loongson LoongArch */
 
 /* Non-standard or deprecated. */
 #define	EM_486		6	/* Intel i486. */
@@ -322,6 +331,7 @@ typedef struct {
 #define	EF_ARM_EABI_VER3	0x03000000
 #define	EF_ARM_EABI_VER4	0x04000000
 #define	EF_ARM_EABI_VER5	0x05000000
+#define	EF_ARM_EABI_VERSION(x)	((x) & EF_ARM_EABIMASK)
 #define	EF_ARM_INTERWORK	0x00000004
 #define	EF_ARM_APCS_26		0x00000008
 #define	EF_ARM_APCS_FLOAT	0x00000010
@@ -329,8 +339,10 @@ typedef struct {
 #define	EF_ARM_ALIGN8		0x00000040
 #define	EF_ARM_NEW_ABI		0x00000080
 #define	EF_ARM_OLD_ABI		0x00000100
-#define	EF_ARM_SOFT_FLOAT	0x00000200
-#define	EF_ARM_VFP_FLOAT	0x00000400
+#define	EF_ARM_ABI_FLOAT_SOFT	0x00000200
+#define	EF_ARM_SOFT_FLOAT	EF_ARM_ABI_FLOAT_SOFT /* Pre-V5 ABI name */
+#define	EF_ARM_ABI_FLOAT_HARD	0x00000400
+#define	EF_ARM_VFP_FLOAT	EF_ARM_ABI_FLOAT_HARD /* Pre-V5 ABI name */
 #define	EF_ARM_MAVERICK_FLOAT	0x00000800
 
 #define	EF_MIPS_NOREORDER	0x00000001
@@ -339,14 +351,56 @@ typedef struct {
 #define	EF_MIPS_UCODE		0x00000010
 #define	EF_MIPS_ABI2		0x00000020	/* N32 */
 #define	EF_MIPS_OPTIONS_FIRST	0x00000080
+#define	EF_MIPS_ABI		0x0000F000
+#define	EF_MIPS_ABI_O32		0x00001000
+#define	EF_MIPS_ABI_O64		0x00002000
+#define	EF_MIPS_ABI_EABI32	0x00003000
+#define	EF_MIPS_ABI_EABI64	0x00004000
 #define	EF_MIPS_ARCH_ASE	0x0F000000	/* Architectural extensions */
 #define	EF_MIPS_ARCH_ASE_MDMX	0x08000000	/* MDMX multimedia extension */
 #define	EF_MIPS_ARCH_ASE_M16	0x04000000	/* MIPS-16 ISA extensions */
 #define	EF_MIPS_ARCH		0xF0000000	/* Architecture field */
+#define	EF_MIPS_ARCH_1		0x00000000	/* -mips1 code */
+#define	EF_MIPS_ARCH_2		0x10000000	/* -mips2 code */
+#define	EF_MIPS_ARCH_3		0x20000000	/* -mips3 code */
+#define	EF_MIPS_ARCH_4		0x30000000	/* -mips4 code */
+#define	EF_MIPS_ARCH_5		0x40000000	/* -mips5 code */
+#define	EF_MIPS_ARCH_32		0x50000000	/* -mips32 code */
+#define	EF_MIPS_ARCH_64		0x60000000	/* -mips64 code */
+#define	EF_MIPS_ARCH_32R2	0x70000000	/* -mips32r2 code */
+#define	EF_MIPS_ARCH_64R2	0x80000000	/* -mips64r2 code */
 
 #define	EF_PPC_EMB		0x80000000
 #define	EF_PPC_RELOCATABLE	0x00010000
 #define	EF_PPC_RELOCATABLE_LIB	0x00008000
+
+#define	EF_RISCV_RVC		0x00000001
+#define	EF_RISCV_FLOAT_ABI_MASK	0x00000006
+#define	EF_RISCV_FLOAT_ABI_SOFT	0x00000000
+#define	EF_RISCV_FLOAT_ABI_SINGLE 0x000002
+#define	EF_RISCV_FLOAT_ABI_DOUBLE 0x000004
+#define	EF_RISCV_FLOAT_ABI_QUAD	0x00000006
+#define	EF_RISCV_RVE		0x00000008
+#define	EF_RISCV_TSO		0x00000010
+
+/*
+ * Loongson LoongArch Specific e_flags
+ *
+ * Definitions from LoongArch ELF psABI v2.01.
+ * Reference: https://github.com/loongson/LoongArch-Documentation
+ * (commit hash 296de4def055c871809068e0816325a4ac04eb12)
+ */
+
+/* LoongArch Base ABI Modifiers */
+#define	EF_LOONGARCH_ABI_SOFT_FLOAT	0x00000001
+#define	EF_LOONGARCH_ABI_SINGLE_FLOAT	0x00000002
+#define	EF_LOONGARCH_ABI_DOUBLE_FLOAT	0x00000003
+#define	EF_LOONGARCH_ABI_MODIFIER_MASK	0x00000007
+
+/* LoongArch Object file ABI versions */
+#define	EF_LOONGARCH_OBJABI_V0		0x00000000
+#define	EF_LOONGARCH_OBJABI_V1		0x00000040
+#define	EF_LOONGARCH_OBJABI_MASK	0x000000C0
 
 #define	EF_SPARC_EXT_MASK	0x00ffff00
 #define	EF_SPARC_32PLUS		0x00000100
@@ -415,7 +469,8 @@ typedef struct {
 #define	SHT_HISUNW		0x6fffffff
 #define	SHT_HIOS		0x6fffffff	/* Last of OS specific semantics */
 #define	SHT_LOPROC		0x70000000	/* reserved range for processor */
-#define	SHT_AMD64_UNWIND	0x70000001	/* unwind information */
+#define	SHT_X86_64_UNWIND	0x70000001	/* unwind information */
+#define	SHT_AMD64_UNWIND	SHT_X86_64_UNWIND
 
 #define	SHT_ARM_EXIDX		0x70000001	/* Exception index table. */
 #define	SHT_ARM_PREEMPTMAP	0x70000002	/* BPABI DLL dynamic linking
@@ -472,6 +527,7 @@ typedef struct {
 #define	SHF_OS_NONCONFORMING	0x100	/* OS-specific processing required. */
 #define	SHF_GROUP		0x200	/* Member of section group. */
 #define	SHF_TLS			0x400	/* Section contains TLS data. */
+#define	SHF_COMPRESSED		0x800	/* Section contains compressed data. */
 #define	SHF_MASKOS	0x0ff00000	/* OS-specific semantics. */
 #define	SHF_MASKPROC	0xf0000000	/* Processor-specific semantics. */
 
@@ -498,8 +554,8 @@ typedef struct {
 #define	PT_GNU_EH_FRAME	0x6474e550
 #define	PT_GNU_STACK	0x6474e551
 #define	PT_GNU_RELRO	0x6474e552
-#define	PT_DUMP_DELTA	0x6fb5d000	/* va->pa map for kernel dumps
-					   (currently arm). */
+#define	PT_DUMP_DELTA	0x6fb5d000	/* va->pa map for arm and amd64 kernel
+					   dumps */
 #define	PT_LOSUNW	0x6ffffffa
 #define	PT_SUNWBSS	0x6ffffffa	/* Sun Specific segment */
 #define	PT_SUNWSTACK	0x6ffffffb	/* describes the stack segment */
@@ -508,7 +564,17 @@ typedef struct {
 #define	PT_HISUNW	0x6fffffff
 #define	PT_HIOS		0x6fffffff	/* Last OS-specific. */
 #define	PT_LOPROC	0x70000000	/* First processor-specific type. */
+#define	PT_ARM_ARCHEXT	0x70000000	/* ARM arch compat information. */
+#define	PT_ARM_EXIDX	0x70000001	/* ARM exception unwind tables. */
+#define	PT_MIPS_REGINFO		0x70000000	/* MIPS register usage info */
+#define	PT_MIPS_RTPROC		0x70000001	/* MIPS runtime procedure tbl */
+#define	PT_MIPS_OPTIONS		0x70000002	/* MIPS e_flags value*/
+#define	PT_MIPS_ABIFLAGS	0x70000003	/* MIPS fp mode */
 #define	PT_HIPROC	0x7fffffff	/* Last processor-specific type. */
+
+#define	PT_OPENBSD_RANDOMIZE	0x65A3DBE6	/* OpenBSD random data segment */
+#define	PT_OPENBSD_WXNEEDED	0x65A3DBE7	/* OpenBSD EXEC/WRITE pages needed */
+#define	PT_OPENBSD_BOOTDATA	0x65A41BE6	/* OpenBSD section for boot args */
 
 /* Values for p_flags. */
 #define	PF_X		0x1		/* Executable. */
@@ -570,11 +636,15 @@ typedef struct {
 #define	DT_PREINIT_ARRAYSZ 33	/* Size in bytes of the array of
 				   pre-initialization functions. */
 #define	DT_MAXPOSTAGS	34	/* number of positive tags */
+#define	DT_RELRSZ	35	/* Total size of ElfNN_Relr relocations. */
+#define	DT_RELR		36	/* Address of ElfNN_Relr relocations. */
+#define	DT_RELRENT	37	/* Size of each ElfNN_Relr relocation. */
 #define	DT_LOOS		0x6000000d	/* First OS-specific */
 #define	DT_SUNW_AUXILIARY	0x6000000d	/* symbol auxiliary name */
 #define	DT_SUNW_RTLDINF		0x6000000e	/* ld.so.1 info (private) */
 #define	DT_SUNW_FILTER		0x6000000f	/* symbol filter name */
 #define	DT_SUNW_CAP		0x60000010	/* hardware/software */
+#define	DT_SUNW_ASLR		0x60000023	/* ASLR control */
 #define	DT_HIOS		0x6ffff000	/* Last OS-specific */
 
 /*
@@ -607,6 +677,8 @@ typedef struct {
  */
 #define	DT_ADDRRNGLO	0x6ffffe00
 #define	DT_GNU_HASH	0x6ffffef5	/* GNU-style hash table */
+#define	DT_TLSDESC_PLT	0x6ffffef6	/* loc. of PLT for tlsdesc resolver */
+#define	DT_TLSDESC_GOT	0x6ffffef7	/* loc. of GOT for tlsdesc resolver */
 #define	DT_GNU_CONFLICT	0x6ffffef8	/* address of conflict section */
 #define	DT_GNU_LIBLIST	0x6ffffef9	/* address of library list */
 #define	DT_CONFIG	0x6ffffefa	/* configuration information */
@@ -627,6 +699,10 @@ typedef struct {
 #define	DT_VERNEEDNUM	0x6fffffff	/* Number of elems in verneed section */
 
 #define	DT_LOPROC	0x70000000	/* First processor-specific type. */
+
+#define	DT_AARCH64_BTI_PLT		0x70000001
+#define	DT_AARCH64_PAC_PLT		0x70000003
+#define	DT_AARCH64_VARIANT_PCS		0x70000005
 
 #define	DT_ARM_SYMTABSZ			0x70000001
 #define	DT_ARM_PREEMPTMAP		0x70000002
@@ -679,6 +755,7 @@ typedef struct {
 #define	DT_MIPS_PLTGOT			0x70000032
 #define	DT_MIPS_RLD_OBJ_UPDATE		0x70000033
 #define	DT_MIPS_RWPLT			0x70000034
+#define	DT_MIPS_RLD_MAP_REL		0x70000035
 
 #define	DT_PPC_GOT			0x70000000
 #define	DT_PPC_TLSOPT			0x70000001
@@ -713,10 +790,12 @@ typedef struct {
 #define	DF_1_GLOBAL	0x00000002	/* Set the RTLD_GLOBAL for object */
 #define	DF_1_NODELETE	0x00000008	/* Set the RTLD_NODELETE for object */
 #define	DF_1_LOADFLTR	0x00000010	/* Immediate loading of filtees */
-#define	DF_1_NOOPEN     0x00000040	/* Do not allow loading on dlopen() */
+#define	DF_1_INITFIRST	0x00000020	/* Initialize DSO first at runtime */
+#define	DF_1_NOOPEN	0x00000040	/* Do not allow loading on dlopen() */
 #define	DF_1_ORIGIN	0x00000080	/* Process $ORIGIN */
 #define	DF_1_INTERPOSE	0x00000400	/* Interpose all objects but main */
 #define	DF_1_NODEFLIB	0x00000800	/* Do not search default paths */
+#define	DF_1_PIE	0x08000000	/* Is position-independent executable */
 
 /* Values for l_flags. */
 #define	LL_NONE			0x0	/* no flags */
@@ -727,10 +806,26 @@ typedef struct {
 #define	LL_DELAY_LOAD		0x10
 #define	LL_DELTA		0x20
 
+/* Note section names */
+#define	ELF_NOTE_FREEBSD	"FreeBSD"
+#define	ELF_NOTE_NETBSD		"NetBSD"
+#define	ELF_NOTE_SOLARIS	"SUNW Solaris"
+#define	ELF_NOTE_GNU		"GNU"
+
 /* Values for n_type used in executables. */
 #define	NT_FREEBSD_ABI_TAG	1
 #define	NT_FREEBSD_NOINIT_TAG	2
 #define	NT_FREEBSD_ARCH_TAG	3
+#define	NT_FREEBSD_FEATURE_CTL	4
+
+/* NT_FREEBSD_FEATURE_CTL desc[0] bits */
+#define	NT_FREEBSD_FCTL_ASLR_DISABLE	0x00000001
+#define	NT_FREEBSD_FCTL_PROTMAX_DISABLE	0x00000002
+#define	NT_FREEBSD_FCTL_STKGAP_DISABLE	0x00000004
+#define	NT_FREEBSD_FCTL_WXNEEDED	0x00000008
+#define	NT_FREEBSD_FCTL_LA48		0x00000010
+/* was ASG_DISABLE, do not reuse	0x00000020 */
+#define	NT_FREEBSD_FCTL_LA57		0x00000040
 
 /* Values for n_type.  Used in core files. */
 #define	NT_PRSTATUS	1	/* Process status. */
@@ -746,8 +841,36 @@ typedef struct {
 #define	NT_PROCSTAT_OSREL	14	/* Procstat osreldate data. */
 #define	NT_PROCSTAT_PSSTRINGS	15	/* Procstat ps_strings data. */
 #define	NT_PROCSTAT_AUXV	16	/* Procstat auxv data. */
+#define	NT_PTLWPINFO		17	/* Thread ptrace miscellaneous info. */
+#define	NT_PROCSTAT_KQUEUES	18	/* Procstat kqueues events. */
 #define	NT_PPC_VMX	0x100	/* PowerPC Altivec/VMX registers */
+#define	NT_PPC_VSX	0x102	/* PowerPC VSX registers */
+#define	NT_X86_SEGBASES	0x200	/* x86 FS/GS base addresses. */
 #define	NT_X86_XSTATE	0x202	/* x86 XSAVE extended state. */
+#define	NT_ARM_VFP	0x400	/* ARM VFP registers */
+#define	NT_ARM_TLS	0x401	/* ARM TLS register */
+#define	NT_ARM_SVE	0x405	/* ARM SVE registers */
+#define	NT_ARM_ADDR_MASK	0x406	/* arm64 address mask (e.g. for TBI) */
+
+/* GNU note types. */
+#define	NT_GNU_ABI_TAG		1
+#define	NT_GNU_HWCAP		2
+#define	NT_GNU_BUILD_ID		3
+#define	NT_GNU_GOLD_VERSION	4
+#define	NT_GNU_PROPERTY_TYPE_0	5
+
+#define	GNU_PROPERTY_LOPROC			0xc0000000
+#define	GNU_PROPERTY_HIPROC			0xdfffffff
+
+#define	GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
+
+#define	GNU_PROPERTY_AARCH64_FEATURE_1_BTI	0x00000001
+#define	GNU_PROPERTY_AARCH64_FEATURE_1_PAC	0x00000002
+
+#define	GNU_PROPERTY_X86_FEATURE_1_AND		0xc0000002
+
+#define	GNU_PROPERTY_X86_FEATURE_1_IBT		0x00000001
+#define	GNU_PROPERTY_X86_FEATURE_1_SHSTK	0x00000002
 
 /* Symbol Binding - ELFNN_ST_BIND - st_info */
 #define	STB_LOCAL	0	/* Local symbol */
@@ -783,6 +906,9 @@ typedef struct {
 #define	STV_EXPORTED	0x4
 #define	STV_SINGLETON	0x5
 #define	STV_ELIMINATE	0x6
+
+/* Architecture specific data - st_other */
+#define	STO_AARCH64_VARIANT_PCS	0x80
 
 /* Special symbol table indexes. */
 #define	STN_UNDEF	0	/* Undefined symbol index. */
@@ -824,7 +950,7 @@ typedef struct {
 #define	SYMINFO_FLG_NOEXTDIRECT	0x0020	/* don't let an external reference */
 					/*	directly bind to this symbol */
 #define	SYMINFO_FLG_FILTER	0x0002	/* symbol ref is associated to a */
-#define	SYMINFO_FLG_AUXILIARY	0x0040	/* 	standard or auxiliary filter */
+#define	SYMINFO_FLG_AUXILIARY	0x0040	/*	standard or auxiliary filter */
 
 /*
  * Syminfo.si_boundto values.
@@ -841,6 +967,58 @@ typedef struct {
 #define	SYMINFO_NONE		0	/* Syminfo version */
 #define	SYMINFO_CURRENT		1
 #define	SYMINFO_NUM		2
+
+/* Values for ch_type (compressed section headers). */
+#define	ELFCOMPRESS_ZLIB	1	/* ZLIB/DEFLATE */
+#define	ELFCOMPRESS_ZSTD	2	/* Zstandard */
+#define	ELFCOMPRESS_LOOS	0x60000000	/* OS-specific */
+#define	ELFCOMPRESS_HIOS	0x6fffffff
+#define	ELFCOMPRESS_LOPROC	0x70000000	/* Processor-specific */
+#define	ELFCOMPRESS_HIPROC	0x7fffffff
+
+/* Values for a_type. */
+#define	AT_NULL		0	/* Terminates the vector. */
+#define	AT_IGNORE	1	/* Ignored entry. */
+#define	AT_EXECFD	2	/* File descriptor of program to load. */
+#define	AT_PHDR		3	/* Program header of program already loaded. */
+#define	AT_PHENT	4	/* Size of each program header entry. */
+#define	AT_PHNUM	5	/* Number of program header entries. */
+#define	AT_PAGESZ	6	/* Page size in bytes. */
+#define	AT_BASE		7	/* Interpreter's base address. */
+#define	AT_FLAGS	8	/* Flags. */
+#define	AT_ENTRY	9	/* Where interpreter should transfer control. */
+#define	AT_NOTELF	10	/* Program is not ELF ?? */
+#define	AT_UID		11	/* Real uid. */
+#define	AT_EUID		12	/* Effective uid. */
+#define	AT_GID		13	/* Real gid. */
+#define	AT_EGID		14	/* Effective gid. */
+#define	AT_EXECPATH	15	/* Path to the executable. */
+#define	AT_CANARY	16	/* Canary for SSP. */
+#define	AT_CANARYLEN	17	/* Length of the canary. */
+#define	AT_OSRELDATE	18	/* OSRELDATE. */
+#define	AT_NCPUS	19	/* Number of CPUs. */
+#define	AT_PAGESIZES	20	/* Pagesizes. */
+#define	AT_PAGESIZESLEN	21	/* Number of pagesizes. */
+#define	AT_TIMEKEEP	22	/* Pointer to timehands. */
+#define	AT_STACKPROT	23	/* Initial stack protection. */
+#define	AT_EHDRFLAGS	24	/* e_flags field from elf hdr */
+#define	AT_HWCAP	25	/* CPU feature flags. */
+#define	AT_HWCAP2	26	/* CPU feature flags 2. */
+#define	AT_BSDFLAGS	27	/* ELF BSD Flags. */
+#define	AT_ARGC		28	/* Argument count */
+#define	AT_ARGV		29	/* Argument vector */
+#define	AT_ENVC		30	/* Environment count */
+#define	AT_ENVV		31	/* Environment vector */
+#define	AT_PS_STRINGS	32	/* struct ps_strings */
+#define	AT_FXRNG	33	/* Pointer to root RNG seed version. */
+#define	AT_KPRELOAD	34	/* Base of vdso, preloaded by rtld */
+#define	AT_USRSTACKBASE	35	/* Top of user stack */
+#define	AT_USRSTACKLIM	36	/* Grow limit of user stack */
+#define	AT_CHERI_STATS	37	/* Reserved */
+#define	AT_HWCAP3	38	/* CPU feature flags 3. */
+#define	AT_HWCAP4	39	/* CPU feature flags 4. */
+
+#define	AT_COUNT	40	/* Count of defined aux entry types. */
 
 /*
  * Relocation types.
@@ -860,12 +1038,17 @@ typedef struct {
 #define	R_386_RELATIVE		8	/* Add load address of shared object. */
 #define	R_386_GOTOFF		9	/* Add GOT-relative symbol address. */
 #define	R_386_GOTPC		10	/* Add PC-relative GOT table address. */
+#define	R_386_32PLT		11
 #define	R_386_TLS_TPOFF		14	/* Negative offset in static TLS block */
 #define	R_386_TLS_IE		15	/* Absolute address of GOT for -ve static TLS */
 #define	R_386_TLS_GOTIE		16	/* GOT entry for negative static TLS block */
 #define	R_386_TLS_LE		17	/* Negative offset relative to static TLS */
 #define	R_386_TLS_GD		18	/* 32 bit offset to GOT (index,off) pair */
 #define	R_386_TLS_LDM		19	/* 32 bit offset to GOT (index,zero) pair */
+#define	R_386_16		20
+#define	R_386_PC16		21
+#define	R_386_8			22
+#define	R_386_PC8		23
 #define	R_386_TLS_GD_32		24	/* 32 bit offset to GOT (index,off) pair */
 #define	R_386_TLS_GD_PUSH	25	/* pushl instruction for Sun ABI GD sequence */
 #define	R_386_TLS_GD_CALL	26	/* call instruction for Sun ABI GD sequence */
@@ -880,7 +1063,12 @@ typedef struct {
 #define	R_386_TLS_DTPMOD32	35	/* GOT entry containing TLS index */
 #define	R_386_TLS_DTPOFF32	36	/* GOT entry containing TLS offset */
 #define	R_386_TLS_TPOFF32	37	/* GOT entry of -ve static TLS offset */
+#define	R_386_SIZE32		38
+#define	R_386_TLS_GOTDESC	39
+#define	R_386_TLS_DESC_CALL	40
+#define	R_386_TLS_DESC		41
 #define	R_386_IRELATIVE		42	/* PLT entry resolved indirectly at runtime */
+#define	R_386_GOT32X		43
 
 #define	R_AARCH64_NONE		0	/* No relocation */
 #define	R_AARCH64_ABS64		257	/* Absolute offset */
@@ -889,14 +1077,18 @@ typedef struct {
 #define	R_AARCH64_PREL64	260	/* PC relative */
 #define	R_AARCH64_PREL32	261	/* PC relative, 32-bit overflow check */
 #define	R_AARCH64_PREL16	262	/* PC relative, 16-bit overflow check */
+#define	R_AARCH64_TSTBR14	279	/* TBZ/TBNZ immediate */
+#define	R_AARCH64_CONDBR19	280	/* Conditional branch immediate */
+#define	R_AARCH64_JUMP26	282	/* Branch immediate */
+#define	R_AARCH64_CALL26	283	/* Call immediate */
 #define	R_AARCH64_COPY		1024	/* Copy data from shared object */
 #define	R_AARCH64_GLOB_DAT	1025	/* Set GOT entry to data address */
 #define	R_AARCH64_JUMP_SLOT	1026	/* Set GOT entry to code address */
-#define	R_AARCH64_RELATIVE 	1027	/* Add load address of shared object */
+#define	R_AARCH64_RELATIVE	1027	/* Add load address of shared object */
 #define	R_AARCH64_TLS_DTPREL64	1028
 #define	R_AARCH64_TLS_DTPMOD64	1029
-#define	R_AARCH64_TLS_TPREL64 	1030
-#define	R_AARCH64_TLSDESC 	1031	/* Identify the TLS descriptor */
+#define	R_AARCH64_TLS_TPREL64	1030
+#define	R_AARCH64_TLSDESC	1031	/* Identify the TLS descriptor */
 #define	R_AARCH64_IRELATIVE	1032
 
 #define	R_ARM_NONE		0	/* No relocation. */
@@ -997,7 +1189,7 @@ typedef struct {
 #define	R_IA_64_PCREL22		0x7a	/* immediate22	S + A - P */
 #define	R_IA_64_PCREL64I	0x7b	/* immediate64	S + A - P */
 #define	R_IA_64_IPLTMSB		0x80	/* function descriptor MSB special */
-#define	R_IA_64_IPLTLSB		0x81	/* function descriptor LSB speciaal */
+#define	R_IA_64_IPLTLSB		0x81	/* function descriptor LSB special */
 #define	R_IA_64_SUB		0x85	/* immediate64	A - S */
 #define	R_IA_64_LTOFF22X	0x86	/* immediate22	special */
 #define	R_IA_64_LDXMOV		0x87	/* immediate22	special */
@@ -1033,10 +1225,18 @@ typedef struct {
 #define	R_MIPS_CALL16	11	/* 16 bit GOT entry for function */
 #define	R_MIPS_GPREL32	12	/* GP relative 32 bit */
 #define	R_MIPS_64	18	/* Direct 64 bit */
-#define	R_MIPS_GOTHI16	21	/* GOT HI 16 bit */
-#define	R_MIPS_GOTLO16	22	/* GOT LO 16 bit */
-#define	R_MIPS_CALLHI16 30	/* upper 16 bit GOT entry for function */
-#define	R_MIPS_CALLLO16 31	/* lower 16 bit GOT entry for function */
+#define	R_MIPS_GOT_DISP	19
+#define	R_MIPS_GOT_PAGE	20
+#define	R_MIPS_GOT_OFST	21
+#define	R_MIPS_GOT_HI16	22	/* GOT HI 16 bit */
+#define	R_MIPS_GOT_LO16	23	/* GOT LO 16 bit */
+#define	R_MIPS_SUB	24
+#define	R_MIPS_CALLHI16	30	/* upper 16 bit GOT entry for function */
+#define	R_MIPS_CALLLO16	31	/* lower 16 bit GOT entry for function */
+#define	R_MIPS_JALR	37
+#define	R_MIPS_TLS_GD	42
+#define	R_MIPS_COPY	126
+#define	R_MIPS_JUMP_SLOT	127
 
 #define	R_PPC_NONE		0	/* No relocation. */
 #define	R_PPC_ADDR32		1
@@ -1075,6 +1275,7 @@ typedef struct {
 #define	R_PPC_SECTOFF_LO	34
 #define	R_PPC_SECTOFF_HI	35
 #define	R_PPC_SECTOFF_HA	36
+#define	R_PPC_IRELATIVE		248
 
 /*
  * 64-bit relocations
@@ -1151,7 +1352,6 @@ typedef struct {
  * RISC-V relocation types.
  */
 
-/* Relocation types used by the dynamic linker. */
 #define	R_RISCV_NONE		0
 #define	R_RISCV_32		1
 #define	R_RISCV_64		2
@@ -1164,8 +1364,7 @@ typedef struct {
 #define	R_RISCV_TLS_DTPREL64	9
 #define	R_RISCV_TLS_TPREL32	10
 #define	R_RISCV_TLS_TPREL64	11
-
-/* Relocation types not used by the dynamic linker. */
+#define	R_RISCV_TLSDESC		12
 #define	R_RISCV_BRANCH		16
 #define	R_RISCV_JAL		17
 #define	R_RISCV_CALL		18
@@ -1191,11 +1390,182 @@ typedef struct {
 #define	R_RISCV_SUB16		38
 #define	R_RISCV_SUB32		39
 #define	R_RISCV_SUB64		40
-#define	R_RISCV_GNU_VTINHERIT	41
-#define	R_RISCV_GNU_VTENTRY	42
+#define	R_RISCV_GOT32_PCREL	41
 #define	R_RISCV_ALIGN		43
 #define	R_RISCV_RVC_BRANCH	44
 #define	R_RISCV_RVC_JUMP	45
+#define	R_RISCV_RELAX		51
+#define	R_RISCV_SUB6		52
+#define	R_RISCV_SET6		53
+#define	R_RISCV_SET8		54
+#define	R_RISCV_SET16		55
+#define	R_RISCV_SET32		56
+#define	R_RISCV_32_PCREL	57
+#define	R_RISCV_IRELATIVE	58
+#define	R_RISCV_PLT32		59
+#define	R_RISCV_SET_ULEB128	60
+#define	R_RISCV_SUB_ULEB128	61
+#define	R_RISCV_TLSDESC_HI20	62
+#define	R_RISCV_TLSDESC_LOAD_LO12 63
+#define	R_RISCV_TLSDESC_ADD_LO12 64
+#define	R_RISCV_TLSDESC_CALL	65
+#define	R_RISCV_VENDOR		191
+
+/*
+ * Loongson LoongArch relocation types.
+ *
+ * LoongArch ELF psABI: https://github.com/loongson/LoongArch-Documentation
+ * (commit hash 9b3bd9f4a497115913c22f1a2a47863798fbc02a)
+ */
+
+/* Relocation types used by the dynamic linker */
+#define	R_LARCH_NONE				0
+#define	R_LARCH_32				1
+#define	R_LARCH_64				2
+#define	R_LARCH_RELATIVE			3
+#define	R_LARCH_COPY				4
+#define	R_LARCH_JUMP_SLOT			5
+#define	R_LARCH_TLS_DTPMOD32			6
+#define	R_LARCH_TLS_DTPMOD64			7
+#define	R_LARCH_TLS_DTPREL32			8
+#define	R_LARCH_TLS_DTPREL64			9
+#define	R_LARCH_TLS_TPREL32			10
+#define	R_LARCH_TLS_TPREL64			11
+#define	R_LARCH_IRELATIVE			12
+#define	R_LARCH_MARK_LA				20
+#define	R_LARCH_MARK_PCREL			21
+#define	R_LARCH_SOP_PUSH_PCREL			22
+#define	R_LARCH_SOP_PUSH_ABSOLUTE		23
+#define	R_LARCH_SOP_PUSH_DUP			24
+#define	R_LARCH_SOP_PUSH_GPREL			25
+#define	R_LARCH_SOP_PUSH_TLS_TPREL		26
+#define	R_LARCH_SOP_PUSH_TLS_GOT		27
+#define	R_LARCH_SOP_PUSH_TLS_GD			28
+#define	R_LARCH_SOP_PUSH_PLT_PCREL		29
+#define	R_LARCH_SOP_ASSERT			30
+#define	R_LARCH_SOP_NOT				31
+#define	R_LARCH_SOP_SUB				32
+#define	R_LARCH_SOP_SL				33
+#define	R_LARCH_SOP_SR				34
+#define	R_LARCH_SOP_ADD				35
+#define	R_LARCH_SOP_AND				36
+#define	R_LARCH_SOP_IF_ELSE			37
+#define	R_LARCH_SOP_POP_32_S_10_5		38
+#define	R_LARCH_SOP_POP_32_U_10_12		39
+#define	R_LARCH_SOP_POP_32_S_10_12		40
+#define	R_LARCH_SOP_POP_32_S_10_16		41
+#define	R_LARCH_SOP_POP_32_S_10_16_S2		42
+#define	R_LARCH_SOP_POP_32_S_5_20		43
+#define	R_LARCH_SOP_POP_32_S_0_5_10_16_S2	44
+#define	R_LARCH_SOP_POP_32_S_0_10_10_16_S2	45
+#define	R_LARCH_SOP_POP_32_U			46
+#define	R_LARCH_ADD8				47
+#define	R_LARCH_ADD16				48
+#define	R_LARCH_ADD24				49
+#define	R_LARCH_ADD32				50
+#define	R_LARCH_ADD64				51
+#define	R_LARCH_SUB8				52
+#define	R_LARCH_SUB16				53
+#define	R_LARCH_SUB24				54
+#define	R_LARCH_SUB32				55
+#define	R_LARCH_SUB64				56
+#define	R_LARCH_GNU_VTINHERIT			57
+#define	R_LARCH_GNU_VTENTRY			58
+
+/*
+ * Relocs whose processing do not require a stack machine.
+ *
+ * Spec addition: https://github.com/loongson/LoongArch-Documentation/pull/57
+ */
+#define	R_LARCH_B16				64
+#define	R_LARCH_B21				65
+#define	R_LARCH_B26				66
+#define	R_LARCH_ABS_HI20			67
+#define	R_LARCH_ABS_LO12			68
+#define	R_LARCH_ABS64_LO20			69
+#define	R_LARCH_ABS64_HI12			70
+#define	R_LARCH_PCALA_HI20			71
+#define	R_LARCH_PCALA_LO12			72
+#define	R_LARCH_PCALA64_LO20			73
+#define	R_LARCH_PCALA64_HI12			74
+#define	R_LARCH_GOT_PC_HI20			75
+#define	R_LARCH_GOT_PC_LO12			76
+#define	R_LARCH_GOT64_PC_LO20			77
+#define	R_LARCH_GOT64_PC_HI12			78
+#define	R_LARCH_GOT_HI20			79
+#define	R_LARCH_GOT_LO12			80
+#define	R_LARCH_GOT64_LO20			81
+#define	R_LARCH_GOT64_HI12			82
+#define	R_LARCH_TLS_LE_HI20			83
+#define	R_LARCH_TLS_LE_LO12			84
+#define	R_LARCH_TLS_LE64_LO20			85
+#define	R_LARCH_TLS_LE64_HI12			86
+#define	R_LARCH_TLS_IE_PC_HI20			87
+#define	R_LARCH_TLS_IE_PC_LO12			88
+#define	R_LARCH_TLS_IE64_PC_LO20		89
+#define	R_LARCH_TLS_IE64_PC_HI12		90
+#define	R_LARCH_TLS_IE_HI20			91
+#define	R_LARCH_TLS_IE_LO12			92
+#define	R_LARCH_TLS_IE64_LO20			93
+#define	R_LARCH_TLS_IE64_HI12			94
+#define	R_LARCH_TLS_LD_PC_HI20			95
+#define	R_LARCH_TLS_LD_HI20			96
+#define	R_LARCH_TLS_GD_PC_HI20			97
+#define	R_LARCH_TLS_GD_HI20			98
+#define	R_LARCH_32_PCREL			99
+#define	R_LARCH_RELAX				100
+
+/*
+ * Relocs added in ELF for the LoongArch™ Architecture v20230519, part of the
+ * v2.10 LoongArch ABI specs.
+ *
+ * Spec addition: https://github.com/loongson/la-abi-specs/pull/1
+ *
+ * Note that the 101 and 104 relocation numbers are defined as R_LARCH_DELETE
+ * and R_LARCH_CFA respectively in psABI 2.10. But they are marked as reserved
+ * in psABI v2.20 because they were proved not necessary to be exposed outside
+ * of the linker.
+ */
+#define	R_LARCH_ALIGN				102
+#define	R_LARCH_PCREL20_S2			103
+#define	R_LARCH_ADD6				105
+#define	R_LARCH_SUB6				106
+#define	R_LARCH_ADD_ULEB128			107
+#define	R_LARCH_SUB_ULEB128			108
+#define	R_LARCH_64_PCREL			109
+
+/*
+ * Relocs added in ELF for the LoongArch™ Architecture v20231102, part of the
+ * v2.20 LoongArch ABI specs.
+ *
+ * Spec addition: https://github.com/loongson/la-abi-specs/pull/4
+ */
+#define	R_LARCH_CALL36				110
+
+/*
+ * Relocs added in ELF for the LoongArch™ Architecture v20231219, part of the
+ * v2.30 LoongArch ABI specs.
+ *
+ * Spec addition: https://github.com/loongson/la-abi-specs/pull/5
+ */
+#define	R_LARCH_TLS_DESC32			13
+#define	R_LARCH_TLS_DESC64			14
+#define	R_LARCH_TLS_DESC_PC_HI20		111
+#define	R_LARCH_TLS_DESC_PC_LO12		112
+#define	R_LARCH_TLS_DESC64_PC_LO20		113
+#define	R_LARCH_TLS_DESC64_PC_HI12		114
+#define	R_LARCH_TLS_DESC_HI20			115
+#define	R_LARCH_TLS_DESC_LO12			116
+#define	R_LARCH_TLS_DESC64_LO20			117
+#define	R_LARCH_TLS_DESC64_HI12			118
+#define	R_LARCH_TLS_DESC_LD			119
+#define	R_LARCH_TLS_DESC_CALL			120
+#define	R_LARCH_TLS_LE_HI20_R			121
+#define	R_LARCH_TLS_LE_ADD_R			122
+#define	R_LARCH_TLS_LE_LO12_R			123
+#define	R_LARCH_TLS_LD_PCREL20_S2		124
+#define	R_LARCH_TLS_GD_PCREL20_S2		125
+#define	R_LARCH_TLS_DESC_PCREL20_S2		126
 
 #define	R_SPARC_NONE		0
 #define	R_SPARC_8		1
@@ -1316,6 +1686,12 @@ typedef struct {
 #define	R_X86_64_TLSDESC_CALL	35
 #define	R_X86_64_TLSDESC	36
 #define	R_X86_64_IRELATIVE	37
+#define	R_X86_64_RELATIVE64	38
+/* 39 and 40 were BND-related, already decomissioned */
+#define	R_X86_64_GOTPCRELX	41
+#define	R_X86_64_REX_GOTPCRELX	42
 
+#define	ELF_BSDF_SIGFASTBLK	0x0001	/* Kernel supports fast sigblock */
+#define	ELF_BSDF_VMNOOVERCOMMIT	0x0002
 
 #endif /* !_SYS_ELF_COMMON_H_ */

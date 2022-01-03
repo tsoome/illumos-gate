@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 1996-1998 John D. Polstra.
  * All rights reserved.
  *
@@ -22,8 +24,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_ELF64_H_
@@ -164,6 +164,8 @@ typedef struct {
 #define	ELF64_R_TYPE_INFO(data, type)	\
 				(((Elf64_Xword)(data)<<8)+(Elf64_Xword)(type))
 
+typedef Elf64_Xword Elf64_Relr;
+
 /*
  *	Note entry header
  */
@@ -174,7 +176,7 @@ typedef Elf_Note Elf64_Nhdr;
  */
 typedef struct {
 	Elf64_Lword	m_value;	/* symbol value */
-	Elf64_Xword 	m_info;		/* size + index */
+	Elf64_Xword	m_info;		/* size + index */
 	Elf64_Xword	m_poffset;	/* symbol offset */
 	Elf64_Half	m_repeat;	/* repeat count */
 	Elf64_Half	m_stride;	/* stride info */
@@ -256,5 +258,12 @@ typedef struct {
 	Elf64_Half	si_boundto;	/* direct bindings - symbol bound to */
 	Elf64_Half	si_flags;	/* per symbol flags */
 } Elf64_Syminfo;
+
+typedef struct {
+	Elf64_Word	ch_type;
+	Elf64_Word	ch_reserved;
+	Elf64_Xword	ch_size;
+	Elf64_Xword	ch_addralign;
+} Elf64_Chdr;
 
 #endif /* !_SYS_ELF64_H_ */

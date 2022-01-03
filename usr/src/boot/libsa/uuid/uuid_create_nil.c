@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2002 Marcel Moolenaar
  * Copyright (c) 2002 Hiten Mahesh Pandya
  * All rights reserved.
@@ -23,8 +25,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #include <strings.h>
@@ -42,5 +42,5 @@ uuid_create_nil(uuid_t *u, uint32_t *status)
 	if (status)
 		*status = uuid_s_ok;
 
-	bzero(u, sizeof(*u));
+	bzero(u, sizeof (*u));
 }

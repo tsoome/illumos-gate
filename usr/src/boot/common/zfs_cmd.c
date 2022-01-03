@@ -32,7 +32,6 @@
 #include <sys/reboot.h>
 
 #include "bootstrap.h"
-
 #include "libzfs.h"
 
 COMMAND_SET(lszfs, "lszfs", "list child datasets of a zfs dataset",

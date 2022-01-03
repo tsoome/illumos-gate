@@ -598,7 +598,7 @@ efi_cons_init(struct console *cp, int arg __unused)
 	if (tem_info_init(cp) == 0 && tem == NULL) {
 		tem = tem_init();
 		if (tem != NULL)
-			tem_activate(tem, B_TRUE);
+			tem_activate(tem, true);
 	}
 
 	if (tem == NULL)

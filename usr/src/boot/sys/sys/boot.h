@@ -1,6 +1,9 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2014 Roger Pau Monné <roger.pau@citrix.com>
  * All rights reserved.
+ * Copyright (c) 2018 Netflix, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,8 +25,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_BOOT_H_
@@ -32,6 +33,7 @@
 /*
  * Return a 'boothowto' value corresponding to the kernel arguments in
  * (kargs) and any relevant environment variables.
+ * XXX Remove with 14807 implementation.
  */
 static struct
 {
@@ -49,7 +51,16 @@ static struct
 	{ "boot_serial",	RB_SERIAL},
 	{ "boot_single",	RB_SINGLE},
 	{ "boot_verbose",	RB_VERBOSE},
-	{ NULL,	0}
+	{ NULL, 0}
 };
+
+#define PATH_KERNEL	"/boot/kernel/kernel"
+
+int boot_env_to_howto(void);
+void boot_howto_to_env(int howto);
+int boot_parse_arg(const char *v);
+int boot_parse_cmdline_delim(char *cmdline, const char *delim);
+int boot_parse_cmdline(char *cmdline);
+int boot_parse_args(int argc, char *argv[]);
 
 #endif /* !_SYS_BOOT_H_ */

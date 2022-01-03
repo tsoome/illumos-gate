@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 2003 Peter Wemm.
  * Copyright (c) 1993 The Regents of the University of California.
  * All rights reserved.
@@ -26,8 +28,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 /*
@@ -36,12 +36,12 @@
  * used in preference to this.
  */
 
+#ifdef __i386__
+#include <i386/cpufunc.h>
+#else /* !__i386__ */
+
 #ifndef _MACHINE_CPUFUNC_H_
 #define	_MACHINE_CPUFUNC_H_
-
-#ifndef _SYS_CDEFS_H_
-#error this file needs sys/cdefs.h as a prerequisite
-#endif
 
 struct region_descriptor;
 
@@ -55,49 +55,15 @@ struct region_descriptor;
 #define writel(va, d)	(*(volatile uint32_t *) (va) = (d))
 #define writeq(va, d)	(*(volatile uint64_t *) (va) = (d))
 
-#if defined(__GNUCLIKE_ASM) && defined(__CC_SUPPORTS___INLINE)
-
 static __inline void
 breakpoint(void)
 {
 	__asm __volatile("int $3");
 }
 
-static __inline u_int
-bsfl(u_int mask)
-{
-	u_int	result;
+#define	bsfl(mask)	__builtin_ctz(mask)
 
-	__asm __volatile("bsfl %1,%0" : "=r" (result) : "rm" (mask));
-	return (result);
-}
-
-static __inline u_long
-bsfq(u_long mask)
-{
-	u_long	result;
-
-	__asm __volatile("bsfq %1,%0" : "=r" (result) : "rm" (mask));
-	return (result);
-}
-
-static __inline u_int
-bsrl(u_int mask)
-{
-	u_int	result;
-
-	__asm __volatile("bsrl %1,%0" : "=r" (result) : "rm" (mask));
-	return (result);
-}
-
-static __inline u_long
-bsrq(u_long mask)
-{
-	u_long	result;
-
-	__asm __volatile("bsrq %1,%0" : "=r" (result) : "rm" (mask));
-	return (result);
-}
+#define	bsfq(mask)	__builtin_ctzl(mask)
 
 static __inline void
 clflush(u_long addr)
@@ -111,6 +77,13 @@ clflushopt(u_long addr)
 {
 
 	__asm __volatile(".byte 0x66;clflush %0" : : "m" (*(char *)addr));
+}
+
+static __inline void
+clwb(u_long addr)
+{
+
+	__asm __volatile("clwb %0" : : "m" (*(char *)addr));
 }
 
 static __inline void
@@ -130,16 +103,16 @@ static __inline void
 do_cpuid(u_int ax, u_int *p)
 {
 	__asm __volatile("cpuid"
-			 : "=a" (p[0]), "=b" (p[1]), "=c" (p[2]), "=d" (p[3])
-			 :  "0" (ax));
+	    : "=a" (p[0]), "=b" (p[1]), "=c" (p[2]), "=d" (p[3])
+	    :  "0" (ax));
 }
 
 static __inline void
 cpuid_count(u_int ax, u_int cx, u_int *p)
 {
 	__asm __volatile("cpuid"
-			 : "=a" (p[0]), "=b" (p[1]), "=c" (p[2]), "=d" (p[3])
-			 :  "0" (ax), "c" (cx));
+	    : "=a" (p[0]), "=b" (p[1]), "=c" (p[2]), "=d" (p[3])
+	    :  "0" (ax), "c" (cx));
 }
 
 static __inline void
@@ -147,53 +120,6 @@ enable_intr(void)
 {
 	__asm __volatile("sti");
 }
-
-#ifdef _KERNEL
-
-#define	HAVE_INLINE_FFS
-#define        ffs(x)  __builtin_ffs(x)
-
-#define	HAVE_INLINE_FFSL
-
-static __inline int
-ffsl(long mask)
-{
-	return (mask == 0 ? mask : (int)bsfq((u_long)mask) + 1);
-}
-
-#define	HAVE_INLINE_FFSLL
-
-static __inline int
-ffsll(long long mask)
-{
-	return (ffsl((long)mask));
-}
-
-#define	HAVE_INLINE_FLS
-
-static __inline int
-fls(int mask)
-{
-	return (mask == 0 ? mask : (int)bsrl((u_int)mask) + 1);
-}
-
-#define	HAVE_INLINE_FLSL
-
-static __inline int
-flsl(long mask)
-{
-	return (mask == 0 ? mask : (int)bsrq((u_long)mask) + 1);
-}
-
-#define	HAVE_INLINE_FLSLL
-
-static __inline int
-flsll(long long mask)
-{
-	return (flsl((long)mask));
-}
-
-#endif /* _KERNEL */
 
 static __inline void
 halt(void)
@@ -222,7 +148,7 @@ inl(u_int port)
 static __inline void
 insb(u_int port, void *addr, size_t count)
 {
-	__asm __volatile("cld; rep; insb"
+	__asm __volatile("rep; insb"
 			 : "+D" (addr), "+c" (count)
 			 : "d" (port)
 			 : "memory");
@@ -231,7 +157,7 @@ insb(u_int port, void *addr, size_t count)
 static __inline void
 insw(u_int port, void *addr, size_t count)
 {
-	__asm __volatile("cld; rep; insw"
+	__asm __volatile("rep; insw"
 			 : "+D" (addr), "+c" (count)
 			 : "d" (port)
 			 : "memory");
@@ -240,7 +166,7 @@ insw(u_int port, void *addr, size_t count)
 static __inline void
 insl(u_int port, void *addr, size_t count)
 {
-	__asm __volatile("cld; rep; insl"
+	__asm __volatile("rep; insl"
 			 : "+D" (addr), "+c" (count)
 			 : "d" (port)
 			 : "memory");
@@ -276,7 +202,7 @@ outl(u_int port, u_int data)
 static __inline void
 outsb(u_int port, const void *addr, size_t count)
 {
-	__asm __volatile("cld; rep; outsb"
+	__asm __volatile("rep; outsb"
 			 : "+S" (addr), "+c" (count)
 			 : "d" (port));
 }
@@ -284,7 +210,7 @@ outsb(u_int port, const void *addr, size_t count)
 static __inline void
 outsw(u_int port, const void *addr, size_t count)
 {
-	__asm __volatile("cld; rep; outsw"
+	__asm __volatile("rep; outsw"
 			 : "+S" (addr), "+c" (count)
 			 : "d" (port));
 }
@@ -292,7 +218,7 @@ outsw(u_int port, const void *addr, size_t count)
 static __inline void
 outsl(u_int port, const void *addr, size_t count)
 {
-	__asm __volatile("cld; rep; outsl"
+	__asm __volatile("rep; outsl"
 			 : "+S" (addr), "+c" (count)
 			 : "d" (port));
 }
@@ -384,12 +310,53 @@ rdtsc(void)
 	return (low | ((uint64_t)high << 32));
 }
 
+static __inline uint64_t
+rdtsc_ordered_lfence(void)
+{
+	lfence();
+	return (rdtsc());
+}
+
+static __inline uint64_t
+rdtsc_ordered_mfence(void)
+{
+	mfence();
+	return (rdtsc());
+}
+
+static __inline uint64_t
+rdtscp(void)
+{
+	uint32_t low, high;
+
+	__asm __volatile("rdtscp" : "=a" (low), "=d" (high) : : "ecx");
+	return (low | ((uint64_t)high << 32));
+}
+
+static __inline uint64_t
+rdtscp_aux(uint32_t *aux)
+{
+	uint32_t low, high;
+
+	__asm __volatile("rdtscp" : "=a" (low), "=d" (high), "=c" (*aux));
+	return (low | ((uint64_t)high << 32));
+}
+
 static __inline uint32_t
 rdtsc32(void)
 {
 	uint32_t rv;
 
 	__asm __volatile("rdtsc" : "=a" (rv) : : "edx");
+	return (rv);
+}
+
+static __inline uint32_t
+rdtscp32(void)
+{
+	uint32_t rv;
+
+	__asm __volatile("rdtscp" : "=a" (rv) : : "ecx", "edx");
 	return (rv);
 }
 
@@ -558,6 +525,29 @@ invpcid(struct invpcid_descr *d, int type)
 	    : : "r" (d), "r" ((u_long)type) : "memory");
 }
 
+#define	INVLPGB_VA		0x0001
+#define	INVLPGB_PCID		0x0002
+#define	INVLPGB_ASID		0x0004
+#define	INVLPGB_GLOB		0x0008
+#define	INVLPGB_FIN		0x0010
+#define	INVLPGB_NEST		0x0020
+
+#define	INVLPGB_DESCR(asid, pcid)	(((pcid) << 16) | (asid))
+
+#define	INVLPGB_2M_CNT		(1u << 31)
+
+static __inline void
+invlpgb(uint64_t rax, uint32_t edx, uint32_t ecx)
+{
+	__asm __volatile("invlpgb" : : "a" (rax), "d" (edx), "c" (ecx));
+}
+
+static __inline void
+tlbsync(void)
+{
+	__asm __volatile("tlbsync");
+}
+
 static __inline u_short
 rfs(void)
 {
@@ -609,6 +599,22 @@ cpu_mwait(u_long extensions, u_int hints)
 	__asm __volatile("mwait" : : "a" (hints), "c" (extensions));
 }
 
+static __inline uint32_t
+rdpkru(void)
+{
+	uint32_t res;
+
+	__asm __volatile("rdpkru" :  "=a" (res) : "c" (0) : "edx");
+	return (res);
+}
+
+static __inline void
+wrpkru(uint32_t mask)
+{
+
+	__asm __volatile("wrpkru" :  : "a" (mask),  "c" (0), "d" (0));
+}
+
 #ifdef _KERNEL
 /* This is defined in <machine/specialreg.h> but is too painful to get to */
 #ifndef	MSR_FSBASE
@@ -651,6 +657,38 @@ load_gs(u_short sel)
 }
 #endif
 
+static __inline uint64_t
+rdfsbase(void)
+{
+	uint64_t x;
+
+	__asm __volatile("rdfsbase %0" : "=r" (x));
+	return (x);
+}
+
+static __inline void
+wrfsbase(uint64_t x)
+{
+
+	__asm __volatile("wrfsbase %0" : : "r" (x));
+}
+
+static __inline uint64_t
+rdgsbase(void)
+{
+	uint64_t x;
+
+	__asm __volatile("rdgsbase %0" : "=r" (x));
+	return (x);
+}
+
+static __inline void
+wrgsbase(uint64_t x)
+{
+
+	__asm __volatile("wrgsbase %0" : : "r" (x));
+}
+
 static __inline void
 bare_lgdt(struct region_descriptor *addr)
 {
@@ -685,6 +723,15 @@ static __inline void
 lldt(u_short sel)
 {
 	__asm __volatile("lldt %0" : : "r" (sel));
+}
+
+static __inline u_short
+sldt(void)
+{
+	u_short sel;
+
+	__asm __volatile("sldt %0" : "=r" (sel));
+	return (sel);
 }
 
 static __inline void
@@ -802,72 +849,121 @@ intr_restore(register_t rflags)
 	write_rflags(rflags);
 }
 
-#else /* !(__GNUCLIKE_ASM && __CC_SUPPORTS___INLINE) */
+static __inline void
+stac(void)
+{
 
-int	breakpoint(void);
-u_int	bsfl(u_int mask);
-u_int	bsrl(u_int mask);
-void	clflush(u_long addr);
-void	clts(void);
-void	cpuid_count(u_int ax, u_int cx, u_int *p);
-void	disable_intr(void);
-void	do_cpuid(u_int ax, u_int *p);
-void	enable_intr(void);
-void	halt(void);
-void	ia32_pause(void);
-u_char	inb(u_int port);
-u_int	inl(u_int port);
-void	insb(u_int port, void *addr, size_t count);
-void	insl(u_int port, void *addr, size_t count);
-void	insw(u_int port, void *addr, size_t count);
-register_t	intr_disable(void);
-void	intr_restore(register_t rf);
-void	invd(void);
-void	invlpg(u_int addr);
-void	invltlb(void);
-u_short	inw(u_int port);
-void	lidt(struct region_descriptor *addr);
-void	lldt(u_short sel);
-void	load_cr0(u_long cr0);
-void	load_cr3(u_long cr3);
-void	load_cr4(u_long cr4);
-void	load_dr0(uint64_t dr0);
-void	load_dr1(uint64_t dr1);
-void	load_dr2(uint64_t dr2);
-void	load_dr3(uint64_t dr3);
-void	load_dr6(uint64_t dr6);
-void	load_dr7(uint64_t dr7);
-void	load_fs(u_short sel);
-void	load_gs(u_short sel);
-void	ltr(u_short sel);
-void	outb(u_int port, u_char data);
-void	outl(u_int port, u_int data);
-void	outsb(u_int port, const void *addr, size_t count);
-void	outsl(u_int port, const void *addr, size_t count);
-void	outsw(u_int port, const void *addr, size_t count);
-void	outw(u_int port, u_short data);
-u_long	rcr0(void);
-u_long	rcr2(void);
-u_long	rcr3(void);
-u_long	rcr4(void);
-uint64_t rdmsr(u_int msr);
-uint32_t rdmsr32(u_int msr);
-uint64_t rdpmc(u_int pmc);
-uint64_t rdr0(void);
-uint64_t rdr1(void);
-uint64_t rdr2(void);
-uint64_t rdr3(void);
-uint64_t rdr6(void);
-uint64_t rdr7(void);
-uint64_t rdtsc(void);
-u_long	read_rflags(void);
-u_int	rfs(void);
-u_int	rgs(void);
-void	wbinvd(void);
-void	write_rflags(u_int rf);
-void	wrmsr(u_int msr, uint64_t newval);
+	__asm __volatile("stac" : : : "cc");
+}
 
-#endif	/* __GNUCLIKE_ASM && __CC_SUPPORTS___INLINE */
+static __inline void
+clac(void)
+{
+
+	__asm __volatile("clac" : : : "cc");
+}
+
+enum {
+	SGX_ECREATE	= 0x0,
+	SGX_EADD	= 0x1,
+	SGX_EINIT	= 0x2,
+	SGX_EREMOVE	= 0x3,
+	SGX_EDGBRD	= 0x4,
+	SGX_EDGBWR	= 0x5,
+	SGX_EEXTEND	= 0x6,
+	SGX_ELDU	= 0x8,
+	SGX_EBLOCK	= 0x9,
+	SGX_EPA		= 0xA,
+	SGX_EWB		= 0xB,
+	SGX_ETRACK	= 0xC,
+};
+
+enum {
+	SGX_PT_SECS = 0x00,
+	SGX_PT_TCS  = 0x01,
+	SGX_PT_REG  = 0x02,
+	SGX_PT_VA   = 0x03,
+	SGX_PT_TRIM = 0x04,
+};
+
+int sgx_encls(uint32_t eax, uint64_t rbx, uint64_t rcx, uint64_t rdx);
+
+static __inline int
+sgx_ecreate(void *pginfo, void *secs)
+{
+
+	return (sgx_encls(SGX_ECREATE, (uint64_t)pginfo,
+	    (uint64_t)secs, 0));
+}
+
+static __inline int
+sgx_eadd(void *pginfo, void *epc)
+{
+
+	return (sgx_encls(SGX_EADD, (uint64_t)pginfo,
+	    (uint64_t)epc, 0));
+}
+
+static __inline int
+sgx_einit(void *sigstruct, void *secs, void *einittoken)
+{
+
+	return (sgx_encls(SGX_EINIT, (uint64_t)sigstruct,
+	    (uint64_t)secs, (uint64_t)einittoken));
+}
+
+static __inline int
+sgx_eextend(void *secs, void *epc)
+{
+
+	return (sgx_encls(SGX_EEXTEND, (uint64_t)secs,
+	    (uint64_t)epc, 0));
+}
+
+static __inline int
+sgx_epa(void *epc)
+{
+
+	return (sgx_encls(SGX_EPA, SGX_PT_VA, (uint64_t)epc, 0));
+}
+
+static __inline int
+sgx_eldu(uint64_t rbx, uint64_t rcx,
+    uint64_t rdx)
+{
+
+	return (sgx_encls(SGX_ELDU, rbx, rcx, rdx));
+}
+
+static __inline int
+sgx_eremove(void *epc)
+{
+
+	return (sgx_encls(SGX_EREMOVE, 0, (uint64_t)epc, 0));
+}
+
+static __inline void
+xrstors(uint8_t *save_area, uint64_t state_bitmap)
+{
+	uint32_t low, hi;
+
+	low = state_bitmap;
+	hi = state_bitmap >> 32;
+	__asm __volatile("xrstors %0" : : "m"(*save_area), "a"(low),
+	    "d"(hi));
+}
+
+static __inline void
+xsaves(uint8_t *save_area, uint64_t state_bitmap)
+{
+	uint32_t low, hi;
+
+	low = state_bitmap;
+	hi = state_bitmap >> 32;
+	__asm __volatile("xsaves %0" : "=m"(*save_area) : "a"(low),
+	    "d"(hi)
+	    : "memory");
+}
 
 void	reset_dbregs(void);
 
@@ -877,3 +973,5 @@ int	wrmsr_safe(u_int msr, uint64_t newval);
 #endif
 
 #endif /* !_MACHINE_CPUFUNC_H_ */
+
+#endif /* __i386__ */

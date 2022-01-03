@@ -1,5 +1,5 @@
 /*-
- * SPDX-License-Identifier: BSD-2-Clause-FreeBSD
+ * SPDX-License-Identifier: BSD-2-Clause
  *
  * Copyright (c) 2009 David Schultz <das@FreeBSD.org>
  * All rights reserved.
@@ -26,8 +26,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-
 #include <string.h>
 
 size_t
@@ -36,7 +34,7 @@ strnlen(const char *s, size_t maxlen)
 	size_t len;
 
 	for (len = 0; len < maxlen; len++, s++) {
-		if (*s == '\0')
+		if (!*s)
 			break;
 	}
 	return (len);

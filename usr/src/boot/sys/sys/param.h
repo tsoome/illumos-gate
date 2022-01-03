@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -15,7 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,15 +32,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)param.h	8.3 (Berkeley) 4/4/95
- * $FreeBSD$
  */
 
 #ifndef _SYS_PARAM_H_
 #define _SYS_PARAM_H_
 
 #include <sys/_null.h>
+#include <sys/_param.h>
 
 #define	BSD	199506		/* System version (year & month). */
 #define BSD4_3	1
@@ -50,15 +50,31 @@
  * there.
  * Currently this lives here in the doc/ repository:
  *
- *	head/en_US.ISO8859-1/books/porters-handbook/versions/chapter.xml
+ *	documentation/content/en/books/porters-handbook/versions/_index.adoc
  *
- * scheme is:  <major><two digit minor>Rxx
+ * Encoding:	<major><two digit minor>Rxx
  *		'R' is in the range 0 to 4 if this is a release branch or
- *		x.0-CURRENT before RELENG_*_0 is created, otherwise 'R' is
+ *		X.0-CURRENT before releng/X.0 is created, otherwise 'R' is
  *		in the range 5 to 9.
+ * Short hand: MMmmXXX
+ *
+ * __FreeBSD_version is bumped every time there's a change in the base system
+ * that's noteworthy. A noteworthy change is any change which changes the
+ * kernel's KBI in -CURRENT, one that changes some detail about the system that
+ * external software (or the ports system) would want to know about, one that
+ * adds a system call, one that adds or deletes a shipped library, a security
+ * fix, or similar change not specifically noted here. Bumps should be limited
+ * to one per day / a couple per week except for security fixes.
+ *
+ * The approved way to obtain this from a shell script is:
+ *	awk '/^\#define[[:space:]]*__FreeBSD_version/ {print $3}'
+ * Other methods to parse this file may work, but are not guaranteed against
+ * future changes. The above script works back to FreeBSD 3.x when this macro
+ * was introduced. This number is propagated to other places needing it that
+ * cannot include sys/param.h and should only be updated here.
  */
 #undef __FreeBSD_version
-#define __FreeBSD_version 1100100	/* Master, propagated to newvers */
+#define __FreeBSD_version 1500053
 
 /*
  * __FreeBSD_kernel__ indicates that this system uses the kernel of FreeBSD,
@@ -76,12 +92,23 @@
 #undef __FreeBSD_kernel__
 #define __FreeBSD_kernel__
 
-#ifdef _KERNEL
+#if defined(_KERNEL) || defined(_WANT_P_OSREL)
 #define	P_OSREL_SIGWAIT			700000
 #define	P_OSREL_SIGSEGV			700004
 #define	P_OSREL_MAP_ANON		800104
 #define	P_OSREL_MAP_FSTRICT		1100036
 #define	P_OSREL_SHUTDOWN_ENOTCONN	1100077
+#define	P_OSREL_MAP_GUARD		1200035
+#define	P_OSREL_WRFSBASE		1200041
+#define	P_OSREL_CK_CYLGRP		1200046
+#define	P_OSREL_VMTOTAL64		1200054
+#define	P_OSREL_CK_SUPERBLOCK		1300000
+#define	P_OSREL_CK_INODE		1300005
+#define	P_OSREL_POWERPC_NEW_AUX_ARGS	1300070
+#define	P_OSREL_TIDPID			1400079
+#define	P_OSREL_ARM64_SPSR		1400084
+#define	P_OSREL_TLSBASE			1500044
+#define	P_OSREL_EXTERRCTL		1500045
 
 #define	P_OSREL_MAJOR(x)		((x) / 100000)
 #endif
@@ -107,7 +134,7 @@
 #define	NOFILE		OPEN_MAX	/* max open files per process */
 #define	NOGROUP		65535		/* marker for empty group set member */
 #define MAXHOSTNAMELEN	256		/* max hostname size */
-#define SPECNAMELEN	63		/* max length of devicename */
+#define SPECNAMELEN	255		/* max length of devicename */
 
 /* More types and definitions used throughout the kernel. */
 #ifdef _KERNEL
@@ -126,7 +153,7 @@
 #endif
 #endif
 
-#ifndef _KERNEL
+#if !defined(_KERNEL) && !defined(_STANDALONE) && !defined(LOCORE)
 /* Signals. */
 #include <sys/signal.h>
 #endif
@@ -135,6 +162,7 @@
 #include <machine/param.h>
 #ifndef _KERNEL
 #include <sys/limits.h>
+#include <sys/_maxphys.h>
 #endif
 
 #ifndef DEV_BSHIFT
@@ -147,9 +175,6 @@
 #endif
 #ifndef DFLTPHYS
 #define DFLTPHYS	(64 * 1024)	/* default max raw I/O transfer size */
-#endif
-#ifndef MAXPHYS
-#define MAXPHYS		(128 * 1024)	/* max raw I/O transfer size */
 #endif
 #ifndef MAXDUMPPGS
 #define MAXDUMPPGS	(DFLTPHYS/PAGE_SIZE)
@@ -169,9 +194,7 @@
 
 #define MCLBYTES	(1 << MCLSHIFT)	/* size of an mbuf cluster */
 
-#if PAGE_SIZE < 2048
-#define	MJUMPAGESIZE	MCLBYTES
-#elif PAGE_SIZE <= 8192
+#if PAGE_SIZE <= 8192
 #define	MJUMPAGESIZE	PAGE_SIZE
 #else
 #define	MJUMPAGESIZE	(8 * 1024)
@@ -179,6 +202,17 @@
 
 #define	MJUM9BYTES	(9 * 1024)	/* jumbo cluster 9k */
 #define	MJUM16BYTES	(16 * 1024)	/* jumbo cluster 16k */
+
+/*
+ * Mach derived conversion macros
+ */
+#define	round_page(x)	roundup2(x, PAGE_SIZE)
+#define	trunc_page(x)	rounddown2(x, PAGE_SIZE)
+
+#define	atop(x)		((x) >> PAGE_SHIFT)
+#define	ptoa(x)		((x) << PAGE_SHIFT)
+
+#define	pgtok(x)	((x) * (PAGE_SIZE / 1024))
 
 /*
  * Some macros for units conversion
@@ -201,7 +235,7 @@
  * a daddr_t.
  */
 #ifndef btodb
-#define btodb(bytes)	 		/* calculates (bytes / DEV_BSIZE) */ \
+#define btodb(bytes)			/* calculates (bytes / DEV_BSIZE) */ \
 	(sizeof (bytes) > sizeof(long) \
 	 ? (daddr_t)((unsigned long long)(bytes) >> DEV_BSHIFT) \
 	 : (daddr_t)((unsigned long)(bytes) >> DEV_BSHIFT))
@@ -212,14 +246,13 @@
 	((off_t)(db) << DEV_BSHIFT)
 #endif
 
-#define	PRIMASK	0x0ff
-#define	PCATCH	0x100		/* OR'd with pri for tsleep to check signals */
-#define	PDROP	0x200	/* OR'd with pri to stop re-entry of interlock mutex */
+#define	PRIMASK		0x0ff
+#define	PCATCH		0x100	/* OR'd with pri for tsleep to check signals */
+#define	PDROP		0x200	/* OR'd with pri to stop re-entry of interlock mutex */
+#define	PNOLOCK		0x400	/* OR'd with pri to allow sleeping w/o a lock */
+#define	PRILASTFLAG	0x400	/* Last flag defined above */
 
 #define	NZERO	0		/* default "nice" */
-
-#define	NBBY	8		/* number of bits in a byte */
-#define	NBPW	sizeof(int)	/* number of bytes per word (integer) */
 
 #define	CMASK	022		/* default file mask: S_IWGRP|S_IWOTH */
 
@@ -244,9 +277,7 @@
  *		Filesystems can of course request smaller chunks.  Actual
  *		backing memory uses a chunk size of a page (PAGE_SIZE).
  *		The default value here can be overridden on a per-architecture
- *		basis by defining it in <machine/param.h>.  This should
- *		probably be done to increase its value, when MAXBCACHEBUF is
- *		defined as a larger value in <machine/param.h>.
+ *		basis by defining it in <machine/param.h>.
  *
  *		If you make BKVASIZE too small you risk seriously fragmenting
  *		the buffer KVM map which may slow things down a bit.  If you
@@ -286,16 +317,7 @@
 #define	isclr(a,i)							\
 	((((const unsigned char *)(a))[(i)/NBBY] & (1<<((i)%NBBY))) == 0)
 
-/* Macros for counting and rounding. */
-#ifndef howmany
-#define	howmany(x, y)	(((x)+((y)-1))/(y))
-#endif
-#define	nitems(x)	(sizeof((x)) / sizeof((x)[0]))
-#define	rounddown(x, y)	(((x)/(y))*(y))
-#define	rounddown2(x, y) ((x)&(~((y)-1)))          /* if y is power of two */
-#define	roundup(x, y)	((((x)+((y)-1))/(y))*(y))  /* to any y */
-#define	roundup2(x, y)	(((x)+((y)-1))&(~((y)-1))) /* if y is powers of two */
-#define powerof2(x)	((((x)-1)&(x))==0)
+/* Macros for counting and rounding provided by <sys/_param.h>. */
 
 /* Macros for min/max. */
 #define	MIN(a,b) (((a)<(b))?(a):(b))
@@ -317,7 +339,6 @@ __END_DECLS
 #endif
 #endif
 
-#ifndef lint
 #ifndef _BYTEORDER_FUNC_DEFINED
 #define	_BYTEORDER_FUNC_DEFINED
 #define	htonl(x)	__htonl(x)
@@ -325,19 +346,18 @@ __END_DECLS
 #define	ntohl(x)	__ntohl(x)
 #define	ntohs(x)	__ntohs(x)
 #endif /* !_BYTEORDER_FUNC_DEFINED */
-#endif /* lint */
 #endif /* _KERNEL */
 
 /*
  * Scale factor for scaled integers used to count %cpu time and load avgs.
  *
  * The number of CPU `tick's that map to a unique `%age' can be expressed
- * by the formula (1 / (2 ^ (FSHIFT - 11))).  The maximum load average that
- * can be calculated (assuming 32 bits) can be closely approximated using
- * the formula (2 ^ (2 * (16 - FSHIFT))) for (FSHIFT < 15).
+ * by the formula (1 / (2 ^ (FSHIFT - 11))).  Since the intermediate
+ * calculation is done with 64-bit precision, the maximum load average that can
+ * be calculated is approximately 2^32 / FSCALE.
  *
  * For the scheduler to maintain a 1:1 mapping of CPU `tick' to `%age',
- * FSHIFT must be at least 11; this gives us a maximum load avg of ~1024.
+ * FSHIFT must be at least 11.  This gives a maximum load avg of 2 million.
  */
 #define	FSHIFT	11		/* bits to right of fixed binary point */
 #define FSCALE	(1<<FSHIFT)

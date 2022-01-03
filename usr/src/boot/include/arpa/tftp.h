@@ -1,4 +1,6 @@
-/*
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -25,9 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)tftp.h	8.1 (Berkeley) 6/2/93
- * $FreeBSD$
  */
 
 #ifndef _ARPA_TFTP_H_
@@ -78,4 +77,4 @@ struct tftphdr {
 #define	ENOUSER		7		/* no such user */
 #define	EOPTNEG		8		/* option negotiation failed */
 
-#endif /* !_TFTP_H_ */
+#endif /* !_ARPA_TFTP_H_ */

@@ -1,4 +1,6 @@
-/*
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -27,12 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)bcmp.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <strings.h>
 
 /*
@@ -47,9 +43,9 @@ bcmp(const void *b1, const void *b2, size_t length)
 		return (0);
 	p1 = (char *)b1;
 	p2 = (char *)b2;
-	do
+	do {
 		if (*p1++ != *p2++)
-			break;
-	while (--length);
-	return (length);
+			return (1);
+	} while (--length);
+	return (0);
 }

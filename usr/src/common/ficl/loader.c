@@ -54,6 +54,7 @@
 #endif
 #include <string.h>
 #include <gfx_fb.h>
+#include <time.h>
 #include "ficl.h"
 
 /*

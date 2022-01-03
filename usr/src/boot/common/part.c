@@ -34,7 +34,7 @@
 #include <sys/endian.h>
 #include <sys/gpt.h>
 #include <sys/queue.h>
-#include <sys/vtoc.h>
+#include <sys/disk/vtoc.h>
 
 #include <fs/cd9660/iso.h>
 
@@ -60,9 +60,9 @@ static const uuid_t gpt_uuid_freebsd_swap = GPT_ENT_TYPE_FREEBSD_SWAP;
 static const uuid_t gpt_uuid_freebsd_zfs = GPT_ENT_TYPE_FREEBSD_ZFS;
 static const uuid_t gpt_uuid_freebsd_vinum = GPT_ENT_TYPE_FREEBSD_VINUM;
 static const uuid_t gpt_uuid_illumos_boot = GPT_ENT_TYPE_ILLUMOS_BOOT;
-static const uuid_t gpt_uuid_illumos_ufs = GPT_ENT_TYPE_ILLUMOS_UFS;
+static const uuid_t gpt_uuid_illumos_ufs = GPT_ENT_TYPE_ILLUMOS_ROOT;
 static const uuid_t gpt_uuid_illumos_zfs = GPT_ENT_TYPE_ILLUMOS_ZFS;
-static const uuid_t gpt_uuid_reserved = GPT_ENT_TYPE_RESERVED;
+static const uuid_t gpt_uuid_reserved = GPT_ENT_TYPE_ILLUMOS_RESERVED;
 static const uuid_t gpt_uuid_apple_apfs = GPT_ENT_TYPE_APPLE_APFS;
 #endif
 

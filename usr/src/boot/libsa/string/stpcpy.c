@@ -1,4 +1,6 @@
-/*
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1999
  *	David E. O'Brien
  * Copyright (c) 1988, 1993
@@ -29,14 +31,15 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-
 #include <string.h>
 
+#undef stpcpy	/* _FORTIFY_SOURCE */
+
 char *
-stpcpy(char * __restrict to, const char * __restrict from)
+stpcpy(char *__restrict to, const char *__restrict from)
 {
 
-	for (; (*to = *from); ++from, ++to);
+	for (; (*to = *from); ++from, ++to)
+		;
 	return (to);
 }

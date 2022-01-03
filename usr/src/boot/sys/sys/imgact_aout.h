@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,7 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -25,9 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)exec.h	8.1 (Berkeley) 6/11/93
- * $FreeBSD$
  */
 
 #ifndef	_IMGACT_AOUT_H_
@@ -68,7 +67,6 @@
 	 N_GETMAGIC_NET(ex) != OMAGIC && N_GETMAGIC_NET(ex) != NMAGIC && \
 	 N_GETMAGIC_NET(ex) != ZMAGIC && N_GETMAGIC_NET(ex) != QMAGIC)
 
-
 /* Address of the bottom of the text segment. */
 /*
  * This can not be done right.  Abuse a_entry in some cases to handle kernels.
@@ -101,7 +99,7 @@
 	(N_RELOFF(ex) + le32toh((ex).a_trsize) + le32toh((ex).a_drsize))
 
 /* String table offset. */
-#define	N_STROFF(ex) 	(N_SYMOFF(ex) + le32toh((ex).a_syms))
+#define	N_STROFF(ex)	(N_SYMOFF(ex) + le32toh((ex).a_syms))
 
 /*
  * Header prepended to each a.out file.

@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -15,7 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,9 +32,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)exec.h	8.3 (Berkeley) 1/21/94
- * $FreeBSD$
  */
 
 #ifndef _SYS_EXEC_H_
@@ -58,12 +57,15 @@ struct ps_strings {
 	unsigned int ps_nenvstr; /* the number of environment strings */
 };
 
-/*
- * Address of ps_strings structure (in user space).
- * Prefer the kern.ps_strings or kern.proc.ps_strings sysctls to this constant.
- */
-#define	PS_STRINGS	(USRSTACK - sizeof(struct ps_strings))
-#define SPARE_USRSPACE	4096
+/* Coredump output parameters. */
+struct coredump_params {
+	off_t		offset;
+	struct ucred	*active_cred;
+	struct ucred	*file_cred;
+	struct thread	*td;
+	struct vnode	*vp;
+	struct compressor *comp;
+};
 
 struct image_params;
 
@@ -77,11 +79,38 @@ struct execsw {
 #ifdef _KERNEL
 #include <sys/cdefs.h>
 
+/*
+ * Address of ps_strings structure (in user space).
+ * Prefer the kern.ps_strings or kern.proc.ps_strings sysctls to this constant.
+ */
+#define	PS_STRINGS	(USRSTACK - sizeof(struct ps_strings))
+#define	PROC_PS_STRINGS(p)	\
+	((p)->p_vmspace->vm_stacktop - (p)->p_sysent->sv_psstringssz)
+
+/*
+ * Address of signal trampoline (in user space).
+ * This assumes that the sigcode resides in the shared page.
+ */
+#define PROC_SIGCODE(p)		\
+	((p)->p_vmspace->vm_shp_base + (p)->p_sysent->sv_sigcode_offset)
+
+#define PROC_HAS_SHP(p)		\
+	((p)->p_sysent->sv_shared_page_obj != NULL)
+
 int exec_map_first_page(struct image_params *);
 void exec_unmap_first_page(struct image_params *);
 
 int exec_register(const struct execsw *);
 int exec_unregister(const struct execsw *);
+
+enum uio_seg;
+
+#define   CORE_BUF_SIZE   (16 * 1024)
+
+int core_write(struct coredump_params *, const void *, size_t, off_t,
+    enum uio_seg, size_t *);
+int core_output(char *, size_t, off_t, struct coredump_params *, void *);
+int sbuf_drain_core_output(void *, const char *, int);
 
 extern int coredump_pack_fileinfo;
 extern int coredump_pack_vmmapinfo;

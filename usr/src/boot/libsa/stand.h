@@ -295,6 +295,7 @@ extern int	close(int);
 extern void	closeall(void);
 extern ssize_t	read(int, void *, size_t);
 extern ssize_t	write(int, const void *, size_t);
+extern int	ioctl(int, ulong_t, void *);
 extern struct	dirent *readdirfd(int);
 
 extern void	srandom(ulong_t seed);
@@ -411,6 +412,11 @@ extern time_t	getsecs(void);
 extern struct fs_ops	*file_system[];
 extern struct fs_ops	*exclusive_file_system;
 extern struct devsw	*devsw[];
+
+/*
+ * Time routines
+ */
+time_t time(time_t *);
 
 /*
  * Expose byteorder(3) functions.

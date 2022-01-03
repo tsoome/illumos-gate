@@ -107,29 +107,27 @@ struct fs_ops ufs_fsops = {
 struct file {
 	off_t		f_seekp;	/* seek pointer */
 	struct fs	*f_fs;		/* pointer to super-block */
-	union dinode {
-		struct ufs1_dinode di1;
-		struct ufs2_dinode di2;
-	}		f_di;		/* copy of on-disk inode */
-	int		f_nindir[NIADDR];
+	union dinode	f_di;		/* copy of on-disk inode */
+	int		f_nindir[UFS_NIADDR];
 					/*
 					 * number of blocks mapped by
 					 * indirect block at level i
 					 */
-	char		*f_blk[NIADDR];
+	char		*f_blk[UFS_NIADDR];
 					/*
 					 * buffer for indirect block at
 					 * level i
 					 */
-	size_t		f_blksize[NIADDR]; /* size of buffer */
-	ufs2_daddr_t	f_blkno[NIADDR]; /* disk address of block in buffer */
+	size_t		f_blksize[UFS_NIADDR]; /* size of buffer */
+	ufs2_daddr_t	f_blkno[UFS_NIADDR];
+					/* disk address of block in buffer */
 	ufs2_daddr_t	f_buf_blkno;	/* block number of data block */
 	char		*f_buf;		/* buffer for data block */
 	size_t		f_buf_size;	/* size of data block */
 };
 #define	DIP(fp, field) \
 	((fp)->f_fs->fs_magic == FS_UFS1_MAGIC ? \
-	(fp)->f_di.di1.field : (fp)->f_di.di2.field)
+	(fp)->f_di.dp1.field : (fp)->f_di.dp2.field)
 
 static int	read_inode(ino_t, struct open_file *);
 static int	block_map(struct open_file *, ufs2_daddr_t, ufs2_daddr_t *);
@@ -168,10 +166,10 @@ read_inode(ino_t inumber, struct open_file *f)
 	}
 
 	if (fp->f_fs->fs_magic == FS_UFS1_MAGIC)
-		fp->f_di.di1 = ((struct ufs1_dinode *)buf)
+		fp->f_di.dp1 = ((struct ufs1_dinode *)buf)
 		    [ino_to_fsbo(fs, inumber)];
 	else
-		fp->f_di.di2 = ((struct ufs2_dinode *)buf)
+		fp->f_di.dp2 = ((struct ufs2_dinode *)buf)
 		    [ino_to_fsbo(fs, inumber)];
 
 	/*
@@ -180,7 +178,7 @@ read_inode(ino_t inumber, struct open_file *f)
 	{
 		int level;
 
-		for (level = 0; level < NIADDR; level++)
+		for (level = 0; level < UFS_NIADDR; level++)
 			fp->f_blkno[level] = -1;
 		fp->f_buf_blkno = -1;
 	}
@@ -228,13 +226,13 @@ block_map(struct open_file *f, ufs2_daddr_t file_block,
 	 *				+ NINDIR(fs)**3 - 1
 	 */
 
-	if (file_block < NDADDR) {
+	if (file_block < UFS_NDADDR) {
 		/* Direct block. */
 		*disk_block_p = DIP(fp, di_db[file_block]);
 		return (0);
 	}
 
-	file_block -= NDADDR;
+	file_block -= UFS_NDADDR;
 
 	/*
 	 * nindir[0] = NINDIR
@@ -242,12 +240,12 @@ block_map(struct open_file *f, ufs2_daddr_t file_block,
 	 * nindir[2] = NINDIR**3
 	 *	etc
 	 */
-	for (level = 0; level < NIADDR; level++) {
+	for (level = 0; level < UFS_NIADDR; level++) {
 		if (file_block < fp->f_nindir[level])
 			break;
 		file_block -= fp->f_nindir[level];
 	}
-	if (level == NIADDR) {
+	if (level == UFS_NIADDR) {
 		/* Block number too high */
 		return (EFBIG);
 	}
@@ -528,13 +526,13 @@ ufs_open(const char *upath, struct open_file *f)
 		int level;
 
 		mult = 1;
-		for (level = 0; level < NIADDR; level++) {
+		for (level = 0; level < UFS_NIADDR; level++) {
 			mult *= NINDIR(fs);
 			fp->f_nindir[level] = mult;
 		}
 	}
 
-	inumber = ROOTINO;
+	inumber = UFS_ROOTINO;
 	if ((rc = read_inode(inumber, f)) != 0)
 		goto out;
 
@@ -614,9 +612,9 @@ ufs_open(const char *upath, struct open_file *f)
 
 			if (link_len < fs->fs_maxsymlinklen) {
 				if (fp->f_fs->fs_magic == FS_UFS1_MAGIC)
-					cp = (caddr_t)(fp->f_di.di1.di_db);
+					cp = (caddr_t)(fp->f_di.dp1.di_db);
 				else
-					cp = (caddr_t)(fp->f_di.di2.di_db);
+					cp = (caddr_t)(fp->f_di.dp2.di_db);
 				bcopy(cp, namebuf, (unsigned)link_len);
 			} else {
 				/*
@@ -650,7 +648,7 @@ ufs_open(const char *upath, struct open_file *f)
 			if (*cp != '/')
 				inumber = parent_inumber;
 			else
-				inumber = (ino_t)ROOTINO;
+				inumber = (ino_t)UFS_ROOTINO;
 
 			if ((rc = read_inode(inumber, f)) != 0)
 				goto out;
@@ -686,7 +684,7 @@ ufs_close(struct open_file *f)
 	if (fp == (struct file *)0)
 		return (0);
 
-	for (level = 0; level < NIADDR; level++) {
+	for (level = 0; level < UFS_NIADDR; level++) {
 		if (fp->f_blk[level])
 			free(fp->f_blk[level]);
 	}

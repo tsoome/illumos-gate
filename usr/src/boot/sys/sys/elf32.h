@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 1996-1998 John D. Polstra.
  * All rights reserved.
  *
@@ -22,8 +24,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_ELF32_H_
@@ -150,6 +150,8 @@ typedef struct {
 /* Macro for constructing r_info from field values. */
 #define ELF32_R_INFO(sym, type)	(((sym) << 8) + (unsigned char)(type))
 
+typedef Elf32_Word Elf32_Relr;
+
 /*
  *	Note entry header
  */
@@ -160,7 +162,7 @@ typedef Elf_Note Elf32_Nhdr;
  */
 typedef struct {
 	Elf32_Lword	m_value;	/* symbol value */
-	Elf32_Word 	m_info;		/* size + index */
+	Elf32_Word	m_info;		/* size + index */
 	Elf32_Word	m_poffset;	/* symbol offset */
 	Elf32_Half	m_repeat;	/* repeat count */
 	Elf32_Half	m_stride;	/* stride info */
@@ -253,5 +255,11 @@ typedef struct {
 	Elf32_Half	si_boundto;	/* direct bindings - symbol bound to */
 	Elf32_Half	si_flags;	/* per symbol flags */
 } Elf32_Syminfo;
+
+typedef struct {
+	Elf32_Word	ch_type;
+	Elf32_Word	ch_size;
+	Elf32_Word	ch_addralign;
+} Elf32_Chdr;
 
 #endif /* !_SYS_ELF32_H_ */

@@ -1,4 +1,6 @@
-/*
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -27,20 +29,18 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)strcat.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <string.h>
 
+#undef strcat	/* _FORTIFY_SOURCE */
+
 char *
-strcat(char * __restrict s, const char * __restrict append)
+strcat(char *__restrict s, const char *__restrict append)
 {
 	char *save = s;
 
-	for (; *s; ++s);
-	while ((*s++ = *append++));
-	return(save);
+	for (; *s; ++s)
+		;
+	while ((*s++ = *append++))
+		;
+	return (save);
 }

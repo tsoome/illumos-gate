@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -30,21 +32,11 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)bcopy.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <sys/types.h>
 
-/*
- * sizeof(word) MUST BE A POWER OF TWO
- * SO THAT wmask BELOW IS ALL ONES
- */
-typedef	int word;		/* "word" used for optimal copy speed */
+typedef	intptr_t word;		/* "word" used for optimal copy speed */
 
-#define	wsize	sizeof(word)
+#define	wsize	sizeof (word)
 #define	wmask	(wsize - 1)
 
 /*
@@ -55,6 +47,9 @@ typedef	int word;		/* "word" used for optimal copy speed */
 #if defined(MEMCOPY) || defined(MEMMOVE)
 #include <string.h>
 
+#undef memcpy	/* _FORTIFY_SOURCE */
+#undef memmove	/* _FORTIFY_SOURCE */
+
 void *
 #ifdef MEMCOPY
 memcpy
@@ -64,6 +59,8 @@ memmove
 (void *dst0, const void *src0, size_t length)
 #else
 #include <strings.h>
+
+#undef bcopy	/* _FORTIFY_SOURCE */
 
 void
 bcopy(const void *src0, void *dst0, size_t length)
@@ -103,7 +100,8 @@ bcopy(const void *src0, void *dst0, size_t length)
 		 * Copy whole words, then mop up any trailing bytes.
 		 */
 		t = length / wsize;
-		TLOOP(*(word *)dst = *(word *)src; src += wsize; dst += wsize);
+		TLOOP(*(word *)(void *)dst = *(const word *)(const void *)src;
+		    src += wsize; dst += wsize);
 		t = length & wmask;
 		TLOOP(*dst++ = *src++);
 	} else {
@@ -124,7 +122,8 @@ bcopy(const void *src0, void *dst0, size_t length)
 			TLOOP1(*--dst = *--src);
 		}
 		t = length / wsize;
-		TLOOP(src -= wsize; dst -= wsize; *(word *)dst = *(word *)src);
+		TLOOP(src -= wsize; dst -= wsize;
+		    *(word *)(void *)dst = *(const word *)(const void *)src);
 		t = length & wmask;
 		TLOOP(*--dst = *--src);
 	}

@@ -16,11 +16,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <sys/types.h>
 #include <string.h>
+
+#undef strlcpy	/* FORTIFY_SOURCE */
 
 /*
  * Copy string src to buffer dst of size dsize.  At most dsize-1
@@ -28,7 +27,7 @@ __FBSDID("$FreeBSD$");
  * Returns strlen(src); if retval >= dsize, truncation occurred.
  */
 size_t
-strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize)
+strlcpy(char *__restrict dst, const char *__restrict src, size_t dsize)
 {
 	const char *osrc = src;
 	size_t nleft = dsize;
@@ -49,5 +48,5 @@ strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize)
 			;
 	}
 
-	return(src - osrc - 1);	/* count does not include NUL */
+	return (src - osrc - 1);	/* count does not include NUL */
 }

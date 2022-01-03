@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 1997 Michael Smith
  * Copyright (c) 1998 Jonathan Lemon
  * All rights reserved.
@@ -23,8 +25,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _MACHINE_PC_BIOS_H_
@@ -50,7 +50,7 @@ struct PnPBIOS_table
 {
     u_int8_t	sig[4];			/* "$PnP */
     u_int8_t	version;		/* should be 0x10 */
-    u_int8_t	len;    		/* total structure length */
+    u_int8_t	len;			/* total structure length */
     u_int16_t	control;		/* BIOS feature flags */
     u_int8_t	cksum;			/* checksum */
     u_int32_t	evflagaddr;		/* address of event notificaton flag */
@@ -105,7 +105,7 @@ struct PnPBIOS_table
  *     s	= short (16 bits)
  *     i	= int (32 bits)
  *     p	= pointer (converted to seg:offset)
- *     C,D,U 	= selector (corresponding to code/data/utility segment)
+ *     C,D,U	= selector (corresponding to code/data/utility segment)
  */
 #define PNP_COUNT_DEVNODES	"sppD",		0x00
 #define PNP_GET_DEVNODE		"sppsD",	0x01
@@ -210,6 +210,9 @@ struct PIR_table
 #define	SMAP_TYPE_ACPI_RECLAIM	3
 #define	SMAP_TYPE_ACPI_NVS	4
 #define	SMAP_TYPE_ACPI_ERROR	5
+#define	SMAP_TYPE_DISABLED	6
+#define	SMAP_TYPE_PMEM		7
+#define	SMAP_TYPE_PRAM		12
 
 #define	SMAP_XATTR_ENABLED	0x00000001
 #define	SMAP_XATTR_NON_VOLATILE	0x00000002
@@ -229,41 +232,9 @@ struct bios_smap_xattr {
     u_int32_t	xattr;
 } __packed;
 
-/*
- * System Management BIOS
- */
-#define	SMBIOS_START	0xf0000
-#define	SMBIOS_STEP	0x10
-#define	SMBIOS_OFF	0
-#define	SMBIOS_LEN	4
-#define	SMBIOS_SIG	"_SM_"
-
-struct smbios_eps {
-	uint8_t		anchor_string[4];		/* '_SM_' */
-	uint8_t		checksum;
-	uint8_t		length;
-	uint8_t		major_version;
-	uint8_t		minor_version;
-	uint16_t	maximum_structure_size;
-	uint8_t		entry_point_revision;
-	uint8_t		formatted_area[5];
-	uint8_t		intermediate_anchor_string[5];	/* '_DMI_' */
-	uint8_t		intermediate_checksum;
-	uint16_t	structure_table_length;
-	uint32_t	structure_table_address;
-	uint16_t	number_structures;
-	uint8_t		BCD_revision;
-};
-
-struct smbios_structure_header {
-	uint8_t		type;
-	uint8_t		length;
-	uint16_t	handle;
-};
-
 #ifdef _KERNEL
-#define BIOS_PADDRTOVADDR(x)	((x) + KERNBASE)
-#define BIOS_VADDRTOPADDR(x)	((x) - KERNBASE)
+#define BIOS_PADDRTOVADDR(x)	((x) + PMAP_MAP_LOW)
+#define BIOS_VADDRTOPADDR(x)	((x) - PMAP_MAP_LOW)
 
 struct bios_oem_signature {
 	char * anchor;		/* search anchor string in BIOS memory */

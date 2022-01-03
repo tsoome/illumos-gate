@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -25,9 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)limits.h	8.2 (Berkeley) 1/4/94
- * $FreeBSD$
  */
 
 #ifndef _LIMITS_H_
@@ -120,7 +119,7 @@
 #endif
 
 #if __XSI_VISIBLE || __POSIX_VISIBLE >= 200809
-#define	NL_ARGMAX		99	/* max # of position args for printf */
+#define	NL_ARGMAX		4096	/* max # of position args for printf */
 #define	NL_MSGMAX		32767
 #define	NL_SETMAX		255
 #define	NL_TEXTMAX		2048
@@ -137,6 +136,11 @@
 #endif
 
 #define	MB_LEN_MAX		6	/* 31-bit UTF-8 */
+
+#if __POSIX_VISIBLE >= 202405
+#define GETENTROPY_MAX		256
+#define NSIG_MAX		128	/* _SIG_MAXSIG from <signal.h> */
+#endif
 
 #include <sys/limits.h>
 

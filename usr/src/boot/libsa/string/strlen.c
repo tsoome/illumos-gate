@@ -1,6 +1,7 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2009, 2010 Xin LI <delphij@FreeBSD.org>
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,19 +25,12 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <sys/limits.h>
 #include <sys/types.h>
 #include <string.h>
 
 /*
  * Portable strlen() for 32-bit and 64-bit systems.
- *
- * Rationale: it is generally much more efficient to do word length
- * operations and avoid branches on modern computer systems, as
- * compared to byte-length operations with a lot of branches.
  *
  * The expression:
  *
@@ -45,15 +39,12 @@ __FBSDID("$FreeBSD$");
  * would evaluate to a non-zero value iff any of the bytes in the
  * original word is zero.
  *
- * On multi-issue processors, we can divide the above expression into:
- *	a)  (x - 0x01....01)
- *	b) (~x & 0x80....80)
- *	c) a & b
- *
- * Where, a) and b) can be partially computed in parallel.
- *
  * The algorithm above is found on "Hacker's Delight" by
  * Henry S. Warren, Jr.
+ *
+ * Note: this leaves performance on the table and each architecture
+ * would be best served with a tailor made routine instead, even if
+ * using the same trick.
  */
 
 /* Magic numbers for the algorithm */
@@ -67,13 +58,13 @@ static const unsigned long mask80 = 0x8080808080808080;
 #error Unsupported word size
 #endif
 
-#define	LONGPTR_MASK (sizeof(long) - 1)
+#define	LONGPTR_MASK (sizeof (long) - 1)
 
 /*
  * Helper macro to return string length if we caught the zero
  * byte.
  */
-#define testbyte(x)				\
+#define	testbyte(x)				\
 	do {					\
 		if (p[x] == '\0')		\
 		    return (p - str + x);	\

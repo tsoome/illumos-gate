@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2002,2005 Marcel Moolenaar
  * Copyright (c) 2002 Hiten Mahesh Pandya
  * All rights reserved.
@@ -23,8 +25,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #include <uuid.h>
@@ -49,6 +49,6 @@ uuid_is_nil(const uuid_t *u, uint32_t *status)
 	 * Pick the largest type that has equivalent alignment constraints
 	 * as an UUID and use it to test if the UUID consists of all zeroes.
 	 */
-	p = (const uint32_t*)u;
+	p = (const uint32_t *)u;
 	return ((p[0] == 0 && p[1] == 0 && p[2] == 0 && p[3] == 0) ? 1 : 0);
 }

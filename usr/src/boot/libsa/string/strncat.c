@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -30,20 +32,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)strncat.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <string.h>
+
+#undef strncat	/* _FORTIFY_SOURCE */
 
 /*
  * Concatenate src on the end of dst.  At most strlen(dst)+n+1 bytes
  * are written at dst (at most n+1 bytes being appended).  Return dst.
  */
 char *
-strncat(char * __restrict dst, const char * __restrict src, size_t n)
+strncat(char *__restrict dst, const char *__restrict src, size_t n)
 {
 	if (n != 0) {
 		char *d = dst;

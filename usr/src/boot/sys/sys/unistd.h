@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,7 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -25,9 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)unistd.h	8.2 (Berkeley) 1/7/94
- * $FreeBSD$
  */
 
 #ifndef _SYS_UNISTD_H_
@@ -50,7 +49,7 @@
  * returns -1, the functions may be stubbed out.
  */
 #define	_POSIX_ADVISORY_INFO		200112L
-#define	_POSIX_ASYNCHRONOUS_IO		0
+#define	_POSIX_ASYNCHRONOUS_IO		200112L
 #define	_POSIX_CHOWN_RESTRICTED		1
 #define	_POSIX_CLOCK_SELECTION		(-1)
 #define	_POSIX_CPUTIME			200112L
@@ -65,7 +64,7 @@
 #define	_POSIX_MONOTONIC_CLOCK		200112L
 #define	_POSIX_NO_TRUNC			1
 #define	_POSIX_PRIORITIZED_IO		(-1)
-#define	_POSIX_PRIORITY_SCHEDULING	200112L
+#define	_POSIX_PRIORITY_SCHEDULING	0
 #define	_POSIX_RAW_SOCKETS		200112L
 #define	_POSIX_REALTIME_SIGNALS		200112L
 #define	_POSIX_SEMAPHORES		200112L
@@ -94,7 +93,7 @@
 #endif
 
 /* Define the POSIX.1 version we target for compliance. */
-#define	_POSIX_VERSION		200112L
+#define	_POSIX_VERSION		200809L
 
 /* access function */
 #define	F_OK		0	/* test for existence of file */
@@ -154,6 +153,10 @@
 #define	_PC_INF_PRESENT		62
 #define	_PC_MAC_PRESENT		63
 #define	_PC_ACL_NFS4		64
+#define	_PC_DEALLOC_PRESENT	65
+#define	_PC_NAMEDATTR_ENABLED	66
+#define	_PC_HAS_NAMEDATTR	67
+#define	_PC_HAS_HIDDENSYSTEM	68
 #endif
 
 /* From OpenSolaris, used by SEEK_DATA/SEEK_HOLE. */
@@ -186,11 +189,29 @@
 #define	RFTSIGNUM(flags)	(((flags) >> RFTSIGSHIFT) & RFTSIGMASK)
 #define	RFTSIGFLAGS(signum)	((signum) << RFTSIGSHIFT)
 #define	RFPROCDESC	(1<<28)	/* return a process descriptor */
-#define	RFPPWAIT	(1<<31)	/* parent sleeps until child exits (vfork) */
+/* kernel: parent sleeps until child exits (vfork) */
+#define	RFPPWAIT	(1<<31)
+/* user: vfork(2) semantics, clear signals */
+#define	RFSPAWN		(1U<<31)
 #define	RFFLAGS		(RFFDG | RFPROC | RFMEM | RFNOWAIT | RFCFDG | \
     RFTHREAD | RFSIGSHARE | RFLINUXTHPN | RFSTOPPED | RFHIGHPID | RFTSIGZMB | \
-    RFPROCDESC | RFPPWAIT)
-#define	RFKERNELONLY	(RFSTOPPED | RFHIGHPID | RFPPWAIT | RFPROCDESC)
+    RFPROCDESC | RFSPAWN | RFPPWAIT)
+#define	RFKERNELONLY	(RFSTOPPED | RFHIGHPID | RFPROCDESC)
+
+/* kcmp() options. */
+#define	KCMP_FILE	100
+#define	KCMP_FILEOBJ	101
+#define	KCMP_FILES	102
+#define	KCMP_SIGHAND	103
+#define	KCMP_VM		104
+
+#define	SWAPOFF_FORCE	0x00000001
+
+/*
+ * close_range() options.
+ */
+#define	CLOSE_RANGE_CLOEXEC	(1<<2)
+#define	CLOSE_RANGE_CLOFORK	(1<<3)
 
 #endif /* __BSD_VISIBLE */
 

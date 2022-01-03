@@ -16,11 +16,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
 #include <sys/types.h>
 #include <string.h>
+
+#undef strlcat	/* FORTIFY_SOURCE */
 
 /*
  * Appends src to string dst of size dsize (unlike strncat, dsize is the
@@ -30,7 +29,7 @@ __FBSDID("$FreeBSD$");
  * If retval >= dsize, truncation occurred.
  */
 size_t
-strlcat(char * __restrict dst, const char * __restrict src, size_t dsize)
+strlcat(char *__restrict dst, const char *__restrict src, size_t dsize)
 {
 	const char *odst = dst;
 	const char *osrc = src;
@@ -44,7 +43,7 @@ strlcat(char * __restrict dst, const char * __restrict src, size_t dsize)
 	n = dsize - dlen;
 
 	if (n-- == 0)
-		return(dlen + strlen(src));
+		return (dlen + strlen(src));
 	while (*src != '\0') {
 		if (n != 0) {
 			*dst++ = *src;
@@ -54,5 +53,5 @@ strlcat(char * __restrict dst, const char * __restrict src, size_t dsize)
 	}
 	*dst = '\0';
 
-	return(dlen + (src - osrc));	/* count does not include NUL */
+	return (dlen + (src - osrc));	/* count does not include NUL */
 }

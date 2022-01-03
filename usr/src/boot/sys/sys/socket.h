@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1982, 1985, 1986, 1988, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,7 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -25,9 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)socket.h	8.4 (Berkeley) 2/21/94
- * $FreeBSD$
  */
 
 #ifndef _SYS_SOCKET_H_
@@ -36,6 +35,7 @@
 #include <sys/cdefs.h>
 #include <sys/_types.h>
 #include <sys/_iovec.h>
+#include <sys/_timeval.h>
 #include <machine/_align.h>
 
 /*
@@ -111,31 +111,42 @@ typedef	__uintptr_t	uintptr_t;
  */
 #define	SOCK_CLOEXEC	0x10000000
 #define	SOCK_NONBLOCK	0x20000000
-#endif
+#define	SOCK_CLOFORK	0x40000000
+#ifdef _KERNEL
+/*
+ * Flags for accept1(), kern_accept4() and solisten_dequeue, in addition
+ * to SOCK_CLOEXEC, SOCK_CLOFORK and SOCK_NONBLOCK.
+ */
+#define ACCEPT4_INHERIT 0x1
+#define ACCEPT4_COMPAT  0x2
+#endif	/* _KERNEL */
+#endif	/* __BSD_VISIBLE */
 
 /*
  * Option flags per-socket.
  */
-#define	SO_DEBUG	0x0001		/* turn on debugging info recording */
-#define	SO_ACCEPTCONN	0x0002		/* socket has had listen() */
-#define	SO_REUSEADDR	0x0004		/* allow local address reuse */
-#define	SO_KEEPALIVE	0x0008		/* keep connections alive */
-#define	SO_DONTROUTE	0x0010		/* just use interface addresses */
-#define	SO_BROADCAST	0x0020		/* permit sending of broadcast msgs */
+#define	SO_DEBUG	0x00000001	/* turn on debugging info recording */
+#define	SO_ACCEPTCONN	0x00000002	/* socket has had listen() */
+#define	SO_REUSEADDR	0x00000004	/* allow local address reuse */
+#define	SO_KEEPALIVE	0x00000008	/* keep connections alive */
+#define	SO_DONTROUTE	0x00000010	/* just use interface addresses */
+#define	SO_BROADCAST	0x00000020	/* permit sending of broadcast msgs */
 #if __BSD_VISIBLE
-#define	SO_USELOOPBACK	0x0040		/* bypass hardware when possible */
+#define	SO_USELOOPBACK	0x00000040	/* bypass hardware when possible */
 #endif
-#define	SO_LINGER	0x0080		/* linger on close if data present */
-#define	SO_OOBINLINE	0x0100		/* leave received OOB data in line */
+#define	SO_LINGER	0x00000080	/* linger on close if data present */
+#define	SO_OOBINLINE	0x00000100	/* leave received OOB data in line */
 #if __BSD_VISIBLE
-#define	SO_REUSEPORT	0x0200		/* allow local address & port reuse */
-#define	SO_TIMESTAMP	0x0400		/* timestamp received dgram traffic */
-#define	SO_NOSIGPIPE	0x0800		/* no SIGPIPE from EPIPE */
-#define	SO_ACCEPTFILTER	0x1000		/* there is an accept filter */
-#define	SO_BINTIME	0x2000		/* timestamp received dgram traffic */
+#define	SO_REUSEPORT	0x00000200	/* allow local address & port reuse */
+#define	SO_TIMESTAMP	0x00000400	/* timestamp received dgram traffic */
+#define	SO_NOSIGPIPE	0x00000800	/* no SIGPIPE from EPIPE */
+#define	SO_ACCEPTFILTER	0x00001000	/* there is an accept filter */
+#define	SO_BINTIME	0x00002000	/* timestamp received dgram traffic */
 #endif
-#define	SO_NO_OFFLOAD	0x4000		/* socket cannot be offloaded */
-#define	SO_NO_DDP	0x8000		/* disable direct data placement */
+#define	SO_NO_OFFLOAD	0x00004000	/* socket cannot be offloaded */
+#define	SO_NO_DDP	0x00008000	/* disable direct data placement */
+#define	SO_REUSEPORT_LB	0x00010000	/* reuse with load balancing */
+#define	SO_RERROR	0x00020000	/* keep track of receive errors */
 
 /*
  * Additional options, not kept in so_options.
@@ -154,10 +165,24 @@ typedef	__uintptr_t	uintptr_t;
 #define	SO_LISTENQLIMIT	0x1011		/* socket's backlog limit */
 #define	SO_LISTENQLEN	0x1012		/* socket's complete queue length */
 #define	SO_LISTENINCQLEN	0x1013	/* socket's incomplete queue length */
-#define	SO_SETFIB	0x1014		/* use this FIB to route */
+#define	SO_FIB		0x1014		/* get or set socket FIB */
+#define	SO_SETFIB	SO_FIB		/* backward compat alias */
 #define	SO_USER_COOKIE	0x1015		/* user cookie (dummynet etc.) */
 #define	SO_PROTOCOL	0x1016		/* get socket protocol (Linux name) */
 #define	SO_PROTOTYPE	SO_PROTOCOL	/* alias for SO_PROTOCOL (SunOS name) */
+#define	SO_TS_CLOCK	0x1017		/* clock type used for SO_TIMESTAMP */
+#define	SO_MAX_PACING_RATE	0x1018	/* socket's max TX pacing rate (Linux name) */
+#define	SO_DOMAIN	0x1019		/* get socket domain */
+#define	SO_SPLICE	0x1023		/* splice data to other socket */
+#endif
+
+#if __BSD_VISIBLE
+#define	SO_TS_REALTIME_MICRO	0	/* microsecond resolution, realtime */
+#define	SO_TS_BINTIME		1	/* sub-nanosecond resolution, realtime */
+#define	SO_TS_REALTIME		2	/* nanosecond resolution, realtime */
+#define	SO_TS_MONOTONIC		3	/* nanosecond resolution, monotonic */
+#define	SO_TS_DEFAULT		SO_TS_REALTIME_MICRO
+#define	SO_TS_CLOCK_MAX		SO_TS_MONOTONIC
 #endif
 
 /*
@@ -240,9 +265,13 @@ struct accept_filter_arg {
 #define	AF_ARP		35
 #define	AF_BLUETOOTH	36		/* Bluetooth sockets */
 #define	AF_IEEE80211	37		/* IEEE 802.11 protocol */
+#define	AF_NETLINK	38		/* Netlink protocol */
 #define	AF_INET_SDP	40		/* OFED Socket Direct Protocol ipv4 */
 #define	AF_INET6_SDP	42		/* OFED Socket Direct Protocol ipv6 */
-#define	AF_MAX		42
+#define	AF_HYPERV	43		/* HyperV sockets */
+#define	AF_DIVERT	44		/* divert(4) */
+#define	AF_IPFWLOG	46
+#define	AF_MAX		46
 /*
  * When allocating a new AF_ constant, please only allocate
  * even numbered constants for FreeBSD until 134 as odd numbered AF_
@@ -250,7 +279,6 @@ struct accept_filter_arg {
  */
 #define AF_VENDOR00 39
 #define AF_VENDOR01 41
-#define AF_VENDOR02 43
 #define AF_VENDOR03 45
 #define AF_VENDOR04 47
 #define AF_VENDOR05 49
@@ -365,8 +393,11 @@ struct sockproto {
 #define	PF_ARP		AF_ARP
 #define	PF_BLUETOOTH	AF_BLUETOOTH
 #define	PF_IEEE80211	AF_IEEE80211
+#define	PF_NETLINK	AF_NETLINK
 #define	PF_INET_SDP	AF_INET_SDP
 #define	PF_INET6_SDP	AF_INET6_SDP
+#define	PF_DIVERT	AF_DIVERT
+#define	PF_IPFWLOG	AF_IPFWLOG
 
 #define	PF_MAX		AF_MAX
 
@@ -393,6 +424,8 @@ struct sockproto {
 #define	NET_RT_IFMALIST	4		/* return multicast address list */
 #define	NET_RT_IFLISTL	5		/* Survey interface list, using 'l'en
 					 * versions of msghdr structs. */
+#define NET_RT_NHOP	6		/* dump routing nexthops */
+#define NET_RT_NHGRP	7		/* dump routing nexthop groups */
 #endif /* __BSD_VISIBLE */
 
 /*
@@ -414,27 +447,40 @@ struct msghdr {
 	int		 msg_flags;		/* flags on received message */
 };
 
-#define	MSG_OOB		0x1		/* process out-of-band data */
-#define	MSG_PEEK	0x2		/* peek at incoming message */
-#define	MSG_DONTROUTE	0x4		/* send without using routing tables */
-#define	MSG_EOR		0x8		/* data completes record */
-#define	MSG_TRUNC	0x10		/* data discarded before delivery */
-#define	MSG_CTRUNC	0x20		/* control data lost before delivery */
-#define	MSG_WAITALL	0x40		/* wait for full request or error */
-#if __POSIX_VISIBLE >= 200809
-#define	MSG_NOSIGNAL	0x20000		/* do not generate SIGPIPE on EOF */
-#endif
+#define	MSG_OOB		 0x00000001	/* process out-of-band data */
+#define	MSG_PEEK	 0x00000002	/* peek at incoming message */
+#define	MSG_DONTROUTE	 0x00000004	/* send without using routing tables */
+#define	MSG_EOR		 0x00000008	/* data completes record */
+#define	MSG_TRUNC	 0x00000010	/* data discarded before delivery */
+#define	MSG_CTRUNC	 0x00000020	/* control data lost before delivery */
+#define	MSG_WAITALL	 0x00000040	/* wait for full request or error */
 #if __BSD_VISIBLE
-#define	MSG_DONTWAIT	0x80		/* this message should be nonblocking */
-#define	MSG_EOF		0x100		/* data completes connection */
-#define	MSG_NOTIFICATION 0x2000         /* SCTP notification */
-#define	MSG_NBIO	0x4000		/* FIONBIO mode, used by fifofs */
-#define	MSG_COMPAT      0x8000		/* used in sendit() */
-#define	MSG_CMSG_CLOEXEC 0x40000	/* make received fds close-on-exec */
-#define	MSG_WAITFORONE	0x80000		/* for recvmmsg() */
+#define	MSG_DONTWAIT	 0x00000080	/* this message should be nonblocking */
+#define	MSG_EOF		 0x00000100	/* data completes connection */
+/*			 0x00000200	   unused */
+/*			 0x00000400	   unused */
+/*			 0x00000800	   unused */
+/*			 0x00001000	   unused */
+#define	MSG_NOTIFICATION 0x00002000	/* SCTP notification */
+#define	MSG_NBIO	 0x00004000	/* FIONBIO mode, used by fifofs */
+#define	MSG_COMPAT       0x00008000		/* used in sendit() */
 #endif
 #ifdef _KERNEL
-#define	MSG_SOCALLBCK   0x10000		/* for use by socket callbacks - soreceive (TCP) */
+#define	MSG_SOCALLBCK    0x00010000	/* for use by socket callbacks - soreceive (TCP) */
+#endif
+#if __POSIX_VISIBLE >= 200809
+#define	MSG_NOSIGNAL	 0x00020000	/* do not generate SIGPIPE on EOF */
+#endif
+#if __BSD_VISIBLE
+#define	MSG_CMSG_CLOEXEC 0x00040000	/* make received fds close-on-exec */
+#define	MSG_WAITFORONE	 0x00080000	/* for recvmmsg() */
+#endif
+#ifdef _KERNEL
+#define	MSG_MORETOCOME	 0x00100000	/* additional data pending */
+#define	MSG_TLSAPPDATA	 0x00200000	/* do not soreceive() alert rec. (TLS) */
+#endif
+#if __BSD_VISIBLE
+#define	MSG_CMSG_CLOFORK 0x00400000	/* make received fds close-on-fork */
 #endif
 
 /*
@@ -475,7 +521,7 @@ struct cmsgcred {
 };
 
 /*
- * Socket credentials.
+ * Socket credentials (LOCAL_CREDS).
  */
 struct sockcred {
 	uid_t	sc_uid;			/* real user id */
@@ -492,6 +538,22 @@ struct sockcred {
 #define	SOCKCREDSIZE(ngrps) \
 	(sizeof(struct sockcred) + (sizeof(gid_t) * ((ngrps) - 1)))
 
+/*
+ * Socket credentials (LOCAL_CREDS_PERSISTENT).
+ */
+struct sockcred2 {
+	int	sc_version;		/* version of this structure */
+	pid_t	sc_pid;			/* PID of sending process */
+	uid_t	sc_uid;			/* real user id */
+	uid_t	sc_euid;		/* effective user id */
+	gid_t	sc_gid;			/* real group id */
+	gid_t	sc_egid;		/* effective group id */
+	int	sc_ngroups;		/* number of supplemental groups */
+	gid_t	sc_groups[1];		/* variable length */
+};
+#define	SOCKCRED2SIZE(ngrps) \
+	(sizeof(struct sockcred2) + (sizeof(gid_t) * ((ngrps) - 1)))
+
 #endif /* __BSD_VISIBLE */
 
 /* given pointer to struct cmsghdr, return pointer to data */
@@ -500,7 +562,7 @@ struct sockcred {
 
 /* given pointer to struct cmsghdr, return pointer to next cmsghdr */
 #define	CMSG_NXTHDR(mhdr, cmsg)	\
-	((char *)(cmsg) == NULL ? CMSG_FIRSTHDR(mhdr) : \
+	((char *)(cmsg) == (char *)0 ? CMSG_FIRSTHDR(mhdr) : \
 	    ((char *)(cmsg) + _ALIGN(((struct cmsghdr *)(cmsg))->cmsg_len) + \
 	  _ALIGN(sizeof(struct cmsghdr)) > \
 	    (char *)(mhdr)->msg_control + (mhdr)->msg_controllen) ? \
@@ -515,7 +577,7 @@ struct sockcred {
 #define	CMSG_FIRSTHDR(mhdr) \
 	((mhdr)->msg_controllen >= sizeof(struct cmsghdr) ? \
 	 (struct cmsghdr *)(mhdr)->msg_control : \
-	 (struct cmsghdr *)NULL)
+	 (struct cmsghdr *)0)
 
 #if __BSD_VISIBLE
 /* RFC 2292 additions */
@@ -533,6 +595,20 @@ struct sockcred {
 #define	SCM_TIMESTAMP	0x02		/* timestamp (struct timeval) */
 #define	SCM_CREDS	0x03		/* process creds (struct cmsgcred) */
 #define	SCM_BINTIME	0x04		/* timestamp (struct bintime) */
+#define	SCM_REALTIME	0x05		/* timestamp (struct timespec) */
+#define	SCM_MONOTONIC	0x06		/* timestamp (struct timespec) */
+#define	SCM_TIME_INFO	0x07		/* timestamp info */
+#define	SCM_CREDS2	0x08		/* process creds (struct sockcred2) */
+
+struct sock_timestamp_info {
+	__uint32_t	st_info_flags;
+	__uint32_t	st_info_pad0;
+	__uint64_t	st_info_rsv[7];
+};
+
+#define	ST_INFO_HW		0x0001		/* SCM_TIMESTAMP was hw */
+#define	ST_INFO_HW_HPREC	0x0002		/* SCM_TIMESTAMP was hw-assisted
+						   on entrance */
 #endif
 
 #if __BSD_VISIBLE
@@ -560,18 +636,14 @@ struct omsghdr {
 /*
  * howto arguments for shutdown(2), specified by Posix.1g.
  */
-#define	SHUT_RD		0		/* shut down the reading side */
-#define	SHUT_WR		1		/* shut down the writing side */
-#define	SHUT_RDWR	2		/* shut down both sides */
-
-#if __BSD_VISIBLE
-/* for SCTP */
-/* we cheat and use the SHUT_XX defines for these */
-#define PRU_FLUSH_RD     SHUT_RD
-#define PRU_FLUSH_WR     SHUT_WR
-#define PRU_FLUSH_RDWR   SHUT_RDWR
-#endif
-
+enum shutdown_how {
+	SHUT_RD = 0,		/* shut down the reading side */
+#define	SHUT_RD		SHUT_RD
+	SHUT_WR,		/* shut down the writing side */
+#define	SHUT_WR		SHUT_WR
+	SHUT_RDWR		/* shut down both sides */
+#define	SHUT_RDWR	SHUT_RDWR
+};
 
 #if __BSD_VISIBLE
 /*
@@ -590,11 +662,11 @@ struct sf_hdtr {
 #define	SF_NODISKIO     0x00000001
 #define	SF_MNOWAIT	0x00000002	/* obsolete */
 #define	SF_SYNC		0x00000004
+#define	SF_USER_READAHEAD	0x00000008
 #define	SF_NOCACHE	0x00000010
 #define	SF_FLAGS(rh, flags)	(((rh) << 16) | (flags))
 
 #ifdef _KERNEL
-#define	SFK_COMPAT	0x00000001
 #define	SF_READAHEAD(flags)	((flags) >> 16)
 #endif /* _KERNEL */
 
@@ -605,9 +677,23 @@ struct mmsghdr {
 	struct msghdr	msg_hdr;		/* message header */
 	ssize_t		msg_len;		/* message length */
 };
+
+/*
+ * Structure used for manipulating splice option.
+ */
+struct splice {
+	int	sp_fd;			/* drain socket file descriptor */
+	off_t	sp_max;			/* if set, maximum bytes to splice */
+	struct timeval sp_idle;		/* idle timeout */
+};
+
 #endif /* __BSD_VISIBLE */
 
 #ifndef	_KERNEL
+
+#if defined(_FORTIFY_SOURCE) && _FORTIFY_SOURCE > 0
+#include <ssp/socket.h>
+#endif
 
 #include <sys/cdefs.h>
 
@@ -653,38 +739,10 @@ __END_DECLS
 #ifdef _KERNEL
 struct socket;
 
-struct tcpcb *so_sototcpcb(struct socket *so);
-struct inpcb *so_sotoinpcb(struct socket *so);
-struct sockbuf *so_sockbuf_snd(struct socket *);
-struct sockbuf *so_sockbuf_rcv(struct socket *);
-
-int so_state_get(const struct socket *);
-void so_state_set(struct socket *, int);
-
 int so_options_get(const struct socket *);
 void so_options_set(struct socket *, int);
 
 int so_error_get(const struct socket *);
 void so_error_set(struct socket *, int);
-
-int so_linger_get(const struct socket *);
-void so_linger_set(struct socket *, int);
-
-struct protosw *so_protosw_get(const struct socket *);
-void so_protosw_set(struct socket *, struct protosw *);
-
-void so_sorwakeup_locked(struct socket *so);
-void so_sowwakeup_locked(struct socket *so);
-
-void so_sorwakeup(struct socket *so);
-void so_sowwakeup(struct socket *so);
-
-void so_lock(struct socket *so);
-void so_unlock(struct socket *so);
-
-void so_listeners_apply_all(struct socket *so, void (*func)(struct socket *, void *), void *arg);
-
-#endif
-
-
+#endif /* _KERNEL */
 #endif /* !_SYS_SOCKET_H_ */

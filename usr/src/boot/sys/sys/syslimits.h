@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,7 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -25,37 +27,32 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)syslimits.h	8.1 (Berkeley) 6/2/93
- * $FreeBSD$
  */
 
 #ifndef _SYS_SYSLIMITS_H_
 #define _SYS_SYSLIMITS_H_
 
-#if !defined(_KERNEL) && !defined(_LIMITS_H_) && !defined(_SYS_PARAM_H_)
-#ifndef _SYS_CDEFS_H_
-#error this file needs sys/cdefs.h as a prerequisite
-#endif
-#ifdef __CC_SUPPORTS_WARNING
+#if !defined(_STANDALONE) && !defined(_KERNEL) && !defined(_LIMITS_H_) && !defined(_SYS_PARAM_H_)
 #warning "No user-serviceable parts inside."
-#endif
 #endif
 
 /*
  * Do not add any new variables here.  (See the comment at the end of
  * the file for why.)
  */
-#define	ARG_MAX			262144	/* max bytes for an exec function */
+#ifndef __ILP32__
+#define	ARG_MAX	      (2 * 256 * 1024)	/* max bytes for an exec function */
+#else
+#define	ARG_MAX		  (256 * 1024)	/* max bytes for KVA-starved archs */
+#endif
 #ifndef CHILD_MAX
 #define	CHILD_MAX		   40	/* max simultaneous processes */
 #endif
-#define	LINK_MAX		32767	/* max file link count */
 #define	MAX_CANON		  255	/* max bytes in term canon input line */
 #define	MAX_INPUT		  255	/* max bytes in terminal input */
 #define	NAME_MAX		  255	/* max bytes in a file name */
 #ifndef NGROUPS_MAX
-#define	NGROUPS_MAX	 	 1023	/* max supplemental group id's */
+#define	NGROUPS_MAX		 1023	/* max supplemental group id's */
 #endif
 #ifndef OPEN_MAX
 #define	OPEN_MAX		   64	/* max open files per process */

@@ -435,6 +435,19 @@ usr/src/boot/efi/include/Pi/*.h
 usr/src/boot/efi/include/Protocol/*.h
 usr/src/boot/efi/include/Uefi/*.h
 
+# loader headers
+usr/src/boot/include/*.h
+usr/src/boot/sys/amd64/include/*.h
+usr/src/boot/sys/dev/ic/*.h
+usr/src/boot/sys/i386/include/*.h
+usr/src/boot/sys/net/*.h
+usr/src/boot/sys/netinet/*.h
+usr/src/boot/sys/netinet6/*.h
+usr/src/boot/sys/sys/*.h
+usr/src/boot/sys/ufs/ffs/*.h
+usr/src/boot/sys/ufs/ufs/*.h
+usr/src/boot/sys/x86/include/*.h
+
 #
 # assert.h does not have a header guard due to its need to change across
 # inclusions.

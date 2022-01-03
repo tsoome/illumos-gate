@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1989, 1990 William F. Jolitz
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -29,9 +31,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)segments.h	7.1 (Berkeley) 5/9/91
  */
+
+#ifdef __i386__
+#include <i386/segments.h>
+#else /* !__i386__ */
 
 #ifndef _MACHINE_SEGMENTS_H_
 #define	_MACHINE_SEGMENTS_H_
@@ -86,10 +90,9 @@ struct region_descriptor {
 } __packed;
 
 #ifdef _KERNEL
-extern struct user_segment_descriptor gdt[];
 extern struct soft_segment_descriptor gdt_segs[];
 extern struct gate_descriptor *idt;
-extern struct region_descriptor r_gdt, r_idt;
+extern struct region_descriptor r_idt;
 
 void	lgdt(struct region_descriptor *rdp);
 void	sdtossd(struct user_segment_descriptor *sdp,
@@ -103,3 +106,5 @@ void	update_gdt_fsbase(struct thread *td, uint32_t base);
 #endif /* _KERNEL */
 
 #endif /* !_MACHINE_SEGMENTS_H_ */
+
+#endif /* __i386__ */

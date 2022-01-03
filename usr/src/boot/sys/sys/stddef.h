@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2002 Maxime Henrion <mux@FreeBSD.org>
  * All rights reserved.
  *
@@ -22,8 +24,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_STDDEF_H_
@@ -31,7 +31,7 @@
 
 #include <sys/cdefs.h>
 #include <sys/_null.h>
-#include <machine/_types.h>
+#include <sys/_types.h>
 
 #ifndef _PTRDIFF_T_DECLARED
 typedef	__ptrdiff_t	ptrdiff_t;

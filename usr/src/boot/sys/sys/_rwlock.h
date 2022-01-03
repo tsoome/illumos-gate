@@ -1,6 +1,7 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2006 John Baldwin <jhb@FreeBSD.org>
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,13 +23,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS__RWLOCK_H_
 #define	_SYS__RWLOCK_H_
 
+#include <sys/_types.h>
+#include <sys/_lock.h>
 #include <machine/param.h>
 
 /*
@@ -42,7 +43,7 @@
  */
 struct rwlock {
 	struct lock_object	lock_object;
-	volatile uintptr_t	rw_lock;
+	volatile __uintptr_t	rw_lock;
 };
 
 /*
@@ -56,7 +57,7 @@ struct rwlock {
  */
 struct rwlock_padalign {
 	struct lock_object	lock_object;
-	volatile uintptr_t	rw_lock;
+	volatile __uintptr_t	rw_lock;
 } __aligned(CACHE_LINE_SIZE);
 
 #endif /* !_SYS__RWLOCK_H_ */

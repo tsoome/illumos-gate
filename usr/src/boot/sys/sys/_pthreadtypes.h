@@ -1,4 +1,6 @@
-/*
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1993, 1994 by Chris Provenzano, proven@mit.edu
  * Copyright (c) 1995-1998 by John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -29,8 +31,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS__PTHREADTYPES_H_
@@ -70,7 +70,7 @@ typedef struct	pthread_mutex		*pthread_mutex_t;
 typedef struct	pthread_mutex_attr	*pthread_mutexattr_t;
 typedef struct	pthread_cond		*pthread_cond_t;
 typedef struct	pthread_cond_attr	*pthread_condattr_t;
-typedef int     			pthread_key_t;
+typedef int				pthread_key_t;
 typedef struct	pthread_once		pthread_once_t;
 typedef struct	pthread_rwlock		*pthread_rwlock_t;
 typedef struct	pthread_rwlockattr	*pthread_rwlockattr_t;

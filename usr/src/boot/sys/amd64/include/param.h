@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-4-Clause
+ *
  * Copyright (c) 2002 David E. O'Brien.  All rights reserved.
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,11 +36,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)param.h	8.1 (Berkeley) 6/10/93
- * $FreeBSD$
  */
-
 
 #ifndef _AMD64_INCLUDE_PARAM_H_
 #define	_AMD64_INCLUDE_PARAM_H_
@@ -48,10 +46,6 @@
 /*
  * Machine dependent constants for AMD64.
  */
-
-
-#define __HAVE_ACPI
-#define __PCI_REROUTE_INTERRUPT
 
 #ifndef MACHINE
 #define	MACHINE		"amd64"
@@ -63,16 +57,16 @@
 #define	MACHINE_ARCH32	"i386"
 #endif
 
-#if defined(SMP) || defined(KLD_MODULE)
+#ifdef SMP
 #ifndef MAXCPU
-#define MAXCPU		256
+#define MAXCPU		1024
 #endif
 #else
 #define MAXCPU		1
 #endif
 
 #ifndef MAXMEMDOM
-#define	MAXMEMDOM	1
+#define	MAXMEMDOM	8
 #endif
 
 #define	ALIGNBYTES		_ALIGNBYTES
@@ -89,7 +83,7 @@
  * CACHE_LINE_SIZE is the compile-time maximum cache line size for an
  * architecture.  It should be used with appropriate caution.
  */
-#define	CACHE_LINE_SHIFT	7
+#define	CACHE_LINE_SHIFT	6
 #define	CACHE_LINE_SIZE		(1 << CACHE_LINE_SHIFT)
 
 /* Size of the level 1 page table units */
@@ -116,6 +110,12 @@
 #define	PML4SHIFT	39		/* LOG2(NBPML4) */
 #define	NBPML4		(1UL<<PML4SHIFT)/* bytes/page map lev4 table */
 #define	PML4MASK	(NBPML4-1)
+/* Size of the level 5 page-map level-5 table units */
+#define	NPML5EPG	(PAGE_SIZE/(sizeof (pml5_entry_t)))
+#define	NPML5EPGSHIFT	9		/* LOG2(NPML5EPG) */
+#define	PML5SHIFT	48		/* LOG2(NBPML5) */
+#define	NBPML5		(1UL<<PML5SHIFT)/* bytes/page map lev5 table */
+#define	PML5MASK	(NBPML5-1)
 
 #define	MAXPAGESIZES	3	/* maximum number of supported page sizes */
 
@@ -128,28 +128,30 @@
 #define	IOPERM_BITMAP_SIZE	(IOPAGES * PAGE_SIZE + 1)
 
 #ifndef	KSTACK_PAGES
+#if defined(KASAN) || defined(KMSAN)
+#define	KSTACK_PAGES	6
+#else
 #define	KSTACK_PAGES	4	/* pages of kstack (with pcb) */
+#endif
 #endif
 #define	KSTACK_GUARD_PAGES 1	/* pages of kstack guard; 0 disables */
 
 /*
  * Mach derived conversion macros
  */
-#define	round_page(x)	((((unsigned long)(x)) + PAGE_MASK) & ~(PAGE_MASK))
-#define	trunc_page(x)	((unsigned long)(x) & ~(PAGE_MASK))
 #define trunc_2mpage(x)	((unsigned long)(x) & ~PDRMASK)
 #define round_2mpage(x)	((((unsigned long)(x)) + PDRMASK) & ~PDRMASK)
 #define trunc_1gpage(x)	((unsigned long)(x) & ~PDPMASK)
 
-#define	atop(x)		((unsigned long)(x) >> PAGE_SHIFT)
-#define	ptoa(x)		((unsigned long)(x) << PAGE_SHIFT)
-
 #define	amd64_btop(x)	((unsigned long)(x) >> PAGE_SHIFT)
 #define	amd64_ptob(x)	((unsigned long)(x) << PAGE_SHIFT)
 
-#define	pgtok(x)	((unsigned long)(x) * (PAGE_SIZE / 1024))
+#define	INKERNEL(va)	\
+    (((va) >= kva_layout.dmap_low && (va) < kva_layout.dmap_high) || \
+    ((va) >= kva_layout.km_low && (va) < kva_layout.km_high))
 
-#define	INKERNEL(va) (((va) >= DMAP_MIN_ADDRESS && (va) < DMAP_MAX_ADDRESS) \
-    || ((va) >= VM_MIN_KERNEL_ADDRESS && (va) < VM_MAX_KERNEL_ADDRESS))
+#ifdef SMP
+#define SC_TABLESIZE    1024                     /* Must be power of 2. */
+#endif
 
 #endif /* !_AMD64_INCLUDE_PARAM_H_ */

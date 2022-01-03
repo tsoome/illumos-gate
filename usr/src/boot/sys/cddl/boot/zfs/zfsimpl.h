@@ -78,6 +78,8 @@
 #define	AVL_PCMP(a, b)	\
 	(((uintptr_t)(a) > (uintptr_t)(b)) - ((uintptr_t)(a) < (uintptr_t)(b)))
 
+typedef enum { B_FALSE, B_TRUE } boolean_t;
+
 /* CRC64 table */
 #define	ZFS_CRC64_POLY	0xC96C5795D7870F42ULL	/* ECMA-182, reflected form */
 

@@ -1,6 +1,12 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 2023 The FreeBSD Foundation
+ *
+ * Portions of this software were developed by Robert Clausecker
+ * <fuz@FreeBSD.org> under sponsorship from the FreeBSD Foundation.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,9 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
+#include <limits.h>
 #include <strings.h>
 
 /*
@@ -38,11 +42,5 @@ __FBSDID("$FreeBSD$");
 int
 fls(int mask)
 {
-	int bit;
-
-	if (mask == 0)
-		return (0);
-	for (bit = 1; mask != 1; bit++)
-		mask = (unsigned int)mask >> 1;
-	return (bit);
+	return (mask == 0 ? 0 : CHAR_BIT * sizeof (mask) - __builtin_clz(mask));
 }

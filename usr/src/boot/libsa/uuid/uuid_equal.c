@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2002,2005 Marcel Moolenaar
  * Copyright (c) 2002 Hiten Mahesh Pandya
  * All rights reserved.
@@ -23,8 +25,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #include <string.h>
@@ -51,5 +51,5 @@ uuid_equal(const uuid_t *a, const uuid_t *b, uint32_t *status)
 		return (uuid_is_nil(a, NULL));
 
 	/* Do a byte for byte comparison. */
-	return ((memcmp(a, b, sizeof(uuid_t))) ? 0 : 1);
+	return ((memcmp(a, b, sizeof (uuid_t))) ? 0 : 1);
 }
