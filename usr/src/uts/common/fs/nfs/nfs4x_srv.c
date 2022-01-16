@@ -816,11 +816,12 @@ check_slot_seqid(rfs4_slot_t *slot, sequenceid4 seqid)
  */
 int
 rfs4x_sequence_prep(COMPOUND4args *args, COMPOUND4res *resp,
-    compound_state_t *cs)
+    compound_state_t *cs, SVCXPRT *xprt)
 {
 	SEQUENCE4args	*sargs;
 	nfsstat4	status;
 	rfs4_slot_t	*slot;
+	XDR		*xdrs;
 
 	if (args->array_len == 0 || args->array[0].argop != OP_SEQUENCE)
 		return (NFS4_OK);
@@ -831,8 +832,14 @@ rfs4x_sequence_prep(COMPOUND4args *args, COMPOUND4res *resp,
 	if (status != NFS4_OK)
 		return (status);
 
+	ASSERT(cs->sp != NULL);
+
 	if (args->array_len > cs->sp->sn_fore->cn_attrs.ca_maxoperations)
 		return (NFS4ERR_TOO_MANY_OPS);
+
+	xdrs = &xprt->xp_xdrin;
+	if (xdr_getpos(xdrs) > cs->sp->sn_fore->cn_attrs.ca_maxrequestsize)
+		return (NFS4ERR_REQ_TOO_BIG);
 
 	/*  have reference to session */
 	slot = &cs->sp->sn_slots[sargs->sa_slotid];

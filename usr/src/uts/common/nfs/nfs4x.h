@@ -191,7 +191,7 @@ struct compound_state;
 void rfs4x_state_init_locked(struct nfs4_srv *);
 void rfs4x_state_fini(struct nfs4_srv *);
 int rfs4x_sequence_prep(COMPOUND4args *, COMPOUND4res *,
-    struct compound_state *);
+    struct compound_state *, SVCXPRT *);
 void rfs4x_sequence_done(COMPOUND4res *, struct compound_state *);
 
 #endif	/* _KERNEL */
