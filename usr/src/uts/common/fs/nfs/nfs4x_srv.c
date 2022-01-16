@@ -900,8 +900,7 @@ rfs4x_sequence_done(COMPOUND4res *resp, compound_state_t *cs)
 			add = -1;
 		}
 
-		if (*cs->statusp == NFS4_OK &&
-		    (cs->cachethis || is_solo_sequence(resp))) {
+		if (cs->cachethis || is_solo_sequence(resp)) {
 			slot->se_flags |= RFS4_SLOT_CACHED;
 			slot->se_buf = *resp;	/* cache a reply */
 			add += 1;
