@@ -807,6 +807,11 @@ check_slot_seqid(rfs4_slot_t *slot, sequenceid4 seqid)
 	return (status);
 }
 
+static boolean_t is_solo_sequence(const COMPOUND4res *resp)
+{
+	return (resp->array_len == 1 && resp->array[0].resop == OP_SEQUENCE);
+}
+
 /*
  * Prep stage for SEQUENCE operation.
  *
@@ -851,8 +856,15 @@ rfs4x_sequence_prep(COMPOUND4args *args, COMPOUND4res *resp,
 			slot->se_flags |= RFS4_SLOT_INUSE;
 			cs->slot = slot;
 			*resp = slot->se_buf;
+		} else if (args->array_len == 1) {
+			/*
+			 * If original request was solo 'sequence' operation,
+			 * it would be always cached. So this request differs
+			 * from the previous.
+			 */
+			status = NFS4ERR_SEQ_FALSE_RETRY;
 		} else {
-			status =  NFS4ERR_SEQ_MISORDERED;
+			status = NFS4ERR_RETRY_UNCACHED_REP;
 		}
 	} else if (status == NFS4_OK) {
 		slot->se_flags |= RFS4_SLOT_INUSE;
@@ -888,7 +900,8 @@ rfs4x_sequence_done(COMPOUND4res *resp, compound_state_t *cs)
 			add = -1;
 		}
 
-		if (*cs->statusp == NFS4_OK && cs->cachethis) {
+		if (*cs->statusp == NFS4_OK &&
+		    (cs->cachethis || is_solo_sequence(resp))) {
 			slot->se_flags |= RFS4_SLOT_CACHED;
 			slot->se_buf = *resp;	/* cache a reply */
 			add += 1;
