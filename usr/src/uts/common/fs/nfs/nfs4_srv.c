@@ -7582,6 +7582,18 @@ rfs4_op_open(nfs_argop4 *argop, nfs_resop4 *resop,
 	can_reclaim = cp->rc_can_reclaim;
 
 	/*
+	 * RFC8881 18.51.3
+	 * If non-reclaim locking operations are done before the
+	 * RECLAIM_COMPLETE, error NFS4ERR_GRACE will be returned
+	 */
+	if (rfs4_has_session(cs) && !cp->rc_reclaim_completed &&
+	    claim != CLAIM_PREVIOUS) {
+		rfs4_client_rele(cp);
+		*cs->statusp = resp->status = NFS4ERR_GRACE;
+		goto end;
+	}
+
+	/*
 	 * Find the open_owner for use from this point forward.  Take
 	 * care in updating the sequence id based on the type of error
 	 * being returned.
