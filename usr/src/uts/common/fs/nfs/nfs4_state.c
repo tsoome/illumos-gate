@@ -50,23 +50,14 @@ extern u_longlong_t nfs4_srv_caller_id;
 
 extern uint_t nfs4_srv_vkey;
 
-stateid4 special0 = {
-	0,
-	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+stateid4 zero_stateid;		/* all zeros */
+stateid4 one_stateid = {
+	.seqid = ~0,
+	.other = { ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0 }
 };
 
-stateid4 special1 = {
-	0xffffffff,
-	{
-		(char)0xff, (char)0xff, (char)0xff, (char)0xff,
-		(char)0xff, (char)0xff, (char)0xff, (char)0xff,
-		(char)0xff, (char)0xff, (char)0xff, (char)0xff
-	}
-};
-
-
-#define	ISSPECIAL(id)  (stateid4_cmp(id, &special0) || \
-			stateid4_cmp(id, &special1))
+#define	ZERO_STATEID(x) (!memcmp((x), &zero_stateid, sizeof (stateid4)))
+#define	ONE_STATEID(x) (!memcmp((x), &one_stateid, sizeof (stateid4)))
 
 /* For embedding the cluster nodeid into our clientid */
 #define	CLUSTER_NODEID_SHIFT	24
@@ -3815,7 +3806,7 @@ rfs4_check_stateid(int mode, vnode_t *vp,
 		ct->cc_flags = CC_DONTBLOCK;
 	}
 
-	if (ISSPECIAL(stateid)) {
+	if (ZERO_STATEID(stateid) || ONE_STATEID(stateid)) {
 		fp = rfs4_findfile(vp, NULL, &create);
 		if (fp == NULL)
 			return (NFS4_OK);
