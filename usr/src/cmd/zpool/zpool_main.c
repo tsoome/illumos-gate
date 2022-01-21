@@ -48,7 +48,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <time.h>
 #include <unistd.h>
 #include <priv.h>
@@ -8770,9 +8769,7 @@ int
 zpool_do_wait(int argc, char **argv)
 {
 	boolean_t verbose = B_FALSE;
-	char c;
-	char *value;
-	int i;
+	int c, i;
 	unsigned long count;
 	pthread_t status_thr;
 	int error = 0;
@@ -8806,28 +8803,25 @@ zpool_do_wait(int argc, char **argv)
 			get_timestamp_arg(*optarg);
 			break;
 		case 't':
-		{
-			static char *col_subopts[] = { "discard", "free",
-			    "initialize", "replace", "remove", "resilver",
-			    "scrub", "trim", NULL };
-
 			/* Reset activities array */
-			bzero(&wd.wd_enabled, sizeof (wd.wd_enabled));
-			while (*optarg != '\0') {
-				int activity = getsubopt(&optarg, col_subopts,
-				    &value);
+			memset(&wd.wd_enabled, 0, sizeof (wd.wd_enabled));
+			for (char *tok; (tok = strsep(&optarg, ",")); ) {
+				static const char *const col_opts[] = {
+				    "discard", "free", "initialize", "replace",
+				    "remove", "resilver", "scrub", "trim" };
 
-				if (activity < 0) {
-					(void) fprintf(stderr,
-					    gettext("invalid activity '%s'\n"),
-					    value);
-					usage(B_FALSE);
-				}
+				for (i = 0; i < ARRAY_SIZE(col_opts); ++i)
+					if (strcmp(tok, col_opts[i]) == 0) {
+						wd.wd_enabled[i] = B_TRUE;
+						goto found;
+					}
 
-				wd.wd_enabled[activity] = B_TRUE;
+				(void) fprintf(stderr,
+				    gettext("invalid activity '%s'\n"), tok);
+				usage(B_FALSE);
+found:;
 			}
 			break;
-		}
 		case '?':
 			(void) fprintf(stderr, gettext("invalid option '%c'\n"),
 			    optopt);
