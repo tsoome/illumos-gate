@@ -8138,27 +8138,24 @@ zfs_do_wait(int argc, char **argv)
 	while ((c = getopt(argc, argv, "t:")) != -1) {
 		switch (c) {
 		case 't':
-		{
-			static char *col_subopts[] = { "deleteq", NULL };
-			char *value;
-
 			/* Reset activities array */
 			bzero(&enabled, sizeof (enabled));
-			while (*optarg != '\0') {
-				int activity = getsubopt(&optarg, col_subopts,
-				    &value);
+			for (char *tok; (tok = strsep(&optarg, ",")); ) {
+				static const char *const col_subopts[
+				    ZFS_WAIT_NUM_ACTIVITIES] = { "deleteq" };
 
-				if (activity < 0) {
-					(void) fprintf(stderr,
-					    gettext("invalid activity '%s'\n"),
-					    value);
-					usage(B_FALSE);
-				}
+				for (i = 0; i < ARRAY_SIZE(col_subopts); ++i)
+					if (strcmp(tok, col_subopts[i]) == 0) {
+						enabled[i] = B_TRUE;
+						goto found;
+					}
 
-				enabled[activity] = B_TRUE;
+				(void) fprintf(stderr,
+				    gettext("invalid activity '%s'\n"), tok);
+				usage(B_FALSE);
+found:;
 			}
 			break;
-		}
 		case '?':
 			(void) fprintf(stderr, gettext("invalid option '%c'\n"),
 			    optopt);
