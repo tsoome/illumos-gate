@@ -1249,6 +1249,10 @@ rfs4_has_session(const compound_state_t *cs)
 	return (cs->slot != NULL);
 }
 
+extern stateid4 invalid_stateid;
+
+#define	INVALID_STATEID(x) (!memcmp((x), &invalid_stateid, sizeof (stateid4))
+
 /*
  * Conversion commands for nfsv4 server attr checking
  */

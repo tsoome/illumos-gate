@@ -8550,6 +8550,7 @@ out:
 	    SETCLIENTID_CONFIRM4 *, res);
 }
 
+extern stateid4 invalid_stateid;
 
 /*ARGSUSED*/
 void
@@ -8642,8 +8643,6 @@ rfs4_op_close(nfs_argop4 *argop, nfs_resop4 *resop,
 
 	/* Update the stateid. */
 	next_stateid(&sp->rs_stateid);
-	resp->open_stateid = sp->rs_stateid.stateid;
-
 	rfs4_dbe_unlock(sp->rs_dbe);
 
 	rfs4_update_lease(sp->rs_owner->ro_client);
@@ -8652,6 +8651,8 @@ rfs4_op_close(nfs_argop4 *argop, nfs_resop4 *resop,
 
 	rfs4_state_close(sp, FALSE, FALSE, cs->cr);
 
+	/* See RFC8881 section 18.2.4, and RFC7530 section 16.2.5 */
+	resp->open_stateid = invalid_stateid;
 	*cs->statusp = resp->status = status;
 
 end:

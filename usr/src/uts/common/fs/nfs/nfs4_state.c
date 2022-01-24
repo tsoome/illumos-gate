@@ -55,6 +55,9 @@ stateid4 one_stateid = {
 	.seqid = ~0,
 	.other = { ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0 }
 };
+stateid4 invalid_stateid = {
+	.seqid = ~0
+};
 
 #define	ZERO_STATEID(x) (!memcmp((x), &zero_stateid, sizeof (stateid4)))
 #define	ONE_STATEID(x) (!memcmp((x), &one_stateid, sizeof (stateid4)))
