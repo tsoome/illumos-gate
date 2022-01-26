@@ -309,8 +309,10 @@ fem_t		*deleg_wrops;
 struct rfsv4disp {
 	void	(*dis_proc)();		/* proc to call */
 	void	(*dis_resfree)();	/* frees space allocated by proc */
-	int	dis_flags;		/* RPC_IDEMPOTENT, etc... */
+	int	dis_flags;		/* OP_IDEMPOTENT, etc... */
 };
+
+#define	OP_IDEMPOTENT		(1 << 0)
 
 static struct rfsv4disp rfsv4disptab[] = {
 	/*
@@ -327,13 +329,13 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_illegal, nullfree, 0},
 
 	/* OP_ACCESS = 3 */
-	{rfs4_op_access, nullfree, RPC_IDEMPOTENT},
+	{rfs4_op_access, nullfree, OP_IDEMPOTENT},
 
 	/* OP_CLOSE = 4 */
 	{rfs4_op_close, nullfree, 0},
 
 	/* OP_COMMIT = 5 */
-	{rfs4_op_commit, nullfree, RPC_IDEMPOTENT},
+	{rfs4_op_commit, nullfree, OP_IDEMPOTENT},
 
 	/* OP_CREATE = 6 */
 	{rfs4_op_create, nullfree, 0},
@@ -345,10 +347,10 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_delegreturn, nullfree, 0},
 
 	/* OP_GETATTR = 9 */
-	{rfs4_op_getattr, rfs4_op_getattr_free, RPC_IDEMPOTENT},
+	{rfs4_op_getattr, rfs4_op_getattr_free, OP_IDEMPOTENT},
 
 	/* OP_GETFH = 10 */
-	{rfs4_op_getfh, rfs4_op_getfh_free, RPC_ALL},
+	{rfs4_op_getfh, rfs4_op_getfh_free, OP_IDEMPOTENT},
 
 	/* OP_LINK = 11 */
 	{rfs4_op_link, nullfree, 0},
@@ -363,13 +365,13 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_locku, nullfree, 0},
 
 	/* OP_LOOKUP = 15 */
-	{rfs4_op_lookup, nullfree, (RPC_IDEMPOTENT | RPC_PUBLICFH_OK)},
+	{rfs4_op_lookup, nullfree, OP_IDEMPOTENT},
 
 	/* OP_LOOKUPP = 16 */
-	{rfs4_op_lookupp, nullfree, (RPC_IDEMPOTENT | RPC_PUBLICFH_OK)},
+	{rfs4_op_lookupp, nullfree, OP_IDEMPOTENT},
 
 	/* OP_NVERIFY = 17 */
-	{rfs4_op_nverify, nullfree, RPC_IDEMPOTENT},
+	{rfs4_op_nverify, nullfree, OP_IDEMPOTENT},
 
 	/* OP_OPEN = 18 */
 	{rfs4_op_open, rfs4_free_reply, 0},
@@ -384,22 +386,22 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_open_downgrade, nullfree, 0},
 
 	/* OP_OPEN_PUTFH = 22 */
-	{rfs4_op_putfh, nullfree, RPC_ALL},
+	{rfs4_op_putfh, nullfree, OP_IDEMPOTENT},
 
 	/* OP_PUTPUBFH = 23 */
-	{rfs4_op_putpubfh, nullfree, RPC_ALL},
+	{rfs4_op_putpubfh, nullfree, OP_IDEMPOTENT},
 
 	/* OP_PUTROOTFH = 24 */
-	{rfs4_op_putrootfh, nullfree, RPC_ALL},
+	{rfs4_op_putrootfh, nullfree, OP_IDEMPOTENT},
 
 	/* OP_READ = 25 */
-	{rfs4_op_read, rfs4_op_read_free, RPC_IDEMPOTENT},
+	{rfs4_op_read, rfs4_op_read_free, OP_IDEMPOTENT},
 
 	/* OP_READDIR = 26 */
-	{rfs4_op_readdir, rfs4_op_readdir_free, RPC_IDEMPOTENT},
+	{rfs4_op_readdir, rfs4_op_readdir_free, OP_IDEMPOTENT},
 
 	/* OP_READLINK = 27 */
-	{rfs4_op_readlink, rfs4_op_readlink_free, RPC_IDEMPOTENT},
+	{rfs4_op_readlink, rfs4_op_readlink_free, OP_IDEMPOTENT},
 
 	/* OP_REMOVE = 28 */
 	{rfs4_op_remove, nullfree, 0},
@@ -411,10 +413,10 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_renew, nullfree, 0},
 
 	/* OP_RESTOREFH = 31 */
-	{rfs4_op_restorefh, nullfree, RPC_ALL},
+	{rfs4_op_restorefh, nullfree, OP_IDEMPOTENT},
 
 	/* OP_SAVEFH = 32 */
-	{rfs4_op_savefh, nullfree, RPC_ALL},
+	{rfs4_op_savefh, nullfree, OP_IDEMPOTENT},
 
 	/* OP_SECINFO = 33 */
 	{rfs4_op_secinfo, rfs4_op_secinfo_free, 0},
@@ -429,7 +431,7 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_setclientid_confirm, nullfree, 0},
 
 	/* OP_VERIFY = 37 */
-	{rfs4_op_verify, nullfree, RPC_IDEMPOTENT},
+	{rfs4_op_verify, nullfree, OP_IDEMPOTENT},
 
 	/* OP_WRITE = 38 */
 	{rfs4_op_write, nullfree, 0},
@@ -6166,26 +6168,24 @@ rfs4_compound_free(COMPOUND4res *resp)
 }
 
 /*
- * Process the value of the compound request rpc flags, as a bit-AND
- * of the individual per-op flags (idempotent, allowork, publicfh_ok)
+ * Check if entire requst is idempotent
  */
-void
-rfs4_compound_flagproc(COMPOUND4args *args, int *flagp)
+bool_t
+rfs4_idempotent_req(const COMPOUND4args *args)
 {
 	int i;
-	int flag = RPC_ALL;
 
-	for (i = 0; flag && i < args->array_len; i++) {
+	for (i = 0; i < args->array_len; i++) {
 		uint_t op;
 
 		op = (uint_t)args->array[i].argop;
 
-		if (op < rfsv4disp_cnt)
-			flag &= rfsv4disptab[op].dis_flags;
-		else
-			flag = 0;
+		if (op >= rfsv4disp_cnt ||
+		    !(rfsv4disptab[op].dis_flags & OP_IDEMPOTENT)) {
+			return (FALSE);
+		}
 	}
-	*flagp = flag;
+	return (TRUE);
 }
 
 nfsstat4

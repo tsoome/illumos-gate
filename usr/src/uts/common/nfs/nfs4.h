@@ -1541,7 +1541,7 @@ extern void rfs4_fini_compound_state(struct compound_state *);
 struct rpcdisp;
 extern int rfs4_dispatch(struct rpcdisp *, struct svc_req *, SVCXPRT *, char *);
 extern void	rfs4_compound_free(COMPOUND4res *);
-extern void	rfs4_compound_flagproc(COMPOUND4args *, int *);
+extern bool_t	rfs4_idempotent_req(const COMPOUND4args *);
 
 extern void	rfs4_srvrinit(void);
 extern void	rfs4_srvrfini(void);
