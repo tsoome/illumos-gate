@@ -55,12 +55,16 @@ stateid4 one_stateid = {
 	.seqid = ~0,
 	.other = { ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0 }
 };
+stateid4 current_stateid = {
+	.seqid = 1
+};
 stateid4 invalid_stateid = {
 	.seqid = ~0
 };
 
 #define	ZERO_STATEID(x) (!memcmp((x), &zero_stateid, sizeof (stateid4)))
 #define	ONE_STATEID(x) (!memcmp((x), &one_stateid, sizeof (stateid4)))
+#define	CURRENT_STATEID(x) (!memcmp((x), &current_stateid, sizeof (stateid4)))
 
 /* For embedding the cluster nodeid into our clientid */
 #define	CLUSTER_NODEID_SHIFT	24
@@ -78,6 +82,21 @@ static void rfs4_ss_clid_write(nfs4_srv_t *nsrv4, rfs4_client_t *cp, char *leaf)
 static void rfs4_ss_clid_write_one(rfs4_client_t *cp, char *dir, char *leaf);
 static void rfs4_dss_clear_oldstate(rfs4_servinst_t *sip);
 static void rfs4_ss_chkclid_sip(rfs4_client_t *cp, rfs4_servinst_t *sip);
+
+void put_stateid4(struct compound_state *cs, stateid4 *state)
+{
+	if (*cs->statusp == NFS4_OK && cs->minorversion) {
+		memcpy(&cs->current_stateid, state, sizeof (stateid4));
+		cs->cs_flags |= RFS4_CURRENT_STATEID;
+	}
+}
+
+void get_stateid4(struct compound_state *cs, stateid4 *state)
+{
+	if ((cs->cs_flags & RFS4_CURRENT_STATEID) && CURRENT_STATEID(state)) {
+		memcpy(state, &cs->current_stateid, sizeof (stateid4));
+	}
+}
 
 /*
  * Couple of simple init/destroy functions for a general waiter

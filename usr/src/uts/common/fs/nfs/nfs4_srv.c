@@ -313,6 +313,7 @@ struct rfsv4disp {
 };
 
 #define	OP_IDEMPOTENT		(1 << 0)
+#define	OP_CLEAR_STATEID	(1 << 1)
 
 static struct rfsv4disp rfsv4disptab[] = {
 	/*
@@ -332,13 +333,13 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_access, nullfree, OP_IDEMPOTENT},
 
 	/* OP_CLOSE = 4 */
-	{rfs4_op_close, nullfree, 0},
+	{rfs4_op_close, nullfree, OP_CLEAR_STATEID},
 
 	/* OP_COMMIT = 5 */
 	{rfs4_op_commit, nullfree, OP_IDEMPOTENT},
 
 	/* OP_CREATE = 6 */
-	{rfs4_op_create, nullfree, 0},
+	{rfs4_op_create, nullfree, OP_CLEAR_STATEID},
 
 	/* OP_DELEGPURGE = 7 */
 	{rfs4_op_delegpurge, nullfree, 0},
@@ -365,10 +366,10 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_locku, nullfree, 0},
 
 	/* OP_LOOKUP = 15 */
-	{rfs4_op_lookup, nullfree, OP_IDEMPOTENT},
+	{rfs4_op_lookup, nullfree, (OP_IDEMPOTENT | OP_CLEAR_STATEID)},
 
 	/* OP_LOOKUPP = 16 */
-	{rfs4_op_lookupp, nullfree, OP_IDEMPOTENT},
+	{rfs4_op_lookupp, nullfree, (OP_IDEMPOTENT | OP_CLEAR_STATEID)},
 
 	/* OP_NVERIFY = 17 */
 	{rfs4_op_nverify, nullfree, OP_IDEMPOTENT},
@@ -386,13 +387,13 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4_op_open_downgrade, nullfree, 0},
 
 	/* OP_OPEN_PUTFH = 22 */
-	{rfs4_op_putfh, nullfree, OP_IDEMPOTENT},
+	{rfs4_op_putfh, nullfree, (OP_IDEMPOTENT | OP_CLEAR_STATEID)},
 
 	/* OP_PUTPUBFH = 23 */
 	{rfs4_op_putpubfh, nullfree, OP_IDEMPOTENT},
 
 	/* OP_PUTROOTFH = 24 */
-	{rfs4_op_putrootfh, nullfree, OP_IDEMPOTENT},
+	{rfs4_op_putrootfh, nullfree, (OP_IDEMPOTENT | OP_CLEAR_STATEID)},
 
 	/* OP_READ = 25 */
 	{rfs4_op_read, rfs4_op_read_free, OP_IDEMPOTENT},
@@ -609,6 +610,7 @@ static const fs_operation_def_t nfs4_wr_deleg_tmpl[] = {
 	VOPNAME_VNEVENT,	{ .femop_vnevent = deleg_wr_vnevent },
 	NULL,			NULL
 };
+
 
 nfs4_srv_t *
 nfs4_get_srv(void)
@@ -3431,6 +3433,8 @@ rfs4_op_read(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 		goto out;
 	}
 
+	get_stateid4(cs, &args->stateid);
+
 	if ((stat = rfs4_check_stateid(FREAD, vp, &args->stateid, FALSE,
 	    deleg, TRUE, &ct, cs)) != NFS4_OK) {
 		*cs->statusp = resp->status = stat;
@@ -5045,6 +5049,10 @@ rfs4_op_restorefh(nfs_argop4 *args, nfs_resop4 *resop, struct svc_req *req,
 	*cs->statusp = resp->status = NFS4_OK;
 	cs->deleg = FALSE;
 
+	if (cs->cs_flags & RFS4_SAVED_STATEID) {
+		cs->current_stateid = cs->save_stateid;
+		cs->cs_flags |= RFS4_CURRENT_STATEID;
+	}
 out:
 	DTRACE_NFSV4_2(op__restorefh__done, struct compound_state *, cs,
 	    RESTOREFH4res *, resp);
@@ -5080,6 +5088,10 @@ rfs4_op_savefh(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 	nfs_fh4_copy(&cs->fh, &cs->saved_fh);
 	*cs->statusp = resp->status = NFS4_OK;
 
+	if (cs->cs_flags & RFS4_CURRENT_STATEID) {
+		cs->save_stateid = cs->current_stateid;
+		cs->cs_flags |= RFS4_SAVED_STATEID;
+	}
 out:
 	DTRACE_NFSV4_2(op__savefh__done, struct compound_state *, cs,
 	    SAVEFH4res *, resp);
@@ -5626,6 +5638,7 @@ rfs4_op_setattr(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 		}
 	}
 
+	get_stateid4(cs, &args->stateid);
 	*cs->statusp = resp->status =
 	    do_rfs4_op_setattr(&resp->attrsset, &args->obj_attributes, cs,
 	    &args->stateid);
@@ -5794,12 +5807,13 @@ rfs4_op_write(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 		*cs->statusp = resp->status = NFS4ERR_NOFILEHANDLE;
 		goto out;
 	}
+
 	if (cs->access == CS_ACCESS_DENIED) {
 		*cs->statusp = resp->status = NFS4ERR_ACCESS;
 		goto out;
 	}
 
-	cr = cs->cr;
+	get_stateid4(cs, &args->stateid);
 
 	if ((stat = rfs4_check_stateid(FWRITE, vp, &args->stateid, FALSE,
 	    deleg, TRUE, &ct, cs)) != NFS4_OK) {
@@ -5821,6 +5835,7 @@ rfs4_op_write(nfs_argop4 *argop, nfs_resop4 *resop, struct svc_req *req,
 		}
 	}
 
+	cr = cs->cr;
 	bva.va_mask = AT_MODE | AT_UID;
 	error = VOP_GETATTR(vp, &bva, 0, cr, &ct);
 
@@ -6092,6 +6107,8 @@ rfs4_compound(COMPOUND4args *args, COMPOUND4res *resp, compound_state_t *cs,
 			    rfs4_op_string[op], *cs->statusp));
 			if (*cs->statusp != NFS4_OK)
 				cs->cont = FALSE;
+			if (rfsv4disptab[op].dis_flags & OP_CLEAR_STATEID)
+				cs->cs_flags &= ~RFS4_CURRENT_STATEID;
 		} else {
 			/*
 			 * This is effectively dead code since XDR code
@@ -7847,6 +7864,7 @@ finish:
 		rfs4_sw_exit(&oo->ro_sw);
 	rfs4_openowner_rele(oo);
 
+	put_stateid4(cs, &resp->stateid);
 end:
 	DTRACE_NFSV4_2(op__open__done, struct compound_state *, cs,
 	    OPEN4res *, resp);
@@ -8570,6 +8588,8 @@ rfs4_op_close(nfs_argop4 *argop, nfs_resop4 *resop,
 		goto out;
 	}
 
+	get_stateid4(cs, &args->open_stateid);
+
 	status = rfs4_get_state(&args->open_stateid, &sp, RFS4_DBS_INVALID);
 	if (status != NFS4_OK) {
 		*cs->statusp = resp->status = status;
@@ -9125,6 +9145,7 @@ rfs4_op_lock(nfs_argop4 *argop, nfs_resop4 *resop,
 		NFS4_DEBUG(rfs4_debug, (CE_NOTE, "Creating new lock owner"));
 
 		stateid = &olo->open_stateid;
+		get_stateid4(cs, stateid);
 		status = rfs4_get_state(stateid, &sp, RFS4_DBS_VALID);
 		if (status != NFS4_OK) {
 			NFS4_DEBUG(rfs4_debug,
@@ -9476,6 +9497,8 @@ out:
 	if (status == NFS4_OK) {
 		resp->LOCK4res_u.lock_stateid = lsp->rls_lockid.stateid;
 		lsp->rls_lock_completed = TRUE;
+
+		put_stateid4(cs, &resp->LOCK4res_u.lock_stateid);
 	}
 	/*
 	 * Only update the "OPEN" response here if this was a new
@@ -9551,6 +9574,8 @@ rfs4_op_locku(nfs_argop4 *argop, nfs_resop4 *resop,
 		    LOCKU4res *, resp);
 		return;
 	}
+
+	get_stateid4(cs, stateid);
 
 	if ((status = rfs4_get_lo_state(stateid, &lsp, TRUE)) != NFS4_OK) {
 		*cs->statusp = resp->status = status;

@@ -1236,9 +1236,13 @@ struct compound_state {
 	uint16_t	op_pos;
 	uint16_t	op_len;		/* number operations in compound req */
 #define	RFS4_DISPATCH_DONE	(1 << 0)
+#define	RFS4_CURRENT_STATEID	(1 << 1)
+#define	RFS4_SAVED_STATEID	(1 << 2)
 	uint8_t		cs_flags;
 	bool_t		cachethis;
 	COMPOUND4res	*cmpresp;
+	stateid4	current_stateid;
+	stateid4	save_stateid;
 };
 
 typedef struct compound_state compound_state_t;
@@ -1552,6 +1556,9 @@ extern void	rfs4_state_zone_init(nfs4_srv_t *);
 extern void	rfs4_state_g_fini(void);
 extern void	rfs4_state_zone_fini(void);
 extern nfs4_srv_t *nfs4_get_srv(void);
+
+void put_stateid4(struct compound_state *, stateid4 *);
+void get_stateid4(struct compound_state *, stateid4 *);
 
 #endif
 #ifdef	__cplusplus
