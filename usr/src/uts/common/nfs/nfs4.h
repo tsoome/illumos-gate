@@ -971,6 +971,10 @@ extern	void		rfs4_file_rele(rfs4_file_t *);
 /* General collection of "get state" functions */
 extern	nfsstat4	rfs4_get_state(stateid4 *, rfs4_state_t **,
 					rfs4_dbsearch_type_t);
+extern nfsstat4		rfs4_get_state_nolock(stateid4 *, rfs4_state_t **,
+					rfs4_dbsearch_type_t);
+extern void rfs4_state_rele_nounlock(rfs4_state_t *);
+
 extern	nfsstat4	rfs4_get_deleg_state(stateid4 *,
 					rfs4_deleg_state_t **);
 extern	nfsstat4	rfs4_get_lo_state(stateid4 *, rfs4_lo_state_t **,

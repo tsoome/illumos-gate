@@ -273,6 +273,8 @@ void rfs4x_op_bind_conn_to_session(nfs_argop4 *argop, nfs_resop4 *resop,
 
 void rfs4x_op_secinfo_noname(nfs_argop4 *argop, nfs_resop4 *resop,
     struct svc_req *req, compound_state_t *cs);
+void rfs4x_op_free_stateid(nfs_argop4 *argop, nfs_resop4 *resop,
+    struct svc_req *req, compound_state_t *cs);
 
 static nfsstat4 check_open_access(uint32_t, struct compound_state *,
 		    struct svc_req *);
@@ -460,7 +462,7 @@ static struct rfsv4disp rfsv4disptab[] = {
 	{rfs4x_op_destroy_session,  nullfree,  0},
 
 	/* OP_FREE_STATEID = 45 */
-	{rfs4_op_notsup,  nullfree,  0},
+	{rfs4x_op_free_stateid,  nullfree,  0},
 
 	/* OP_GET_DIR_DELEGATION = 46 */
 	{rfs4_op_notsup,  nullfree,  0},

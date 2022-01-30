@@ -83,7 +83,8 @@ static void rfs4_ss_clid_write_one(rfs4_client_t *cp, char *dir, char *leaf);
 static void rfs4_dss_clear_oldstate(rfs4_servinst_t *sip);
 static void rfs4_ss_chkclid_sip(rfs4_client_t *cp, rfs4_servinst_t *sip);
 
-void put_stateid4(struct compound_state *cs, stateid4 *state)
+void
+put_stateid4(struct compound_state *cs, stateid4 *state)
 {
 	if (*cs->statusp == NFS4_OK && cs->minorversion) {
 		memcpy(&cs->current_stateid, state, sizeof (stateid4));
@@ -91,7 +92,8 @@ void put_stateid4(struct compound_state *cs, stateid4 *state)
 	}
 }
 
-void get_stateid4(struct compound_state *cs, stateid4 *state)
+void
+get_stateid4(struct compound_state *cs, stateid4 *state)
 {
 	if ((cs->cs_flags & RFS4_CURRENT_STATEID) && CURRENT_STATEID(state)) {
 		memcpy(state, &cs->current_stateid, sizeof (stateid4));
@@ -403,8 +405,6 @@ static void *deleg_mkkey(rfs4_entry_t);
 static uint32_t deleg_state_hash(void *);
 static bool_t deleg_state_compare(rfs4_entry_t, void *);
 static void *deleg_state_mkkey(rfs4_entry_t);
-
-static void rfs4_state_rele_nounlock(rfs4_state_t *);
 
 static int rfs4_ss_enabled = 0;
 
@@ -3031,7 +3031,7 @@ rfs4_state_destroy(rfs4_entry_t u_entry)
 	sp->rs_owner = NULL;
 }
 
-static void
+void
 rfs4_state_rele_nounlock(rfs4_state_t *sp)
 {
 	rfs4_dbe_rele(sp->rs_dbe);
@@ -3555,6 +3555,13 @@ rfs4_get_state(stateid4 *stateid, rfs4_state_t **spp,
     rfs4_dbsearch_type_t find_invalid)
 {
 	return (rfs4_get_state_lockit(stateid, spp, find_invalid, TRUE));
+}
+
+nfsstat4
+rfs4_get_state_nolock(stateid4 *stateid, rfs4_state_t **spp,
+    rfs4_dbsearch_type_t find_invalid)
+{
+	return (rfs4_get_state_lockit(stateid, spp, find_invalid, FALSE));
 }
 
 int

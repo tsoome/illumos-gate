@@ -33,7 +33,9 @@
 #include <sys/disp.h>
 #include <nfs/nfs.h>
 #include <nfs/nfs4.h>
+#include <nfs/lm.h>
 #include <sys/systeminfo.h>
+#include <sys/flock.h>
 
 /* Helpers */
 
@@ -1179,4 +1181,112 @@ out:
 	DTRACE_NFSV4_2(op__secinfo__no__name__done,
 	    struct compound_state *, cs,
 	    SECINFO_NO_NAME4res *, resp);
+}
+
+/*
+ * Used to free a stateid that no longer has any associated locks.
+ * If there are valid locks, error NFS4ERR_LOCKS_HELD is returned.
+ * NB: Actual freeing of stateid will be taken care by reaper_thread().
+ */
+void
+rfs4x_op_free_stateid(nfs_argop4 *argop, nfs_resop4 *resop,
+    struct svc_req *req, compound_state_t *cs)
+{
+	FREE_STATEID4args	*args = &argop->nfs_argop4_u.opfree_stateid;
+	FREE_STATEID4res	*resp = &resop->nfs_resop4_u.opfree_stateid;
+	nfsstat4		status = NFS4ERR_BAD_STATEID;
+	stateid4		*sid;
+	stateid_t		*id;
+
+	DTRACE_NFSV4_2(op__free__stateid__start,
+	    struct compound_state *, cs,
+	    FREE_STATEID4args *, args);
+
+	/* Fetch the ARG stateid */
+	sid = &args->fsa_stateid;
+	get_stateid4(cs, sid);
+
+	id = (stateid_t *)sid;
+	switch (id->bits.type) {
+	case OPENID: {
+		rfs4_state_t *sp;
+
+		status = rfs4_get_state_nolock(sid, &sp, RFS4_DBS_VALID);
+		if (status != NFS4_OK)
+			goto final;
+
+		rfs4_update_lease(sp->rs_owner->ro_client);
+		rfs4_state_rele_nounlock(sp);
+		status = NFS4ERR_LOCKS_HELD;
+		break;
+	}
+
+	case LOCKID: {
+		sysid_t sysid;
+		rfs4_lo_state_t *lsp;
+		rfs4_lockowner_t *lo;
+
+		status = rfs4_get_lo_state(sid, &lsp, FALSE);
+		if (status != NFS4_OK)
+			goto final;
+
+		lo = lsp->rls_locker;
+		rfs4_update_lease(lo->rl_client);
+
+		rfs4_dbe_lock(lo->rl_client->rc_dbe);
+		sysid = lo->rl_client->rc_sysidt;
+		rfs4_dbe_unlock(lo->rl_client->rc_dbe);
+
+		/*
+		 * Check for ACTIVE LOCKS by this lockowner.
+		 */
+		if (sysid != LM_NOSYSID) {
+			locklist_t *llist;
+
+			llist = flk_get_active_locks(sysid, lo->rl_pid);
+			if (llist != NULL) {
+				flk_free_locklist(llist);
+				status = NFS4ERR_LOCKS_HELD;
+			}
+		}
+
+
+		/*
+		 * If the state does not have any active LOCKS,
+		 * invalidate the LOCK stateid right away.
+		 */
+		if (status != NFS4ERR_LOCKS_HELD) {
+			rfs4_dbe_lock(lsp->rls_dbe);
+			rfs4_dbe_invalidate(lsp->rls_dbe);
+			rfs4_dbe_unlock(lsp->rls_dbe);
+		}
+
+		rfs4_lo_state_rele(lsp, FALSE);
+		break;
+	}
+
+	case DELEGID: {
+		rfs4_deleg_state_t *dsp;
+
+		status = rfs4_get_deleg_state(sid, &dsp);
+		if (status != NFS4_OK)
+			goto final;
+
+		rfs4_update_lease(dsp->rds_client);
+		rfs4_deleg_state_rele(dsp);
+		status = NFS4ERR_LOCKS_HELD;
+		break;
+	}
+
+	default:
+		status = NFS4ERR_BAD_STATEID;
+		break;
+	}
+
+final:
+	*cs->statusp = resp->fsr_status = status;
+
+	DTRACE_NFSV4_2(op__free__stateid__done,
+	    struct compound_state *, cs,
+	    FREE_STATEID4res *, resp);
 }
