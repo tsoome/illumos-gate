@@ -94,6 +94,8 @@ static int rfs4_maxlock_tries = RFS4_MAXLOCK_TRIES;
 static clock_t  rfs4_lock_delay = RFS4_LOCK_DELAY;
 extern struct svc_ops rdma_svc_ops;
 extern int nfs_loaned_buffers;
+#define	RFS4_LOOKUP_EXP_STATE_MAX 8 /* Limit of loop to clean expired states */
+static int rfs4_lookup_exp_state_max = RFS4_LOOKUP_EXP_STATE_MAX;
 /* End of Tunables */
 
 static int rdma_setup_read_data4(READ4args *, READ4res *);
@@ -6952,6 +6954,23 @@ rfs4_createfile(OPEN4args *args, struct svc_req *req, struct compound_state *cs,
 	return (status);
 }
 
+static void
+close_expired_state(rfs4_entry_t u_entry)
+{
+	rfs4_state_t *sp = (rfs4_state_t *)u_entry;
+
+	if (sp->rs_closed)
+		return;
+
+	/* not expired ? */
+	if (gethrestime_sec() - sp->rs_owner->ro_client->rc_last_access
+	    <= rfs4_lease_time)
+		return;
+
+	rfs4_state_close(sp, TRUE, TRUE, CRED());
+	rfs4_dbe_invalidate(sp->rs_dbe);
+}
+
 /*ARGSUSED*/
 static void
 rfs4_do_open(struct compound_state *cs, struct svc_req *req,
@@ -6974,6 +6993,7 @@ rfs4_do_open(struct compound_state *cs, struct svc_req *req,
 	int recall = 0;
 	int err;
 	int first_open;
+	int tries = 0;
 
 	/* get the file struct and hold a lock on it during initial open */
 	fp = rfs4_findfile_withlock(cs->vp, &cs->fh, &fcreate);
@@ -7010,6 +7030,7 @@ rfs4_do_open(struct compound_state *cs, struct svc_req *req,
 	if (access & OPEN4_SHARE_ACCESS_WRITE)
 		fflags |= FWRITE;
 
+again:
 	rfs4_dbe_lock(sp->rs_dbe);
 
 	/*
@@ -7042,6 +7063,19 @@ rfs4_do_open(struct compound_state *cs, struct svc_req *req,
 	if (share_a || share_d) {
 		if ((err = rfs4_share(sp, access, deny)) != 0) {
 			rfs4_dbe_unlock(sp->rs_dbe);
+			if (err == NFS4ERR_SHARE_DENIED && ++tries < 2) {
+				/*
+				 * Cleanup recently expired (not yet cleaned by
+				 * reaper thread) and re-try.
+				 */
+				nfs4_srv_t *nsrv4 = nfs4_get_srv();
+
+				rfs4_dbsearch_cb(nsrv4->rfs4_state_file_idx,
+				    sp->rs_finfo, rfs4_lookup_exp_state_max,
+				    close_expired_state);
+				goto again;
+			}
+
 			resp->status = err;
 
 			rfs4_file_rele(fp);

@@ -193,6 +193,8 @@ extern bool_t		rfs4_dbe_islocked(rfs4_dbe_t *);
 #endif
 extern void		rfs4_dbe_walk(rfs4_table_t *,
 			void (*callout)(rfs4_entry_t, void *), void *);
+extern void		rfs4_dbsearch_cb(rfs4_index_t *idx, void *key,
+    int maxcount, void (*callout)(rfs4_entry_t));
 
 /*
  * Minimal server stable storage.
