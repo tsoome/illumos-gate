@@ -41,13 +41,6 @@ LDLIBS += ../lib/bsd/libbsd.a -lc -lnsl -lumem
 
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
 
-CCERRWARN += -_gcc=-Wno-unused-variable
-CCERRWARN += -_gcc=-Wno-switch
-CCERRWARN += -_gcc=-Wno-parentheses
-CCERRWARN += -_gcc=-Wno-unused-function
-CCERRWARN += -_gcc=-Wno-clobbered
-CCERRWARN += -_gcc=-Wno-uninitialized
-
 ROOTLINKS = $(ROOTCCSBIN)/make $(ROOTXPG4BIN)/make $(ROOTBIN)/dmake $(ROOTCCSLIB)/svr4.make \
 	$(ROOTLIB)/svr4.make
 

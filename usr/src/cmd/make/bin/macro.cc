@@ -57,10 +57,8 @@ setvar_append(Name name, Name value)
 {
 	Property	macro_apx = get_prop(name->prop, macro_append_prop);
 	Property	macro = get_prop(name->prop, macro_prop);
-	int			length;
 	String_rec		destination;
 	wchar_t			buffer[STRING_BUFFER_LENGTH];
-	Chain		chain;
 	Name			val = NULL;
 
 	if(macro_apx == NULL) {

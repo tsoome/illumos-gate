@@ -40,25 +40,6 @@
 #include <unistd.h>		/* getpid() */
 
 /*
- * Defined macros
- */
-
-/*
- * typedefs & structs
- */
-
-/*
- * Static variables
- */
-static	int		filter_file;
-static	char		*filter_file_name;
-
-/*
- * File table of contents
- */
-static	void		redirect_stderr(void);
-
-/*
  *	dosys(command, ignore_error, call_make, silent_error, target)
  *
  *	Check if command string contains meta chars and dispatch to

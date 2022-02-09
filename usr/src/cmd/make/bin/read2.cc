@@ -572,8 +572,8 @@ enter_dependencies(Name target, Chain target_group, Name_vector depes, Cmd_line 
 {
 	int		i;
 	Property	line;
-	Name			name;
-	Name			directory;
+	Name			name = NULL;
+	Name			directory = NULL;
 	wchar_t			*namep;
 	char			*mb_namep;
 	Dependency		dp;
@@ -1070,7 +1070,6 @@ enter_dyntarget(Name target)
 	Dyntarget	result = ALLOC(Dyntarget);
 	Dyntarget		p;
 	Dyntarget		*insert;
-	int				i;
 
 	result->next = NULL;
 	result->name = target;

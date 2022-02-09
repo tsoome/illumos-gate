@@ -82,9 +82,9 @@ read_make_machines(Name make_machines_name)
 	struct hostent		*hp;
 	wchar_t			local_host[MAX_HOSTNAMELEN + 1];
 	char			local_host_mb[MAX_HOSTNAMELEN + 1] = "";
-	int			local_host_wslen;
+	size_t			local_host_wslen;
 	wchar_t			full_host[MAXNETNAMELEN + 1];
-	int			full_host_wslen = 0;
+	size_t			full_host_wslen = 0;
 	char			*homedir;
 	Name			MAKE_MACHINES;
 	struct stat		make_machines_buf;

@@ -34,7 +34,7 @@ static	short	setenv_made_new_vector= 0;
 
 char *setenv(char *name, char *value)
 {	char *p= NULL, **q;
-	int length= 0, vl;
+	size_t length= 0, vl;
 
 	if ((p= getenv(name)) == NULL) {	/* Allocate new vector */
 		for (q= environ; *q != NULL; q++, length++);

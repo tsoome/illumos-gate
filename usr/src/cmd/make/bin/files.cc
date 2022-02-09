@@ -65,7 +65,6 @@ extern	timestruc_t&	exists(Name target);
 extern  void		set_target_stat(Name target, struct stat buf);
 static	timestruc_t&	vpath_exists(Name target);
 static	Name		enter_file_name(wchar_t *name_string, wchar_t *library);
-static	Boolean		star_match(char *string, char *pattern);
 static	Boolean		amatch(wchar_t *string, wchar_t *pattern);
 
 /*
@@ -294,7 +293,6 @@ read_dir(Name dir, wchar_t *pattern, Property line, wchar_t *library)
 	Name			plain_file;
 	wchar_t			tmp_wcs_buffer[MAXPATHLEN];
 	DIR			*dir_fd;
-	int			m_local_dependency=0;
 #define d_fileno d_ino
         struct dirent  *dp;
 	wchar_t			*vpath = NULL;

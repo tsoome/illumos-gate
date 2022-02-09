@@ -56,22 +56,9 @@
 #define MAXRULES		100
 
 /*
- * This const should be in avo_dms/include/AvoDmakeCommand.h
- */
-const int local_host_mask = 0x20;
-
-
-/*
- * typedefs & structs
- */
-
-
-/*
  * Static variables
  */
-static	Boolean		just_did_subtree = false;
 static	char		local_host[MAXNAMELEN] = "";
-static	char		user_name[MAXNAMELEN] = "";
 static	int		pmake_max_jobs = 0;
 static	pid_t		process_running = -1;
 static	Running		*running_tail = &running_list;
@@ -84,14 +71,13 @@ static	Name		subtree_conflict2;
  */
 static	void		delete_running_struct(Running rp);
 static	Boolean		dependency_conflict(Name target);
-static	Doname		distribute_process(char **commands, Property line);
+static	Doname		distribute_process(char **commands);
 static	void		doname_subtree(Name target, Boolean do_get, Boolean implicit);
 static	void		dump_out_file(char *filename, Boolean err);
 static	void		finish_doname(Running rp);
-static	void		maybe_reread_make_state(void);
 static	void		process_next(void);
 static	void		reset_conditionals(int cnt, Name *targets, Property *locals);
-static	pid_t           run_rule_commands(char *host, char **commands);
+static	pid_t           run_rule_commands(char **commands);
 static	Property	*set_conditionals(int cnt, Name *targets);
 static	void		store_conditionals(Running rp);
 
@@ -109,10 +95,9 @@ static	void		store_conditionals(Running rp);
  *		line		The command group to execute
  */
 Doname
-execute_parallel(Property line, Boolean waitflg, Boolean local)
+execute_parallel(Property line, Boolean waitflg, Boolean local __unused)
 {
 	int			argcnt;
-	int			cmd_options = 0;
 	char			*commands[MAXRULES + 5];
 	char			*cp;
 	Name			dmake_name;
@@ -121,11 +106,8 @@ execute_parallel(Property line, Boolean waitflg, Boolean local)
 	Name			make_machines_name;
 	char			**p;
 	Property		prop;
-	Doname			result = build_ok;
 	Cmd_line		rule;
 	Boolean			silent_flag;
-	Name			target = line->body.line.target;
-	Boolean			wrote_state_file = false;
 
 	if ((pmake_max_jobs == 0) &&
 	    (dmake_mode_type == parallel_mode)) {
@@ -227,7 +209,7 @@ execute_parallel(Property line, Boolean waitflg, Boolean local)
 	{
 		*p = NULL;
 
-		Doname res = distribute_process(commands, line);
+		Doname res = distribute_process(commands);
 		if (res == build_running) {
 			parallel_process_cnt++;
 		}
@@ -534,7 +516,7 @@ job_adjust_init() {
 
 
 /*
- *	distribute_process(char **commands, Property line)
+ *	distribute_process(char **commands)
  *
  *	Parameters:
  *		commands	argv vector of commands to execute
@@ -547,12 +529,10 @@ job_adjust_init() {
  *		job_adjust_mode	Current job adjust mode
  */
 static Doname
-distribute_process(char **commands, Property line)
+distribute_process(char **commands)
 {
 	static unsigned	file_number = 0;
-	wchar_t		string[MAXPATHLEN];
 	char		mbstring[MAXPATHLEN];
-	int		filed;
 	int		res;
 	int		tmp_index;
 	char		*tmp_index_str_ptr;
@@ -656,7 +636,7 @@ distribute_process(char **commands, Property line)
 		stderr_file = strdup(mbstring);
 	}
 
-	process_running = run_rule_commands(local_host, commands);
+	process_running = run_rule_commands(commands);
 
 	return build_running;
 }
@@ -1758,7 +1738,7 @@ is_running(Name target)
 
 
 static pid_t
-run_rule_commands(char *host, char **commands)
+run_rule_commands(char **commands)
 {
 	Boolean		always_exec;
 	Name		command;
@@ -1782,9 +1762,7 @@ run_rule_commands(char *host, char **commands)
 		} else {
 			redirect_io(stdout_file, stderr_file);
 		}
-		for (commands = commands;
-		     (*commands != (char *)NULL);
-		     commands++) {
+		for (; (*commands != NULL); commands++) {
 			silent_flag = silent;
 			ignore = false;
 			always_exec = false;
@@ -1838,33 +1816,6 @@ run_rule_commands(char *host, char **commands)
 	}
 	return childPid;
 }
-
-static void
-maybe_reread_make_state(void)
-{
-	/* Copying dosys()... */
-	if (report_dependencies_level == 0) {
-		make_state->stat.time = file_no_time;
-		(void) exists(make_state);
-		if (make_state_before == make_state->stat.time) {
-			return;
-		}
-		makefile_type = reading_statefile;
-		if (read_trace_level > 1) {
-			trace_reader = true;
-		}
-		temp_file_number++;
-		(void) read_simple_file(make_state,
-					false,
-					false,
-					false,
-					false,
-					false,
-					true);
-		trace_reader = false;
-	}
-}
-
 
 static void
 delete_running_struct(Running rp)

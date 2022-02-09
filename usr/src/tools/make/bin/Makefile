@@ -41,13 +41,6 @@ NATIVE_LIBS += libnsl.so libumem.so
 
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
 
-CCERRWARN += -_gcc=-Wno-unused-variable
-CCERRWARN += -_gcc=-Wno-switch
-CCERRWARN += -_gcc=-Wno-parentheses
-CCERRWARN += -_gcc=-Wno-unused-function
-CCERRWARN += -_gcc=-Wno-clobbered
-CCERRWARN += -_gcc=-Wno-uninitialized
-
 ROOTLINKS = $(ROOTONBLDBINMACH)/dmake
 ROOTRULES = $(ROOTONBLDSHARE)/make.rules
 

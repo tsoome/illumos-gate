@@ -109,7 +109,6 @@ read_simple_file(Name makefile_name, Boolean chase_path, Boolean doname_it, Bool
 	int		length;
 	wchar_t			*previous_file_being_read = file_being_read;
 	int			previous_line_number = line_number;
-	wchar_t			previous_current_makefile[MAXPATHLEN];
 	Makefile_type		save_makefile_type;
 	Name			normalized_makefile_name;
 	wchar_t        *string_start;
@@ -462,33 +461,33 @@ parse_makefile(Name true_makefile_name, Source source)
 /*
 	char			mb_buffer[MB_LEN_MAX];
  */
-	wchar_t	*source_p;
-	wchar_t	*source_end;
+	wchar_t	*source_p = NULL;
+	wchar_t	*source_end = NULL;
 	wchar_t	*string_start;
 	wchar_t			*string_end;
 	Boolean	macro_seen_in_string;
-	Boolean			append;
+	Boolean			append = false;
 	String_rec		name_string;
 	wchar_t			name_buffer[STRING_BUFFER_LENGTH];
 	int		distance;
 	int		paren_count;
 	int			brace_count;
 	int			char_number;
-	Cmd_line		command;
+	Cmd_line		command = NULL;
 	Cmd_line		command_tail;
 	Name			macro_value;
 
 	Name_vector_rec		target;
 	Name_vector_rec		depes;
 	Name_vector_rec		extra_name_vector;
-	Name_vector		current_names;
+	Name_vector		current_names = NULL;
 	Name_vector		extra_names = &extra_name_vector;
 	Name_vector		nvp;
 	Boolean			target_group_seen;
 
 	Reader_state   state;
 	Reader_state   on_eoln_state;
-	Separator	separator;
+	Separator	separator = none_seen;
 
 	wchar_t                 buffer[4 * STRING_BUFFER_LENGTH];
 	Source			extrap;
@@ -504,7 +503,6 @@ parse_makefile(Name true_makefile_name, Source source)
 	static wchar_t		include_tab[10];
 	int			tmp_bytes_left_in_string;
 	Boolean			tmp_maybe_include = false;
-	int			emptycount = 0;
 	Boolean			first_target;
 
 	String_rec		include_name;

@@ -40,19 +40,6 @@
 #include <libintl.h>
 
 /*
- * Defined macros
- */
-
-/*
- * typedefs & structs
- */
-
-/*
- * Static variables
- */
-static	wchar_t		WIDE_NULL[1] = {(wchar_t) nul_char};
-
-/*
  * File table of contents
  */
 extern	Doname		find_suffix_rule(Name target, Name target_body, Name target_suffix, Property *command, Boolean rechecking);
@@ -121,7 +108,7 @@ find_suffix_rule(Name target, Name target_body, Name target_suffix, Property *co
 	extern Boolean		tilde_rule;
 	Boolean			name_found = true;
 	Boolean			posix_tilde_attempt = true;
-	int			src_len = MAXPATHLEN + strlen(target_body->string_mb);
+	size_t src_len = MAXPATHLEN + strlen(target_body->string_mb);
 
 	/*
 	 * To avoid infinite recursion
@@ -231,10 +218,10 @@ posix_attempts:
 				/* + 8 to add "s." or "SCCS/s." */
 			        memset(tmpbuf,0,source->hash.length + 8);
 			        source->string_mb[source->hash.length - 1] = '\0';
-			        if(p = (char *) memchr((char *)source->string_mb,'/',source->hash.length))
+			        if((p = (char *) memchr((char *)source->string_mb,'/',source->hash.length)) != NULL)
 				{
 			          while(1) {
-				    if(np = (char *) memchr((char *)p+1,'/',source->hash.length - (p - source->string_mb))) {
+				    if((np = (char *) memchr((char *)p+1,'/',source->hash.length - (p - source->string_mb))) != NULL) {
 			              p = np;
 			            } else {break;}
 			          }
@@ -347,6 +334,8 @@ posix_attempts:
 					retmem(sourcename);
 				}
 				return build_failed;
+			default:
+				break;
 			}
 
 			if (debug_level > 1) {
@@ -432,8 +421,6 @@ posix_attempts:
 			 */
 			line->body.line.star = target_body;
 			if(svr4|posix) {
-			  char * p;
-			  char tstr[256];
 			  extern Boolean dollarless_flag;
 			  extern Name dollarless_value;
 
@@ -556,6 +543,8 @@ find_ar_suffix_rule(Name target, Name true_target, Property *command, Boolean re
 			return build_ok;
 		case build_running:
 			return build_running;
+		default:
+			break;
 		}
 		/*
 		 * If no rule was found, we try the next suffix to see
@@ -598,7 +587,6 @@ find_double_suffix_rule(Name target, Property *command, Boolean rechecking)
 	Dependency	suffix;
 	int		suffix_length;
 	Boolean			scanned_once = false;
-	Boolean			name_found = true;
 
 	Wstring			targ_string;
 	Wstring			suf_string;
@@ -635,7 +623,7 @@ find_double_suffix_rule(Name target, Property *command, Boolean rechecking)
 		suffix_length = suffix->name->hash.length;
 		suf_string.init(suffix->name);
 		/* Check the lengths, or else RTC will report rua. */
-		if (true_target->hash.length < suffix_length) {
+		if ((int)true_target->hash.length < suffix_length) {
 			goto not_this_one;
 		} else if (!IS_WEQUALN(suf_string.get_string(),
 			        (target_end - suffix_length),
@@ -660,6 +648,8 @@ find_double_suffix_rule(Name target, Property *command, Boolean rechecking)
 			return build_ok;
 		case build_running:
 			return build_running;
+		default:
+			break;
 		}
 		if (true_target->suffix_scan_done == true) {
 			scanned_once = true;
@@ -806,7 +796,7 @@ find_percent_rule(Name target, Property *command, Boolean rechecking)
 	String_rec		percent;
 	wchar_t			percent_buf[STRING_BUFFER_LENGTH];
 	Name			true_target = target;
-	Name			less;
+	Name			less = NULL;
 	Boolean			nonpattern_less;
 	Boolean			dep_name_found = false;
 	Doname			result = build_dont_know;
@@ -1222,7 +1212,7 @@ match_found_with_pattern(Name target, Percent pat_rule, String percent, wchar_t 
 		INIT_STRING_FROM_STACK(string, string_buf);
 		expand_value(suffix, &string, false);
 		suffix_length = string.text.p - string.buffer.start;
-		if(suffix_length > target->hash.length) {
+		if(suffix_length > (int)target->hash.length) {
 			return false;
 		}
 		if (!targ_string.equal(string.buffer.start, target->hash.length - suffix_length)) {
@@ -1230,7 +1220,7 @@ match_found_with_pattern(Name target, Percent pat_rule, String percent, wchar_t 
 		}
 	} else {
 		suffix_length = (int) suffix->hash.length;
-		if(suffix_length > target->hash.length) {
+		if(suffix_length > (int)target->hash.length) {
 			return false;
 		}
 		if (!targ_string.equal(&suf_string, target->hash.length - suffix_length)) {

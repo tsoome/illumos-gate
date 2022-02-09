@@ -146,7 +146,7 @@ redirect_io(char *stdout_file, char *stderr_file)
  *		shell_name	The Name "SHELL", used to get the path to shell
  */
 int
-doshell(wchar_t *command, Boolean ignore_error, char *stdout_file, char *stderr_file, int nice_prio)
+doshell(wchar_t *command, Boolean ignore_error, char *, char *, int nice_prio)
 {
 	char			*argv[6];
 	int			argv_index = 0;
@@ -311,7 +311,8 @@ exec_vp(char *name, char **argv, char **envp, Boolean ignore_error, pathpt vroot
  *		filter_stderr	If -X is on we redirect stderr
  */
 int
-doexec(wchar_t *command, Boolean ignore_error, char *stdout_file, char *stderr_file, pathpt vroot_path, int nice_prio)
+doexec(wchar_t *command, Boolean ignore_error, char *stdout_file __unused,
+    char *stderr_file __unused, pathpt vroot_path, int nice_prio)
 {
 	int			arg_count = 5;
 	char			**argv;
@@ -422,7 +423,7 @@ doexec(wchar_t *command, Boolean ignore_error, char *stdout_file, char *stderr_f
  *		target		The target we are building, for error msgs
  *		command		The command we ran, for error msgs
  *		running_pid	The pid of the process we are waiting for
- *		
+ *
  *	Static variables used:
  *		filter_file	The fd for the filter file
  *		filter_file_name The name of the filter file
@@ -431,15 +432,14 @@ doexec(wchar_t *command, Boolean ignore_error, char *stdout_file, char *stderr_f
  *		filter_stderr	Set if -X is on
  */
 Boolean
-await(Boolean ignore_error, Boolean silent_error, Name target, wchar_t *command, pid_t running_pid, void *xdrs_p, int job_msg_id)
+await(Boolean ignore_error, Boolean silent_error, Name target __unused,
+    wchar_t *command __unused, pid_t running_pid, void *xdrs_p __unused,
+    int job_msg_id __unused)
 {
         int                     status;
-	char			*buffer;
 	int			core_dumped;
 	int			exit_status;
-	FILE			*outfp;
 	pid_t			pid;
-	struct stat		stat_buff;
 	int			termination_signal;
 
 	while ((pid = wait(&status)) != running_pid) {
@@ -517,7 +517,7 @@ await(Boolean ignore_error, Boolean silent_error, Name target, wchar_t *command,
  *	Parameters:
  *		command		The command to run
  *		destination	Where to deposit the output from the command
- *		
+ *
  *	Static variables used:
  *
  *	Global variables used:
@@ -555,7 +555,7 @@ sh_command2string(String command, String destination)
 	if (command_generated_output){
 		if ( *(destination->text.p-1) == (int) space_char) {
 			* (-- destination->text.p) = '\0';
-		} 
+		}
 	} else {
 		/*
 		 * If the command didn't generate any output,
@@ -563,7 +563,7 @@ sh_command2string(String command, String destination)
 		 */
 		*(destination->text.p) = '\0';
 	}
-			
+
 	status = pclose(fd);
 	if (status != 0) {
 		WCSTOMBS(mbs_buffer, command->buffer.start);

@@ -24,16 +24,9 @@ SRCDIR = $(SRC)/cmd/make/lib/mksh
 MAPFILES=
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
 
-CCERRWARN += -_gcc=-Wno-unused-variable
-CCERRWARN += -_gcc=-Wno-unused-function
-CCERRWARN += -_gcc=-Wno-unused-value
-CCERRWARN += -_gcc=-Wno-uninitialized
-
 all: $(LIBS)
 
 install: all
-
-lint:
 
 # We can't create CTF in the tools build because of a bootstrap bug with the new CTF
 $(DYNLIB) := CTFMERGE_POST= :

@@ -69,7 +69,7 @@ report_recursive_init(void)
 	char		*search_dir;
 	char		nse_depinfo[MAXPATHLEN];
 	FILE		*fp;
-	int		line_size, line_index;
+	size_t		line_size, line_index;
 	wchar_t		*line;
 	wchar_t		*bigger_line;
 	wchar_t		*colon;

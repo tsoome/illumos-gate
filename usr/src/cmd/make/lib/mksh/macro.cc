@@ -258,7 +258,7 @@ expand_value(Name value, String destination, Boolean cmd)
 void
 expand_macro(Source source, String destination, wchar_t *current_string, Boolean cmd)
 {
-	static Name		make = (Name)NULL;
+	static Name		make = NULL;
 	static wchar_t		colon_sh[4];
 	static wchar_t		colon_shell[7];
 	String_rec		string;
@@ -266,15 +266,15 @@ expand_macro(Source source, String destination, wchar_t *current_string, Boolean
 	wchar_t	*source_p = source->string.text.p;
 	wchar_t	*source_end = source->string.text.end;
 	int		closer = 0;
-	wchar_t			*block_start = (wchar_t *)NULL;
+	wchar_t			*block_start = NULL;
 	int			quote_seen = 0;
 	int		closer_level = 1;
-	Name			name = (Name)NULL;
-	wchar_t			*colon = (wchar_t *)NULL;
-	wchar_t			*percent = (wchar_t *)NULL;
-	wchar_t			*eq = (wchar_t *) NULL;
+	Name			name = NULL;
+	wchar_t			*colon = NULL;
+	wchar_t			*percent = NULL;
+	wchar_t			*eq = NULL;
 	Property		macro = NULL;
-	wchar_t			*p = (wchar_t*)NULL;
+	wchar_t			*p = NULL;
 	String_rec		extracted;
 	wchar_t			extracted_string[MAXPATHLEN];
 	wchar_t			*left_head = NULL;
@@ -284,7 +284,7 @@ expand_macro(Source source, String destination, wchar_t *current_string, Boolean
 	int			left_tail_len = 0;
 	int			tmp_len = 0;
 	wchar_t			*right_hand[128];
-	int			i = 0;
+	unsigned		i = 0;
 	enum {
 		no_extract,
 		dir_extract,

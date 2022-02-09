@@ -95,7 +95,8 @@ parse_path_string(char *string, int remove_slash)
 
 	if (string != NULL)
 		for (; 1; string= p+1) {
-			if (p= strchr(string, ':')) *p= 0;
+			if ((p = strchr(string, ':')) != NULL)
+				*p = 0;
 			if ((remove_slash == 1) && !strcmp(string, "/"))
 				add_dir_to_path("", &result, -1);
 			else

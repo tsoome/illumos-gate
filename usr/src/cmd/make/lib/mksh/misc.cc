@@ -304,7 +304,7 @@ setup_char_semantics(void)
 	} else {
 		s = "=@-?!+";
 	}
-	for (s; MBTOWC(wc_buffer, s); s++) {
+	for (; MBTOWC(wc_buffer, s); s++) {
 		entry = get_char_semantics_entry(*wc_buffer);
 		char_semantics[entry] |= (int) command_prefix_sem;
 	}
@@ -423,27 +423,8 @@ void
 fatal_reader_mksh(const char * pattern, ...)
 {
 	va_list args;
-	char	message[1000];
 
 	va_start(args, pattern);
-/*
-	if (file_being_read != NULL) {
-		WCSTOMBS(mbs_buffer, file_being_read);
-		if (line_number != 0) {
-			(void) sprintf(message,
-				       gettext("%s, line %d: %s"),
-				       mbs_buffer,
-				       line_number,
-				       pattern);
-		} else {
-			(void) sprintf(message,
-				       "%s: %s",
-				       mbs_buffer,
-				       pattern);
-		}
-		pattern = message;
-	}
- */
 
 	(void) fflush(stdout);
 	(void) fprintf(stderr, gettext("mksh: Fatal error in reader: "));
@@ -451,23 +432,9 @@ fatal_reader_mksh(const char * pattern, ...)
 	(void) fprintf(stderr, "\n");
 	va_end(args);
 
-/*
-	if (temp_file_name != NULL) {
-		(void) fprintf(stderr,
-			       gettext("mksh: Temp-file %s not removed\n"),
-			       temp_file_name->string_mb);
-		temp_file_name = NULL;
-	}
- */
+	(void) fprintf(stderr, gettext("Current working directory %s\n"),
+	    get_current_path_mksh());
 
-/*
-	if (report_pwd) {
- */
-	if (1) {
-		(void) fprintf(stderr,
-			       gettext("Current working directory %s\n"),
-			       get_current_path_mksh());
-	}
 	(void) fflush(stderr);
 	exit_status = 1;
 	exit(1);
@@ -842,7 +809,7 @@ setup_interrupt(void (*handler) (int))
 void
 mbstowcs_with_check(wchar_t *pwcs, const char *s, size_t n)
 {
-	if(mbstowcs(pwcs, s, n) == -1) {
+	if(mbstowcs(pwcs, s, n) == (size_t)-1) {
 		fatal_mksh(gettext("The string `%s' is not valid in current locale"), s);
 	}
 }

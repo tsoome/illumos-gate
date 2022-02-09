@@ -34,13 +34,11 @@
  */
 void   print_dependencies(Name target, Property line);
 static void	print_deps(Name target, Property line);
-static void	print_more_deps(Name target, Name name);
 static void	print_filename(Name name);
 static Boolean	should_print_dep(Property line);
 static void	print_forest(Name target);
 static void	print_deplist(Dependency head);
 void		print_value(Name value, Daemon daemon);
-static void	print_rule(Name target);
 static	void	print_rec_info(Name target);
 static Boolean	is_out_of_date(Property line);
 extern void depvar_print_results (void);
@@ -95,44 +93,8 @@ print_dependencies(Name target, Property line)
 		makefiles_printed = true;
 	}
 	print_deps(target, line);
-/*
-	print_more_deps(target, init);
-	print_more_deps(target, done);
- */
 	if (target_variants) {
 		print_forest(target);
-	}
-}
-
-/*
- *	print_more_deps(target, name)
- *
- *	Print some special dependencies.
- *	These are the dependencies for the .INIT and .DONE targets.
- *
- *	Parameters:
- *		target		Target built during make run
- *		name		Special target to print dependencies for
- *
- *	Global variables used:
- */
-static void
-print_more_deps(Name target, Name name)
-{
-	Property	line;
-	Dependency	dependencies;
-
-	line = get_prop(name->prop, line_prop);
-	if (line != NULL && line->body.line.dependencies != NULL) {
-		(void) printf("%s:\t", target->string_mb);
-		print_deplist(line->body.line.dependencies);
-		(void) printf("\n");
-		for (dependencies= line->body.line.dependencies;
-		     dependencies != NULL;
-		     dependencies= dependencies->next) {
-	                 print_deps(dependencies->name,
-				 get_prop(dependencies->name->prop, line_prop));
-		}
 	}
 }
 
@@ -321,22 +283,6 @@ print_value(Name value, Daemon daemon)
 			break;
 		};
 }
-
-static void
-print_rule(Name target)
-{
-	Cmd_line	rule;
-	Property	line;
-
-	if (((line= get_prop(target->prop, line_prop)) == NULL) ||
-	    ((line->body.line.command_template == NULL) &&
-	     (line->body.line.dependencies == NULL)))
-		return;
-	print_dependencies(target, line);
-	for (rule= line->body.line.command_template; rule != NULL; rule= rule->next)
-		(void)printf("\t%s\n", rule->command_line->string_mb);
-}
-
 
 /*
  *  If target is recursive,  print the following to standard out:

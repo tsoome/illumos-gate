@@ -287,7 +287,6 @@ report_dependency(const char *name)
 	char		buffer[MAXPATHLEN+1];
 	char	*p;
 	char	*p2;
-	char		nse_depinfo_file[MAXPATHLEN];
 
 	if (report_file == NULL) {
 		if ((filename= getenv(SUNPRO_DEPENDENCIES)) == NULL) {

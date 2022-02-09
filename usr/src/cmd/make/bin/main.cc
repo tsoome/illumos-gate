@@ -115,9 +115,8 @@ static	Boolean		trace_status;			/* `-p' */
 static	Boolean		getname_stat = false;
 #endif
 
-	static	time_t		start_time;
-	static	int		g_argc;
-	static	char		**g_argv;
+static	int		g_argc;
+static	char		**g_argv;
 
 /*
  * File table of contents
@@ -190,15 +189,10 @@ main(int argc, char *argv[])
 	Boolean			argv_zero_relative = false;
 	char			*prognameptr;
 	char			*slash_ptr;
-	mode_t			um;
 	int			i;
-	struct itimerval	value;
-	char			def_dmakerc_path[MAXPATHLEN];
-	Name			dmake_name, dmake_name2;
-	Name			dmake_value, dmake_value2;
-	Property		prop, prop2;
-	struct stat		statbuf;
-	int			statval;
+	Name			dmake_name2;
+	Name			dmake_value2;
+	Property		prop2;
 
 	struct stat		out_stat, err_stat;
 	hostid = gethostid();
@@ -621,6 +615,7 @@ cleanup_after_exit(void)
 {
 	Running		rp;
 
+#ifdef DMAKE_STATISTICS
 extern long	getname_bytes_count;
 extern long	getname_names_count;
 extern long	getname_struct_count;
@@ -633,7 +628,6 @@ extern long	env_alloc_num;
 extern long	env_alloc_bytes;
 
 
-#ifdef DMAKE_STATISTICS
 if(getname_stat) {
 	printf(">>> Getname statistics:\n");
 	printf("  Allocated:\n");
@@ -927,7 +921,6 @@ read_command_options(int argc, char **argv)
 	const char		*tptr;
 	const char		*CMD_OPTS;
 
-	extern char		*optarg;
 	extern int		optind, opterr, optopt;
 
 #define SUNPRO_CMD_OPTS	"-~Bbc:C:Ddef:g:ij:K:kM:m:NnO:o:PpqRrSsTtuVvwx:"
@@ -1171,11 +1164,8 @@ static void
 setup_makeflags_argv()
 {
 	char		*cp;
-	char		*cp1;
-	char		*cp2;
-	char		*cp3;
 	char		*cp_orig;
-	Boolean		add_hyphen;
+	Boolean		add_hyphen = false;
 	int		i;
 	char		tmp_char;
 
@@ -1193,8 +1183,6 @@ setup_makeflags_argv()
 		    (strchr(cp, (int) equal_char) != NULL)) {
 
 			/* New MAKEFLAGS format */
-
-			add_hyphen = false;
 
 			/* Check if MAKEFLAGS value begins with multiple
 			 * hyphen characters, and remove all duplicates.
@@ -1631,7 +1619,6 @@ make_install_prefix(void)
 {
 	int ret;
 	char origin[PATH_MAX];
-	char *dir;
 
 	if ((ret = readlink("/proc/self/path/a.out", origin,
 	    PATH_MAX - 1)) < 0)
@@ -1685,9 +1672,8 @@ add_to_env(const char *var, const char *value, const char *fallback)
  * the original location just as a safety measure.
  */
 static void
-set_sgs_support()
+set_sgs_support(void)
 {
-	int		len;
 	char		*newpath, *newpath64;
 	char		*lib32, *lib64;
 	static char	*prev_path, *prev_path64;
@@ -1778,7 +1764,6 @@ read_files_and_state(int argc, char **argv)
 {
 	wchar_t			buffer[1000];
 	wchar_t			buffer_posix[1000];
-	char		ch;
 	char		*cp;
 	Property		def_make_macro = NULL;
 	Name			def_make_name;
@@ -1786,14 +1771,11 @@ read_files_and_state(int argc, char **argv)
 	String_rec		dest;
 	wchar_t			destbuffer[STRING_BUFFER_LENGTH];
 	int		i;
-	int		j;
 	Name			keep_state_name;
-	int			length;
 	Name			Makefile;
 	Property	macro;
 	struct stat		make_state_stat;
 	Name			makefile_name;
-        int		makefile_next = 0;
 	Boolean	makefile_read = false;
 	String_rec		makeflags_string;
 	String_rec		makeflags_string_posix;
@@ -1802,12 +1784,10 @@ read_files_and_state(int argc, char **argv)
 	Name		name;
 	Name			new_make_value;
 	Boolean			save_do_not_exec_rule;
-	static wchar_t		state_file_str;
 	static char		state_file_str_mb[MAXPATHLEN];
 	static struct _Name	state_filename;
 	Boolean			temp;
 	char			tmp_char;
-	wchar_t			*tmp_wcs_buffer;
 	Name		value;
 	ASCII_Dyn_Array		makeflags_and_macro;
 	Boolean			is_xpg4;
@@ -2100,7 +2080,7 @@ read_files_and_state(int argc, char **argv)
 		cp = makeflags_and_macro.start;
 		do {
 			append_char(tmp_char, &makeflags_string_posix);
-		} while ( tmp_char = *cp++ );
+		} while ((tmp_char = *cp++) != '\0');
 		retmem_mb(makeflags_and_macro.start);
 	}
 
@@ -2400,7 +2380,7 @@ read_files_and_state(int argc, char **argv)
 		   char tmp_path[MAXPATHLEN];
 		   char *slashp;
 
-		   if (slashp = strrchr(make_state->string_mb, '/')) {
+		   if ((slashp = strrchr(make_state->string_mb, '/')) != NULL) {
 		      strncpy(tmp_path, make_state->string_mb,
 				(slashp - make_state->string_mb));
 			tmp_path[slashp - make_state->string_mb]=0;
@@ -2449,7 +2429,6 @@ enter_argv_values(int argc, char *argv[], ASCII_Dyn_Array *makeflags_and_macro)
 	Name		value;
 	Boolean			append = false;
 	Property		macro;
-	struct stat		statbuf;
 
 
 	/* Read argv options and "=" type args and make them readonly. */
@@ -3103,8 +3082,8 @@ append_or_replace_macro_in_dyn_array(ASCII_Dyn_Array *Ar, char *macro)
 	char	*cp3;	/* work pointer in array */
 	char	*name;	/* macro name */
 	char	*value;	/* macro value */
-	int	len_array;
-	int	len_macro;
+	size_t	len_array;
+	size_t	len_macro;
 
 	char * esc_value = NULL;
 	int esc_len;

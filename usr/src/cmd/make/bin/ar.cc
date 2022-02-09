@@ -270,7 +270,6 @@ static Boolean
 open_archive(char *filename, Ar *arp)
 {
 	int			fd;
-	char			mag_5[AR_5_MAGIC_LENGTH];
 	char			mag_port[AR_PORT_MAGIC_LENGTH];
 	char			buffer[4];
 
@@ -622,12 +621,11 @@ translate_entry(Ar *arp, Name target, Property member, char **long_names_table)
 	ar_port_word		*offs;
 	int			strtablen;
 	char			*syms;		 /* string table */
-	char			*csym;		 /* string table */
 	ar_port_word		*offend;	 /* end of offsets table */
 	int			date;
 	wchar_t	*ap;
 	char		*hp;
-	int			maxs;
+	size_t			maxs;
 	int			offset;
 	char		buffer[4];
 
@@ -685,7 +683,7 @@ translate_entry(Ar *arp, Name target, Property member, char **long_names_table)
 		if (fread((char *) offs,
 			  AR_PORT_WORD,
 			  (int) arp->num_symbols,
-			  arp->fd) != arp->num_symbols) {
+			  arp->fd) != (size_t)arp->num_symbols) {
 			goto read_error;
 		}
 
@@ -699,7 +697,7 @@ translate_entry(Ar *arp, Name target, Property member, char **long_names_table)
 		if (fread(syms,
 			  sizeof (char),
 			  strtablen,
-			  arp->fd) != strtablen) {
+			  arp->fd) != (size_t)strtablen) {
 			goto read_error;
 		}
 		offend = &offs[arp->num_symbols];

@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma init(ld_support_init)
-
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -34,6 +32,8 @@
 #include <link.h>
 
 #define	SUNPRO_DEPENDENCIES	"SUNPRO_DEPENDENCIES"
+
+static void ld_support_init(void) __attribute__((constructor));
 
 /*
  * Linked list of strings - used to keep lists of names
@@ -132,14 +132,15 @@ mk_state_update_exit()
 } /* mk_state_update_exit() */
 
 static void
-ld_support_init()
+ld_support_init(void)
 {
 	mk_state_init();
 
 } /* ld_support_init() */
 
 void
-ld_file(const char *file, const Elf_Kind ekind, int flags, Elf *elf)
+ld_file(const char *file, const Elf_Kind ekind __unused, int flags,
+    Elf *elf __unused)
 {
 	if (!((flags & LD_SUP_DERIVED) && !(flags & LD_SUP_EXTRACTED)))
 		return;
@@ -162,7 +163,8 @@ ld_atexit(int exit_code)
  * Supporting 64-bit objects
  */
 void
-ld_file64(const char *file, const Elf_Kind ekind, int flags, Elf *elf)
+ld_file64(const char *file, const Elf_Kind ekind __unused, int flags,
+    Elf *elf __unused)
 {
 	if (!((flags & LD_SUP_DERIVED) && !(flags & LD_SUP_EXTRACTED)))
 		return;

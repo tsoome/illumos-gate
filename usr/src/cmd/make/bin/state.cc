@@ -120,12 +120,12 @@ static	void		print_auto_depes(Dependency dependency, FILE *fd, Boolean built_thi
 void
 write_state_file(int, Boolean exiting)
 {
-	FILE		*fd;
+	FILE			*fd;
 	int			lock_err;
 	char			buffer[MAXPATHLEN];
 	char			make_state_tempfile[MAXPATHLEN];
 	jmp_buf			long_jump;
-	int		attempts = 0;
+	volatile int		attempts = 0;
 	Name_set::iterator	np, e;
 	Property	lines;
 	int		m;
@@ -149,9 +149,9 @@ write_state_file(int, Boolean exiting)
 	(void) sprintf(make_state_lockfile,
 	               "%s.lock",
 	               make_state->string_mb);
-	if (lock_err = file_lock(make_state->string_mb,
-				 make_state_lockfile,
-				 (int *) &make_state_locked, 0)) {
+	lock_err = file_lock(make_state->string_mb, make_state_lockfile,
+	    (int *) &make_state_locked, 0);
+	if (lock_err != 0) {
 		retmem_mb(make_state_lockfile);
 		make_state_lockfile = NULL;
 
@@ -161,22 +161,10 @@ write_state_file(int, Boolean exiting)
 		 * it again.
 		 */
 
-		if (exiting) {
-			(void) sprintf(buffer, "%s/.make.state.%d.XXXXXX", tmpdir, getpid());
-			report_pwd = true;
-			warning(gettext("Writing to %s"), buffer);
-			int fdes = mkstemp(buffer);
-			if ((fdes < 0) || (fd = fdopen(fdes, "w")) == NULL) {
-				fprintf(stderr,
-					gettext("Could not open statefile `%s': %s"),
-					buffer,
-					errmsg(errno));
-				return;
-			}
-		} else {
-			report_pwd = true;
-			fatal(gettext("Can't lock .make.state"));
-		}
+		report_pwd = true;
+		if (exiting)
+			return;
+		fatal(gettext("Can't lock .make.state"));
 	}
 
 	(void) sprintf(make_state_tempfile,
@@ -184,16 +172,6 @@ write_state_file(int, Boolean exiting)
 	               make_state->string_mb);
 	/* Delete old temporary statefile (in case it exists) */
 	(void) unlink(make_state_tempfile);
-	if ((fd = fopen(make_state_tempfile, "w")) == NULL) {
-		lock_err = errno; /* Save it! unlink() can change errno */
-		(void) unlink(make_state_lockfile);
-		retmem_mb(make_state_lockfile);
-		make_state_lockfile = NULL;
-		make_state_locked = false;
-		fatal(gettext("Could not open temporary statefile `%s': %s"),
-		      make_state_tempfile,
-		      errmsg(lock_err));
-	}
 	/*
 	 * Set a trap for failed writes. If a write fails, the routine
 	 * will try saving the .make.state file under another name in /tmp.
@@ -220,6 +198,15 @@ write_state_file(int, Boolean exiting)
 		}
 		warning(gettext("Initial write of statefile failed. Trying again on %s"),
 			buffer);
+	} else if ((fd = fopen(make_state_tempfile, "w")) == NULL) {
+		lock_err = errno; /* Save it! unlink() can change errno */
+		(void) unlink(make_state_lockfile);
+		retmem_mb(make_state_lockfile);
+		make_state_lockfile = NULL;
+		make_state_locked = false;
+		fatal(gettext("Could not open temporary statefile `%s': %s"),
+		      make_state_tempfile,
+		      errmsg(lock_err));
 	}
 
 	/* Write the version stamp. */
@@ -256,7 +243,7 @@ write_state_file(int, Boolean exiting)
 		for (m = 0, dependency = lines->body.line.dependencies;
 		     dependency != NULL;
 		     dependency = dependency->next) {
-			if (m = !dependency->stale
+			if ((m = !dependency->stale) != 0
 			    && (dependency->name != force)
 #ifndef PRINT_EXPLICIT_DEPEN
 			    && dependency->automatic

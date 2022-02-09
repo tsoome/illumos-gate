@@ -140,7 +140,7 @@ get_next_block_fn(Source source)
 		}
 	}
 
-	if ((int) num_wc_chars == (size_t)-1) {
+	if (num_wc_chars == (size_t)-1) {
 		source->error_converting = true;
 		return source;
 	}
@@ -157,7 +157,6 @@ get_next_block_fn(Source source)
 					     mbs_buffer);
 			*source->string.text.end++ = (int) newline_char;
 			*source->string.text.end = (int) nul_char;
-			*source->string.buffer.end++;
 		}
 		if (source->inp_buf != NULL) {
 			retmem_mb(source->inp_buf);

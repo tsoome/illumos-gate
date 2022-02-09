@@ -59,20 +59,6 @@
 
 #define MAXRULES 100
 
-// Sleep for .1 seconds between stat()'s
-const int	STAT_RETRY_SLEEP_TIME = 100000;
-
-/*
- * typedefs & structs
- */
-
-/*
- * Static variables
- */
-static char	hostName[MAXNAMELEN] = "";
-static char	userName[MAXNAMELEN] = "";
-
-
 static int	second_pass = 0;
 
 /*
@@ -182,6 +168,8 @@ try_again:
 		}
 		fatal(gettext("Don't know how to make target `%s'"),
 		    target->string_mb);
+		break;
+	default:
 		break;
 	}
 	return (rv);
@@ -302,7 +290,7 @@ doname(Name target, Boolean do_get, Boolean implicit, Boolean automatic)
 	Name			*automatics = NULL;
 	int		auto_count;
 	Boolean			rechecking_target = false;
-	Boolean			saved_commands_done;
+	Boolean			saved_commands_done = false;
 	Boolean			restart = false;
 	Boolean			save_parallel = parallel;
 	Boolean			doing_subtree = false;
@@ -547,6 +535,8 @@ recheck_target:
 			case build_ok:
 				result = build_ok;
 				break;
+			default:
+				break;
 			}
 		}
 		/* Look for double suffix rule */
@@ -614,6 +604,8 @@ recheck_target:
 							     0);
 					}
 					return build_running;
+				default:
+					break;
 				}
 			}
 		}
@@ -661,6 +653,8 @@ recheck_target:
 						     0);
 				}
 				return build_running;
+			default:
+				break;
 			}
 		}
 		/* Try to sccs get */
@@ -785,6 +779,8 @@ r_command:
 			if (true_target->stat.time == file_doesnt_exist) {
 				true_target->stat.time = file_max_time;
 			}
+			break;
+		default:
 			break;
 		}
 	} else {
@@ -1042,6 +1038,8 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 						     dependency->name->string_mb);
 				}
 				break;
+			default:
+				break;
 			}
 			if (dependency->name->depends_on_conditional) {
 				target->depends_on_conditional = true;
@@ -1242,7 +1240,7 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 			Property		member;
 			wchar_t	*target_end;
 			Dependency	suffix;
-			int		suffix_length;
+			size_t		suffix_length;
 			Wstring			targ_string;
 			Wstring			suf_string;
 
@@ -1387,7 +1385,7 @@ dynamic_dependencies(Name target)
 		/* We also have to deal with dependencies that expand to */
 		/* lib.a(members) notation */
 		for (p = start; *p != (int) nul_char; p++) {
-			if ((*p == (int) parenleft_char)) {
+			if (*p == (int) parenleft_char) {
 				lib = GETNAME(start, p - start);
 				lib->is_member = true;
 				first_member = dependency;
@@ -1728,6 +1726,8 @@ run_command(Property line, Boolean)
 						    NULL;
 						return build_serial;
 					}
+				default:
+					break;
 				}
 			}
 		} else {
@@ -1768,12 +1768,8 @@ run_command(Property line, Boolean)
 Doname
 execute_serial(Property line)
 {
-	int			child_pid = 0;
-	Boolean			printed_serial;
 	Doname			result = build_ok;
 	Cmd_line		rule, cmd_tail, command = NULL;
-	char			mbstring[MAXPATHLEN];
-	int			filed;
 	Name			target = line->body.line.target;
 
 	target->has_recursive_dependency = false;
@@ -2515,7 +2511,6 @@ touch_command(Property line, Name target, Doname result)
 	String_rec		touch_string;
 	wchar_t			buffer[MAXPATHLEN];
 	Name			touch_cmd;
-	Cmd_line		rule;
 
 	for (name = target, target_group = NULL; name != NULL;) {
 		if (!name->is_member) {
@@ -2543,8 +2538,8 @@ touch_command(Property line, Name target, Doname result)
 				retmem(touch_string.buffer.start);
 			}
 			if (!silent ||
-			    do_not_exec_rule &&
-			    (target_group == NULL)) {
+			    (do_not_exec_rule &&
+			    target_group == NULL)) {
 				(void) printf("%s\n", touch_cmd->string_mb);
 			}
 			/* Run the touch command, or simulate it */
@@ -2829,8 +2824,7 @@ read_directory_of_file(Name file)
 	wchar_t usr_include_sys_buf[MAXPATHLEN];
 
 	Name		directory = dot;
-	wchar_t	*p = (wchar_t *) wcsrchr(wcb,
-							(int) slash_char);
+	wchar_t	*p = (wchar_t *) wcsrchr(wcb, (int) slash_char);
 	int		length = p - wcb;
 	static Name		usr_include;
 	static Name		usr_include_sys;
@@ -2851,12 +2845,12 @@ read_directory_of_file(Name file)
 		 * Check some popular directories first to possibly
 		 * save time. Compare string length first to gain speed.
 		 */
-		if ((usr_include->hash.length == length) &&
+		if (((int)usr_include->hash.length == length) &&
 		    IS_WEQUALN(usr_include_buf,
 			       wcb,
 			       length)) {
 			directory = usr_include;
-		} else if ((usr_include_sys->hash.length == length) &&
+		} else if (((int)usr_include_sys->hash.length == length) &&
 		           IS_WEQUALN(usr_include_sys_buf,
 		                      wcb,
 		                      length)) {
@@ -2865,10 +2859,7 @@ read_directory_of_file(Name file)
 			directory = GETNAME(wcb, length);
 		}
 	}
-	(void) read_dir(directory,
-			(wchar_t *) NULL,
-			(Property) NULL,
-			(wchar_t *) NULL);
+	(void) read_dir(directory, NULL, NULL, NULL);
 }
 
 /*

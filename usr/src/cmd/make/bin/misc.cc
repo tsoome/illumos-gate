@@ -516,7 +516,6 @@ dump_target_list(void)
 static void
 print_target_n_deps(Name target)
 {
-	Cmd_line	rule;
 	Property	line;
 	Dependency	dependency;
 
