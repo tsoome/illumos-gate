@@ -368,9 +368,6 @@ udp_srcport_hash(mblk_t *mp, int type, uint16_t min, uint16_t max,
     uint16_t def)
 {
 	size_t szused = 0;
-	ip6_t *ip6h;
-	ipha_t *ipha;
-	uint16_t sap;
 	uint64_t hash;
 	uint32_t mod;
 
