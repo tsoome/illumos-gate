@@ -40,6 +40,9 @@ $(PROG):	$(OBJS)
 		$(LINK.c) $(OBJS) -o $@ $(LDLIBS)
 		$(POST_PROCESS)
 
+%.o:		%.c
+		$(COMPILE.c) -o $@ $<
+
 %.o:		$(CMDDIR)/%.c
 		$(COMPILE.c) -o $@ $<
 
