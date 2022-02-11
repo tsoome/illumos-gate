@@ -1669,7 +1669,9 @@ contract_device_publish(dev_info_t *dip, dev_t dev, int spec_type,
 	    ctd = list_next(&(DEVI(dip)->devi_ct), ctd)) {
 
 		ctid_t ctid;
+#ifdef DEBUG
 		size_t len = strlen(path);
+#endif
 
 		mutex_enter(&ctd->cond_contract.ct_lock);
 
