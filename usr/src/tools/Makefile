@@ -48,6 +48,8 @@ BOOT_SUBDIRS=		\
 	.WAIT		\
 	install.bin	\
 	.WAIT		\
+	make		\
+	.WAIT		\
 	ctf
 
 COMMON_SUBDIRS=		\
@@ -57,7 +59,6 @@ COMMON_SUBDIRS=		\
 	find_elf	\
 	findunref	\
 	lintdump	\
-	make		\
 	makesoftcore	\
 	ndrgen		\
 	onbld		\
