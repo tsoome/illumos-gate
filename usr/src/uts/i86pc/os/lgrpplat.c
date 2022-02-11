@@ -301,12 +301,12 @@ lgrp_plat_latency_stats_t		lgrp_plat_lat_stats;
  */
 static int				lgrp_plat_mem_intrlv = 0;
 
+#ifndef	__xpv
 /*
  * Node ID to proximity domain ID mapping table (only used for SRAT)
  */
 static node_domain_map_t		lgrp_plat_node_domain[MAX_NODES];
 
-#ifndef	__xpv
 /*
  * Error code from processing ACPI SLIT
  */
