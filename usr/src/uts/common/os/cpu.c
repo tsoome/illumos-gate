@@ -3000,7 +3000,9 @@ cpu_unbind(processorid_t cpu, boolean_t unbind_all_threads)
 void
 cpu_destroy_bound_threads(cpu_t *cp)
 {
+#ifdef DEBUG
 	extern id_t syscid;
+#endif
 	register kthread_id_t	t, tlist, tnext;
 
 	/*
