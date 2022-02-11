@@ -149,6 +149,7 @@ typedef struct hat hat_t;
  */
 #define	HAT_PLAT_NOCACHE	(0x100000)
 
+#ifdef DEBUG
 /*
  * Simple statistics for the HAT. These are just counters that are
  * atomically incremented. They can be reset directly from the kernel
@@ -176,10 +177,9 @@ struct hatstats {
 	ulong_t hs_hat_normal64;
 };
 extern struct hatstats hatstat;
-#ifdef DEBUG
 #define	HATSTAT_INC(x)	(++hatstat.x)
 #else
-#define	HATSTAT_INC(x)	(0)
+#define	HATSTAT_INC(x)
 #endif
 
 #if defined(_KERNEL)

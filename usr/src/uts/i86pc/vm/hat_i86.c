@@ -362,10 +362,12 @@ kmem_cache_t	*hat_cache;
 kmem_cache_t	*hat_hash_cache;
 kmem_cache_t	*hat32_hash_cache;
 
+#ifdef DEBUG
 /*
  * Simple statistics
  */
 struct hatstats hatstat;
+#endif
 
 /*
  * Some earlier hypervisor versions do not emulate cmpxchg of PTEs
