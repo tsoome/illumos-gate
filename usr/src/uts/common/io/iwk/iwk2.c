@@ -319,8 +319,10 @@ static int	iwk_ofdm_sens(iwk_sc_t *sc, uint32_t actual_rx_time);
 static void	iwk_recv_mgmt(struct ieee80211com *ic, mblk_t *mp,
     struct ieee80211_node *in, int subtype, int rssi, uint32_t rstamp);
 
+#ifdef DEBUG
 static void	iwk_write_event_log(iwk_sc_t *);
 static void	iwk_write_error_log(iwk_sc_t *);
+#endif
 
 static int	iwk_attach(dev_info_t *dip, ddi_attach_cmd_t cmd);
 static int	iwk_detach(dev_info_t *dip, ddi_detach_cmd_t cmd);
@@ -824,7 +826,6 @@ attach_fail8:
 	sc->sc_soft_hdl = NULL;
 attach_fail7:
 	ieee80211_detach(ic);
-attach_fail6:
 	iwk_free_fw_dma(sc);
 attach_fail5:
 	iwk_ring_free(sc);
@@ -1165,7 +1166,7 @@ iwk_free_fw_dma(iwk_sc_t *sc)
 static int
 iwk_alloc_shared(iwk_sc_t *sc)
 {
-	iwk_dma_t *dma_p;
+	iwk_dma_t *dma_p __unused;
 	int err = DDI_SUCCESS;
 
 	/* must be aligned on a 4K-page boundary */
@@ -1200,7 +1201,7 @@ iwk_free_shared(iwk_sc_t *sc)
 static int
 iwk_alloc_kw(iwk_sc_t *sc)
 {
-	iwk_dma_t *dma_p;
+	iwk_dma_t *dma_p __unused;
 	int err = DDI_SUCCESS;
 
 	/* must be aligned on a 4K-page boundary */
@@ -1233,7 +1234,7 @@ iwk_alloc_rx_ring(iwk_sc_t *sc)
 {
 	iwk_rx_ring_t *ring;
 	iwk_rx_data_t *data;
-	iwk_dma_t *dma_p;
+	iwk_dma_t *dma_p __unused;
 	int i, err = DDI_SUCCESS;
 
 	ring = &sc->sc_rxq;
@@ -1336,7 +1337,7 @@ iwk_alloc_tx_ring(iwk_sc_t *sc, iwk_tx_ring_t *ring,
 	uint32_t paddr_desc_h;
 	iwk_cmd_t *cmd_h;
 	uint32_t paddr_cmd_h;
-	iwk_dma_t *dma_p;
+	iwk_dma_t *dma_p __unused;
 	int i, err = DDI_SUCCESS;
 
 	ring->qid = qid;
@@ -1973,12 +1974,14 @@ iwk_mac_access_exit(iwk_sc_t *sc)
 	    tmp & ~CSR_GP_CNTRL_REG_FLAG_MAC_ACCESS_REQ);
 }
 
+#ifdef DEBUG
 static uint32_t
 iwk_mem_read(iwk_sc_t *sc, uint32_t addr)
 {
 	IWK_WRITE(sc, HBUS_TARG_MEM_RADDR, addr);
 	return (IWK_READ(sc, HBUS_TARG_MEM_RDAT));
 }
+#endif
 
 static void
 iwk_mem_write(iwk_sc_t *sc, uint32_t addr, uint32_t data)
@@ -2085,7 +2088,7 @@ static void
 iwk_rx_intr(iwk_sc_t *sc, iwk_rx_desc_t *desc, iwk_rx_data_t *data)
 {
 	ieee80211com_t *ic = &sc->sc_ic;
-	iwk_rx_ring_t *ring = &sc->sc_rxq;
+	iwk_rx_ring_t *ring __unused = &sc->sc_rxq;
 	iwk_rx_phy_res_t *stat;
 	ieee80211_node_t *in;
 	uint32_t *tail;
@@ -2433,7 +2436,7 @@ iwk_rx_softintr(caddr_t arg, caddr_t unused)
 		}
 		case SCAN_COMPLETE_NOTIFICATION:
 		{
-			iwk_stop_scan_t *scan =
+			iwk_stop_scan_t *scan __unused =
 			    (iwk_stop_scan_t *)(desc + 1);
 
 			IWK_DBG((IWK_DEBUG_SCAN,
@@ -3301,7 +3304,7 @@ iwk_thread(iwk_sc_t *sc)
 {
 	ieee80211com_t	*ic = &sc->sc_ic;
 	clock_t clk;
-	int times = 0, err, n = 0, timeout = 0;
+	int times __unused = 0, err, n = 0, timeout = 0;
 	uint32_t tmp;
 
 	mutex_enter(&sc->sc_mt_lock);
@@ -5949,7 +5952,8 @@ static void iwk_write_event_log(iwk_sc_t *sc)
 	uint32_t startptr;	/* Start address of log data */
 	uint32_t logptr;	/* address of log data entry */
 	uint32_t i, n, num_events;
-	uint32_t event_id, data1, data2; /* log data */
+	/* log data */
+	uint32_t event_id __unused, data1 __unused, data2 __unused;
 
 	uint32_t log_size;   /* log capacity (in number of entries) */
 	uint32_t type;	/* (1)timestamp with each entry,(0) no timestamp */
