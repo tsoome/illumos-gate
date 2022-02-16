@@ -1330,13 +1330,12 @@ static void
 esp_port_freshness(uint32_t ports, ipsa_t *assoc)
 {
 	uint16_t remote = FIRST_16(ports);
-	uint16_t local = NEXT_16(ports);
 	ipsa_t *outbound_peer;
 	isaf_t *bucket;
 	ipsecesp_stack_t *espstack = assoc->ipsa_netstack->netstack_ipsecesp;
 
-	/* We found a conn_t, therefore local != 0. */
-	ASSERT(local != 0);
+	/* We found a conn_t, therefore NEXT_16(ports) != 0. */
+	ASSERT(NEXT_16(ports) != 0);
 	/* Assume an IPv4 SA. */
 	ASSERT(assoc->ipsa_addrfam == AF_INET);
 
@@ -3332,7 +3331,7 @@ esp_add_sa(mblk_t *mp, keysock_in_t *ksi, int *diagnostic, netstack_t *ns)
 	    (sadb_address_t *)ksi->ks_in_extv[SADB_X_EXT_ADDRESS_NATT_REM];
 	sadb_key_t *akey = (sadb_key_t *)ksi->ks_in_extv[SADB_EXT_KEY_AUTH];
 	sadb_key_t *ekey = (sadb_key_t *)ksi->ks_in_extv[SADB_EXT_KEY_ENCRYPT];
-	struct sockaddr_in *src, *dst;
+	struct sockaddr_in *src __unused, *dst __unused;
 	struct sockaddr_in *natt_loc, *natt_rem;
 	struct sockaddr_in6 *natt_loc6, *natt_rem6;
 	sadb_lifetime_t *soft =
