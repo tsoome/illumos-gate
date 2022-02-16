@@ -78,7 +78,6 @@
  * Local static data
  */
 static void	*megasas_state = NULL;
-static int 	debug_level_g = CL_ANN;
 
 #pragma weak scsi_hba_open
 #pragma weak scsi_hba_close
@@ -295,7 +294,7 @@ megasas_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	uint8_t		create_scsi_node_f = 0;
 	uint8_t		create_ioc_node_f = 0;
 	uint8_t		tran_alloc_f = 0;
-	uint8_t 	irq;
+	uint8_t 	irq __unused;
 	uint16_t	vendor_id;
 	uint16_t	device_id;
 	uint16_t	subsysvid;
@@ -2346,7 +2345,7 @@ mfi_state_transition_to_ready(struct megasas_instance *instance)
 {
 	int		i;
 	uint8_t		max_wait;
-	uint32_t	fw_ctrl;
+	uint32_t	fw_ctrl __unused;
 	uint32_t	fw_state;
 	uint32_t	cur_state;
 
@@ -2650,9 +2649,9 @@ service_mfi_aen(struct megasas_instance *instance, struct megasas_cmd *cmd)
 	 */
 	if (ddi_log_sysevent(instance->dip, DDI_VENDOR_LSI, "LSIMEGA", "SAS",
 	    NULL, NULL, DDI_NOSLEEP) != DDI_SUCCESS) {
-		int	instance_no = ddi_get_instance(instance->dip);
 		con_log(CL_ANN, (CE_WARN,
-		    "mega%d: Failed to log AEN event", instance_no));
+		    "mega%d: Failed to log AEN event",
+		    ddi_get_instance(instance->dip)));
 	}
 
 	/* get copy of seq_num and class/locale for re-registration */
@@ -4712,7 +4711,7 @@ enable_intr_xscale(struct megasas_instance *instance)
 static void
 enable_intr_ppc(struct megasas_instance *instance)
 {
-	uint32_t	mask;
+	uint32_t	mask __unused;
 
 	con_log(CL_ANN1, (CE_NOTE, "enable_intr_ppc: called\n"));
 

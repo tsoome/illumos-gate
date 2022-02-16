@@ -660,8 +660,8 @@ struct megasas_sge64 {
 };
 
 union megasas_sgl {
-	struct megasas_sge32	sge32[1];
-	struct megasas_sge64	sge64[1];
+	struct megasas_sge32	sge32[2];
+	struct megasas_sge64	sge64[2];
 };
 
 struct megasas_header {
