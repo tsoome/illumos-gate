@@ -878,7 +878,7 @@ extern "C" {
 				} else { \
 					nb_pci_putb(0, 16, 2, 0xc3, val); \
 				}
-#define	EMASK_5000_INT_WR(val)	nb_pci_putb(0, 16, 2, 0xcc, val)
+#define	EMASK_5000_INT_WR(val)	nb_pci_putb(0, 16, 2, 0xcc, (uint8_t)val)
 #define	EMASK_5400_INT_WR(val)	nb_pci_putl(0, 16, 2, 0xd0, val)
 #define	EMASK_INT_WR(val)	if (nb_chipset == INTEL_NB_5400) { \
 					EMASK_5400_INT_WR(val); \
@@ -888,22 +888,26 @@ extern "C" {
 #define	ERR0_INT_WR(val)	if (nb_chipset == INTEL_NB_5400) { \
 					nb_pci_putl(0, 16, 2, 0xd4, val); \
 				} else { \
-					nb_pci_putb(0, 16, 2, 0xd0, val); \
+					nb_pci_putb(0, 16, 2, 0xd0, \
+					    (uint8_t)val); \
 				}
 #define	ERR1_INT_WR(val)	if (nb_chipset == INTEL_NB_5400) { \
 					nb_pci_putl(0, 16, 2, 0xd8, val); \
 				} else { \
-					nb_pci_putb(0, 16, 2, 0xd1, val); \
+					nb_pci_putb(0, 16, 2, 0xd1, \
+					    (uint8_t)val); \
 				}
 #define	ERR2_INT_WR(val)	if (nb_chipset == INTEL_NB_5400) { \
 					nb_pci_putl(0, 16, 2, 0xdc, val); \
 				} else { \
-					nb_pci_putb(0, 16, 2, 0xd2, val); \
+					nb_pci_putb(0, 16, 2, 0xd2, \
+					    (uint8_t)val); \
 				}
 #define	MCERR_INT_WR(val)	if (nb_chipset == INTEL_NB_5400) { \
 					nb_pci_putl(0, 16, 2, 0xe0, val); \
 				} else { \
-					nb_pci_putb(0, 16, 2, 0xd3, val); \
+					nb_pci_putb(0, 16, 2, 0xd3, \
+					    (uint8_t)val); \
 				}
 
 #define	NRECINT_RD()		nb_pci_getl(0, 16, 2, \
