@@ -1626,7 +1626,6 @@ ipw2200_auth_and_assoc(struct ipw2200_softc *sc)
 	struct ipw2200_associate	assoc;
 	uint32_t			data;
 	int				err;
-	uint8_t				*wpa_level;
 
 	if (sc->sc_flags & IPW2200_FLAG_ASSOCIATED) {
 		/* already associated */
@@ -1693,6 +1692,8 @@ ipw2200_auth_and_assoc(struct ipw2200_softc *sc)
 	 * by net80211 kernel module.
 	 */
 	if (ic->ic_opt_ie != NULL) {
+#ifdef DEBUG
+		uint8_t *wpa_level;
 
 		wpa_level = (uint8_t *)ic->ic_opt_ie;
 
@@ -1719,6 +1720,7 @@ ipw2200_auth_and_assoc(struct ipw2200_softc *sc)
 		    wpa_level[17], wpa_level[18], wpa_level[19],
 		    wpa_level[20], wpa_level[21], wpa_level[22],
 		    wpa_level[23]));
+#endif
 
 		err = ipw2200_cmd(sc, IPW2200_CMD_SET_OPTIE,
 		    ic->ic_opt_ie, ic->ic_opt_ie_len, 1);
@@ -2112,12 +2114,14 @@ fail:
 static int
 ipw2200_m_promisc(void *arg, boolean_t on)
 {
+#ifdef DEBUG
 	/* not supported */
 	struct ipw2200_softc	*sc = (struct ipw2200_softc *)arg;
 
 	IPW2200_DBG(IPW2200_DBG_GLD, (sc->sc_dip, CE_CONT,
 	    "ipw2200_m_promisc(): enter. "
 	    "GLD setting promiscuous mode - %d\n", on));
+#endif
 
 	return (0);
 }
@@ -2858,7 +2862,7 @@ ipw2200_intr(caddr_t arg)
 	uint8_t			*p, *rxbuf;
 	struct dma_region	*dr;
 	struct ipw2200_hdr	*hdr;
-	uint32_t		widx;
+	uint32_t		widx __unused;
 
 	/* when it is on suspend, unclaim all interrupt directly */
 	if (sc->sc_flags & IPW2200_FLAG_SUSPEND)
