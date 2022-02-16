@@ -187,7 +187,6 @@ static char *IPSECAH = "ipsecah";
 static char *IPSECAHDEV = "/devices/pseudo/ipsecah@0:ipsecah";
 static char *IP6DEV = "/devices/pseudo/ip6@0:ip6";
 static char *KEYSOCK = "keysock";
-static char *STRMOD = "strmod";
 
 /*
  * Load the other ipsec modules and plumb them together.
