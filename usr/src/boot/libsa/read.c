@@ -63,6 +63,7 @@
 #include <sys/cdefs.h>
 
 #include <sys/param.h>
+#include <strings.h>
 #include "stand.h"
 
 ssize_t

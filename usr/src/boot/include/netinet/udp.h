@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.
  * All rights reserved.
@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)udp.h	8.1 (Berkeley) 6/10/93
- * $FreeBSD$
  */
 
 #ifndef _NETINET_UDP_H_
@@ -39,13 +38,13 @@
  * Per RFC 768, September, 1981.
  */
 struct udphdr {
-	u_short	uh_sport;		/* source port */
-	u_short	uh_dport;		/* destination port */
-	u_short	uh_ulen;		/* udp length */
-	u_short	uh_sum;			/* udp checksum */
+	ushort_t	uh_sport;		/* source port */
+	ushort_t	uh_dport;		/* destination port */
+	ushort_t	uh_ulen;		/* udp length */
+	ushort_t	uh_sum;			/* udp checksum */
 };
 
-/* 
+/*
  * User-settable options (used with setsockopt).
  */
 #define	UDP_ENCAP			1

@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)in_systm.h	8.1 (Berkeley) 6/10/93
- * $FreeBSD$
  */
 
 #ifndef _NETINET_IN_SYSTM_H_
@@ -49,10 +48,10 @@
  * than high-ender, which sadly invokes an Orson Scott Card novel, or
  * worse, the movie.
  */
-typedef u_int16_t n_short;		/* short as received from the net */
-typedef u_int32_t n_long;		/* long as received from the net */
+typedef uint16_t n_short;		/* short as received from the net */
+typedef uint32_t n_long;		/* long as received from the net */
 
-typedef	u_int32_t n_time;		/* ms since 00:00 UTC, byte rev */
+typedef	uint32_t n_time;		/* ms since 00:00 UTC, byte rev */
 
 #ifdef _KERNEL
 uint32_t	 iptime(void);

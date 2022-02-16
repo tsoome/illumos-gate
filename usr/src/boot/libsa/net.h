@@ -36,7 +36,7 @@
 #define	_STAND_NET_H
 #ifndef _KERNEL	/* XXX - see <netinet/in.h> */
 #undef __IPADDR
-#define __IPADDR(x)	htonl((u_int32_t)(x))
+#define __IPADDR(x)	htonl((uint32_t)(x))
 #endif
 
 #include "iodesc.h"
@@ -71,7 +71,7 @@ enum net_proto {
 #define ETHER_SIZE 14
 #define	HEADER_SIZE 48
 
-extern	u_char bcea[6];
+extern	uchar_t bcea[6];
 extern	char rootpath[FNAME_SIZE];
 extern	char bootfile[FNAME_SIZE];
 extern	char hostname[FNAME_SIZE];
@@ -89,19 +89,19 @@ extern	struct in_addr gateip;
 extern	struct in_addr nameip;
 extern	struct in_addr tftpip;
 extern	n_long netmask;
-extern	u_int intf_mtu;
+extern	uint_t intf_mtu;
 
 extern	int debug;			/* defined in the machdep sources */
 
 /* ARP/RevARP functions: */
-u_char	*arpwhohas(struct iodesc *, struct in_addr);
+uchar_t	*arpwhohas(struct iodesc *, struct in_addr);
 void	arp_reply(struct iodesc *, void *);
 int	rarp_getipaddress(int);
 
 /* Link functions: */
 ssize_t sendether(struct iodesc *d, void *pkt, size_t len,
-			u_char *dea, int etype);
-ssize_t readether(struct iodesc *, void **, void **, time_t, u_int16_t *);
+			uchar_t *dea, int etype);
+ssize_t readether(struct iodesc *, void **, void **, time_t, uint16_t *);
 
 ssize_t	sendip(struct iodesc *, void *, size_t, uint8_t);
 ssize_t	readip(struct iodesc *, void **, void **, time_t, uint8_t);
@@ -118,7 +118,7 @@ ssize_t	sendrecv(struct iodesc *,
 void	bootp(int);
 
 /* Utilities: */
-char	*ether_sprintf(u_char *);
+char	*ether_sprintf(uchar_t *);
 int	in_cksum(void *, int);
 char	*inet_ntoa(struct in_addr);
 char	*intoa(n_long);		/* similar to inet_ntoa */

@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.
  * All rights reserved.
@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)ip.h	8.2 (Berkeley) 6/1/94
- * $FreeBSD$
  */
 
 #ifndef _NETINET_IP_H_
@@ -47,25 +46,25 @@
  * Structure of an internet header, naked of options.
  */
 struct ip {
-#if BYTE_ORDER == LITTLE_ENDIAN
-	u_char	ip_hl:4,		/* header length */
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	uchar_t	ip_hl:4,		/* header length */
 		ip_v:4;			/* version */
 #endif
-#if BYTE_ORDER == BIG_ENDIAN
-	u_char	ip_v:4,			/* version */
+#if _BYTE_ORDER == _BIG_ENDIAN
+	uchar_t	ip_v:4,			/* version */
 		ip_hl:4;		/* header length */
 #endif
-	u_char	ip_tos;			/* type of service */
-	u_short	ip_len;			/* total length */
-	u_short	ip_id;			/* identification */
-	u_short	ip_off;			/* fragment offset field */
+	uchar_t	ip_tos;			/* type of service */
+	ushort_t ip_len;			/* total length */
+	ushort_t ip_id;			/* identification */
+	ushort_t ip_off;			/* fragment offset field */
 #define	IP_RF 0x8000			/* reserved fragment flag */
 #define	IP_DF 0x4000			/* dont fragment flag */
 #define	IP_MF 0x2000			/* more fragments flag */
 #define	IP_OFFMASK 0x1fff		/* mask for fragmenting bits */
-	u_char	ip_ttl;			/* time to live */
-	u_char	ip_p;			/* protocol */
-	u_short	ip_sum;			/* checksum */
+	uchar_t	ip_ttl;			/* time to live */
+	uchar_t	ip_p;			/* protocol */
+	ushort_t ip_sum;			/* checksum */
 	struct	in_addr ip_src,ip_dst;	/* source and dest address */
 } __packed __aligned(2);
 
@@ -164,15 +163,15 @@ struct ip {
  * Time stamp option structure.
  */
 struct	ip_timestamp {
-	u_char	ipt_code;		/* IPOPT_TS */
-	u_char	ipt_len;		/* size of structure (variable) */
-	u_char	ipt_ptr;		/* index of current entry */
-#if BYTE_ORDER == LITTLE_ENDIAN
-	u_char	ipt_flg:4,		/* flags, see below */
+	uchar_t	ipt_code;		/* IPOPT_TS */
+	uchar_t	ipt_len;		/* size of structure (variable) */
+	uchar_t	ipt_ptr;		/* index of current entry */
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	uchar_t	ipt_flg:4,		/* flags, see below */
 		ipt_oflw:4;		/* overflow counter */
 #endif
-#if BYTE_ORDER == BIG_ENDIAN
-	u_char	ipt_oflw:4,		/* overflow counter */
+#if _BYTE_ORDER == _BIG_ENDIAN
+	uchar_t	ipt_oflw:4,		/* overflow counter */
 		ipt_flg:4;		/* flags, see below */
 #endif
 	union ipt_timestamp {
@@ -215,8 +214,8 @@ struct	ip_timestamp {
 struct ippseudo {
 	struct	in_addr	ippseudo_src;	/* source internet address */
 	struct	in_addr	ippseudo_dst;	/* destination internet address */
-	u_char		ippseudo_pad;	/* pad, must be zero */
-	u_char		ippseudo_p;	/* protocol */
-	u_short		ippseudo_len;	/* protocol length */
+	uchar_t		ippseudo_pad;	/* pad, must be zero */
+	uchar_t		ippseudo_p;	/* protocol */
+	ushort_t	ippseudo_len;	/* protocol length */
 };
 #endif

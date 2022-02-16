@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 2005 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
  *
@@ -25,14 +25,13 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <sys/types.h>
 #include <limits.h>
 #include <string.h>
 
-#define	IDX(c)	((u_char)(c) / LONG_BIT)
-#define	BIT(c)	((u_long)1 << ((u_char)(c) % LONG_BIT))
+#define	IDX(c)	((uchar_t)(c) / LONG_BIT)
+#define	BIT(c)	((ulong_t)1 << ((uchar_t)(c) % LONG_BIT))
 
 size_t
 strcspn(const char *s, const char *charset)
@@ -42,8 +41,8 @@ strcspn(const char *s, const char *charset)
 	 * generate better code.  Without them, gcc gets a little confused.
 	 */
 	const char *s1;
-	u_long bit;
-	u_long tbl[(UCHAR_MAX + 1) / LONG_BIT];
+	ulong_t bit;
+	ulong_t tbl[(UCHAR_MAX + 1) / LONG_BIT];
 	int idx;
 
 	if(*s == '\0')

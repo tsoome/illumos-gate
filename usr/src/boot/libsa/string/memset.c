@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -30,17 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)memset.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <sys/types.h>
 
 #include <limits.h>
 
-#define	wsize	sizeof(u_int)
+#define	wsize	sizeof(uint_t)
 #define	wmask	(wsize - 1)
 
 #ifdef BZERO
@@ -65,9 +61,9 @@ memset(void *dst0, int c0, size_t length)
 {
 	size_t t;
 #ifndef BZERO
-	u_int c;
+	uint_t c;
 #endif
-	u_char *dst;
+	uchar_t *dst;
 
 	dst = dst0;
 	/*
@@ -92,13 +88,13 @@ memset(void *dst0, int c0, size_t length)
 	}
 
 #ifndef BZERO
-	if ((c = (u_char)c0) != 0) {	/* Fill the word. */
-		c = (c << 8) | c;	/* u_int is 16 bits. */
+	if ((c = (uchar_t)c0) != 0) {	/* Fill the word. */
+		c = (c << 8) | c;	/* uint_t is 16 bits. */
 #if UINT_MAX > 0xffff
-		c = (c << 16) | c;	/* u_int is 32 bits. */
+		c = (c << 16) | c;	/* uint_t is 32 bits. */
 #endif
 #if UINT_MAX > 0xffffffff
-		c = (c << 32) | c;	/* u_int is 64 bits. */
+		c = (c << 32) | c;	/* uint_t is 64 bits. */
 #endif
 	}
 #endif
@@ -114,7 +110,7 @@ memset(void *dst0, int c0, size_t length)
 	/* Fill words.  Length was >= 2*words so we know t >= 1 here. */
 	t = length / wsize;
 	do {
-		*(u_int *)dst = WIDEVAL;
+		*(uint_t *)dst = WIDEVAL;
 		dst += wsize;
 	} while (--t != 0);
 

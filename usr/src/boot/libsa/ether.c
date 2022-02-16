@@ -39,7 +39,7 @@
 
 #include <sys/param.h>
 #include <sys/socket.h>
-#include <string.h>
+#include <strings.h>
 
 #include <net/if.h>
 #include <netinet/in.h>

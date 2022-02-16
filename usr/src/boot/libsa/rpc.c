@@ -51,7 +51,7 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
-#include <string.h>
+#include <strings.h>
 
 #include "rpcv2.h"
 
@@ -62,7 +62,7 @@
 
 struct auth_info {
 	int32_t 	authtype;	/* auth type */
-	u_int32_t	authlen;	/* auth length */
+	uint32_t	authlen;	/* auth length */
 };
 
 struct auth_unix {
@@ -74,23 +74,23 @@ struct auth_unix {
 };
 
 struct rpc_call {
-	u_int32_t	rp_xid;		/* request transaction id */
+	uint32_t	rp_xid;		/* request transaction id */
 	int32_t 	rp_direction;	/* call direction (0) */
-	u_int32_t	rp_rpcvers;	/* rpc version (2) */
-	u_int32_t	rp_prog;	/* program */
-	u_int32_t	rp_vers;	/* version */
-	u_int32_t	rp_proc;	/* procedure */
+	uint32_t	rp_rpcvers;	/* rpc version (2) */
+	uint32_t	rp_prog;	/* program */
+	uint32_t	rp_vers;	/* version */
+	uint32_t	rp_proc;	/* procedure */
 };
 
 struct rpc_reply {
-	u_int32_t	rp_xid;		/* request transaction id */
+	uint32_t	rp_xid;		/* request transaction id */
 	int32_t 	rp_direction;	/* call direction (1) */
 	int32_t 	rp_astatus;	/* accept status (0: accepted) */
 	union {
-		u_int32_t	rpu_errno;
+		uint32_t	rpu_errno;
 		struct {
 			struct auth_info rok_auth;
-			u_int32_t	rok_status;
+			uint32_t	rok_status;
 		} rpu_rok;
 	} rp_u;
 };
@@ -276,17 +276,17 @@ recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
  * dig out the IP address/port from the headers.
  */
 void
-rpc_fromaddr(void *pkt, struct in_addr *addr, u_short *port)
+rpc_fromaddr(void *pkt, struct in_addr *addr, ushort_t *port)
 {
 	struct hackhdr {
 		/* Tail of IP header: just IP addresses */
 		n_long ip_src;
 		n_long ip_dst;
 		/* UDP header: */
-		u_int16_t uh_sport;		/* source port */
-		u_int16_t uh_dport;		/* destination port */
+		uint16_t uh_sport;		/* source port */
+		uint16_t uh_dport;		/* destination port */
 		int16_t	  uh_ulen;		/* udp length */
-		u_int16_t uh_sum;		/* udp checksum */
+		uint16_t uh_sum;		/* udp checksum */
 		/* RPC reply header: */
 		struct rpc_reply rpc;
 	} *hhdr;
@@ -304,8 +304,8 @@ rpc_fromaddr(void *pkt, struct in_addr *addr, u_short *port)
 int rpc_pmap_num;
 struct pmap_list {
 	struct in_addr	addr;	/* server, net order */
-	u_int	prog;		/* host order */
-	u_int	vers;		/* host order */
+	uint_t	prog;		/* host order */
+	uint_t	vers;		/* host order */
 	int 	port;		/* host order */
 } rpc_pmap_list[PMAP_NUM];
 
@@ -317,7 +317,7 @@ struct pmap_list {
  *  vers .. host order.
  */
 int
-rpc_pmap_getcache(struct in_addr addr, u_int prog, u_int vers)
+rpc_pmap_getcache(struct in_addr addr, uint_t prog, uint_t vers)
 {
 	struct pmap_list *pl;
 
@@ -339,7 +339,7 @@ rpc_pmap_getcache(struct in_addr addr, u_int prog, u_int vers)
  *  port .. host order.
  */
 void
-rpc_pmap_putcache(struct in_addr addr, u_int prog, u_int vers, int port)
+rpc_pmap_putcache(struct in_addr addr, uint_t prog, uint_t vers, int port)
 {
 	struct pmap_list *pl;
 

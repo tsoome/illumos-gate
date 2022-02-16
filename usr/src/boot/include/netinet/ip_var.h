@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)ip_var.h	8.2 (Berkeley) 1/9/95
- * $FreeBSD$
  */
 
 #ifndef _NETINET_IP_VAR_H_
@@ -39,9 +38,9 @@
  * Overlay for ip header used by other protocols (tcp, udp).
  */
 struct ipovly {
-	u_char	ih_x1[9];		/* (unused) */
-	u_char	ih_pr;			/* protocol */
-	u_short	ih_len;			/* protocol length */
+	uchar_t	ih_x1[9];		/* (unused) */
+	uchar_t	ih_pr;			/* protocol */
+	ushort_t ih_len;			/* protocol length */
 	struct	in_addr ih_src;		/* source internet address */
 	struct	in_addr ih_dst;		/* destination internet address */
 };
@@ -55,12 +54,12 @@ struct ipovly {
  */
 struct ipq {
 	TAILQ_ENTRY(ipq) ipq_list;	/* to other reass headers */
-	u_char	ipq_ttl;		/* time for reass q to live */
-	u_char	ipq_p;			/* protocol of this fragment */
-	u_short	ipq_id;			/* sequence id for reassembly */
+	uchar_t	ipq_ttl;		/* time for reass q to live */
+	uchar_t	ipq_p;			/* protocol of this fragment */
+	ushort_t ipq_id;			/* sequence id for reassembly */
 	struct mbuf *ipq_frags;		/* to ip headers of fragments */
 	struct	in_addr ipq_src,ipq_dst;
-	u_char	ipq_nfrags;		/* # frags in this packet */
+	uchar_t	ipq_nfrags;		/* # frags in this packet */
 	struct label *ipq_label;	/* MAC label */
 };
 #endif /* _KERNEL */
@@ -86,11 +85,11 @@ struct ipoption {
 struct ip_moptions {
 	struct	ifnet *imo_multicast_ifp; /* ifp for outgoing multicasts */
 	struct in_addr imo_multicast_addr; /* ifindex/addr on MULTICAST_IF */
-	u_long	imo_multicast_vif;	/* vif num outgoing multicasts */
-	u_char	imo_multicast_ttl;	/* TTL for outgoing multicasts */
-	u_char	imo_multicast_loop;	/* 1 => hear sends if a member */
-	u_short	imo_num_memberships;	/* no. memberships this socket */
-	u_short	imo_max_memberships;	/* max memberships this socket */
+	ulong_t	imo_multicast_vif;	/* vif num outgoing multicasts */
+	uchar_t	imo_multicast_ttl;	/* TTL for outgoing multicasts */
+	uchar_t	imo_multicast_loop;	/* 1 => hear sends if a member */
+	ushort_t imo_num_memberships;	/* no. memberships this socket */
+	ushort_t imo_max_memberships;	/* max memberships this socket */
 	struct	in_multi **imo_membership;	/* group memberships */
 	struct	in_mfilter *imo_mfilters;	/* source filters */
 	STAILQ_ENTRY(ip_moptions) imo_link;
@@ -179,11 +178,11 @@ VNET_DECLARE(int, ipforwarding);		/* ip forwarding */
 #ifdef IPSTEALTH
 VNET_DECLARE(int, ipstealth);			/* stealth forwarding */
 #endif
-extern u_char	ip_protox[];
+extern uchar_t	ip_protox[];
 VNET_DECLARE(struct socket *, ip_rsvpd);	/* reservation protocol daemon*/
 VNET_DECLARE(struct socket *, ip_mrouter);	/* multicast routing daemon */
 extern int	(*legal_vif_num)(int);
-extern u_long	(*ip_mcast_src)(int);
+extern ulong_t	(*ip_mcast_src)(int);
 VNET_DECLARE(int, rsvp_on);
 VNET_DECLARE(int, drop_redirect);
 extern struct	pr_usrreqs rip_usrreqs;
@@ -206,7 +205,7 @@ int	inp_setmoptions(struct inpcb *, struct sockopt *);
 int	ip_ctloutput(struct socket *, struct sockopt *sopt);
 void	ip_drain(void);
 int	ip_fragment(struct ip *ip, struct mbuf **m_frag, int mtu,
-	    u_long if_hwassist_flags);
+	    ulong_t if_hwassist_flags);
 void	ip_forward(struct mbuf *m, int srcrt);
 void	ip_init(void);
 #ifdef VIMAGE
@@ -223,7 +222,7 @@ int	ipproto_unregister(short);
 struct mbuf *
 	ip_reass(struct mbuf *);
 struct in_ifaddr *
-	ip_rtaddr(struct in_addr, u_int fibnum);
+	ip_rtaddr(struct in_addr, uint_t fibnum);
 void	ip_savecontrol(struct inpcb *, struct mbuf **, struct ip *,
 	    struct mbuf *);
 void	ip_slowtimo(void);

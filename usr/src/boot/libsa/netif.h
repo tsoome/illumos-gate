@@ -24,7 +24,7 @@ struct netif_dif {
 	struct netif_stats *dif_stats;
 	void		*dif_private;
 	/* the following fields are used internally by the netif layer */
-	u_long		dif_used;
+	ulong_t		dif_used;
 };
 
 struct netif_stats {
@@ -61,5 +61,5 @@ int		netif_open(void *);
 int		netif_close(int);
 
 struct iodesc	*socktodesc(int);
-	
+
 #endif /* __SYS_LIBNETBOOT_NETIF_H */

@@ -28,6 +28,7 @@
  */
 
 #include <sys/cdefs.h>
+#include <strings.h>
 
 /*
  * MALLOC.C - malloc equivalent, runs on top of zalloc and uses sbrk

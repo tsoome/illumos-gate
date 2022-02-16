@@ -31,8 +31,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 /* XXX defines we can't easily get from system includes */
@@ -49,9 +47,9 @@
 /* RPC functions: */
 ssize_t	rpc_call(struct iodesc *, n_long, n_long, n_long,
 		     void *, size_t, void **, void **);
-void	rpc_fromaddr(void *, struct in_addr *, u_short *);
-int	rpc_pmap_getcache(struct in_addr, u_int, u_int);
-void	rpc_pmap_putcache(struct in_addr, u_int, u_int, int);
+void	rpc_fromaddr(void *, struct in_addr *, ushort_t *);
+int	rpc_pmap_getcache(struct in_addr, uint_t, uint_t);
+void	rpc_pmap_putcache(struct in_addr, uint_t, uint_t, int);
 
 extern int rpc_port;	/* decrement before bind */
 

@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.
  * All rights reserved.
@@ -28,7 +28,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)udp_var.h	8.1 (Berkeley) 6/10/93
- * $FreeBSD$
  */
 
 #ifndef _NETINET_UDP_VAR_H_
@@ -63,7 +62,7 @@ typedef void(*udp_tun_func_t)(struct mbuf *, int off, struct inpcb *,
  */
 struct udpcb {
 	udp_tun_func_t	u_tun_func;	/* UDP kernel tunneling callback. */
-	u_int		u_flags;	/* Generic UDP flags. */
+	uint_t		u_flags;	/* Generic UDP flags. */
 	uint16_t	u_rxcslen;	/* Coverage for incoming datagrams. */
 	uint16_t	u_txcslen;	/* Coverage for outgoing datagrams. */
 	void 		*u_tun_ctx;	/* Tunneling callback context. */

@@ -16,7 +16,7 @@
 #include "stand.h"
 #include "net.h"
 
-u_char	bcea[6] = BA;			/* broadcast ethernet address */
+uchar_t	bcea[6] = BA;			/* broadcast ethernet address */
 
 char	rootpath[FNAME_SIZE] = "/";	/* root mount path */
 char	bootfile[FNAME_SIZE];		/* bootp says to boot this */
@@ -32,6 +32,6 @@ struct	in_addr rootip;			/* root ip address */
 struct	in_addr swapip;			/* swap ip address */
 struct	in_addr gateip;			/* gateway ip address */
 n_long	netmask = 0xffffff00;		/* subnet or net mask */
-u_int	intf_mtu;			/* interface mtu from bootp/dhcp */
+uint_t	intf_mtu;			/* interface mtu from bootp/dhcp */
 int	errno;				/* our old friend */
 

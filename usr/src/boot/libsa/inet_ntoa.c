@@ -49,10 +49,3 @@ inet_ntoa(struct in_addr in)
 	sprintf(ret, fmt, src[0], src[1], src[2], src[3]);
 	return (ret);
 }
-
-/*
- * Weak aliases for applications that use certain private entry points,
- * and fail to include <arpa/inet.h>.
- */
-#undef inet_ntoa
-__weak_reference(__inet_ntoa, inet_ntoa);

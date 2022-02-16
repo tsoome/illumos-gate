@@ -43,7 +43,7 @@
 #include <sys/socket.h>
 #include <sys/queue.h>
 
-#include <string.h>
+#include <strings.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
@@ -89,7 +89,7 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 {
 	ssize_t cc;
 	struct ip *ip;
-	u_char *ea;
+	uchar_t *ea;
 
 #ifdef NET_DEBUG
 	if (debug) {
@@ -275,7 +275,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		uh = (struct udphdr *)((uintptr_t)ip + sizeof (*ip));
 		/* If there were ip options, make them go away */
 		if (hlen != sizeof(*ip)) {
-			bcopy(((u_char *)ip) + hlen, uh, uh->uh_ulen - hlen);
+			bcopy(((uchar_t *)ip) + hlen, uh, uh->uh_ulen - hlen);
 			ip->ip_len = htons(sizeof(*ip));
 			n -= hlen - sizeof(*ip);
 		}

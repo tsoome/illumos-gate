@@ -1,8 +1,5 @@
 /*
  * Fundamental constants relating to ethernet.
- *
- * $FreeBSD$
- *
  */
 
 #ifndef _NET_ETHERNET_H_
@@ -58,16 +55,16 @@
  * Structure of a 10Mb/s Ethernet header.
  */
 struct ether_header {
-	u_char	ether_dhost[ETHER_ADDR_LEN];
-	u_char	ether_shost[ETHER_ADDR_LEN];
-	u_short	ether_type;
+	uchar_t	ether_dhost[ETHER_ADDR_LEN];
+	uchar_t	ether_shost[ETHER_ADDR_LEN];
+	ushort_t ether_type;
 } __packed;
 
 /*
  * Structure of a 48-bit Ethernet address.
  */
 struct ether_addr {
-	u_char octet[ETHER_ADDR_LEN];
+	uchar_t octet[ETHER_ADDR_LEN];
 } __packed;
 
 #define	ETHER_IS_MULTICAST(addr) (*(addr) & 0x01) /* is address mcast/bcast? */
@@ -391,15 +388,15 @@ struct bpf_if;
 extern	uint32_t ether_crc32_le(const uint8_t *, size_t);
 extern	uint32_t ether_crc32_be(const uint8_t *, size_t);
 extern	void ether_demux(struct ifnet *, struct mbuf *);
-extern	void ether_ifattach(struct ifnet *, const u_int8_t *);
+extern	void ether_ifattach(struct ifnet *, const uint8_t *);
 extern	void ether_ifdetach(struct ifnet *);
-extern	int  ether_ioctl(struct ifnet *, u_long, caddr_t);
+extern	int  ether_ioctl(struct ifnet *, ulong_t, caddr_t);
 extern	int  ether_output(struct ifnet *, struct mbuf *,
 	    const struct sockaddr *, struct route *);
 extern	int  ether_output_frame(struct ifnet *, struct mbuf *);
-extern	char *ether_sprintf(const u_int8_t *);
+extern	char *ether_sprintf(const uint8_t *);
 void	ether_vlan_mtap(struct bpf_if *, struct mbuf *,
-	    void *, u_int);
+	    void *, uint_t);
 struct mbuf  *ether_vlanencap(struct mbuf *, uint16_t);
 
 #else /* _KERNEL */

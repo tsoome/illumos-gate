@@ -40,7 +40,7 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
-#include <string.h>
+#include <strings.h>
 
 #define	BOOTP_DEBUGxx
 #define	SUPPORT_DHCP

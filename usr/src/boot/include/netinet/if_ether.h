@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)if_ether.h	8.3 (Berkeley) 5/2/95
- * $FreeBSD$
  */
 
 #ifndef _NETINET_IF_ETHER_H_
@@ -43,14 +42,14 @@
  */
 #define ETHER_MAP_IP_MULTICAST(ipaddr, enaddr) \
 	/* struct in_addr *ipaddr; */ \
-	/* u_char enaddr[ETHER_ADDR_LEN];	   */ \
+	/* uchar_t enaddr[ETHER_ADDR_LEN];	   */ \
 { \
 	(enaddr)[0] = 0x01; \
 	(enaddr)[1] = 0x00; \
 	(enaddr)[2] = 0x5e; \
-	(enaddr)[3] = ((const u_char *)ipaddr)[1] & 0x7f; \
-	(enaddr)[4] = ((const u_char *)ipaddr)[2]; \
-	(enaddr)[5] = ((const u_char *)ipaddr)[3]; \
+	(enaddr)[3] = ((const uchar_t *)ipaddr)[1] & 0x7f; \
+	(enaddr)[4] = ((const uchar_t *)ipaddr)[2]; \
+	(enaddr)[5] = ((const uchar_t *)ipaddr)[3]; \
 }
 /*
  * Macro to map an IP6 multicast address to an Ethernet multicast address.
@@ -59,14 +58,14 @@
  */
 #define ETHER_MAP_IPV6_MULTICAST(ip6addr, enaddr)			\
 /* struct	in6_addr *ip6addr; */					\
-/* u_char	enaddr[ETHER_ADDR_LEN]; */				\
+/* uchar_t	enaddr[ETHER_ADDR_LEN]; */				\
 {                                                                       \
 	(enaddr)[0] = 0x33;						\
 	(enaddr)[1] = 0x33;						\
-	(enaddr)[2] = ((const u_char *)ip6addr)[12];			\
-	(enaddr)[3] = ((const u_char *)ip6addr)[13];			\
-	(enaddr)[4] = ((const u_char *)ip6addr)[14];			\
-	(enaddr)[5] = ((const u_char *)ip6addr)[15];			\
+	(enaddr)[2] = ((const uchar_t *)ip6addr)[12];			\
+	(enaddr)[3] = ((const uchar_t *)ip6addr)[13];			\
+	(enaddr)[4] = ((const uchar_t *)ip6addr)[14];			\
+	(enaddr)[5] = ((const uchar_t *)ip6addr)[15];			\
 }
 
 /*
@@ -78,10 +77,10 @@
  */
 struct	ether_arp {
 	struct	arphdr ea_hdr;	/* fixed-size header */
-	u_char	arp_sha[ETHER_ADDR_LEN];	/* sender hardware address */
-	u_char	arp_spa[4];	/* sender protocol address */
-	u_char	arp_tha[ETHER_ADDR_LEN];	/* target hardware address */
-	u_char	arp_tpa[4];	/* target protocol address */
+	uchar_t	arp_sha[ETHER_ADDR_LEN];	/* sender hardware address */
+	uchar_t	arp_spa[4];	/* sender protocol address */
+	uchar_t	arp_tha[ETHER_ADDR_LEN];	/* target hardware address */
+	uchar_t	arp_tpa[4];	/* target protocol address */
 };
 #define	arp_hrd	ea_hdr.ar_hrd
 #define	arp_pro	ea_hdr.ar_pro
@@ -91,13 +90,13 @@ struct	ether_arp {
 
 #ifndef BURN_BRIDGES	/* Can be used by third party software. */
 struct sockaddr_inarp {
-	u_char	sin_len;
-	u_char	sin_family;
-	u_short sin_port;
+	uchar_t	sin_len;
+	uchar_t	sin_family;
+	ushort_t sin_port;
 	struct	in_addr sin_addr;
 	struct	in_addr sin_srcaddr;
-	u_short	sin_tos;
-	u_short	sin_other;
+	ushort_t sin_tos;
+	ushort_t sin_other;
 #define SIN_PROXY 1
 };
 #endif /* !BURN_BRIDGES  */
@@ -109,17 +108,17 @@ struct sockaddr_inarp {
 #define RTF_ANNOUNCE	RTF_PROTO2	/* announce new arp entry */
 
 #ifdef	_KERNEL
-extern u_char	ether_ipmulticast_min[ETHER_ADDR_LEN];
-extern u_char	ether_ipmulticast_max[ETHER_ADDR_LEN];
+extern uchar_t	ether_ipmulticast_min[ETHER_ADDR_LEN];
+extern uchar_t	ether_ipmulticast_max[ETHER_ADDR_LEN];
 
 struct ifaddr;
 
 int	arpresolve(struct ifnet *ifp, int is_gw, struct mbuf *m,
-	    const struct sockaddr *dst, u_char *desten, uint32_t *pflags);
+	    const struct sockaddr *dst, uchar_t *desten, uint32_t *pflags);
 void	arprequest(struct ifnet *, const struct in_addr *,
-	    const struct in_addr *, u_char *);
+	    const struct in_addr *, uchar_t *);
 void	arp_ifinit(struct ifnet *, struct ifaddr *);
-void	arp_ifinit2(struct ifnet *, struct ifaddr *, u_char *);
+void	arp_ifinit2(struct ifnet *, struct ifaddr *, uchar_t *);
 #endif
 
 #endif
