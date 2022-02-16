@@ -543,7 +543,7 @@ lofi_teardown_task(void *arg)
 static void
 lofi_destroy(struct lofi_state *lsp, cred_t *credp)
 {
-	int id = LOFI_MINOR2ID(getminor(lsp->ls_dev));
+	int id __unused = LOFI_MINOR2ID(getminor(lsp->ls_dev));
 	int i;
 
 	ASSERT(MUTEX_HELD(&lofi_lock));
