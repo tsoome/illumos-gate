@@ -57,6 +57,7 @@ CSTD=	$(CSTD_GNU99)
 
 # unused labels in yaccpar
 CERRWARN +=	-_gcc=-Wno-unused-label
+CERRWARN +=	-_clang=-Wno-unused-label
 
 # Override default source file derivation rule (in Makefile.lib)
 # from objects
