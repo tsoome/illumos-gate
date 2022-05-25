@@ -308,7 +308,7 @@ typedef struct dbuf_hash_table {
 	kmutex_t hash_mutexes[DBUF_MUTEXES];
 } dbuf_hash_table_t;
 
-typedef void (*dbuf_prefetch_fn)(void *, boolean_t);
+typedef void (*dbuf_prefetch_fn)(void *, uint64_t, uint64_t, boolean_t);
 
 uint64_t dbuf_whichblock(struct dnode *di, int64_t level, uint64_t offset);
 
