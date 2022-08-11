@@ -27,22 +27,18 @@
 #ifndef	_LIBI386_H
 #define	_LIBI386_H
 
+#include "disk.h"
+#include "libzfs.h"
+
 /*
  * i386 fully-qualified device descriptor.
  */
 struct i386_devdesc {
-    struct devdesc	dd;	/* Must be first. */
-    union {
-	struct {
-	    int		slice;
-	    int		partition;
-	    off_t	offset;
-	} biosdisk;
-	struct {
-	    uint64_t	pool_guid;
-	    uint64_t	root_guid;
-	} zfs;
-    } d_kind;
+	union {
+		struct devdesc dd;
+		struct disk_devdesc disk;
+		struct zfs_devdesc zfs;
+	};
 };
 
 /*

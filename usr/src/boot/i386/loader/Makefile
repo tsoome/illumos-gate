@@ -103,6 +103,7 @@ include ../Makefile.inc
 conf.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 main.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(SRC)/uts/common/fs/zfs
+chain.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 zfs_cmd.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 
 # For multiboot2.h, must be last, to avoid conflicts

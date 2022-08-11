@@ -18,7 +18,7 @@ include $(SRC)/Makefile.master
 include $(SRC)/boot/Makefile.inc
 
 CPPFLAGS += -I../../include -I../../sys
-CPPFLAGS += -I$(ZFSSRC)
+CPPFLAGS += -I$(ZFSSRC) -I../../sys/cddl/boot/zfs
 
 all install: libi386.a
 

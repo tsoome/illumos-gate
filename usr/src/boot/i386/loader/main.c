@@ -238,8 +238,8 @@ extract_currdev(void)
 			new_currdev.dd.d_unit = 0;
 		} else {
 			/* we don't know what our boot device is */
-			new_currdev.d_kind.biosdisk.slice = -1;
-			new_currdev.d_kind.biosdisk.partition = 0;
+			new_currdev.disk.d_slice = -1;
+			new_currdev.disk.d_partition = 0;
 			biosdev = -1;
 		}
 	} else if ((kargs->bootflags & KARGS_FLAGS_ZFS) != 0) {
@@ -252,12 +252,12 @@ extract_currdev(void)
 		    zargs->size >=
 		    offsetof(struct zfs_boot_args, primary_pool)) {
 			/* sufficient data is provided */
-			new_currdev.d_kind.zfs.pool_guid = zargs->pool;
-			new_currdev.d_kind.zfs.root_guid = zargs->root;
+			new_currdev.zfs.pool_guid = zargs->pool;
+			new_currdev.zfs.root_guid = zargs->root;
 		} else {
 			/* old style zfsboot block */
-			new_currdev.d_kind.zfs.pool_guid = kargs->zfspool;
-			new_currdev.d_kind.zfs.root_guid = 0;
+			new_currdev.zfs.pool_guid = kargs->zfspool;
+			new_currdev.zfs.root_guid = 0;
 		}
 		new_currdev.dd.d_dev = &zfs_dev;
 		if ((bootonce = malloc(VDEV_PAD_SIZE)) != NULL) {
@@ -273,14 +273,12 @@ extract_currdev(void)
 		}
 	} else if ((initial_bootdev & B_MAGICMASK) != B_DEVMAGIC) {
 		/* The passed-in boot device is bad */
-		new_currdev.d_kind.biosdisk.slice = -1;
-		new_currdev.d_kind.biosdisk.partition = 0;
+		new_currdev.disk.d_slice = -1;
+		new_currdev.disk.d_partition = 0;
 		biosdev = -1;
 	} else {
-		new_currdev.d_kind.biosdisk.slice =
-		    B_SLICE(initial_bootdev) - 1;
-		new_currdev.d_kind.biosdisk.partition =
-		    B_PARTITION(initial_bootdev);
+		new_currdev.disk.d_slice = B_SLICE(initial_bootdev) - 1;
+		new_currdev.disk.d_partition = B_PARTITION(initial_bootdev);
 		biosdev = initial_bootinfo->bi_bios_dev;
 
 		/*
