@@ -39,7 +39,6 @@
 #include <stddef.h>
 
 #include "stand.h"
-#include "disk.h"
 
 #include "dosfs.h"
 
@@ -377,7 +376,7 @@ dos_open(const char *path, struct open_file *fd)
 	if (fd->f_dev == NULL || fd->f_dev->dv_type != DEVT_DISK)
 		return (ENXIO);
 
-	dev = disk_fmtdev(fd->f_devdata);
+	dev = devformat((struct devdesc *)fd->f_devdata);
 	STAILQ_FOREACH(mnt, &mnt_list, dos_link) {
 		if (strcmp(dev, mnt->dos_dev) == 0)
 			break;

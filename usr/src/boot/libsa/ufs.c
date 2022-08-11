@@ -80,7 +80,6 @@
 #include <ufs/ufs/dir.h>
 #include <ufs/ffs/fs.h>
 #include "stand.h"
-#include "disk.h"
 #include "string.h"
 
 static int	ufs_open(const char *, struct open_file *);
@@ -556,7 +555,7 @@ ufs_open(const char *upath, struct open_file *f)
 		return (errno);
 	f->f_fsdata = fp;
 
-	dev = disk_fmtdev(f->f_devdata);
+	dev = devformat((struct devdesc *)f->f_devdata);
 	/* Is this device mounted? */
 	STAILQ_FOREACH(mnt, &mnt_list, um_link) {
 		if (strcmp(dev, mnt->um_dev) == 0)
@@ -752,7 +751,7 @@ ufs_close(struct open_file *f)
 	}
 	free(fp->f_buf);
 
-	dev = disk_fmtdev(f->f_devdata);
+	dev = devformat((struct devdesc *)f->f_devdata);
 	STAILQ_FOREACH(mnt, &mnt_list, um_link) {
 		if (strcmp(dev, mnt->um_dev) == 0)
 			break;
