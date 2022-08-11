@@ -118,7 +118,8 @@ extern int disk_write(struct disk_devdesc *, void *, uint64_t, u_int);
  * Print information about slices on a disk.
  */
 extern int disk_print(struct disk_devdesc *, char *, int);
-extern char* disk_fmtdev(struct disk_devdesc *);
 extern int disk_parsedev(struct disk_devdesc *, const char *, const char **);
+
+extern char *disk_fmtdev(struct devdesc *);
 
 #endif	/* _DISK_H */
