@@ -54,3 +54,14 @@ noioctl(struct open_file *f __unused, ulong_t cmd __unused, void *data __unused)
 {
 	return (EINVAL);
 }
+
+char *
+devformat(struct devdesc *d)
+{
+	static char name[DEV_DEVLEN];
+
+	if (d->d_dev->dv_fmtdev != NULL)
+		return (d->d_dev->dv_fmtdev(d));
+	snprintf(name, sizeof(name), "%s%d:", d->d_dev->dv_name, d->d_unit);
+	return (name);
+}
