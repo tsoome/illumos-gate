@@ -136,8 +136,11 @@ extern struct fs_ops dosfs_fsops;
 /*
  * Device switch
  */
+#define	DEV_NAMLEN	8	/* Length of name of device class */
+#define	DEV_DEVLEN	128	/* Length of longest device instance name */
+struct devdesc;
 struct devsw {
-	const char dv_name[8];
+	const char dv_name[DEV_NAMLEN];
 	int dv_type;		/* opaque type constant, arch-dependant */
 #define	DEVT_NONE	0
 #define	DEVT_DISK	1
@@ -147,12 +150,13 @@ struct devsw {
 #define	DEVT_FD		5
 	int (*dv_init)(void);	/* early probe call */
 	int (*dv_strategy)(void *devdata, int rw, daddr_t blk,
-			size_t size, char *buf, size_t *rsize);
+	    size_t size, char *buf, size_t *rsize);
 	int (*dv_open)(struct open_file *f, ...);
 	int (*dv_close)(struct open_file *f);
 	int (*dv_ioctl)(struct open_file *f, ulong_t cmd, void *data);
 	int (*dv_print)(int verbose);	/* print device information */
 	void (*dv_cleanup)(void);
+	char *(*dv_fmtdev)(struct devdesc *);
 };
 
 /*
@@ -172,6 +176,8 @@ struct devdesc {
 	int		d_unit;
 	void		*d_opendata;
 };
+
+char *devformat(struct devdesc *d);
 
 struct open_file {
 	int		f_flags;	/* see F_* below */
