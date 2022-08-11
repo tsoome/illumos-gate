@@ -80,7 +80,7 @@ struct devsw efipart_fddev = {
 	.dv_close = efipart_close,
 	.dv_ioctl = efipart_ioctl,
 	.dv_print = efipart_printfd,
-	.dv_cleanup = NULL
+	.dv_cleanup = nullsys
 };
 
 struct devsw efipart_cddev = {
@@ -92,7 +92,7 @@ struct devsw efipart_cddev = {
 	.dv_close = efipart_close,
 	.dv_ioctl = efipart_ioctl,
 	.dv_print = efipart_printcd,
-	.dv_cleanup = NULL
+	.dv_cleanup = nullsys
 };
 
 struct devsw efipart_hddev = {
@@ -104,7 +104,8 @@ struct devsw efipart_hddev = {
 	.dv_close = efipart_close,
 	.dv_ioctl = efipart_ioctl,
 	.dv_print = efipart_printhd,
-	.dv_cleanup = NULL
+	.dv_cleanup = nullsys,
+	.dv_fmtdev = disk_fmtdev,
 };
 
 static pdinfo_list_t fdinfo = STAILQ_HEAD_INITIALIZER(fdinfo);
