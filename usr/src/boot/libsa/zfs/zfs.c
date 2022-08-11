@@ -1637,7 +1637,8 @@ struct devsw zfs_dev = {
 	.dv_close = zfs_dev_close,
 	.dv_ioctl = noioctl,
 	.dv_print = zfs_dev_print,
-	.dv_cleanup = NULL
+	.dv_cleanup = nullsys,
+	.dv_fmtdev = zfs_fmtdev,
 };
 
 int
