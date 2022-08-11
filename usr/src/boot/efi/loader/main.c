@@ -245,7 +245,7 @@ set_currdev_devdesc(struct devdesc *currdev)
 {
 	char *devname;
 
-	devname = efi_fmtdev(currdev);
+	devname = devformat(currdev);
 
 	printf("Setting currdev to %s\n", devname);
 	set_currdev(devname);
