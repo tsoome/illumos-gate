@@ -1591,7 +1591,7 @@ zfs_dev_open(struct open_file *f, ...)
 	rv = 0;
 	/* This device is not set as currdev, mount us private copy. */
 	if (mount == NULL)
-		rv = zfs_mount(zfs_fmtdev(&dev->dd), NULL, (void **)&mount);
+		rv = zfs_mount(devformat(&dev->dd), NULL, (void **)&mount);
 
 	f->f_mount = mount;
 
