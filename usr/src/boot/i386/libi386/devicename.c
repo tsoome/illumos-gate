@@ -170,33 +170,6 @@ fail:
 	return (err);
 }
 
-
-char *
-i386_fmtdev(void *vdev)
-{
-	struct i386_devdesc *dev = (struct i386_devdesc *)vdev;
-	static char buf[SPECNAMELEN + 1];
-
-	switch (dev->dd.d_dev->dv_type) {
-	case DEVT_NONE:
-		strlcpy(buf, "(no device)", sizeof (buf));
-		break;
-
-	case DEVT_DISK:
-		return (disk_fmtdev(vdev));
-
-	case DEVT_ZFS:
-		return (zfs_fmtdev(vdev));
-
-	default:
-		snprintf(buf, sizeof (buf), "%s%d:", dev->dd.d_dev->dv_name,
-		    dev->dd.d_unit);
-		break;
-	}
-	return (buf);
-}
-
-
 /*
  * Set currdev to suit the value being supplied in (value)
  */

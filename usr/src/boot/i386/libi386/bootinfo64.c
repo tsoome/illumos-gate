@@ -169,7 +169,7 @@ bi_load64(char *args, vm_offset_t addr, vm_offset_t *modulep,
     }
 
     /* Try reading the /etc/fstab file to select the root device */
-    getrootmount(i386_fmtdev((void *)rootdev));
+    getrootmount(devformat(&rootdev->dd));
 
     if (addr == 0) {
         /* find the last module in the chain */
