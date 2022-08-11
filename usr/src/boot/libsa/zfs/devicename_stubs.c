@@ -39,7 +39,7 @@ zfs_parsedev(struct zfs_devdesc *dev __unused, const char *devspec __unused,
 
 __attribute__((weak))
 char *
-zfs_fmtdev(void *vdev __unused)
+zfs_fmtdev(struct devdesc *vdev __unused)
 {
     static char	buf[128];
 

@@ -1591,7 +1591,7 @@ zfs_dev_open(struct open_file *f, ...)
 	rv = 0;
 	/* This device is not set as currdev, mount us private copy. */
 	if (mount == NULL)
-		rv = zfs_mount(zfs_fmtdev(dev), NULL, (void **)&mount);
+		rv = zfs_mount(zfs_fmtdev(&dev->dd), NULL, (void **)&mount);
 
 	f->f_mount = mount;
 
@@ -1745,7 +1745,7 @@ zfs_bootfs(void *zdev)
 }
 
 char *
-zfs_fmtdev(void *vdev)
+zfs_fmtdev(struct devdesc *vdev)
 {
 	static char		rootname[ZFS_MAXNAMELEN];
 	static char		buf[2 * ZFS_MAXNAMELEN + 8];
@@ -1753,7 +1753,7 @@ zfs_fmtdev(void *vdev)
 	spa_t			*spa;
 
 	buf[0] = '\0';
-	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
+	if (vdev->d_dev->dv_type != DEVT_ZFS)
 		return (buf);
 
 	/* Do we have any pools? */
