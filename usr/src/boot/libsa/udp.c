@@ -111,6 +111,7 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 	ssize_t n;
 	struct udphdr *uh;
 	void *ptr;
+	time_t tref;
 
 #ifdef NET_DEBUG
 	if (debug)
@@ -119,21 +120,28 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 
 	uh = NULL;
 	ptr = NULL;
-	n = readip(d, &ptr, (void **)&uh, tleft, IPPROTO_UDP);
-	if (n == -1 || n < sizeof (*uh) || n != ntohs(uh->uh_ulen)) {
+	tref = getsecs();
+	do {
 		free(ptr);
-		return (-1);
-	}
-
-	if (uh->uh_dport != d->myport) {
+		ptr = NULL;	/* prevent panic when readip() fails */
+		if ((getsecs() - tref) >= tleft) {
+			errno = ETIMEDOUT;
+			return (-1);
+		}
+		n = readip(d, &ptr, (void **)&uh, tleft, IPPROTO_UDP);
+		if (n == -1 || n < sizeof (*uh) || n != ntohs(uh->uh_ulen)) {
+			free(ptr);
+			return (-1);
+		}
 #ifdef NET_DEBUG
-		if (debug)
-			printf("readudp: bad dport %d != %d\n",
-			    d->myport, ntohs(uh->uh_dport));
+		if (uh->uh_dport != d->myport) {
+			if (debug) {
+				printf("readudp: bad dport %d != %d\n",
+				    ntohs(d->myport), ntohs(uh->uh_dport));
+			}
+		}
 #endif
-		free(ptr);
-		return (-1);
-	}
+	} while (uh->uh_dport != d->myport);
 
 #ifndef UDP_NO_CKSUM
 	if (uh->uh_sum) {
