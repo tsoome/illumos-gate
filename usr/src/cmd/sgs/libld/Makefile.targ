@@ -70,6 +70,10 @@ pics/elfcap.o:	$(ELFCAP)/elfcap.c
 # The DO_RELOC_LIBLD definition is needed to generate the libld version
 # of the doreloc code.
 #
+pics/%_aarch64_64.o: $(KRTLD_AARCH64)/%.c
+		$(COMPILE.c) -o $@ -D_ELF64 -DDO_RELOC_LIBLD $<
+		$(POST_PROCESS_O)
+
 pics/%_x86_32.o: $(KRTLD_I386)/%.c
 		$(COMPILE.c) -o $@ -DDO_RELOC_LIBLD $<
 		$(POST_PROCESS_O)

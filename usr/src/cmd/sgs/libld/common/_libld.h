@@ -749,6 +749,7 @@ extern Sdf_desc		*sdf_find(const char *, APlist *);
 #define	ld_sym_reducable	ld64_sym_reducable
 #define	ld_sym_spec		ld64_sym_spec
 #define	ld_targ			ld64_targ
+#define	ld_targ_init_aarch64	ld64_targ_init_aarch64
 #define	ld_targ_init_sparc	ld64_targ_init_sparc
 #define	ld_targ_init_x86	ld64_targ_init_x86
 #define	ld_unwind_make_hdr	ld64_unwind_make_hdr
@@ -848,6 +849,7 @@ extern Sdf_desc		*sdf_find(const char *, APlist *);
 #define	ld_sym_reducable	ld32_sym_reducable
 #define	ld_sym_spec		ld32_sym_spec
 #define	ld_targ			ld32_targ
+#define	ld_targ_init_aarch64	ld32_targ_init_aarch64
 #define	ld_targ_init_sparc	ld32_targ_init_sparc
 #define	ld_targ_init_x86	ld32_targ_init_x86
 #define	ld_unwind_make_hdr	ld32_unwind_make_hdr
@@ -995,6 +997,7 @@ extern Boolean		ld_sym_reducable(Ofl_desc *, Sym_desc *);
 extern uintptr_t	ld_sym_spec(Ofl_desc *);
 
 extern Target		ld_targ;
+extern const Target	*ld_targ_init_aarch64(void);
 extern const Target	*ld_targ_init_sparc(void);
 extern const Target	*ld_targ_init_x86(void);
 

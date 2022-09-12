@@ -123,6 +123,12 @@ ld_init_target(Lm_list *lml, Half mach)
 		ld_targ = *ld_targ_init_sparc();
 		break;
 
+#if defined(_ELF64)		/* XXXARM: This is a shame */
+	case EM_AARCH64:
+		ld_targ = *ld_targ_init_aarch64();
+		break;
+#endif
+
 	default:
 		{
 			Conv_inv_buf_t	inv_buf;

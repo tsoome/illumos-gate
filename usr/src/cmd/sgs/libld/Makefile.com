@@ -53,7 +53,7 @@ AVLOBJ =	avl.o
 
 # Relocation engine objects.
 G_MACHOBJS32 =	doreloc_sparc_32.o doreloc_x86_32.o
-G_MACHOBJS64 =	doreloc_sparc_64.o doreloc_x86_64.o
+G_MACHOBJS64 =	doreloc_sparc_64.o doreloc_x86_64.o doreloc_aarch64_64.o
 
 # Target specific objects (sparc/sparcv9)
 L_SPARC_MACHOBJS32 =	machrel.sparc32.o	machsym.sparc32.o
@@ -64,12 +64,16 @@ E_X86_COMMONOBJ =	leb128.o
 L_X86_MACHOBJS32 =	machrel.intel32.o
 L_X86_MACHOBJS64 =	machrel.amd64.o
 
+# Target specific objects (aarch64)
+# XXXARM: Wow, that's unfortunate
+L_AARCH64_MACHOBJS64 = machrel.aarch6464.o
+
 # All target specific objects rolled together
 E_COMMONOBJ =	$(E_SPARC_COMMONOBJ) \
 	$(E_X86_COMMONOBJ)
 L_MACHOBJS32 =	$(L_SPARC_MACHOBJS32) \
 	$(L_X86_MACHOBJS32)
-L_MACHOBJS64 =	$(L_SPARC_MACHOBJS64) \
+L_MACHOBJS64 =	$(L_AARCH64_MACHOBJS64) $(L_SPARC_MACHOBJS64) \
 	$(L_X86_MACHOBJS64)
 
 
@@ -99,6 +103,7 @@ SMOFF += no_if_block
 
 # Location of the shared relocation engines maintained under usr/src/uts.
 #
+KRTLD_AARCH64 = $(SRC)/uts/aarch64/krtld
 KRTLD_I386 = $(SRC)/uts/intel/ia32/krtld
 KRTLD_AMD64 = $(SRC)/uts/intel/amd64/krtld
 KRTLD_SPARC = $(SRC)/uts/sparc/krtld
@@ -134,10 +139,11 @@ BLTFILES =	$(BLTDEFS) $(BLTDATA) $(BLTMESG)
 # organizational reasons.
 #
 SGSMSGCOM =	$(SRCDIR)/common/libld.msg
-SGSMSGSPARC =	$(SRCDIR)/common/libld.sparc.msg
+SGSMSGAARCH64 =	$(SRCDIR)/common/libld.aarch64.msg
 SGSMSGINTEL =	$(SRCDIR)/common/libld.intel.msg
-SGSMSGTARG =	$(SGSMSGCOM) $(SGSMSGSPARC) $(SGSMSGINTEL)
-SGSMSGALL =	$(SGSMSGCOM) $(SGSMSGSPARC) $(SGSMSGINTEL)
+SGSMSGSPARC =	$(SRCDIR)/common/libld.sparc.msg
+SGSMSGTARG =	$(SGSMSGCOM) $(SGSMSGAARCH64) $(SGSMSGINTEL) $(SGSMSGSPARC)
+SGSMSGALL =	$(SGSMSGCOM) $(SGSMSGAARCH64) $(SGSMSGINTEL) $(SGSMSGSPARC)
 
 SGSMSGFLAGS1 =	$(SGSMSGFLAGS) -m $(BLTMESG)
 SGSMSGFLAGS2 =	$(SGSMSGFLAGS) -h $(BLTDEFS) -d $(BLTDATA) -n libld_msg
@@ -146,6 +152,7 @@ CHKSRCS =	$(SRC)/uts/common/krtld/reloc.h \
 		$(COMOBJS32:%32.o=$(SRCDIR)/common/%.c) \
 		$(L_MACHOBJS32:%32.o=$(SRCDIR)/common/%.c) \
 		$(L_MACHOBJS64:%64.o=$(SRCDIR)/common/%.c) \
+		$(KRTLD_AARCH64)/doreloc.c \
 		$(KRTLD_I386)/doreloc.c \
 		$(KRTLD_AMD64)/doreloc.c \
 		$(KRTLD_SPARC)/doreloc.c

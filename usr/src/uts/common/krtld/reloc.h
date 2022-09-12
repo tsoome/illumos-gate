@@ -80,6 +80,16 @@ extern "C" {
 #define	reloc_table		reloc32_table_sparc
 #endif
 
+#elif	defined(DO_RELOC_LIBLD_AARCH64)
+
+#define	DO_RELOC_LIBLD
+#if	defined(_ELF64)
+#define	do_reloc_ld		do64_reloc_ld_aarch64
+#define	reloc_table		reloc64_table_aarch64
+#else
+#error "aarch64 has no 32bit support"
+#endif
+
 #else				/* rtld */
 
 #if	defined(_ELF64)
