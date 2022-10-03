@@ -388,7 +388,7 @@ static void
 hw_cap(Ofl_desc *ofl, Xword tag, Xword val)
 {
 	elfcap_mask_t	*hwcap;
-	ofl_flag_t	flags1;
+	ofl_flag_t	flags1 = 0;
 
 	switch (tag) {
 	case CA_SUNW_HW_1:

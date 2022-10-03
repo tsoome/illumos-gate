@@ -1239,7 +1239,7 @@ at_cap_plat(Mapfile *mf, Token eq_tok, void *uvalue __unused)
  * ---------------------------^
  */
 static Token
-at_cap_hw_3(Mapfile *mf, Token eq_tok, void *uvalue)
+at_cap_hw_3(Mapfile *mf, Token eq_tok, void *uvalue __unused)
 {
 	return (parse_cap_mask(mf, eq_tok, &mf->mf_ofl->ofl_ocapset.oc_hw_3,
 	    CA_SUNW_HW_3, elfcap_hw3_from_str));
