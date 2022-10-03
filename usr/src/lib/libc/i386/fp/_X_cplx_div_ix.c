@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * _X_cplx_div_ix(b, w) returns (I * b) / w with infinities handled
  * according to C99.
@@ -61,15 +59,15 @@ static const union {
 	unsigned int	i[3];
 	long double	e;
 } scl[9] = {
-	{ 0, 0x80000000, 0x7fbf },
-	{ 0, 0x80000000, 0x6fcf },
-	{ 0, 0x80000000, 0x5fdf },
-	{ 0, 0x80000000, 0x4fef },
-	{ 0, 0x80000000, 0x3fff },
-	{ 0, 0x80000000, 0x300f },
-	{ 0, 0x80000000, 0x201f },
-	{ 0, 0x80000000, 0x102f },
-	{ 0, 0x80000000, 0x003f }
+	{ {0, 0x80000000, 0x7fbf} },
+	{ {0, 0x80000000, 0x6fcf} },
+	{ {0, 0x80000000, 0x5fdf} },
+	{ {0, 0x80000000, 0x4fef} },
+	{ {0, 0x80000000, 0x3fff} },
+	{ {0, 0x80000000, 0x300f} },
+	{ {0, 0x80000000, 0x201f} },
+	{ {0, 0x80000000, 0x102f} },
+	{ {0, 0x80000000, 0x003f} }
 };
 
 /*

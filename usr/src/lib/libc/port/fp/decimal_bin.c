@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Conversion from decimal to binary floating point
  */
@@ -322,9 +320,9 @@ static union {
 	double	d;
 } C[] = {
 #ifdef _LITTLE_ENDIAN
-	{ 0x00000000, 0x3cc40000 },
+	{ {0x00000000, 0x3cc40000} },
 #else
-	{ 0x3cc40000, 0x00000000 },	/* 5 * 2^-53 */
+	{ {0x3cc40000, 0x00000000} },	/* 5 * 2^-53 */
 #endif
 };
 

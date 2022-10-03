@@ -100,7 +100,11 @@ FILE _iob[_NFILE] = {
  */
 struct xFILEdata _xftab[_NFILE] = {
 	XFILEINITIALIZER, XFILEINITIALIZER,
-	{ 0, _smbuf[2] + _SBFSIZ, RECURSIVEMUTEX, DEFAULTMBSTATE }, /* stderr */
+	{
+		._end = _smbuf[2] + _SBFSIZ,
+		._lock = RECURSIVEMUTEX,
+		._state = DEFAULTMBSTATE
+	}, /* stderr */
 	XFILEINITIALIZER, XFILEINITIALIZER, XFILEINITIALIZER, XFILEINITIALIZER,
 	XFILEINITIALIZER, XFILEINITIALIZER, XFILEINITIALIZER, XFILEINITIALIZER,
 	XFILEINITIALIZER, XFILEINITIALIZER, XFILEINITIALIZER, XFILEINITIALIZER,
@@ -130,9 +134,9 @@ struct xFILEdata _xftab[_NFILE] = {
 Uchar *_bufendtab[_NFILE+1] = { NULL, NULL, _smbuf[2] + _SBFSIZ, };
 
 FILE _iob[_NFILE] = {
-	{ 0, NULL, NULL, _IOREAD, 0 },
-	{ 0, NULL, NULL, _IOWRT, 1 },
-	{ 0, NULL, NULL, _IOWRT|_IONBF, 2 },
+	{ ._flag = _IOREAD, ._magic = 0 },
+	{ ._flag = _IOWRT, ._magic = 1 },
+	{ ._flag = _IOWRT|_IONBF, ._magic = 2 },
 };
 
 /*

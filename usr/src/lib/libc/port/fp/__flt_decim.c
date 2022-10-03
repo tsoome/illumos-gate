@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Short cut for conversion from double precision to decimal
  * floating point
@@ -197,15 +195,15 @@ static union {
 	double		d;
 } C[] = {
 #ifdef _LITTLE_ENDIAN
-	{ 0x00000000, 0x43300000 },
-	{ 0x00000000, 0x3ca00000 },
-	{ 0x00000000, 0x3fe00000 },
-	{ 0xffffffff, 0x3fdfffff },
+	{ {0x00000000, 0x43300000} },
+	{ {0x00000000, 0x3ca00000} },
+	{ {0x00000000, 0x3fe00000} },
+	{ {0xffffffff, 0x3fdfffff} },
 #else
-	{ 0x43300000, 0x00000000 },
-	{ 0x3ca00000, 0x00000000 },
-	{ 0x3fe00000, 0x00000000 },
-	{ 0x3fdfffff, 0xffffffff },	/* nextafter(1/2, 0) */
+	{ {0x43300000, 0x00000000} },
+	{ {0x3ca00000, 0x00000000} },
+	{ {0x3fe00000, 0x00000000} },
+	{ {0x3fdfffff, 0xffffffff} },	/* nextafter(1/2, 0) */
 #endif
 };
 

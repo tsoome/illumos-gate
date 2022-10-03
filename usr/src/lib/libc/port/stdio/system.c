@@ -54,7 +54,7 @@ static mutex_t sys_lock = DEFAULTMUTEX;	/* protects the following */
 static uint_t sys_count = 0;		/* number of threads in system() */
 static struct sigaction sys_ibuf;	/* saved SIGINT sigaction */
 static struct sigaction sys_qbuf;	/* saved SIGQUIT sigaction */
-static struct sigaction ignore = {0, {SIG_IGN}, {0}};
+static struct sigaction ignore = { ._funcptr = {SIG_IGN} };
 
 /*
  * Things needed by the cancellation cleanup handler.

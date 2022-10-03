@@ -37,10 +37,10 @@ extern	int	_ti_critical();
  * the dynamic linker via _ld_libc() (see libc_init()).
  */
 const Lc_interface rtld_funcs[] = {
-	{CI_VERSION,	(int(*)())CI_V_CURRENT},
-	{CI_BIND_GUARD,	(int(*)())_ti_bind_guard},
-	{CI_BIND_CLEAR,	(int(*)())_ti_bind_clear},
-	{CI_THR_SELF,	(int(*)())_ti_thr_self},
-	{CI_CRITICAL,	(int(*)())_ti_critical},
-	{CI_NULL,	(int(*)())NULL}
+	{CI_VERSION,	{(int(*)())CI_V_CURRENT}},
+	{CI_BIND_GUARD,	{(int(*)())_ti_bind_guard}},
+	{CI_BIND_CLEAR,	{(int(*)())_ti_bind_clear}},
+	{CI_THR_SELF,	{(int(*)())_ti_thr_self}},
+	{CI_CRITICAL,	{(int(*)())_ti_critical}},
+	{CI_NULL,	{(int(*)())NULL}}
 };

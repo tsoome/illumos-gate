@@ -95,115 +95,115 @@ const char *_sys_polllist[NSIGPOLL] = {
 };
 
 struct siginfolist _sys_siginfolist[OLDNSIG-1] = {
-	0,		0,			/* SIGHUP */
-	0,		0,			/* SIGINT */
-	0,		0,			/* SIGQUIT */
-	NSIGILL,	(char **)_sys_illlist,	/* SIGILL */
-	NSIGTRAP,	(char **)_sys_traplist,	/* SIGTRAP */
-	0,		0,			/* SIGABRT */
-	0,		0,			/* SIGEMT */
-	NSIGFPE,	(char **)_sys_fpelist,	/* SIGFPE */
-	0,		0,			/* SIGKILL */
-	NSIGBUS,	(char **)_sys_buslist,	/* SIGBUS */
-	NSIGSEGV,	(char **)_sys_segvlist,	/* SIGSEGV */
-	0,		0,			/* SIGSYS */
-	0,		0,			/* SIGPIPE */
-	0,		0,			/* SIGALRM */
-	0,		0,			/* SIGTERM */
-	0,		0,			/* SIGUSR1 */
-	0,		0,			/* SIGUSR2 */
-	NSIGCLD,	(char **)_sys_cldlist,	/* SIGCLD */
-	0,		0,			/* SIGPWR */
-	0,		0,			/* SIGWINCH */
-	0,		0,			/* SIGURG */
-	NSIGPOLL,	(char **)_sys_polllist,	/* SIGPOLL */
-	0,		0,			/* SIGSTOP */
-	0,		0,			/* SIGTSTP */
-	0,		0,			/* SIGCONT */
-	0,		0,			/* SIGTTIN */
-	0,		0,			/* SIGTTOU */
-	0,		0,			/* SIGVTALRM */
-	0,		0,			/* SIGPROF */
-	0,		0,			/* SIGXCPU */
-	0,		0,			/* SIGXFSZ */
-	0,		0,			/* SIGWAITING */
-	0,		0,			/* SIGLWP */
+	{0,		0},			/* SIGHUP */
+	{0,		0},			/* SIGINT */
+	{0,		0},			/* SIGQUIT */
+	{NSIGILL,	(char **)_sys_illlist},	/* SIGILL */
+	{NSIGTRAP,	(char **)_sys_traplist}, /* SIGTRAP */
+	{0,		0},			/* SIGABRT */
+	{0,		0},			/* SIGEMT */
+	{NSIGFPE,	(char **)_sys_fpelist},	/* SIGFPE */
+	{0,		0},			/* SIGKILL */
+	{NSIGBUS,	(char **)_sys_buslist},	/* SIGBUS */
+	{NSIGSEGV,	(char **)_sys_segvlist}, /* SIGSEGV */
+	{0,		0},			/* SIGSYS */
+	{0,		0},			/* SIGPIPE */
+	{0,		0},			/* SIGALRM */
+	{0,		0},			/* SIGTERM */
+	{0,		0},			/* SIGUSR1 */
+	{0,		0},			/* SIGUSR2 */
+	{NSIGCLD,	(char **)_sys_cldlist},	/* SIGCLD */
+	{0,		0},			/* SIGPWR */
+	{0,		0},			/* SIGWINCH */
+	{0,		0},			/* SIGURG */
+	{NSIGPOLL,	(char **)_sys_polllist}, /* SIGPOLL */
+	{0,		0},			/* SIGSTOP */
+	{0,		0},			/* SIGTSTP */
+	{0,		0},			/* SIGCONT */
+	{0,		0},			/* SIGTTIN */
+	{0,		0},			/* SIGTTOU */
+	{0,		0},			/* SIGVTALRM */
+	{0,		0},			/* SIGPROF */
+	{0,		0},			/* SIGXCPU */
+	{0,		0},			/* SIGXFSZ */
+	{0,		0},			/* SIGWAITING */
+	{0,		0},			/* SIGLWP */
 };
 
 static const struct siginfolist _sys_siginfolist_data[NSIG-1] = {
-	0,		0,			/* SIGHUP */
-	0,		0,			/* SIGINT */
-	0,		0,			/* SIGQUIT */
-	NSIGILL,	(char **)_sys_illlist,	/* SIGILL */
-	NSIGTRAP,	(char **)_sys_traplist,	/* SIGTRAP */
-	0,		0,			/* SIGABRT */
-	0,		0,			/* SIGEMT */
-	NSIGFPE,	(char **)_sys_fpelist,	/* SIGFPE */
-	0,		0,			/* SIGKILL */
-	NSIGBUS,	(char **)_sys_buslist,	/* SIGBUS */
-	NSIGSEGV,	(char **)_sys_segvlist,	/* SIGSEGV */
-	0,		0,			/* SIGSYS */
-	0,		0,			/* SIGPIPE */
-	0,		0,			/* SIGALRM */
-	0,		0,			/* SIGTERM */
-	0,		0,			/* SIGUSR1 */
-	0,		0,			/* SIGUSR2 */
-	NSIGCLD,	(char **)_sys_cldlist,	/* SIGCLD */
-	0,		0,			/* SIGPWR */
-	0,		0,			/* SIGWINCH */
-	0,		0,			/* SIGURG */
-	NSIGPOLL,	(char **)_sys_polllist,	/* SIGPOLL */
-	0,		0,			/* SIGSTOP */
-	0,		0,			/* SIGTSTP */
-	0,		0,			/* SIGCONT */
-	0,		0,			/* SIGTTIN */
-	0,		0,			/* SIGTTOU */
-	0,		0,			/* SIGVTALRM */
-	0,		0,			/* SIGPROF */
-	0,		0,			/* SIGXCPU */
-	0,		0,			/* SIGXFSZ */
-	0,		0,			/* SIGWAITING */
-	0,		0,			/* SIGLWP */
-	0,		0,			/* SIGFREEZE */
-	0,		0,			/* SIGTHAW */
-	0,		0,			/* SIGCANCEL */
-	0,		0,			/* SIGLOST */
-	0,		0,			/* SIGXRES */
-	0,		0,			/* SIGJVM1 */
-	0,		0,			/* SIGJVM2 */
-	0,		0,			/* SIGINFO */
-	0,		0,			/* SIGRTMIN */
-	0,		0,			/* SIGRTMIN+1 */
-	0,		0,			/* SIGRTMIN+2 */
-	0,		0,			/* SIGRTMIN+3 */
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,			/* SIGRTMIN+15 */
-	0,		0,			/* SIGRTMAX-15 */
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,
-	0,		0,			/* SIGRTMAX-3 */
-	0,		0,			/* SIGRTMAX-2 */
-	0,		0,			/* SIGRTMAX-1 */
-	0,		0,			/* SIGRTMAX */
+	{0,		0},			/* SIGHUP */
+	{0,		0},			/* SIGINT */
+	{0,		0},			/* SIGQUIT */
+	{NSIGILL,	(char **)_sys_illlist},	/* SIGILL */
+	{NSIGTRAP,	(char **)_sys_traplist}, /* SIGTRAP */
+	{0,		0},			/* SIGABRT */
+	{0,		0},			/* SIGEMT */
+	{NSIGFPE,	(char **)_sys_fpelist},	/* SIGFPE */
+	{0,		0},			/* SIGKILL */
+	{NSIGBUS,	(char **)_sys_buslist},	/* SIGBUS */
+	{NSIGSEGV,	(char **)_sys_segvlist}, /* SIGSEGV */
+	{0,		0},			/* SIGSYS */
+	{0,		0},			/* SIGPIPE */
+	{0,		0},			/* SIGALRM */
+	{0,		0},			/* SIGTERM */
+	{0,		0},			/* SIGUSR1 */
+	{0,		0},			/* SIGUSR2 */
+	{NSIGCLD,	(char **)_sys_cldlist},	/* SIGCLD */
+	{0,		0},			/* SIGPWR */
+	{0,		0},			/* SIGWINCH */
+	{0,		0},			/* SIGURG */
+	{NSIGPOLL,	(char **)_sys_polllist}, /* SIGPOLL */
+	{0,		0},			/* SIGSTOP */
+	{0,		0},			/* SIGTSTP */
+	{0,		0},			/* SIGCONT */
+	{0,		0},			/* SIGTTIN */
+	{0,		0},			/* SIGTTOU */
+	{0,		0},			/* SIGVTALRM */
+	{0,		0},			/* SIGPROF */
+	{0,		0},			/* SIGXCPU */
+	{0,		0},			/* SIGXFSZ */
+	{0,		0},			/* SIGWAITING */
+	{0,		0},			/* SIGLWP */
+	{0,		0},			/* SIGFREEZE */
+	{0,		0},			/* SIGTHAW */
+	{0,		0},			/* SIGCANCEL */
+	{0,		0},			/* SIGLOST */
+	{0,		0},			/* SIGXRES */
+	{0,		0},			/* SIGJVM1 */
+	{0,		0},			/* SIGJVM2 */
+	{0,		0},			/* SIGINFO */
+	{0,		0},			/* SIGRTMIN */
+	{0,		0},			/* SIGRTMIN+1 */
+	{0,		0},			/* SIGRTMIN+2 */
+	{0,		0},			/* SIGRTMIN+3 */
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},			/* SIGRTMIN+15 */
+	{0,		0},			/* SIGRTMAX-15 */
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},
+	{0,		0},			/* SIGRTMAX-3 */
+	{0,		0},			/* SIGRTMAX-2 */
+	{0,		0},			/* SIGRTMAX-1 */
+	{0,		0},			/* SIGRTMAX */
 };
 
 const struct siginfolist *_sys_siginfolistp = _sys_siginfolist_data;

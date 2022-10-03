@@ -138,12 +138,12 @@ static char rbuf[MAX_DEV_PATH]; /* perfect match file name */
 static char dev_rbuf[MAX_DEV_PATH]; /* partial match file name */
 static int dev_flag;		/* if set, dev + rdev match was found */
 static spcl_t special_case[] = {
-	"/dev/tty", 0, 0, 0,
-	"/dev/console", 0, 0, 0,
-	"/dev/conslog", 0, 0, 0,
-	"/dev/systty", 0, 0, 0,
-	"/dev/wscons", 0, 0, 0,
-	"/dev/msglog", 0, 0, 0,
+	{ "/dev/tty", 0, 0, 0 },
+	{ "/dev/console", 0, 0, 0 },
+	{ "/dev/conslog", 0, 0, 0 },
+	{ "/dev/systty", 0, 0, 0 },
+	{ "/dev/wscons", 0, 0, 0 },
+	{ "/dev/msglog", 0, 0, 0 },
 };
 #define	NUMSPECIAL	(sizeof (special_case) / sizeof (spcl_t))
 static spcl_t ptmspecial = {

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "thr_uberdata.h"
 #include <sched.h>
@@ -38,13 +36,13 @@
  * for priocntl scheduling classes.
  */
 static pcclass_t sched_class[] = {
-	{0, SCHED_OTHER, 0, 0, {-1, "TS",  0}},
-	{0, SCHED_FIFO,	 0, 0, {-1, "RT",  0}},
-	{0, SCHED_RR,	 0, 0, {-1, "RT",  0}},
-	{0, SCHED_SYS,	 0, 0, {0,  "SYS", 0}},
-	{0, SCHED_IA,	 0, 0, {-1, "IA",  0}},
-	{0, SCHED_FSS,	 0, 0, {-1, "FSS", 0}},
-	{0, SCHED_FX,	 0, 0, {-1, "FX",  0}},
+	{0, SCHED_OTHER, 0, 0, {-1, "TS",  {0}}},
+	{0, SCHED_FIFO,	 0, 0, {-1, "RT",  {0}}},
+	{0, SCHED_RR,	 0, 0, {-1, "RT",  {0}}},
+	{0, SCHED_SYS,	 0, 0, {0,  "SYS", {0}}},
+	{0, SCHED_IA,	 0, 0, {-1, "IA",  {0}}},
+	{0, SCHED_FSS,	 0, 0, {-1, "FSS", {0}}},
+	{0, SCHED_FX,	 0, 0, {-1, "FX",  {0}}},
 	/*
 	 * Allow unknown (to us) scheduling classes.
 	 * The kernel allows space for exactly 10 scheduling classes
@@ -52,16 +50,16 @@ static pcclass_t sched_class[] = {
 	 * We need that number of available slots here.
 	 * If the kernel space is changed, this has to change too.
 	 */
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
-	{0, -1,		 0, 0, {-1, "",	   0}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
+	{0, -1,		 0, 0, {-1, "",	   {0}}},
 };
 
 #define	NPOLICY	(sizeof (sched_class) / sizeof (pcclass_t))

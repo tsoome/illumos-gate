@@ -77,7 +77,11 @@ static	int	pthread_concurrency;
 
 /* initial allocation, just enough for one lwp */
 thr_hash_table_t init_hash_table[1] __aligned(64) = {
-	{ DEFAULTMUTEX, DEFAULTCV, NULL },
+	{
+		.hash_lock = DEFAULTMUTEX,
+		.hash_cond = DEFAULTCV,
+		.hash_bucket =  NULL
+	}
 };
 
 extern const Lc_interface rtld_funcs[];
@@ -87,32 +91,32 @@ extern const Lc_interface rtld_funcs[];
  */
 #pragma weak _uberdata = __uberdata
 uberdata_t __uberdata = {
-	{ DEFAULTMUTEX, 0, 0 },	/* link_lock */
-	{ RECURSIVEMUTEX, 0, 0 },	/* ld_lock */
-	{ RECURSIVEMUTEX, 0, 0 },	/* fork_lock */
-	{ RECURSIVEMUTEX, 0, 0 },	/* atfork_lock */
-	{ RECURSIVEMUTEX, 0, 0 },	/* callout_lock */
-	{ DEFAULTMUTEX, 0, 0 },	/* tdb_hash_lock */
+	{ .pad_lock = DEFAULTMUTEX },	/* link_lock */
+	{ .pad_lock = RECURSIVEMUTEX },	/* ld_lock */
+	{ .pad_lock = RECURSIVEMUTEX },	/* fork_lock */
+	{ .pad_lock = RECURSIVEMUTEX },	/* atfork_lock */
+	{ .pad_lock = RECURSIVEMUTEX },	/* callout_lock */
+	{ .pad_lock = DEFAULTMUTEX },	/* tdb_hash_lock */
 	{ 0, },				/* tdb_hash_lock_stats */
 	{ { 0 }, },			/* siguaction[NSIG] */
-	{{ DEFAULTMUTEX, NULL, 0 },		/* bucket[NBUCKETS] */
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 },
-	{ DEFAULTMUTEX, NULL, 0 }},
-	{ RECURSIVEMUTEX, NULL, NULL },		/* atexit_root */
-	{ RECURSIVEMUTEX, NULL },		/* quickexit_root */
-	{ DEFAULTMUTEX, 0, 0, NULL },		/* tsd_metadata */
-	{ DEFAULTMUTEX, {0, 0}, {0, 0} },	/* tls_metadata */
+	{ { .bucket_lock = DEFAULTMUTEX },	/* bucket[NBUCKETS] */
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX },
+		{ .bucket_lock = DEFAULTMUTEX } },
+	{ .exitfns_lock = RECURSIVEMUTEX },	/* atexit_root */
+	{ .exitfns_lock = RECURSIVEMUTEX },	/* quickexit_root */
+	{ .tsdm_lock = DEFAULTMUTEX },		/* tsd_metadata */
+	{ .tls_lock = DEFAULTMUTEX },		/* tls_metadata */
 	0,			/* primary_map */
 	0,			/* bucket_init */
-	0,			/* pad[0] */
-	0,			/* pad[1] */
+	{ 0,			/* pad[0] */
+	  0 },			/* pad[1] */
 	{ 0 },			/* uberflags */
 	NULL,			/* queue_head */
 	init_hash_table,	/* thr_hash_table */

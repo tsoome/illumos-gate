@@ -106,7 +106,8 @@ struct xFILEdata {
 	stdio_ops_t	*_ops;	/* Alternate impl ops */
 };
 
-#define	XFILEINITIALIZER	{ 0, NULL, RECURSIVEMUTEX, DEFAULTMBSTATE }
+#define	XFILEINITIALIZER	\
+	{ ._lock = RECURSIVEMUTEX, ._state = DEFAULTMBSTATE }
 
 #endif	/*	_LP64	*/
 

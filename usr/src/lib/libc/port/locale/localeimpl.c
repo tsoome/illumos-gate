@@ -133,12 +133,12 @@ __global_locale(void)
  * cache/file as for other UTF-8 locales.
  */
 static struct locdata cutf_locdata[LC_ALL] = {
-	{ "C.UTF-8", NULL }, /* unused */
-	{ "C.UTF-8", &lc_numeric_posix },
-	{ "C.UTF-8", &lc_time_posix },
-	{ "C.UTF-8", &lc_collate_posix },
-	{ "C.UTF-8", &lc_monetary_posix },
-	{ "C.UTF-8", &lc_messages_posix },
+	{ .l_lname = "C.UTF-8", .l_data = { NULL } }, /* unused */
+	{ .l_lname = "C.UTF-8", .l_data = { &lc_numeric_posix } },
+	{ .l_lname = "C.UTF-8", .l_data = { &lc_time_posix } },
+	{ .l_lname = "C.UTF-8", .l_data = { &lc_collate_posix } },
+	{ .l_lname = "C.UTF-8", .l_data = { &lc_monetary_posix } },
+	{ .l_lname = "C.UTF-8", .l_data = { &lc_messages_posix } },
 };
 
 /*

@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.8	*/
-
 /*
  * contains the definitions
  * of the global constant __huge_val used
@@ -53,11 +51,11 @@
 /* IEEE infinity */
 const _h_val __huge_val =
 #if defined(_LP64)			/* long == long long */
-	{ 0x7ff0000000000000ull };
+	{ {0x7ff0000000000000ull} };
 #elif defined(_LONG_LONG_HTOL)		/* like 32-bit sparc */
-	{ 0x7ff00000ul, 0x00000000ul };
+	{ {0x7ff00000ul, 0x00000000ul} };
 #elif defined(_LONG_LONG_LTOH)		/* like 32-bit x86 */
-	{ 0x00000000ul, 0x7ff00000ul };
+	{ {0x00000000ul, 0x7ff00000ul} };
 #else
 #error "none of { _LP64 _LONG_LONG_HTOL _LONG_LONG_LTOH } is defined"
 #endif
