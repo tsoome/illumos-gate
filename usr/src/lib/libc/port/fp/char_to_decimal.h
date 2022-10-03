@@ -712,6 +712,9 @@ exponent:
 		case fixed_intdotfrac_form:
 			form = floating_intdotfrac_form;
 			break;
+
+		default:
+			break;
 		}
 	} else {
 		*pechar = NULL;

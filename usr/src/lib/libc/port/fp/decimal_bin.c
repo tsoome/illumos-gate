@@ -530,6 +530,9 @@ decimal_to_single(single *px, decimal_mode *pm, decimal_record *pd,
 		kluge->f.msw.significand = 0x3fffff;
 		*ps = 0;
 		return;
+
+	default:
+		break;
 	}
 
 	/* numeric values */
@@ -609,6 +612,9 @@ decimal_to_double(double *px, decimal_mode *pm, decimal_record *pd,
 		kluge->f.significand2 = 0xffffffff;
 		*ps = 0;
 		return;
+
+	default:
+		break;
 	}
 
 	/* numeric values */
@@ -689,6 +695,9 @@ decimal_to_extended(extended *px, decimal_mode *pm, decimal_record *pd,
 		kluge->f.significand2 = 0xffffffff;
 		*ps = 0;
 		return;
+
+	default:
+		break;
 	}
 
 	/* numeric values */
@@ -784,6 +793,9 @@ decimal_to_quadruple(quadruple *px, decimal_mode *pm, decimal_record *pd,
 		kluge->f.significand4 = 0xffffffff;
 		*ps = 0;
 		return;
+
+	default:
+		break;
 	}
 
 	/* numeric values */

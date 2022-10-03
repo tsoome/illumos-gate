@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "base_conversion.h"
 
@@ -208,6 +206,9 @@ infinity:
 		}
 		kluge.f.msw.exponent = pu->exponent;
 		kluge.f.msw.significand = 0x7fffff & pu->significand[0];
+
+	default:
+		break;
 	}
 ret:
 	*px = kluge.x;
@@ -281,6 +282,9 @@ infinity:
 		kluge.f.msw.significand = 0xfffff & pu->significand[0];
 		kluge.f.significand2 = pu->significand[1];
 		break;
+
+	default:
+		break;
 	}
 ret:
 	*px = kluge.x;
@@ -346,6 +350,9 @@ infinity:
 		kluge.f.msw.exponent = pu->exponent;
 		kluge.f.significand = pu->significand[0];
 		kluge.f.significand2 = pu->significand[1];
+		break;
+
+	default:
 		break;
 	}
 ret:
@@ -435,6 +442,9 @@ infinity:
 		kluge.f.significand2 = pu->significand[1];
 		kluge.f.significand3 = pu->significand[2];
 		kluge.f.significand4 = pu->significand[3];
+		break;
+
+	default:
 		break;
 	}
 ret:

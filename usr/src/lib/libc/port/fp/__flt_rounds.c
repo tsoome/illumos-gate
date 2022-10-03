@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * These functions return the prevailing rounding mode per ANSI C spec:
  *	 0:	toward zero
@@ -54,6 +52,9 @@ __flt_rounds(void)
 
 	case fp_negative:
 		return (3);
+
+	default:
+		break;
 	}
 	return (1);
 }
@@ -72,6 +73,9 @@ __fltrounds(void)
 
 	case fp_negative:
 		return (3);
+
+	default:
+		break;
 	}
 	return (1);
 }

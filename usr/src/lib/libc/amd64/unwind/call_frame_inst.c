@@ -667,6 +667,8 @@ interpret_op(void **datap, ptrdiff_t reloc,
 		if (f_start_state != 0)
 			f_state[val1] = f_start_state[val1];
 		break;
+	default:
+		break;
 	}
 	return (0);
 }
