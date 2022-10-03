@@ -148,7 +148,7 @@ qsort_r(void *basep, size_t nrec, size_t rsiz,
 	char		*t_dup;		/* top duplicate */
 	char		*t_par;		/* top partition */
 	char		*m1, *m2, *m3;	/* median pointers */
-	uintptr_t	d_bytelength;	/* byte length of duplicate records */
+	ptrdiff_t	d_bytelength;	/* byte length of duplicate records */
 	int		b_nrec;
 	int		t_nrec;
 	int		cv;		/* results of compare (bottom / top) */
@@ -507,9 +507,8 @@ qsort(void *basep, size_t nrec, size_t rsiz,
  * verify this by examining the assembly code
  */
 
-/* ARGSUSED */
 static void
-swapp32(uint32_t *r1, uint32_t *r2, size_t cnt)
+swapp32(uint32_t *r1, uint32_t *r2, size_t cnt __unused)
 {
 	uint32_t temp;
 
@@ -518,9 +517,8 @@ swapp32(uint32_t *r1, uint32_t *r2, size_t cnt)
 	*r2++ = temp;
 }
 
-/* ARGSUSED */
 static void
-swapp64(uint64_t *r1, uint64_t *r2, size_t cnt)
+swapp64(uint64_t *r1, uint64_t *r2, size_t cnt __unused)
 {
 	uint64_t temp;
 
