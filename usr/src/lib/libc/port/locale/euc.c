@@ -352,7 +352,7 @@ _EUC_mbrtowc_impl(wchar_t *_RESTRICT_KYWD pwc, const char *_RESTRICT_KYWD s,
 		wc = es->ch;
 	}
 
-	for (i = 0; i < MIN(want, n); i++) {
+	for (i = 0; i < MIN(want, (int)n); i++) {
 		wc <<= 8;
 		chs = *s;
 		wc |= chs;

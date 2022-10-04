@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "thr_uberdata.h"
 #include <sys/types.h>
@@ -552,7 +550,7 @@ del_sigev_timer(timer_t timer)
 	int rc = 0;
 	thread_communication_data_t *tcdp;
 
-	if ((uint_t)timer < timer_max && (tcdp = timer_tcd[timer]) != NULL) {
+	if (timer < timer_max && (tcdp = timer_tcd[timer]) != NULL) {
 		sig_mutex_lock(&tcdp->tcd_lock);
 		if (tcdp->tcd_port >= 0) {
 			if ((rc = port_alert(tcdp->tcd_port,
@@ -571,7 +569,7 @@ sigev_timer_getoverrun(timer_t timer)
 {
 	thread_communication_data_t *tcdp;
 
-	if ((uint_t)timer < timer_max && (tcdp = timer_tcd[timer]) != NULL)
+	if (timer < timer_max && (tcdp = timer_tcd[timer]) != NULL)
 		return (tcdp->tcd_overruns);
 	return (0);
 }

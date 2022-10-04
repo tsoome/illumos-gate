@@ -23,9 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 /*
  * UTF-8 text preparation functions (PSARC/2007/149, PSARC/2007/458).
  *
@@ -343,7 +340,7 @@ u8_validate(char *u8str, size_t n, char **list, int flag, int *errnum)
 	uchar_t *s2;
 	uchar_t f;
 	int sz;
-	size_t i;
+	int i;
 	int ret_val;
 	boolean_t second;
 	boolean_t no_need_to_validate_entire;
@@ -1461,7 +1458,7 @@ collect_a_seq(size_t uv, uchar_t *u8s, uchar_t **source, uchar_t *slast,
 			s += sz;
 			sz = i;
 		} else {
-			for (i = 0; i < sz; )
+			for (i = 0; (int)i < sz; )
 				u8s[i++] = *s++;
 			u8s[i] = '\0';
 		}
@@ -1490,7 +1487,7 @@ collect_a_seq(size_t uv, uchar_t *u8s, uchar_t **source, uchar_t *slast,
 
 			last = 0;
 
-			for (i = 0; i < saved_sz; ) {
+			for (i = 0; (int)i < saved_sz; ) {
 				sz = u8_number_of_bytes[u8s[i]];
 
 				comb_class[last] = combining_class(uv,
@@ -1639,7 +1636,7 @@ TURN_STREAM_SAFE:
 					sz = i;
 					s += l;
 
-					for (i = 0; i < sz; i++)
+					for (i = 0; (int)i < sz; i++)
 						u8s[saved_sz++] = uts[i];
 				} else {
 					comb_class[last] = i;
@@ -1647,7 +1644,7 @@ TURN_STREAM_SAFE:
 					disp[last] = sz;
 					last++;
 
-					for (i = 0; i < sz; i++)
+					for (i = 0; (int)i < sz; i++)
 						u8s[saved_sz++] = *s++;
 				}
 
@@ -2037,7 +2034,7 @@ u8_textprep_str(char *inarray, size_t *inlen, char *outarray, size_t *outlen,
 					i = do_case_conv(unicode_version, u8s,
 					    ib, sz, is_it_toupper);
 
-					if ((obtail - ob) < i) {
+					if ((obtail - ob) < (int)i) {
 						*errnum = E2BIG;
 						ret_val = (size_t)-1;
 						break;
@@ -2045,7 +2042,7 @@ u8_textprep_str(char *inarray, size_t *inlen, char *outarray, size_t *outlen,
 
 					ib += sz;
 
-					for (sz = 0; sz < i; sz++)
+					for (sz = 0; sz < (int)i; sz++)
 						*ob++ = u8s[sz];
 				} else {
 					if ((obtail - ob) < sz) {
@@ -2054,7 +2051,7 @@ u8_textprep_str(char *inarray, size_t *inlen, char *outarray, size_t *outlen,
 						break;
 					}
 
-					for (i = 0; i < sz; i++)
+					for (i = 0; (int)i < sz; i++)
 						*ob++ = *ib++;
 				}
 			}
@@ -2113,7 +2110,7 @@ u8_textprep_str(char *inarray, size_t *inlen, char *outarray, size_t *outlen,
 					break;
 				}
 
-				if ((obtail - ob) < j) {
+				if ((obtail - ob) < (int)j) {
 					*errnum = E2BIG;
 					ret_val = (size_t)-1;
 					break;

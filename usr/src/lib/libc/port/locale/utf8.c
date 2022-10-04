@@ -161,7 +161,7 @@ _UTF8_mbrtowc(wchar_t *_RESTRICT_KYWD pwc, const char *_RESTRICT_KYWD s,
 	else
 		wch = us->ch;
 
-	for (i = (us->want == 0) ? 1 : 0; i < MIN(want, n); i++) {
+	for (i = (us->want == 0) ? 1 : 0; i < MIN(want, (int)n); i++) {
 		if ((*s & 0xc0) != 0x80) {
 			/*
 			 * Malformed input; bad characters in the middle
@@ -402,7 +402,7 @@ _UTF8_wcsnrtombs(char *_RESTRICT_KYWD dst, const wchar_t **_RESTRICT_KYWD src,
 				*src = s;
 				return ((size_t)-1);
 			}
-			if (nb > (int)len)
+			if (nb > len)
 				/* MB sequence for character won't fit. */
 				break;
 			(void) memcpy(dst, buf, nb);

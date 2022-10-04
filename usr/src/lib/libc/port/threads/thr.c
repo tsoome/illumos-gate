@@ -1657,7 +1657,6 @@ postfork1_child()
 	queue_head_t *qp;
 	ulwp_t *next;
 	ulwp_t *ulwp;
-	int i;
 
 	/* daemon threads shouldn't call fork1(), but oh well... */
 	self->ul_usropts &= ~THR_DAEMON;
@@ -1665,7 +1664,7 @@ postfork1_child()
 	udp->ndaemons = 0;
 	udp->uberflags.uf_mt = 0;
 	__libc_threaded = 0;
-	for (i = 0; i < udp->hash_size; i++)
+	for (uint_t i = 0; i < udp->hash_size; i++)
 		udp->thr_hash_table[i].hash_bucket = NULL;
 	self->ul_lwpid = _lwp_self();
 	hash_in_unlocked(self, TIDHASH(self->ul_lwpid, udp), udp);
@@ -1683,7 +1682,7 @@ postfork1_child()
 	/* no one in the child is on a sleep queue; reinitialize */
 	if ((qp = udp->queue_head) != NULL) {
 		(void) memset(qp, 0, 2 * QHASHSIZE * sizeof (queue_head_t));
-		for (i = 0; i < 2 * QHASHSIZE; qp++, i++) {
+		for (int i = 0; i < 2 * QHASHSIZE; qp++, i++) {
 			qp->qh_type = (i < QHASHSIZE)? MX : CV;
 			qp->qh_lock.mutex_flag = LOCK_INITED;
 			qp->qh_lock.mutex_magic = MUTEX_MAGIC;
@@ -2442,7 +2441,7 @@ thr_setname(pthread_t tid, const char *name)
 
 	if (n < 0)
 		return (saved_errno);
-	if (n != len)
+	if ((size_t)n != len)
 		return (EFAULT);
 	return (0);
 }

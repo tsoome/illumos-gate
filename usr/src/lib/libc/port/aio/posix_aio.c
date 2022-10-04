@@ -1151,7 +1151,7 @@ __aio_waitn(void **list, uint_t nent, uint_t *nwait, const timespec_t *utimo)
 			 * sig_cond_reltimedwait() could also return with
 			 * a timeout error (ETIME).
 			 */
-			if (*nwait < _aio_outstand_cnt)
+			if (*nwait < (uint_t)_aio_outstand_cnt)
 				_aio_waitncnt = *nwait;
 			else
 				_aio_waitncnt = _aio_outstand_cnt;

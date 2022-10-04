@@ -119,12 +119,14 @@ static void
 arc4_fill(uint8_t *buf, size_t n)
 {
 	if (arc4 == NULL) {
+		long rv;
 		size_t pgsz, mapsz;
 		void *a;
 
-		pgsz = sysconf(_SC_PAGESIZE);
-		if (pgsz == -1)
+		rv = sysconf(_SC_PAGESIZE);
+		if (rv == -1)
 			abort();
+		pgsz = rv;
 		mapsz = P2ROUNDUP(sizeof (arc4_state_t), pgsz);
 		a = mmap(NULL, mapsz, PROT_READ | PROT_WRITE,
 		    MAP_PRIVATE | MAP_ANON, -1, 0);

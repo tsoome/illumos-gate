@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include <mtlib.h>
 #include <sys/types.h>
@@ -661,7 +659,7 @@ _nsc_getdoorbuf(void **doorptr, size_t *bufsize)
 		/* check old buffer size and resize if needed */
 		if (*bufsize) {
 			dsize = _nsc_getdoorbsize(*bufsize);
-			if (tsdbuf->buflen < dsize) {
+			if ((size_t)tsdbuf->buflen < dsize) {
 				lfree(tsdbuf->buffer, (size_t)tsdbuf->buflen);
 				bp = lmalloc(dsize);
 				if (bp == NULL)

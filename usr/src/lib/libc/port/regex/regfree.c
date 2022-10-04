@@ -52,12 +52,6 @@ void
 regfree(regex_t *preg)
 {
 	struct re_guts *g;
-	int i;
-
-#ifdef	__lint
-	/* shut up lint! */
-	CHIN(NULL, 0);
-#endif
 
 	if (preg->re_magic != MAGIC1)	/* oops */
 		return;			/* nice to complain, but hard */
@@ -69,14 +63,14 @@ regfree(regex_t *preg)
 	g->magic = 0;			/* mark it invalid */
 
 	if (g->strip != NULL)
-		free((char *)g->strip);
+		free(g->strip);
 	if (g->sets != NULL) {
-		for (i = 0; i < g->ncsets; i++) {
+		for (unsigned i = 0; i < g->ncsets; i++) {
 			free(g->sets[i].ranges);
 			free(g->sets[i].wides);
 			free(g->sets[i].types);
 		}
-		free((char *)g->sets);
+		free(g->sets);
 	}
 	if (g->must != NULL)
 		free(g->must);
@@ -84,5 +78,5 @@ regfree(regex_t *preg)
 		free(&g->charjump[CHAR_MIN]);
 	if (g->matchjump != NULL)
 		free(g->matchjump);
-	free((char *)g);
+	free(g);
 }

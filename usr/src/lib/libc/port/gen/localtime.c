@@ -1256,7 +1256,7 @@ posix_check_dst(long long t, state_t *sp)
 {
 	struct tm	gmttm;
 	long long	jan01;
-	int		year, i, idx, ridx;
+	int		year, idx, ridx;
 	posix_daylight_t	pdaylight;
 
 	(void) offtime_u(t, 0L, &gmttm);
@@ -1277,7 +1277,8 @@ posix_check_dst(long long t, state_t *sp)
 		pdaylight.rules[0] = &sp->start_rule;
 		pdaylight.rules[1] = &sp->end_rule;
 	} else { 			/* POSIX_USA: USA */
-		i = 0;
+		size_t i = 0;
+
 		while (year < __usa_rules[i].s_year && i < MAX_RULE_TABLE) {
 			i++;
 		}
@@ -1480,7 +1481,8 @@ load_zoneinfo(const char *name, state_t *sp)
 		return (-1);
 	}
 
-	if ((cnt = read(fid, bufp, flen)) != flen) {
+	cnt = read(fid, bufp, flen);
+	if (cnt < 0 || (size_t)cnt != flen) {
 		lfree(bufp, flen);
 		(void) close(fid);
 		return (-1);

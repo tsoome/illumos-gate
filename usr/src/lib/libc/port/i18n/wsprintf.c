@@ -27,8 +27,6 @@
 /*	Copyright (c) 1986 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -51,11 +49,10 @@ wsprintf(wchar_t *wstring, const char *format, ...)
 	va_list	ap;
 	char	tempstring[1024];
 	char *p2;
-	size_t len;
+	size_t len, i;
 	int malloced = 0;
 	char *p1 = (char *)wstring;
 	int retcode;
-	int	i;
 
 	va_start(ap, format);
 	if (vsprintf(p1, format, ap) == -1) {

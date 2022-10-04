@@ -130,7 +130,7 @@ static const wchar_t widenullstr[] = L"(null)";
 		 * sordid details. \
 		 */\
 		if (snflag || bufptr > bufferend ||\
-		    (unsigned long)(bufferend - bufptr) < (n)) {\
+		    (unsigned long)(bufferend - bufptr) < (unsigned long)(n)) {\
 			if (!_dowrite(p, n, iop, &bufptr)) {\
 				return (EOF);\
 			}\
@@ -269,7 +269,7 @@ _dowrite(const char *p, ssize_t n, FILE *iop, unsigned char **ptrptr)
 		iop->_cnt -= (*ptrptr - iop->_ptr);
 		iop->_ptr = *ptrptr;
 		_bufsync(iop, _bufend(iop));
-		if (_FWRITE(p, 1, n, iop) != n) {
+		if (_FWRITE(p, 1, n, iop) != (size_t)n) {
 			return (0);
 		}
 		*ptrptr = iop->_ptr;
@@ -993,7 +993,7 @@ _ndoprnt(const char *format, va_list in_args, FILE *iop, int prflag)
 					 * Negate, checking in advance for
 					 * possible overflow.
 					 */
-					if (ll != HIBITLL)
+					if ((unsigned long long)ll != HIBITLL)
 						ll = -ll;
 					else
 					/* number is -HIBITLL; convert last */
@@ -1025,7 +1025,7 @@ _ndoprnt(const char *format, va_list in_args, FILE *iop, int prflag)
 					 * Negate, checking in advance
 					 * for possible overflow.
 					 */
-					if (val != HIBITL)
+					if ((unsigned long)val != HIBITL)
 						val = -val;
 					/*
 					 * number is -HIBITL; convert
@@ -1832,7 +1832,7 @@ wide_S:
 					errno = EILSEQ;
 					return (EOF);
 				}
-				if (prec > nwc) {
+				if ((size_t)prec > nwc) {
 					bpsize = sizeof (wchar_t) * nwc;
 					wstr = (wchar_t *)lmalloc(bpsize);
 					if (wstr == NULL) {

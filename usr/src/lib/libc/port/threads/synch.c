@@ -1020,7 +1020,7 @@ mutex_lock_kernel(mutex_t *mp, timespec_t *tsp, tdb_mutex_stats_t *msp)
 			 * in which case we don't actually own the mutex.
 			 */
 			enter_critical(self);
-			if (mp->mutex_ownerpid == udp->pid) {
+			if ((pid_t)mp->mutex_ownerpid == udp->pid) {
 				exit_critical(self);
 				acquired = 1;
 				break;
@@ -1079,7 +1079,7 @@ mutex_trylock_kernel(mutex_t *mp)
 			 * in which case we don't actually own the mutex.
 			 */
 			enter_critical(self);
-			if (mp->mutex_ownerpid == udp->pid) {
+			if ((pid_t)mp->mutex_ownerpid == udp->pid) {
 				exit_critical(self);
 				acquired = 1;
 				break;
@@ -2841,7 +2841,7 @@ shared_mutex_held(mutex_t *mparg)
 	ulwp_t *self = curthread;
 	uberdata_t *udp = self->ul_uberdata;
 
-	return (MUTEX_OWNED(mp, self) && mp->mutex_ownerpid == udp->pid);
+	return (MUTEX_OWNED(mp, self) && (pid_t)mp->mutex_ownerpid == udp->pid);
 }
 
 #pragma weak _mutex_held = mutex_held

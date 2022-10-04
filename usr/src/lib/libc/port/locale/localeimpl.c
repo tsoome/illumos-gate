@@ -331,7 +331,7 @@ locdata_get(int category, const char *locname)
 		}
 		if (slash) {
 			len = slash - locname + 1;
-			if (len >= sizeof (scratch)) {
+			if ((size_t)len >= sizeof (scratch)) {
 				len = sizeof (scratch);
 			}
 		} else {

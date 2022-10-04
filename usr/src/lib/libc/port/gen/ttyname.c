@@ -203,7 +203,7 @@ _ttyname_common(struct stat64 *fsp, char *buffer, uint_t match_mask)
 	struct stat64 tfsb;
 	const entry_t *srch_dirs;	/* priority directories */
 	spcl_t *spclp;
-	int i;
+	unsigned i;
 	int found = 0;
 	int dirno = 0;
 	int is_pts = 0;

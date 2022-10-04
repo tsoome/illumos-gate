@@ -156,7 +156,8 @@ warnxlen(const char *argv0, const char *msg, int argLen, const char *arg)
 {
 	char argbuf[256];
 	(void) strncpy(argbuf, arg, argLen);
-	argbuf[argLen < (sizeof (argbuf)-1)? argLen:(sizeof (argbuf)-1)] = '\0';
+	argbuf[argLen < (int)(sizeof (argbuf) - 1) ?
+	    argLen : (sizeof (argbuf) - 1)] = '\0';
 	warnx_getopt(argv0, msg, argbuf);
 }
 

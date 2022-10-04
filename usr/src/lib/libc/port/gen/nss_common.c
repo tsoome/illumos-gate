@@ -136,9 +136,9 @@ struct nss_db_state {
  */
 struct nss_src_state {
 	struct __nsw_lookup_v1	*lkp;
-	int			n_active;
-	int			n_dormant;
-	int			n_waiting;	/* ... on wanna_be */
+	unsigned		n_active;
+	unsigned		n_dormant;
+	unsigned		n_waiting;	/* ... on wanna_be */
 	cond_t			wanna_be;
 	union {
 		nss_backend_t	*single; /* Efficiency hack for common case */
@@ -694,7 +694,7 @@ __parse_environment(struct option *opt, char *p)
 		 * play it safe and keep it simple, bail if an opt name
 		 * is too long.
 		 */
-		if ((p-base) >= sizeof (optname))
+		if ((p - base) >= (long)sizeof (optname))
 			return;
 
 		(void) strncpy(optname, base, p-base);
@@ -709,7 +709,7 @@ __parse_environment(struct option *opt, char *p)
 			 * play it safe and keep it simple, bail if an opt
 			 * value is too long.
 			 */
-			if ((p-base) >= sizeof (optval))
+			if ((p - base) >= (long)sizeof (optval))
 				return;
 
 			(void) strncpy(optval, base, p-base);
@@ -942,7 +942,7 @@ _nss_src_state_destr(struct nss_src_state *src, int max_dormant)
 			    NSS_DBOP_DESTRUCTOR, 0);
 		};
 	} else if (src->dormant.multi != 0) {
-		int	n;
+		unsigned	n;
 
 		for (n = 0;  n < src->n_dormant;  n++) {
 			(void) NSS_INVOKE_DBOP(src->dormant.multi[n],

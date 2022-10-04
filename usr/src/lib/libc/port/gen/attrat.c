@@ -176,7 +176,7 @@ static int
 cgetattr(int fd, nvlist_t **response)
 {
 	int error;
-	int bytesread;
+	ssize_t bytesread;
 	void *nv_response;
 	size_t nv_responselen;
 	struct stat buf;
@@ -190,7 +190,7 @@ cgetattr(int fd, nvlist_t **response)
 	if ((nv_response = malloc(nv_responselen)) == NULL)
 		return (-1);
 	bytesread = read(fd, nv_response, nv_responselen);
-	if (bytesread != nv_responselen) {
+	if (bytesread < 0 || (size_t)bytesread != nv_responselen) {
 		free(nv_response);
 		errno = EFAULT;
 		return (-1);
@@ -210,7 +210,7 @@ static int
 csetattr(int fd, nvlist_t *request)
 {
 	int error, saveerrno;
-	int byteswritten;
+	ssize_t byteswritten;
 	void *nv_request;
 	size_t nv_requestlen;
 
@@ -221,7 +221,7 @@ csetattr(int fd, nvlist_t *request)
 		return (error);
 
 	byteswritten = write(fd, nv_request, nv_requestlen);
-	if (byteswritten != nv_requestlen) {
+	if (byteswritten < 0 || (size_t)byteswritten != nv_requestlen) {
 		saveerrno = errno;
 		free(nv_request);
 		errno = saveerrno;

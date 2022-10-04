@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #pragma	weak _confstr = confstr
 
 #include "lint.h"
@@ -95,7 +93,6 @@ confstr(int name, char *buf, size_t length)
 {
 	size_t			conf_length;
 	config			*entry;
-	int			i;
 	char			*path;
 
 	/* Keep _CS_PATH in sync with execvp.c */
@@ -119,7 +116,7 @@ confstr(int name, char *buf, size_t length)
 	 * Make sure others are known configuration parameters
 	 */
 	entry = (config *)default_conf;
-	for (i = 0; i < CS_ENTRY_COUNT; i++) {
+	for (size_t i = 0; i < CS_ENTRY_COUNT; i++) {
 		if (name == entry->config_value) {
 			/*
 			 * Copy out the parameter from our tables.

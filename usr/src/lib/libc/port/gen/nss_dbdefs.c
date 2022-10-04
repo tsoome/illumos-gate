@@ -872,7 +872,6 @@ nss_upack_key2arg(void *buffer, size_t length __unused, char **dbname __unused,
 	const char			*strtype = NULL;
 	nssuint_t			off, *uptr, keysize;
 	size_t				len, slop;
-	int				i, j;
 	char				**cv, *bptr;
 	struct nss_setnetgrent_args	*sng;
 	struct nss_innetgr_args		*ing;
@@ -1020,16 +1019,16 @@ nss_upack_key2arg(void *buffer, size_t length __unused, char **dbname __unused,
 			cv = (char **)((void *)(bptr + off));
 			uptr = (nssuint_t *)
 			    ((void *)(bptr + sizeof (nss_pnetgr_t)));
-			for (j = 0; j < NSS_NETGR_N; j++) {
+			for (int j = 0; j < NSS_NETGR_N; j++) {
 				ing->arg[j].argv = cv;
-				for (i = 0; i < ing->arg[j].argc; i++) {
+				for (uint_t i = 0; i < ing->arg[j].argc; i++) {
 					if (*uptr >= keysize)
 						return (NSS_ERROR);
 					*cv++ = (bptr + *uptr++);
 				}
 			}
 			ing->groups.argv = cv;
-			for (i = 0; i < ing->groups.argc; i++) {
+			for (uint_t i = 0; i < ing->groups.argc; i++) {
 				if (*uptr >= keysize)
 					return (NSS_ERROR);
 				*cv++ = (bptr + *uptr++);

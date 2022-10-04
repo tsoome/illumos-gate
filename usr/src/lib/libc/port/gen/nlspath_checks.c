@@ -229,19 +229,20 @@ nls_safe_open(const char *path, struct stat64 *statbuf, int *trust, int safe)
  * allows one use, but we don't want to break existing functional code,
  * even if it's buggy.
  */
-#define	STORE(buf, size, arg, val)	if (arg * FORMAT_SIZE + 1 >= size ||\
-					    (strict ? \
-					    (buf[arg*FORMAT_SIZE] != '\0' && \
-					    buf[arg*FORMAT_SIZE] != val) \
-						: \
-					    (buf[arg*FORMAT_SIZE] == 'n'))) \
-						return (-1); \
-					else {\
-						if (arg >= maxarg) \
-							maxarg = arg + 1; \
-						narg++; \
-						buf[arg*FORMAT_SIZE] = val; \
-					}
+#define	STORE(buf, size, arg, val)	\
+	if ((size_t)(arg * FORMAT_SIZE + 1) >= size || \
+	    (strict ? \
+	    (buf[arg*FORMAT_SIZE] != '\0' && \
+	    buf[arg*FORMAT_SIZE] != val) \
+	    : \
+	    (buf[arg*FORMAT_SIZE] == 'n'))) \
+		return (-1); \
+	else {\
+		if (arg >= maxarg) \
+			maxarg = arg + 1; \
+			narg++; \
+			buf[arg*FORMAT_SIZE] = val; \
+	}
 
 /*
  * This function extracts sprintf format into a canonical

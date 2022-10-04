@@ -301,7 +301,7 @@ file_open(const char *name, int safe)
 
 	/* check MAGIC number of catalogue file */
 	tmp = (struct _cat_hdr *)addr;
-	if (tmp->__hdr_magic != _CAT_MAGIC) {
+	if ((uint_t)tmp->__hdr_magic != _CAT_MAGIC) {
 		(void) munmap(addr, (size_t)statbuf.st_size);
 		return (NULL);
 	}

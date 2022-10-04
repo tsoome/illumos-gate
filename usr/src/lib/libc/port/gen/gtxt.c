@@ -150,7 +150,7 @@ load_db(const char *curloc, const char *catname, int *err)
 	db->flag = DB_OPEN;
 	if (snprintf(pathname, sizeof (pathname),
 	    _DFLT_LOC_PATH "%s" MESSAGES "%s",
-	    db->saved_locale, db->db_name) >= sizeof (pathname)) {
+	    db->saved_locale, db->db_name) >= (int)sizeof (pathname)) {
 		/*
 		 * We won't set err here, because an invalid locale is not
 		 * the fatal condition, but we can fall back to "C"

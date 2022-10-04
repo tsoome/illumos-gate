@@ -124,7 +124,8 @@ __cp_gethrtime(comm_page_t *cp)
 int
 __cp_clock_gettime_realtime(comm_page_t *cp, timespec_t *tsp)
 {
-	int lock_prev, nslt;
+	uint32_t lock_prev;
+	int nslt;
 	timespec_t now;
 	int64_t hres_adj;
 

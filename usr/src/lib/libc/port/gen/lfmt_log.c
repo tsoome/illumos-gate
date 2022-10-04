@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* lfmt_log() - log info */
 
 #include "lint.h"
@@ -70,7 +68,7 @@ __lfmt_log(const char *text, const char *sev, va_list args, long flag, int ret)
 
 	len = ret + sizeof (long) + 3;
 
-	if (len > sizeof (msg)) {
+	if (len > (long)sizeof (msg)) {
 		errno = ERANGE;
 		return (-2);
 	}

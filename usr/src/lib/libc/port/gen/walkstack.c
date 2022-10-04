@@ -519,7 +519,7 @@ backtrace_symbols_fd(void *const *array, int size, int fd)
 {
 	char linebuffer[MAX_LINE];
 	int i;
-	int len;
+	size_t len;
 
 	for (i = 0; i < size; i++) {
 		len = addrtosymstr(array[i], linebuffer,

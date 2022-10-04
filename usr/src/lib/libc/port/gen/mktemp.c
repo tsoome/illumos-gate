@@ -179,7 +179,7 @@ libc_mktemps(char *as, int slen)
 		xpid >>= (previous_xcnt * 6 - pidshift);
 		xpid &= ((1 << pidshift) - 1);
 
-		if (xpid == pid &&
+		if (xpid == (uint64_t)pid &&
 		    lstat64(as, &buf) == -1 && errno == ENOENT) {
 			lmutex_unlock(&mktemp_lock);
 			return (as);
@@ -197,7 +197,7 @@ libc_mktemps(char *as, int slen)
 	for (;;) {
 		/* num is up to a 36-bit integer ... */
 		uint64_t num = ((uint64_t)pid << tryshift) + (uint64_t)try;
-		int i;
+		uint_t i;
 
 		/* ... which we represent backwards in base 64 */
 		for (i = 0, s = first_x; i < xcnt; i++) {

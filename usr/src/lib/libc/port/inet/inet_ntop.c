@@ -76,8 +76,10 @@ inet_ntop4(const uchar_t *src, char *dst, socklen_t size)
 {
 	static const char fmt[] = "%u.%u.%u.%u";
 	char tmp[sizeof ("255.255.255.255")];
+	int rv;
 
-	if (sprintf(tmp, fmt, src[0], src[1], src[2], src[3]) > size) {
+	rv = sprintf(tmp, fmt, src[0], src[1], src[2], src[3]);
+	if (rv < 0 || (socklen_t)rv > size) {
 		errno = ENOSPC;
 		return (NULL);
 	}
@@ -172,7 +174,7 @@ inet_ntop6(const uchar_t *src, char *dst, socklen_t size)
 	/*
 	 * Check for overflow, copy, and we're done.
 	 */
-	if ((int)(tp - tmp) > size) {
+	if ((unsigned)(tp - tmp) > size) {
 		errno = ENOSPC;
 		return (NULL);
 	}

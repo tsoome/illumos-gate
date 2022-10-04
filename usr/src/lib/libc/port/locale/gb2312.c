@@ -104,7 +104,7 @@ _GB2312_mbrtowc(wchar_t *_RESTRICT_KYWD pwc, const char *_RESTRICT_KYWD s,
 
 	gs = (_GB2312State *)ps;
 
-	if (gs->count < 0 || gs->count > sizeof (gs->bytes)) {
+	if (gs->count < 0 || (size_t)gs->count > sizeof (gs->bytes)) {
 		errno = EINVAL;
 		return ((size_t)-1);
 	}

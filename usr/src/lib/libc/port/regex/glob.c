@@ -556,7 +556,8 @@ glob0(const wcat_t *pattern, glob_t *pglob, struct glob_lim *limitp,
     int (*errfunc)(const char *, int))
 {
 	const wcat_t *qpatnext;
-	int err, oldpathc;
+	int err;
+	size_t oldpathc;
 	wchar_t c;
 	int a;
 	wcat_t *bufnext, patbuf[PATH_MAX];
@@ -1191,7 +1192,7 @@ fail:
 void
 _globfree_ext(glob_t *pglob)
 {
-	int i;
+	size_t i;
 	char **pp;
 
 	if (pglob->gl_pathv != NULL) {

@@ -929,7 +929,7 @@ static const int tries[] = {196, 120, 60, 3};
 int
 enable_extended_FILE_stdio(int fd, int action)
 {
-	int i;
+	unsigned i;
 
 	if (action < 0)
 		action = SIGABRT;	/* default signal */

@@ -179,7 +179,7 @@ get_info_by_class(id_t classid)
 {
 	pcinfo_t	pcinfo;
 	pcclass_t	*pccp;
-	int		policy;
+	size_t		policy;
 
 	if (classid < 0) {
 		errno = EINVAL;

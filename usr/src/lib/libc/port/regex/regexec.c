@@ -55,6 +55,46 @@
 #include "utils.h"
 #include "regex2.h"
 
+static int
+CHIN1(cset *cs, wint_t ch)
+{
+	unsigned int i;
+
+	assert(ch >= 0);
+	if (ch < NC)
+		return (((cs->bmp[ch >> 3] & (1 << (ch & 7))) != 0) ^
+		    cs->invert);
+	for (i = 0; i < cs->nwides; i++) {
+		if (cs->icase) {
+			if (ch == towlower(cs->wides[i]) ||
+			    ch == towupper(cs->wides[i]))
+				return (!cs->invert);
+		} else if (ch == cs->wides[i])
+			return (!cs->invert);
+	}
+	for (i = 0; i < cs->nranges; i++)
+		if (cs->ranges[i].min <= ch && ch <= cs->ranges[i].max)
+			return (!cs->invert);
+	for (i = 0; i < cs->ntypes; i++)
+		if (iswctype(ch, cs->types[i]))
+			return (!cs->invert);
+	return (cs->invert);
+}
+
+static int
+CHIN(cset *cs, wint_t ch)
+{
+	assert(ch >= 0);
+	if (ch < NC)
+		return (((cs->bmp[ch >> 3] & (1 << (ch & 7))) != 0) ^
+		    cs->invert);
+	else if (cs->icase)
+		return (CHIN1(cs, ch) || CHIN1(cs, towlower(ch)) ||
+		    CHIN1(cs, towupper(ch)));
+	else
+		return (CHIN1(cs, ch));
+}
+
 static size_t
 xmbrtowc(wint_t *wi, const char *s, size_t n, mbstate_t *mbs, wint_t dummy)
 {

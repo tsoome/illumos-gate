@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "file64.h"
 #include <sys/types.h>
@@ -47,7 +45,8 @@ const char *PASSWD = "/etc/passwd";
 int
 getpw(uid_t uid, char buf[])
 {
-	int n, c;
+	int c;
+	uint_t n;
 	char *bp;
 	FILE *fp;
 	rmutex_t *lk;

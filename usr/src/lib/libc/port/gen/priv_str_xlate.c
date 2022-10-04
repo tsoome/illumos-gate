@@ -433,6 +433,7 @@ priv_gettext(const char *priv)
 	locale_t curloc;
 	const char *loc;
 	char	*ret;
+	int	rv;
 
 	/* Not a valid privilege */
 	if (priv_getbyname(priv) < 0)
@@ -441,8 +442,9 @@ priv_gettext(const char *priv)
 	curloc = uselocale(NULL);
 	loc = current_locale(curloc, LC_MESSAGES);
 
-	if (snprintf(file, sizeof (file),
-	    _DFLT_LOC_PATH "%s/LC_MESSAGES/priv_names", loc) < sizeof (file)) {
+	rv = snprintf(file, sizeof (file),
+	    _DFLT_LOC_PATH "%s/LC_MESSAGES/priv_names", loc);
+	if (rv < 0 || rv < (int)sizeof (file)) {
 		ret = do_priv_gettext(priv, (const char *)file);
 		if (ret != NULL)
 			return (ret);

@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include <string.h>
 #include <limits.h>
@@ -111,7 +109,8 @@ getpriority(int which, id_t who)
 	idtype_t idtype;
 	pcnice_t pcnice;
 
-	if ((idtype = prio_to_idtype(which)) == -1) {
+	idtype = prio_to_idtype(which);
+	if ((int)idtype == -1) {
 		errno = EINVAL;
 		return (-1);
 	}
@@ -153,7 +152,8 @@ setpriority(int which, id_t who, int prio)
 	pcnice_t pcnice;
 	int ret;
 
-	if ((idtype = prio_to_idtype(which)) == -1) {
+	idtype = prio_to_idtype(which);
+	if ((int)idtype == -1) {
 		errno = EINVAL;
 		return (-1);
 	}

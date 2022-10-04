@@ -92,7 +92,7 @@ __tls_static_mods(TLS_modinfo **tlslist, unsigned long statictlssize)
 	TLS_modinfo *modinfo;
 	caddr_t data;
 	caddr_t data_end;
-	int max_modid;
+	unsigned long max_modid;
 
 	primary_link_map = 1;		/* inform libc_init */
 	if (statictlssize == 0)
@@ -314,12 +314,12 @@ __tls_get_addr(TLS_index *tls_index)
  * Constructors for initially allocated static TLS are called here.
  */
 void
-tls_setup()
+tls_setup(void)
 {
 	ulwp_t *self = curthread;
 	tls_metadata_t *tlsm = &self->ul_uberdata->tls_metadata;
 	TLS_modinfo *tlsp;
-	long moduleid;
+	ulong_t moduleid;
 	ulong_t nmods;
 
 	if (tlsm->static_tls.tls_size == 0)	/* no static TLS */
@@ -375,7 +375,7 @@ tls_exit()
 	tls_metadata_t *tlsm = &self->ul_uberdata->tls_metadata;
 	tls_t *tlsent;
 	TLS_modinfo *tlsp;
-	long moduleid;
+	ulong_t moduleid;
 	ulong_t nmods;
 
 	if (tlsm->static_tls.tls_size == 0 && self->ul_ntlsent == 0)

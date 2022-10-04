@@ -177,7 +177,6 @@ mq_is_valid(mqdes_t *mqdp)
 static void
 mq_init(mqhdr_t *mqhp, size_t msgsize, ssize_t maxmsg)
 {
-	int		i;
 	uint64_t	temp;
 	uint64_t	currentp;
 	uint64_t	nextp;
@@ -224,7 +223,7 @@ mq_init(mqhdr_t *mqhp, size_t msgsize, ssize_t maxmsg)
 	MQ_PTR(mqhp, currentp)->msg_next = 0;
 
 	temp = (mqhp->mq_maxsz + MQ_ALIGNSIZE - 1) & ~(MQ_ALIGNSIZE - 1);
-	for (i = 1; i < mqhp->mq_maxmsg; i++) {
+	for (uint32_t i = 1; i < mqhp->mq_maxmsg; i++) {
 		nextp = currentp + sizeof (msghdr_t) + temp;
 		MQ_PTR(mqhp, currentp)->msg_next = nextp;
 		MQ_PTR(mqhp, nextp)->msg_next = 0;
@@ -683,7 +682,7 @@ __mq_timedsend(mqd_t mqdes, const char *msg_ptr, size_t msg_len,
 		errno = EINVAL;
 		return (-1);
 	}
-	if (msg_len > mqhp->mq_maxsz) {
+	if (msg_len > (uint64_t)mqhp->mq_maxsz) {
 		errno = EMSGSIZE;
 		return (-1);
 	}
@@ -815,7 +814,7 @@ __mq_timedreceive(mqd_t mqdes, char *msg_ptr, size_t msg_len,
 
 	mqhp = mqdp->mqd_mq;
 
-	if (msg_len < mqhp->mq_maxsz) {
+	if (msg_len < (uint64_t)mqhp->mq_maxsz) {
 		errno = EMSGSIZE;
 		return (ssize_t)(-1);
 	}

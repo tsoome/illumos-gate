@@ -77,7 +77,7 @@ vasprintf(char **str, const char *format, va_list ap)
 			free(newstr);
 			return (-1);
 		}
-		if (ret < len) {
+		if ((size_t)ret < len) {
 			*str = newstr;
 			return (ret);
 		}

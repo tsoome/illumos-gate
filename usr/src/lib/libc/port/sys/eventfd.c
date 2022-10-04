@@ -47,7 +47,8 @@ eventfd(unsigned int initval, int flags)
 		return (-1);
 	}
 
-	if (write(fd, &val, sizeof (val)) < sizeof (val)) {
+	ssize_t rv = write(fd, &val, sizeof (val));
+	if (rv < 0 || (size_t)rv < sizeof (val)) {
 		(void) close(fd);
 		return (-1);
 	}

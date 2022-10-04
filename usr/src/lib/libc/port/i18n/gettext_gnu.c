@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "mtlib.h"
 #include <ctype.h>
@@ -1104,7 +1102,6 @@ build_rev1_info(Msg_g_node *p)
 	size_t	hash_mem_size;
 	size_t	d_msgid_size, d_msgstr_size;
 	char	*chunk, *mchunk;
-	int	i;
 
 #ifdef GETTEXT_DEBUG
 	gprintf(0, "******* entering build_rev1_info(0x%p)\n", p);
@@ -1143,12 +1140,12 @@ build_rev1_info(Msg_g_node *p)
 	}
 
 	/* copy the original hash table into the dynamic hash table */
-	for (i = 0; i < hash_size; i++) {
+	for (uint32_t i = 0; i < hash_size; i++) {
 		d_hash[i] = SWAP(p, p->hash_table[i]);
 	}
 
 	/* fill in the dynamic hash table with dynamic messages */
-	for (i = 0; i < num_of_d_str; i++) {
+	for (uint32_t i = 0; i < num_of_d_str; i++) {
 		hash_value = get_hashid(mchunk + p->d_msg[MSGID][i].offset,
 		    NULL);
 		idx = get_hash_index(d_hash, hash_value, hash_size);

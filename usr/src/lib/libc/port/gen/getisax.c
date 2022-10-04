@@ -46,7 +46,7 @@ extern long ___getauxval(int type);
 uint_t
 getisax(uint32_t *array, uint_t n)
 {
-	int i;
+	uint_t i;
 	static uint32_t auxv_hwcap;
 	static uint32_t auxv_hwcap_2;
 	static uint32_t auxv_hwcap_3;

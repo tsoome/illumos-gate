@@ -25,8 +25,6 @@
  * Copyright (c) 2016 by Delphix. All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include <mtlib.h>
 #include <sys/types.h>
@@ -136,7 +134,7 @@ getfield(constp *nextp, constp limit, int uns, void *valp)
 	 *   Ugh.  (It's convenient to terminate with a colon rather than \0).
 	 */
 	if ((endfield = memccpy(numbuf, p, ':', len)) == 0) {
-		if (len != limit - p) {
+		if (len != (size_t)(limit - p)) {
 			/* Error -- field is too big to be a legit number */
 			return (0);
 		}
@@ -196,7 +194,7 @@ str2spwd(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
 		lencopy = p - instr;
 		p++;
 	}
-	if (lencopy + 1 > buflen) {
+	if (lencopy + 1 > (size_t)buflen) {
 		return (NSS_STR_PARSE_ERANGE);
 	}
 

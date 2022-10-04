@@ -357,11 +357,11 @@ advance(const char *lp, char *ep)
 			return (0);
 
 		case CBRA:
-			braslist[*ep++] = (char *)lp;
+			braslist[(int)(*ep++)] = (char *)lp;
 			continue;
 
 		case CKET:
-			braelist[*ep++] = (char *)lp;
+			braelist[(int)(*ep++)] = (char *)lp;
 			continue;
 
 		case CBACK:

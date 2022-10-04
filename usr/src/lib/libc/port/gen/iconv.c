@@ -189,7 +189,7 @@ search_alias(char **paddr, size_t size, const char *variant)
 			continue;
 		}
 
-		if (((p - sp) != var_len) ||
+		if (((size_t)(p - sp) != var_len) ||
 		    ((strncmp(sp, variant, var_len) != 0) &&
 		    (strncasecmp(sp, variant, var_len) != 0))) {
 			/*

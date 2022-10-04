@@ -84,7 +84,7 @@ fputs(const char *ptr, FILE *iop)
 			 * Then, copies 'len' bytes from 'ptr' to the buffer
 			 * of 'iop'.
 			 */
-			len = (c = (ptrlen <= n)) ? ptrlen : n;
+			len = (c = ((ssize_t)ptrlen <= n)) ? ptrlen : n;
 			(void) memcpy(cptr, ptr, len);
 			iop->_cnt -= len;
 			iop->_ptr += len;

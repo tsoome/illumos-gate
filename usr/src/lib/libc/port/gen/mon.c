@@ -333,7 +333,7 @@ monitor(int (*alowpc)(void), int (*ahighpc)(void), WORD *buffer,
 	 * scale is a 16 bit fixed point fraction with the decimal
 	 * point at the left
 	 */
-	if (bufsize < text) {
+	if (bufsize < (size_t)text) {
 		/* make sure cast is done first! */
 		double temp = (double)bufsize;
 		scale = (uint_t)((temp * (long)0200000L) / text);
@@ -389,6 +389,7 @@ writeBlocks(void)
 
 	if (ok) {		/* if the hdr went out ok.. */
 		size_t amt;
+		ssize_t rv;
 		char *p;
 
 		/* write out the count arrays (region 2's) */
@@ -396,7 +397,8 @@ writeBlocks(void)
 			amt = ap->monBuffer->nfns * sizeof (struct cnt);
 			p = (char *)ap->monBuffer + sizeof (struct hdr);
 
-			ok = (write(fd, p, amt) == amt);
+			rv = write(fd, p, amt);
+			ok = (rv >= 0 && (size_t)rv == amt);
 		}
 
 		/* count arrays out; write out histgm area */
@@ -405,8 +407,8 @@ writeBlocks(void)
 			    (histp->monBuffer->nfns * sizeof (struct cnt));
 			amt = histp->histSize;
 
-			ok = (write(fd, p, amt) == amt);
-
+			rv = write(fd, p, amt);
+			ok = (rv >= 0 && (size_t)rv == amt);
 		}
 	}
 

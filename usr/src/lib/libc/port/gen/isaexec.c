@@ -52,7 +52,7 @@ isaexec(const char *execname, char *const *argv, char *const *envp)
 	char *pathname;
 	char *str;
 	char *lasts;
-	size_t isalen = 255;		/* wild guess */
+	long isalen = 257;		/* suggested by sysinfo(2) */
 	size_t len;
 	int saved_errno;
 
@@ -61,8 +61,9 @@ isaexec(const char *execname, char *const *argv, char *const *envp)
 	 */
 	isalist = malloc(isalen);
 	do {
-		long ret = sysinfo(SI_ISALIST, isalist, isalen);
-		if (ret == -1l) {
+		int ret = sysinfo(SI_ISALIST, isalist, isalen);
+
+		if (ret == -1) {
 			free(isalist);
 			errno = ENOENT;
 			return (-1);

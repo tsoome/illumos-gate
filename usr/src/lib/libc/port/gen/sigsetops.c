@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * POSIX signal manipulation functions.
  */
@@ -58,7 +56,7 @@ static int sigsinit;
 static int
 sigvalid(int sig)
 {
-	if (sig <= 0 || sig > (MAXBITNO * SIGSETSIZE))
+	if (sig <= 0 || (size_t)sig > (MAXBITNO * SIGSETSIZE))
 		return (0);
 
 	if (!sigsinit) {

@@ -101,7 +101,7 @@ __wcsnrtombs_std(char *_RESTRICT_KYWD dst, const wchar_t **_RESTRICT_KYWD src,
 				*src = s;
 				return ((size_t)-1);
 			}
-			if (nb > (int)len) {
+			if (nb > len) {
 				/* MB sequence for character won't fit. */
 				*ps = mbsbak;
 				break;

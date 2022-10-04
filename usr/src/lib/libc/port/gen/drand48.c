@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	drand48, etc. pseudo-random number generator
  *	This implementation assumes unsigned short integers of at least
@@ -73,7 +71,7 @@ static mutex_t seed_lock = DEFAULTMUTEX;
 #define	HIGH(x)	LOW((x) >> N)
 #define	MUL(x, y, z)	{ int32_t l = (int32_t)(x) * (int32_t)(y); \
 		(z)[0] = LOW(l); (z)[1] = HIGH(l); }
-#define	CARRY(x, y)	((int32_t)(x) + (int32_t)(y) > MASK)
+#define	CARRY(x, y)	((int32_t)(x) + (int32_t)(y) > (int32_t)MASK)
 #define	ADDEQU(x, y, z)	(z = CARRY(x, (y)), x = LOW(x + (y)))
 #define	X0	0x330E
 #define	X1	0xABCD

@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	Memory management: malloc(), realloc(), free().
  *
@@ -133,7 +131,8 @@ _smalloc(size_t size)
 
 	if (List[i] == NULL) {
 		TREE *np;
-		int n;
+		size_t n;
+
 		/* number of blocks to get at one time */
 #define	NPS (WORDSIZE*8)
 		ASSERT((size + WORDSIZE) * NPS >= MINSIZE);

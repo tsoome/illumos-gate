@@ -251,7 +251,7 @@ refresh_data(void)
 	int i;
 
 	if (getprivinfo(&ii, sizeof (ii)) != 0 ||
-	    ii.priv_max == privdata->pd_nprivs)
+	    ii.priv_max == (uint32_t)privdata->pd_nprivs)
 		return (B_FALSE);
 
 	ip = alloca(PRIV_IMPL_INFO_SIZE(&ii));
@@ -349,7 +349,7 @@ __priv_getdata(void)
 
 			if (zone_getattr(getzoneid(), ZONE_ATTR_PRIVSET,
 			    tmp->pd_zoneset, tmp->pd_setsize)
-			    == tmp->pd_setsize) {
+			    == (ssize_t)tmp->pd_setsize) {
 				membar_producer();
 				privdata = tmp;
 				goto out;
@@ -947,7 +947,7 @@ priv_issubset(const priv_set_t *a, const priv_set_t *b)
 }
 
 #define	PRIV_CHANGE_BODY(a, op, b) \
-	int i; \
+	uint32_t i; \
 	priv_data_t *d; \
 \
 	LOADPRIVDATA(d); \

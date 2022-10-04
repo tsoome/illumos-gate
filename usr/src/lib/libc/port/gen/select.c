@@ -90,7 +90,7 @@ fd_sets_count(int limit, fd_set *in, fd_set *out, fd_set *ex)
 	if (limit <= 0)
 		return (0);
 
-	for (int i = 0; i < fd_set_size(limit); i++) {
+	for (size_t i = 0; i < fd_set_size(limit); i++) {
 		long v = (in->fds_bits[i] | out->fds_bits[i] | ex->fds_bits[i]);
 
 		while (v != 0) {

@@ -191,7 +191,7 @@ rw_write_held(rwlock_t *rwlp)
 	rval = ((readers & URW_WRITE_LOCKED) &&
 	    rwlp->rwlock_owner == (uintptr_t)self &&
 	    (rwlp->rwlock_type == USYNC_THREAD ||
-	    rwlp->rwlock_ownerpid == self->ul_uberdata->pid));
+	    rwlp->rwlock_ownerpid == (upad64_t)self->ul_uberdata->pid));
 
 	preempt(self);
 	return (rval);

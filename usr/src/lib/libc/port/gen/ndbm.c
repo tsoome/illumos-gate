@@ -617,7 +617,7 @@ dbm_do_nextkey(DBM *db, datum inkey)
 
 		/* begin put makdatum inline */
 
-		if ((unsigned)i >= sp[0]) {
+		if (i >= sp[0]) {
 			item.dptr = NULL;
 			item.dsize = 0;
 			break; /* from below */
@@ -636,7 +636,7 @@ dbm_do_nextkey(DBM *db, datum inkey)
 
 
 		n = key.dsize;
-		if (n != item.dsize) {
+		if (n != (long)item.dsize) {
 			if ((n - item.dsize) <= 0)
 				continue;
 		} else {
@@ -671,7 +671,7 @@ keep_going:
 			/* if (cmpdatum(bitem, item) < 0) */
 
 			n = bitem.dsize;
-			if (n != item.dsize) {
+			if (n != (long)item.dsize) {
 				if ((n - item.dsize) < 0) {
 					bitem = item;
 					j = i;
@@ -848,7 +848,7 @@ makdatum(char *buf, int n)
 	datum item;
 
 	sp = (short *)(uintptr_t)buf;
-	if ((unsigned)n >= sp[0]) {
+	if (n >= sp[0]) {
 		item.dptr = NULL;
 		item.dsize = 0;
 		return (item);
@@ -868,7 +868,7 @@ cmpdatum(datum d1, datum d2)
 	char *p1, *p2;
 
 	n = d1.dsize;
-	if (n != d2.dsize)
+	if (n != (long)d2.dsize)
 		return ((int)(n - d2.dsize));
 	if (n == 0)
 		return (0);
@@ -889,13 +889,14 @@ static int
 finddatum(char *buf, datum item)
 {
 	short *sp;
-	int i, n, j;
+	int i, j;
+	long n;
 
 	sp = (short *)(uintptr_t)buf;
 	n = PBLKSIZ;
 	for (i = 0, j = sp[0]; i < j; i += 2, n = sp[i]) {
 		n -= sp[i + 1];
-		if (n != item.dsize)
+		if (n != (int)item.dsize)
 			continue;
 		if (n == 0 || memcmp(&buf[sp[i+1]], item.dptr, n) == 0)
 			return (i);
@@ -969,7 +970,7 @@ delitem(char *buf, int n)
 
 	sp = (short *)(uintptr_t)buf;
 	i2 = sp[0];
-	if ((unsigned)n >= i2 || (n & 1))
+	if (n >= i2 || (n & 1))
 		return (0);
 	if (n == i2-2) {
 		sp[0] -= 2;

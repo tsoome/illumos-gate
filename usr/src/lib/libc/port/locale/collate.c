@@ -100,7 +100,7 @@ __lc_collate_load(const char *locname)
 		errno = EINVAL;
 		return (NULL);
 	}
-	if (sbuf.st_size < (COLLATE_STR_LEN + sizeof (info))) {
+	if (sbuf.st_size < (off_t)(COLLATE_STR_LEN + sizeof (info))) {
 		(void) close(fd);
 		errno = EINVAL;
 		return (NULL);

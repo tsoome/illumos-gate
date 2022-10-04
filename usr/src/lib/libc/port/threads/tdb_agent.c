@@ -33,46 +33,74 @@
 #include "thr_uberdata.h"
 
 static void
-tdb_event_ready(void) {}
+tdb_event_ready(void)
+{
+}
 
 static void
-tdb_event_sleep(void) {}
+tdb_event_sleep(void)
+{
+}
 
 static void
-tdb_event_switchto(void) {}
+tdb_event_switchto(void)
+{
+}
 
 static void
-tdb_event_switchfrom(void) {}
+tdb_event_switchfrom(void)
+{
+}
 
 static void
-tdb_event_lock_try(void) {}
+tdb_event_lock_try(void)
+{
+}
 
 static void
-tdb_event_catchsig(void) {}
+tdb_event_catchsig(void)
+{
+}
 
 static void
-tdb_event_idle(void) {}
+tdb_event_idle(void)
+{
+}
 
 static void
-tdb_event_create(void) {}
+tdb_event_create(void)
+{
+}
 
 static void
-tdb_event_death(void) {}
+tdb_event_death(void)
+{
+}
 
 static void
-tdb_event_preempt(void) {}
+tdb_event_preempt(void)
+{
+}
 
 static void
-tdb_event_pri_inherit(void) {}
+tdb_event_pri_inherit(void)
+{
+}
 
 static void
-tdb_event_reap(void) {}
+tdb_event_reap(void)
+{
+}
 
 static void
-tdb_event_concurrency(void) {}
+tdb_event_concurrency(void)
+{
+}
 
 static void
-tdb_event_timeout(void) {}
+tdb_event_timeout(void)
+{
+}
 
 /*
  * uberflags.uf_tdb_register_sync is set to REGISTER_SYNC_ENABLE by a debugger
@@ -130,7 +158,6 @@ alloc_sync_addr(void *addr)
 
 	if ((sap = tdbp->tdb_sync_addr_free) == NULL) {
 		void *vaddr;
-		int i;
 
 		/*
 		 * Don't keep trying after mmap() has already failed.
@@ -148,7 +175,7 @@ alloc_sync_addr(void *addr)
 			return (NULL);
 		}
 		sap = tdbp->tdb_sync_addr_free = vaddr;
-		for (i = 1; i < tdbp->tdb_sync_alloc; sap++, i++)
+		for (size_t i = 1; i < tdbp->tdb_sync_alloc; sap++, i++)
 			sap->next = (uintptr_t)(sap + 1);
 		sap->next = (uintptr_t)0;
 		tdbp->tdb_sync_addr_last = sap;
@@ -171,7 +198,6 @@ initialize_sync_hash()
 	uint64_t *addr_hash;
 	tdb_sync_stats_t *sap;
 	void *vaddr;
-	int i;
 
 	if (tdbp->tdb_hash_alloc_failed)
 		return;
@@ -203,7 +229,7 @@ initialize_sync_hash()
 	/* initialize the free list */
 	tdbp->tdb_sync_addr_free = sap =
 	    (tdb_sync_stats_t *)&addr_hash[TDB_HASH_SIZE];
-	for (i = 1; i < tdbp->tdb_sync_alloc; sap++, i++)
+	for (size_t i = 1; i < tdbp->tdb_sync_alloc; sap++, i++)
 		sap->next = (uintptr_t)(sap + 1);
 	sap->next = (uintptr_t)0;
 	tdbp->tdb_sync_addr_last = sap;

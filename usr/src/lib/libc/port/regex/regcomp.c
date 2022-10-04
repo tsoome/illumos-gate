@@ -191,6 +191,47 @@ static int never = 0;		/* for use in asserts; shuts lint up */
 #define	never	0		/* some <assert.h>s have bugs too */
 #endif
 
+static int
+CHIN1(cset *cs, wint_t ch)
+{
+	unsigned int i;
+
+	assert(ch >= 0);
+	if (ch < NC)
+		return (((cs->bmp[ch >> 3] & (1 << (ch & 7))) != 0) ^
+		    cs->invert);
+	for (i = 0; i < cs->nwides; i++) {
+		if (cs->icase) {
+			if (ch == towlower(cs->wides[i]) ||
+			    ch == towupper(cs->wides[i]))
+				return (!cs->invert);
+		} else if (ch == cs->wides[i])
+			return (!cs->invert);
+	}
+	for (i = 0; i < cs->nranges; i++)
+		if (cs->ranges[i].min <= ch && ch <= cs->ranges[i].max)
+			return (!cs->invert);
+	for (i = 0; i < cs->ntypes; i++)
+		if (iswctype(ch, cs->types[i]))
+			return (!cs->invert);
+	return (cs->invert);
+}
+
+static int
+CHIN(cset *cs, wint_t ch)
+{
+
+	assert(ch >= 0);
+	if (ch < NC)
+		return (((cs->bmp[ch >> 3] & (1 << (ch & 7))) != 0) ^
+		    cs->invert);
+	else if (cs->icase)
+		return (CHIN1(cs, ch) || CHIN1(cs, towlower(ch)) ||
+		    CHIN1(cs, towupper(ch)));
+	else
+		return (CHIN1(cs, ch));
+}
+
 /*
  * regcomp - interface for parser and compilation
  */

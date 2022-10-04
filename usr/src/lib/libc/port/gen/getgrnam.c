@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #pragma weak _getgrnam	= getgrnam
 #pragma weak _getgrgid	= getgrgid
 
@@ -70,7 +68,7 @@ get_grbuf(int max_buf)
 	else
 		blen = sysconf(_SC_GETGR_R_SIZE_MAX);	/* max size */
 	if (*buffer) {
-		if ((*buffer)->buflen >= blen)	/* existing size fits */
+		if ((size_t)(*buffer)->buflen >= blen)	/* existing size fits */
 			return (*buffer);
 		NSS_XbyY_FREE(buffer);		/* existing is too small */
 	}

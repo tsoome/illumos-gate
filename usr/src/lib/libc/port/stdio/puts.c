@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "file64.h"
 #include "mtlib.h"
@@ -81,7 +79,7 @@ puts(const char *ptr)
 		 * Then, copies 'len' bytes from 'ptr' to the buffer
 		 * of stdout.
 		 */
-		len = (c = (ptrlen <= n)) ? ptrlen : n;
+		len = (c = ((ssize_t)ptrlen <= n)) ? ptrlen : n;
 		(void) memcpy(cptr, ptr, len);
 		stdout->_cnt -= len;
 		stdout->_ptr += len;

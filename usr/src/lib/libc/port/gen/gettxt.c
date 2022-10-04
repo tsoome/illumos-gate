@@ -165,9 +165,9 @@ try_C:
 		return (handle_return(dflt_str));
 	}
 
-	if (snprintf(pathname, sizeof (pathname),
-	    _DFLT_LOC_PATH "%s" MESSAGES "%s", dbc->loc, msgfile) >=
-	    sizeof (pathname)) {
+	int rv = snprintf(pathname, sizeof (pathname),
+	    _DFLT_LOC_PATH "%s" MESSAGES "%s", dbc->loc, msgfile);
+	if (rv < 0 || (size_t)rv >= sizeof (pathname)) {
 		lfree(dbl, sizeof (struct db_list));
 		lmutex_unlock(&gettxt_lock);
 		return (handle_return(dflt_str));

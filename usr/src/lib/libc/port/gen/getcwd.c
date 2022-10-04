@@ -48,6 +48,8 @@ getcwd(char *pathname, size_t size)
 	int alloc = 0;
 
 	if (size == 0 && pathname == NULL) {
+		long pc;
+
 		/*
 		 * If no size was provided, start with a buffer that should
 		 * accommodate any normal path and, if it is not big enough,
@@ -61,8 +63,11 @@ getcwd(char *pathname, size_t size)
 		 * This is an arbitrary limit which is far bigger than the
 		 * length of any practical path on the system.
 		 */
-		if ((size = pathconf(".", _PC_PATH_MAX)) == -1)
+		pc = pathconf(".", _PC_PATH_MAX);
+		if (pc == -1)
 			size = MAXPATHLEN;
+		else
+			size = pc;
 
 		while (size <= 0x20000) {
 			if ((pathname = reallocf(pathname, size)) == NULL) {

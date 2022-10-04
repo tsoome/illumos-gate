@@ -278,7 +278,7 @@ label:
 
 		case 'A':
 		case 'a':
-			for (i = 0; i < asizeof(tptr->weekday); i++) {
+			for (i = 0; i < (int)asizeof(tptr->weekday); i++) {
 				len = strlen(tptr->weekday[i]);
 				if (strncasecmp(buf, tptr->weekday[i], len) ==
 				    0)
@@ -363,7 +363,7 @@ label:
 		case 'B':
 		case 'b':
 		case 'h':
-			for (i = 0; i < asizeof(tptr->month); i++) {
+			for (i = 0; i < (int)asizeof(tptr->month); i++) {
 				len = strlen(tptr->month[i]);
 				if (strncasecmp(buf, tptr->month[i], len) == 0)
 					break;
@@ -373,7 +373,8 @@ label:
 			 * wasn't found.
 			 */
 			if (i == asizeof(tptr->month)) {
-				for (i = 0; i < asizeof(tptr->month); i++) {
+				for (i = 0; i < (int)asizeof(tptr->month);
+				    i++) {
 					len = strlen(tptr->mon[i]);
 					if (strncasecmp(buf, tptr->mon[i],
 					    len) == 0)

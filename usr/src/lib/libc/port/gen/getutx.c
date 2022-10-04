@@ -488,7 +488,6 @@ invoke_utmp_update(const struct utmpx *entryx)
 	int cancel_state;
 	pid_t child;
 	pid_t w;
-	int i;
 	char user[STRSZ], id[STRSZ], line[STRSZ], pid[STRSZ], type[STRSZ],
 	    term[STRSZ], exit[STRSZ], time[STRSZ], time_usec[STRSZ],
 	    session_id[STRSZ], syslen[32];
@@ -518,7 +517,7 @@ invoke_utmp_update(const struct utmpx *entryx)
 	(void) sprintf(session_id, "%d", entryx->ut_session);
 
 	cp = (unsigned char *)entryx->pad;
-	for (i = 0; i < sizeof (entryx->pad); ++i) {
+	for (size_t i = 0; i < sizeof (entryx->pad); ++i) {
 		pad[i << 1] = bin2hex[(cp[i] >> 4) & 0xF];
 		pad[(i << 1) + 1] = bin2hex[cp[i] & 0xF];
 	}

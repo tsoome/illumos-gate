@@ -27,8 +27,6 @@
 /*	Copyright (c) 1986 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifndef	_WCS_LONGLONG
 #pragma weak _wcstoul = wcstoul
 #endif
@@ -110,7 +108,7 @@ wcstoul(const wchar_t *str, wchar_t **ptr, int base)
 		if (val > multmax)
 			goto overflow;
 		val *= base;
-		if (_WULONG_MAX - val < xx)
+		if (_WULONG_MAX - val < (unsigned long)xx)
 			goto overflow;
 		val += xx;
 	}

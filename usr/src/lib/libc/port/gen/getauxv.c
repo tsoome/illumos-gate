@@ -92,14 +92,14 @@ _getaux(int type)
 	/*
 	 * Scan the auxiliary entries looking for the required type.
 	 */
-	for (i = 0; i < nauxv; i++)
+	for (size_t i = 0; i < nauxv; i++)
 		if (auxb[i].a_type == type)
 			return (&auxb[i]);
 
 	/*
 	 * No auxiliary array (static executable) or entry not found.
 	 */
-	return ((auxv_t *)0);
+	return (NULL);
 }
 
 /*

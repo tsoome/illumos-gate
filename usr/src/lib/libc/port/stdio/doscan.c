@@ -795,7 +795,7 @@ number(int *chcount, int *flag_eof, int stow, int type, int len, int size,
 
 	if (stow && digitseen) {
 		/* suppress possible overflow on 2's-comp negation */
-		if (negflg && lcval != (1ULL << 63))
+		if (negflg && (unsigned long long)lcval != (1ULL << 63))
 			lcval = -lcval;
 		switch (size) {
 			case 'm':
@@ -907,8 +907,7 @@ _mkarglst(const char *fmt, stva_list args, stva_list arglst[])
 #define	SPNSTR2	"# +-.0123456789hL$"
 #endif /* _WIDE */
 
-	int maxnum, curargno;
-	size_t n;
+	size_t maxnum, curargno, n;
 
 	maxnum = -1;
 	curargno = 0;

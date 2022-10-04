@@ -31,7 +31,7 @@ getentropy(void *buf, size_t buflen)
 	}
 
 	ret = getrandom(buf, buflen, 0);
-	if (ret == -1 || ret != buflen) {
+	if (ret == -1 || (size_t)ret != buflen) {
 		if (errno != EFAULT)
 			errno = EIO;
 		return (-1);

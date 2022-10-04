@@ -86,7 +86,7 @@ _GB18030_mbrtowc(wchar_t *_RESTRICT_KYWD pwc, const char *_RESTRICT_KYWD s,
 
 	gs = (_GB18030State *)ps;
 
-	if (gs->count < 0 || gs->count > sizeof (gs->bytes)) {
+	if (gs->count < 0 || gs->count > (int)sizeof (gs->bytes)) {
 		errno = EINVAL;
 		return ((size_t)-1);
 	}

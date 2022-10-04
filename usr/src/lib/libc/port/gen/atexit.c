@@ -302,7 +302,7 @@ _preexec_tsd_unload(Lc_addr_range_t range[], uint_t count)
 {
 	tsd_metadata_t *tsdm = &curthread->ul_uberdata->tsd_metadata;
 	void (*func)(void *);
-	int key;
+	uint_t key;
 
 	lmutex_lock(&tsdm->tsdm_lock);
 	for (key = 1; key < tsdm->tsdm_nused; key++) {
