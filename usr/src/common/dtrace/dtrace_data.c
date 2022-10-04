@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 
 /*
@@ -64,8 +62,7 @@
 
 #if defined(__sparc)
 
-#pragma align 64(dtrace_data)
-uint32_t	dtrace_data[32] = {
+uint32_t	dtrace_data[32] __aligned(64)  = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0x9de04000,			/* save %g1, %g0, %sp */
@@ -79,8 +76,7 @@ uint32_t	dtrace_data[32] = {
 
 #elif defined(__amd64)
 
-#pragma align 64(dtrace_data)
-uint8_t	dtrace_data[64] = {
+uint8_t	dtrace_data[64] __aligned(64) = {
 	0, 0, 0, 0, 0, 0, 0, 0,		/* self pointer (must be zero) */
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -93,8 +89,7 @@ uint8_t	dtrace_data[64] = {
 
 #elif defined(__i386)
 
-#pragma align 64(dtrace_data)
-uint8_t	dtrace_data[64] = {
+uint8_t	dtrace_data[64] __aligned(64) = {
 	0, 0, 0, 0,			/* self pointer (must be zero)  */
 	0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
