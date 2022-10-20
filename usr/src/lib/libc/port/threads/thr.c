@@ -2938,16 +2938,14 @@ _thread_probe_getfunc()
 
 void * (*thr_probe_getfunc_addr)(void) = _thread_probe_getfunc;
 
-/* ARGSUSED */
 void
-_resume(ulwp_t *ulwp, caddr_t sp, int dontsave)
+_resume(ulwp_t *ulwp __unused, caddr_t sp __unused, int dontsave __unused)
 {
 	/* never called */
 }
 
-/* ARGSUSED */
 void
-_resume_ret(ulwp_t *oldlwp)
+_resume_ret(ulwp_t *oldlwp __unused)
 {
 	/* never called */
 }
