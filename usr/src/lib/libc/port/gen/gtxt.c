@@ -272,7 +272,7 @@ __gtxt(const char *catname, int id, const char *dflt)
 	 */
 	if (!catname || !*catname) {
 		lrw_rdlock(&_rw_cur_cat);
-		if (cur_cat == NULL || !*cur_cat) {
+		if (*cur_cat == '\0') {
 			lrw_unlock(&_rw_cur_cat);
 			return (not_found);
 		}

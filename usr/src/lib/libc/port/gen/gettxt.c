@@ -105,7 +105,7 @@ gettxt(const char *msg_id, const char *dflt_str)
 		msgfile[name_len] = '\0';
 	} else {
 		lrw_rdlock(&_rw_cur_cat);
-		if (cur_cat == NULL || *cur_cat == '\0') {
+		if (*cur_cat == '\0') {
 			lrw_unlock(&_rw_cur_cat);
 			return (handle_return(dflt_str));
 		}
