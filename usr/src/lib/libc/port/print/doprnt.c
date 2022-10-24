@@ -200,9 +200,8 @@ static wchar_t *insert_thousands_sep(wchar_t *bp, wchar_t *ep);
 #else  /* _WIDE */
 static char *insert_decimal_point(char *ep);
 static char *insert_thousands_sep(char *bp, char *ep);
-#endif /* _WIDE */
-
 static int	_rec_scrswidth(wchar_t *, ssize_t);
+#endif /* _WIDE */
 
 /*
  *	Positional Parameter information
@@ -2679,6 +2678,7 @@ insert_decimal_point(char *ep)
 }
 
 
+#ifndef	_WIDE
 /*
  *  Recovery scrswidth function -
  *  this variant of wcswidth() accepts non-printable or illegal
@@ -2698,3 +2698,4 @@ _rec_scrswidth(wchar_t *wp, ssize_t n)
 	}
 	return (col);
 }
+#endif

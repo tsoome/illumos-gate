@@ -88,9 +88,10 @@ static int	wbrstring(int *, int *, int, int, int, FILE *,
 #ifdef	_WIDE
 static int	brstring(int *, int *, int, int, int, FILE *,
     unsigned char *, va_list *);
-#endif
+#else
 static int _bi_getwc(FILE *);
 static int _bi_ungetwc(wint_t, FILE *);
+#endif
 
 #ifdef	_WIDE
 static int _mkarglst(const wchar_t *, stva_list, stva_list[]);
@@ -1234,7 +1235,7 @@ brstring(int *chcount, int *flag_eof, int stow, int type __unused,
 		*ptr = '\0';
 	return (1);					/* successful match */
 }
-#endif /* _WIDE */
+#else
 
 /*
  * Locally define getwc and ungetwc
@@ -1343,3 +1344,4 @@ _bi_ungetwc(wint_t wc, FILE *iop)
 	}
 	return (wc);
 }
+#endif /* _WIDE */
