@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * interface used by unwind support to query frame descriptor info
  */
@@ -34,6 +32,7 @@
 #include "lint.h"
 #endif
 #include <sys/types.h>
+#include <sys/debug.h>
 #include <limits.h>
 #include "stack_unwind.h"
 #include "unwind_context.h"
@@ -204,8 +203,10 @@ table_ent_log_size(int enc)
 		res = 4;
 		break;
 	default:
+		res = 0;
 		break;
 	}
+	ASSERT(res != 0);
 	return (res);
 }
 
