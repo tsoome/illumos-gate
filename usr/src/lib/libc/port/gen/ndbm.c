@@ -644,10 +644,12 @@ dbm_do_nextkey(DBM *db, datum inkey)
 			p1 = key.dptr;
 			p2 = item.dptr;
 			do {
-				if (*p1++ != *p2++)
+				if (*p1++ != *p2++) {
 					if ((*--p1 - *--p2) > 0)
 						goto keep_going;
-					else continue;
+					else
+						continue;
+				}
 			} while (--n);
 			continue;
 		}

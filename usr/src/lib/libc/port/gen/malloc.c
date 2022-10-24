@@ -702,41 +702,69 @@ _morecore(size_t size)
  */
 
 #define	LEFT1(x, y)		\
-			if ((RIGHT(x) = LEFT(y)) != NULL) PARENT(RIGHT(x)) = x;\
-			if ((PARENT(y) = PARENT(x)) != NULL)\
+			if ((RIGHT(x) = LEFT(y)) != NULL) {\
+				PARENT(RIGHT(x)) = x;\
+			}\
+			if ((PARENT(y) = PARENT(x)) != NULL) {\
 				if (LEFT(PARENT(x)) == x) LEFT(PARENT(y)) = y;\
 				else RIGHT(PARENT(y)) = y;\
-			LEFT(y) = x; PARENT(x) = y
+			}\
+			LEFT(y) = x;\
+			PARENT(x) = y
 
 #define	RIGHT1(x, y)		\
-			if ((LEFT(x) = RIGHT(y)) != NULL) PARENT(LEFT(x)) = x;\
-			if ((PARENT(y) = PARENT(x)) != NULL)\
+			if ((LEFT(x) = RIGHT(y)) != NULL) {\
+				PARENT(LEFT(x)) = x;\
+			}\
+			if ((PARENT(y) = PARENT(x)) != NULL) {\
 				if (LEFT(PARENT(x)) == x) LEFT(PARENT(y)) = y;\
 				else RIGHT(PARENT(y)) = y;\
-			RIGHT(y) = x; PARENT(x) = y
+			}\
+			RIGHT(y) = x;\
+			PARENT(x) = y
 
 #define	BULEFT2(x, y, z)	\
-			if ((RIGHT(x) = LEFT(y)) != NULL) PARENT(RIGHT(x)) = x;\
-			if ((RIGHT(y) = LEFT(z)) != NULL) PARENT(RIGHT(y)) = y;\
-			if ((PARENT(z) = PARENT(x)) != NULL)\
+			if ((RIGHT(x) = LEFT(y)) != NULL) {\
+				PARENT(RIGHT(x)) = x;\
+			}\
+			if ((RIGHT(y) = LEFT(z)) != NULL) {\
+				PARENT(RIGHT(y)) = y;\
+			}\
+			if ((PARENT(z) = PARENT(x)) != NULL) {\
 				if (LEFT(PARENT(x)) == x) LEFT(PARENT(z)) = z;\
 				else RIGHT(PARENT(z)) = z;\
-			LEFT(z) = y; PARENT(y) = z; LEFT(y) = x; PARENT(x) = y
+			}\
+			LEFT(z) = y;\
+			PARENT(y) = z;\
+			LEFT(y) = x;\
+			PARENT(x) = y
 
 #define	BURIGHT2(x, y, z)	\
-			if ((LEFT(x) = RIGHT(y)) != NULL) PARENT(LEFT(x)) = x;\
-			if ((LEFT(y) = RIGHT(z)) != NULL) PARENT(LEFT(y)) = y;\
-			if ((PARENT(z) = PARENT(x)) != NULL)\
+			if ((LEFT(x) = RIGHT(y)) != NULL) {\
+				PARENT(LEFT(x)) = x;\
+			}\
+			if ((LEFT(y) = RIGHT(z)) != NULL) {\
+				PARENT(LEFT(y)) = y;\
+			}\
+			if ((PARENT(z) = PARENT(x)) != NULL) {\
 				if (LEFT(PARENT(x)) == x) LEFT(PARENT(z)) = z;\
 				else RIGHT(PARENT(z)) = z;\
-			RIGHT(z) = y; PARENT(y) = z; RIGHT(y) = x; PARENT(x) = y
+			}\
+			RIGHT(z) = y;\
+			PARENT(y) = z;\
+			RIGHT(y) = x;\
+			PARENT(x) = y
 
 #define	TDLEFT2(x, y, z)	\
-			if ((RIGHT(y) = LEFT(z)) != NULL) PARENT(RIGHT(y)) = y;\
-			if ((PARENT(z) = PARENT(x)) != NULL)\
+			if ((RIGHT(y) = LEFT(z)) != NULL) {\
+				PARENT(RIGHT(y)) = y;\
+			}\
+			if ((PARENT(z) = PARENT(x)) != NULL) {\
 				if (LEFT(PARENT(x)) == x) LEFT(PARENT(z)) = z;\
 				else RIGHT(PARENT(z)) = z;\
-			PARENT(x) = z; LEFT(z) = x;
+			}\
+			PARENT(x) = z;\
+			LEFT(z) = x;
 
 #define	TDRIGHT2(x, y, z)	\
 			if ((LEFT(y) = RIGHT(z)) != NULL) PARENT(LEFT(y)) = y;\

@@ -1100,23 +1100,25 @@ retry_test(nss_status_t res, int n, struct __nsw_lookup_v1 *lkp)
 		return (1);
 
 	if (res == NSS_TRYAGAIN &&
-	    lkp->actions[__NSW_TRYAGAIN] == __NSW_TRYAGAIN_NTIMES)
-		if (n <= lkp->max_retries)
+	    lkp->actions[__NSW_TRYAGAIN] == __NSW_TRYAGAIN_NTIMES) {
+		if (n <= lkp->max_retries) {
 			return (1);
-		else {
+		} else {
 			lkp->actions[__NSW_TRYAGAIN] = __NSW_TRYAGAIN_PAUSED;
 			return (0);
 		}
+	}
 
 	if (res == NSS_NISSERVDNS_TRYAGAIN &&
-	    lkp->actions[__NSW_NISSERVDNS_TRYAGAIN] == __NSW_TRYAGAIN_NTIMES)
-		if (n <= lkp->max_retries)
+	    lkp->actions[__NSW_NISSERVDNS_TRYAGAIN] == __NSW_TRYAGAIN_NTIMES) {
+		if (n <= lkp->max_retries) {
 			return (1);
-		else {
+		} else {
 			lkp->actions[__NSW_NISSERVDNS_TRYAGAIN] =
 			    __NSW_TRYAGAIN_PAUSED;
 			return (0);
 		}
+	}
 
 	return (0);
 }
