@@ -779,7 +779,7 @@ number(int *chcount, int *flag_eof, int stow, int type, int len, int size,
 			errno = ERANGE;
 			return (0);
 		}
-		if (isdigit(c) || base == 16 && isxdigit(c)) {
+		if (isdigit(c) || (base == 16 && isxdigit(c))) {
 			int digit = c - (isdigit(c) ? '0' :
 			    isupper(c) ? 'A' - 10 : 'a' - 10);
 			if (digit >= base)
@@ -849,15 +849,15 @@ string(int *chcount, int *flag_eof, int stow, int type, int len,
 	char	*start;
 
 	start = ptr = stow ? va_arg(*listp, char *) : NULL;
-	if (((type == 'c') || (type == 'C')) && len == MAXINT)
+	if ((type == 'c' || type == 'C') && len == MAXINT)
 		len = 1;
 #ifdef	_WIDE
-	while ((ch = locgetc((*chcount))) != EOF &&
-	    !(((type == 's') || (type == 'S')) && isspace(ch))) {
+	while ((ch = locgetc(*chcount)) != EOF &&
+	    !((type == 's' || type == 'S') && isspace(ch))) {
 #else  /* _WIDE */
-	while ((ch = locgetc((*chcount))) != EOF &&
-	    !(((type == 's') || (type == 'S')) &&
-	    isspace(ch) || type == '[' && tab[ch])) {
+	while ((ch = locgetc(*chcount)) != EOF &&
+	    !(((type == 's' || type == 'S') && isspace(ch)) ||
+	    (type == '[' && tab[ch]))) {
 #endif /* _WIDE */
 		if (stow)
 			*ptr = (char)ch;
