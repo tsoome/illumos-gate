@@ -82,7 +82,7 @@
 /*
  * These are SUNWprivate, but they are being used by Sun Studio libcollector.
  */
-#pragma weak _fork1 = fork1
+#pragma weak _fork1 = fork
 #pragma weak _forkall = forkall
 
 /*
