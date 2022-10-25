@@ -255,11 +255,11 @@
 	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff,
 
 _RuneLocale _DefaultRuneLocale = {
-	_RUNE_MAGIC_1,
-	"NONE",
-	{ _DEFRUNETYPE },
-	{ _DEFMAPLOWER },
-	{ _DEFMAPUPPER },
+	.__magic = _RUNE_MAGIC_1,
+	.__encoding = "NONE",
+	.__runetype = { _DEFRUNETYPE },
+	.__maplower = { _DEFMAPLOWER },
+	.__mapupper = { _DEFMAPUPPER },
 };
 
 /*

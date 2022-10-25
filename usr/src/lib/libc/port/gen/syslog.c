@@ -114,14 +114,14 @@ static struct __syslog {
 	dev_t   _LogDev;
 	char	_ProcName[PRFNSZ + 1];
 } __syslog = {
-	-1,		/* fd for log */
-	0,		/* status bits, set by openlog() */
-	"syslog",	/* string to tag the entry with */
-	0xff,		/* mask of priorities to be logged */
-	NULL,
-	LOG_USER,	/* default facility code */
-	FALSE,		/* check for validity of fd for log */
-	0,		/* openlog has not yet been called */
+	._LogFile = -1,		/* fd for log */
+	._LogStat = 0,		/* status bits, set by openlog() */
+	._LogTag = "syslog",	/* string to tag the entry with */
+	._LogMask = 0xff,	/* mask of priorities to be logged */
+	._SyslogHost = NULL,
+	._LogFacility = LOG_USER,	/* default facility code */
+	._LogFileInvalid = FALSE,	/* check for validity of fd for log */
+	._OpenLogCalled = 0,		/* openlog has not yet been called */
 };
 
 #define	LogFile (__syslog._LogFile)

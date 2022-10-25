@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include <sys/types.h>
 #include <stdio.h>
@@ -44,13 +42,13 @@
 #define	S_WAITTIME	15
 
 static struct flock flock =	{
-			0,	/* l_type */
-			0,	/* l_whence */
-			0,	/* l_start */
-			0,	/* l_len */
-			0,	/* l_sysid */
-			0	/* l_pid */
-			};
+	.l_type = 0,	/* l_type */
+	.l_whence = 0,	/* l_whence */
+	.l_start = 0,	/* l_start */
+	.l_len = 0,	/* l_len */
+	.l_sysid = 0,	/* l_sysid */
+	.l_pid = 0	/* l_pid */
+};
 
 /*
  * lckpwdf() returns a 0 for a successful lock within W_WAITTIME
