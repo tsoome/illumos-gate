@@ -1122,7 +1122,8 @@ MAPFILES =	$(LIBCDIR)/port/mapfile-vers
 #
 CFLAGS +=	$(EXTN_CFLAGS)
 CPPFLAGS=	-D_REENTRANT -Di386 $(EXTN_CPPFLAGS) $(THREAD_DEBUG) \
-		-I$(LIBCBASE)/inc -I$(LIBCDIR)/inc $(CPPFLAGS.master)
+		-I$(LIBCBASE)/inc -I$(LIBCDIR)/inc $(CPPFLAGS.master) \
+		-U_XOPEN_SOURCE
 ASFLAGS=	$(AS_PICFLAGS) -P -D__STDC__ -D_ASM $(CPPFLAGS) $(i386_AS_XARCH)
 
 # As a favor to the dtrace syscall provider, libc still calls the

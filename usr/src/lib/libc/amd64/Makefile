@@ -1069,7 +1069,8 @@ $(DYNLIB) := BUILD.SO = $(LD) -o $@ $(GSHARED) $(DYNFLAGS) $(PICS) $(ALTPICS) $(
 MAPFILES =	$(LIBCDIR)/port/mapfile-vers
 
 CPPFLAGS=	-D_REENTRANT -D$(MACH64) -D__$(MACH64) $(THREAD_DEBUG) \
-		-I. -I$(LIBCBASE)/inc -I$(LIBCDIR)/inc $(CPPFLAGS.master)
+		-I. -I$(LIBCBASE)/inc -I$(LIBCDIR)/inc $(CPPFLAGS.master) \
+		-U_XOPEN_SOURCE
 ASFLAGS=	$(AS_PICFLAGS) -P -D__STDC__ -D_ASM $(CPPFLAGS) \
 		$(amd64_AS_XARCH)
 
