@@ -36,14 +36,14 @@
 static const union {
 	unsigned i[4];
 	long double ld;
-} __nanl_union = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff };
+} __nanl_union = { {0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff} };
 
 #elif defined(__x86)
 
 static const union {
 	unsigned i[3];
 	long double ld;
-} __nanl_union = { 0xffffffff, 0xffffffff, 0x7fff };
+} __nanl_union = { {0xffffffff, 0xffffffff, 0x7fff} };
 
 #else
 #error Unknown architecture

@@ -65,7 +65,7 @@ static int handlers_initialized = 0;
 static thread_key_t handlers_key;
 static mutex_t handlers_key_lock = DEFAULTMUTEX;
 
-static struct sigaction oact = { 0, SIG_DFL };
+static struct sigaction oact = { ._funcptr = { SIG_DFL } };
 static mutex_t hdlr_lock = DEFAULTMUTEX;
 static int hdlr_installed = 0;
 
@@ -637,7 +637,7 @@ __fex_hdlr(int sig, siginfo_t *sip, ucontext_t *uap)
 	addr = (unsigned long)uap->uc_mcontext.fpregs.fp_reg_set.
 	    fpchip_state.state[3];
 #endif
-	accrued = uap->uc_mcontext.fpregs.fp_reg_set.fpchip_state.status & 
+	accrued = uap->uc_mcontext.fpregs.fp_reg_set.fpchip_state.status &
 	    ~te_bit[(int)e];
 	if (test_sse_hw)
 		accrued |= uap->uc_mcontext.fpregs.fp_reg_set.fpchip_state.

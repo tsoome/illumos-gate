@@ -35,9 +35,9 @@ static union {
 	unsigned i;
 	float f;
 } C[] = {
-	0x00800000,
-	0x7f000000,
-	0x7fffffff
+	{0x00800000},
+	{0x7f000000},
+	{0x7fffffff}
 };
 
 #define	tiny	C[0].f

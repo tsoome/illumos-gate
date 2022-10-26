@@ -103,11 +103,11 @@ static const union {
 	double		d;
 } C[] = {
 #ifdef _LITTLE_ENDIAN
-	{ 0xffffffff, 0x7fffffff },
-	{ 0x54442d18, 0x400921fb },
+	{ {0xffffffff, 0x7fffffff} },
+	{ {0x54442d18, 0x400921fb} },
 #else
-	{ 0x7fffffff, 0xffffffff },
-	{ 0x400921fb, 0x54442d18 },
+	{ {0x7fffffff, 0xffffffff} },
+	{ {0x400921fb, 0x54442d18} },
 #endif
 };
 
