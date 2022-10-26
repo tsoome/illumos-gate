@@ -15,10 +15,6 @@
  * All rights reserved.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.1	*/
-
-/* LINTLIBRARY */
-
 #include <stdio.h>
 #include <mp.h>
 #include <sys/types.h>
@@ -45,10 +41,8 @@ _mp_move(MINT *a, MINT *b)
 	}
 }
 
-/* ARGSUSED */
-/* VARARGS */
 short *
-_mp_xalloc(int nint, char *s)
+_mp_xalloc(int nint, char *s __unused)
 {
 	short *i;
 
