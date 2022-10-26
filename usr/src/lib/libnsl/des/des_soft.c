@@ -149,7 +149,7 @@ des_setparity_g(des_block *p)
 	int i;
 
 	for (i = 0; i < 8; i++) {
-		(*p).c[i] = partab_g[(*p).c[i]];
+		(*p).c[i] = partab_g[(int)(*p).c[i]];
 	}
 }
 
