@@ -221,7 +221,7 @@ my_fp_classl(long double *x)
 		return ((*(1+(int*)x) < 0)? fp_normal :
 			(enum fp_class_type) -1); /* unsupported format */
 	}
-	else if (*(1+(int*)x) == 0x80000000 && *(int*)x == 0)
+	else if (*(1+(unsigned*)x) == 0x80000000 && *(int*)x == 0)
 		return fp_infinity;
 	else if (*(1+(unsigned*)x) >= 0xc0000000)
 		return fp_quiet;

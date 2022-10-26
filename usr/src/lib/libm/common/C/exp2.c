@@ -67,7 +67,8 @@ exp2(double x) {
 
 	if (hx >= 0x4090e000) {	/* |x| >= 1080 or x is nan */
 		if (hx >= 0x7ff00000) {	/* x is inf or nan */
-			if (ix == 0xfff00000 && ((int *)&x)[LOWORD] == 0)
+			if ((uint_t)ix == 0xfff00000 &&
+			    ((int *)&x)[LOWORD] == 0)
 				return (zero);
 			return (x * x);
 		}

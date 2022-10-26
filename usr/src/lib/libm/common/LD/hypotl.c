@@ -113,9 +113,10 @@ hypotl(long double x, long double y) {
 	} else {
 		if (nx == k || ny == k) {	/* x or y is INF or NaN */
 			/* since nx >= ny; nx is always k within this block */
-			if (px[1] == 0x80000000 && px[0] == 0)
+			if ((unsigned)px[1] == 0x80000000 && px[0] == 0)
 				return (x);
-			else if (ny == k && py[1] == 0x80000000 && py[0] == 0)
+			else if (ny == k && (unsigned)py[1] == 0x80000000 &&
+			    py[0] == 0)
 				return (y);
 			else
 				return (x + y);

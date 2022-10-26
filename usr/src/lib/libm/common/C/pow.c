@@ -205,7 +205,7 @@ pow(double x, double y) {
 			k = (ahy >> 20) - 0x3ff;	/* exponent */
 			if (k > 20) {
 				j = ly >> (52 - k);
-				if ((j << (52 - k)) == ly)
+				if ((uint_t)(j << (52 - k)) == ly)
 					yisint = 2 - (j & 1);
 			} else if (ly == 0) {
 				j = ahy >> (20 - k);
@@ -311,7 +311,7 @@ pow(double x, double y) {
 								/* overflow */
 		}
 	} else if ((j & ~0x80000000) >= 0x4090cc00) {	/* z <= -1075 */
-		if (!(j == 0xc090cc00 && pz[LOWORD] == 0))	/* z < -1075 */
+		if (!((uint_t)j == 0xc090cc00 && pz[LOWORD] == 0))	/* z < -1075 */
 			return (_SVID_libm_err(x, y, 22));	/* underflow */
 		else {
 			w2 = y1 - z;

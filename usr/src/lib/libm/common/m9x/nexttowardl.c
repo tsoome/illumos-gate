@@ -67,7 +67,7 @@
 					px[n1] = 0x80000000, ++px[n0]; \
 		}
 #define	DEC(px)	{ \
-			if (--px[n2] == 0xffffffff) \
+			if (--px[n2] == (int)0xffffffff) \
 				if (--px[n1] == 0x7fffffff) \
 					if ((--px[n0] & 0x7fff) != 0) \
 						px[n1] |= 0x80000000; \

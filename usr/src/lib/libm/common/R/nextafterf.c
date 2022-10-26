@@ -45,7 +45,7 @@ nextafterf(float x, float y) {
 		return (x * y);		/* + -> * for Cheetah */
 	if ((iy & ~0x80000000) > 0x7f800000)
 		return (y * x);		/* + -> * for Cheetah */
-	if (ix == iy || (ix | iy) == 0x80000000)
+	if (ix == iy || (uint_t)(ix | iy) == 0x80000000)
 		return (y);		/* C99 requirement */
 	if ((ix & ~0x80000000) == 0)
 		iz = 1 | (iy & 0x80000000);

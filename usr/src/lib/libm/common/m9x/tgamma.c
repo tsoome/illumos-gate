@@ -1582,7 +1582,7 @@ tgamma(double x) {
 		k = (ix >> 20) - 0x3ff;
 		if (k > 20) {
 			j = lx >> (52 - k);
-			if ((j << (52 - k)) == lx)
+			if ((unsigned)(j << (52 - k)) == lx)
 				xk = -2 + (j & 1);
 			else
 				xk = j & 1;

@@ -75,7 +75,7 @@ exp10(double x) {
 
 	if (hx >= 0x4074a000) {	/* |x| >= 330 or x is nan */
 		if (hx >= 0x7ff00000) {	/* x is inf or nan */
-			if (ix == 0xfff00000 && ((int *)&x)[LOWORD] == 0)
+			if (ix == (int)0xfff00000 && ((int *)&x)[LOWORD] == 0)
 				return (zero);
 			return (x * x);
 		}

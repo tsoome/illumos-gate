@@ -145,7 +145,7 @@ roundl(long double x) {
 		} else {
 			i = 1 << (0x403d - ex);
 			xx.i[0] += i;
-			if (xx.i[0] < i)
+			if (xx.i[0] < (unsigned)i)
 				xx.i[1]++;
 			xx.i[0] &= ~(i | (i - 1));
 		}

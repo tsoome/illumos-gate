@@ -137,7 +137,7 @@ __fex_read_syms(int fd)
 	}
 
 	/* read the program headers */
-	if (lseek(fd, h.e_phoff, SEEK_SET) != h.e_phoff ||
+	if (lseek(fd, h.e_phoff, SEEK_SET) != (off_t)h.e_phoff ||
 		read(fd, ph, size) != (ssize_t)size)
 	{
 		nph = 0;
@@ -149,7 +149,7 @@ __fex_read_syms(int fd)
 	size = h.e_shnum * h.e_shentsize;
 	if ((sh = (Elf_Shdr*)malloc(size)) == NULL)
 		return -1;
-	if (lseek(fd, h.e_shoff, SEEK_SET) != h.e_shoff ||
+	if (lseek(fd, h.e_shoff, SEEK_SET) != (off_t)h.e_shoff ||
 		read(fd, sh, size) != (ssize_t)size)
 	{
 		free(sh);
@@ -188,12 +188,12 @@ __fex_read_syms(int fd)
 	}
 
 	/* read the symbol and string tables */
-	if (lseek(fd, sh[i].sh_offset, SEEK_SET) != sh[i].sh_offset ||
-		read(fd, stbuf, sh[i].sh_size) != sh[i].sh_size ||
+	if (lseek(fd, sh[i].sh_offset, SEEK_SET) != (off_t)sh[i].sh_offset ||
+		read(fd, stbuf, sh[i].sh_size) != (ssize_t)sh[i].sh_size ||
 		lseek(fd, sh[sh[i].sh_link].sh_offset, SEEK_SET) !=
-			sh[sh[i].sh_link].sh_offset ||
+			(off_t)sh[sh[i].sh_link].sh_offset ||
 		read(fd, stbuf + sh[i].sh_size, sh[sh[i].sh_link].sh_size) !=
-			sh[sh[i].sh_link].sh_size)
+			(ssize_t)sh[sh[i].sh_link].sh_size)
 	{
 		free(sh);
 		return (-1);

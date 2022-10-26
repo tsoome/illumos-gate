@@ -359,7 +359,7 @@ expf(float xf) {
 
 	if (n >= 0x86) {	/* |x| >= 2^7 */
 		if (n >= 0xff) {	/* x is nan of +-inf */
-			if (hx == 0xff800000)
+			if ((unsigned)hx == 0xff800000)
 				return (zero);	/* exp(-inf)=0 */
 			return (xf * xf);	/* exp(nan/inf) is nan or inf */
 		}
