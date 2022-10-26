@@ -1249,8 +1249,10 @@ $(LIB_PIC): pics $$(PICS)
 
 $(LIBCBASE)/crt/_rtbootld.s: $(LIBCBASE)/crt/_rtboot.s $(LIBCBASE)/crt/_rtld.c
 	$(CC) $($(MACH)_XARCH) $(CPPFLAGS) -_smatch=off $(CTF_FLAGS) -O -S \
-	    $(C_PICFLAGS) $(LIBCBASE)/crt/_rtld.c -o $(LIBCBASE)/crt/_rtld.s
-	$(CAT) $(LIBCBASE)/crt/_rtboot.s $(LIBCBASE)/crt/_rtld.s > $@
+	    $(C_PICFLAGS) -_clang=-no-integrated-as $(LIBCBASE)/crt/_rtld.c \
+	    -o $(LIBCBASE)/crt/_rtld.s
+	$(CAT) $(LIBCBASE)/crt/_rtboot.s $(LIBCBASE)/crt/_rtld.s | \
+	    sed -e 's/^# .*//' > $@
 	$(RM) $(LIBCBASE)/crt/_rtld.s
 
 # partially built from C source
