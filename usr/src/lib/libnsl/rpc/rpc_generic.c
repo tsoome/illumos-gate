@@ -66,19 +66,19 @@ struct _rpcnettype {
 	const char *name;
 	const int type;
 } _rpctypelist[] = {
-	"netpath", _RPC_NETPATH,
-	"visible", _RPC_VISIBLE,
-	"circuit_v", _RPC_CIRCUIT_V,
-	"datagram_v", _RPC_DATAGRAM_V,
-	"circuit_n", _RPC_CIRCUIT_N,
-	"datagram_n", _RPC_DATAGRAM_N,
-	"tcp", _RPC_TCP,
-	"udp", _RPC_UDP,
-	"local", _RPC_LOCAL,
-	"door", _RPC_DOOR,
-	"door_local", _RPC_DOOR_LOCAL,
-	"door_netpath", _RPC_DOOR_NETPATH,
-	0, _RPC_NONE
+	{"netpath", _RPC_NETPATH},
+	{"visible", _RPC_VISIBLE},
+	{"circuit_v", _RPC_CIRCUIT_V},
+	{"datagram_v", _RPC_DATAGRAM_V},
+	{"circuit_n", _RPC_CIRCUIT_N},
+	{"datagram_n", _RPC_DATAGRAM_N},
+	{"tcp", _RPC_TCP},
+	{"udp", _RPC_UDP},
+	{"local", _RPC_LOCAL},
+	{"door", _RPC_DOOR},
+	{"door_local", _RPC_DOOR_LOCAL},
+	{"door_netpath", _RPC_DOOR_NETPATH},
+	{NULL, _RPC_NONE}
 };
 
 /*

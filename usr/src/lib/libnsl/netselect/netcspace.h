@@ -36,8 +36,6 @@
 #ifndef _NSS_NETCSPACE_H
 #define	_NSS_NETCSPACE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,17 +46,17 @@ struct nc_data {
 };
 
 static struct nc_data nc_semantics[] = {
-	"tpi_clts",	NC_TPI_CLTS,
-	"tpi_cots",	NC_TPI_COTS,
-	"tpi_cots_ord",	NC_TPI_COTS_ORD,
-	"tpi_raw",	NC_TPI_RAW,
-	NULL,		(unsigned)-1
+	{"tpi_clts",	NC_TPI_CLTS},
+	{"tpi_cots",	NC_TPI_COTS},
+	{"tpi_cots_ord",	NC_TPI_COTS_ORD},
+	{"tpi_raw",	NC_TPI_RAW},
+	{NULL,		(unsigned)-1}
 };
 
 static struct nc_data nc_flag[] = {
-	"-",		NC_NOFLAG,
-	"v",		NC_VISIBLE,
-	NULL,		(unsigned)-1
+	{"-",		NC_NOFLAG},
+	{"v",		NC_VISIBLE},
+	{NULL,		(unsigned)-1}
 };
 
 #define	NC_NOERROR	0

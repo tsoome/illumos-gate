@@ -472,15 +472,11 @@ struct sockaddr_in6 {
 
 #else
 
-#define	IN6ADDR_ANY_INIT	    {	0, 0, 0, 0,	\
-					0, 0, 0, 0,	\
-					0, 0, 0, 0,	\
-					0, 0, 0, 0 }
+#define	IN6ADDR_ANY_INIT	\
+    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } }
 
-#define	IN6ADDR_LOOPBACK_INIT	    {	0, 0, 0, 0,	\
-					0, 0, 0, 0,	\
-					0, 0, 0, 0,	\
-					0, 0, 0, 0x1U }
+#define	IN6ADDR_LOOPBACK_INIT	\
+    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1U } } }
 #endif /* _KERNEL */
 
 /*
