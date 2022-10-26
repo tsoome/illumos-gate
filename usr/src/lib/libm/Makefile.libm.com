@@ -36,7 +36,9 @@ ASSUFFIX	= $(ASSUFFIX_$(MACH))
 # far as is important.
 CSTD		=
 CFLAGS		+= -_gcc=-std=gnu89
+CFLAGS		+= -_clang=-std=gnu89
 CFLAGS64	+= -_gcc=-std=gnu89
+CFLAGS64	+= -_clang=-std=gnu89
 
 M4FLAGS		= -D__STDC__ -DPIC
 
@@ -57,7 +59,9 @@ $(RELEASE_BUILD)CPPFLAGS += -DNDEBUG
 # providing no -xc99 to Studio, in that it gets us the C99 language features,
 # but not values-xpg6, the reason for which is outlined with CSTD.
 CFLAGS		+= -_gcc=-D__C99FEATURES__
+CFLAGS		+= -_clang=-D__C99FEATURES__
 CFLAGS64	+= -_gcc=-D__C99FEATURES__
+CFLAGS64	+= -_clang=-D__C99FEATURES__
 
 # libm depends on integer overflow characteristics
 CFLAGS		+= -_gcc=-fno-strict-overflow
