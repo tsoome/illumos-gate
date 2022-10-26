@@ -54,8 +54,7 @@ static const union {
 #error Unknown architecture
 #endif
 
-/* ARGSUSED0 */
 double
-__nan(const char *c) {
+__nan(const char *c __unused) {
 	return (__nan_union.d);
 }

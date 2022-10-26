@@ -36,8 +36,7 @@ static const union {
 	float f;
 } __nanf_union = { 0x7fffffff };
 
-/* ARGSUSED0 */
 float
-__nanf(const char *c) {
+__nanf(const char *c __unused) {
 	return (__nanf_union.f);
 }

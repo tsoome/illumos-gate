@@ -49,8 +49,7 @@ static const union {
 #error Unknown architecture
 #endif
 
-/* ARGSUSED0 */
 long double
-__nanl(const char *c) {
+__nanl(const char *c __unused) {
 	return (__nanl_union.ld);
 }

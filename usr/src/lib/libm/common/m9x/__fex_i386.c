@@ -235,7 +235,7 @@ my_fp_classl(long double *x)
 *  Determine which type of invalid operation exception occurred
 */
 enum fex_exception
-__fex_get_invalid_type(siginfo_t *sip, ucontext_t *uap)
+__fex_get_invalid_type(siginfo_t *sip __unused, ucontext_t *uap)
 {
 	unsigned			op;
 	unsigned long			ea;

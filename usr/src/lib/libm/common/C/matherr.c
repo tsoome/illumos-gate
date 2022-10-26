@@ -31,8 +31,7 @@
 
 #include "libm.h"
 
-/* ARGSUSED0 */
 int
-__matherr(struct exception *x) {
+__matherr(struct exception *x __unused) {
 	return (0);
 }
