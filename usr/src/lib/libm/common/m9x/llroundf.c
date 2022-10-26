@@ -27,10 +27,10 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __llroundf = llroundf
+long long __llroundf(float) __attribute__((weak, alias("llroundf")));
 #if defined(__sparcv9) || defined(__amd64)
-#pragma weak lroundf = llroundf
-#pragma weak __lroundf = llroundf
+long int lroundf(float) __attribute__((weak, alias("llroundf")));
+long int __lroundf(float) __attribute__((weak, alias("llroundf")));
 #endif
 
 #include "libm.h"

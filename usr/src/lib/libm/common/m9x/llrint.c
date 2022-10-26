@@ -27,10 +27,10 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __llrint = llrint
+long long __llrint(double) __attribute__((weak, alias("llrint")));
 #if defined(__sparcv9) || defined(__amd64)
-#pragma weak lrint = llrint
-#pragma weak __lrint = llrint
+long int lrint(double) __attribute__((weak, alias("llrint")));
+long int __lrint(double) __attribute__((weak, alias("llrint")));
 #endif
 
 /*

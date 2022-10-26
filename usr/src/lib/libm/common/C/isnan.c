@@ -26,10 +26,10 @@
  * Use is subject to license terms.
  */
 
-#pragma weak isnan = __isnan
-#pragma weak _isnan = __isnan
-#pragma weak _isnand = __isnan
-#pragma weak isnand = __isnan
+int isnan(double) __attribute__((weak, alias("__isnan")));
+int _isnan(double) __attribute__((weak, alias("__isnan")));
+int _isnand(double) __attribute__((weak, alias("__isnan")));
+int isnand(double) __attribute__((weak, alias("__isnan")));
 
 #include "libm.h"
 

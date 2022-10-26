@@ -27,8 +27,6 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __lrint = lrint
-
 /*
  * lrint(x) rounds its argument to the nearest integer according
  * to the current rounding direction and converts the result to
@@ -41,6 +39,8 @@
 
 #include <sys/isa_defs.h>	/* _ILP32 */
 #include "libm.h"
+
+long __lrint(double) __attribute__(((weak), alias("lrint")));
 
 #if defined(_ILP32)
 long

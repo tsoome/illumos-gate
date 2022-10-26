@@ -27,8 +27,8 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __isnanf = isnanf
-#pragma weak _isnanf = isnanf
+int __isnanf(float) __attribute__((weak, alias("isnanf")));
+int _isnanf(float) __attribute__((weak, alias("isnanf")));
 
 #include "libm.h"
 

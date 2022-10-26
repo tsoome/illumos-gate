@@ -26,14 +26,15 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __nextafter = nextafter
-#pragma weak _nextafter = nextafter
+double __nextafter(double, double) __attribute__((weak, alias("nextafter")));
+double _nextafter(double, double) __attribute__((weak, alias("nextafter")));
 
 #include "libm.h"
 #include <float.h>		/* DBL_MIN */
 
 double
-nextafter(double x, double y) {
+nextafter(double x, double y)
+{
 	int		hx, hy, k;
 	double		ans;
 	unsigned	lx;

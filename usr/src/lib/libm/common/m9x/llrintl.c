@@ -27,10 +27,10 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __llrintl = llrintl
+long long __llrintl(long double) __attribute__((weak, alias("llrintl")));
 #if defined(__sparcv9) || defined(__amd64)
-#pragma weak lrintl = llrintl
-#pragma weak __lrintl = llrintl
+long int lrintl(long double) __attribute__((weak, alias("llrintl")));
+long int __lrintl(long double) __attribute__((weak, alias("llrintl")));
 #endif
 
 #include "libm.h"

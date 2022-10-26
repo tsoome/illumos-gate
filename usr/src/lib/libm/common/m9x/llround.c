@@ -27,10 +27,10 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __llround = llround
+long long __llround(double) __attribute__((weak, alias("llround")));
 #if defined(__sparcv9) || defined(__amd64)
-#pragma weak lround = llround
-#pragma weak __lround = llround
+long int lround(double) __attribute__((weak, alias("llround")));
+long int __lround(double) __attribute__((weak, alias("llround")));
 #endif
 
 /*

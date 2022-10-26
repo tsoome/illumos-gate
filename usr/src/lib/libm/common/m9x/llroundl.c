@@ -27,13 +27,13 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __llroundl = llroundl
-#if defined(__sparcv9) || defined(__amd64)
-#pragma weak lroundl = llroundl
-#pragma weak __lroundl = llroundl
-#endif
-
 #include "libm.h"
+
+long long __llroundl(long double) __attribute__((weak, alias("llroundl")));
+#if defined(__sparcv9) || defined(__amd64)
+long int lroundl(long double) __attribute__((weak, alias("llroundl")));
+long int __lroundl(long double) __attribute__((weak, alias("llroundl")));
+#endif
 
 #if defined(__sparc)
 long long
