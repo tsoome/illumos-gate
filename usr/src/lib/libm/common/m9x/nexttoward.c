@@ -167,7 +167,7 @@ __nexttoward(double x, long double y) {
 	} xx;
 	unsigned hx;
 	long double lx;
-	volatile double	dummy;
+	volatile double	dummy __unused; /* Silence set but not used warning */
 
 	lx = xx.d = x;
 	hx = (xx.i[1] & ~0x80000000) | xx.i[0];

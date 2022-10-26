@@ -137,7 +137,7 @@ __nexttowardf(float x, long double y) {
 	} xx;
 	unsigned hx;
 	long double lx;
-	volatile float dummy;
+	volatile float dummy __unused; /* Silence set but not used warning */
 
 	lx = xx.f = x;
 	hx = xx.i & ~0x80000000;

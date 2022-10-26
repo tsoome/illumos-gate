@@ -64,7 +64,7 @@ int feclearexcept(int e)
 */
 int feraiseexcept(int e)
 {
-	volatile double	t;
+	volatile double	t __unused;	/* Silence set but not used warning */
 	unsigned long	fsr;
 
 	if (e & FE_INVALID) {
@@ -81,8 +81,7 @@ int feraiseexcept(int e)
 		if (!(__fenv_get_te(fsr) & (1 << fp_trap_overflow))) {
 			__fenv_set_ex(fsr, __fenv_get_ex(fsr) | FE_OVERFLOW);
 			__fenv_setfsr(&fsr);
-		}
-		else {
+		} else {
 			t = 1.0e300;
 			t *= 1.0e300;
 		}
@@ -93,8 +92,7 @@ int feraiseexcept(int e)
 		if (!(__fenv_get_te(fsr) & (1 << fp_trap_underflow))) {
 			__fenv_set_ex(fsr, __fenv_get_ex(fsr) | FE_UNDERFLOW);
 			__fenv_setfsr(&fsr);
-		}
-		else {
+		} else {
 			t = 1.0e-307;
 			t -= 1.001e-307;
 		}

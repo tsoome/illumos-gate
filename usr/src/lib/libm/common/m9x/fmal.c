@@ -880,7 +880,7 @@ __fmal(long double x, long double y, long double z) {
 	unsigned xy0, xy1, xy2, xy3, xy4, z0, z1, z2, z3, z4;
 	unsigned oldcwsw, cwsw, rm, sticky, carry;
 	int ex, ey, ez, exy, sxy, sz, e, tinyafter;
-	volatile double	dummy;
+	volatile double	dummy __unused; /* Silence set but not used warning */
 
 	/* extract the exponents of the arguments */
 	xx.e = x;
