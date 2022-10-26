@@ -56,8 +56,9 @@
  * s_ioctl exist in the socket library.
  * There is no need for s_ioctl for other purposes.
  */
-#pragma weak s_fcntl = __fcntl
-#pragma weak _s_fcntl = __fcntl
+int s_fcntl(int, int, ...) __attribute__((weak, alias("__fcntl")));
+int _s_fcntl(int, int, ...) __attribute__((weak, alias("__fcntl")));
+
 int
 s_ioctl(int fd, int cmd, intptr_t arg)
 {
