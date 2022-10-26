@@ -27,18 +27,6 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __feclearexcept = feclearexcept
-#pragma weak __feraiseexcept = feraiseexcept
-#pragma weak __fetestexcept = fetestexcept
-#pragma weak __fegetexceptflag = fegetexceptflag
-#pragma weak __fesetexceptflag = fesetexceptflag
-
-#pragma weak feclearexcept96 = feclearexcept
-#pragma weak feraiseexcept96 = feraiseexcept
-#pragma weak fetestexcept96 = fetestexcept
-#pragma weak fegetexceptflag96 = fegetexceptflag
-#pragma weak fesetexceptflag96 = fesetexceptflag
-
 #include <fenv.h>
 #include <sys/ieeefp.h>
 #include <ucontext.h>
@@ -46,6 +34,26 @@
 #include "fex_handler.h"
 #include "fenv_inlines.h"
 
+int __feclearexcept(int)
+    __attribute__((weak, alias("feclearexcept")));
+int feclearexcept96(int)
+    __attribute__((weak, alias("feclearexcept")));
+int __feraiseexcept(int)
+    __attribute__((weak, alias("feraiseexcept")));
+int feraiseexcept96(int)
+    __attribute__((weak, alias("feraiseexcept")));
+int __fetestexcept(int)
+    __attribute__((weak, alias("fetestexcept")));
+int fetestexcept96(int)
+    __attribute__((weak, alias("fetestexcept")));
+int __fegetexceptflag(fexcept_t *, int)
+    __attribute__((weak, alias("fegetexceptflag")));
+int fegetexceptflag96(fexcept_t *, int)
+    __attribute__((weak, alias("fegetexceptflag")));
+int __fesetexceptflag(const fexcept_t *, int)
+    __attribute__((weak, alias("fesetexceptflag")));
+int fesetexceptflag96(const fexcept_t *, int)
+    __attribute__((weak, alias("fesetexceptflag")));
 
 int feclearexcept(int e)
 {

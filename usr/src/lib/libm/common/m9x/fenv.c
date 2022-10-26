@@ -27,22 +27,28 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __fex_merge_flags = fex_merge_flags
-
-#pragma weak __feholdexcept = feholdexcept
-#pragma weak __feupdateenv = feupdateenv
-#pragma weak __fegetenv = fegetenv
-#pragma weak __fesetenv = fesetenv
-
-#pragma weak feupdateenv96 = feupdateenv
-#pragma weak fegetenv96 = fegetenv
-#pragma weak fesetenv96 = fesetenv
-
 #include <fenv.h>
 #include <ucontext.h>
 #include <thread.h>
 #include "fex_handler.h"
 #include "fenv_inlines.h"
+
+void __fex_merge_flags(const fenv_t *)
+    __attribute__((weak, alias("fex_merge_flags")));
+int __feholdexcept(fenv_t *)
+    __attribute__((weak, alias("feholdexcept")));
+int __fegetenv(fenv_t *)
+    __attribute__((weak, alias("fegetenv")));
+int fegetenv96(fenv_t *)
+    __attribute__((weak, alias("fegetenv")));
+int __fesetenv(const fenv_t *)
+    __attribute__((weak, alias("fesetenv")));
+int fesetenv96(const fenv_t *)
+    __attribute__((weak, alias("fesetenv")));
+int __feupdateenv(const fenv_t *)
+    __attribute__((weak, alias("feupdateenv")));
+int feupdateenv96(const fenv_t *)
+    __attribute__((weak, alias("feupdateenv")));
 
 const fenv_t __fenv_dfl_env = {
 	{

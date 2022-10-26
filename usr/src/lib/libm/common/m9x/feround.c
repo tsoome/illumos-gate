@@ -27,11 +27,6 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __fegetround = fegetround
-#pragma weak __fesetround = fesetround
-
-#pragma weak fegetround96 = fegetround
-
 #include <fenv.h>
 #include <ucontext.h>
 #include <thread.h>
@@ -41,6 +36,13 @@
 #if defined(__i386) && !defined(__amd64)
 #include <float.h>
 #endif
+
+int __fesetround(int)
+    __attribute__((weak, alias("fesetround")));
+int __fegetround(void)
+    __attribute__((weak, alias("fegetround")));
+int fegetround96(void)
+    __attribute__((weak, alias("fegetround")));
 
 int fegetround(void)
 {

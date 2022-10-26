@@ -27,9 +27,6 @@
  * Use is subject to license terms.
  */
 
-#pragma weak modf = __modf
-#pragma weak _modf = __modf
-
 /*
  * modf(x, iptr) decomposes x into an integral part and a fractional
  * part both having the same sign as x.  It stores the integral part
@@ -43,6 +40,9 @@
  */
 
 #include "libm.h"
+
+double modf(double, double *) __attribute__((weak, alias("__modf")));
+double _modf(double, double *) __attribute__((weak, alias("__modf")));
 
 double
 __modf(double x, double *iptr) {

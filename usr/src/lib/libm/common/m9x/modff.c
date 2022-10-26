@@ -27,10 +27,10 @@
  * Use is subject to license terms.
  */
 
-#pragma weak modff = __modff
-#pragma weak _modff = __modff
-
 #include "libm.h"
+
+float modff(float, float *) __attribute__((weak, alias("__modff")));
+float _modff(float, float *) __attribute__((weak, alias("__modff")));
 
 float
 __modff(float x, float *iptr) {

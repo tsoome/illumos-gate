@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __logb = logb
-#pragma weak _logb = logb
-
 #include "libm.h"
 #include "xpg6.h"	/* __xpg6 */
 #define	_C99SUSv3_logb	_C99SUSv3_logb_subnormal_is_like_ilogb
+
+double __logb(double) __attribute__((weak, alias("logb")));
+double _logb(double) __attribute__((weak, alias("logb")));
 
 #if defined(__x86)
 static const double two52 = 4503599627370496.0;

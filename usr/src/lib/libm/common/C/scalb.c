@@ -26,10 +26,12 @@
  * Use is subject to license terms.
  */
 
-#pragma weak __scalb = scalb
-#pragma weak _scalb = scalb
-
 #include "libm.h"
+
+double __scalb(double, double)
+    __attribute__((weak, alias("scalb")));
+double _scalb(double, double)
+    __attribute__((weak, alias("scalb")));
 
 double
 scalb(double x, double fn) {
