@@ -146,7 +146,7 @@ parse_gidlist(char *p, struct netid_userdata *argp)
 	*(argp->gidp) = g;
 
 	len = 0;
-	while (p = strchr(p, ','))
+	while ((p = strchr(p, ',')) != NULL)
 		argp->gidlist[len++] = (gid_t)atoi(++p);
 	*(argp->gidlenp) = len;
 	return (__NSW_SUCCESS);

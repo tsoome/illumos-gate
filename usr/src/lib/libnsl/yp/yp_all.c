@@ -34,8 +34,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -84,7 +82,8 @@ __yp_all_cflookup(char *domain, char *map, struct ypall_callback *callback,
 	    (callback == NULL))
 		return (YPERR_BADARGS);
 
-	if (reason = __yp_dobind_cflookup(domain, &pdomb, hardlookup))
+	reason = __yp_dobind_cflookup(domain, &pdomb, hardlookup);
+	if (reason != 0)
 		return (reason);
 
 	if (pdomb->dom_binding->ypbind_hi_vers < YPVERS) {
@@ -208,7 +207,8 @@ __yp_all_rsvdport(char *domain, char *map, struct ypall_callback *callback)
 	    (callback == NULL))
 		return (YPERR_BADARGS);
 
-	if (reason = __yp_dobind_rsvdport(domain, &pdomb))
+	reason = __yp_dobind_rsvdport(domain, &pdomb);
+	if (reason != 0)
 		return (reason);
 
 	if (pdomb->dom_binding->ypbind_hi_vers < YPVERS) {

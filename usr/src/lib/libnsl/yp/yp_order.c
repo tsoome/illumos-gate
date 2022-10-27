@@ -34,8 +34,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -75,7 +73,8 @@ yp_order(char *domain, char *map, unsigned long *order)
 
 	for (;;) {
 
-		if (reason = __yp_dobind(domain, &pdomb))
+		reason = __yp_dobind(domain, &pdomb);
+		if (reason != 0)
 			return (reason);
 
 		if (pdomb->dom_binding->ypbind_hi_vers >= YPVERS) {

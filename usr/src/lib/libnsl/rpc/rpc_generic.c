@@ -206,7 +206,7 @@ __rpc_getconfip(char *nettype)
 
 		if (!(confighandle = setnetconfig()))
 			return (NULL);
-		while (nconf = getnetconfig(confighandle)) {
+		while ((nconf = getnetconfig(confighandle)) != NULL) {
 			if (strcmp(nconf->nc_protofmly, NC_INET) == 0) {
 				if (strcmp(nconf->nc_proto, NC_TCP) == 0) {
 					netid_tcp = strdup(nconf->nc_netid);
@@ -455,7 +455,7 @@ __rpcfd_to_nconf(int fd, int servtype)
 	 *	uses the clone driver.
 	 */
 
-	while (nconf = getnetconfig(hndl)) {
+	while ((nconf = getnetconfig(hndl)) != NULL) {
 		if (__rpc_matchserv(servtype, nconf->nc_semantics) == TRUE) {
 			if (!stat(nconf->nc_device, &statbuf)) {
 				if (fdmajor == major(statbuf.st_rdev))

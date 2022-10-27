@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Client interface to broadcast service.
  *
@@ -172,7 +170,7 @@ rpc_broadcast_exp(const rpcprog_t prog, const rpcvers_t vers,
 		nettype = "datagram_n";
 	if ((handle = __rpc_setconf((char *)nettype)) == NULL)
 		return (RPC_UNKNOWNPROTO);
-	while (nconf = __rpc_getconf(handle)) {
+	while ((nconf = __rpc_getconf(handle)) != NULL) {
 		struct t_info tinfo;
 		int fd;
 		uint_t addrlen;

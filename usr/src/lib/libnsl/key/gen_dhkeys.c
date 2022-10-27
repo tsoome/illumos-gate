@@ -182,9 +182,9 @@ __gen_dhkeys_g(char *pkey,	/* out */
 	} else {
 		int (*dlfp)(); /* func ptr to dynamic loaded lib */
 
-		if (dlfp = (int (*)())__nis_get_mechanism_symbol(keylen,
-							algtype,
-							dl_gen_funcname)) {
+		dlfp = (int (*)())__nis_get_mechanism_symbol(keylen,
+		    algtype, dl_gen_funcname);
+		if (dlfp != NULL) {
 			(*dlfp)(pkey, skey, pass); /* void */
 			return (1);
 		}
@@ -281,9 +281,9 @@ __gen_common_dhkeys_g(char *xpublic,	/* in  */
 	} else {
 		int (*dlfp)(); /* func ptr to dynamically loaded lib */
 
-		if (dlfp = (int (*)())__nis_get_mechanism_symbol(keylen,
-						algtype,
-						dl_gen_common_funcname)) {
+		dlfp = (int (*)())__nis_get_mechanism_symbol(keylen,
+		    algtype, dl_gen_common_funcname);
+		if (dlfp != NULL) {
 			/* function called will have void return value */
 			(*dlfp)(xpublic, xsecret, deskeys, keynum);
 			return (1);

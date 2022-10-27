@@ -1368,7 +1368,8 @@ svc_getreq_common(const int fd)
 	do {
 		bool_t dispatch;
 
-		if (dispatch = SVC_RECV(xprt, msg))
+		dispatch = SVC_RECV(xprt, msg);
+		if (dispatch)
 			(void) _svc_prog_dispatch(xprt, msg, r);
 		/*
 		 * Check if the xprt has been disconnected in a recursive call

@@ -35,8 +35,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -88,7 +86,8 @@ __yp_first_cflookup(
 
 	for (;;) {
 
-		if (reason = __yp_dobind_cflookup(domain, &pdomb, hardlookup))
+		reason = __yp_dobind_cflookup(domain, &pdomb, hardlookup);
+		if (reason != 0)
 			return (reason);
 
 		if (pdomb->dom_binding->ypbind_hi_vers == YPVERS) {
@@ -252,7 +251,8 @@ __yp_next_cflookup(
 		return (YPERR_BADARGS);
 
 	for (;;) {
-		if (reason = __yp_dobind_cflookup(domain, &pdomb, hardlookup))
+		reason = __yp_dobind_cflookup(domain, &pdomb, hardlookup);
+		if (reason != 0)
 			return (reason);
 
 		if (pdomb->dom_binding->ypbind_hi_vers == YPVERS) {

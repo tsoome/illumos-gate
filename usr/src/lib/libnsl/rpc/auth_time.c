@@ -130,7 +130,7 @@ get_server(char *host, nis_server *srv, endpoint eps[], int  maxep)
 	hs.h_host = host;
 	hs.h_serv = "rpcbind";
 	nch = setnetconfig();
-	while (nc = getnetconfig(nch)) {
+	while ((nc = getnetconfig(nch)) != NULL) {
 		if ((nc->nc_flag & NC_VISIBLE) == 0)
 			continue;
 		if (! netdir_getbyname(nc, &hs, &addrs)) {

@@ -145,7 +145,7 @@ repphone(char *arg, char *phone, char *trstr)
 				arg++;
 				break;
 			case 'D':
-				for (fp = phone; *tp = *fp++; tp++)
+				for (fp = phone; (*tp = *fp++) != '\0'; tp++)
 					;
 				arg++;
 				break;

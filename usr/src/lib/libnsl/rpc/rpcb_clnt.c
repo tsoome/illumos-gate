@@ -422,7 +422,7 @@ local_rpcb(void)
 			(void) mutex_unlock(&loopnconf_lock);
 			return (NULL);
 		}
-		while (nconf = getnetconfig(nc_handle)) {
+		while ((nconf = getnetconfig(nc_handle)) != NULL) {
 			if (strcmp(nconf->nc_protofmly, NC_LOOPBACK) == 0) {
 				tmpnconf = nconf;
 				if (nconf->nc_semantics == NC_TPI_CLTS)

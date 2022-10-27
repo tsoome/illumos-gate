@@ -579,7 +579,7 @@ __nis_get_mechanisms(bool_t qop_secserv)
 			return (NULL);
 		}
 
-		while (mp = get_secfile_ent(fptr)) {
+		while ((mp = get_secfile_ent(fptr)) != NULL) {
 			/*
 			 * Make sure entry is either the AUTH_DES compat
 			 * one or a valid GSS one that is installed.
@@ -854,8 +854,9 @@ __nis_keyalg2mechalias(
 		}
 		else
 			return (NULL);
-	} else
-		if (mechs = __nis_get_mechanisms(FALSE)) {
+	} else {
+		mechs = __nis_get_mechanisms(FALSE);
+		if (mechs != NULL) {
 			mechanism_t **mpp;
 
 			for (mpp = mechs; *mpp; mpp++) {
@@ -881,6 +882,7 @@ __nis_keyalg2mechalias(
 			}
 			__nis_release_mechanisms(mechs);
 		}
+	}
 
 	return (NULL);
 }
@@ -1020,12 +1022,13 @@ mf_get_mechs()
 			mechs = NULL;
 		}
 
-		if (!(fptr = fopen(mech_file, "rF"))) {
+		fptr = fopen(mech_file, "rF");
+		if (fptr == NULL) {
 			(void) mutex_unlock(&mech_file_lock);
 			return (NULL);
 		}
 
-		while (mp = get_mechfile_ent(fptr)) {
+		while ((mp = get_mechfile_ent(fptr)) != NULL) {
 			ent_cnt++;
 			tmechs = (mfent_t **)list_append_ent((void *)mp,
 			    (void **)tmechs, ent_cnt, (void (*)()) mf_free_ent);

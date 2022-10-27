@@ -32,8 +32,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include "../rpc/rpc_mt.h"		/* for MT declarations only */
 #include <rpc/types.h>
@@ -305,7 +303,7 @@ getnetlist(void)
 	 *	the list).
 	 */
 	linenum = 0;
-	for (tpp = listpp; *tpp = fgetnetconfig(fp, NULL); tpp++)
+	for (tpp = listpp; (*tpp = fgetnetconfig(fp, NULL)) != NULL; tpp++)
 		;
 	(void) fclose(fp);
 
@@ -330,7 +328,7 @@ fgetnetconfig(FILE *fp, char *netid)
 	char *entnetid;		/* netid for the current entry */
 
 	/* skip past blank lines and comments. */
-	while (retvalp = fgets(linep, BUFSIZ, fp)) {
+	while ((retvalp = fgets(linep, BUFSIZ, fp)) != NULL) {
 		linenum++;
 		if (!(blank(linep) || comment(linep))) {
 			break;

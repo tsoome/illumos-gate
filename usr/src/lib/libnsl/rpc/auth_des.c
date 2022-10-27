@@ -242,7 +242,6 @@ authdes_nextverf(AUTH *auth __unused)
 static bool_t
 authdes_marshal(AUTH *auth, XDR *xdrs)
 {
-/* LINTED pointer alignment */
 	struct ad_private *ad = (struct ad_private *)auth->ah_private;
 	struct authdes_cred *cred = &ad->ad_cred;
 	struct authdes_verf *verf = &ad->ad_verf;
@@ -306,7 +305,8 @@ authdes_marshal(AUTH *auth, XDR *xdrs)
 		len = (1 + 1)*BYTES_PER_XDR_UNIT;
 	}
 
-	if (ixdr = xdr_inline(xdrs, 2*BYTES_PER_XDR_UNIT)) {
+	ixdr = xdr_inline(xdrs, 2 * BYTES_PER_XDR_UNIT);
+	if (ixdr != NULL) {
 		IXDR_PUT_INT32(ixdr, AUTH_DES);
 		IXDR_PUT_INT32(ixdr, len);
 	} else {
@@ -319,7 +319,8 @@ authdes_marshal(AUTH *auth, XDR *xdrs)
 		return (FALSE);
 
 	len = (2 + 1)*BYTES_PER_XDR_UNIT;
-	if (ixdr = xdr_inline(xdrs, 2*BYTES_PER_XDR_UNIT)) {
+	ixdr = xdr_inline(xdrs, 2 * BYTES_PER_XDR_UNIT);
+	if (ixdr != NULL) {
 		IXDR_PUT_INT32(ixdr, AUTH_DES);
 		IXDR_PUT_INT32(ixdr, len);
 	} else {
@@ -338,7 +339,6 @@ authdes_marshal(AUTH *auth, XDR *xdrs)
 static bool_t
 authdes_validate(AUTH *auth, struct opaque_auth *rverf)
 {
-/* LINTED pointer alignment */
 	struct ad_private *ad = (struct ad_private *)auth->ah_private;
 	struct authdes_verf verf;
 	int status;
@@ -347,7 +347,6 @@ authdes_validate(AUTH *auth, struct opaque_auth *rverf)
 
 	if (rverf->oa_length != (2 + 1) * BYTES_PER_XDR_UNIT)
 		return (FALSE);
-/* LINTED pointer alignment */
 	ixdr = (uint32_t *)rverf->oa_base;
 	buf.key.high = (uint32_t)*ixdr++;
 	buf.key.low = (uint32_t)*ixdr++;
@@ -367,7 +366,6 @@ authdes_validate(AUTH *auth, struct opaque_auth *rverf)
 	/*
 	 * xdr the decrypted timestamp
 	 */
-/* LINTED pointer alignment */
 	ixdr = (uint32_t *)buf.c;
 	verf.adv_timestamp.tv_sec = IXDR_GET_INT32(ixdr) + 1;
 	verf.adv_timestamp.tv_usec = IXDR_GET_INT32(ixdr);
@@ -434,7 +432,6 @@ authdes_refresh(AUTH *auth, void *dummy __unused)
 static void
 authdes_destroy(AUTH *auth)
 {
-/* LINTED pointer alignment */
 	struct ad_private *ad = (struct ad_private *)auth->ah_private;
 
 	free(ad->ad_fullname);

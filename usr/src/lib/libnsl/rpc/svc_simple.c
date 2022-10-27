@@ -110,7 +110,7 @@ rpc_reg(const rpcprog_t prognum, const rpcvers_t versnum,
 	}
 /* VARIABLES PROTECTED BY proglst_lock: proglst */
 	(void) mutex_lock(&proglst_lock);
-	while (nconf = __rpc_getconf(handle)) {
+	while ((nconf = __rpc_getconf(handle)) != NULL) {
 		struct proglst *pl;
 		SVCXPRT *svcxprt;
 		int madenow;

@@ -942,7 +942,7 @@ __clnt_create_loopback(rpcprog_t prog, rpcvers_t vers, int *err)
 		*err = YPERR_RPC;
 		return (NULL);
 	}
-	while (nconf = getnetconfig(nc_handle))
+	while ((nconf = getnetconfig(nc_handle)) != NULL) {
 		/* Try only one connection oriented loopback transport */
 		if ((strcmp(nconf->nc_protofmly, NC_LOOPBACK) == 0) &&
 			((nconf->nc_semantics == NC_TPI_COTS) ||
@@ -950,6 +950,7 @@ __clnt_create_loopback(rpcprog_t prog, rpcvers_t vers, int *err)
 			clnt = getclnt(prog, vers, nconf, err);
 			break;
 		}
+	}
 	(void) endnetconfig(nc_handle);
 
 	if (clnt == NULL) {	/* no loopback transport available */

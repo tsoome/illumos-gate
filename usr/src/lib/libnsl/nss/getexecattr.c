@@ -219,9 +219,11 @@ retry_policy:
 			struct __nsw_lookup	*lookups = NULL;
 			struct __nsw_switchconfig *conf = NULL;
 
-			if (conf = __nsw_getconfig(NSS_DBNAM_PROFATTR, &pserr))
+			conf = __nsw_getconfig(NSS_DBNAM_PROFATTR, &pserr);
+			if (conf != NULL) {
 				if ((lookups = conf->lookups) == NULL)
 					goto out;
+			}
 			NSS_XbyY_INIT(&parg, &prof, pbuf, NSS_BUFLEN_PROFATTR,
 			    str2profattr);
 			parg.key.name = name;
@@ -288,12 +290,14 @@ _doexeclist(nss_XbyY_args_t *argp)
 	execstr_t	*exec = (execstr_t *)((argp->buf.result));
 
 	if (_priv_exec->head_exec == NULL) {
-		if (_priv_exec->head_exec = _dup_execstr(exec))
+		_priv_exec->head_exec = _dup_execstr(exec);
+		if (_priv_exec->head_exec != NULL)
 			_priv_exec->prev_exec = _priv_exec->head_exec;
 		else
 			status = 0;
 	} else {
-		if (_priv_exec->prev_exec->next = _dup_execstr(exec))
+		_priv_exec->prev_exec->next = _dup_execstr(exec);
+		if (_priv_exec->prev_exec->next != NULL)
 			_priv_exec->prev_exec = _priv_exec->prev_exec->next;
 		else
 			status = 0;

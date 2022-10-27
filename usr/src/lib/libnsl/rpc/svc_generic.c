@@ -137,7 +137,7 @@ svc_create(void (*dispatch)(), const rpcprog_t prognum, const rpcvers_t versnum,
 		(void) syslog(LOG_ERR, "svc_create: unknown protocol");
 		return (0);
 	}
-	while (nconf = __rpc_getconf(handle)) {
+	while ((nconf = __rpc_getconf(handle)) != NULL) {
 		(void) mutex_lock(&xprtlist_lock);
 		for (l = _svc_xprtlist; l; l = l->next) {
 			if (strcmp(l->xprt->xp_netid, nconf->nc_netid) == 0) {
