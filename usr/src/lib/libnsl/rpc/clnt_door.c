@@ -301,10 +301,8 @@ clnt_door_send(CLIENT *cl __unused, rpcproc_t proc __unused,
 }
 
 static void
-clnt_door_geterr(CLIENT *cl, struct rpc_err *errp)
+clnt_door_geterr(CLIENT *cl __unused, struct rpc_err *errp)
 {
-	struct cu_data	*cu = (struct cu_data *)cl->cl_private;
-
 	*errp = rpc_callerr;
 }
 
@@ -319,9 +317,8 @@ clnt_door_freeres(CLIENT *cl __unused, xdrproc_t xdr_res, caddr_t res_ptr)
 }
 
 static void
-clnt_door_abort(CLIENT *cl)
+clnt_door_abort(CLIENT *cl __unused)
 {
-	cl = cl;
 }
 
 static bool_t

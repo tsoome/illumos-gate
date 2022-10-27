@@ -71,7 +71,6 @@
 static const char *PKMAP = "publickey.byname";
 static const char *PKFILE = "/etc/publickey";
 static const char dh_caps_str[] = "DH";
-static const char des_caps_str[] = AUTH_DES_AUTH_TYPE;
 
 static char	*netname2hashname(const char *, char *, int, keylen_t,
 				algtype_t);
@@ -434,7 +433,6 @@ getkeys_ldap_g(
 	char		keytypename[NIS_MAXNAMELEN+1];
 	int		len;
 	const bool_t	classic_des = AUTH_DES_KEY(keylen, algtype);
-	int		rc = 0;
 	nss_XbyY_args_t arg;
 	nss_XbyY_buf_t	*buf = NULL;
 	char		*keyval;
@@ -556,7 +554,6 @@ __getpublickey_cached_g(const char netname[],	/* in  */
 	struct __nsw_lookup *look;
 	enum __nsw_parse_err perr;
 	const bool_t classic_des = AUTH_DES_KEY(keylen, algtype);
-	int	retry_cache = 0;
 
 	if (!netname || !pkey)
 		return (0);
