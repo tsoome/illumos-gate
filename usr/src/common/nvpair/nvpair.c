@@ -730,14 +730,15 @@ static int
 i_validate_nvpair_name(nvpair_t *nvp)
 {
 	if ((nvp->nvp_name_sz <= 0) ||
-	    (nvp->nvp_size < NVP_SIZE_CALC(nvp->nvp_name_sz, 0)))
+	    ((size_t)nvp->nvp_size < NVP_SIZE_CALC(nvp->nvp_name_sz, 0)))
 		return (EFAULT);
 
 	/* verify the name string, make sure its terminated */
 	if (NVP_NAME(nvp)[nvp->nvp_name_sz - 1] != '\0')
 		return (EFAULT);
 
-	return (strlen(NVP_NAME(nvp)) == nvp->nvp_name_sz - 1 ? 0 : EFAULT);
+	return (strlen(NVP_NAME(nvp)) == (size_t)nvp->nvp_name_sz - 1 ?
+	    0 : EFAULT);
 }
 
 static int
@@ -749,15 +750,12 @@ i_validate_nvpair_value(data_type_t type, uint_t nelem, const void *data)
 		    *(boolean_t *)data != B_FALSE)
 			return (EINVAL);
 		break;
-	case DATA_TYPE_BOOLEAN_ARRAY: {
-		int i;
-
-		for (i = 0; i < nelem; i++)
+	case DATA_TYPE_BOOLEAN_ARRAY:
+		for (uint_t i = 0; i < nelem; i++)
 			if (((boolean_t *)data)[i] != B_TRUE &&
 			    ((boolean_t *)data)[i] != B_FALSE)
 				return (EINVAL);
 		break;
-	}
 	default:
 		break;
 	}
@@ -774,7 +772,8 @@ static int
 i_validate_nvpair(nvpair_t *nvp)
 {
 	data_type_t type = NVP_TYPE(nvp);
-	int size1, size2;
+	size_t size1;
+	int size2;
 
 	/* verify nvp_name_sz, check the name string length */
 	if (i_validate_nvpair_name(nvp) != 0)
@@ -1129,8 +1128,8 @@ nvlist_add_common(nvlist_t *nvl, const char *name,
 {
 	nvpair_t *nvp;
 	uint_t i;
-
-	int nvp_sz, name_sz, value_sz;
+	size_t name_sz;
+	int nvp_sz, value_sz;
 	int err = 0;
 
 	if (name == NULL || nvl == NULL || nvl->nvl_priv == 0)
@@ -1989,7 +1988,7 @@ nvlist_lookup_nvpair_ei_sep(nvlist_t *nvl, const char *name, const char sep,
 
 			/* continue if no match on name */
 			if (strncmp(np, nvpair_name(nvp), n) ||
-			    (strlen(nvpair_name(nvp)) != n))
+			    (strlen(nvpair_name(nvp)) != (size_t)n))
 				continue;
 
 			/* if indexed, verify type is array oriented */
@@ -2485,7 +2484,7 @@ nvs_embedded_nvl_array(nvstream_t *nvs, nvpair_t *nvp, size_t *size)
 {
 	size_t nelem = NVP_NELEM(nvp);
 	nvlist_t **nvlp = EMBEDDED_NVL_ARRAY(nvp);
-	int i;
+	size_t i;
 
 	switch (nvs->nvs_op) {
 	case NVS_OP_ENCODE:
@@ -2975,7 +2974,7 @@ nvs_native_nvp_op(nvstream_t *nvs, nvpair_t *nvp)
 	if ((value_sz = i_get_value_size(type, NULL, NVP_NELEM(nvp))) < 0)
 		return (EFAULT);
 
-	if (NVP_SIZE_CALC(nvp->nvp_name_sz, value_sz) > nvp->nvp_size)
+	if (NVP_SIZE_CALC(nvp->nvp_name_sz, value_sz) > (uint32_t)nvp->nvp_size)
 		return (EFAULT);
 
 	switch (type) {
@@ -3247,7 +3246,7 @@ nvs_xdr_nvp_op(nvstream_t *nvs, nvpair_t *nvp)
 		return (EFAULT);
 	buflen = buf_end - buf;
 
-	if (buflen < value_sz)
+	if ((int)buflen < value_sz)
 		return (EFAULT);
 
 	switch (type) {
@@ -3355,7 +3354,7 @@ nvs_xdr_nvp_op(nvstream_t *nvs, nvpair_t *nvp)
 	case DATA_TYPE_STRING_ARRAY: {
 		size_t len = nelem * sizeof (uint64_t);
 		char **strp = (void *)buf;
-		int i;
+		uint_t i;
 
 		if (nvs->nvs_op == NVS_OP_DECODE)
 			bzero(buf, len);	/* don't trust packed data */

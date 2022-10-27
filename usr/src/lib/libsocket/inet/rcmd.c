@@ -280,7 +280,8 @@ int rcmd_af(char **ahost, unsigned short rport, const char *locuser,
 			goto bad;
 		(void) listen(s2, 1);
 		(void) snprintf(aport, MAX_SHORTSTRLEN, "%d", lport);
-		if (write(s, aport, strlen(aport)+1) != strlen(aport)+1) {
+		if (write(s, aport, strlen(aport) + 1) !=
+		    (ssize_t)strlen(aport) + 1) {
 			perror(dgettext(TEXT_DOMAIN,
 			    "write: setting up stderr"));
 			(void) close(s2);

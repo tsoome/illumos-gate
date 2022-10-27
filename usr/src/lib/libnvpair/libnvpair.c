@@ -1002,7 +1002,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 
 		/* check indexed string value of array for match */
 		if ((nvpair_value_string_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len)) {
+		    (ai < (int)a_len)) {
 			if (value_regex) {
 				if (regexec(value_regex, val_array[ai],
 				    (size_t)0, NULL, 0) == 0)
@@ -1032,7 +1032,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%c", &val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_byte_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1055,7 +1055,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi8, &val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_int8_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1078,7 +1078,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi8, (int8_t *)&val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_uint8_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1101,7 +1101,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi16, &val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_int16_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1124,7 +1124,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi16, (int16_t *)&val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_uint16_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1147,7 +1147,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi32, &val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_int32_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1170,7 +1170,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi32, (int32_t *)&val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_uint32_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1193,7 +1193,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi64, &val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_int64_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 				return (1);
 		break;
@@ -1216,7 +1216,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi64, (int64_t *)&val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_uint64_array(nvp, &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
+		    (ai < (int)a_len) &&
 		    (val_array[ai] == val_arg))
 			return (1);
 		break;
@@ -1229,7 +1229,7 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		sr = sscanf(value, "%"SCNi32, &val_arg);
 		if ((sr == 1) &&
 		    (nvpair_value_boolean_value(nvp, &val) == 0) &&
-		    (val == val_arg))
+		    (val == (boolean_t)val_arg))
 			return (1);
 		break;
 	}
@@ -1242,8 +1242,8 @@ nvpair_value_match_regex(nvpair_t *nvp, int ai,
 		if ((sr == 1) &&
 		    (nvpair_value_boolean_array(nvp,
 		    &val_array, &a_len) == 0) &&
-		    (ai < a_len) &&
-		    (val_array[ai] == val_arg))
+		    (ai < (int)a_len) &&
+		    (val_array[ai] == (boolean_t)val_arg))
 			return (1);
 		break;
 	}
