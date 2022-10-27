@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This module contains the interfaces for the NIS+ security mechanisms.
  */
@@ -276,12 +274,14 @@ free_fields(char **cpp, int cnt)
 	char **tpp = cpp;
 
 	if (cpp) {
-		if (cnt)
-			for (; cnt > 0; cnt--, tpp++)
+		if (cnt) {
+			for (; cnt > 0; cnt--, tpp++) {
 				if (*tpp)
 					free(*tpp);
 				else
 					break;
+			}
+		}
 		free(cpp);
 	}
 }

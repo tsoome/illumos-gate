@@ -266,7 +266,7 @@ xencrypt_g(
 		return (0);
 
 	(void) memcpy(hexkeybuf, secret, hexkeybytes);
-	if (do_chksum)
+	if (do_chksum) {
 		if (classic_des) {
 			(void) memcpy(hexkeybuf + hexkeybytes, secret,
 					keychecksumsize);
@@ -287,6 +287,7 @@ xencrypt_g(
 			(void) memcpy(hexkeybuf + hexkeybytes,
 					(void *)md5hexbuf, MD5HEXSIZE);
 		}
+	}
 	hexkeybuf[bufsize - 1] = 0;
 
 	if (binkeybytes > MAX_KEY_CRYPT_LEN) {
@@ -386,7 +387,7 @@ xdecrypt_g(
 	(void) bin2hex(len, (unsigned char *) buf, secret);
 	free(buf);
 
-	if (do_chksum)
+	if (do_chksum) {
 		if (classic_des) {
 			if (memcmp(secret, &(secret[hexkeybytes]),
 					keychecksumsize) != 0) {
@@ -413,6 +414,7 @@ xdecrypt_g(
 				return (0);
 			}
 		}
+	}
 
 	secret[hexkeybytes] = '\0';
 

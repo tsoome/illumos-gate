@@ -772,12 +772,14 @@ gettoken(char *cp, int skip)
 
 	retp = p;
 	while (*p) {
-		if (isspace(*p))
+		if (isspace(*p)) {
 			if (skip == TRUE) {
 				shift1left(p);
 				continue;
-			} else
+			} else {
 				break;
+			}
+		}
 		/*
 		 *	Only process the escape of the space seperator;
 		 *	since the token may contain other separators,

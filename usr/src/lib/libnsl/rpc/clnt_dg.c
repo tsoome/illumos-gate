@@ -579,12 +579,12 @@ timeout:			(void) gettimeofday(&curtime, NULL);
 		 * If unsuccesful AND error is an authentication error
 		 * then refresh credentials and try again, else break
 		 */
-		else if (rpc_callerr.re_status == RPC_AUTHERROR)
+		else if (rpc_callerr.re_status == RPC_AUTHERROR) {
 			/* maybe our credentials need to be refreshed ... */
 			if (nrefreshes-- &&
-			    AUTH_REFRESH(cl->cl_auth, &reply_msg))
+			    AUTH_REFRESH(cl->cl_auth, &reply_msg)) {
 				goto call_again;
-			else
+			} else {
 				/*
 				 * We are setting rpc_callerr here given that
 				 * libnsl is not reentrant thereby
@@ -593,6 +593,8 @@ timeout:			(void) gettimeofday(&curtime, NULL);
 				 * failed.
 				 */
 				rpc_callerr.re_status = RPC_AUTHERROR;
+			}
+		}
 
 		/* end of unsuccessful completion */
 		/* free verifier */
