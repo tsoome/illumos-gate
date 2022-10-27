@@ -558,9 +558,8 @@ nvlist_nvflag(nvlist_t *nvl)
 /*
  * nvlist_alloc - Allocate nvlist.
  */
-/*ARGSUSED1*/
 int
-nvlist_alloc(nvlist_t **nvlp, uint_t nvflag, int kmflag)
+nvlist_alloc(nvlist_t **nvlp, uint_t nvflag, int kmflag __unused)
 {
 #if defined(_KERNEL) && !defined(_BOOT)
 	return (nvlist_xalloc(nvlp, nvflag,
@@ -894,9 +893,8 @@ nvlist_contains_nvp(nvlist_t *nvl, nvpair_t *nvp)
 /*
  * Make a copy of nvlist
  */
-/*ARGSUSED1*/
 int
-nvlist_dup(nvlist_t *nvl, nvlist_t **nvlp, int kmflag)
+nvlist_dup(nvlist_t *nvl, nvlist_t **nvlp, int kmflag __unused)
 {
 #if defined(_KERNEL) && !defined(_BOOT)
 	return (nvlist_xdup(nvl, nvlp,
@@ -2259,9 +2257,8 @@ nvlist_add_nvpair(nvlist_t *nvl, nvpair_t *nvp)
  * the values are taken from nvl in the case of duplicates.
  * Return 0 on success.
  */
-/*ARGSUSED*/
 int
-nvlist_merge(nvlist_t *dst, nvlist_t *nvl, int flag)
+nvlist_merge(nvlist_t *dst, nvlist_t *nvl, int flag __unused)
 {
 	if (nvl == NULL || dst == NULL)
 		return (EINVAL);
@@ -2634,10 +2631,9 @@ nvlist_size(nvlist_t *nvl, size_t *size, int encoding)
 /*
  * Pack nvlist into contiguous memory
  */
-/*ARGSUSED1*/
 int
 nvlist_pack(nvlist_t *nvl, char **bufp, size_t *buflen, int encoding,
-    int kmflag)
+    int kmflag __unused)
 {
 #if defined(_KERNEL) && !defined(_BOOT)
 	return (nvlist_xpack(nvl, bufp, buflen, encoding,
@@ -2697,9 +2693,8 @@ nvlist_xpack(nvlist_t *nvl, char **bufp, size_t *buflen, int encoding,
 /*
  * Unpack buf into an nvlist_t
  */
-/*ARGSUSED1*/
 int
-nvlist_unpack(char *buf, size_t buflen, nvlist_t **nvlp, int kmflag)
+nvlist_unpack(char *buf, size_t buflen, nvlist_t **nvlp, int kmflag __unused)
 {
 #if defined(_KERNEL) && !defined(_BOOT)
 	return (nvlist_xunpack(buf, buflen, nvlp,
@@ -2772,9 +2767,8 @@ nvs_native_create(nvstream_t *nvs, nvs_native_t *native, char *buf,
 	}
 }
 
-/*ARGSUSED*/
 static void
-nvs_native_destroy(nvstream_t *nvs)
+nvs_native_destroy(nvstream_t *nvs __unused)
 {
 }
 

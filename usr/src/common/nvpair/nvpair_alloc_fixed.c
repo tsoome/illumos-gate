@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/stropts.h>
 #include <sys/isa_defs.h>
 #include <sys/nvpair.h>
@@ -94,9 +92,9 @@ nv_fixed_alloc(nv_alloc_t *nva, size_t size)
 	return ((void *)new);
 }
 
-/*ARGSUSED*/
 static void
-nv_fixed_free(nv_alloc_t *nva, void *buf, size_t size)
+nv_fixed_free(nv_alloc_t *nva __unused, void *buf __unused,
+    size_t size __unused)
 {
 	/* don't free memory in the pre-allocated buffer */
 }

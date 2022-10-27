@@ -24,21 +24,17 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/nvpair.h>
 #include <stdlib.h>
 
-/*ARGSUSED*/
 static void *
-nv_alloc_sys(nv_alloc_t *nva, size_t size)
+nv_alloc_sys(nv_alloc_t *nva __unused, size_t size)
 {
 	return (malloc(size));
 }
 
-/*ARGSUSED*/
 static void
-nv_free_sys(nv_alloc_t *nva, void *buf, size_t size)
+nv_free_sys(nv_alloc_t *nva __unused, void *buf, size_t size __unused)
 {
 	free(buf);
 }

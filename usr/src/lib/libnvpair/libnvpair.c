@@ -29,7 +29,6 @@
 #include <sys/types.h>
 #include <sys/inttypes.h>
 #include <stdarg.h>
-#include <note.h>
 #include "libnvpair.h"
 
 /*
@@ -188,12 +187,10 @@ indent(nvlist_prtctl_t pctl, int onemore)
 
 #define	NVLIST_PRTFUNC(type_and_variant, vtype, ptype, vfmt) \
 static int \
-nvprint_##type_and_variant(nvlist_prtctl_t pctl, void *private, \
-    nvlist_t *nvl, const char *name, vtype value) \
+nvprint_##type_and_variant(nvlist_prtctl_t pctl, void *private __unused, \
+    nvlist_t *nvl __unused, const char *name, vtype value) \
 { \
 	FILE *fp = pctl->nvprt_fp; \
-	NOTE(ARGUNUSED(private)) \
-	NOTE(ARGUNUSED(nvl)) \
 	indent(pctl, 1); \
 	(void) fprintf(fp, pctl->nvprt_nmfmt, name); \
 	(void) fprintf(fp, vfmt, (ptype)value); \
@@ -221,13 +218,11 @@ NVLIST_PRTFUNC(hrtime, hrtime_t, hrtime_t, "0x%llx")
 
 #define	NVLIST_ARRPRTFUNC(type_and_variant, vtype, ptype, vfmt) \
 static int \
-nvaprint_##type_and_variant(nvlist_prtctl_t pctl, void *private, \
-    nvlist_t *nvl, const char *name, vtype *valuep, uint_t count) \
+nvaprint_##type_and_variant(nvlist_prtctl_t pctl, void *private __unused, \
+    nvlist_t *nvl __unused, const char *name, vtype *valuep, uint_t count) \
 { \
 	FILE *fp = pctl->nvprt_fp; \
 	uint_t i; \
-	NOTE(ARGUNUSED(private)) \
-	NOTE(ARGUNUSED(nvl)) \
 	for (i = 0; i < count; i++) { \
 		if (i == 0 || pctl->nvprt_btwnarrfmt_nl) { \
 			indent(pctl, 1); \
@@ -254,10 +249,9 @@ NVLIST_ARRPRTFUNC(int64_array, int64_t, longlong_t, "%lld")
 NVLIST_ARRPRTFUNC(uint64_array, uint64_t, u_longlong_t, "0x%llx")
 NVLIST_ARRPRTFUNC(string_array, char *, char *, "%s")
 
-/*ARGSUSED*/
 static int
-nvprint_nvlist(nvlist_prtctl_t pctl, void *private,
-    nvlist_t *nvl, const char *name, nvlist_t *value)
+nvprint_nvlist(nvlist_prtctl_t pctl, void *private __unused,
+    nvlist_t *nvl __unused, const char *name, nvlist_t *value)
 {
 	FILE *fp = pctl->nvprt_fp;
 
@@ -274,10 +268,9 @@ nvprint_nvlist(nvlist_prtctl_t pctl, void *private,
 	return (1);
 }
 
-/*ARGSUSED*/
 static int
-nvaprint_nvlist_array(nvlist_prtctl_t pctl, void *private,
-    nvlist_t *nvl, const char *name, nvlist_t **valuep, uint_t count)
+nvaprint_nvlist_array(nvlist_prtctl_t pctl, void *private __unused,
+    nvlist_t *nvl __unused, const char *name, nvlist_t **valuep, uint_t count)
 {
 	FILE *fp = pctl->nvprt_fp;
 	uint_t i;
