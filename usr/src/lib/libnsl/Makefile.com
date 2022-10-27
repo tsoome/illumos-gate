@@ -185,7 +185,7 @@ $(BIGPICS) :=	sparc_C_PICFLAGS = $(C_BIGPICFLAGS)
 $(BIGPICS) :=	i386_C_PICFLAGS = $(C_BIGPICFLAGS)
 
 CPPFLAGS +=	-I$(SRC)/lib/libnsl/include -D_REENTRANT
-CPPFLAGS +=	-I$(SRC)/lib/libnsl/dial
+CPPFLAGS +=	-I$(SRC)/lib/libnsl/dial -U_XOPEN_SOURCE
 
 CFLAGS +=	$(CCVERBOSE)
 
@@ -210,7 +210,6 @@ SMATCH=off
 LIBMP =		-lmp
 LDLIBS +=	$(LIBMP) -lmd -lc
 DYNFLAGS +=	$(ZNODELETE)
-
 
 .KEEP_STATE:
 
