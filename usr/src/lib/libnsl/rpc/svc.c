@@ -556,9 +556,8 @@ svc_remove_input(svc_input_id_t id)
  * that do not use all the fields in struct svc_auth_ops.
  */
 
-/*ARGSUSED*/
 static int
-authany_wrap(AUTH *auth, XDR *xdrs, xdrproc_t xfunc, caddr_t xwhere)
+authany_wrap(AUTH *auth __unused, XDR *xdrs, xdrproc_t xfunc, caddr_t xwhere)
 {
 	return (*xfunc)(xdrs, xwhere);
 }
@@ -574,7 +573,6 @@ struct svc_auth_ops svc_auth_any_ops = {
 SVCAUTH *
 __svc_get_svcauth(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	return (&SVC_XP_AUTH(xprt));
 }
 
@@ -1163,14 +1161,12 @@ svcerr_systemerr(const SVCXPRT *xprt)
 void
 __svc_versquiet_on(const SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= SVC_VERSQUIET;
 }
 
 void
 __svc_versquiet_off(const SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	svc_flags(xprt) &= ~SVC_VERSQUIET;
 }
 
@@ -1183,7 +1179,6 @@ svc_versquiet(const SVCXPRT *xprt)
 int
 __svc_versquiet_get(const SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	return (svc_flags(xprt) & SVC_VERSQUIET);
 }
 
@@ -1362,11 +1357,8 @@ svc_getreq_common(const int fd)
 		return;
 	}
 	(void) rw_unlock(&svc_fd_lock);
-/* LINTED pointer alignment */
 	msg = SVCEXT(xprt)->msg;
-/* LINTED pointer alignment */
 	r = SVCEXT(xprt)->req;
-/* LINTED pointer alignment */
 	cred_area = SVCEXT(xprt)->cred_area;
 	msg->rm_call.cb_cred.oa_base = cred_area;
 	msg->rm_call.cb_verf.oa_base = &(cred_area[MAX_AUTH_BYTES]);
@@ -1417,9 +1409,7 @@ _svc_prog_dispatch(SVCXPRT *xprt, struct rpc_msg *msg, struct svc_req *r)
 	r->rq_vers = msg->rm_call.cb_vers;
 	r->rq_proc = msg->rm_call.cb_proc;
 	r->rq_cred = msg->rm_call.cb_cred;
-/* LINTED pointer alignment */
 	SVC_XP_AUTH(r->rq_xprt).svc_ah_ops = svc_auth_any_ops;
-/* LINTED pointer alignment */
 	SVC_XP_AUTH(r->rq_xprt).svc_ah_private = NULL;
 
 	/* first authenticate the message */
@@ -1472,7 +1462,6 @@ _svc_prog_dispatch(SVCXPRT *xprt, struct rpc_msg *msg, struct svc_req *r)
 	 * is not served ...
 	 */
 	if (prog_found) {
-/* LINTED pointer alignment */
 		if (!version_keepquiet(xprt))
 			svcerr_progvers(xprt, low_vers, high_vers);
 	} else {
@@ -1520,7 +1509,6 @@ svc_xprt_alloc(void)
 		goto err_exit;
 	xt->cred_area = cred_area;
 
-/* LINTED pointer alignment */
 	(void) mutex_init(&svc_send_mutex(xprt), USYNC_THREAD, (void *)0);
 	return (xprt);
 
@@ -1536,7 +1524,6 @@ err_exit:
 void
 svc_xprt_free(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	SVCXPRT_EXT	*xt = xprt ? SVCEXT(xprt) : NULL;
 	SVCXPRT_LIST	*my_xlist = xt ? xt->my_xlist: NULL;
 	struct rpc_msg	*msg = xt ? xt->msg : NULL;
@@ -1567,13 +1554,9 @@ svc_xprt_destroy(SVCXPRT *xprt)
 	SVCXPRT_LIST	*xlist, *xnext = NULL;
 	int		type;
 
-/* LINTED pointer alignment */
 	if (SVCEXT(xprt)->parent)
-/* LINTED pointer alignment */
 		xprt = SVCEXT(xprt)->parent;
-/* LINTED pointer alignment */
 	type = svc_type(xprt);
-/* LINTED pointer alignment */
 	for (xlist = SVCEXT(xprt)->my_xlist; xlist != NULL; xlist = xnext) {
 		xnext = xlist->next;
 		xprt = xlist->xprt;
@@ -1601,7 +1584,6 @@ svc_xprt_destroy(SVCXPRT *xprt)
 SVCXPRT *
 svc_copy(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	switch (svc_type(xprt)) {
 	case SVC_DGRAM:
 		return (svc_dg_xprtcopy(xprt));
@@ -1620,7 +1602,6 @@ svc_copy(SVCXPRT *xprt)
 void
 _svc_destroy_private(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	switch (svc_type(xprt)) {
 	case SVC_DGRAM:
 		_svc_dg_destroy_private(xprt);
@@ -1641,7 +1622,6 @@ _svc_destroy_private(SVCXPRT *xprt)
 bool_t
 svc_get_local_cred(SVCXPRT *xprt, svc_local_cred_t *lcred)
 {
-	/* LINTED pointer alignment */
 	if (svc_type(xprt) == SVC_DOOR)
 		return (__svc_get_door_cred(xprt, lcred));
 	return (__rpc_get_local_cred(xprt, lcred));
@@ -1775,7 +1755,6 @@ __svc_dup(struct svc_req *req, caddr_t *resp_buf, uint_t *resp_bufsz,
 	struct dupreq *dr = NULL;
 	time_t timenow = time(NULL);
 
-	/* LINTED pointer alignment */
 	struct dupcache *dc = (struct dupcache *)xprt_cache;
 
 	if (dc == NULL) {
@@ -2023,7 +2002,6 @@ __svc_dupdone(struct svc_req *req, caddr_t resp_buf, uint_t resp_bufsz,
 	uint32_t drxid, drhash;
 	int rc;
 
-	/* LINTED pointer alignment */
 	struct dupcache *dc = (struct dupcache *)xprt_cache;
 
 	if (dc == NULL) {

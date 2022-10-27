@@ -28,8 +28,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * *************************************************************
  *	  dial() returns an fd for an open tty-line connected to the
@@ -131,15 +129,14 @@ static int rlfd;			/* fd for remote comm line */
 static jmp_buf Sjbuf;		/* needed by connection routines */
 
 /* VARARGS */
-/* ARGSUSED */
 static void
-assert(const char *s1, const char *s2, int i1, const char *s3, int i2)
+assert(const char *s1 __unused, const char *s2 __unused, int i1 __unused,
+    const char *s3 __unused, int i2 __unused)
 {					/* for ASSERT in conn() */
 }
 
-/* ARGSUSED */
 static void
-logent(const char *s1, const char *s2)
+logent(const char *s1 __unused, const char *s2 __unused)
 {					/* so we can load unlockf() */
 }
 

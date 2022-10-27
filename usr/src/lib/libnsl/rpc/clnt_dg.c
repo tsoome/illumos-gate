@@ -218,7 +218,6 @@ clnt_dg_create(const int fd, struct netbuf *svcaddr, const rpcprog_t program,
 	cu->cu_xdrpos = XDR_GETPOS(&(cu->cu_outxdrs));
 	XDR_DESTROY(&(cu->cu_outxdrs));
 	xdrmem_create(&(cu->cu_outxdrs), cu->cu_outbuf_start, ssz, XDR_ENCODE);
-/* LINTED pointer alignment */
 	tr_data = (struct t_unitdata *)t_alloc(fd, T_UNITDATA, T_ADDR | T_OPT);
 	if (tr_data == NULL) {
 		goto err1;
@@ -262,7 +261,6 @@ static enum clnt_stat
 clnt_dg_call(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp,
 	xdrproc_t xresults, caddr_t resultsp, struct timeval utimeout)
 {
-/* LINTED pointer alignment */
 	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 	XDR *xdrs;
 	int outlen;
@@ -306,9 +304,7 @@ call_again:
 	 * Due to little endian byte order, it is necessary to convert to host
 	 * format before incrementing xid.
 	 */
-	/* LINTED pointer cast */
 	x_id = ntohl(*(uint32_t *)(cu->cu_outbuf)) + 1;		/* set XID */
-	/* LINTED pointer cast */
 	*(uint32_t *)cu->cu_outbuf = htonl(x_id);
 
 	if (cl->cl_auth->ah_cred.oa_flavor != RPCSEC_GSS) {
@@ -320,7 +316,6 @@ call_again:
 			return (rpc_callerr.re_status = RPC_CANTENCODEARGS);
 		}
 	} else {
-/* LINTED pointer alignment */
 		uint32_t *u = (uint32_t *)&cu->cu_outbuf[cu->cu_xdrpos];
 		IXDR_PUT_U_INT32(u, proc);
 		if (!__rpc_gss_wrap(cl->cl_auth, cu->cu_outbuf,
@@ -538,9 +533,7 @@ timeout:			(void) gettimeofday(&curtime, NULL);
 		if (cu->cu_tr_data->udata.len < (uint_t)sizeof (uint32_t))
 			continue;
 		/* see if reply transaction id matches sent id */
-		/* LINTED pointer alignment */
 		if (*((uint32_t *)(cu->cu_inbuf)) !=
-		    /* LINTED pointer alignment */
 		    *((uint32_t *)(cu->cu_outbuf)))
 			goto timeout;
 		/* we now assume we have the proper reply */
@@ -621,7 +614,6 @@ timeout:			(void) gettimeofday(&curtime, NULL);
 static enum clnt_stat
 clnt_dg_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 {
-/* LINTED pointer alignment */
 	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 	XDR *xdrs;
 	int outlen;
@@ -644,9 +636,7 @@ clnt_dg_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 	 * Due to little endian byte order, it is necessary to convert to host
 	 * format before incrementing xid.
 	 */
-/* LINTED pointer alignment */
 	x_id = ntohl(*(uint32_t *)(cu->cu_outbuf)) + 1;		/* set XID */
-	/* LINTED pointer cast */
 	*(uint32_t *)cu->cu_outbuf = htonl(x_id);
 
 	if (cl->cl_auth->ah_cred.oa_flavor != RPCSEC_GSS) {
@@ -658,7 +648,6 @@ clnt_dg_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 			return (rpc_callerr.re_status = RPC_CANTENCODEARGS);
 		}
 	} else {
-/* LINTED pointer alignment */
 		uint32_t *u = (uint32_t *)&cu->cu_outbuf[cu->cu_xdrpos];
 		IXDR_PUT_U_INT32(u, proc);
 		if (!__rpc_gss_wrap(cl->cl_auth, cu->cu_outbuf,
@@ -684,16 +673,14 @@ clnt_dg_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 }
 
 static void
-clnt_dg_geterr(CLIENT *cl, struct rpc_err *errp)
+clnt_dg_geterr(CLIENT *cl __unused, struct rpc_err *errp)
 {
-        NOTE(ARGUNUSED(cl))
 	*errp = rpc_callerr;
 }
 
 static bool_t
 clnt_dg_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
 {
-/* LINTED pointer alignment */
 	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 	XDR *xdrs = &(cu->cu_outxdrs);
 	bool_t stat;
@@ -705,16 +692,14 @@ clnt_dg_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
 	return (stat);
 }
 
-/* ARGSUSED */
 static void
-clnt_dg_abort(CLIENT *h)
+clnt_dg_abort(CLIENT *h __unused)
 {
 }
 
 static bool_t
 clnt_dg_control(CLIENT *cl, int request, char *info)
 {
-/* LINTED pointer alignment */
 	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 	struct netbuf *addr;
 	if (rpc_fd_lock(dgtbl, cu->cu_fd)) {
@@ -740,16 +725,13 @@ clnt_dg_control(CLIENT *cl, int request, char *info)
 	}
 	switch (request) {
 	case CLSET_TIMEOUT:
-/* LINTED pointer alignment */
 		if (time_not_ok((struct timeval *)info)) {
 			rpc_fd_unlock(dgtbl, cu->cu_fd);
 			return (FALSE);
 		}
-/* LINTED pointer alignment */
 		cu->cu_total = *(struct timeval *)info;
 		break;
 	case CLGET_TIMEOUT:
-/* LINTED pointer alignment */
 		*(struct timeval *)info = cu->cu_total;
 		break;
 	case CLGET_SERVER_ADDR:		/* Give it the fd address */
@@ -757,28 +739,22 @@ clnt_dg_control(CLIENT *cl, int request, char *info)
 		(void) memcpy(info, cu->cu_raddr.buf, (size_t)cu->cu_raddr.len);
 		break;
 	case CLSET_RETRY_TIMEOUT:
-/* LINTED pointer alignment */
 		if (time_not_ok((struct timeval *)info)) {
 			rpc_fd_unlock(dgtbl, cu->cu_fd);
 			return (FALSE);
 		}
-/* LINTED pointer alignment */
 		cu->cu_wait = *(struct timeval *)info;
 		break;
 	case CLGET_RETRY_TIMEOUT:
-/* LINTED pointer alignment */
 		*(struct timeval *)info = cu->cu_wait;
 		break;
 	case CLGET_FD:
-/* LINTED pointer alignment */
 		*(int *)info = cu->cu_fd;
 		break;
 	case CLGET_SVC_ADDR:
-/* LINTED pointer alignment */
 		*(struct netbuf *)info = cu->cu_raddr;
 		break;
 	case CLSET_SVC_ADDR:		/* set to new address */
-/* LINTED pointer alignment */
 		addr = (struct netbuf *)info;
 		if (cu->cu_raddr.maxlen < addr->len) {
 			free(cu->cu_raddr.buf);
@@ -797,13 +773,11 @@ clnt_dg_control(CLIENT *cl, int request, char *info)
 		 * first element in the call structure *.
 		 * This will get the xid of the PREVIOUS call
 		 */
-/* LINTED pointer alignment */
 		*(uint32_t *)info = ntohl(*(uint32_t *)cu->cu_outbuf);
 		break;
 
 	case CLSET_XID:
 		/* This will set the xid of the NEXT call */
-/* LINTED pointer alignment */
 		*(uint32_t *)cu->cu_outbuf =  htonl(*(uint32_t *)info - 1);
 		/* decrement by 1 as clnt_dg_call() increments once */
 		break;
@@ -815,15 +789,12 @@ clnt_dg_control(CLIENT *cl, int request, char *info)
 		 * begining of the RPC header. MUST be changed if the
 		 * call_struct is changed
 		 */
-/* LINTED pointer alignment */
 		*(uint32_t *)info = ntohl(*(uint32_t *)(cu->cu_outbuf +
 		    4 * BYTES_PER_XDR_UNIT));
 		break;
 
 	case CLSET_VERS:
-/* LINTED pointer alignment */
 		*(uint32_t *)(cu->cu_outbuf + 4 * BYTES_PER_XDR_UNIT) =
-/* LINTED pointer alignment */
 		    htonl(*(uint32_t *)info);
 		break;
 
@@ -834,15 +805,12 @@ clnt_dg_control(CLIENT *cl, int request, char *info)
 		 * begining of the RPC header. MUST be changed if the
 		 * call_struct is changed
 		 */
-/* LINTED pointer alignment */
 		*(uint32_t *)info = ntohl(*(uint32_t *)(cu->cu_outbuf +
 		    3 * BYTES_PER_XDR_UNIT));
 		break;
 
 	case CLSET_PROG:
-/* LINTED pointer alignment */
 		*(uint32_t *)(cu->cu_outbuf + 3 * BYTES_PER_XDR_UNIT) =
-/* LINTED pointer alignment */
 		    htonl(*(uint32_t *)info);
 		break;
 
@@ -857,7 +825,6 @@ clnt_dg_control(CLIENT *cl, int request, char *info)
 static void
 clnt_dg_destroy(CLIENT *cl)
 {
-/* LINTED pointer alignment */
 	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 	int cu_fd = cu->cu_fd;
 
@@ -922,7 +889,6 @@ _rcv_unitdata_err(struct cu_data *cu)
 	struct t_uderr *uderr;
 
 	old = t_errno;
-	/* LINTED pointer cast */
 	uderr = (struct t_uderr *)t_alloc(cu->cu_fd, T_UDERROR, T_ADDR);
 
 	if (t_rcvuderr(cu->cu_fd, uderr) == 0) {

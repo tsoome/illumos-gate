@@ -500,9 +500,8 @@ _t_do_ioctl(int fd, char *buf, int size, int cmd, int *retlenp)
 /*
  * alloc scratch buffers and look buffers
  */
-/* ARGSUSED */
 static int
-_t_alloc_bufs(int fd, struct _ti_user *tiptr, struct T_info_ack *tsap)
+_t_alloc_bufs(int fd __unused, struct _ti_user *tiptr, struct T_info_ack *tsap)
 {
 	unsigned int size1, size2;
 	t_scalar_t optsize;

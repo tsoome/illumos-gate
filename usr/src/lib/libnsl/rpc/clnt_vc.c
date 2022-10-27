@@ -860,9 +860,8 @@ clnt_vc_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xdr_args, caddr_t args_ptr)
 	return (rpc_callerr.re_status);
 }
 
-/* ARGSUSED */
 static void
-clnt_vc_geterr(CLIENT *cl, struct rpc_err *errp)
+clnt_vc_geterr(CLIENT *cl __unused, struct rpc_err *errp)
 {
 	*errp = rpc_callerr;
 }

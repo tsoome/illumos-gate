@@ -47,8 +47,6 @@
  *	needed to deal with TCP connections.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,9 +78,8 @@ extern bool_t	__nis_netconfig_matches_ep(struct netconfig *, endpoint *);
 
 static int saw_alarm = 0;
 
-/* ARGSUSED */
 static void
-alarm_hndler(int s)
+alarm_hndler(int s __unused)
 {
 	saw_alarm = 1;
 }

@@ -207,9 +207,8 @@ twrite(int fd, char *buf, unsigned nbytes)
 /*
  *	tioctl - stub for tli ioctl routine
  */
-/* ARGSUSED */
 static int
-tioctl(int fd, int request, ...)
+tioctl(int fd __unused, int request __unused, ...)
 {
 	return (SUCCESS);
 }
@@ -237,9 +236,8 @@ tsetup(int role, int *fdreadp, int *fdwritep)
 /*
  *	tteardown - tli shutdown routine
  */
-/* ARGSUSED */
 static int
-tteardown(int role, int fdread, int fdwrite)
+tteardown(int role __unused, int fdread, int fdwrite __unused)
 {
 	(void) t_unbind(fdread);
 	(void) t_close(fdread);

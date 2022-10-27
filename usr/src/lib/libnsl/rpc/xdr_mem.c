@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * xdr_mem.h, XDR implementation using memory buffers.
  *
@@ -65,7 +63,7 @@ static struct xdr_ops *xdrmem_ops(void);
  */
 void
 xdrmem_create(XDR *xdrs, const caddr_t addr, const uint_t size,
-							const enum xdr_op op)
+    const enum xdr_op op)
 {
 	caddr_t eaddr = addr;
 
@@ -87,9 +85,8 @@ xdrmem_create(XDR *xdrs, const caddr_t addr, const uint_t size,
 	}
 }
 
-/* ARGSUSED */
 static void
-xdrmem_destroy(XDR *xdrs)
+xdrmem_destroy(XDR *xdrs __unused)
 {
 }
 

@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef PORTMAP
 /*
  * rpc_soc.c
@@ -230,7 +228,6 @@ svc_com_create(int fd, uint_t sendsize, uint_t recvsize, char *netid)
 		return (NULL);
 	}
 	if (res == -1)
-		/* LINTED pointer cast */
 		port = (((struct sockaddr_in *)svc->xp_ltaddr.buf)->sin_port);
 	svc->xp_port = ntohs(port);
 	return (svc);
@@ -312,10 +309,8 @@ __rpc_bindresvport_ipv6(int fd, struct sockaddr *sin, int *portp, int qlen,
 		get_myaddress_ipv6(fmly, sin);
 	}
 	if (sin->sa_family == AF_INET) {
-		/* LINTED pointer cast */
 		sinport = &((struct sockaddr_in *)sin)->sin_port;
 	} else if (sin->sa_family == AF_INET6) {
-		/* LINTED pointer cast */
 		sinport = &((struct sockaddr_in6 *)sin)->sin6_port;
 	} else {
 		errno = EPFNOSUPPORT;
@@ -326,7 +321,6 @@ __rpc_bindresvport_ipv6(int fd, struct sockaddr *sin, int *portp, int qlen,
 	if (t_getinfo(fd, &tinfo) == -1) {
 		return (-1);
 	}
-	/* LINTED pointer cast */
 	tres = (struct t_bind *)t_alloc(fd, T_BIND, T_ADDR);
 	if (tres == NULL)
 		return (-1);
@@ -334,7 +328,6 @@ __rpc_bindresvport_ipv6(int fd, struct sockaddr *sin, int *portp, int qlen,
 	tbindstr.qlen = qlen;
 	tbindstr.addr.buf = (char *)sin;
 	tbindstr.addr.len = tbindstr.addr.maxlen = __rpc_get_a_size(tinfo.addr);
-	/* LINTED pointer cast */
 	sin = (struct sockaddr *)tbindstr.addr.buf;
 
 	res = -1;
@@ -382,7 +375,6 @@ void
 get_myaddress_ipv6(char *fmly, struct sockaddr *addr)
 {
 	if (fmly != 0 && strcmp(fmly, NC_INET6) == 0) {
-		/* LINTED pointer cast */
 		struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)addr;
 		(void) memset(sin6, 0, sizeof (*sin6));
 		sin6->sin6_family = AF_INET6;
@@ -397,7 +389,6 @@ get_myaddress_ipv6(char *fmly, struct sockaddr *addr)
 			IN6_INADDR_TO_V4MAPPED(&in4, &sin6->sin6_addr);
 		}
 	} else {
-		/* LINTED pointer cast */
 		struct sockaddr_in	*sin = (struct sockaddr_in *)addr;
 		(void) memset(sin, 0, sizeof (*sin));
 		sin->sin_family = AF_INET;
@@ -465,16 +456,15 @@ static resultproc_t	clnt_broadcast_result_main;
  * Need to translate the netbuf address into sockaddr_in address.
  * Dont care about netid here.
  */
-/* ARGSUSED2 */
 static bool_t
-rpc_wrap_bcast(char *resultp, struct netbuf *addr, struct netconfig *nconf)
+rpc_wrap_bcast(char *resultp, struct netbuf *addr,
+    struct netconfig *nconf __unused)
 {
 	resultproc_t clnt_broadcast_result;
 
 	clnt_broadcast_result = thr_main()? clnt_broadcast_result_main :
 		(resultproc_t)pthread_getspecific(clnt_broadcast_key);
 	return ((*clnt_broadcast_result)(resultp,
-				/* LINTED pointer cast */
 				(struct sockaddr_in *)addr->buf));
 }
 

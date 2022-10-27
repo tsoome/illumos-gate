@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * svc_auth.c, Server-side rpc authenticator interface.
  *
@@ -155,9 +153,8 @@ __authenticate(struct svc_req *rqst, struct rpc_msg *msg)
 	return (__gss_authenticate(rqst, msg, &no_dispatch));
 }
 
-/*ARGSUSED*/
 enum auth_stat
-__svcauth_null(struct svc_req *rqst, struct rpc_msg *msg)
+__svcauth_null(struct svc_req *rqst __unused, struct rpc_msg *msg __unused)
 {
 	return (AUTH_OK);
 }

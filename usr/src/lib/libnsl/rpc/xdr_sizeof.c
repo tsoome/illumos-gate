@@ -35,27 +35,24 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
-/* ARGSUSED1 */
 static bool_t
-x_putlong(XDR *xdrs, long *ip)
+x_putlong(XDR *xdrs, long *ip __unused)
 {
 	xdrs->x_handy += BYTES_PER_XDR_UNIT;
 	return (TRUE);
 }
 
 #if defined(_LP64)
-/* ARGSUSED1 */
 static bool_t
-x_putint32_t(XDR *xdrs, int32_t *ip)
+x_putint32_t(XDR *xdrs, int32_t *ip __unused)
 {
 	xdrs->x_handy += BYTES_PER_XDR_UNIT;
 	return (TRUE);
 }
 #endif
 
-/* ARGSUSED */
 static bool_t
-x_putbytes(XDR *xdrs, char *bp, int len)
+x_putbytes(XDR *xdrs, char *bp __unused, int len)
 {
 	xdrs->x_handy += len;
 	return (TRUE);
@@ -67,9 +64,8 @@ x_getpostn(XDR *xdrs)
 	return (xdrs->x_handy);
 }
 
-/* ARGSUSED */
 static bool_t
-x_setpostn(XDR *xdrs, uint_t pos)
+x_setpostn(XDR *xdrs __unused, uint_t pos __unused)
 {
 	/* This is not allowed */
 	return (FALSE);
@@ -85,7 +81,6 @@ x_inline(XDR *xdrs, int len)
 	if (len < (intptr_t)xdrs->x_base) {
 		/* x_private was already allocated */
 		xdrs->x_handy += len;
-		/* LINTED pointer cast */
 		return ((rpc_inline_t *)xdrs->x_private);
 	}
 	/* Free the earlier space and allocate new area */
@@ -97,7 +92,6 @@ x_inline(XDR *xdrs, int len)
 	}
 	xdrs->x_base = (caddr_t)(intptr_t)len;
 	xdrs->x_handy += len;
-	/* LINTED pointer cast */
 	return ((rpc_inline_t *)xdrs->x_private);
 }
 

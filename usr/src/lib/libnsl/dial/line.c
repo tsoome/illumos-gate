@@ -100,9 +100,8 @@ static struct termios Savettybs;
  * return:
  *	none
  */
-/*ARGSUSED*/
 static void
-fixline(int tty, int spwant, int type)
+fixline(int tty, int spwant, int type __unused)
 {
 	register const struct sg_spds	*ps;
 	struct termio		ttbuf;

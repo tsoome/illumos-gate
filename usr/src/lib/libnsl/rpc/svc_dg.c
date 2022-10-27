@@ -266,9 +266,8 @@ svc_dg_xprtcopy(SVCXPRT *parent)
 	return (xprt);
 }
 
-/*ARGSUSED*/
 static enum xprt_stat
-svc_dg_stat(SVCXPRT *xprt)
+svc_dg_stat(SVCXPRT *xprt __unused)
 {
 	return (XPRT_IDLE);
 }

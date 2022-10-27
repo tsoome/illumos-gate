@@ -36,9 +36,8 @@
 #include <stdio.h>
 #include <string.h>
 
-/* ARGSUSED1 */
 int
-_tx_error(const char *s, int api_semantics)
+_tx_error(const char *s, int api_semantics __unused)
 {
 	const char *c;
 	int errnum = errno;	/* In case a system call fails. */

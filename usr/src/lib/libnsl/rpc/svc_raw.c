@@ -127,16 +127,14 @@ svc_raw_create(void)
 	return (srp->server);
 }
 
-/*ARGSUSED*/
 static enum xprt_stat
-svc_raw_stat(SVCXPRT *xprt)
+svc_raw_stat(SVCXPRT *xprt __unused)
 {
 	return (XPRT_IDLE);
 }
 
-/*ARGSUSED*/
 static bool_t
-svc_raw_recv(SVCXPRT *xprt, struct rpc_msg *msg)
+svc_raw_recv(SVCXPRT *xprt __unused, struct rpc_msg *msg)
 {
 	struct svc_raw_private *srp;
 	XDR *xdrs;
@@ -162,9 +160,8 @@ svc_raw_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 	return (TRUE);
 }
 
-/*ARGSUSED*/
 static bool_t
-svc_raw_reply(SVCXPRT *xprt, struct rpc_msg *msg)
+svc_raw_reply(SVCXPRT *xprt __unused, struct rpc_msg *msg)
 {
 	struct svc_raw_private *srp;
 	XDR *xdrs;
@@ -194,9 +191,8 @@ svc_raw_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 	return (TRUE);
 }
 
-/*ARGSUSED*/
 static bool_t
-svc_raw_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
+svc_raw_getargs(SVCXPRT *xprt __unused, xdrproc_t xdr_args, caddr_t args_ptr)
 {
 	struct svc_raw_private *srp;
 
@@ -211,9 +207,8 @@ svc_raw_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 	return ((*xdr_args)(&srp->xdr_stream, args_ptr));
 }
 
-/*ARGSUSED*/
 static bool_t
-svc_raw_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
+svc_raw_freeargs(SVCXPRT *xprt __unused, xdrproc_t xdr_args, caddr_t args_ptr)
 {
 	struct svc_raw_private *srp;
 
@@ -232,15 +227,13 @@ svc_raw_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 	return (TRUE);
 }
 
-/*ARGSUSED*/
 static void
-svc_raw_destroy(SVCXPRT *xprt)
+svc_raw_destroy(SVCXPRT *xprt __unused)
 {
 }
 
-/*ARGSUSED*/
 static bool_t
-svc_raw_control(SVCXPRT *xprt, const uint_t rq, void *in)
+svc_raw_control(SVCXPRT *xprt __unused, const uint_t rq, void *in __unused)
 {
 	switch (rq) {
 	case SVCGET_XID: /* fall through for now */

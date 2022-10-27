@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * auth_none.c
  * Creates a client authentication handle for passing "null"
@@ -95,9 +93,8 @@ authnone_create(void)
 	return (&ap->no_client);
 }
 
-/*ARGSUSED*/
 static bool_t
-authnone_marshal(AUTH *client, XDR *xdrs)
+authnone_marshal(AUTH *client __unused, XDR *xdrs)
 {
 	struct authnone_private *ap;
 	bool_t res;
@@ -115,30 +112,25 @@ authnone_marshal(AUTH *client, XDR *xdrs)
 	return (res);
 }
 
-/* All these unused parameters are required to keep ANSI-C from grumbling */
-/*ARGSUSED*/
 static void
-authnone_verf(AUTH *client)
+authnone_verf(AUTH *client __unused)
 {
 }
 
-/*ARGSUSED*/
 static bool_t
-authnone_validate(AUTH *client, struct opaque_auth *opaque)
+authnone_validate(AUTH *client __unused, struct opaque_auth *opaque __unused)
 {
 	return (TRUE);
 }
 
-/*ARGSUSED*/
 static bool_t
-authnone_refresh(AUTH *client, void *dummy)
+authnone_refresh(AUTH *client __unused, void *dummy __unused)
 {
 	return (FALSE);
 }
 
-/*ARGSUSED*/
 static void
-authnone_destroy(AUTH *client)
+authnone_destroy(AUTH *client __unused)
 {
 }
 

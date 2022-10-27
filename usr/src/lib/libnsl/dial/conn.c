@@ -527,9 +527,8 @@ expect_str(char *str, int fn)
 /*
  *	alarmtr()  -  catch alarm routine for "expect".
  */
-/*ARGSUSED*/
 static void
-alarmtr(int sig)
+alarmtr(int sig __unused)
 {
 	CDEBUG(6, "timed out\n%s", "");
 	longjmp(Sjbuf, 1);

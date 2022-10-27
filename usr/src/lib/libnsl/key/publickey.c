@@ -114,9 +114,9 @@ static DEFINE_NSS_DB_ROOT(db_root);
 /*
  * str2key
  */
-/* ARGSUSED */
 static int
-str2key(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
+str2key(const char *instr, int lenstr, void *ent __unused, char *buffer,
+    int buflen)
 {
 	if (lenstr + 1 > buflen)
 		return (NSS_STR_PARSE_ERANGE);
@@ -422,9 +422,9 @@ getkeys_ldap_g(
 	int		*err,		/* in  */
 	char		*netname,	/* in  */
 	char		*pkey,		/* out */
-	int		pkeylen,	/* in  */
+	int		pkeylen __unused,	/* in  */
 	char		*skey,		/* out */
-	int		skeylen,	/* in  */
+	int		skeylen __unused,	/* in  */
 	char		*passwd,	/* in  */
 	keylen_t	keylen,		/* in  */
 	algtype_t	algtype)	/* in  */
@@ -549,7 +549,7 @@ __getpublickey_cached_g(const char netname[],	/* in  */
     algtype_t algtype,	/* in  */
     char *pkey,		/* out */
     size_t pkeylen,	/* in  */
-    int *from_cache)	/* in/out  */
+    int *from_cache __unused)	/* in/out  */
 {
 	int	needfree = 1, res, err;
 	struct __nsw_switchconfig *conf;

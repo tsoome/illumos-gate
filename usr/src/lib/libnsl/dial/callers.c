@@ -463,9 +463,8 @@ static struct netbuf	*stoa(char *, struct netbuf *);
 /*
  * returns fd to remote uucp daemon
  */
-/*ARGSUSED*/
 static int
-tlicall(char *flds[], char *dev[])
+tlicall(char *flds[] __unused, char *dev[])
 {
 	char		addrbuf[ BUFSIZ ];
 	char		devname[MAXNAMESIZE];

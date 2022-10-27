@@ -170,12 +170,10 @@ err:
 	return (NULL);
 }
 
-/* ARGSUSED */
 static enum clnt_stat
 clnt_door_call(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp,
-	xdrproc_t xresults, caddr_t resultsp, struct timeval utimeout)
+	xdrproc_t xresults, caddr_t resultsp, struct timeval utimeout __unused)
 {
-/* LINTED pointer alignment */
 	struct cu_data	*cu = (struct cu_data *)cl->cl_private;
 	XDR 		xdrs;
 	door_arg_t	params;
@@ -204,10 +202,8 @@ clnt_door_call(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp,
 call_again:
 	xdrmem_create(&xdrs, params.data_ptr, cu->cu_sendsz, XDR_ENCODE);
 	/* Increment XID (not really needed for RPC over doors...) */
-	/* LINTED pointer alignment */
 	xid = atomic_inc_uint_nv((uint32_t *)cu->cu_header);
 	(void) memcpy(params.data_ptr, cu->cu_header, cu->cu_xdrpos);
-	/* LINTED pointer alignment */
 	*(uint32_t *)params.data_ptr = xid;
 	XDR_SETPOS(&xdrs, cu->cu_xdrpos);
 
@@ -230,7 +226,6 @@ call_again:
 	}
 	need_to_unmap = (params.rbuf != outbuf_ref);
 
-/* LINTED pointer alignment */
 	if (*(uint32_t *)params.rbuf != xid) {
 		rpc_callerr.re_status = RPC_CANTDECODERES;
 		goto done;
@@ -293,9 +288,9 @@ done:
 	return (rpc_callerr.re_status);
 }
 
-/* ARGSUSED */
 static enum clnt_stat
-clnt_door_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
+clnt_door_send(CLIENT *cl __unused, rpcproc_t proc __unused,
+    xdrproc_t xargs __unused, caddr_t argsp __unused)
 {
 	/* send() call not supported on doors */
 
@@ -308,15 +303,13 @@ clnt_door_send(CLIENT *cl, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 static void
 clnt_door_geterr(CLIENT *cl, struct rpc_err *errp)
 {
-/* LINTED pointer alignment */
 	struct cu_data	*cu = (struct cu_data *)cl->cl_private;
 
 	*errp = rpc_callerr;
 }
 
-/* ARGSUSED */
 static bool_t
-clnt_door_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
+clnt_door_freeres(CLIENT *cl __unused, xdrproc_t xdr_res, caddr_t res_ptr)
 {
 	XDR		xdrs;
 
@@ -334,7 +327,6 @@ clnt_door_abort(CLIENT *cl)
 static bool_t
 clnt_door_control(CLIENT *cl, int request, char *info)
 {
-/* LINTED pointer alignment */
 	struct cu_data	*cu = (struct cu_data *)cl->cl_private;
 
 	switch (request) {
@@ -353,7 +345,6 @@ clnt_door_control(CLIENT *cl, int request, char *info)
 
 	switch (request) {
 	case CLGET_FD:
-/* LINTED pointer alignment */
 		*(int *)info = cu->cu_fd;
 		break;
 
@@ -363,13 +354,11 @@ clnt_door_control(CLIENT *cl, int request, char *info)
 		 * first element in the call structure *.
 		 * This will get the xid of the PREVIOUS call
 		 */
-/* LINTED pointer alignment */
 		*(uint32_t *)info = ntohl(*(uint32_t *)cu->cu_header);
 		break;
 
 	case CLSET_XID:
 		/* This will set the xid of the NEXT call */
-/* LINTED pointer alignment */
 		*(uint32_t *)cu->cu_header =  htonl(*(uint32_t *)info - 1);
 		/* decrement by 1 as clnt_door_call() increments once */
 		break;
@@ -381,15 +370,12 @@ clnt_door_control(CLIENT *cl, int request, char *info)
 		 * begining of the RPC header. MUST be changed if the
 		 * call_struct is changed
 		 */
-/* LINTED pointer alignment */
 		*(uint32_t *)info = ntohl(*(uint32_t *)(cu->cu_header +
 		    4 * BYTES_PER_XDR_UNIT));
 		break;
 
 	case CLSET_VERS:
-/* LINTED pointer alignment */
 		*(uint32_t *)(cu->cu_header + 4 * BYTES_PER_XDR_UNIT) =
-/* LINTED pointer alignment */
 		    htonl(*(uint32_t *)info);
 		break;
 
@@ -400,15 +386,12 @@ clnt_door_control(CLIENT *cl, int request, char *info)
 		 * begining of the RPC header. MUST be changed if the
 		 * call_struct is changed
 		 */
-/* LINTED pointer alignment */
 		*(uint32_t *)info = ntohl(*(uint32_t *)(cu->cu_header +
 		    3 * BYTES_PER_XDR_UNIT));
 		break;
 
 	case CLSET_PROG:
-/* LINTED pointer alignment */
 		*(uint32_t *)(cu->cu_header + 3 * BYTES_PER_XDR_UNIT) =
-/* LINTED pointer alignment */
 		    htonl(*(uint32_t *)info);
 		break;
 
@@ -421,7 +404,6 @@ clnt_door_control(CLIENT *cl, int request, char *info)
 static void
 clnt_door_destroy(CLIENT *cl)
 {
-/* LINTED pointer alignment */
 	struct cu_data	*cu = (struct cu_data *)cl->cl_private;
 	int		cu_fd = cu->cu_fd;
 
@@ -458,7 +440,6 @@ clnt_door_ops(void)
 int
 _update_did(CLIENT *cl, int vers)
 {
-/* LINTED pointer alignment */
 	struct cu_data	*cu = (struct cu_data *)cl->cl_private;
 	rpcprog_t prog;
 	char rendezvous[64];

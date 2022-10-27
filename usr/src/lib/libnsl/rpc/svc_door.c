@@ -181,7 +181,6 @@ static void
 svc_door_dispatch(SVCXPRT *xprt, struct rpc_msg *msg, struct svc_req *r)
 {
 	enum auth_stat		why;
-/* LINTED pointer alignment */
 	struct svc_door_data	*su = su_data(xprt);
 	bool_t nd;
 
@@ -220,10 +219,9 @@ svc_door_dispatch(SVCXPRT *xprt, struct rpc_msg *msg, struct svc_req *r)
 /*
  * This is the door server procedure.
  */
-/* ARGSUSED */
 static void
 door_server(void *cookie, char *argp, size_t arg_size,
-    door_desc_t *dp, uint_t n_did)
+    door_desc_t *dp __unused, uint_t n_did __unused)
 {
 	SVCXPRT			*parent = (SVCXPRT *)cookie;
 	SVCXPRT			*xprt;
@@ -237,7 +235,6 @@ door_server(void *cookie, char *argp, size_t arg_size,
 	/*
 	 * allocate result buffer
 	 */
-/* LINTED pointer alignment */
 	result_buf = alloca(su_data(parent)->su_iosz);
 	if (result_buf == NULL) {
 		(void) syslog(LOG_ERR, "door_server: alloca failed");
@@ -255,18 +252,14 @@ door_server(void *cookie, char *argp, size_t arg_size,
 	}
 	(void) mutex_unlock(&svc_door_mutex);
 
-/* LINTED pointer alignment */
 	msg = SVCEXT(xprt)->msg;
-/* LINTED pointer alignment */
 	r = SVCEXT(xprt)->req;
-/* LINTED pointer alignment */
 	cred_area = SVCEXT(xprt)->cred_area;
 
 	msg->rm_call.cb_cred.oa_base = cred_area;
 	msg->rm_call.cb_verf.oa_base = &(cred_area[MAX_AUTH_BYTES]);
 	r->rq_clntcred = &(cred_area[2 * MAX_AUTH_BYTES]);
 
-/* LINTED pointer alignment */
 	su = su_data(xprt);
 	su->argbuf = argp;
 	su->arglen = arg_size;
@@ -295,7 +288,6 @@ door_server(void *cookie, char *argp, size_t arg_size,
 void
 svc_door_xprtfree(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	struct svc_door_data	*su = xprt ? su_data(xprt) : NULL;
 
 	if (xprt == NULL)
@@ -334,7 +326,6 @@ svc_door_create(void (*dispatch)(), const rpcprog_t prognum,
 		(void) syslog(LOG_ERR, "svc_door_create: out of memory");
 		goto freedata;
 	}
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= SVC_DOOR;
 
 	(void) sprintf(rendezvous, RPC_DOOR_RENDEZVOUS, (int)prognum,
@@ -446,9 +437,7 @@ svc_door_xprtcopy(SVCXPRT *parent)
 	if ((xprt = svc_xprt_alloc()) == NULL)
 		return (NULL);
 
-/* LINTED pointer alignment */
 	SVCEXT(xprt)->parent = parent;
-/* LINTED pointer alignment */
 	SVCEXT(xprt)->flags = SVCEXT(parent)->flags;
 
 	xprt->xp_fd = parent->xp_fd;
@@ -478,9 +467,7 @@ svc_door_xprtcopy(SVCXPRT *parent)
 		svc_door_xprtfree(xprt);
 		return (NULL);
 	}
-/* LINTED pointer alignment */
 	su->su_iosz = su_data(parent)->su_iosz;
-/* LINTED pointer alignment */
 	su->call_info = su_data(parent)->call_info;
 
 	xprt->xp_p2 = (caddr_t)su;	/* su_data(xprt) = su */
@@ -493,7 +480,6 @@ svc_door_xprtcopy(SVCXPRT *parent)
 static SVCXPRT *
 get_xprt_copy(SVCXPRT *parent, char *buf)
 {
-/* LINTED pointer alignment */
 	SVCXPRT_LIST		*xlist = SVCEXT(parent)->my_xlist;
 	SVCXPRT_LIST		*xret;
 	SVCXPRT			*xprt;
@@ -504,15 +490,12 @@ get_xprt_copy(SVCXPRT *parent, char *buf)
 		xlist->next = xret->next;
 		xret->next = NULL;
 		xprt = xret->xprt;
-/* LINTED pointer alignment */
 		svc_flags(xprt) = svc_flags(parent);
 	} else
 		xprt = svc_door_xprtcopy(parent);
 
 	if (xprt) {
-/* LINTED pointer alignment */
 		SVCEXT(parent)->refcnt++;
-/* LINTED pointer alignment */
 		su = su_data(xprt);
 		su->buf = buf;
 		su->len = 0;
@@ -525,22 +508,17 @@ return_xprt_copy(SVCXPRT *xprt)
 {
 	SVCXPRT		*parent;
 	SVCXPRT_LIST	*xhead, *xlist;
-/* LINTED pointer alignment */
 	int		len = su_data(xprt)->len;
 
 	(void) mutex_lock(&svc_door_mutex);
-/* LINTED pointer alignment */
 	if ((parent = SVCEXT(xprt)->parent) == NULL) {
 		(void) mutex_unlock(&svc_door_mutex);
 		return (0);
 	}
-/* LINTED pointer alignment */
 	xhead = SVCEXT(parent)->my_xlist;
-/* LINTED pointer alignment */
 	xlist = SVCEXT(xprt)->my_xlist;
 	xlist->next = xhead->next;
 	xhead->next = xlist;
-/* LINTED pointer alignment */
 	SVCEXT(parent)->refcnt--;
 
 	/*
@@ -549,13 +527,9 @@ return_xprt_copy(SVCXPRT *xprt)
 	 * (even if there are multiple outstanding children) and the
 	 * door will get closed.
 	 */
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= svc_flags(parent);
-/* LINTED pointer alignment */
 	if (svc_defunct(xprt)) {
-/* LINTED pointer alignment */
 		svc_flags(parent) |= SVC_DEFUNCT;
-		/* LINTED pointer cast */
 		if (SVCEXT(parent)->refcnt == 0)
 			svc_door_destroy_pvt(xprt);
 	}
@@ -563,9 +537,8 @@ return_xprt_copy(SVCXPRT *xprt)
 	return (len);
 }
 
-/* ARGSUSED */
 static enum xprt_stat
-svc_door_stat(SVCXPRT *xprt)
+svc_door_stat(SVCXPRT *xprt __unused)
 {
 	return (XPRT_IDLE);
 }
@@ -573,7 +546,6 @@ svc_door_stat(SVCXPRT *xprt)
 static bool_t
 svc_door_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-/* LINTED pointer alignment */
 	struct svc_door_data	*su = su_data(xprt);
 	XDR			*xdrs = &(su->su_xdrs);
 
@@ -587,7 +559,6 @@ svc_door_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 static bool_t
 svc_door_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-/* LINTED pointer alignment */
 	struct svc_door_data	*su = su_data(xprt);
 	XDR			*xdrs = &(su->su_xdrs);
 
@@ -603,14 +574,12 @@ svc_door_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 static bool_t
 svc_door_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
-/* LINTED pointer alignment */
 	return ((*xdr_args)(&(su_data(xprt)->su_xdrs), args_ptr));
 }
 
 static bool_t
 svc_door_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
-/* LINTED pointer alignment */
 	XDR		*xdrs = &(su_data(xprt)->su_xdrs);
 
 	xdrs->x_op = XDR_FREE;
@@ -628,13 +597,9 @@ svc_door_destroy(SVCXPRT *xprt)
 static void
 svc_door_destroy_pvt(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	if (SVCEXT(xprt)->parent)
-/* LINTED pointer alignment */
 		xprt = SVCEXT(xprt)->parent;
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= SVC_DEFUNCT;
-/* LINTED pointer alignment */
 	if (SVCEXT(xprt)->refcnt > 0)
 		return;
 
@@ -716,9 +681,8 @@ svc_door_ops(void)
 /*
  * Return door credentials.
  */
-/* ARGSUSED */
 bool_t
-__svc_get_door_cred(SVCXPRT *xprt, svc_local_cred_t *lcred)
+__svc_get_door_cred(SVCXPRT *xprt __unused, svc_local_cred_t *lcred)
 {
 	door_cred_t		dc;
 
@@ -732,9 +696,8 @@ __svc_get_door_cred(SVCXPRT *xprt, svc_local_cred_t *lcred)
 	return (TRUE);
 }
 
-/* ARGSUSED */
 bool_t
-__svc_get_door_ucred(const SVCXPRT *xprt, ucred_t *ucp)
+__svc_get_door_ucred(const SVCXPRT *xprt __unused, ucred_t *ucp)
 {
 	return (door_ucred(&ucp) == 0);
 }

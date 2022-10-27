@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * xdr_stdio.c, XDR implementation on standard i/o file.
  *
@@ -165,9 +163,8 @@ xdrstdio_setpos(XDR *xdrs, uint_t pos)
 			(int)pos, 0) < 0) ? FALSE : TRUE);
 }
 
-/* ARGSUSED */
 static rpc_inline_t *
-xdrstdio_inline(XDR *xdrs, int len)
+xdrstdio_inline(XDR *xdrs __unused, int len __unused)
 {
 	/*
 	 * Must do some work to implement this: must insure
@@ -181,9 +178,8 @@ xdrstdio_inline(XDR *xdrs, int len)
 	return (NULL);
 }
 
-/* ARGSUSED */
 static bool_t
-xdrstdio_control(XDR *xdrs, int request, void *info)
+xdrstdio_control(XDR *xdrs __unused, int request __unused, void *info __unused)
 {
 	return (FALSE);
 }

@@ -233,9 +233,8 @@ authsys_create_ruid(void)
  * authsys operations
  */
 
-/*ARGSUSED*/
 static void
-authsys_nextverf(AUTH *auth)
+authsys_nextverf(AUTH *auth __unused)
 {
 	/* no action necessary */
 }
@@ -243,7 +242,6 @@ authsys_nextverf(AUTH *auth)
 static bool_t
 authsys_marshal(AUTH *auth, XDR *xdrs)
 {
-/* LINTED pointer alignment */
 	struct audata *au = AUTH_PRIVATE(auth);
 
 	return (XDR_PUTBYTES(xdrs, au->au_marshed, au->au_mpos));
@@ -256,7 +254,6 @@ authsys_validate(AUTH *auth, struct opaque_auth *verf)
 	XDR xdrs;
 
 	if (verf->oa_flavor == AUTH_SHORT) {
-/* LINTED pointer alignment */
 		au = AUTH_PRIVATE(auth);
 		xdrmem_create(&xdrs, verf->oa_base,
 		    verf->oa_length, XDR_DECODE);
@@ -278,11 +275,9 @@ authsys_validate(AUTH *auth, struct opaque_auth *verf)
 	return (TRUE);
 }
 
-/*ARGSUSED*/
 static bool_t
-authsys_refresh(AUTH *auth, void *dummy)
+authsys_refresh(AUTH *auth, void *dummy __unused)
 {
-/* LINTED pointer alignment */
 	struct audata *au = AUTH_PRIVATE(auth);
 	struct authsys_parms aup;
 	struct timeval now;
@@ -323,7 +318,6 @@ done:
 static void
 authsys_destroy(AUTH *auth)
 {
-/* LINTED pointer alignment */
 	struct audata *au = AUTH_PRIVATE(auth);
 
 	free(au->au_origcred.oa_base);
@@ -347,7 +341,6 @@ marshal_new_auth(AUTH *auth)
 {
 	XDR	xdr_stream;
 	XDR	*xdrs = &xdr_stream;
-/* LINTED pointer alignment */
 	struct audata *au = AUTH_PRIVATE(auth);
 
 	xdrmem_create(xdrs, au->au_marshed, MAX_AUTH_BYTES, XDR_ENCODE);

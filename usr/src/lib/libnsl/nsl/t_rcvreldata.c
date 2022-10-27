@@ -25,8 +25,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * t_rcvrel.c and t_rcvreldata.c are very similar and contain common code.
  * Any changes to either of them should be reviewed to see whether they
@@ -46,9 +44,8 @@
 #include <assert.h>
 #include "tx.h"
 
-/* ARGSUSED */
 int
-_tx_rcvreldata(int fd, struct t_discon *discon, int api_semantics)
+_tx_rcvreldata(int fd, struct t_discon *discon __unused, int api_semantics)
 {
 	struct strbuf ctlbuf;
 	struct strbuf databuf;

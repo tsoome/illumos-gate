@@ -132,10 +132,9 @@ clnt_raw_create(const rpcprog_t prog, const rpcvers_t vers)
 	return (client);
 }
 
-/*ARGSUSED*/
 static enum clnt_stat
 clnt_raw_call(CLIENT *h, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp,
-    xdrproc_t xresults, caddr_t resultsp, struct timeval timeout)
+    xdrproc_t xresults, caddr_t resultsp, struct timeval timeout __unused)
 {
 	struct clnt_raw_private *clp;
 	XDR xdrs;
@@ -160,7 +159,6 @@ call_again:
 	xdrmem_create(&xdrs, clp->raw_netbuf->buf, clp->raw_netbuf->maxlen,
 	    XDR_ENCODE);
 	start = XDR_GETPOS(&xdrs);
-/* LINTED pointer alignment */
 	((struct rpc_msg *)clp->mashl_callmsg)->rm_xid++;
 	if ((!XDR_PUTBYTES(&xdrs, clp->mashl_callmsg, clp->mcnt)) ||
 	    (!XDR_PUTINT32(&xdrs, (int32_t *)&proc)) ||
@@ -242,7 +240,6 @@ clnt_raw_send(CLIENT *h, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 	xdrmem_create(&xdrs, clp->raw_netbuf->buf, clp->raw_netbuf->maxlen,
 	    XDR_ENCODE);
 	start = XDR_GETPOS(&xdrs);
-/* LINTED pointer alignment */
 	((struct rpc_msg *)clp->mashl_callmsg)->rm_xid++;
 	if ((!XDR_PUTBYTES(&xdrs, clp->mashl_callmsg, clp->mcnt)) ||
 	    (!XDR_PUTINT32(&xdrs, (int32_t *)&proc)) ||
@@ -264,16 +261,14 @@ clnt_raw_send(CLIENT *h, rpcproc_t proc, xdrproc_t xargs, caddr_t argsp)
 	return (rpc_callerr.re_status = RPC_SUCCESS);
 }
 
-/*ARGSUSED*/
 static void
-clnt_raw_geterr(CLIENT *cl, struct rpc_err *errp)
+clnt_raw_geterr(CLIENT *cl __unused, struct rpc_err *errp)
 {
 	*errp = rpc_callerr;
 }
 
-/*ARGSUSED*/
 static bool_t
-clnt_raw_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
+clnt_raw_freeres(CLIENT *cl __unused, xdrproc_t xdr_res, caddr_t res_ptr)
 {
 	struct clnt_raw_private *clp;
 
@@ -290,22 +285,19 @@ clnt_raw_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
 	return (TRUE);
 }
 
-/*ARGSUSED*/
 static void
-clnt_raw_abort(CLIENT *cl, struct rpc_err *errp)
+clnt_raw_abort(CLIENT *cl __unused, struct rpc_err *errp __unused)
 {
 }
 
-/*ARGSUSED*/
 static bool_t
-clnt_raw_control(CLIENT *cl, int request, char *info)
+clnt_raw_control(CLIENT *cl __unused, int request __unused, char *info __unused)
 {
 	return (FALSE);
 }
 
-/*ARGSUSED*/
 static void
-clnt_raw_destroy(CLIENT *cl)
+clnt_raw_destroy(CLIENT *cl __unused)
 {
 }
 

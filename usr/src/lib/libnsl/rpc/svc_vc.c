@@ -157,10 +157,8 @@ static bool_t check_nonblock_timestamps = FALSE;
 void
 svc_vc_xprtfree(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	SVCXPRT_EXT		*xt = xprt ? SVCEXT(xprt) : NULL;
 	struct cf_rendezvous	*r = xprt ?
-/* LINTED pointer alignment */
 	    (struct cf_rendezvous *)xprt->xp_p1 : NULL;
 
 	if (!xprt)
@@ -213,7 +211,6 @@ svc_vc_create_private(int fd, uint_t sendsize, uint_t recvsize)
 		    svc_vc_create_str, no_mem_str);
 		return (NULL);
 	}
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= SVC_RENDEZVOUS;
 
 	r = calloc(1, sizeof (*r));
@@ -248,7 +245,6 @@ svc_vc_create_private(int fd, uint_t sendsize, uint_t recvsize)
 		return (NULL);
 	}
 
-/* LINTED pointer alignment */
 	r->t_call = (struct t_call *)t_alloc(fd, T_CALL, T_ADDR | T_OPT);
 	if (r->t_call == NULL) {
 		(void) syslog(LOG_ERR, errstring,
@@ -258,7 +254,6 @@ svc_vc_create_private(int fd, uint_t sendsize, uint_t recvsize)
 		return (NULL);
 	}
 
-/* LINTED pointer alignment */
 	r->t_bind = (struct t_bind *)t_alloc(fd, T_BIND, T_ADDR);
 	if (r->t_bind == NULL) {
 		(void) syslog(LOG_ERR, errstring,
@@ -278,9 +273,7 @@ svc_vc_create_private(int fd, uint_t sendsize, uint_t recvsize)
 	xprt->xp_p2 = NULL;
 	xprt->xp_verf = _null_auth;
 	xprt->xp_ops = svc_vc_rendezvous_ops();
-/* LINTED pointer alignment */
 	SVC_XP_AUTH(xprt).svc_ah_ops = svc_auth_any_ops;
-/* LINTED pointer alignment */
 	SVC_XP_AUTH(xprt).svc_ah_private = NULL;
 
 	return (xprt);
@@ -306,9 +299,7 @@ svc_vc_xprtcopy(SVCXPRT *parent)
 	if ((xprt = svc_xprt_alloc()) == NULL)
 		return (NULL);
 
-/* LINTED pointer alignment */
 	SVCEXT(xprt)->parent = parent;
-/* LINTED pointer alignment */
 	SVCEXT(xprt)->flags = SVCEXT(parent)->flags;
 
 	xprt->xp_fd = fd;
@@ -345,7 +336,6 @@ svc_vc_xprtcopy(SVCXPRT *parent)
 		return (NULL);
 	}
 	xprt->xp_p1 = (caddr_t)r;
-/* LINTED pointer alignment */
 	pr = (struct cf_rendezvous *)parent->xp_p1;
 	r->sendsize = pr->sendsize;
 	r->recvsize = pr->recvsize;
@@ -354,13 +344,11 @@ svc_vc_xprtcopy(SVCXPRT *parent)
 	r->tcp_flag = pr->tcp_flag;
 	r->tcp_keepalive = pr->tcp_keepalive;
 	r->cf_connmaxrec = pr->cf_connmaxrec;
-/* LINTED pointer alignment */
 	r->t_call = (struct t_call *)t_alloc(fd, T_CALL, T_ADDR | T_OPT);
 	if (r->t_call == NULL) {
 		svc_vc_xprtfree(xprt);
 		return (NULL);
 	}
-/* LINTED pointer alignment */
 	r->t_bind = (struct t_bind *)t_alloc(fd, T_BIND, T_ADDR);
 	if (r->t_bind == NULL) {
 		svc_vc_xprtfree(xprt);
@@ -374,13 +362,11 @@ svc_vc_xprtcopy(SVCXPRT *parent)
  * XXX : Used for setting flag to indicate that this is TCP
  */
 
-/*ARGSUSED*/
 int
-__svc_vc_setflag(SVCXPRT *xprt, int flag)
+__svc_vc_setflag(SVCXPRT *xprt, int flag __unused)
 {
 	struct cf_rendezvous *r;
 
-/* LINTED pointer alignment */
 	r = (struct cf_rendezvous *)xprt->xp_p1;
 	r->tcp_flag = TRUE;
 	return (1);
@@ -446,9 +432,7 @@ svc_fd_create(const int fd, const uint_t sendsize, const uint_t recvsize)
 void
 svc_fd_xprtfree(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	SVCXPRT_EXT	*xt = xprt ? SVCEXT(xprt) : NULL;
-/* LINTED pointer alignment */
 	struct cf_conn	*cd = xprt ? (struct cf_conn *)xprt->xp_p1 : NULL;
 
 	if (!xprt)
@@ -469,7 +453,6 @@ svc_fd_xprtfree(SVCXPRT *xprt)
 		free(cd);
 	}
 	if (xt && (xt->parent == NULL) && xprt->xp_p2) {
-/* LINTED pointer alignment */
 		free(((struct netbuf *)xprt->xp_p2)->buf);
 		free(xprt->xp_p2);
 	}
@@ -488,7 +471,6 @@ makefd_xprt(int fd, uint_t sendsize, uint_t recvsize, t_scalar_t tsdu,
 		(void) syslog(LOG_ERR, errstring, makefd_xprt_str, no_mem_str);
 		return (NULL);
 	}
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= SVC_CONNECTION;
 
 	cd = malloc(sizeof (struct cf_conn));
@@ -590,9 +572,7 @@ svc_fd_xprtcopy(SVCXPRT *parent)
 	if ((xprt = svc_xprt_alloc()) == NULL)
 		return (NULL);
 
-/* LINTED pointer alignment */
 	SVCEXT(xprt)->parent = parent;
-/* LINTED pointer alignment */
 	SVCEXT(xprt)->flags = SVCEXT(parent)->flags;
 
 	xprt->xp_fd = parent->xp_fd;
@@ -626,7 +606,6 @@ svc_fd_xprtcopy(SVCXPRT *parent)
 		svc_fd_xprtfree(xprt);
 		return (NULL);
 	}
-/* LINTED pointer alignment */
 	pcd = (struct cf_conn *)parent->xp_p1;
 	cd->sendsize = pcd->sendsize;
 	cd->recvsize = pcd->recvsize;
@@ -661,15 +640,13 @@ static void do_accept();
  * another endpoint which is also registered, which then always
  * has a request ready to be served.
  */
-/* ARGSUSED1 */
 static bool_t
-rendezvous_request(SVCXPRT *xprt, struct rpc_msg *msg)
+rendezvous_request(SVCXPRT *xprt, struct rpc_msg *msg __unused)
 {
 	struct cf_rendezvous *r;
 	char *tpname = NULL;
 	char devbuf[256];
 
-/* LINTED pointer alignment */
 	r = (struct cf_rendezvous *)xprt->xp_p1;
 
 again:
@@ -849,7 +826,6 @@ again:
 
 			case T_LISTEN:
 				if (tcp2 == NULL)
-/* LINTED pointer alignment */
 					tcp2 = (struct t_call *)t_alloc(srcfd,
 					    T_CALL, T_ADDR | T_OPT);
 				if (tcp2 == NULL) {
@@ -955,7 +931,6 @@ again:
 			struct t_optmgmt optreq, optret;
 			int *p_optval;
 
-			/* LINTED pointer cast */
 			opt = (struct opthdr *)option;
 			opt->level = SOL_SOCKET;
 			opt->name  = SO_KEEPALIVE;
@@ -1031,7 +1006,6 @@ again:
 		xprt->xp_p2 = malloc(sizeof (struct netbuf));
 
 		if (xprt->xp_p2 != NULL) {
-/* LINTED pointer alignment */
 			struct netbuf *netptr = (struct netbuf *)xprt->xp_p2;
 
 			netptr->len = tcp->opt.len;
@@ -1049,7 +1023,6 @@ again:
 	 * perform the necessary operations.
 	 */
 	xprt_srcfd = svc_xports[srcfd];
-	/* LINTED pointer cast */
 	if (((struct cf_rendezvous *)(xprt_srcfd->xp_p1))->cf_connmaxrec) {
 		if (!svc_vc_nonblock(xprt_srcfd, xprt))
 			goto xprt_err;
@@ -1100,9 +1073,7 @@ svc_vc_nonblock(SVCXPRT *xprt_rendezvous, SVCXPRT *xprt_conn)
 	int nn;
 	int fdconn = xprt_conn->xp_fd;
 	struct cf_rendezvous *r =
-	    /* LINTED pointer cast */
 	    (struct cf_rendezvous *)xprt_rendezvous->xp_p1;
-	/* LINTED pointer cast */
 	struct cf_conn *cd = (struct cf_conn *)xprt_conn->xp_p1;
 	uint32_t maxrecsz;
 
@@ -1134,9 +1105,8 @@ svc_vc_nonblock(SVCXPRT *xprt_rendezvous, SVCXPRT *xprt_conn)
 	return (FALSE);
 }
 
-/* ARGSUSED */
 static enum xprt_stat
-rendezvous_stat(SVCXPRT *xprt)
+rendezvous_stat(SVCXPRT *xprt __unused)
 {
 	return (XPRT_IDLE);
 }
@@ -1154,13 +1124,9 @@ void
 _svc_vc_destroy_private(SVCXPRT *xprt, bool_t lock_not_held)
 {
 	if (svc_mt_mode != RPC_SVC_MT_NONE) {
-/* LINTED pointer alignment */
 		if (SVCEXT(xprt)->parent)
-/* LINTED pointer alignment */
 			xprt = SVCEXT(xprt)->parent;
-/* LINTED pointer alignment */
 		svc_flags(xprt) |= SVC_DEFUNCT;
-/* LINTED pointer alignment */
 		if (SVCEXT(xprt)->refcnt > 0)
 			return;
 	}
@@ -1182,7 +1148,6 @@ _svc_vc_destroy_private(SVCXPRT *xprt, bool_t lock_not_held)
 	if (svc_mt_mode != RPC_SVC_MT_NONE) {
 		svc_xprt_destroy(xprt);
 	} else {
-/* LINTED pointer alignment */
 		if (svc_type(xprt) == SVC_RENDEZVOUS)
 			svc_vc_xprtfree(xprt);
 		else
@@ -1190,7 +1155,6 @@ _svc_vc_destroy_private(SVCXPRT *xprt, bool_t lock_not_held)
 	}
 }
 
-/*ARGSUSED*/
 static bool_t
 svc_vc_control(SVCXPRT *xprt, const uint_t rq, void *in)
 {
@@ -1204,7 +1168,6 @@ svc_vc_control(SVCXPRT *xprt, const uint_t rq, void *in)
 	case SVCGET_XID:
 		if (xprt->xp_p1 == NULL)
 			return (FALSE);
-		/* LINTED pointer alignment */
 		*(uint32_t *)in = ((struct cf_conn *)(xprt->xp_p1))->x_id;
 		return (TRUE);
 	default:
@@ -1226,7 +1189,6 @@ rendezvous_control(SVCXPRT *xprt, const uint_t rq, void *in)
 		*(svc_errorhandler_t *)in = xprt->xp_closeclnt;
 		return (TRUE);
 	case SVCSET_KEEPALIVE:
-		/* LINTED pointer cast */
 		r = (struct cf_rendezvous *)xprt->xp_p1;
 		if (r->tcp_flag) {
 			r->tcp_keepalive = (int)(intptr_t)in;
@@ -1241,7 +1203,6 @@ rendezvous_control(SVCXPRT *xprt, const uint_t rq, void *in)
 		 * the connectionless case, so no need to check the
 		 * connection type here.
 		 */
-		/* LINTED pointer cast */
 		r = (struct cf_rendezvous *)xprt->xp_p1;
 		tmp = __rpc_legal_connmaxrec(*(int *)in);
 		if (r != 0 && tmp >= 0) {
@@ -1250,7 +1211,6 @@ rendezvous_control(SVCXPRT *xprt, const uint_t rq, void *in)
 		}
 		return (FALSE);
 	case SVCGET_CONNMAXREC:
-		/* LINTED pointer cast */
 		r = (struct cf_rendezvous *)xprt->xp_p1;
 		if (r != 0) {
 			*(int *)in = r->cf_connmaxrec;
@@ -1275,7 +1235,6 @@ static  void
 update_nonblock_timestamps(SVCXPRT *xprt_conn)
 {
 	struct timeval tv;
-	/* LINTED pointer cast */
 	struct cf_conn *cd = (struct cf_conn *)xprt_conn->xp_p1;
 
 	(void) gettimeofday(&tv, NULL);
@@ -1298,11 +1257,9 @@ read_vc(SVCXPRT *xprt, caddr_t buf, int len)
 	/*
 	 * Make sure the connection is not already dead.
 	 */
-/* LINTED pointer alignment */
 	if (svc_failed(xprt))
 		return (-1);
 
-	/* LINTED pointer cast */
 	if (((struct cf_conn *)(xprt->xp_p1))->cf_conn_nonblock) {
 		/*
 		 * For nonblocked reads, only update the
@@ -1353,9 +1310,7 @@ read_vc(SVCXPRT *xprt, caddr_t buf, int len)
 	}
 
 fatal_err:
-/* LINTED pointer alignment */
 	((struct cf_conn *)(xprt->xp_p1))->strm_stat = XPRT_DIED;
-/* LINTED pointer alignment */
 	svc_flags(xprt) |= SVC_FAILED;
 	return (-1);
 }
@@ -1445,11 +1400,9 @@ svc_timeout_nonblock_xprt_and_LRU(bool_t destroy_lru)
 				continue;
 			}
 			/* Only look at connection fds */
-			/* LINTED pointer cast */
 			if (svc_type(xprt) != SVC_CONNECTION) {
 				continue;
 			}
-			/* LINTED pointer cast */
 			cd = (struct cf_conn *)xprt->xp_p1;
 			if (!cd->cf_conn_nonblock)
 				continue;
@@ -1532,9 +1485,7 @@ write_vc(SVCXPRT *xprt, caddr_t buf, int len)
 	int nonblock;
 	struct pollfd pfd;
 
-/* LINTED pointer alignment */
 	maxsz = ((struct cf_conn *)(xprt->xp_p1))->cf_tsdu;
-	/* LINTED pointer cast */
 	nonblock = ((struct cf_conn *)(xprt->xp_p1))->cf_conn_nonblock;
 	if (nonblock && maxsz <= 0)
 		maxsz = len;
@@ -1554,10 +1505,8 @@ write_vc(SVCXPRT *xprt, caddr_t buf, int len)
 					break;
 				}
 			}
-/* LINTED pointer alignment */
 			((struct cf_conn *)(xprt->xp_p1))->strm_stat =
 			    XPRT_DIED;
-/* LINTED pointer alignment */
 			svc_flags(xprt) |= SVC_FAILED;
 		}
 		return (len);
@@ -1614,10 +1563,8 @@ write_vc(SVCXPRT *xprt, caddr_t buf, int len)
 				continue;
 			}
 fatal_err:
-/* LINTED pointer alignment */
 			((struct cf_conn *)(xprt->xp_p1))->strm_stat =
 			    XPRT_DIED;
-/* LINTED pointer alignment */
 			svc_flags(xprt) |= SVC_FAILED;
 			return (-1);
 		}
@@ -1628,10 +1575,8 @@ fatal_err:
 static enum xprt_stat
 svc_vc_stat(SVCXPRT *xprt)
 {
-/* LINTED pointer alignment */
 	SVCXPRT *parent = SVCEXT(xprt)->parent ? SVCEXT(xprt)->parent : xprt;
 
-/* LINTED pointer alignment */
 	if (svc_failed(parent) || svc_failed(xprt))
 		return (XPRT_DIED);
 	if (!xdrrec_eof(svc_xdrs[xprt->xp_fd]))
@@ -1640,7 +1585,6 @@ svc_vc_stat(SVCXPRT *xprt)
 	 * xdrrec_eof could have noticed that the connection is dead, so
 	 * check status again.
 	 */
-/* LINTED pointer alignment */
 	if (svc_failed(parent) || svc_failed(xprt))
 		return (XPRT_DIED);
 	return (XPRT_IDLE);
@@ -1651,7 +1595,6 @@ svc_vc_stat(SVCXPRT *xprt)
 static bool_t
 svc_vc_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-/* LINTED pointer alignment */
 	struct cf_conn *cd = (struct cf_conn *)(xprt->xp_p1);
 	XDR *xdrs = svc_xdrs[xprt->xp_fd];
 
@@ -1670,7 +1613,6 @@ svc_vc_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 			 * is being processed through the xdr routines.
 			 */
 			if (cd->strm_stat == XPRT_DIED)
-				/* LINTED pointer cast */
 				svc_flags(xprt) |= SVC_FAILED;
 			return (FALSE);
 		}
@@ -1690,7 +1632,6 @@ svc_vc_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 	 * We are either under attack, or we're talking to a broken client.
 	 */
 	if (cd->cf_conn_nonblock) {
-		/* LINTED pointer cast */
 		svc_flags(xprt) |= SVC_FAILED;
 	}
 
@@ -1702,7 +1643,6 @@ svc_vc_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
 	bool_t dummy;
 
-/* LINTED pointer alignment */
 	dummy = SVCAUTH_UNWRAP(&SVC_XP_AUTH(xprt), svc_xdrs[xprt->xp_fd],
 	    xdr_args, args_ptr);
 	if (svc_mt_mode != RPC_SVC_MT_NONE)
@@ -1713,7 +1653,6 @@ svc_vc_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 static bool_t
 svc_vc_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
-/* LINTED pointer alignment */
 	XDR *xdrs = &(((struct cf_conn *)(xprt->xp_p1))->xdrs);
 
 	xdrs->x_op = XDR_FREE;
@@ -1723,7 +1662,6 @@ svc_vc_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 static bool_t
 svc_vc_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-/* LINTED pointer alignment */
 	struct cf_conn *cd = (struct cf_conn *)(xprt->xp_p1);
 	XDR *xdrs = &(cd->xdrs);
 	bool_t stat = FALSE;
@@ -1732,7 +1670,6 @@ svc_vc_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 	bool_t has_args;
 
 	if (svc_mt_mode != RPC_SVC_MT_NONE)
-/* LINTED pointer alignment */
 		(void) mutex_lock(&svc_send_mutex(SVCEXT(xprt)->parent));
 
 	if (msg->rm_reply.rp_stat == MSG_ACCEPTED &&
@@ -1747,7 +1684,6 @@ svc_vc_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 
 	xdrs->x_op = XDR_ENCODE;
 	msg->rm_xid = cd->x_id;
-/* LINTED pointer alignment */
 	if (xdr_replymsg(xdrs, msg) && (!has_args || SVCAUTH_WRAP(
 	    &SVC_XP_AUTH(xprt), xdrs, xdr_results, xdr_location))) {
 		stat = TRUE;
@@ -1755,7 +1691,6 @@ svc_vc_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 	(void) xdrrec_endofrecord(xdrs, TRUE);
 
 	if (svc_mt_mode != RPC_SVC_MT_NONE)
-/* LINTED pointer alignment */
 		(void) mutex_unlock(&svc_send_mutex(SVCEXT(xprt)->parent));
 
 	return (stat);
@@ -1814,7 +1749,6 @@ bool_t
 __svc_vc_dupcache_init(SVCXPRT *xprt, void *condition, int basis)
 {
 	return (__svc_dupcache_init(condition, basis,
-	    /* LINTED pointer alignment */
 	    &(((struct cf_rendezvous *)xprt->xp_p1)->cf_cache)));
 }
 
@@ -1822,7 +1756,6 @@ int
 __svc_vc_dup(struct svc_req *req, caddr_t *resp_buf, uint_t *resp_bufsz)
 {
 	return (__svc_dup(req, resp_buf, resp_bufsz,
-	    /* LINTED pointer alignment */
 	    ((struct cf_conn *)req->rq_xprt->xp_p1)->cf_cache));
 }
 
@@ -1831,6 +1764,5 @@ __svc_vc_dupdone(struct svc_req *req, caddr_t resp_buf, uint_t resp_bufsz,
     int status)
 {
 	return (__svc_dupdone(req, resp_buf, resp_bufsz, status,
-	    /* LINTED pointer alignment */
 	    ((struct cf_conn *)req->rq_xprt->xp_p1)->cf_cache));
 }

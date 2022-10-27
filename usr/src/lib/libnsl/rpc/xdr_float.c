@@ -99,9 +99,8 @@ xdr_double(XDR *xdrs, double *dp)
 	return (FALSE);
 }
 
-/* ARGSUSED */
 bool_t
-xdr_quadruple(XDR *xdrs, long double *fp)
+xdr_quadruple(XDR *xdrs __unused, long double *fp __unused)
 {
 /*
  * The Sparc uses IEEE FP encoding, so just do a byte copy

@@ -122,9 +122,8 @@ __svcauth_sys(struct svc_req *rqst, struct rpc_msg *msg)
  * Shorthand unix authenticator
  * Looks up longhand in a cache.
  */
-/*ARGSUSED*/
 enum auth_stat
-__svcauth_short(struct svc_req *rqst, struct rpc_msg *msg)
+__svcauth_short(struct svc_req *rqst __unused, struct rpc_msg *msg __unused)
 {
 	return (AUTH_REJECTEDCRED);
 }
