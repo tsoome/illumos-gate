@@ -25,8 +25,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <rpc/rpc.h>
 #include <rpc/key_prot.h>
@@ -225,6 +223,9 @@ xdr_key_netstres(XDR *xdrs, key_netstres *objp)
 	case KEY_SUCCESS:
 		if (!xdr_key_netstarg(xdrs, &objp->key_netstres_u.knet))
 			return (FALSE);
+		break;
+
+	default:
 		break;
 	}
 	return (TRUE);

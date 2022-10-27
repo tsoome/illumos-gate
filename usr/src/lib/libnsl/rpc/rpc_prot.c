@@ -93,8 +93,9 @@ xdr_accepted_reply(XDR *xdrs, struct accepted_reply *ar)
 		if (!xdr_u_int(xdrs, (uint_t *)&(ar->ar_vers.low)))
 			return (FALSE);
 		return (xdr_u_int(xdrs, (uint_t *)&(ar->ar_vers.high)));
+	default:
+		return (TRUE);  /* TRUE => open ended set of problems */
 	}
-	return (TRUE);  /* TRUE => open ended set of problems */
 }
 
 /*
@@ -163,6 +164,8 @@ xdr_replymsg(XDR *xdrs, struct rpc_msg *rmsg)
 			if (!xdr_u_int(xdrs, (uint_t *)&(ar->ar_vers.low)))
 				return (FALSE);
 			return (xdr_u_int(xdrs, (uint_t *)&(ar->ar_vers.high)));
+		default:
+			break;
 		}
 		return (TRUE);
 	}
@@ -225,6 +228,8 @@ xdr_replymsg(XDR *xdrs, struct rpc_msg *rmsg)
 			if (!xdr_u_int(xdrs, (uint_t *)&(ar->ar_vers.low)))
 				return (FALSE);
 			return (xdr_u_int(xdrs, (uint_t *)&(ar->ar_vers.high)));
+		default:
+			break;
 		}
 		return (TRUE);
 	}
@@ -358,6 +363,8 @@ __seterr_reply(struct rpc_msg *msg, struct rpc_err *error)
 	case RPC_PROGVERSMISMATCH:
 		error->re_vers.low = msg->acpted_rply.ar_vers.low;
 		error->re_vers.high = msg->acpted_rply.ar_vers.high;
+		break;
+	default:
 		break;
 	}
 }

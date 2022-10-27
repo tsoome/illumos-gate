@@ -482,7 +482,8 @@ _get_hostserv_inetnetdir_byname(struct netconfig *nconf,
 			}
 			break;
 
-
+		default:
+			break;
 	}
 
 	/*
@@ -899,6 +900,8 @@ _get_hostserv_inetnetdir_byaddr(struct netconfig *nconf,
 		}
 		break;
 
+		default:
+			break;
 	}
 
 	/*
@@ -1251,9 +1254,10 @@ __nss2herrno(nss_status_t nsstat)
 		return (NO_RECOVERY);
 	case NSS_NISSERVDNS_TRYAGAIN:
 		return (TRY_AGAIN);
+	default:
+		/* anything else */
+		return (NO_RECOVERY);
 	}
-	/* anything else */
-	return (NO_RECOVERY);
 }
 
 nss_status_t

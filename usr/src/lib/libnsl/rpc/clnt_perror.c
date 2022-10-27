@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * clnt_perror.c
  *
@@ -107,8 +105,10 @@ auth_errmsg(enum auth_stat stat)
 		"Incorrect network address in kerberos ticket"));
 	case AUTH_KERB_GENERIC:
 		return (dgettext(__nsl_dom, "Kerberos generic error"));
+
+	default:
+		return (dgettext(__nsl_dom, "Unknown authentication error"));
 	}
-	return (dgettext(__nsl_dom, "Unknown authentication error"));
 }
 
 /*
@@ -304,6 +304,9 @@ clnt_spcreateerror(const char *s)
 		(void) strlcat(str,
 			auth_errmsg(rpc_createerr.cf_error.re_why), ERRBUFSZ);
 		break;
+
+	default:
+		break;
 	}
 	return (str);
 }
@@ -383,6 +386,8 @@ clnt_sperrno(const enum clnt_stat stat)
 			"RPC: Received disconnect from remote"));
 	case RPC_CANTCREATESTREAM:
 		return (dgettext(__nsl_dom, "RPC: Can't push RPC module"));
+
+	default:
+		return (dgettext(__nsl_dom, "RPC: (unknown error code)"));
 	}
-	return (dgettext(__nsl_dom, "RPC: (unknown error code)"));
 }

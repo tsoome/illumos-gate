@@ -72,7 +72,7 @@ xdr_reference(XDR *xdrs, caddr_t *pp, uint_t size, const xdrproc_t proc)
 	    xdrs->x_op != XDR_FREE)
 		return (FALSE);
 
-	if (loc == NULL)
+	if (loc == NULL) {
 		switch (xdrs->x_op) {
 		case XDR_FREE:
 			return (TRUE);
@@ -84,6 +84,9 @@ xdr_reference(XDR *xdrs, caddr_t *pp, uint_t size, const xdrproc_t proc)
 			}
 			(void) memset(loc, 0, (int)size);
 			break;
+		default:
+			break;
+		}
 	}
 
 	stat = (*proc)(xdrs, loc, LASTUNSIGNED);

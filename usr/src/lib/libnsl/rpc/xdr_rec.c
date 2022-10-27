@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * xdr_rec.c, Implements (TCP/IP based) XDR streams with a "record marking"
  * layer above connection oriented transport layer (e.g. tcp) (for rpc's use).
@@ -454,6 +452,9 @@ xdrrec_setpos(XDR *xdrs, uint_t pos)
 				return (TRUE);
 			}
 			break;
+
+		default:
+			break;
 		}
 	return (FALSE);
 }
@@ -490,6 +491,9 @@ xdrrec_inline(XDR *xdrs, int len)
 			rstrm->fbtbc -= len;
 			rstrm->in_finger += len;
 		}
+		break;
+
+	default:
 		break;
 	}
 	return (buf);

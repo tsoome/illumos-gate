@@ -99,6 +99,9 @@ xdr_array(XDR *xdrs, caddr_t *addrp, uint_t *sizep, const uint_t maxsize,
 
 		case XDR_FREE:
 			return (TRUE);
+
+		default:
+			break;
 	}
 
 	/*

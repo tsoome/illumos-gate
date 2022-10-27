@@ -540,6 +540,9 @@ xdr_string(XDR *xdrs, char **cpp, const uint_t maxsize)
 	case XDR_ENCODE:
 		size = (sp != NULL) ? (uint_t)strlen(sp) : 0;
 		break;
+
+	default:
+		break;
 	}
 	/*
 	 * We decided not to use MACRO XDR_U_INT here, because the
