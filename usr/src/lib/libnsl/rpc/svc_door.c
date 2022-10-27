@@ -378,7 +378,7 @@ svc_door_create(void (*dispatch)(), const rpcprog_t prognum,
 	/*
 	 * Determine send size
 	 */
-	if (sendsize < __rpc_min_door_buf_size)
+	if (sendsize < (uint_t)__rpc_min_door_buf_size)
 		ssize = __rpc_default_door_buf_size;
 	else
 		ssize = RNDUP(sendsize);

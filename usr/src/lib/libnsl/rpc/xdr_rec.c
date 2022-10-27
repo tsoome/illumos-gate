@@ -1015,7 +1015,7 @@ recsz_invalid:
 					rstrm->in_boundry - rstrm->in_finger);
 			}
 			/* Consume the fragment header */
-			if (len_received > sizeof (*header)) {
+			if (len_received > (int)sizeof (*header)) {
 				len_received -= sizeof (*header);
 			} else {
 				len_received = 0;

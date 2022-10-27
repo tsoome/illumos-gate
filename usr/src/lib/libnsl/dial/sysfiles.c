@@ -614,7 +614,7 @@ nextdialers(void)
 static int
 getpop(char *buf, size_t len, int *optional)
 {
-	int slen;
+	size_t slen;
 
 	if (Pops[0] == NULL || Pops[npops] == NULL)
 		return (FALSE);

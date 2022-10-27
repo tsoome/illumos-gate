@@ -32,8 +32,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdlib.h>
 #include <mp.h>
@@ -109,12 +107,9 @@ char *keyin;
  * public and secret are buffers of size HEXKEYBYTES + 1.
  */
 void
-__gen_dhkeys(public, secret, pass)
-char *public;
-char *secret;
-char *pass;
+__gen_dhkeys(char *public, char *secret, char *pass)
 {
-	int i;
+	uint_t i;
 
 #define	BASEBITS	(8 * sizeof (short) - 1)
 #define	BASE		(1 << BASEBITS)

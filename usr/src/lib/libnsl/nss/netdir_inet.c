@@ -1443,7 +1443,7 @@ str2servent(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
 {
 	struct servent	*serv	= (struct servent *)ent;
 	const char	*p, *fieldstart, *limit, *namestart;
-	ssize_t		fieldlen, namelen = 0;
+	size_t		fieldlen, namelen;
 	char		numbuf[12];
 	char		*numend;
 
@@ -1464,7 +1464,7 @@ str2servent(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
 	}
 	namelen = p - namestart;
 
-	if (buflen <= namelen) { /* not enough buffer */
+	if (buflen <= (int)namelen) { /* not enough buffer */
 		return (NSS_STR_PARSE_ERANGE);
 	}
 	(void) memcpy(buffer, namestart, namelen);
@@ -1671,13 +1671,12 @@ order_haddrlist_inet(char **haddrlist, size_t addrcount)
 	hrtime_t	now;
 	static rwlock_t	localinfo_lock = DEFAULTRWLOCK;
 	uint8_t		*sortbuf;
-	size_t		sortbuf_size;
+	size_t		sortbuf_size, i;
 	struct in_addr	**inaddrlist = (struct in_addr **)haddrlist;
 	struct in_addr	**sorted;
 	struct in_addr	**classnext[ADDR_NUMCLASSES];
 	uint_t		classcount[ADDR_NUMCLASSES];
 	addr_class_t	*sortclass;
-	int		i;
 	int		rc;
 
 
@@ -2732,7 +2731,7 @@ int
 __inet_address_is_local_af(void *p, sa_family_t af, void *addr) {
 
 	struct ifinfo	*localinfo = (struct ifinfo *)p;
-	int		i, a;
+	size_t		i, a;
 	struct in_addr	v4addr;
 
 	if (localinfo == 0)
@@ -2744,7 +2743,7 @@ __inet_address_is_local_af(void *p, sa_family_t af, void *addr) {
 		addr = (void *)&v4addr;
 	}
 
-	for (i = 0; i < localinfo->count; i++) {
+	for (i = 0; i < (size_t)localinfo->count; i++) {
 		if (ifaf(i) == af) {
 			if (af == AF_INET6) {
 				struct in6_addr *a6 = (struct in6_addr *)addr;
@@ -2882,7 +2881,7 @@ __inet_get_networka(void *p, int n)
 	if (ifaf(n) == AF_INET6) {
 		char		buf[INET6_ADDRSTRLEN];
 		struct in6_addr	in6;
-		int		i;
+		size_t		i;
 
 		for (i = 0; i < sizeof (in6.s6_addr); i++) {
 			in6.s6_addr[i] = ifaddr6(n).s6_addr[i] &

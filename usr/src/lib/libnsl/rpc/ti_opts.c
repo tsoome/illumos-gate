@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdio.h>
 #include <netinet/in.h>
@@ -164,7 +162,7 @@ find_ucred_opt(const SVCXPRT *trans, ucred_t *uc, bool_t checkzone)
 		syslog(LOG_INFO, "find_ucred_opt opt: %p %x, %d %d", opt,
 			opt->len, opt->name, opt->level);
 #endif
-		if (opt->len > maxbufp - bufp || (opt->len & 3))
+		if (opt->len > (uint_t)(maxbufp - bufp) || (opt->len & 3))
 			return (-1);
 		if (opt->level == SOL_SOCKET && opt->name == SCM_UCRED &&
 		    opt->len - sizeof (struct T_opthdr) <= ucred_size()) {

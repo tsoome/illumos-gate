@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.3.4.1 */
-
 #include "mt.h"
 #include <stdlib.h>
 #include <errno.h>
@@ -157,7 +155,7 @@ _tx_bind(
 		 * will also have trouble with TCP/UDP wildcard port
 		 * requests
 		 */
-		if ((req->addr.len != bind_ackp->ADDR_length) ||
+		if ((req->addr.len != (uint_t)bind_ackp->ADDR_length) ||
 		    (memcmp(req->addr.buf, ctlbuf.buf +
 		    bind_ackp->ADDR_offset, req->addr.len) != 0)) {
 			(void) _tx_unbind_locked(fd, tiptr, &ctlbuf);

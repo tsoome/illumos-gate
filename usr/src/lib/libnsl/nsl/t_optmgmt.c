@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -198,7 +196,7 @@ _tx_optmgmt(
 			if ((uchar_t *)next_opt < (uchar_t *)opt || /* (1) */
 			    ((next_opt >= opt_end) &&
 				(((uchar_t *)next_opt - (uchar_t *)opt_end) >=
-				    ALIGN_XTI_opthdr_size)) || /* (2) */
+				    (int)ALIGN_XTI_opthdr_size)) || /* (2) */
 			    (opt->level != first_opt_level)) { /* (3) */
 				t_errno = TBADOPT;
 				goto err_out;

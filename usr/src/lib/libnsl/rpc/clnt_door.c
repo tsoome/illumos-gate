@@ -77,7 +77,7 @@ struct cu_data {
  */
 CLIENT *
 clnt_door_create(const rpcprog_t program, const rpcvers_t version,
-							const uint_t sendsz)
+    const uint_t sendsz)
 {
 	CLIENT			*cl = NULL;	/* client handle */
 	struct cu_data		*cu = NULL;	/* private data */
@@ -109,7 +109,7 @@ clnt_door_create(const rpcprog_t program, const rpcvers_t version,
 	/*
 	 * Determine send size
 	 */
-	if (sendsz < __rpc_min_door_buf_size)
+	if (sendsz < (uint_t)__rpc_min_door_buf_size)
 		ssz = __rpc_default_door_buf_size;
 	else
 		ssz = RNDUP(sendsz);

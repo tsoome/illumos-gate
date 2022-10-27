@@ -1490,7 +1490,7 @@ unsigned int
 _t_bytecount_upto_intmax(const struct t_iovec *tiov, unsigned int tiovcount)
 {
 	size_t nbytes;
-	int i;
+	unsigned int i;
 
 	nbytes = 0;
 	for (i = 0; i < tiovcount && nbytes < INT_MAX; i++) {
@@ -1520,7 +1520,7 @@ _t_gather(char *dataptr, const struct t_iovec *tiov, unsigned int tiovcount)
 	char *curptr;
 	unsigned int cur_count;
 	unsigned int nbytes_remaining;
-	int i;
+	unsigned int i;
 
 	curptr = dataptr;
 	cur_count = 0;
@@ -1553,7 +1553,8 @@ _t_scatter(struct strbuf *pdatabuf, struct t_iovec *tiov, int tiovcount)
 	 * There cannot be any uncopied data leftover in pdatabuf
 	 * at the conclusion of this function. (asserted below)
 	 */
-	assert(pdatabuf->len <= _t_bytecount_upto_intmax(tiov, tiovcount));
+	assert((unsigned)pdatabuf->len <=
+	    _t_bytecount_upto_intmax(tiov, tiovcount));
 	curptr = pdatabuf->buf;
 	nbytes_remaining = pdatabuf->len;
 	for (i = 0; i < tiovcount && nbytes_remaining != 0; i++) {
@@ -1583,7 +1584,7 @@ _t_adjust_iov(int bytes_sent, struct iovec *iov, int *iovcountp)
 	for (i = 0; i < *iovcountp && bytes_sent; i++) {
 		if (iov[i].iov_len == 0)
 			continue;
-		if (bytes_sent < iov[i].iov_len)
+		if (bytes_sent < (ssize_t)iov[i].iov_len)
 			break;
 		else {
 			bytes_sent -= iov[i].iov_len;

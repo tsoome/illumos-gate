@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.5 */
-
 #include "mt.h"
 #include <errno.h>
 #include <stdlib.h>
@@ -85,7 +83,7 @@ _tx_listen(int fd, struct t_call *call, int api_semantics)
 			return (-1);
 		}
 
-		if (tiptr->ti_ocnt == tiptr->ti_qlen) {
+		if ((uint_t)tiptr->ti_ocnt == tiptr->ti_qlen) {
 			if (!(tiptr->ti_flags & TX_TQFULL_NOTIFIED)) {
 				tiptr->ti_flags |= TX_TQFULL_NOTIFIED;
 				t_errno = TQFULL;

@@ -1509,7 +1509,7 @@ iovFromBuffer(struct ct_data *ct, struct iovec *iov)
 		return (0);
 
 	l = REMAIN_BYTES(bufferReadPtr);
-	if (l < ct->ct_bufferPendingSize) {
+	if (l < (int)ct->ct_bufferPendingSize) {
 		/* Buffer in two fragments. */
 		iov[0].iov_base = ct->ct_bufferReadPtr;
 		iov[0].iov_len  = l;
@@ -1639,7 +1639,7 @@ do_flush(struct ct_data *ct, uint_t flush_mode)
 static int
 nb_send(struct ct_data *ct, void *buff, unsigned int nBytes)
 {
-	int result;
+	ssize_t result;
 
 	if (!LAST_FRAG(buff)) {
 		return (-1);
@@ -1679,7 +1679,7 @@ nb_send(struct ct_data *ct, void *buff, unsigned int nBytes)
 		 * If we have not sent all data, we must store them
 		 * in the buffer.
 		 */
-		if (result != nBytes) {
+		if ((size_t)result != nBytes) {
 			if (addInBuffer(ct, (char *)buff + result,
 			    nBytes - result) == -1) {
 				return (-1);
@@ -1710,7 +1710,7 @@ nb_send(struct ct_data *ct, void *buff, unsigned int nBytes)
 		 * Add the bytes from the message
 		 * that we have not sent.
 		 */
-		if (result <= ct->ct_bufferPendingSize) {
+		if ((size_t)result <= ct->ct_bufferPendingSize) {
 			/* No bytes from the message sent */
 			consumeFromBuffer(ct, result);
 			if (addInBuffer(ct, buff, nBytes) == -1) {
@@ -1722,7 +1722,7 @@ nb_send(struct ct_data *ct, void *buff, unsigned int nBytes)
 			 * Compute the length of the message that has
 			 * been sent.
 			 */
-			int len = result - ct->ct_bufferPendingSize;
+			unsigned len = result - ct->ct_bufferPendingSize;
 
 			/* So, empty the buffer. */
 			ct->ct_bufferReadPtr = ct->ct_buffer;

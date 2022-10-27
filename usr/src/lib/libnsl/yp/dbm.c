@@ -563,7 +563,6 @@ chkblk(char *buf)
 	short *sp;
 	int t, i;
 
-	/* LINTED pointer cast */
 	sp = (short *)buf;
 	t = PBLKSIZ;
 	for (i = 0; i < sp[0]; i++) {
@@ -571,7 +570,7 @@ chkblk(char *buf)
 			goto bad;
 		t = sp[i+1];
 	}
-	if (t < (sp[0]+1) * sizeof (short))
+	if (t < (int)((sp[0] + 1) * sizeof (short)))
 		goto bad;
 	return;
 

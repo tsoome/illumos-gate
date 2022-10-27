@@ -74,9 +74,8 @@ __svcauth_sys(struct svc_req *rqst, struct rpc_msg *msg)
 	struct authsys_area *area;
 	uint_t auth_len;
 	uint_t str_len, gid_len;
-	int i;
+	uint_t i;
 
-	/* LINTED pointer cast */
 	area = (struct authsys_area *)rqst->rq_clntcred;
 	aup = &area->area_aup;
 	aup->aup_machname = area->area_machname;
@@ -85,7 +84,6 @@ __svcauth_sys(struct svc_req *rqst, struct rpc_msg *msg)
 	if (auth_len == 0)
 		return (AUTH_BADCRED);
 
-	/* LINTED pointer cast */
 	buf = (int32_t *)msg->rm_call.cb_cred.oa_base;
 
 	aup->aup_time = IXDR_GET_INT32(buf);

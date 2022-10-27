@@ -1007,7 +1007,8 @@ svc_args_done(SVCXPRT *xprt)
 
 
 int
-__rpc_legal_connmaxrec(int suggested) {
+__rpc_legal_connmaxrec(int suggested)
+{
 	if (suggested == -1) {
 		/* Supply default */
 		return (RPC_MAXDATASIZE + 2*sizeof (uint32_t));
@@ -1017,13 +1018,13 @@ __rpc_legal_connmaxrec(int suggested) {
 		/* Round down to multiple of BYTES_PER_XDR_UNIT */
 		suggested -= suggested % BYTES_PER_XDR_UNIT;
 		/* If possible, allow for two fragment headers */
-		if (suggested < MAXINT-(2*sizeof (uint32_t))) {
+		if (suggested < (int)(MAXINT-(2*sizeof (uint32_t)))) {
 			/* Allow for two fragment headers */
 			suggested += 2 * sizeof (uint32_t);
 		} else {
 			suggested = MAXINT;
 		}
-		if (suggested < sizeof (struct rpc_msg)) {
+		if (suggested < (int)sizeof (struct rpc_msg)) {
 			return (-1);
 		}
 	}

@@ -891,7 +891,7 @@ netlist_free(struct netconfig ***netppp)
 static void
 netconfig_free(struct netconfig *netconfigp)
 {
-	int i;
+	unsigned i;
 
 	if (netconfigp == NULL)
 		return;
@@ -910,7 +910,7 @@ static struct netconfig *
 netconfig_dup(struct netconfig *netconfigp)
 {
 	struct netconfig *nconf;
-	int i;
+	unsigned i;
 
 	nconf = calloc(1, sizeof (struct netconfig));
 	if (nconf == NULL) {

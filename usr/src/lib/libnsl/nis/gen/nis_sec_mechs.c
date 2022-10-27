@@ -555,7 +555,7 @@ __nis_get_mechanisms(bool_t qop_secserv)
 	mechanism_t	**tmechs_no_dups = NULL; /* temp mechs sans dups */
 	int		ent_cnt = 0;		 /* valid cf file entry count */
 	int		ent_cnt_no_dups = 0;	 /* valid cf count, no dups */
-	static uint_t	last = 0;
+	static time_t	last = 0;
 	struct stat	sbuf;
 	FILE 		*fptr;
 
@@ -720,14 +720,15 @@ __nis_mechname2alias(const char *mechname,	/* in */
 	mpp_h = mpp;
 	for (; *mpp; mpp++) {
 		mechanism_t *mp = *mpp;
-		int len;
+		size_t len;
 
 		if (mp->mechname &&
 		    (strcasecmp(mechname, mp->mechname) == 0)) {
 			if (mp->alias) {
-				if ((len = strlen(mp->alias)) < bufsize) {
+				len = strlen(mp->alias);
+				if (len < bufsize) {
 					(void) strncpy(alias, mp->alias,
-							len + 1);
+					    len + 1);
 					__nis_release_mechanisms(mpp_h);
 					return (alias);
 				}
@@ -803,7 +804,7 @@ __nis_mechalias2authtype(
 	const char *src = mechalias;
 	char *dst = authtype;
 	const char *max = src + authtypelen;
-	const int slen = strlen(cf_mech_dh1920_str);
+	const size_t slen = strlen(cf_mech_dh1920_str);
 
 	if (!src || !dst || !authtypelen)
 		return (NULL);
@@ -868,7 +869,7 @@ __nis_keyalg2mechalias(
 
 				if (keylen == mp->keylen &&
 				    algtype == mp->algtype && mp->alias) {
-					int al_len = strlen(mp->alias);
+					size_t al_len = strlen(mp->alias);
 
 					if (alias_len > al_len) {
 						(void) strncpy(alias, mp->alias,
@@ -1005,7 +1006,7 @@ mf_get_mechs()
 	mfent_t		*mp;			/* a mech entry */
 	mfent_t		**tmechs = NULL;	/* temp mechs list */
 	uint_t		ent_cnt = 0;		/* valid cf file entry count */
-	static uint_t	last = 0;		/* file last modified date */
+	static time_t	last = 0;		/* file last modified date */
 	struct stat	sbuf;
 	FILE 		*fptr;
 
@@ -1066,11 +1067,11 @@ mechfile_name2lib(const char *mechname, char *libname, int len)
 		mfent_t *mp = *mpp;
 
 		if (mp->mechname && strcasecmp(mechname, mp->mechname) == 0) {
-			if (strlen(mp->libname) < len) {
+			if ((int)strlen(mp->libname) < len) {
 				(void) strcpy(libname, mp->libname);
-					mf_free_mechs(mechs);
-					return (libname);
-				}
+				mf_free_mechs(mechs);
+				return (libname);
+			}
 		}
 	}
 	mf_free_mechs(mechs);

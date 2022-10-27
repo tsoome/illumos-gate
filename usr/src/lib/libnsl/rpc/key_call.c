@@ -32,8 +32,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Interface to keyserver
  *
@@ -348,7 +346,7 @@ key_encryptsession_pk_g(
 		debug("encrypt3 status is nonzero");
 		return (-1);
 	}
-	if (res.cryptkeyres3_u.deskey.deskeyarray_len != keynum) {
+	if (res.cryptkeyres3_u.deskey.deskeyarray_len != (uint_t)keynum) {
 		debug("number of keys don't match");
 		return (-1);
 	}
@@ -419,7 +417,7 @@ key_decryptsession_pk_g(
 		debug("decrypt3 status is nonzero");
 		return (-1);
 	}
-	if (res.cryptkeyres3_u.deskey.deskeyarray_len != keynum) {
+	if (res.cryptkeyres3_u.deskey.deskeyarray_len != (uint_t)keynum) {
 		debug("number of keys don't match");
 		return (-1);
 	}
@@ -474,7 +472,7 @@ key_encryptsession_g(
 		debug("encrypt3 status is nonzero");
 		return (-1);
 	}
-	if (res.cryptkeyres3_u.deskey.deskeyarray_len != keynum) {
+	if (res.cryptkeyres3_u.deskey.deskeyarray_len != (uint_t)keynum) {
 		debug("encrypt3 didn't return same number of keys");
 		return (-1);
 	}
@@ -530,7 +528,7 @@ key_decryptsession_g(
 		debug("decrypt3 status is nonzero");
 		return (-1);
 	}
-	if (res.cryptkeyres3_u.deskey.deskeyarray_len != keynum) {
+	if (res.cryptkeyres3_u.deskey.deskeyarray_len != (uint_t)keynum) {
 		debug("decrypt3 didn't return same number of keys");
 		return (-1);
 	}
@@ -558,7 +556,7 @@ key_gendes_g(
 	if (!key_call((rpcproc_t)KEY_GEN_3, xdr_keynum_t, (char *)&keynum,
 			xdr_deskeyarray, (char *)&res))
 		return (-1);
-	if (res.deskeyarray_len != keynum) {
+	if (res.deskeyarray_len != (uint_t)keynum) {
 		debug("return length doesn't match\n");
 		return (-1);
 	}
@@ -756,7 +754,7 @@ key_get_conv_g(
 		debug("get_conv3 status is nonzero");
 		return (-1);
 	}
-	if (res.cryptkeyres3_u.deskey.deskeyarray_len != keynum) {
+	if (res.cryptkeyres3_u.deskey.deskeyarray_len != (uint_t)keynum) {
 		debug("get_conv3 number of keys dont match");
 		return (-1);
 	}

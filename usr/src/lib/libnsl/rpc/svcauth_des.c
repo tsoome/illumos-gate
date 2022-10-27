@@ -257,7 +257,7 @@ again:
 		}
 	} else { /* ADN_NICKNAME */
 		sid = cred->adc_nickname;
-		if (sid >= authdes_cachesz) {
+		if (sid >= (uint32_t)authdes_cachesz) {
 			__msgout(LOG_INFO, "_svcauth_des:", "bad nickname");
 			(void) mutex_unlock(&authdes_lock);
 			return (AUTH_BADCRED);	/* garbled credential */
@@ -319,7 +319,7 @@ again:
 		if (fullname_rcvd) {
 			window = IXDR_GET_U_INT32(ixdr);
 			winverf = IXDR_GET_U_INT32(ixdr);
-			if (winverf != window - 1) {
+			if ((uint_t)winverf != window - 1) {
 				if (from_cache) {
 					__getpublickey_flush(
 						cred->adc_fullname.name);
@@ -645,7 +645,7 @@ authdes_getucred(const struct authdes_cred *adc, uid_t *uid, gid_t *gid,
 	struct bsdcred *cred;
 
 	sid = adc->adc_nickname;
-	if (sid >= authdes_cachesz) {
+	if (sid >= (uint32_t)authdes_cachesz) {
 		__msgout2(__getucredstr, "invalid nickname");
 		return (0);
 	}

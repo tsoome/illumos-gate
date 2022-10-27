@@ -60,6 +60,7 @@
 #include <signal.h>
 #include <sys/errno.h>
 #include <sys/poll.h>
+#include <sys/sysmacros.h>
 #include <rpc/rpc.h>
 #include <rpc/nettype.h>
 #undef NIS
@@ -190,7 +191,7 @@ __rpc_get_time_offset(struct timeval *td, nis_server *srv,
 	endpoint		*ep;		/* useful endpoints	*/
 	char			*useua = NULL,	/* uaddr of selected xp	*/
 				*useid = NULL;	/* netid of selected xp	*/
-	int			epl, i;		/* counters		*/
+	uint_t			epl, i;		/* counters		*/
 	enum clnt_stat		status;		/* result of clnt_call	*/
 	uint_t			thetime;
 	ulong_t			delta;
@@ -243,7 +244,7 @@ __rpc_get_time_offset(struct timeval *td, nis_server *srv,
 
 		ep = srv->ep.ep_val;
 		epl = srv->ep.ep_len;
-		for (i = 0; i < sizeof (epcand)/sizeof (epcand[0]); i++) {
+		for (i = 0; i < ARRAY_SIZE(epcand); i++) {
 			epcand[i] = 0;
 			nonipcand[i] = 0;
 		}
@@ -640,9 +641,10 @@ error:
 
 		/* Round to the nearest second */
 		tv.tv_sec += (tv.tv_sec > 500000) ? 1 : 0;
-		delta = (thetime > tv.tv_sec) ? thetime - tv.tv_sec :
-						tv.tv_sec - thetime;
-		td->tv_sec = (thetime < tv.tv_sec) ? - delta : delta;
+		delta = (thetime > (unsigned long)tv.tv_sec) ?
+		    thetime - tv.tv_sec : tv.tv_sec - thetime;
+		td->tv_sec = (thetime < (unsigned long)tv.tv_sec) ?
+		    - delta : delta;
 		td->tv_usec = 0;
 	} else {
 		/*EMPTY*/

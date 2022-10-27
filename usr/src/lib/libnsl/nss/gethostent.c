@@ -28,8 +28,6 @@
  * Ye olde non-reentrant interface (MT-unsafe, caveat utor)
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -108,8 +106,8 @@ __str2hostent(int af, const char *instr, int lenstr, void *ent, char *buffer,
 {
 	struct hostent	*host	= (struct hostent *)ent;
 	const char	*p, *addrstart, *limit;
-	int		naddr, i, aliases_erange = 0;
-	int		addrlen, res;
+	int		res, naddr, i, aliases_erange = 0;
+	size_t		addrlen;
 	char		addrbuf[100];  /* Why 100? */
 	struct in_addr	*addrp;
 	struct in6_addr	*addrp6;

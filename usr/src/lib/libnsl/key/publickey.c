@@ -376,7 +376,7 @@ extract_secret_g(
 		return (1); /* yes, return 1 even if xdecrypt fails */
 	}
 
-	if (strlen(buf) >= prilen) {
+	if ((int)strlen(buf) >= prilen) {
 		private[0] = 0;
 		free(buf);
 		return (0);
@@ -510,14 +510,14 @@ netname2hashname(
 		return (NULL);
 
 	if (classic_des) {
-		if (bufsiz > strlen(netname))
+		if (bufsiz > (int)strlen(netname))
 			(void) strcpy(hashname, netname);
 		else
 			return (NULL);
 	} else {
 		char tmp[128];
 		(void) sprintf(tmp, ":%d-%d", keylen, algtype);
-		if (bufsiz > (strlen(netname) + strlen(tmp)))
+		if (bufsiz > (int)(strlen(netname) + strlen(tmp)))
 			(void) sprintf(hashname, "%s%s", netname, tmp);
 		else
 			return (NULL);

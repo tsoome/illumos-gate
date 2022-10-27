@@ -32,8 +32,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * netdir.c
  *
@@ -214,7 +212,7 @@ __classic_netdir_getbyname(struct netconfig *tp, struct nd_hostserv *serv,
 	struct translator	*t;	/* pointer to translator list	*/
 	struct nd_addrlist	*nn;	/* the results			*/
 	char			*lr;	/* routines to try		*/
-	int			i;	/* counts the routines		*/
+	unsigned		i;	/* counts the routines		*/
 
 	_nderror = ND_SYSTEM;
 	for (i = 0; i < tp->nc_nlookups; i++) {
@@ -343,7 +341,7 @@ __classic_netdir_getbyaddr(struct netconfig *tp, struct nd_hostservlist **serv,
 	struct translator	*t;	/* pointer to translator list	*/
 	struct nd_hostservlist	*hs;	/* the results			*/
 	char			*lr;	/* routines to try		*/
-	int			i;	/* counts the routines		*/
+	unsigned		i;	/* counts the routines		*/
 
 	_nderror = ND_SYSTEM;
 	for (i = 0; i < tp->nc_nlookups; i++) {
@@ -400,7 +398,7 @@ netdir_options(struct netconfig *tp, int option, int fd, char *par)
 {
 	struct translator	*t;	/* pointer to translator list	*/
 	char			*lr;	/* routines to try		*/
-	int			i;	/* counts the routines		*/
+	unsigned		i;	/* counts the routines		*/
 
 	if (tp == 0) {
 		_nderror = ND_BADARG;
@@ -452,7 +450,7 @@ uaddr2taddr(struct netconfig *tp, char *addr)
 	struct translator	*t;	/* pointer to translator list 	*/
 	struct netbuf		*x;	/* the answer we want 		*/
 	char			*lr;	/* routines to try		*/
-	int			i;	/* counts the routines		*/
+	unsigned		i;	/* counts the routines		*/
 
 	if (tp == 0) {
 		_nderror = ND_BADARG;
@@ -511,7 +509,7 @@ taddr2uaddr(struct netconfig *tp, struct netbuf *addr)
 	struct translator	*t;	/* pointer to translator list	*/
 	char			*lr;	/* routines to try		*/
 	char			*x;	/* the answer			*/
-	int			i;	/* counts the routines		*/
+	unsigned		i;	/* counts the routines		*/
 
 	if (tp == 0) {
 		_nderror = ND_BADARG;

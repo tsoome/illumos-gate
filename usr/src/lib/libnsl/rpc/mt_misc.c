@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	Define and initialize MT data for libnsl.
  *	The _libnsl_lock_init() function below is the library's .init handler.
@@ -36,6 +34,7 @@
 #include <unistd.h>
 #include <rpc/rpc.h>
 #include <sys/time.h>
+#include <sys/sysmacros.h>
 #include <stdlib.h>
 #include <syslog.h>
 
@@ -121,14 +120,14 @@ _libnsl_parent_atfork()
 void
 _libnsl_lock_init()
 {
-	int	i;
+	size_t	i;
 
 	(void) sigfillset(&fillset);
 
-	for (i = 0; i <  (sizeof (mutex_table) / sizeof (mutex_table[0])); i++)
+	for (i = 0; i <  ARRAY_SIZE(mutex_table); i++)
 		(void) mutex_init(mutex_table[i], 0, (void *) 0);
 
-	for (i = 0; i < (sizeof (rwlock_table) / sizeof (rwlock_table[0])); i++)
+	for (i = 0; i < ARRAY_SIZE(rwlock_table); i++)
 		(void) rwlock_init(rwlock_table[i], 0, (void *) 0);
 
 	(void) cond_init(&svc_thr_fdwait, USYNC_THREAD, 0);

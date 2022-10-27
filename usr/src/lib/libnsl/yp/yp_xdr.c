@@ -34,8 +34,6 @@
  * California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This contains ALL xdr routines used by the YP rpc interface.
  */
@@ -79,12 +77,13 @@ xdr_datum(XDR *xdrs, datum *pdatum)
 	 * xdr_bytes()
 	 */
 	if (xdrs->x_op == XDR_ENCODE) {
-		if (pdatum->dsize > UINT_MAX)
+		if (pdatum->dsize > 0 &&
+		    (unsigned long)pdatum->dsize > UINT_MAX)
 			return (FALSE);
 	}
 	dsize = (uint_t)pdatum->dsize;
 	res = (bool)xdr_bytes(xdrs, (char **)&(pdatum->dptr), &dsize,
-								YPMAXRECORD);
+	    YPMAXRECORD);
 	if (xdrs->x_op == XDR_DECODE) {
 		pdatum->dsize = dsize;
 	}

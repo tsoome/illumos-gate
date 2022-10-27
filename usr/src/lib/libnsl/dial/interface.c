@@ -185,19 +185,19 @@ twrite(int fd, char *buf, unsigned nbytes)
 			return (FAIL);
 	}
 
-	if (info.tsdu <= 0 || nbytes <= info.tsdu)
+	if (info.tsdu <= 0 || nbytes <= (unsigned)info.tsdu)
 		return ((ssize_t)t_snd(fd, buf, nbytes, 0));
 	/* if get here, then there is a limit on transmit size	*/
 	/* (info.tsdu > 0) and buf exceeds it			*/
 	i = ret = 0;
-	while (nbytes >= info.tsdu) {
+	while (nbytes >= (unsigned)info.tsdu) {
 		if ((ret = t_snd(fd,  &buf[i], info.tsdu, 0)) != info.tsdu)
 			return ((ssize_t)(ret >= 0 ? (i + ret) : ret));
 		i += info.tsdu;
 		nbytes -= info.tsdu;
 	}
 	if (nbytes != 0) {
-		if ((ret = t_snd(fd,  &buf[i], nbytes, 0)) != nbytes)
+		if ((unsigned)(ret = t_snd(fd,  &buf[i], nbytes, 0)) != nbytes)
 			return ((ssize_t)(ret >= 0 ? (i + ret) : ret));
 		i += nbytes;
 	}

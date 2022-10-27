@@ -583,7 +583,7 @@ static struct DESkey weakDESkeys[] = {
 static int
 weak_DES_key(des_block db)
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < sizeof (weakDESkeys)/sizeof (struct DESkey); i++) {
 		if (weakDESkeys[i].h1 == db.key.high &&

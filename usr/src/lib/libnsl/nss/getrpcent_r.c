@@ -28,8 +28,6 @@
  * Rentrant (MT-safe) getrpcYY interfaces.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "mt.h"
 #include <ctype.h>
 #include <nss_dbdefs.h>
@@ -53,7 +51,7 @@ _nss_initf_rpc(nss_db_params_t *p)
 
 struct rpcent *
 getrpcbyname_r(const char *name, struct rpcent *result, char *buffer,
-								int buflen)
+    int buflen)
 {
 	nss_XbyY_args_t arg;
 	nss_status_t	res;
@@ -73,7 +71,7 @@ getrpcbyname_r(const char *name, struct rpcent *result, char *buffer,
 
 struct rpcent *
 getrpcbynumber_r(const int number, struct rpcent *result, char *buffer,
-								int buflen)
+    int buflen)
 {
 	nss_XbyY_args_t arg;
 	nss_status_t	res;
@@ -120,7 +118,7 @@ str2rpcent(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
 {
 	struct rpcent	*rpc	= (struct rpcent *)ent;
 	const char	*p, *numstart, *limit, *namestart;
-	ssize_t		numlen, namelen = 0;
+	size_t		numlen, namelen;
 	char		numbuf[12];
 	char		*numend;
 
@@ -140,7 +138,7 @@ str2rpcent(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
 	}
 	namelen = p - namestart;
 
-	if (buflen <= namelen)		/* not enough buffer */
+	if (buflen <= (int)namelen)		/* not enough buffer */
 		return (NSS_STR_PARSE_ERANGE);
 	(void) memcpy(buffer, namestart, namelen);
 	buffer[namelen] = '\0';
