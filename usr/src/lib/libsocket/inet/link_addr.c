@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Function implementations to convert between link layer addresses and
  * ascii representations of the form "x:x:x:...:x:x:x" where x is a hex
@@ -43,9 +41,9 @@
  * Currently, the "mactype" is unused, but in the future, the string
  * can be modulated by "mactype" (IFT_* value from <net/if_types.h>)
  */
-/* ARGSUSED */
 char *
-_link_ntoa(const unsigned char *macaddr, char *str, int size, int mactype)
+_link_ntoa(const unsigned char *macaddr, char *str, int size,
+    int mactype __unused)
 {
 	char *buf;
 	int i, n;

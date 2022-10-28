@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -69,12 +67,11 @@ bootparams_getbyname(
  * NOTE: we expect the data we're passed (in instr) has had the host's name
  * stripped off the begining.
  */
-/* ARGSUSED */
 static int
 str2bootent(
     const char *instr,
     int lenstr,
-    void *ent,		/* really (char *) */
+    void *ent __unused,		/* really (char *) */
     char *buffer,
     int buflen
 )

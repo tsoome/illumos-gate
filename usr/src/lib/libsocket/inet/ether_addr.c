@@ -178,9 +178,9 @@ ether_line(
 		islower(x) ? (x) + 10 - 'a' : (x) + 10 - 'A')
 #define	lisalnum(x)	(isdigit(x) || \
 		((x) >= 'a' && (x) <= 'z') || ((x) >= 'A' && (x) <= 'Z'))
-/* ARGSUSED */
 int
-str2ether(const char *instr, int lenstr, void *ent, char *buffer, int buflen)
+str2ether(const char *instr, int lenstr, void *ent, char *buffer,
+    int buflen __unused)
 {
 	uchar_t	*ether =  (uchar_t *)ent;
 	char	*host = buffer;
