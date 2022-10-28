@@ -8,8 +8,6 @@
  *
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sm/gen.h>
 SM_RCSID("@(#)$Id: signal.c,v 8.44 2006/03/03 03:42:04 ca Exp $")
 
@@ -106,7 +104,7 @@ mi_signal_thread(name)
 	for (;;)
 	{
 		sigerr = sig = 0;
-#if defined(SOLARIS) || defined(__svr5__)
+#if (defined(SOLARIS) || defined(__svr5__)) && !defined(__XOPEN_OR_POSIX)
 		if ((sig = sigwait(&set)) < 0)
 #else /* defined(SOLARIS) || defined(__svr5__) */
 		if ((sigerr = sigwait(&set, &sig)) != 0)
