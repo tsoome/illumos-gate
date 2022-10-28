@@ -1050,7 +1050,7 @@ st_optionneg(g)
 
 		/* check whether some flags need to be "faked" */
 		i = ctx->ctx_pflags2mta;
-		if ((ctx->ctx_mta_pflags & i) != i)
+		if ((ctx->ctx_mta_pflags & i) != (uint32_t)i)
 		{
 			unsigned int idx;
 			unsigned long b;
@@ -1082,7 +1082,7 @@ st_optionneg(g)
 
 	/* check whether actions and protocol requirements can be satisfied */
 	i = ctx->ctx_aflags;
-	if ((i & ctx->ctx_mta_aflags) != i)
+	if ((i & ctx->ctx_mta_aflags) != (uint32_t)i)
 	{
 		smi_log(SMI_LOG_ERR,
 			"%s: st_optionneg[%ld]: 0x%lx does not fulfill action requirements 0x%x",
@@ -1092,7 +1092,7 @@ st_optionneg(g)
 	}
 
 	i = ctx->ctx_pflags2mta;
-	if ((ctx->ctx_mta_pflags & i) != i)
+	if ((ctx->ctx_mta_pflags & i) != (uint32_t)i)
 	{
 		/*
 		**  Older MTAs do not support some protocol steps.
@@ -1111,7 +1111,7 @@ st_optionneg(g)
 		i = ctx->ctx_pflags2mta;
 	}
 
-	if ((ctx->ctx_mta_pflags & i) != i)
+	if ((ctx->ctx_mta_pflags & i) != (uint32_t)i)
 	{
 		smi_log(SMI_LOG_ERR,
 			"%s: st_optionneg[%ld]: 0x%lx does not fulfill protocol requirements 0x%x",
@@ -1657,7 +1657,7 @@ trans_ok(old, new)
 	int s, n;
 
 	s = old;
-	if (s >= SIZE_NEXT_STATES)
+	if ((uint_t)s >= SIZE_NEXT_STATES)
 		return false;
 	do
 	{
@@ -1672,7 +1672,7 @@ trans_ok(old, new)
 		*/
 
 		n = s + 1;
-		if (n >= SIZE_NEXT_STATES)
+		if ((uint_t)n >= SIZE_NEXT_STATES)
 			return false;
 
 		/*
@@ -1685,7 +1685,7 @@ trans_ok(old, new)
 			s = n;
 		else
 			return false;
-	} while (s < SIZE_NEXT_STATES);
+	} while ((uint_t)s < SIZE_NEXT_STATES);
 	return false;
 }
 

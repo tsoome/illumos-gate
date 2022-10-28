@@ -132,7 +132,7 @@ mi_rd_cmd(sd, timeout, cmd, rlen, name)
 	expl = ntohl(expl) - 1;
 	if (expl <= 0)
 		return NULL;
-	if (expl > Maxdatasize)
+	if ((size_t)expl > Maxdatasize)
 	{
 		*cmd = SMFIC_TOOBIG;
 		return NULL;
