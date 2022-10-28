@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -71,7 +69,7 @@ int rexec_af(char **ahost, unsigned short rport, const char *name,
 {
 	int s, timo = 1, s3;
 	char c;
-	ushort_t port;
+	ushort_t port = 0;
 	static char hostname[MAXHOSTNAMELEN];
 	int rc;
 	struct addrinfo *res;
@@ -122,7 +120,6 @@ retry:
 	}
 	if (fd2p == 0) {
 		(void) write(s, "", 1);
-		port = 0;
 	} else {
 		int s2;
 		socklen_t sin2len;
