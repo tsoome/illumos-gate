@@ -227,7 +227,9 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 			/* Caller wants the textual form of the port number */
 			portlen = snprintf(port_buf, sizeof (port_buf), "%hu",
 			    ntohs(port));
-			if (servlen < portlen + 1)
+			if (portlen < 0)
+				return (EAI_SYSTEM);
+			if (servlen < (uint_t)portlen + 1)
 				return (EAI_OVERFLOW);
 			(void) strcpy(serv, port_buf);
 		} else {
@@ -251,7 +253,9 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen,
 				 */
 				portlen = snprintf(port_buf, sizeof (port_buf),
 				    "%hu", ntohs(port));
-				if (servlen < portlen + 1)
+				if (portlen < 0)
+					return (EAI_SYSTEM);
+				if (servlen < (uint_t)portlen + 1)
 					return (EAI_OVERFLOW);
 				(void) strcpy(serv, port_buf);
 			}
@@ -334,11 +338,11 @@ getzonestr(const struct sockaddr_in6 *sa, char *zonestr, size_t zonelen)
 		 * simply return the literal value of ifindex as
 		 * a string.
 		 */
-		if ((n = snprintf(zonestr, zonelen, "%u",
-		    ifindex)) < 0) {
+		n = snprintf(zonestr, zonelen, "%u", ifindex);
+		if (n < 0) {
 			return (0);
 		} else {
-			if (n >= zonelen) {
+			if ((uint_t)n >= zonelen) {
 				return (0);
 			}
 			return (n);

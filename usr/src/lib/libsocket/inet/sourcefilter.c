@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -43,7 +41,8 @@ getsourcefilter(int s, uint32_t interface, struct sockaddr *group,
     struct sockaddr_storage *slist)
 {
 	struct group_filter *gf;
-	int mallocsize, orig_numsrc, cpsize, rtnerr;
+	int mallocsize, cpsize, rtnerr;
+	uint_t orig_numsrc;
 
 	mallocsize = (*numsrc == 0) ?
 	    sizeof (struct group_filter) : GROUP_FILTER_SIZE(*numsrc);
@@ -159,7 +158,8 @@ getipv4sourcefilter(int s, struct in_addr interface, struct in_addr group,
     uint32_t *fmode, uint32_t *numsrc, struct in_addr *slist)
 {
 	struct ip_msfilter *imsf;
-	int mallocsize, orig_numsrc, cpsize, rtnerr;
+	int mallocsize, cpsize, rtnerr;
+	uint32_t orig_numsrc;
 
 	mallocsize = (*numsrc == 0) ?
 	    sizeof (struct ip_msfilter) : IP_MSFILTER_SIZE(*numsrc);

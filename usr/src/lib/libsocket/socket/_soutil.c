@@ -214,7 +214,7 @@ _s_match_netconf(int family, int type, int proto, void **nethandle)
 			semantics = NC_TPI_COTS;
 		if (proto) {
 			if (strcmp(net->nc_protofmly, family_sw[family]) == 0 &&
-			    semantics == type &&
+			    semantics == (uint_t)type &&
 			    strcmp(net->nc_proto, oproto) == 0)
 				break;
 
@@ -228,7 +228,7 @@ _s_match_netconf(int family, int type, int proto, void **nethandle)
 			continue;
 		} else	{
 			if (strcmp(net->nc_protofmly, family_sw[family]) == 0 &&
-			    semantics == type) {
+			    semantics == (uint_t)type) {
 				break;
 			}
 		}

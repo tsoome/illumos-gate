@@ -581,7 +581,7 @@ get_addr(int family, const char *hostname, struct addrinfo *aip, struct
 	 */
 	if ((zonestr = strchr(hostname, '%')) != NULL) {
 		/* make sure we have room for <addr> portion of hostname */
-		if (((zonestr - hostname) + 1) > sizeof (_hostname)) {
+		if (((size_t)(zonestr - hostname) + 1) > sizeof (_hostname)) {
 			return (EAI_MEMORY);
 		}
 

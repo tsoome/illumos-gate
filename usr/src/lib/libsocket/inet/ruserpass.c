@@ -160,7 +160,7 @@ rnetrc(const char *host, char **aname, char **apass)
 	if (hdir == NULL)
 		hdir = ".";
 	t = snprintf(buf, sizeof (buf), "%s/.netrc", hdir);
-	if (t < 0 || t >= sizeof (buf)) {
+	if (t < 0 || (size_t)t >= sizeof (buf)) {
 		if (t < 0) {
 			perror(buf);
 		} else {

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This code is conformant to RFC 3542.
  */
@@ -159,7 +157,7 @@ inet6_opt_finish(void *extbuf, socklen_t extlen, int offset)
 	if (padbytes == 8)
 		padbytes = 0;
 
-	if ((offset + padbytes > extlen) || !extbuf) {
+	if (((uint_t)(offset + padbytes) > extlen) || !extbuf) {
 		if (extbuf) {
 			return (-1);
 		} else {
