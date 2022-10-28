@@ -224,7 +224,6 @@ if_nameindex(void)
 	struct lifconf	lifc;
 	struct lifreq	*lifrp;
 	int		numifs;
-	int		index;
 	int		i;
 	int 		physinterf_num;
 	size_t		bufsize;
