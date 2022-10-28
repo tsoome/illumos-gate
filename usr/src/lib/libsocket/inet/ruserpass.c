@@ -191,7 +191,7 @@ next:
 		switch (t) {
 
 		case LOGIN:
-			if (token())
+			if (token()) {
 				if (*aname == 0) {
 					*aname = malloc(strlen(d->tokval) + 1);
 					(void) strcpy(*aname, d->tokval);
@@ -199,6 +199,7 @@ next:
 					if (strcmp(*aname, d->tokval))
 						goto next;
 				}
+			}
 			break;
 		case PASSWD:
 			if (fstat64(fileno(d->cfile), &stb) >= 0 &&
