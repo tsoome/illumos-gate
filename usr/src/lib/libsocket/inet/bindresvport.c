@@ -32,8 +32,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -57,8 +55,9 @@ bindresvport(int sd, struct sockaddr_in *sin)
 	struct sockaddr_in myaddr;
 	struct sockaddr_in *bindaddr;
 	int level, optname;
-	int optval, len;
+	int optval;
 	int ret;
+	uint_t len;
 
 	bindaddr = sin;
 	if (bindaddr == (struct sockaddr_in *)0) {
