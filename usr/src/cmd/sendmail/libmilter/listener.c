@@ -732,7 +732,7 @@ mi_listener(conn, dbg, smfi, timeout, backlog)
 	sthread_t thread_id;
 #endif /* !_FFR_WORKERS_POOL */
 	_SOCK_ADDR cliaddr;
-	SOCKADDR_LEN_T clilen;
+	uint_t clilen;
 	SMFICTX_PTR ctx;
 	FD_RD_VAR(rds, excs);
 	struct timeval chktime;
