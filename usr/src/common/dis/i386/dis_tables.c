@@ -3240,7 +3240,7 @@ dtrace_imm_opnd(dis86_t *x, int wbit, int size, int opindex)
 	int byte;
 	int valsize;
 
-	if (x->d86_numopnds < opindex + 1)
+	if (x->d86_numopnds < (uint_t)opindex + 1)
 		x->d86_numopnds = opindex + 1;
 
 	switch (wbit) {
@@ -3286,7 +3286,7 @@ dtrace_imm_opnd(dis86_t *x, int wbit, int size, int opindex)
 	}
 	/* Do sign extension */
 	if (x->d86_bytes[x->d86_len - 1] & 0x80) {
-		for (; i < sizeof (uint64_t); i++)
+		for (; i < (int)sizeof (uint64_t); i++)
 			x->d86_opnd[opindex].d86_value |=
 			    (uint64_t)0xff << (i * 8);
 	}
@@ -3351,7 +3351,7 @@ dtrace_get_operand(dis86_t *x, uint_t mode, uint_t r_m, int wbit, int opindex)
 	char *opnd = x->d86_opnd[opindex].d86_opnd;
 #endif
 
-	if (x->d86_numopnds < opindex + 1)
+	if (x->d86_numopnds < (uint_t)opindex + 1)
 		x->d86_numopnds = opindex + 1;
 
 	if (x->d86_error)
@@ -6581,7 +6581,6 @@ dtrace_disx86_str(dis86_t *dis, uint_t mode, uint64_t pc, char *buf,
 	uint64_t tgt = 0;
 	int curlen;
 	int (*lookup)(void *, uint64_t, char *, size_t);
-	int i;
 	int64_t sv;
 	uint64_t usv, mask, save_mask, save_usv;
 	static uint64_t masks[] =
@@ -6596,7 +6595,7 @@ dtrace_disx86_str(dis86_t *dis, uint_t mode, uint64_t pc, char *buf,
 	 */
 	pc += dis->d86_len;
 
-	for (i = 0; i < dis->d86_numopnds; i++) {
+	for (uint_t i = 0; i < dis->d86_numopnds; i++) {
 		d86opnd_t *op = &dis->d86_opnd[i];
 
 		if (i != 0)

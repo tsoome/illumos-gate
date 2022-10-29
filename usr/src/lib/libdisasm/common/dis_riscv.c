@@ -508,9 +508,9 @@ dis_riscv_csr(dis_handle_t *dhp, uint32_t instr, dis_riscv_instr_t *table,
 			continue;
 		if (a->drca_csr != NULL && strcmp(a->drca_csr, csrstr) != 0)
 			continue;
-		if (a->drca_rd != -1 && a->drca_rd != rd)
+		if (a->drca_rd != -1 && (uint_t)a->drca_rd != rd)
 			continue;
-		if (a->drca_rs != -1 && a->drca_rs != rs)
+		if (a->drca_rs != -1 && (uint_t)a->drca_rs != rs)
 			continue;
 		alias = a;
 		break;
@@ -580,7 +580,7 @@ dis_riscv_csri(dis_handle_t *dhp, uint32_t instr, dis_riscv_instr_t *table,
 			continue;
 		if (a->drca_csr != NULL && strcmp(a->drca_csr, csrstr) != 0)
 			continue;
-		if (a->drca_rd != -1 && a->drca_rd != rd)
+		if (a->drca_rd != -1 && (uint_t)a->drca_rd != rd)
 			continue;
 		if (a->drca_rs != -1)
 			continue;

@@ -204,7 +204,7 @@ dis_sparc_previnstr(dis_handle_t *dhp, uint64_t pc, int n)
 	if (n <= 0)
 		return (pc);
 
-	if (pc < n)
+	if (pc < (uint_t)n)
 		return (pc);
 
 	return (pc - n*4);
@@ -307,7 +307,7 @@ dis_get_overlay(dis_handle_t *dhp, const table_t *tp, uint32_t idx)
 		return (ip);
 
 	for (i = 0; tp->tbl_ovp[i].ov_idx != -1; ++i) {
-		if (tp->tbl_ovp[i].ov_idx != idx)
+		if ((uint32_t)tp->tbl_ovp[i].ov_idx != idx)
 			continue;
 
 		if ((tp->tbl_ovp[i].ov_inst.in_arch & dhp->dh_flags) == 0)
