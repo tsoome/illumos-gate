@@ -400,12 +400,18 @@ enum {
  * this decodes the r_m field for mode's 0, 1, 2 in 16 bit mode
  */
 const char *const dis_addr16[3][8] = {
-"(%bx,%si)", "(%bx,%di)", "(%bp,%si)", "(%bp,%di)", "(%si)", "(%di)", "",
-									"(%bx)",
-"(%bx,%si)", "(%bx,%di)", "(%bp,%si)", "(%bp,%di)", "(%si)", "(%di", "(%bp)",
-									"(%bx)",
-"(%bx,%si)", "(%bx,%di)", "(%bp,%si)", "(%bp,%di)", "(%si)", "(%di)", "(%bp)",
-									"(%bx)",
+	{
+		"(%bx,%si)", "(%bx,%di)", "(%bp,%si)", "(%bp,%di)", "(%si)",
+		"(%di)", "", "(%bx)"
+	},
+	{
+		"(%bx,%si)", "(%bx,%di)", "(%bp,%si)", "(%bp,%di)", "(%si)",
+		"(%di)", "(%bp)", "(%bx)"
+	},
+	{
+		"(%bx,%si)", "(%bx,%di)", "(%bp,%si)", "(%bp,%di)", "(%si)",
+		"(%di)", "(%bp)", "(%bx)"
+	},
 };
 
 
@@ -413,12 +419,12 @@ const char *const dis_addr16[3][8] = {
  * This decodes 32 bit addressing mode r_m field for modes 0, 1, 2
  */
 const char *const dis_addr32_mode0[16] = {
-  "(%eax)", "(%ecx)", "(%edx)",  "(%ebx)",  "", "",        "(%esi)",  "(%edi)",
-  "(%r8d)", "(%r9d)", "(%r10d)", "(%r11d)", "", "",        "(%r14d)", "(%r15d)"
+  "(%eax)", "(%ecx)", "(%edx)",  "(%ebx)",  "", "", "(%esi)",  "(%edi)",
+  "(%r8d)", "(%r9d)", "(%r10d)", "(%r11d)", "", "", "(%r14d)", "(%r15d)"
 };
 
 const char *const dis_addr32_mode12[16] = {
-  "(%eax)", "(%ecx)", "(%edx)",  "(%ebx)",  "", "(%ebp)",  "(%esi)",  "(%edi)",
+  "(%eax)", "(%ecx)", "(%edx)",  "(%ebx)",  "", "(%ebp)", "(%esi)", "(%edi)",
   "(%r8d)", "(%r9d)", "(%r10d)", "(%r11d)", "", "(%r13d)", "(%r14d)", "(%r15d)"
 };
 
