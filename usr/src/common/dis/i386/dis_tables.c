@@ -306,7 +306,8 @@ enum {
 #if defined(DIS_TEXT) && defined(DIS_MEM)
 #define	IND(table)		{(instable_t *)table, 0, "", 0, 0, 0, 0, 0, 0}
 #define	INDx(table)		{(instable_t *)table, 0, "", 0, 0, 1, 0, 0, 0}
-#define	TNS(name, amode)	{TERM, amode, name, 0, 0, 0, 0, 0, 0}
+#define	TNS(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name }
 #define	TNSu(name, amode)	{TERM, amode, name, 0, 0, 0, 0, 1, 0}
 #define	TNSx(name, amode)	{TERM, amode, name, 0, 0, 1, 0, 0, 0}
 #define	TNSy(name, amode)	{TERM, amode, name, 0, 0, 0, 1, 0, 0}
@@ -327,27 +328,59 @@ enum {
 #define	TSZy(name, amode, sz)	{TERM, amode, name, 1, sz, 0, 1, 0, 0}
 #define	INVALID			{TERM, UNKNOWN, "", 0, 0, 0, 0, 0}
 #elif defined(DIS_TEXT)
-#define	IND(table)		{(instable_t *)table, 0, "", 0, 0, 0, 0, 0}
-#define	INDx(table)		{(instable_t *)table, 0, "", 0, 1, 0, 0, 0}
-#define	TNS(name, amode)	{TERM, amode, name, 0, 0, 0, 0, 0}
+#define	IND(table)		\
+	{ .it_indirect = (instable_t *)table, .it_name = "" }
+#define	INDx(table)		\
+	{ .it_indirect = (instable_t *)table, .it_name = "", \
+	    .it_invalid64 = 1 }
+#define	TNS(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name }
 #define	TNSu(name, amode)	{TERM, amode, name, 0, 0, 0, 1, 0}
-#define	TNSx(name, amode)	{TERM, amode, name, 0, 1, 0, 0, 0}
-#define	TNSy(name, amode)	{TERM, amode, name, 0, 0, 1, 0, 0}
-#define	TNSyp(name, amode)	{TERM, amode, name, 0, 0, 1, 0, 1}
-#define	TNSZ(name, amode, sz)	{TERM, amode, name, 0, 0, 0, 0, 0}
+#define	TNSx(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_invalid64 = 1 }
+#define	TNSy(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_always64 = 1 }
+#define	TNSyp(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_always64 = 1, .it_stackop = 1}
+#define	TNSZ(name, amode, sz)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name }
 #define	TNSZy(name, amode, sz)	{TERM, amode, name, 0, 0, 1, 0, 0}
-#define	TNSZvr(name, amode, sz)	{TERM, amode, name, 0, 0, 0, 0, 0, 1}
+#define	TNSZvr(name, amode, sz)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_vexwoxmm = 1 }
 #define	TSvo(name, amode)	{TERM, amode, name, 1, 0, 0, 0, 0, 0, 0, 1}
-#define	TS(name, amode)		{TERM, amode, name, 1, 0, 0, 0, 0}
-#define	TSx(name, amode)	{TERM, amode, name, 1, 1, 0, 0, 0}
-#define	TSy(name, amode)	{TERM, amode, name, 1, 0, 1, 0, 0}
-#define	TSp(name, amode)	{TERM, amode, name, 1, 0, 0, 0, 1}
-#define	TSZ(name, amode, sz)	{TERM, amode, name, 1, 0, 0, 0, 0}
-#define	TSaZ(name, amode, sz)	{TERM, amode, name, 1, 0, 0, 0, 0, 0, AVS2}
-#define	TSq(name, amode)	{TERM, amode, name, 0, 0, 0, 0, 0, 0, AVS5Q}
-#define	TSZx(name, amode, sz)	{TERM, amode, name, 1, 1, 0, 0, 0}
-#define	TSZy(name, amode, sz)	{TERM, amode, name, 1, 0, 1, 0, 0}
-#define	INVALID			{TERM, UNKNOWN, "", 0, 0, 0, 0, 0}
+#define	TS(name, amode)		\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1 }
+#define	TSx(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1, .it_invalid64 = 1 }
+#define	TSy(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1, .it_always64 = 1 }
+#define	TSp(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1, .it_stackop = 1 }
+#define	TSZ(name, amode, sz)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1 }
+#define	TSaZ(name, amode, sz)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1, .it_avxsuf = AVS2}
+#define	TSq(name, amode)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_avxsuf = AVS5Q }
+#define	TSZx(name, amode, sz)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1, .it_invalid64 = 1 }
+#define	TSZy(name, amode, sz)	\
+	{ .it_indirect = TERM, .it_adrmode = amode, .it_name = name, \
+	    .it_suffix = 1, .it_always64 = 1 }
+#define	INVALID			\
+	{ .it_indirect = TERM, .it_adrmode = UNKNOWN, .it_name = "" }
 #elif defined(DIS_MEM)
 #define	IND(table)		{(instable_t *)table, 0, 0, 0, 0, 0, 0}
 #define	INDx(table)		{(instable_t *)table, 0, 0, 1, 0, 0, 0}

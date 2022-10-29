@@ -883,84 +883,272 @@ dis_riscv_fp_rm(dis_handle_t *dhp, uint32_t instr,
 	    dis_riscv_rm[DIS_RISCV_FUNCT3(instr)]);
 }
 
-#define	DIS_RISCV_R32(str, op, f3, f7)	\
-	{ str, DIS_RISCV_I_R_TYPE, dis_riscv_rtype_32, op, f3, f7 }
-#define	DIS_RISCV_I32(str, op, f3)	\
-	{ str, DIS_RISCV_I_I_TYPE, dis_riscv_itype_32, op, f3 }
-#define	DIS_RISCV_S32(str, op, f3)	\
-	{ str, DIS_RISCV_I_S_TYPE, dis_riscv_stype_32, op, f3 }
-#define	DIS_RISCV_B32(str, op, f3)	\
-	{ str, DIS_RISCV_I_B_TYPE, dis_riscv_btype_32, op, f3 }
-#define	DIS_RISCV_U32(str, op)		\
-	{ str, DIS_RISCV_I_U_TYPE, dis_riscv_utype_32, op }
-#define	DIS_RISCV_J32(str, op)		\
-	{ str, DIS_RISCV_I_J_TYPE, dis_riscv_jtype_32, op }
+#define	DIS_RISCV_R32(str, op, f3, f7)		\
+	{					\
+		.drv_name = str,		\
+		.drv_type = DIS_RISCV_I_R_TYPE, \
+		.drv_print = dis_riscv_rtype_32,\
+		.drv_opcode = op,		\
+		.drv_funct3 = f3,		\
+		.drv_funct7 = f7		\
+	}
+#define	DIS_RISCV_I32(str, op, f3)		\
+	{					\
+		.drv_name = str,		\
+		.drv_type = DIS_RISCV_I_I_TYPE, \
+		.drv_print = dis_riscv_itype_32,\
+		.drv_opcode = op,		\
+		.drv_funct3 = f3		\
+	}
+#define	DIS_RISCV_S32(str, op, f3)		\
+	{					\
+		.drv_name = str,		\
+		.drv_type = DIS_RISCV_I_S_TYPE, \
+		.drv_print = dis_riscv_stype_32,\
+		.drv_opcode = op,		\
+		.drv_funct3 = f3		\
+	}
+#define	DIS_RISCV_B32(str, op, f3)		\
+	{					\
+		.drv_name = str,		\
+		.drv_type = DIS_RISCV_I_B_TYPE, \
+		.drv_print = dis_riscv_btype_32,\
+		.drv_opcode = op,		\
+		.drv_funct3 = f3		\
+	}
+#define	DIS_RISCV_U32(str, op)			\
+	{					\
+		.drv_name = str,		\
+		.drv_type = DIS_RISCV_I_U_TYPE, \
+		.drv_print = dis_riscv_utype_32,\
+		.drv_opcode = op		\
+	}
+#define	DIS_RISCV_J32(str, op)			\
+	{					\
+		.drv_name = str,		\
+		.drv_type = DIS_RISCV_I_J_TYPE, \
+		.drv_print = dis_riscv_jtype_32,\
+		.drv_opcode = op		\
+	}
 
 /*
  * These are non-standard types that we've defined because they require
  * different handling.
  */
-#define	DIS_RISCV_SHIFT32(str, op, f3, f7)	\
-	{ str, DIS_RISCV_I_R_TYPE, dis_riscv_shift_32, op, f3, f7 }
-#define	DIS_RISCV_SHIFT64(str, op, f3, f7)	\
-	{ str, DIS_RISCV_I_SHIFT64_TYPE, dis_riscv_shift_64, op, f3, f7 }
-#define	DIS_RISCV_CSR(str, op, f3)		\
-	{ str, DIS_RISCV_I_I_TYPE, dis_riscv_csr, op, f3 }
-#define	DIS_RISCV_CSRI(str, op, f3)		\
-	{ str, DIS_RISCV_I_I_TYPE, dis_riscv_csri, op, f3 }
-#define	DIS_RISCV_LOAD(str, op, f3)		\
-	{ str, DIS_RISCV_I_I_TYPE, dis_riscv_load, op, f3 }
+#define	DIS_RISCV_SHIFT32(str, op, f3, f7)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_R_TYPE,		\
+		.drv_print = dis_riscv_shift_32,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7			\
+	}
+#define	DIS_RISCV_SHIFT64(str, op, f3, f7)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_SHIFT64_TYPE,	\
+		.drv_print = dis_riscv_shift_64,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7			\
+	}
+#define	DIS_RISCV_CSR(str, op, f3)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_I_TYPE,		\
+		.drv_print = dis_riscv_csr,		\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3			\
+	}
+#define	DIS_RISCV_CSRI(str, op, f3)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_I_TYPE,		\
+		.drv_print = dis_riscv_csri,		\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3			\
+	}
+#define	DIS_RISCV_LOAD(str, op, f3)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_I_TYPE,		\
+		.drv_print = dis_riscv_load,		\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3			\
+	}
 
-#define	DIS_RISCV_MASK(str, mask, val, func)	\
-	{ str, DIS_RISCV_I_MASK_TYPE, func, mask, val }
+#define	DIS_RISCV_MASK(str, mask, val, func)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_MASK_TYPE,	\
+		.drv_print = func,			\
+		.drv_opcode = mask,			\
+		.drv_funct3 = val			\
+	}
 
 
 /*
  * Atomic-extension specific entries
  */
-#define	DIS_RISCV_A32(str, op, f3, f5)		\
-	{ str, DIS_RISCV_I_RV32A_TYPE, dis_riscv_rv32a, op, f3, f5 }
-#define	DIS_RISCV_A32LOAD(str, op, f3, f5, f2)	\
-	{ str, DIS_RISCV_I_RV32A_LOAD_TYPE, dis_riscv_rv32a_load, op, f3, \
-	    f5, f2 }
+#define	DIS_RISCV_A32(str, op, f3, f5)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_RV32A_TYPE,	\
+		.drv_print = dis_riscv_rv32a,		\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f5			\
+	}
+#define	DIS_RISCV_A32LOAD(str, op, f3, f5, f2)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_RV32A_LOAD_TYPE,\
+		.drv_print = dis_riscv_rv32a_load,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f5,			\
+		.drv_funct2 = f2			\
+	}
 
 /*
  * Floating-point specific entries
  */
-#define	DIS_RISCV_FP_LOAD(str, op, f3)				\
-	{ str, DIS_RISCV_I_I_TYPE, dis_riscv_fp_load, op, f3 }
-#define	DIS_RISCV_FP_STORE(str, op, f3)				\
-	{ str, DIS_RISCV_I_S_TYPE, dis_riscv_fp_store, op, f3 }
-#define	DIS_RISCV_FP_R(str, op, f3, f7)				\
-	{ str, DIS_RISCV_I_R_TYPE, dis_riscv_fp_r, op, f3, f7 }
-#define	DIS_RISCV_FP_R4(str, op, f2)				\
-	{ str, DIS_RISCV_I_R4_TYPE, dis_riscv_fp_r4, op, 0, 0, f2 }
-#define	DIS_RISCV_FP_RS2_FP(str, op, rs2, f7)			\
-	{ str, DIS_RISCV_I_FP_RS2OP_TYPE, dis_riscv_fp_rs2_fp, op, rs2, f7 }
-#define	DIS_RISCV_FP_RS2_FP_NR(str, op, rs2, f7)		\
-	{ str, DIS_RISCV_I_FP_RS2OP_TYPE, dis_riscv_fp_rs2_fp_nr, op, rs2, f7 }
-#define	DIS_RISCV_FP_RS2_FPI(str, op, rs2, f7)			\
-	{ str, DIS_RISCV_I_FP_RS2OP_TYPE, dis_riscv_fp_rs2_fpi, op, rs2, f7 }
-#define	DIS_RISCV_FP_RS2_IFP(str, op, rs2, f7)			\
-	{ str, DIS_RISCV_I_FP_RS2OP_TYPE, dis_riscv_fp_rs2_ifp, op, rs2, f7 }
-#define	DIS_RISCV_FP_RS2_IFP_NR(str, op, rs2, f7)		\
-	{ str, DIS_RISCV_I_FP_RS2OP_TYPE, dis_riscv_fp_rs2_ifp_nr, op, rs2, f7 }
-#define	DIS_RISCV_FP_RM(str, op, f7)				\
-	{ str, DIS_RISCV_I_FP_RM_TYPE, dis_riscv_fp_rm, op, 0, f7 }
-#define	DIS_RISCV_FP_R_RS2_FPI(str, op, f3, rs2, f7)		\
-	{ str, DIS_RISCV_I_FP_R_RS2_TYPE, dis_riscv_fp_rs2_fpi, op, f3, f7, \
-	    rs2 }
-#define	DIS_RISCV_FP_R_RS2_IFP(str, op, f3, rs2, f7)		\
-	{ str, DIS_RISCV_I_FP_R_RS2_TYPE, dis_riscv_fp_rs2_ifp, op, f3, f7, \
-	    rs2 }
-#define	DIS_RISCV_FP_R_RS2_FPI_NR(str, op, f3, rs2, f7)		\
-	{ str, DIS_RISCV_I_FP_R_RS2_TYPE, dis_riscv_fp_rs2_fpi_nr, op, f3, \
-	    f7, rs2 }
-#define	DIS_RISCV_FP_R_RS2_IFP_NR(str, op, f3, rs2, f7)		\
-	{ str, DIS_RISCV_I_FP_R_RS2_TYPE, dis_riscv_fp_rs2_ifp_nr, op, f3, \
-	    f7, rs2 }
-#define	DIS_RISCV_FP_RI(str, op, f3, f7)			\
-	{ str, DIS_RISCV_I_R_TYPE, dis_riscv_fp_r_fpi, op, f3, f7 }
+#define	DIS_RISCV_FP_LOAD(str, op, f3)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_I_TYPE,		\
+		.drv_print = dis_riscv_fp_load,		\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3			\
+	}
+#define	DIS_RISCV_FP_STORE(str, op, f3)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_S_TYPE,		\
+		.drv_print = dis_riscv_fp_store,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3			\
+	}
+#define	DIS_RISCV_FP_R(str, op, f3, f7)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_R_TYPE,		\
+		.drv_print = dis_riscv_fp_r,		\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_R4(str, op, f2)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_R4_TYPE,	\
+		.drv_print = dis_riscv_fp_r4,		\
+		.drv_opcode = op,			\
+		.drv_funct2 = f2,			\
+	}
+#define	DIS_RISCV_FP_RS2_FP(str, op, rs2, f7)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_RS2OP_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_fp,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = rs2,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_RS2_FP_NR(str, op, rs2, f7)	\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_RS2OP_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_fp_nr,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = rs2,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_RS2_FPI(str, op, rs2, f7)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_RS2OP_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_fpi,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = rs2,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_RS2_IFP(str, op, rs2, f7)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_RS2OP_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_ifp,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = rs2,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_RS2_IFP_NR(str, op, rs2, f7)	\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_RS2OP_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_ifp_nr,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = rs2,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_RM(str, op, f7)			\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_RM_TYPE,	\
+		.drv_print = dis_riscv_fp_rm,	\
+		.drv_opcode = op,			\
+		.drv_funct7 = f7,			\
+	}
+#define	DIS_RISCV_FP_R_RS2_FPI(str, op, f3, rs2, f7)	\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_R_RS2_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_fpi,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7,			\
+		.drv_funct2 = rs2,			\
+	}
+#define	DIS_RISCV_FP_R_RS2_IFP(str, op, f3, rs2, f7)	\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_R_RS2_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_ifp,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7,			\
+		.drv_funct2 = rs2,			\
+	}
+#define	DIS_RISCV_FP_R_RS2_FPI_NR(str, op, f3, rs2, f7)	\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_R_RS2_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_fpi_nr,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7,			\
+		.drv_funct2 = rs2,			\
+	}
+#define	DIS_RISCV_FP_R_RS2_IFP_NR(str, op, f3, rs2, f7)	\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_FP_R_RS2_TYPE,	\
+		.drv_print = dis_riscv_fp_rs2_ifp_nr,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7,			\
+		.drv_funct2 = rs2,			\
+	}
+#define	DIS_RISCV_FP_RI(str, op, f3, f7)		\
+	{						\
+		.drv_name = str,			\
+		.drv_type = DIS_RISCV_I_R_TYPE,	\
+		.drv_print = dis_riscv_fp_r_fpi,	\
+		.drv_opcode = op,			\
+		.drv_funct3 = f3,			\
+		.drv_funct7 = f7			\
+	}
 
 /*
  * This table is ordered such that it follows the ordering in the RISC-V ISA
