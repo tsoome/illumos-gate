@@ -154,10 +154,10 @@ find_dynamic_ent32(struct rd_agent *rap, psaddr_t dynaddr,
 			return (RD_DBERR);
 		}
 		dynaddr += sizeof (d);
-		if (d.d_tag == dyntag)
+		if ((Xword)d.d_tag == dyntag)
 			break;
 	} while (d.d_tag != DT_NULL);
-	if (d.d_tag == dyntag) {
+	if ((Xword)d.d_tag == dyntag) {
 		*dyn = d;
 		LOG(ps_plog(MSG_ORIG(MSG_DB_FINDDYNAMIC), EC_ADDR(dyntag),
 		    EC_ADDR(d.d_un.d_val)));
@@ -415,7 +415,7 @@ _rd_get_dyns32(rd_agent_t *rap, psaddr_t addr, Dyn **dynpp, size_t *dynpp_sz)
 	Ehdr			ehdr;
 	Phdr			phdr;
 	Dyn			*dynp;
-	int			i;
+	uint_t			i;
 
 	/* We only need to muck with dyn elements for ET_DYN objects */
 	if ((err = _rd_get_ehdr32(rap, addr, &ehdr, &phnum)) != RD_OK)
