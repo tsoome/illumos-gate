@@ -54,6 +54,8 @@
 #include <synch.h>
 #include <string.h>
 
+static void malloc_init(void) __attribute__((constructor));
+
 static mutex_t lock = DEFAULTMUTEX;
 
 struct block {
@@ -285,7 +287,6 @@ malloc_release()
 	(void) mutex_unlock(&lock);
 }
 
-#pragma init(malloc_init)
 static void
 malloc_init(void)
 {
