@@ -57,9 +57,8 @@ calloc(size_t num, size_t size)
 	return (mp);
 }
 
-/*ARGSUSED*/
 void
-cfree(void *p, size_t num, size_t size)
+cfree(void *p, size_t num __unused, size_t size __unused)
 {
 	free(p);
 }

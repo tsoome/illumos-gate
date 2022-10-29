@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <errno.h>
 
@@ -33,9 +31,8 @@
  * valloc(size) - do nothing
  */
 
-/*ARGSUSED*/
 void *
-valloc(size_t size)
+valloc(size_t size __unused)
 {
 	return (0);
 }
@@ -45,9 +42,8 @@ valloc(size_t size)
  * memalign(align,nbytes) - do nothing
  */
 
-/*ARGSUSED*/
 void *
-memalign(size_t align, size_t nbytes)
+memalign(size_t align __unused, size_t nbytes __unused)
 {
 	errno = EINVAL;
 	return (NULL);
