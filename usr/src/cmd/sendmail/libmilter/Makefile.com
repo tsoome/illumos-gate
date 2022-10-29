@@ -27,7 +27,7 @@
 LIBRARY=	libmilter.a
 VERS=		.1
 LOCOBJS=	main.o engine.o listener.o handler.o comm.o smfi.o signal.o \
-	sm_gethost.o worker.o monitor.o
+	sm_gethost.o
 REMOBJS=	errstring.o strl.o
 OBJECTS=	$(LOCOBJS) $(REMOBJS)
 SENDMAIL=	$(SRC)/cmd/sendmail
