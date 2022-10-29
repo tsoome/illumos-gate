@@ -69,7 +69,6 @@ OBJECTS=dwarf_abbrev.o		\
 	dwarfstring.o		\
 	dwgetopt.o		\
 	gennames.o		\
-	malloc_check.o		\
 	pro_alloc.o		\
 	pro_arange.o		\
 	pro_die.o		\
