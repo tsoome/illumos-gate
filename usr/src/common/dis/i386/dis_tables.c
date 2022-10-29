@@ -3078,9 +3078,9 @@ dtrace_get_modrm(dis86_t *x, uint_t *mode, uint_t *reg, uint_t *r_m)
 /*
  * Adjust register selection based on any REX prefix bits present.
  */
-/*ARGSUSED*/
 static void
-dtrace_rex_adjust(uint_t rex_prefix, uint_t mode, uint_t *reg, uint_t *r_m)
+dtrace_rex_adjust(uint_t rex_prefix, uint_t mode __unused, uint_t *reg,
+    uint_t *r_m)
 {
 	if (reg != NULL && r_m == NULL) {
 		if (rex_prefix & REX_B)
@@ -3097,9 +3097,9 @@ dtrace_rex_adjust(uint_t rex_prefix, uint_t mode, uint_t *reg, uint_t *r_m)
  * Adjust register selection based on any VEX prefix bits present.
  * Notes: VEX.R, VEX.X and VEX.B use the inverted form compared with REX prefix
  */
-/*ARGSUSED*/
 static void
-dtrace_vex_adjust(uint_t vex_byte1, uint_t mode, uint_t *reg, uint_t *r_m)
+dtrace_vex_adjust(uint_t vex_byte1, uint_t mode __unused, uint_t *reg,
+    uint_t *r_m)
 {
 	if (reg != NULL && r_m == NULL) {
 		if (!(vex_byte1 & VEX_B))

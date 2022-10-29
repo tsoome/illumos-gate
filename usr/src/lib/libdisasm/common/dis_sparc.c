@@ -183,23 +183,20 @@ dis_sparc_handle_attach(dis_handle_t *dhp)
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-dis_sparc_max_instrlen(dis_handle_t *dhp)
+dis_sparc_max_instrlen(dis_handle_t *dhp __unused)
 {
 	return (4);
 }
 
-/* ARGSUSED */
 static int
-dis_sparc_min_instrlen(dis_handle_t *dhp)
+dis_sparc_min_instrlen(dis_handle_t *dhp __unused)
 {
 	return (4);
 }
 
-/* ARGSUSED */
 static uint64_t
-dis_sparc_previnstr(dis_handle_t *dhp, uint64_t pc, int n)
+dis_sparc_previnstr(dis_handle_t *dhp __unused, uint64_t pc, int n)
 {
 	if (n <= 0)
 		return (pc);
@@ -210,9 +207,8 @@ dis_sparc_previnstr(dis_handle_t *dhp, uint64_t pc, int n)
 	return (pc - n*4);
 }
 
-/* ARGSUSED */
 static int
-dis_sparc_instrlen(dis_handle_t *dhp, uint64_t pc)
+dis_sparc_instrlen(dis_handle_t *dhp __unused, uint64_t pc __unused)
 {
 	return (4);
 }

@@ -666,9 +666,8 @@ static void bprintf(dis_handle_t *, const char *, ...);
  * print out val (which is 'bitlen' bits long) in binary
  */
 #if defined(DIS_STANDALONE)
-/* ARGSUSED */
 void
-prt_binary(uint32_t val, int bitlen)
+prt_binary(uint32_t val __unused, int bitlen __unused)
 {
 
 }
@@ -694,9 +693,8 @@ prt_binary(uint32_t val, int bitlen)
  * print out a call instruction
  * format: call address  <name>
  */
-/* ARGSUSED1 */
 int
-fmt_call(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_call(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx __unused)
 {
 	dis_handle_sparc_t *dhx = dhp->dh_arch_private;
 	ifmt_t *f = (ifmt_t *)&instr;
@@ -769,7 +767,6 @@ fmt_sethi(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED3 */
 int
 fmt_branch(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 {
@@ -1482,9 +1479,8 @@ dis_fmt_rdwr(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED3 */
 int
-fmt_trap(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_trap(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx __unused)
 {
 	dis_handle_sparc_t *dhx = dhp->dh_arch_private;
 	ifmt_t *f = (ifmt_t *)&instr;
@@ -1559,9 +1555,8 @@ prt_shift(dis_handle_t *dhp, uint32_t instr, const inst_t *inp)
 	return (0);
 }
 
-/* ARGSUSED3 */
 static int
-prt_jmpl(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+prt_jmpl(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx __unused)
 {
 	dis_handle_sparc_t *dhx = dhp->dh_arch_private;
 	const char *name = inp->in_data.in_def.in_name;
@@ -1902,17 +1897,17 @@ fmt_alu(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED1 */
 int
-fmt_regwin(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_regwin(dis_handle_t *dhp, uint32_t instr __unused, const inst_t *inp,
+    int idx __unused)
 {
 	prt_name(dhp, inp->in_data.in_def.in_name, 0);
 	return (0);
 }
 
-/* ARGSUSED1 */
 int
-fmt_trap_ret(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_trap_ret(dis_handle_t *dhp, uint32_t instr, const inst_t *inp,
+    int idx __unused)
 {
 	ifmt_t *f = (ifmt_t *)&instr;
 	prt_name(dhp, inp->in_data.in_def.in_name, 1);
@@ -1925,9 +1920,9 @@ fmt_trap_ret(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED3 */
 int
-fmt_movcc(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_movcc(dis_handle_t *dhp, uint32_t instr, const inst_t *inp,
+    int idx __unused)
 {
 	dis_handle_sparc_t *dhx = dhp->dh_arch_private;
 	ifmt_t *f = (ifmt_t *)&instr;
@@ -1972,9 +1967,8 @@ fmt_movcc(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED3 */
 int
-fmt_movr(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_movr(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx __unused)
 {
 	dis_handle_sparc_t *dhx = dhp->dh_arch_private;
 	ifmt_t *f = (ifmt_t *)&instr;
@@ -1994,9 +1988,9 @@ fmt_movr(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED3 */
 int
-fmt_fpop1(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_fpop1(dis_handle_t *dhp, uint32_t instr, const inst_t *inp,
+    int idx __unused)
 {
 	dis_handle_sparc_t *dhx = dhp->dh_arch_private;
 	ifmt_t *f = (ifmt_t *)&instr;
@@ -2149,9 +2143,9 @@ fmt_vis(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
 	return (0);
 }
 
-/* ARGSUSED3 */
 int
-fmt_fused(dis_handle_t *dhp, uint32_t instr, const inst_t *inp, int idx)
+fmt_fused(dis_handle_t *dhp, uint32_t instr, const inst_t *inp,
+    int idx __unused)
 {
 	ifmt_t *f = (ifmt_t *)&instr;
 	int flags = inp->in_data.in_def.in_flags;
@@ -2182,9 +2176,8 @@ prt_name(dis_handle_t *dhp, const char *name, int add_space)
  * len is the length of the field (in bits)
  */
 #if defined(DIS_STANDALONE)
-/* ARGSUSED */
 static void
-prt_field(const char *field, uint32_t val, int len)
+prt_field(const char *field __unused, uint32_t val __unused, int len __unused)
 {
 
 }

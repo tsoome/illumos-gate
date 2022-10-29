@@ -99,9 +99,8 @@ dis_zalloc(size_t bytes)
 	return (calloc(1, bytes));
 }
 
-/*ARGSUSED*/
 void
-dis_free(void *ptr, size_t bytes)
+dis_free(void *ptr, size_t bytes __unused)
 {
 	free(ptr);
 }

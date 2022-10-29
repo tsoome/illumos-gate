@@ -158,16 +158,14 @@ dis_i386_disassemble(dis_handle_t *dhp, uint64_t addr, char *buf,
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-dis_i386_max_instrlen(dis_handle_t *dhp)
+dis_i386_max_instrlen(dis_handle_t *dhp __unused)
 {
 	return (15);
 }
 
-/* ARGSUSED */
 static int
-dis_i386_min_instrlen(dis_handle_t *dhp)
+dis_i386_min_instrlen(dis_handle_t *dhp __unused)
 {
 	return (1);
 }

@@ -1853,45 +1853,45 @@ sval_4_8(uint32_t hi, uint32_t lo)
 	return (tmp);
 }
 
-/* ARGSUSED */
 static void
-fmt_zero(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_zero(uint64_t addr __unused, union inst *inst __unused, char *buf,
+    size_t buflen, int flags __unused)
 {
 	(void) snprintf(buf, buflen, "0x00, 0x00");
 }
 
-/* ARGSUSED */
 static void
-fmt_diag(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_diag(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%#x",
 	    val_8_16(inst->diag.par1, inst->diag.par2));
 }
 
-/* ARGSUSED */
 static void
-fmt_e(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_e(uint64_t addr __unused, union inst *inst __unused, char *buf __unused,
+    size_t buflen __unused, int flags __unused)
 {
 	/* nothing to do */
 }
 
-/* ARGSUSED */
 static void
-fmt_i(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_i(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%#x", inst->i.i);
 }
 
-/* ARGSUSED */
 static void
-fmt_ie(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ie(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%u,%u", inst->ie.i1, inst->ie.i2);
 }
 
-/* ARGSUSED */
 static void
-fmt_mii(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_mii(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 * sval_4_8(inst->mii.ri2h, inst->mii.ri2l);
 	uint64_t ri3 = addr + 2 * sval_8_16(inst->mii.ri3h, inst->mii.ri3l);
@@ -1899,17 +1899,17 @@ fmt_mii(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	(void) snprintf(buf, buflen, "%s,%#x,%#x", M[inst->mii.m1], ri2, ri3);
 }
 
-/* ARGSUSED */
 static void
-fmt_ril_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ril_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%u", R[inst->ril_a.r1],
 	    val_16_16(inst->ril_a.i2h, inst->ril_a.i2l));
 }
 
-/* ARGSUSED */
 static void
-fmt_ril_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ril_b(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 *
 	    sval_16_16(inst->ril_b.ri2h, inst->ril_b.ri2l);
@@ -1917,9 +1917,9 @@ fmt_ril_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	(void) snprintf(buf, buflen, "%s,%#x", R[inst->ril_b.r1], ri2);
 }
 
-/* ARGSUSED */
 static void
-fmt_ril_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ril_c(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 *
 	    sval_16_16(inst->ril_c.ri2h, inst->ril_c.ri2l);
@@ -1927,9 +1927,9 @@ fmt_ril_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	(void) snprintf(buf, buflen, "%s,%#x", M[inst->ril_c.m1], ri2);
 }
 
-/* ARGSUSED */
 static void
-fmt_ris(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ris(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d4 = val_4_8(inst->ris.d4h, inst->ris.d4l);
 
@@ -1938,9 +1938,9 @@ fmt_ris(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    B[inst->ris.b4]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ri_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ri_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags)
 {
 	uint16_t i2 = BE_16(inst->ri_a.i2);
 
@@ -1952,9 +1952,9 @@ fmt_ri_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 		    i2);
 }
 
-/* ARGSUSED */
 static void
-fmt_ri_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ri_b(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 * (int16_t)BE_16(inst->ri_b.ri2);
 
@@ -1972,17 +1972,17 @@ fmt_ri_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 		(void) snprintf(buf, buflen, "%s,%#x", M[inst->ri_c.m1], ri2);
 }
 
-/* ARGSUSED */
 static void
-fmt_rie_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rie_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%u,%s", R[inst->rie_a.r1],
 	    BE_16(inst->rie_a.i2), M[inst->rie_a.m3]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rie_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rie_b(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri4 = addr + 2 * (int16_t)BE_16(inst->rie_b.ri4);
 
@@ -1990,9 +1990,9 @@ fmt_rie_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    R[inst->rie_b.r2], M[inst->rie_b.m3], ri4);
 }
 
-/* ARGSUSED */
 static void
-fmt_rie_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rie_c(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri4 = addr + 2 * (int16_t)BE_16(inst->rie_c.ri4);
 
@@ -2000,17 +2000,17 @@ fmt_rie_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    inst->rie_c.i2, M[inst->rie_c.m3], ri4);
 }
 
-/* ARGSUSED */
 static void
-fmt_rie_d(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rie_d(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%u", R[inst->rie_d.r1],
 	    R[inst->rie_d.r3], BE_16(inst->rie_d.i2));
 }
 
-/* ARGSUSED */
 static void
-fmt_rie_e(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rie_e(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 * (int16_t)BE_16(inst->rie_e.ri2);
 
@@ -2018,75 +2018,75 @@ fmt_rie_e(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    R[inst->rie_e.r3], ri2);
 }
 
-/* ARGSUSED */
 static void
-fmt_rie_f(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rie_f(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%u,%u,%u", R[inst->rie_f.r1],
 	    R[inst->rie_f.r2], inst->rie_f.i3, inst->rie_f.i4,
 	    inst->rie_f.i5);
 }
 
-/* ARGSUSED */
 static void
-fmt_rre(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rre(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s", R[inst->rre.r1], R[inst->rre.r2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrf_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrf_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s",
 	    R[inst->rrf_ab.r1], R[inst->rrf_ab.r2], R[inst->rrf_ab.r3]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrf_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrf_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s",
 	    R[inst->rrf_ab.r1], R[inst->rrf_ab.r3], R[inst->rrf_ab.r2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrf_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrf_c(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s",
 	    R[inst->rrf_cde.r1], R[inst->rrf_cde.r2], M[inst->rrf_cde.m3]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrf_d(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrf_d(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s",
 	    R[inst->rrf_cde.r1], R[inst->rrf_cde.r2], M[inst->rrf_cde.m4]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrf_e(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrf_e(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s,%s",
 	    R[inst->rrf_cde.r1], M[inst->rrf_cde.m3],
 	    R[inst->rrf_cde.r2], M[inst->rrf_cde.m4]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrs(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrs(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s,%u(%s)", R[inst->rrs.r1],
 	    R[inst->rrs.r2], M[inst->rrs.m3],
 	    val_4_8(inst->rrs.d4h, inst->rrs.d4l), B[inst->rrs.b4]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rr(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rr(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags)
 {
 	/* a branch uses r1 as a mask */
 	if (flags & F_HIDE_MASK)
@@ -2099,17 +2099,17 @@ fmt_rr(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 		    R[inst->rr.r2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rrd(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rrd(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%s", R[inst->rrd.r1],
 	    R[inst->rrd.r3], R[inst->rrd.r2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rx_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rx_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2 = val_4_8(inst->rx_a.d2h, inst->rx_b.d2l);
 
@@ -2117,9 +2117,9 @@ fmt_rx_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d2, X[inst->rx_a.x2], B[inst->rx_a.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rx_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rx_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2 = val_4_8(inst->rx_b.d2h, inst->rx_b.d2l);
 
@@ -2131,9 +2131,9 @@ fmt_rx_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 		    d2, X[inst->rx_b.x2], B[inst->rx_b.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rxe(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rxe(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2 = val_4_8(inst->rxe.d2h, inst->rxe.d2l);
 
@@ -2141,9 +2141,9 @@ fmt_rxe(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    R[inst->rxe.r1], d2, X[inst->rxe.x2], B[inst->rxe.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rxf(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rxf(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+     int flags __unused)
 {
 	uint32_t d2 = val_4_8(inst->rxf.d2h, inst->rxf.d2l);
 
@@ -2152,9 +2152,9 @@ fmt_rxf(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    B[inst->rxf.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rxy_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rxy_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2;
 
@@ -2164,9 +2164,9 @@ fmt_rxy_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    R[inst->rxy_a.r1], d2, X[inst->rxy_a.x2], B[inst->rxy_a.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rxy_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rxy_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2;
 
@@ -2176,9 +2176,9 @@ fmt_rxy_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    M[inst->rxy_b.m1], d2, X[inst->rxy_b.x2], B[inst->rxy_b.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rs_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rs_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	const char *r1, *r3;
 
@@ -2194,27 +2194,27 @@ fmt_rs_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    val_4_8(inst->rs_a.d2h, inst->rs_a.d2l), B[inst->rs_a.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rs_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rs_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%s,%u(%s)", R[inst->rs_b.r1],
 	    M[inst->rs_b.m3], val_4_8(inst->rs_b.d2h, inst->rs_b.d2l),
 	    B[inst->rs_b.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rsl_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rsl_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%u(%u,%s)",
 	    val_4_8(inst->rsl_a.d1h, inst->rsl_a.d1l), inst->rsl_a.l1,
 	    B[inst->rsl_a.b1]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rsl_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rsl_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%s,%u(%u,%s),%s",
 	    R[inst->rsl_b.r1],
@@ -2222,9 +2222,9 @@ fmt_rsl_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    B[inst->rsl_b.b2], M[inst->rsl_b.m3]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rsy_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rsy_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags)
 {
 	const char *r1, *r3;
 	uint32_t d2;
@@ -2243,9 +2243,9 @@ fmt_rsy_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    B[inst->rsy_a.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rsy_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rsy_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2;
 
@@ -2256,9 +2256,9 @@ fmt_rsy_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d2, B[inst->rsy_b.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_rsi(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_rsi(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 * (int16_t)BE_16(inst->rsi.ri2);
 
@@ -2266,9 +2266,9 @@ fmt_rsi(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    R[inst->rsi.r3], ri2);
 }
 
-/* ARGSUSED */
 static void
-fmt_si(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_si(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1 = val_4_8(inst->si.d1h, inst->si.d1l);
 
@@ -2276,27 +2276,27 @@ fmt_si(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    inst->si.i2);
 }
 
-/* ARGSUSED */
 static void
-fmt_sil(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_sil(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%u(%s),%u",
 	    val_4_8(inst->sil.d1h, inst->sil.d1l), B[inst->sil.b1],
 	    BE_16(inst->sil.i2));
 }
 
-/* ARGSUSED */
 static void
-fmt_siy(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_siy(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	(void) snprintf(buf, buflen, "%u(%s),%u",
 	    val_8_4_8(inst->siy.dh1, inst->siy.dl1h, inst->siy.dl1l),
 	    B[inst->siy.b1], inst->siy.i2);
 }
 
-/* ARGSUSED */
 static void
-fmt_smi(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_smi(uint64_t addr, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint64_t ri2 = addr + 2 * (int16_t)BE_16(inst->smi.ri2);
 
@@ -2304,18 +2304,18 @@ fmt_smi(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    val_4_8(inst->smi.d3h, inst->smi.d3l), B[inst->smi.b3]);
 }
 
-/* ARGSUSED */
 static void
-fmt_s(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_s(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d = val_4_8(inst->s.d2h, inst->s.d2l);
 
 	(void) snprintf(buf, buflen, "%u(%s)", d, B[inst->s.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ss_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ss_a(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1, d2;
 
@@ -2327,9 +2327,9 @@ fmt_ss_a(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d2, B[inst->ss_a.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ss_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ss_b(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1, d2;
 
@@ -2341,9 +2341,9 @@ fmt_ss_b(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d2, inst->ss_b.l2 + 1, B[inst->ss_b.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ss_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ss_c(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1, d2;
 
@@ -2355,9 +2355,9 @@ fmt_ss_c(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d2, B[inst->ss_c.b2], inst->ss_c.i3);
 }
 
-/* ARGSUSED */
 static void
-fmt_ss_d(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ss_d(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1, d2;
 
@@ -2369,9 +2369,9 @@ fmt_ss_d(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d2, B[inst->ss_d.b2], R[inst->ss_d.r3]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ss_e(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ss_e(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d2, d4;
 
@@ -2383,9 +2383,9 @@ fmt_ss_e(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    R[inst->ss_e.r3], d4, B[inst->ss_e.b4]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ss_f(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ss_f(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1, d2;
 
@@ -2397,9 +2397,9 @@ fmt_ss_f(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    B[inst->ss_f.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_sse(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_sse(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1 = val_4_8(inst->sse.d1h, inst->sse.d1l);
 	uint32_t d2 = val_4_8(inst->sse.d2h, inst->sse.d2l);
@@ -2408,9 +2408,9 @@ fmt_sse(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
 	    d1, B[inst->sse.b1], d2, B[inst->sse.b2]);
 }
 
-/* ARGSUSED */
 static void
-fmt_ssf(uint64_t addr, union inst *inst, char *buf, size_t buflen, int flags)
+fmt_ssf(uint64_t addr __unused, union inst *inst, char *buf, size_t buflen,
+    int flags __unused)
 {
 	uint32_t d1 = val_4_8(inst->ssf.d1h, inst->ssf.d1l);
 	uint32_t d2 = val_4_8(inst->ssf.d2h, inst->ssf.d2l);
@@ -2572,16 +2572,14 @@ dis_s390_disassemble(dis_handle_t *dhp, uint64_t addr, char *buf,
 	return (0);
 }
 
-/* ARGSUSED */
 static int
-dis_s390_min_instrlen(dis_handle_t *dhp)
+dis_s390_min_instrlen(dis_handle_t *dhp __unused)
 {
 	return (2);
 }
 
-/* ARGSUSED */
 static int
-dis_s390_max_instrlen(dis_handle_t *dhp)
+dis_s390_max_instrlen(dis_handle_t *dhp __unused)
 {
 	return (6);
 }
