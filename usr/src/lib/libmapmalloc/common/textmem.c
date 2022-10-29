@@ -27,10 +27,7 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
-
 
 /*
  * Simplified version of malloc(), free() and realloc(), to be linked with
@@ -215,7 +212,7 @@ free(void *ptr)
 static size_t
 align(size_t size, int bound)
 {
-	if (size < bound)
+	if (size < (size_t)bound)
 		return ((size_t)bound);
 	else
 		return (size + bound - 1 - (size + bound - 1) % bound);
