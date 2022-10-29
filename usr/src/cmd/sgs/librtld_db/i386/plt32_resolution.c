@@ -139,9 +139,8 @@ rli_func(const rd_loadobj_t *rl, void *data)
  *      another .so, we must resolve where the GOT table is for the given
  *      object.
  */
-/* ARGSUSED 3 */
 rd_err_e
-plt32_resolution(rd_agent_t *rap, psaddr_t pc, lwpid_t lwpid,
+plt32_resolution(rd_agent_t *rap, psaddr_t pc, lwpid_t lwpid __unused,
     psaddr_t pltbase, rd_plt_info_t *rpi)
 {
 	unsigned	addr;

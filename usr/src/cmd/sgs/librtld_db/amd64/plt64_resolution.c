@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include	<libelf.h>
 #include	<sys/reg.h>
 #include	<rtld_db.h>
@@ -46,10 +44,9 @@
  *  The nth time around, the GOT[N] actually contains the resolved
  *	address of the symbol(name), so the jmp is direct
  */
-/* ARGSUSED 3 */
 rd_err_e
-plt64_resolution(rd_agent_t *rap, psaddr_t pc, lwpid_t lwpid,
-	psaddr_t pltbase, rd_plt_info_t *rpi)
+plt64_resolution(rd_agent_t *rap, psaddr_t pc, lwpid_t lwpid __unused,
+    psaddr_t pltbase, rd_plt_info_t *rpi)
 {
 	uint32_t	pcrel;
 	psaddr_t	destaddr;
