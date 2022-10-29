@@ -709,7 +709,6 @@ dwarf_load_macho_commands(
 {
     Dwarf_Unsigned cmdi = 0;
     Dwarf_Unsigned curoff = mfp->mo_command_start_offset;
-    Dwarf_Unsigned cmdspace = 0;
     struct load_command mc;
     struct generic_macho_command *mcp = 0;
     unsigned segment_command_count = 0;
@@ -745,7 +744,6 @@ dwarf_load_macho_commands(
         ASNAR(mfp->mo_copy_word,mcp->cmdsize,mc.cmdsize);
         mcp->offset_this_command = curoff;
         curoff += mcp->cmdsize;
-        cmdspace += mcp->cmdsize;
         if (mcp->cmdsize > mfp->mo_filesize ||
             curoff > mfp->mo_filesize) {
             /* corrupt object */
