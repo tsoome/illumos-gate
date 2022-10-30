@@ -895,9 +895,8 @@ dump_sections(pgcore_t *pgc)
 	return (0);
 }
 
-/*ARGSUSED*/
 static int
-dump_map(void *data, const prmap_t *pmp, const char *name)
+dump_map(void *data, const prmap_t *pmp, const char *name __unused)
 {
 	pgcore_t *pgc = data;
 	struct ps_prochandle *P = pgc->P;

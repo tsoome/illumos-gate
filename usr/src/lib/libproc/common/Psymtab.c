@@ -3395,10 +3395,9 @@ typedef struct getenv_data {
 	size_t searchlen;
 } getenv_data_t;
 
-/*ARGSUSED*/
 static int
-getenv_func(void *data, struct ps_prochandle *P, uintptr_t addr,
-    const char *nameval)
+getenv_func(void *data, struct ps_prochandle *P __unused,
+    uintptr_t addr __unused, const char *nameval)
 {
 	getenv_data_t *d = data;
 	size_t len;

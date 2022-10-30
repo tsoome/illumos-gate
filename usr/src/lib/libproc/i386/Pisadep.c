@@ -104,9 +104,9 @@ Pissyscall_prev(struct ps_prochandle *P, uintptr_t addr, uintptr_t *dst)
 	return (0);
 }
 
-/* ARGSUSED */
 int
-Pissyscall_text(struct ps_prochandle *P, const void *buf, size_t buflen)
+Pissyscall_text(struct ps_prochandle *P __unused, const void *buf,
+    size_t buflen)
 {
 	if (buflen < sizeof (int_syscall_instr))
 		return (0);

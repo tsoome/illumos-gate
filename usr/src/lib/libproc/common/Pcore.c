@@ -119,26 +119,24 @@ core_rw(struct ps_prochandle *P, void *buf, size_t n, uintptr_t addr,
 	return (n - resid);
 }
 
-/*ARGSUSED*/
 static ssize_t
 Pread_core(struct ps_prochandle *P, void *buf, size_t n, uintptr_t addr,
-    void *data)
+    void *data __unused)
 {
 	return (core_rw(P, buf, n, addr, pread64));
 }
 
-/*ARGSUSED*/
 static ssize_t
 Pwrite_core(struct ps_prochandle *P, const void *buf, size_t n, uintptr_t addr,
-    void *data)
+    void *data __unused)
 {
 	return (core_rw(P, (void *)buf, n, addr,
 	    (ssize_t (*)(int, void *, size_t, off64_t)) pwrite64));
 }
 
-/*ARGSUSED*/
 static int
-Pcred_core(struct ps_prochandle *P, prcred_t *pcrp, int ngroups, void *data)
+Pcred_core(struct ps_prochandle *P __unused, prcred_t *pcrp, int ngroups,
+    void *data)
 {
 	core_info_t *core = data;
 
@@ -160,9 +158,8 @@ Pcred_core(struct ps_prochandle *P, prcred_t *pcrp, int ngroups, void *data)
 	return (-1);
 }
 
-/*ARGSUSED*/
 static int
-Psecflags_core(struct ps_prochandle *P, prsecflags_t **psf, void *data)
+Psecflags_core(struct ps_prochandle *P __unused, prsecflags_t **psf, void *data)
 {
 	core_info_t *core = data;
 
@@ -179,9 +176,8 @@ Psecflags_core(struct ps_prochandle *P, prsecflags_t **psf, void *data)
 	return (0);
 }
 
-/*ARGSUSED*/
 static int
-Ppriv_core(struct ps_prochandle *P, prpriv_t **pprv, void *data)
+Ppriv_core(struct ps_prochandle *P __unused, prpriv_t **pprv, void *data)
 {
 	core_info_t *core = data;
 
@@ -199,16 +195,15 @@ Ppriv_core(struct ps_prochandle *P, prpriv_t **pprv, void *data)
 	return (0);
 }
 
-/*ARGSUSED*/
 static const psinfo_t *
-Ppsinfo_core(struct ps_prochandle *P, psinfo_t *psinfo, void *data)
+Ppsinfo_core(struct ps_prochandle *P, psinfo_t *psinfo __unused,
+    void *data __unused)
 {
 	return (&P->psinfo);
 }
 
-/*ARGSUSED*/
 static void
-Pfini_core(struct ps_prochandle *P, void *data)
+Pfini_core(struct ps_prochandle *P __unused, void *data)
 {
 	core_info_t *core = data;
 
@@ -255,9 +250,8 @@ Pfini_core(struct ps_prochandle *P, void *data)
 	}
 }
 
-/*ARGSUSED*/
 static char *
-Pplatform_core(struct ps_prochandle *P, char *s, size_t n, void *data)
+Pplatform_core(struct ps_prochandle *P __unused, char *s, size_t n, void *data)
 {
 	core_info_t *core = data;
 
@@ -270,9 +264,8 @@ Pplatform_core(struct ps_prochandle *P, char *s, size_t n, void *data)
 	return (s);
 }
 
-/*ARGSUSED*/
 static int
-Puname_core(struct ps_prochandle *P, struct utsname *u, void *data)
+Puname_core(struct ps_prochandle *P __unused, struct utsname *u, void *data)
 {
 	core_info_t *core = data;
 
@@ -284,9 +277,8 @@ Puname_core(struct ps_prochandle *P, struct utsname *u, void *data)
 	return (0);
 }
 
-/*ARGSUSED*/
 static char *
-Pzonename_core(struct ps_prochandle *P, char *s, size_t n, void *data)
+Pzonename_core(struct ps_prochandle *P __unused, char *s, size_t n, void *data)
 {
 	core_info_t *core = data;
 
@@ -299,9 +291,9 @@ Pzonename_core(struct ps_prochandle *P, char *s, size_t n, void *data)
 }
 
 #ifdef __x86
-/*ARGSUSED*/
 static int
-Pldt_core(struct ps_prochandle *P, struct ssd *pldt, int nldt, void *data)
+Pldt_core(struct ps_prochandle *P __unused, struct ssd *pldt, int nldt,
+    void *data)
 {
 	core_info_t *core = data;
 
@@ -1230,9 +1222,8 @@ note_upanic(struct ps_prochandle *P, size_t nbytes)
 	return (0);
 }
 
-/*ARGSUSED*/
 static int
-note_notsup(struct ps_prochandle *P, size_t nbytes)
+note_notsup(struct ps_prochandle *P __unused, size_t nbytes)
 {
 	dprintf("skipping unsupported note type of size %ld bytes\n",
 	    (ulong_t)nbytes);

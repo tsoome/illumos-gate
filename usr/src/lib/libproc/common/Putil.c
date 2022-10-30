@@ -110,10 +110,9 @@ dprintf(const char *format, ...)
  * function that will interpose on our empty default.  This may be useful for
  * clients that wish to display such messages to the user.
  */
-/*ARGSUSED*/
-/*PRINTFLIKE2*/
 void
-Perror_printf(struct ps_prochandle *P, const char *format, ...)
+Perror_printf(struct ps_prochandle *P __unused,
+    const char *format __unused, ...)
 {
 	/* nothing to do here */
 }

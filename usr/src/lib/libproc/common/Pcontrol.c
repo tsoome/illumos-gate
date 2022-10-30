@@ -84,26 +84,23 @@ static  prheader_t *read_lfile(struct ps_prochandle *, const char *);
  * Ops vector functions for live processes.
  */
 
-/*ARGSUSED*/
 static ssize_t
 Pread_live(struct ps_prochandle *P, void *buf, size_t n, uintptr_t addr,
-    void *data)
+    void *data __unused)
 {
 	return (pread(P->asfd, buf, n, (off_t)addr));
 }
 
-/*ARGSUSED*/
 static ssize_t
 Pwrite_live(struct ps_prochandle *P, const void *buf, size_t n, uintptr_t addr,
-    void *data)
+    void *data __unused)
 {
 	return (pwrite(P->asfd, buf, n, (off_t)addr));
 }
 
-/*ARGSUSED*/
 static int
 Pread_maps_live(struct ps_prochandle *P, prmap_t **Pmapp, ssize_t *nmapp,
-    void *data)
+    void *data __unused)
 {
 	char mapfile[PATH_MAX];
 	int mapfd;
@@ -134,9 +131,9 @@ Pread_maps_live(struct ps_prochandle *P, prmap_t **Pmapp, ssize_t *nmapp,
 	return (0);
 }
 
-/*ARGSUSED*/
 static void
-Pread_aux_live(struct ps_prochandle *P, auxv_t **auxvp, int *nauxp, void *data)
+Pread_aux_live(struct ps_prochandle *P, auxv_t **auxvp, int *nauxp,
+    void *data __unused)
 {
 	char auxfile[64];
 	int fd;
@@ -172,23 +169,21 @@ Pread_aux_live(struct ps_prochandle *P, auxv_t **auxvp, int *nauxp, void *data)
 	(void) close(fd);
 }
 
-/*ARGSUSED*/
 static int
-Pcred_live(struct ps_prochandle *P, prcred_t *pcrp, int ngroups, void *data)
+Pcred_live(struct ps_prochandle *P, prcred_t *pcrp, int ngroups,
+    void *data __unused)
 {
 	return (proc_get_cred(P->pid, pcrp, ngroups));
 }
 
-/* ARGSUSED */
 static int
-Psecflags_live(struct ps_prochandle *P, prsecflags_t **psf, void *data)
+Psecflags_live(struct ps_prochandle *P, prsecflags_t **psf, void *data __unused)
 {
 	return (proc_get_secflags(P->pid, psf));
 }
 
-/*ARGSUSED*/
 static int
-Ppriv_live(struct ps_prochandle *P, prpriv_t **pprv, void *data)
+Ppriv_live(struct ps_prochandle *P, prpriv_t **pprv, void *data __unused)
 {
 	prpriv_t *pp;
 
@@ -201,9 +196,8 @@ Ppriv_live(struct ps_prochandle *P, prpriv_t **pprv, void *data)
 	return (0);
 }
 
-/*ARGSUSED*/
 static const psinfo_t *
-Ppsinfo_live(struct ps_prochandle *P, psinfo_t *psinfo, void *data)
+Ppsinfo_live(struct ps_prochandle *P, psinfo_t *psinfo, void *data __unused)
 {
 	if (proc_get_psinfo(P->pid, psinfo) == -1)
 		return (NULL);
@@ -211,39 +205,36 @@ Ppsinfo_live(struct ps_prochandle *P, psinfo_t *psinfo, void *data)
 	return (psinfo);
 }
 
-/*ARGSUSED*/
 static prheader_t *
-Plstatus_live(struct ps_prochandle *P, void *data)
+Plstatus_live(struct ps_prochandle *P, void *data __unused)
 {
 	return (read_lfile(P, "lstatus"));
 }
 
-/*ARGSUSED*/
 static prheader_t *
-Plpsinfo_live(struct ps_prochandle *P, void *data)
+Plpsinfo_live(struct ps_prochandle *P, void *data __unused)
 {
 	return (read_lfile(P, "lpsinfo"));
 }
 
-/*ARGSUSED*/
 static char *
-Pplatform_live(struct ps_prochandle *P, char *s, size_t n, void *data)
+Pplatform_live(struct ps_prochandle *P __unused, char *s, size_t n,
+    void *data __unused)
 {
 	if (sysinfo(SI_PLATFORM, s, n) == -1)
 		return (NULL);
 	return (s);
 }
 
-/*ARGSUSED*/
 static int
-Puname_live(struct ps_prochandle *P, struct utsname *u, void *data)
+Puname_live(struct ps_prochandle *P __unused, struct utsname *u,
+    void *data __unused)
 {
 	return (uname(u));
 }
 
-/*ARGSUSED*/
 static char *
-Pzonename_live(struct ps_prochandle *P, char *s, size_t n, void *data)
+Pzonename_live(struct ps_prochandle *P, char *s, size_t n, void *data __unused)
 {
 	if (getzonenamebyid(P->status.pr_zoneid, s, n) < 0)
 		return (NULL);
@@ -266,9 +257,9 @@ stat_exec(const char *path, void *arg)
 	    stp->st_dev == st.st_dev && stp->st_ino == st.st_ino);
 }
 
-/*ARGSUSED*/
 static char *
-Pexecname_live(struct ps_prochandle *P, char *buf, size_t buflen, void *data)
+Pexecname_live(struct ps_prochandle *P, char *buf, size_t buflen,
+    void *data __unused)
 {
 	char exec_name[PATH_MAX];
 	char cwd[PATH_MAX];
@@ -314,9 +305,9 @@ Pexecname_live(struct ps_prochandle *P, char *buf, size_t buflen, void *data)
 }
 
 #if defined(__i386) || defined(__amd64)
-/*ARGSUSED*/
 static int
-Pldt_live(struct ps_prochandle *P, struct ssd *pldt, int nldt, void *data)
+Pldt_live(struct ps_prochandle *P, struct ssd *pldt, int nldt,
+    void *data __unused)
 {
 	return (proc_get_ldt(P->pid, pldt, nldt));
 }
@@ -746,9 +737,8 @@ Pcreate_error(int error)
  * may be useful for clients that need to modify signal dispositions, terminal
  * attributes, or process group and session properties for each new victim.
  */
-/*ARGSUSED*/
 void
-Pcreate_callback(struct ps_prochandle *P)
+Pcreate_callback(struct ps_prochandle *P __unused)
 {
 	/* nothing to do here */
 }
@@ -1360,9 +1350,8 @@ Pldt(struct ps_prochandle *P, struct ssd *pldt, int nldt)
 }
 #endif	/* __i386 */
 
-/* ARGSUSED */
 void
-Ppriv_free(struct ps_prochandle *P, prpriv_t *prv)
+Ppriv_free(struct ps_prochandle *P __unused, prpriv_t *prv)
 {
 	free(prv);
 }

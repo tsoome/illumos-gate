@@ -232,7 +232,8 @@ proc_fdinfo_misc(const prfdinfo_t *info, uint_t type, size_t *buflen)
 }
 
 static int
-proc_fdinfo_dup_cb(uint_t type, const void *data, size_t len, void *datap)
+proc_fdinfo_dup_cb(uint_t type __unused, const void *data __unused, size_t len,
+    void *datap)
 {
 	size_t *sz = (size_t *)datap;
 

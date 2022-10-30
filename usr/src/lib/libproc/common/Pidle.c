@@ -37,10 +37,9 @@
 #include "libproc.h"
 #include "Pcontrol.h"
 
-/*ARGSUSED*/
 static ssize_t
 Pread_idle(struct ps_prochandle *P, void *buf, size_t n, uintptr_t addr,
-    void *data)
+    void *data __unused)
 {
 	size_t resid = n;
 
@@ -68,18 +67,16 @@ Pread_idle(struct ps_prochandle *P, void *buf, size_t n, uintptr_t addr,
 	return (n - resid);
 }
 
-/*ARGSUSED*/
 static ssize_t
-Pwrite_idle(struct ps_prochandle *P, const void *buf, size_t n, uintptr_t addr,
-    void *data)
+Pwrite_idle(struct ps_prochandle *P __unused, const void *buf __unused,
+    size_t n __unused, uintptr_t addr __unused, void *data __unused)
 {
 	errno = EIO;
 	return (-1);
 }
 
-/*ARGSUSED*/
 static int
-Ppriv_idle(struct ps_prochandle *P, prpriv_t **pprv, void *data)
+Ppriv_idle(struct ps_prochandle *P, prpriv_t **pprv, void *data __unused)
 {
 	prpriv_t *pp;
 

@@ -101,18 +101,16 @@ ps_pcontinue(struct ps_prochandle *P)
  * ps_lstop() and ps_lcontinue() are not called by any code in libc_db
  * or librtld_db.  We make them behave like ps_pstop() and ps_pcontinue().
  */
-/* ARGSUSED1 */
 ps_err_e
-ps_lstop(struct ps_prochandle *P, lwpid_t lwpid)
+ps_lstop(struct ps_prochandle *P, lwpid_t lwpid __unused)
 {
 	if (P->state != PS_STOP && P->state != PS_DEAD)
 		return (PS_ERR);
 	return (PS_OK);
 }
 
-/* ARGSUSED1 */
 ps_err_e
-ps_lcontinue(struct ps_prochandle *P, lwpid_t lwpid)
+ps_lcontinue(struct ps_prochandle *P, lwpid_t lwpid __unused)
 {
 	if (P->state != PS_STOP && P->state != PS_DEAD)
 		return (PS_ERR);
