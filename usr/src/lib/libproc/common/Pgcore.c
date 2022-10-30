@@ -76,7 +76,7 @@ typedef struct {
 static int
 gc_pwrite64(int fd, const void *buf, size_t len, off64_t off)
 {
-	int err;
+	ssize_t err;
 
 	err = pwrite64(fd, buf, len, off);
 
@@ -88,7 +88,7 @@ gc_pwrite64(int fd, const void *buf, size_t len, off64_t off)
 	 * unused EBADE to mean a short write.  Typically this will actually
 	 * result from ENOSPC or EDQUOT, but we can't be sure.
 	 */
-	if (err < len) {
+	if ((size_t)err < len) {
 		errno = EBADE;
 		return (-1);
 	}
@@ -993,7 +993,8 @@ dump_map(void *data, const prmap_t *pmp, const char *name)
 		 * PF_SUNW_FAILURE flag and store the errno where the
 		 * mapping would have been.
 		 */
-		if (ret != csz || gc_pwrite64(pgc->pgc_fd, pgc->pgc_chunk, csz,
+		if ((size_t)ret != csz ||
+		    gc_pwrite64(pgc->pgc_fd, pgc->pgc_chunk, csz,
 		    *pgc->pgc_doff + n) != 0) {
 			int err = errno;
 			(void) gc_pwrite64(pgc->pgc_fd, &err, sizeof (err),
@@ -1646,16 +1647,17 @@ proc_str2content(const char *str, core_content_t *cp)
 		for (cur = str; isalpha(*cur); cur++)
 			continue;
 
-		if (STREQ(str, "default", cur - str)) {
+		if (STREQ(str, "default", (size_t)(cur - str))) {
 			mask = CC_CONTENT_DEFAULT;
-		} else if (STREQ(str, "all", cur - str)) {
+		} else if (STREQ(str, "all", (size_t)(cur - str))) {
 			mask = CC_CONTENT_ALL;
-		} else if (STREQ(str, "none", cur - str)) {
+		} else if (STREQ(str, "none", (size_t)(cur - str))) {
 			mask = 0;
 		} else {
-			int i = 0;
+			uint_t i = 0;
 
-			while (!STREQ(str, content_str[i], cur - str)) {
+			while (!STREQ(str, content_str[i],
+			    (size_t)(cur - str))) {
 				i++;
 
 				if (i >= ncontent_str)

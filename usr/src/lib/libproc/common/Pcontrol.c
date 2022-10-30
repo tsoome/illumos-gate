@@ -115,7 +115,7 @@ Pread_maps_live(struct ps_prochandle *P, prmap_t **Pmapp, ssize_t *nmapp,
 	    procfs_path, (int)P->pid);
 	if ((mapfd = open(mapfile, O_RDONLY)) < 0 ||
 	    fstat(mapfd, &statb) != 0 ||
-	    statb.st_size < sizeof (prmap_t) ||
+	    statb.st_size < (off_t)sizeof (prmap_t) ||
 	    (Pmap = malloc(statb.st_size)) == NULL ||
 	    (nmap = pread(mapfd, Pmap, statb.st_size, 0L)) <= 0 ||
 	    (nmap /= sizeof (prmap_t)) == 0) {
@@ -153,7 +153,7 @@ Pread_aux_live(struct ps_prochandle *P, auxv_t **auxvp, int *nauxp, void *data)
 	}
 
 	if (fstat(fd, &statb) == 0 &&
-	    statb.st_size >= sizeof (auxv_t) &&
+	    statb.st_size >= (off_t)sizeof (auxv_t) &&
 	    (auxv = malloc(statb.st_size + sizeof (auxv_t))) != NULL) {
 		if ((naux = read(fd, auxv, statb.st_size)) < 0 ||
 		    (naux /= sizeof (auxv_t)) < 1) {
@@ -461,16 +461,17 @@ Pxcreate(const char *file,	/* executable file name */
 	}
 
 	if (pid == 0) {			/* child process */
-		id_t id;
+		uid_t uid;
+		gid_t gid;
 		extern char **environ;
 
 		/*
 		 * If running setuid or setgid, reset credentials to normal.
 		 */
-		if ((id = getgid()) != getegid())
-			(void) setgid(id);
-		if ((id = getuid()) != geteuid())
-			(void) setuid(id);
+		if ((gid = getgid()) != getegid())
+			(void) setgid(gid);
+		if ((uid = getuid()) != geteuid())
+			(void) setuid(uid);
 
 		Pcreate_callback(P);	/* execute callback (see below) */
 		(void) pause();		/* wait for PRSABORT from parent */
@@ -1399,7 +1400,7 @@ Psetpriv(struct ps_prochandle *P, prpriv_t *pprv)
 
 	(void) memcpy(&ctl[1], pprv, PRIV_PRPRIV_SIZE(pprv));
 
-	if (write(P->ctlfd, ctl, sz) != sz)
+	if ((size_t)write(P->ctlfd, ctl, sz) != sz)
 		rc = -1;
 	else
 		rc = 0;
@@ -2032,7 +2033,7 @@ deadcheck(struct ps_prochandle *P)
 			buf = &P->status.pr_lwp;
 			size = sizeof (P->status.pr_lwp);
 		}
-		while (pread(fd, buf, size, (off_t)0) != size) {
+		while ((size_t)pread(fd, buf, size, (off_t)0) != size) {
 			switch (errno) {
 			default:
 				P->state = PS_UNDEAD;
@@ -2153,7 +2154,7 @@ Psetrun(struct ps_prochandle *P,
 		P->ucnelems = 0;
 	}
 
-	if (write(ctlfd, ctl, size) != size) {
+	if ((size_t)write(ctlfd, ctl, size) != size) {
 		/* If it is dead or lost, return the real status, not PS_RUN */
 		if (errno == ENOENT || errno == EAGAIN) {
 			(void) Pstopstatus(P, PCNULL, 0);
@@ -2202,14 +2203,15 @@ Pread_string(struct ps_prochandle *P,
 	*buf = '\0';
 	string[STRSZ] = '\0';
 
-	for (nbyte = STRSZ; nbyte == STRSZ && leng < size; addr += STRSZ) {
+	for (nbyte = STRSZ; nbyte == STRSZ && (size_t)leng < size;
+	    addr += STRSZ) {
 		if ((nbyte = P->ops.pop_pread(P, string, STRSZ, addr,
 		    P->data)) <= 0) {
 			buf[leng] = '\0';
 			return (leng ? leng : -1);
 		}
 		if ((nbyte = strlen(string)) > 0) {
-			if (leng + nbyte > size)
+			if ((size_t)(leng + nbyte) > size)
 				nbyte = size - leng;
 			(void) strncpy(buf + leng, string, nbyte);
 			leng += nbyte;
@@ -2234,7 +2236,7 @@ Pclearsig(struct ps_prochandle *P)
 	int ctlfd = (P->agentctlfd >= 0)? P->agentctlfd : P->ctlfd;
 	long ctl = PCCSIG;
 
-	if (write(ctlfd, &ctl, sizeof (ctl)) != sizeof (ctl))
+	if ((size_t)write(ctlfd, &ctl, sizeof (ctl)) != sizeof (ctl))
 		return (-1);
 	P->status.pr_lwp.pr_cursig = 0;
 	return (0);
@@ -2288,7 +2290,7 @@ Psetbkpt(struct ps_prochandle *P, uintptr_t address, ulong_t *saved)
 	ctlp += sizeof (priovec_t) / sizeof (long);
 
 	size = (char *)ctlp - (char *)ctl;
-	if (write(P->ctlfd, ctl, size) != size)
+	if ((size_t)write(P->ctlfd, ctl, size) != size)
 		return (-1);
 
 	/*
@@ -2428,7 +2430,8 @@ execute_bkpt(
 	ctlp += sizeof (sigset_t) / sizeof (long);
 
 	size = (char *)ctlp - (char *)ctl;
-	if ((ssize = write(ctlfd, ctl, size)) != size)
+	ssize = write(ctlfd, ctl, size);
+	if ((size_t)ssize != size)
 		error = (ssize == -1)? errno : EINTR;
 	(void) sigprocmask(SIG_SETMASK, &unblock, NULL);
 	return (error);
@@ -2624,7 +2627,8 @@ execute_wapt(
 	ctlp += sizeof (sigset_t) / sizeof (long);
 
 	size = (char *)ctlp - (char *)ctl;
-	if ((ssize = write(ctlfd, ctl, size)) != size)
+	ssize = write(ctlfd, ctl, size);
+	if ((size_t)ssize != size)
 		error = (ssize == -1)? errno : EINTR;
 	(void) sigprocmask(SIG_SETMASK, &unblock, NULL);
 	return (error);
@@ -2913,12 +2917,12 @@ read_lfile(struct ps_prochandle *P, const char *lname)
 		if ((Lhp = malloc(size)) == NULL)
 			break;
 		if ((rval = pread(fd, Lhp, size, 0)) < 0 ||
-		    rval <= sizeof (prheader_t)) {
+		    rval <= (ssize_t)sizeof (prheader_t)) {
 			free(Lhp);
 			Lhp = NULL;
 			break;
 		}
-		if (rval < size)
+		if ((size_t)rval < size)
 			break;
 		/* need a bigger buffer */
 		free(Lhp);
@@ -3678,7 +3682,7 @@ Lsetrun(struct ps_lwphandle *L,
 	L->lwp_proc->state = PS_RUN;
 	L->lwp_state = PS_RUN;
 
-	if (write(ctlfd, ctl, size) != size) {
+	if ((size_t)write(ctlfd, ctl, size) != size) {
 		/* Pretend that a job-stopped LWP is running */
 		if (errno != EBUSY || L->lwp_status.pr_why != PR_JOBCONTROL)
 			return (Lstopstatus(L, PCNULL, 0));
@@ -3917,7 +3921,7 @@ map_sort(const void *a, const void *b)
 void
 Psort_mappings(struct ps_prochandle *P)
 {
-	int i;
+	size_t i;
 	map_info_t *mp;
 
 	qsort(P->mappings, P->map_count, sizeof (map_info_t), map_sort);

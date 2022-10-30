@@ -772,7 +772,7 @@ Pbuild_file_ctf(struct ps_prochandle *P, file_info_t *fptr)
 			return (NULL);
 		}
 
-		if (pread(fptr->file_fd, fptr->file_ctf_buf,
+		if ((size_t)pread(fptr->file_fd, fptr->file_ctf_buf,
 		    fptr->file_ctf_size, fptr->file_ctf_off) !=
 		    fptr->file_ctf_size) {
 			free(fptr->file_ctf_buf);
@@ -1268,7 +1268,7 @@ found_cksum:
 		if ((dynp = malloc(phdr.p_filesz)) == NULL)
 			return (0);
 		dync.d_tag = DT_NULL;
-		if (Pread(P, dynp, phdr.p_filesz, phdr.p_vaddr) !=
+		if ((Elf32_Word)Pread(P, dynp, phdr.p_filesz, phdr.p_vaddr) !=
 		    phdr.p_filesz) {
 			free(dynp);
 			return (0);
@@ -1303,7 +1303,7 @@ found_cksum:
 		if ((dynp = malloc(phdr.p_filesz)) == NULL)
 			return (0);
 		dync.d_tag = DT_NULL;
-		if (Pread(P, dynp, phdr.p_filesz, phdr.p_vaddr) !=
+		if ((Elf64_Xword)Pread(P, dynp, phdr.p_filesz, phdr.p_vaddr) !=
 		    phdr.p_filesz) {
 			free(dynp);
 			return (0);
@@ -1479,7 +1479,7 @@ static GElf_Sym *
 symtab_getsym(sym_tbl_t *symtab, int ndx, GElf_Sym *dst)
 {
 	/* If index is in range of primary symtab, look it up there */
-	if (ndx >= symtab->sym_symn_aux) {
+	if ((uint_t)ndx >= symtab->sym_symn_aux) {
 		return (gelf_getsym(symtab->sym_data_pri,
 		    ndx - symtab->sym_symn_aux, dst));
 	}
@@ -2126,7 +2126,7 @@ Pbuild_file_symtab(struct ps_prochandle *P, file_info_t *fptr)
 	 * have a null-terminator.
 	 */
 	if (fptr->file_symtab.sym_data_pri == NULL && buildid != NULL) {
-		int i, bo;
+		uint_t i, bo;
 		uint8_t *dp;
 		char buf[BUILDID_STRLEN], *path;
 		Elf32_Nhdr *hdr = buildid->c_data->d_buf;
@@ -2647,12 +2647,12 @@ sym_by_addr_linear(sym_tbl_t *symtab, GElf_Addr addr, GElf_Sym *symbolp,
 	char *strs = symtab->sym_strs;
 	GElf_Sym sym, *symp = NULL;
 	GElf_Sym osym, *osymp = NULL;
-	int i, id;
+	int id;
 
 	if (symtab->sym_data_pri == NULL || symn == 0 || strs == NULL)
 		return (NULL);
 
-	for (i = 0; i < symn; i++) {
+	for (size_t i = 0; i < symn; i++) {
 		if ((symp = symtab_getsym(symtab, i, &sym)) != NULL) {
 			if (addr >= sym.st_value &&
 			    addr < sym.st_value + sym.st_size) {
@@ -2743,12 +2743,11 @@ sym_by_name_linear(sym_tbl_t *symtab, const char *name, GElf_Sym *symp,
 {
 	size_t symn = symtab->sym_symn;
 	char *strs = symtab->sym_strs;
-	int i;
 
 	if (symtab->sym_data_pri == NULL || symn == 0 || strs == NULL)
 		return (NULL);
 
-	for (i = 0; i < symn; i++) {
+	for (size_t i = 0; i < symn; i++) {
 		if (symtab_getsym(symtab, i, symp) &&
 		    strcmp(name, strs + symp->st_name) == 0) {
 			if (idp)
@@ -2998,7 +2997,7 @@ i_Pmapping_iter(struct ps_prochandle *P, boolean_t lmresolve,
 	file_info_t *fptr;
 	char *object_name;
 	int rc = 0;
-	int i;
+	size_t i;
 
 	/* create all the file_info_t's for all the mappings */
 	(void) Prd_agent(P);
@@ -3361,8 +3360,6 @@ Pinitsym(struct ps_prochandle *P)
 void
 Preset_maps(struct ps_prochandle *P)
 {
-	int i;
-
 	if (P->rap != NULL) {
 		rd_delete(P->rap);
 		P->rap = NULL;
@@ -3379,7 +3376,7 @@ Preset_maps(struct ps_prochandle *P)
 		P->nauxv = 0;
 	}
 
-	for (i = 0; i < P->map_count; i++)
+	for (size_t i = 0; i < P->map_count; i++)
 		map_info_free(P, &P->mappings[i]);
 
 	if (P->mappings != NULL) {
@@ -3528,7 +3525,7 @@ again:
 
 		if (ret <= 0) {
 			nameval = NULL;
-		} else if (ret == buflen - 1) {
+		} else if ((size_t)ret == buflen - 1) {
 			free(buf);
 			/*
 			 * Bail if we have a corrupted environment

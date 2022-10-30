@@ -270,7 +270,7 @@ fake_elf32(struct ps_prochandle *P, file_info_t *fptr, uintptr_t addr,
 	} else {
 		if ((dp = malloc(phdr->p_filesz)) == NULL)
 			goto bad;
-		if (Pread(P, dp, phdr->p_filesz, phdr->p_vaddr) !=
+		if ((Elf64_Xword)Pread(P, dp, phdr->p_filesz, phdr->p_vaddr) !=
 		    phdr->p_filesz)
 			goto bad;
 	}
@@ -476,7 +476,7 @@ done_with_plt:
 	 * address space is a little suspect, but since we only
 	 * use them for their address and size values, this is fine.
 	 */
-	if (Pread(P, &elfdata[ep->e_phoff], phnum * ep->e_phentsize,
+	if ((size_t)Pread(P, &elfdata[ep->e_phoff], phnum * ep->e_phentsize,
 	    addr + ehdr->e_phoff) != phnum * ep->e_phentsize) {
 		dprintf("failed to read program headers\n");
 		goto bad;
@@ -523,7 +523,7 @@ done_with_plt:
 		sp->sh_addralign = SH_ADDRALIGN;
 		sp->sh_entsize = sizeof (Sym);
 
-		if (Pread(P, &elfdata[off], sp->sh_size,
+		if ((Elf64_Xword)Pread(P, &elfdata[off], sp->sh_size,
 		    sp->sh_addr) != sp->sh_size) {
 			dprintf("failed to read .SUNW_ldynsym at %lx\n",
 			    (long)sp->sh_addr);
@@ -550,7 +550,7 @@ done_with_plt:
 	sp->sh_addralign = SH_ADDRALIGN;
 	sp->sh_entsize = sizeof (Sym);
 
-	if (Pread(P, &elfdata[off], sp->sh_size,
+	if ((Elf64_Xword)Pread(P, &elfdata[off], sp->sh_size,
 	    sp->sh_addr) != sp->sh_size) {
 		dprintf("failed to read .dynsym at %lx\n",
 		    (long)sp->sh_addr);
@@ -576,7 +576,7 @@ done_with_plt:
 	sp->sh_addralign = 1;
 	sp->sh_entsize = 0;
 
-	if (Pread(P, &elfdata[off], sp->sh_size,
+	if ((Elf64_Xword)Pread(P, &elfdata[off], sp->sh_size,
 	    sp->sh_addr) != sp->sh_size) {
 		dprintf("failed to read .dynstr\n");
 		goto bad;
@@ -702,8 +702,8 @@ done_with_plt:
 		sp->sh_addralign = SH_ADDRALIGN;
 		sp->sh_entsize = M_PLT_ENTSIZE;
 
-		if (Pread(P, &elfdata[off], sp->sh_size, sp->sh_addr) !=
-		    sp->sh_size) {
+		if ((Elf64_Xword)Pread(P, &elfdata[off], sp->sh_size,
+		    sp->sh_addr) != sp->sh_size) {
 			dprintf("failed to read .plt at %lx\n",
 			    (long)sp->sh_addr);
 			goto badplt;

@@ -141,7 +141,7 @@ proc_get_fdinfo(pid_t pid, int fd)
 	for (retries = 1; retries < 5; retries++) {
 		struct stat st;
 		off_t off;
-		size_t l;
+		ssize_t l;
 
 		if (fstat(ifd, &st) == -1) {
 			err = errno;
@@ -165,10 +165,10 @@ proc_get_fdinfo(pid_t pid, int fd)
 
 		off = offsetof(prfdinfo_t, pr_misc);
 
-		if (l < off + sizeof (pr_misc_header_t))
+		if (l < (off_t)(off + sizeof (pr_misc_header_t)))
 			continue;
 
-		while (off <= l - sizeof (pr_misc_header_t)) {
+		while (off <= (ssize_t)(l - sizeof (pr_misc_header_t))) {
 			pr_misc_header_t *misc;
 
 			misc = (pr_misc_header_t *)((uint8_t *)info + off);

@@ -304,7 +304,7 @@ Psyscall(struct ps_prochandle *P,
 	int agent_created = FALSE;
 	pstatus_t save_pstatus;
 	argdes_t *adp;			/* pointer to argument descriptor */
-	int i;				/* general index value */
+	uint_t i;			/* general index value */
 	int model;			/* data model */
 	int error = 0;			/* syscall errno */
 	int Perr = 0;			/* local error number */
@@ -318,7 +318,7 @@ Psyscall(struct ps_prochandle *P,
 	rval->sys_rval1 = 0;		/* initialize return values */
 	rval->sys_rval2 = 0;
 
-	if (sysindex <= 0 || sysindex > PRMAXSYS || nargs > MAXARGS)
+	if (sysindex <= 0 || (uint_t)sysindex > PRMAXSYS || nargs > MAXARGS)
 		goto bad1;	/* programming error */
 
 	if (P->state == PS_DEAD || P->state == PS_UNDEAD || P->state == PS_IDLE)

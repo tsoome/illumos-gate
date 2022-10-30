@@ -102,7 +102,7 @@ getlwpstatus(struct ps_prochandle *P, lwpid_t lwpid, lwpstatus_t *lps)
 	 * For both live processes and cores, our job is easy if the lwpid
 	 * matches that of the representative lwp:
 	 */
-	if (P->status.pr_lwp.pr_lwpid == lwpid) {
+	if ((lwpid_t)P->status.pr_lwp.pr_lwpid == lwpid) {
 		(void) memcpy(lps, &P->status.pr_lwp, sizeof (lwpstatus_t));
 		return (0);
 	}
@@ -156,7 +156,7 @@ setlwpregs(struct ps_prochandle *P, lwpid_t lwpid, long cmd,
 	 * primary interfaces.  Similarly, make sure to update P->status
 	 * afterward if we are modifying one of its register sets.
 	 */
-	if (P->status.pr_lwp.pr_lwpid == lwpid) {
+	if ((lwpid_t)P->status.pr_lwp.pr_lwpid == lwpid) {
 		Psync(P);
 
 		if (writev(P->ctlfd, iov, 2) == -1)

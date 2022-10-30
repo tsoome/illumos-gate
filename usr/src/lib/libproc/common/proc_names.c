@@ -395,7 +395,7 @@ proc_sysname(int sys, char *buf, size_t bufsz)
 	if (bufsz == 0)		/* force a program failure */
 		return (NULL);
 
-	if (sys >= 0 && sys < SYSEND)
+	if (sys >= 0 && (ulong_t)sys < SYSEND)
 		name = systable[sys];
 	else
 		name = NULL;
@@ -420,9 +420,15 @@ int
 proc_str2flt(const char *str, int *fltnum)
 {
 	char *next;
-	int i;
+	long n;
+	unsigned long i;
 
-	i = strtol(str, &next, 0);
+	n = strtol(str, &next, 0);
+	if (n > 0)
+		i = n;
+	else
+		i = 0;
+
 	if (i > 0 && i <= PRMAXFAULT && *next == '\0') {
 		*fltnum = i;
 		return (0);
@@ -463,9 +469,15 @@ int
 proc_str2sys(const char *str, int *sysnum)
 {
 	char *next;
-	int i;
+	long n;
+	unsigned long i;
 
-	i = strtol(str, &next, 0);
+	n = strtol(str, &next, 0);
+	if (n > 0)
+		i = n;
+	else
+		i = 0;
+
 	if (i > 0 && i <= PRMAXSYS && *next == '\0') {
 		*sysnum = i;
 		return (0);
@@ -494,7 +506,7 @@ proc_fltset2str(const fltset_t *set, const char *delim, int m,
 {
 	char name[FLT2STR_MAX], *p = buf;
 	size_t n;
-	int i;
+	unsigned long i;
 
 	if (buf == NULL || len < 1) {
 		errno = EINVAL;
@@ -580,7 +592,7 @@ proc_sysset2str(const sysset_t *set, const char *delim, int m,
 {
 	char name[SYS2STR_MAX], *p = buf;
 	size_t n;
-	int i;
+	unsigned long i;
 
 	if (buf == NULL || len < 1) {
 		errno = EINVAL;

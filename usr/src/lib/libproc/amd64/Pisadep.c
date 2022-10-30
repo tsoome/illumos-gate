@@ -267,13 +267,12 @@ Pstack_iter32(struct ps_prochandle *P, const prgregset_t regs,
 		prgreg32_t pc;
 		prgreg32_t args[32];
 	} frame;
-	uint_t argc;
+	uint_t argc, i;
 	ssize_t sz;
 	prgregset_t gregs;
 	uint32_t fp, pfp, pc, ctf_pc;
 	long args[32];
 	int rv;
-	int i;
 
 	/*
 	 * Type definition for a structure corresponding to an IA32
@@ -394,7 +393,6 @@ read_args(struct ps_prochandle *P, uintptr_t fp, uintptr_t pc, prgreg_t *args,
 	int rettype = 0;
 	int start_index = 0;
 	int args_style = 0;
-	int i;
 	ctf_id_t args_types[5];
 
 	if (Pxlookup_by_addr(P, pc, NULL, 0, &sym, &si) != 0)
@@ -432,7 +430,7 @@ read_args(struct ps_prochandle *P, uintptr_t fp, uintptr_t pc, prgreg_t *args,
 	if (ctf_func_args(ctfp, si.prs_id, 5, args_types) == CTF_ERR)
 		return (0);
 
-	for (i = 0; i < MIN(5, finfo.ctc_argc); i++) {
+	for (uint_t i = 0; i < MIN(5, finfo.ctc_argc); i++) {
 		int t = ctf_type_kind(ctfp, args_types[i]);
 
 		if (((t == CTF_K_STRUCT) || (t == CTF_K_UNION)) &&
@@ -449,7 +447,7 @@ read_args(struct ps_prochandle *P, uintptr_t fp, uintptr_t pc, prgreg_t *args,
 	insnsize = MIN(MIN(sym.st_size, SAVEARGS_INSN_SEQ_LEN),
 	    pc - sym.st_value);
 
-	if (Pread(P, ins, insnsize, sym.st_value) != insnsize)
+	if ((size_t)Pread(P, ins, insnsize, sym.st_value) != insnsize)
 		return (0);
 
 	if ((argc != 0) &&
@@ -467,7 +465,7 @@ read_args(struct ps_prochandle *P, uintptr_t fp, uintptr_t pc, prgreg_t *args,
 		if (args_style == SAVEARGS_STRUCT_ARGS)
 			size += sizeof (long);
 
-		if (Pread(P, args, size, (fp - size)) != size)
+		if ((size_t)Pread(P, args, size, (fp - size)) != size)
 			return (0);
 
 		for (i = 0; i < (regargs / 2); i++) {
@@ -481,7 +479,7 @@ read_args(struct ps_prochandle *P, uintptr_t fp, uintptr_t pc, prgreg_t *args,
 			size = MIN((argc - regargs) * sizeof (long),
 			    argsize - (regargs * sizeof (long)));
 
-			if (Pread(P, &args[regargs], size, fp +
+			if ((size_t)Pread(P, &args[regargs], size, fp +
 			    (sizeof (uintptr_t) * 2)) != size)
 				return (6);
 		}
@@ -545,7 +543,7 @@ Pstack_iter(struct ps_prochandle *P, const prgregset_t regs,
 		if (fp != 0 &&
 		    Pread(P, &frame, sizeof (frame), (uintptr_t)fp) ==
 		    sizeof (frame)) {
-			if (frame.pc == -1) {
+			if (frame.pc == (uintptr_t)-1) {
 				argc = 3;
 				args[2] = fp + sizeof (sigframe_t);
 				if (Pread(P, &args, 2 * sizeof (prgreg_t),

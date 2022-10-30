@@ -73,7 +73,7 @@ static ssize_t
 core_rw(struct ps_prochandle *P, void *buf, size_t n, uintptr_t addr,
     ssize_t (*prw)(int, void *, size_t, off64_t))
 {
-	ssize_t resid = n;
+	size_t resid = n;
 
 	while (resid != 0) {
 		map_info_t *mp = Paddr2mptr(P, addr);
@@ -309,7 +309,7 @@ Pldt_core(struct ps_prochandle *P, struct ssd *pldt, int nldt, void *data)
 		return (core->core_nldt);
 
 	if (core->core_ldt != NULL) {
-		nldt = MIN(nldt, core->core_nldt);
+		nldt = MIN((uint_t)nldt, core->core_nldt);
 
 		(void) memcpy(pldt, core->core_ldt,
 		    nldt * sizeof (struct ssd));
@@ -627,12 +627,12 @@ note_linux_prstatus(struct ps_prochandle *P, size_t nbytes)
 	    (ulong_t)nbytes, (ulong_t)sizeof (prs32));
 	if (core->core_dmodel == PR_MODEL_ILP32) {
 		if (nbytes < sizeof (prs32) ||
-		    read(P->asfd, &prs32, sizeof (prs32)) != nbytes)
+		    (size_t)read(P->asfd, &prs32, sizeof (prs32)) != nbytes)
 			goto err;
 		tid = prs32.pr_pid;
 	} else {
 		if (nbytes < sizeof (prs64) ||
-		    read(P->asfd, &prs64, sizeof (prs64)) != nbytes)
+		    (size_t)read(P->asfd, &prs64, sizeof (prs64)) != nbytes)
 			goto err;
 		tid = prs64.pr_pid;
 	}
@@ -790,7 +790,7 @@ note_platform(struct ps_prochandle *P, size_t nbytes)
 		return (0);	/* Already seen */
 
 	if (nbytes != 0 && ((plat = malloc(nbytes + 1)) != NULL)) {
-		if (read(P->asfd, plat, nbytes) != nbytes) {
+		if ((size_t)read(P->asfd, plat, nbytes) != nbytes) {
 			dprintf("Pgrab_core: failed to read NT_PLATFORM\n");
 			free(plat);
 			return (-1);
@@ -818,7 +818,7 @@ note_secflags(struct ps_prochandle *P, size_t nbytes)
 	}
 
 	if (nbytes != 0 && ((psf = malloc(nbytes)) != NULL)) {
-		if (read(P->asfd, psf, nbytes) != nbytes) {
+		if ((size_t)read(P->asfd, psf, nbytes) != nbytes) {
 			dprintf("Pgrab_core: failed to read NT_SECFLAGS\n");
 			free(psf);
 			return (-1);
@@ -843,7 +843,7 @@ note_utsname(struct ps_prochandle *P, size_t nbytes)
 	if ((utsp = malloc(ubytes)) == NULL)
 		return (-1);
 
-	if (read(P->asfd, utsp, ubytes) != ubytes) {
+	if ((size_t)read(P->asfd, utsp, ubytes) != ubytes) {
 		dprintf("Pgrab_core: failed to read NT_UTSNAME\n");
 		free(utsp);
 		return (-1);
@@ -903,7 +903,7 @@ note_cred(struct ps_prochandle *P, size_t nbytes)
 	if ((pcrp = malloc(nbytes)) == NULL)
 		return (-1);
 
-	if (read(P->asfd, pcrp, nbytes) != nbytes) {
+	if ((size_t)read(P->asfd, pcrp, nbytes) != nbytes) {
 		dprintf("Pgrab_core: failed to read NT_PRCRED\n");
 		free(pcrp);
 		return (-1);
@@ -936,7 +936,7 @@ note_ldt(struct ps_prochandle *P, size_t nbytes)
 	if ((pldt = malloc(nbytes)) == NULL)
 		return (-1);
 
-	if (read(P->asfd, pldt, nbytes) != nbytes) {
+	if ((size_t)read(P->asfd, pldt, nbytes) != nbytes) {
 		dprintf("Pgrab_core: failed to read NT_LDT\n");
 		free(pldt);
 		return (-1);
@@ -960,7 +960,7 @@ note_priv(struct ps_prochandle *P, size_t nbytes)
 	if ((pprvp = malloc(nbytes)) == NULL)
 		return (-1);
 
-	if (read(P->asfd, pprvp, nbytes) != nbytes) {
+	if ((size_t)read(P->asfd, pprvp, nbytes) != nbytes) {
 		dprintf("Pgrab_core: failed to read NT_PRPRIV\n");
 		free(pprvp);
 		return (-1);
@@ -985,7 +985,7 @@ note_priv_info(struct ps_prochandle *P, size_t nbytes)
 	if ((ppii = malloc(nbytes)) == NULL)
 		return (-1);
 
-	if (read(P->asfd, ppii, nbytes) != nbytes ||
+	if ((size_t)read(P->asfd, ppii, nbytes) != nbytes ||
 	    PRIV_IMPL_INFO_SIZE(ppii) != nbytes) {
 		dprintf("Pgrab_core: failed to read NT_PRPRIVINFO\n");
 		free(ppii);
@@ -1009,7 +1009,7 @@ note_zonename(struct ps_prochandle *P, size_t nbytes)
 	if (nbytes != 0) {
 		if ((zonename = malloc(nbytes)) == NULL)
 			return (-1);
-		if (read(P->asfd, zonename, nbytes) != nbytes) {
+		if ((size_t)read(P->asfd, zonename, nbytes) != nbytes) {
 			dprintf("Pgrab_core: failed to read NT_ZONENAME\n");
 			free(zonename);
 			return (-1);
@@ -1036,7 +1036,7 @@ note_auxv(struct ps_prochandle *P, size_t nbytes)
 		nbytes = n * sizeof (auxv32_t);
 		a32 = alloca(nbytes);
 
-		if (read(P->asfd, a32, nbytes) != nbytes) {
+		if ((size_t)read(P->asfd, a32, nbytes) != nbytes) {
 			dprintf("Pgrab_core: failed to read NT_AUXV\n");
 			return (-1);
 		}
@@ -1055,7 +1055,7 @@ note_auxv(struct ps_prochandle *P, size_t nbytes)
 		if ((P->auxv = malloc(nbytes + sizeof (auxv_t))) == NULL)
 			return (-1);
 
-		if (read(P->asfd, P->auxv, nbytes) != nbytes) {
+		if ((size_t)read(P->asfd, P->auxv, nbytes) != nbytes) {
 			free(P->auxv);
 			P->auxv = NULL;
 			return (-1);
@@ -1218,7 +1218,7 @@ note_upanic(struct ps_prochandle *P, size_t nbytes)
 	}
 
 	if (nbytes != 0 && ((pru = malloc(nbytes)) != NULL)) {
-		if (read(P->asfd, pru, nbytes) != nbytes) {
+		if ((size_t)read(P->asfd, pru, nbytes) != nbytes) {
 			dprintf("Pgrab_core: failed to read NT_UPANIC\n");
 			free(pru);
 			return (-1);
@@ -1384,7 +1384,8 @@ core_add_mapping(struct ps_prochandle *P, GElf_Phdr *php)
 	 */
 	if (php->p_flags & PF_SUNW_FAILURE) {
 		core_report_mapping(P, php);
-	} else if (php->p_filesz != 0 && php->p_offset >= core->core_size) {
+	} else if (php->p_filesz != 0 &&
+	    php->p_offset >= (Elf64_Off)core->core_size) {
 		Perror_printf(P, "core file may be corrupt -- data for mapping "
 		    "at %p is missing\n", (void *)(uintptr_t)php->p_vaddr);
 		dprintf("core file may be corrupt -- data for mapping "
@@ -1505,8 +1506,9 @@ fake_up_symtab(struct ps_prochandle *P, const elf_file_header_t *ehdr,
 		b->shdr[1].sh_info =  symtab->sh_info;
 		b->shdr[1].sh_addralign = symtab->sh_addralign;
 
-		if (pread64(P->asfd, &b->data[off], b->shdr[1].sh_size,
-		    symtab->sh_offset) != b->shdr[1].sh_size) {
+		if ((Elf32_Word)pread64(P->asfd, &b->data[off],
+		    b->shdr[1].sh_size, symtab->sh_offset) !=
+		    b->shdr[1].sh_size) {
 			dprintf("fake_up_symtab: pread of symtab[1] failed\n");
 			free(b);
 			return;
@@ -1521,8 +1523,9 @@ fake_up_symtab(struct ps_prochandle *P, const elf_file_header_t *ehdr,
 		b->shdr[2].sh_info =  strtab->sh_info;
 		b->shdr[2].sh_addralign = 1;
 
-		if (pread64(P->asfd, &b->data[off], b->shdr[2].sh_size,
-		    strtab->sh_offset) != b->shdr[2].sh_size) {
+		if ((Elf32_Word)pread64(P->asfd, &b->data[off],
+		    b->shdr[2].sh_size, strtab->sh_offset) !=
+		    b->shdr[2].sh_size) {
 			dprintf("fake_up_symtab: pread of symtab[2] failed\n");
 			free(b);
 			return;
@@ -1571,8 +1574,9 @@ fake_up_symtab(struct ps_prochandle *P, const elf_file_header_t *ehdr,
 		b->shdr[1].sh_info =  symtab->sh_info;
 		b->shdr[1].sh_addralign = symtab->sh_addralign;
 
-		if (pread64(P->asfd, &b->data[off], b->shdr[1].sh_size,
-		    symtab->sh_offset) != b->shdr[1].sh_size) {
+		if ((Elf64_Xword)pread64(P->asfd, &b->data[off],
+		    b->shdr[1].sh_size, symtab->sh_offset) !=
+		    b->shdr[1].sh_size) {
 			free(b);
 			return;
 		}
@@ -1586,8 +1590,9 @@ fake_up_symtab(struct ps_prochandle *P, const elf_file_header_t *ehdr,
 		b->shdr[2].sh_info =  strtab->sh_info;
 		b->shdr[2].sh_addralign = 1;
 
-		if (pread64(P->asfd, &b->data[off], b->shdr[2].sh_size,
-		    strtab->sh_offset) != b->shdr[2].sh_size) {
+		if ((Elf64_Xword)pread64(P->asfd, &b->data[off],
+		    b->shdr[2].sh_size, strtab->sh_offset) !=
+		    b->shdr[2].sh_size) {
 			free(b);
 			return;
 		}
@@ -2186,7 +2191,7 @@ core_load_shdrs(struct ps_prochandle *P, elf_file_t *efp)
 
 	size_t nbytes;
 	void *buf;
-	int i;
+	uint_t i;
 
 	if (efp->e_hdr.e_shstrndx >= efp->e_hdr.e_shnum) {
 		dprintf("corrupt shstrndx (%u) exceeds shnum (%u)\n",
@@ -2212,7 +2217,8 @@ core_load_shdrs(struct ps_prochandle *P, elf_file_t *efp)
 		goto out;
 	}
 
-	if (pread64(efp->e_fd, buf, nbytes, efp->e_hdr.e_shoff) != nbytes) {
+	if ((size_t)pread64(efp->e_fd, buf, nbytes, efp->e_hdr.e_shoff) !=
+	    nbytes) {
 		dprintf("failed to read section headers at off %lld: %s\n",
 		    (longlong_t)efp->e_hdr.e_shoff, strerror(errno));
 		free(buf);
@@ -2244,7 +2250,7 @@ core_load_shdrs(struct ps_prochandle *P, elf_file_t *efp)
 		goto out;
 	}
 
-	if (pread64(efp->e_fd, shstrtab, shstrtabsz,
+	if ((ulong_t)pread64(efp->e_fd, shstrtab, shstrtabsz,
 	    shp->sh_offset) != shstrtabsz) {
 		dprintf("failed to read %lu bytes of shstrs at off %lld: %s\n",
 		    shstrtabsz, (longlong_t)shp->sh_offset, strerror(errno));
@@ -2289,7 +2295,7 @@ core_load_shdrs(struct ps_prochandle *P, elf_file_t *efp)
 			}
 
 			if ((buf = malloc(shp->sh_size)) == NULL ||
-			    pread64(efp->e_fd, buf, shp->sh_size,
+			    (Elf64_Xword)pread64(efp->e_fd, buf, shp->sh_size,
 			    shp->sh_offset) != shp->sh_size) {
 				dprintf("skipping section %s [%d]: %s\n",
 				    name, i, strerror(errno));
@@ -2327,7 +2333,8 @@ Pfgrab_core(int core_fd, const char *aout_path, int *perr)
 	map_info_t *stk_mp, *brk_mp;
 	const char *execname;
 	char *interp;
-	int i, notes, pagesize;
+	int notes, pagesize;
+	uint_t i;
 	uintptr_t addr, base_addr;
 	struct stat64 stbuf;
 	void *phbuf, *php;
@@ -2454,7 +2461,8 @@ Pfgrab_core(int core_fd, const char *aout_path, int *perr)
 		goto err;
 	}
 
-	if (pread64(core_fd, phbuf, nbytes, core.e_hdr.e_phoff) != nbytes) {
+	if ((size_t)pread64(core_fd, phbuf, nbytes, core.e_hdr.e_phoff) !=
+	    nbytes) {
 		*perr = G_STRANGE;
 		free(phbuf);
 		goto err;
@@ -2636,7 +2644,7 @@ Pfgrab_core(int core_fd, const char *aout_path, int *perr)
 			}
 		}
 
-		if (P->status.pr_pid != pid) {
+		if ((size_t)P->status.pr_pid != pid) {
 			dprintf("No valid pid, setting to %ld\n", (ulong_t)pid);
 			P->status.pr_pid = pid;
 			P->psinfo.pr_pid = pid;

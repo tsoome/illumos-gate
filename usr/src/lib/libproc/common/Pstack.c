@@ -58,7 +58,7 @@ stack_loop(prgreg_t fp, prgreg_t **prevfpp, int *nfpp, uint_t *pfpsizep)
 			return (1); /* stack loop detected */
 	}
 
-	if (nfp == pfpsize) {
+	if ((uint_t)nfp == pfpsize) {
 		pfpsize = pfpsize ? pfpsize * 2 : 16;
 		prevfp = realloc(prevfp, pfpsize * sizeof (prgreg_t));
 		/*

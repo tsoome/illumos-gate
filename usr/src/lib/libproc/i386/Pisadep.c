@@ -328,7 +328,7 @@ Psyscall_copyinargs(struct ps_prochandle *P, int nargs, argdes_t *argp,
 		arglist[1 + i] = (int32_t)adp->arg_value;
 
 	arglist[0] = P->status.pr_lwp.pr_reg[R_PC];
-	if (Pwrite(P, &arglist[0], sizeof (int) * (nargs+1),
+	if ((size_t)Pwrite(P, &arglist[0], sizeof (int) * (nargs+1),
 	    (uintptr_t)ap) != sizeof (int) * (nargs+1))
 		return (-1);
 
@@ -343,8 +343,8 @@ Psyscall_copyoutargs(struct ps_prochandle *P, int nargs, argdes_t *argp,
 	int i;
 	argdes_t *adp;
 
-	if (Pread(P, &arglist[0], sizeof (int) * (nargs+1), (uintptr_t)ap)
-	    != sizeof (int) * (nargs+1))
+	if ((size_t)Pread(P, &arglist[0], sizeof (int) * (nargs+1),
+	    (uintptr_t)ap) != sizeof (int) * (nargs+1))
 		return (-1);
 
 	for (i = 0, adp = argp; i < nargs; i++, adp++)

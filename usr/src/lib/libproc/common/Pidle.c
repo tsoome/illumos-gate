@@ -161,7 +161,6 @@ Pgrab_file(const char *fname, int *perr)
 	size_t phnum;
 	file_info_t *fp = NULL;
 	int fd;
-	int i;
 
 	if ((fd = open64(fname, O_RDONLY)) < 0) {
 		dprintf("couldn't open file");
@@ -259,7 +258,7 @@ Pgrab_file(const char *fname, int *perr)
 	/*
 	 * Sift through the program headers making the relevant maps.
 	 */
-	for (i = 0; i < phnum; i++) {
+	for (size_t i = 0; i < phnum; i++) {
 		GElf_Phdr phdr, *php;
 
 		if ((php = gelf_getphdr(elf, i, &phdr)) == NULL) {

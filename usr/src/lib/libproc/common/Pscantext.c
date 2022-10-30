@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -107,7 +105,7 @@ Pscantext(struct ps_prochandle *P)
 			return (-1);
 		}
 		nmappings /= sizeof (prmap_t);
-		if (nmappings < nmap)	/* we read them all */
+		if ((uint_t)nmappings < nmap)	/* we read them all */
 			break;
 		/* allocate a bigger buffer */
 		free(prbuf);
@@ -131,10 +129,12 @@ Pscantext(struct ps_prochandle *P)
 
 		/* avoid non-EXEC mappings; avoid the stack and heap */
 		if ((pdp->pr_mflags&MA_EXEC) == 0 ||
-		    (endoff > P->status.pr_stkbase &&
-		    offset < P->status.pr_stkbase + P->status.pr_stksize) ||
-		    (endoff > P->status.pr_brkbase &&
-		    offset < P->status.pr_brkbase + P->status.pr_brksize))
+		    ((uintptr_t)endoff > P->status.pr_stkbase &&
+		    (uintptr_t)offset <
+		    P->status.pr_stkbase + P->status.pr_stksize) ||
+		    ((uintptr_t)endoff > P->status.pr_brkbase &&
+		    (uintptr_t)offset <
+		    P->status.pr_brkbase + P->status.pr_brksize))
 			continue;
 
 		(void) lseek(P->asfd, (off_t)offset, 0);

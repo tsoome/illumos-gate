@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -41,8 +39,6 @@ pr_meminfo(struct ps_prochandle *Pr, const uint64_t *addrs,
 	int addr_count, const uint_t *info, int info_count,
 	uint64_t *outdata, uint_t *validity)
 {
-
-
 	int error;
 	sysret_t rval;
 	argdes_t argd[7];
@@ -82,12 +78,12 @@ pr_meminfo(struct ps_prochandle *Pr, const uint64_t *addrs,
 
 	validityaddr = infoaddr + infoarraysize;
 
-	if (Pwrite(Pr, addrs, inarraysize, inaddr) != inarraysize) {
+	if ((size_t)Pwrite(Pr, addrs, inarraysize, inaddr) != inarraysize) {
 		dprintf("pr_meminfo: Pwrite inaddr failed \n");
 		goto out;
 	}
 
-	if (Pwrite(Pr, info, infoarraysize, infoaddr) !=
+	if ((size_t)Pwrite(Pr, info, infoarraysize, infoaddr) !=
 	    infoarraysize) {
 		dprintf("pr_meminfo: Pwrite info failed \n");
 		goto out;
@@ -162,12 +158,12 @@ pr_meminfo(struct ps_prochandle *Pr, const uint64_t *addrs,
 
 	/* syscall was successful, copy out the data */
 
-	if ((Pread(Pr, outdata, outarraysize, outaddr)) != outarraysize) {
+	if ((size_t)Pread(Pr, outdata, outarraysize, outaddr) != outarraysize) {
 		dprintf("pr_meminfo: Pread of outarray failed\n");
 		goto out;
 	}
 
-	if (Pread(Pr, validity, validityarraysize, validityaddr)
+	if ((size_t)Pread(Pr, validity, validityarraysize, validityaddr)
 	    != validityarraysize) {
 		dprintf("pr_meminfo: Pread of validity array failed\n");
 		goto out;
