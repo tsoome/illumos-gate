@@ -196,10 +196,9 @@ do_read(void *data, uint64_t addr, void *buf, size_t len)
 	return (len);
 }
 
-/* ARGSUSED */
 int
-do_lookup(void *data, uint64_t addr, char *buf, size_t buflen, uint64_t *start,
-    size_t *symlen)
+do_lookup(void *data __unused, uint64_t addr __unused, char *buf __unused,
+    size_t buflen __unused, uint64_t *start __unused, size_t *symlen __unused)
 {
 	/* We don't actually need lookup info */
 	return (-1);
