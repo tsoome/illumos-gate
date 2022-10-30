@@ -95,8 +95,9 @@ Pissyscall_prev(struct ps_prochandle *P, uintptr_t addr, uintptr_t *dst)
 {
 	int ret;
 
-	if (ret = Pissyscall(P, addr - sizeof (int_syscall_instr))) {
-		if (dst)
+	ret = Pissyscall(P, addr - sizeof (int_syscall_instr));
+	if (ret != 0) {
+		if (dst != NULL)
 			*dst = addr - sizeof (int_syscall_instr);
 		return (ret);
 	}

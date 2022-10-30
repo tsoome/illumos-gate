@@ -168,7 +168,8 @@ Pscantext(struct ps_prochandle *P)
 						BLKSIZE);
 			}
 
-			if (syspri = Pissyscall_text(P, p, nbytes))
+			syspri = Pissyscall_text(P, p, nbytes);
+			if (syspri != 0)
 				sysaddr = offset;
 
 			p += sizeof (instr_t);

@@ -1976,7 +1976,8 @@ Pbuild_file_symtab(struct ps_prochandle *P, file_info_t *fptr)
 	 * Iterate through each section, caching its section header, data
 	 * pointer, and name.  We use this for handling sh_link values below.
 	 */
-	for (cp = cache + 1, scn = NULL; scn = elf_nextscn(elf, scn); cp++) {
+	for (cp = cache + 1, scn = NULL;
+	    (scn = elf_nextscn(elf, scn)) != NULL; cp++) {
 		if (gelf_getshdr(scn, &cp->c_shdr) == NULL) {
 			dprintf("Pbuild_file_symtab: Failed to get section "
 			    "header\n");

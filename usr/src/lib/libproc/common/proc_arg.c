@@ -451,7 +451,7 @@ proc_walk(proc_walk_f *func, void *arg, int flag)
 	}
 	if ((procdir = opendir(procfs_path)) == NULL)
 		return (-1);
-	while (dirent = readdir(procdir)) {
+	while ((dirent = readdir(procdir)) != NULL) {
 		if (dirent->d_name[0] == '.')	/* skip . and .. */
 			continue;
 		pid = (id_t)strtol(dirent->d_name, &errptr, 10);
