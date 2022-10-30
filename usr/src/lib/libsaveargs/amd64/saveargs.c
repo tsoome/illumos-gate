@@ -219,8 +219,8 @@ instr_size(dis_handle_t *dhp, uint8_t *ins, unsigned int i, size_t size)
 static boolean_t
 has_saved_fp(dis_handle_t *dhp, uint8_t *ins, int size)
 {
-	int		i, j;
-	uint32_t	n;
+	int		i;
+	uint32_t	n, j;
 	boolean_t	found_push = B_FALSE;
 	ssize_t		sz = 0;
 
@@ -254,8 +254,7 @@ has_saved_fp(dis_handle_t *dhp, uint8_t *ins, int size)
 int
 saveargs_has_args(uint8_t *ins, size_t size, uint_t argc, int start_index)
 {
-	int		i, j;
-	uint32_t	n;
+	uint_t		i, j, n;
 	uint8_t		found = 0;
 	ssize_t		sz = 0;
 	dis_handle_t	*dhp = NULL;
