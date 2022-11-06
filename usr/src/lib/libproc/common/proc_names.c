@@ -28,9 +28,13 @@
  */
 
 #include <stdio.h>
+#if !defined(__EXTENSIONS__)
 #define	__EXTENSIONS__
 #include <string.h>
 #undef  __EXTENSIONS__
+#else
+#include <string.h>
+#endif
 #include <signal.h>
 #include <errno.h>
 #include "libproc.h"

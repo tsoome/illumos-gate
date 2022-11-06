@@ -26,9 +26,13 @@
  * Copyright (c) 2013 by Delphix. All rights reserved.
  */
 
+#if !defined(__EXTENSIONS__)
 #define	__EXTENSIONS__
 #include <string.h>
 #undef	__EXTENSIONS__
+#else
+#include <string.h>
+#endif
 
 #include <libgen.h>
 #include <limits.h>

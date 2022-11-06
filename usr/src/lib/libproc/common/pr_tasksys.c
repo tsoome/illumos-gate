@@ -24,9 +24,9 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
+#if !defined(_LARGEFILE64_SOURCE)
 #define	_LARGEFILE64_SOURCE
+#endif
 
 #include <sys/task.h>
 #include <sys/types.h>
