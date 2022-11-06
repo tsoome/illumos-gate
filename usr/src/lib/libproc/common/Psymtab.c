@@ -914,7 +914,7 @@ Pgetauxval(struct ps_prochandle *P, int type)
 const auxv_t *
 Pgetauxvec(struct ps_prochandle *P)
 {
-	static const auxv_t empty = { AT_NULL, 0L };
+	static const auxv_t empty = { AT_NULL, {0L} };
 
 	if (P->auxv == NULL)
 		Preadauxvec(P);
