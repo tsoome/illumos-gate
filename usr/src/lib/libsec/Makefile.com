@@ -51,6 +51,10 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 CERRWARN +=	-_gcc=-Wno-unused-label
 CERRWARN +=	-_gcc=-Wno-unused-variable
 
+# unused labels in /usr/share/lib/ccs/yaccpar
+pics/acl.tab.o pics/acl_lex.o := CERRWARN += -_gcc=-Wno-unused-label
+pics/acl.tab.o pics/acl_lex.o := CERRWARN += -_clang=-Wno-unused-label
+
 # not linted
 SMATCH=off
 
@@ -66,7 +70,6 @@ SRCS=		$(OBJS_COMMON:%.o=$(SRCDIR)/%.c) \
 .KEEP_STATE:
 
 all: $(LIBS)
-
 
 pics/%.o: ../../../common/acl/%.c
 	$(COMPILE.c) -o $@ $<
