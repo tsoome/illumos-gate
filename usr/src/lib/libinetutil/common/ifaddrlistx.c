@@ -120,7 +120,7 @@ again:
 			goto fail;
 		}
 
-		if (set != 0 && ((lifrp->lifr_flags & set) == 0) ||
+		if ((set != 0 && ((lifrp->lifr_flags & set) == 0)) ||
 		    (lifrp->lifr_flags & clear) != 0)
 			continue;
 
