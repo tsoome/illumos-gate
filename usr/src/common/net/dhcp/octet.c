@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-/* LINTLIBRARY */
-
 #if !defined(_BOOT) && !defined(_KERNEL)
 #include <stdio.h>
 #include <ctype.h>
@@ -52,7 +50,7 @@
 int
 octet_to_hexascii(const void *nump, uint_t nlen, char *bufp, uint_t *blen)
 {
-	int		i;
+	uint_t		i;
 	char		*bp;
 	const uchar_t	*np;
 	static char	ascii_conv[] = "0123456789ABCDEF";

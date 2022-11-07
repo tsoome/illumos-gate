@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -34,7 +32,7 @@
 #include <libinetutil.h>
 #include "libinetutil_impl.h"
 
-static int	grow_fds(iu_eh_t *, int);
+static int	grow_fds(iu_eh_t *, uint_t);
 
 /*
  * signal_to_eh[] is pretty much useless, since the event handler is
@@ -138,7 +136,7 @@ iu_stop_handling_events(iu_eh_t *eh, unsigned int reason,
  */
 
 static int
-grow_fds(iu_eh_t *eh, int total_fds)
+grow_fds(iu_eh_t *eh, uint_t total_fds)
 {
 	unsigned int	i;
 	struct pollfd	*new_pollfds;
@@ -199,7 +197,10 @@ iu_event_id_t
 iu_register_event(iu_eh_t *eh, int fd, short events, iu_eh_callback_t *callback,
     void *arg)
 {
-	if (eh->iueh_num_fds <= fd)
+	if (fd < 0)
+		return (-1);
+
+	if (eh->iueh_num_fds <= (unsigned int)fd)
 		if (grow_fds(eh, fd + EH_FD_SLACK) == 0)
 			return (-1);
 
@@ -240,7 +241,7 @@ iu_register_event(iu_eh_t *eh, int fd, short events, iu_eh_callback_t *callback,
 int
 iu_unregister_event(iu_eh_t *eh, iu_event_id_t event_id, void **arg)
 {
-	if (event_id < 0 || event_id >= eh->iueh_num_fds ||
+	if (event_id < 0 || (unsigned int)event_id >= eh->iueh_num_fds ||
 	    eh->iueh_pollfds[event_id].fd == -1)
 		return (0);
 
