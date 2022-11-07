@@ -153,7 +153,6 @@ ace:	entry_type idname ace_perms access_type
 	{
 		int error;
 		uid_t id;
-		int mask;
 
 		error = get_id($1, $2, &id);
 		if (error) {
