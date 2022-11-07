@@ -42,10 +42,14 @@
  * The only way to turn off this behavior is to omit these functions.
  */
 
-#pragma weak ps_pdread = ps_pread
-#pragma weak ps_ptread = ps_pread
-#pragma weak ps_pdwrite = ps_pwrite
-#pragma weak ps_ptwrite = ps_pwrite
+ps_err_e ps_pdread(struct ps_prochandle *, psaddr_t, void *, size_t)
+    __attribute__((weak, alias("ps_pread")));
+ps_err_e ps_ptread(struct ps_prochandle *, psaddr_t, void *, size_t)
+    __attribute__((weak, alias("ps_pread")));
+ps_err_e ps_pdwrite(struct ps_prochandle *, psaddr_t, const void *, size_t)
+    __attribute__((weak, alias("ps_pwrite")));
+ps_err_e ps_ptwrite(struct ps_prochandle *, psaddr_t, const void *, size_t)
+    __attribute__((weak, alias("ps_pwrite")));
 
 ps_err_e
 ps_pdmodel(struct ps_prochandle *P, int *modelp)
