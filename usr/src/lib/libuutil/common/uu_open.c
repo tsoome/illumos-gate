@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "libuutil_common.h"
 
 #include <sys/time.h>
@@ -42,9 +40,8 @@
 #define	TMPPATHFMT	"%s/uu%lld"
 #endif /* _LP64 */
 
-/*ARGSUSED*/
 int
-uu_open_tmp(const char *dir, uint_t uflags)
+uu_open_tmp(const char *dir, uint_t uflags __unused)
 {
 	int f;
 	char *fname = uu_zalloc(PATH_MAX);
