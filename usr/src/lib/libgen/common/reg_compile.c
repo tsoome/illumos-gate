@@ -289,8 +289,8 @@ _compile(const char *sp, char *ep, char *endbuf, int viflag)
 				} else
 					lc = c;
 				/* put eight bit characters into bitmap */
-				if (!multibyte || c <= 0177 || c <= 0377 &&
-				    iscntrl((int)c))
+				if (!multibyte || c <= 0177 || (c <= 0377 &&
+				    iscntrl((int)c)))
 					PLACE(c);
 				else {
 					/*

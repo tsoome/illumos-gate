@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -505,8 +503,9 @@ _advance(char *lp, char *ep)
 				continue;
 			c = (unsigned char)*lp;
 			d = (unsigned char)*(lp-1);
-			if ((isdigit((int)c) || uletter((int)c) || c >= 0200 &&
-			    MB_CUR_MAX > 1) && !isdigit((int)d) &&
+			if ((isdigit((int)c) || uletter((int)c) ||
+			    (c >= 0200 && MB_CUR_MAX > 1)) &&
+			    !isdigit((int)d) &&
 			    !uletter((int)d) &&
 			    (d < 0200 || MB_CUR_MAX == 1))
 				continue;
@@ -617,9 +616,9 @@ cclass(char *ep, char **rp, int neg)
 	*rp = lp + (n ? n : 1);
 	c = cl;
 	/* look for eight bit characters in bitmap */
-	if (c <= 0177 || c <= 0377 && iscntrl((int)c))
-		return (ISTHERE(c) && !neg || !ISTHERE(c) && neg);
-	else {
+	if (c <= 0177 || (c <= 0377 && iscntrl((int)c))) {
+		return ((ISTHERE(c) && !neg) || (!ISTHERE(c) && neg));
+	} else {
 		/* look past bitmap for multibyte characters */
 		endep = *(ep + 32) + ep + 32;
 		ep += 33;
