@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <locale.h>
 #include <string.h>
@@ -46,7 +44,7 @@ isencrypt(const char *fbuf, size_t ninbuf)
 	const char	*fp;
 	char 		*locale;
 	int 		crflag = 0;
-	int		i;
+	size_t		i;
 
 	if (ninbuf == 0)
 		return (0);

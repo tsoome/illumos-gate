@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	Split buffer into fields delimited by tabs and newlines.
  *	Fill pointer array with pointers to fields.
@@ -84,7 +82,7 @@ bufsplit(char *buf, size_t dim, char **array)
 #endif /* _REENTRANT */
 
 	unsigned numsplit;
-	int	i;
+	size_t	i;
 
 	if (!buf)
 		return (0);
