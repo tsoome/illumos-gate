@@ -23,9 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-/*LINTLIBRARY*/
-
 /*
  * aclcheck(): check validity of an ACL
  *	A valid ACL is defined as follows:
@@ -298,7 +295,7 @@ check_dup(int count, uid_t *ids, uid_t newid, struct entry_stat *tallyp)
     ACE_NO_PROPAGATE_INHERIT_ACE|ACE_INHERIT_ONLY_ACE)
 
 static int
-ace_aclcheck(acl_t *aclp, int isdir)
+ace_aclcheck(acl_t *aclp, int isdir __unused)
 {
 	ace_t 	*acep;
 	int 	i;
