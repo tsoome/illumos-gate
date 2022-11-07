@@ -1265,7 +1265,7 @@ ace_inherit_helper(char *str, uint32_t *imask, int table_length)
 {
 	int rc = 0;
 
-	if (strlen(str) == table_length) {
+	if (strlen(str) == (size_t)table_length) {
 		/*
 		 * If the string == table_length then first check to see it's
 		 * in positional format.  If that fails then see if it's in

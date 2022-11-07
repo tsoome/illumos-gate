@@ -1754,7 +1754,7 @@ ace_walk(void *datap, uint64_t cookie, int aclcnt, uint16_t *flags,
 {
 	ace_t *acep = datap;
 
-	if (cookie >= aclcnt)
+	if (cookie >= (uint_t)aclcnt)
 		return (0);
 
 	*flags = acep[cookie].a_flags;
