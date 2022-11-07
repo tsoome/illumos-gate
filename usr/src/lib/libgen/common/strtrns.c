@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	Copy `str' to `result' replacing any character found
  *	in both `str' and `old' with the corresponding character from `new'.
@@ -42,7 +40,7 @@ strtrns(const char *str, const char *old, const char *new,
 	char		*r;
 	const char	*o;
 
-	for (r = result; *r = *str++; r++)
+	for (r = result; (*r = *str++) != '\0'; r++)
 		for (o = old; *o; )
 			if (*r == *o++) {
 				*r = new[o - old -1];

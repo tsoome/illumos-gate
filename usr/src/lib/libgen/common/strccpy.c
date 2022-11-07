@@ -27,8 +27,6 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <libgen.h>
 
@@ -60,7 +58,7 @@ strcadd(char *pout, const char *pin)
 	int	count;
 	int	wd;
 
-	while (c = *pin++) {
+	while ((c = *pin++) != '\0') {
 		if (c == '\\')
 			switch (c = *pin++) {
 			case 'n':
