@@ -69,6 +69,8 @@ static pthread_t	uu_panic_thread;
 
 static uint32_t		_uu_main_error;
 
+static void uu_init(void) __attribute__((constructor));
+
 void
 uu_set_error(uint_t code)
 {
@@ -245,7 +247,6 @@ uu_release_child(void)
 	uu_release();
 }
 
-#pragma init(uu_init)
 static void
 uu_init(void)
 {
