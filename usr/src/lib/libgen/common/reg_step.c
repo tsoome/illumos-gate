@@ -295,11 +295,11 @@ _advance(char *lp, char *ep)
 			continue;
 
 		case CBRA:
-			braslist[*ep++] = lp;
+			braslist[(int)*ep++] = lp;
 			continue;
 
 		case CKET:
-			braelist[*ep++] = lp;
+			braelist[(int)*ep++] = lp;
 			continue;
 
 		case MCCHR | RNGE:
@@ -415,8 +415,8 @@ _advance(char *lp, char *ep)
 			goto star;
 
 		case CBACK:
-			bbeg = braslist[*ep];
-			ct = (int)(braelist[*ep++] - bbeg);
+			bbeg = braslist[(int)*ep];
+			ct = (int)(braelist[(int)*ep++] - bbeg);
 
 			if (ecmp(bbeg, lp, ct)) {
 				lp += ct;
@@ -425,8 +425,8 @@ _advance(char *lp, char *ep)
 			return (0);
 
 		case CBACK | STAR:
-			bbeg = braslist[*ep];
-			ct = (int)(braelist[*ep++] - bbeg);
+			bbeg = braslist[(int)*ep];
+			ct = (int)(braelist[(int)*ep++] - bbeg);
 			curlp = lp;
 			while (ecmp(bbeg, lp, ct))
 				lp += ct;
