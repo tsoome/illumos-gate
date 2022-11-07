@@ -209,7 +209,7 @@ uu_panic(const char *format, ...)
 int
 assfail(const char *astring, const char *file, int line)
 {
-	__assert(astring, file, line);
+	__assert_c99(astring, file, line, NULL);
 	/*NOTREACHED*/
 	return (0);
 }

@@ -57,7 +57,10 @@
 
 #define	POOL_TO_MARKER(pp) ((void *)((uintptr_t)(pp) | 1))
 
-static uu_list_pool_t	uu_null_lpool = { &uu_null_lpool, &uu_null_lpool };
+static uu_list_pool_t	uu_null_lpool = {
+	.ulp_next = &uu_null_lpool,
+	.ulp_prev = &uu_null_lpool
+};
 static pthread_mutex_t	uu_lpool_list_lock = PTHREAD_MUTEX_INITIALIZER;
 
 uu_list_pool_t *

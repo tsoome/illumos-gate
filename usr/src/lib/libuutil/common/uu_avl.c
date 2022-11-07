@@ -30,7 +30,10 @@
 #include <unistd.h>
 #include <sys/avl.h>
 
-static uu_avl_pool_t	uu_null_apool = { &uu_null_apool, &uu_null_apool };
+static uu_avl_pool_t	uu_null_apool = {
+	.uap_next = &uu_null_apool,
+	.uap_prev = &uu_null_apool
+};
 static pthread_mutex_t	uu_apool_list_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /*

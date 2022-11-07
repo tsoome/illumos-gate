@@ -67,6 +67,7 @@ AVLDIR =	../../../common/avl
 
 CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-I$(SRCDIR) -I../../common/inc
+CSTD=		$(CSTD_GNU99)
 
 SMOFF += signed
 
