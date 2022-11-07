@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <string.h>
 #include <floatingpoint.h>
@@ -136,7 +134,6 @@ print_bitfield(ulong_t off, ctf_encoding_t *ep)
 	(void) fflush(ABISTREAM);
 }
 
-/* ARGSUSED */
 static void
 print_int(ctf_id_t base, ulong_t off, printarg_t *pap)
 {
@@ -188,9 +185,8 @@ print_int(ctf_id_t base, ulong_t off, printarg_t *pap)
 	(void) fflush(ABISTREAM);
 }
 
-/* ARGSUSED */
 static void
-print_float(ctf_id_t base, ulong_t off, printarg_t *pap)
+print_float(ctf_id_t base, ulong_t off __unused, printarg_t *pap)
 {
 	ctf_file_t *ctfp = pap->pa_ctfp;
 	ctf_encoding_t e;
@@ -218,7 +214,6 @@ print_float(ctf_id_t base, ulong_t off, printarg_t *pap)
 	(void) fflush(ABISTREAM);
 }
 
-/* ARGSUSED */
 static void
 print_ptr(ctf_id_t base, ulong_t off, printarg_t *pap)
 {
@@ -244,9 +239,8 @@ print_ptr(ctf_id_t base, ulong_t off, printarg_t *pap)
 	(void) fflush(ABISTREAM);
 }
 
-/* ARGSUSED */
 static void
-print_array(ctf_id_t base, ulong_t off, printarg_t *pap)
+print_array(ctf_id_t base __unused, ulong_t off, printarg_t *pap)
 {
 	ulong_t addr = pap->pa_addr + off / NBBY;
 
@@ -254,16 +248,15 @@ print_array(ctf_id_t base, ulong_t off, printarg_t *pap)
 	(void) fflush(ABISTREAM);
 }
 
-/* ARGSUSED */
 static void
-print_sou(ctf_id_t base, ulong_t off, printarg_t *pap)
+print_sou(ctf_id_t base __unused, ulong_t off __unused,
+    printarg_t *pap __unused)
 {
 	(void) fprintf(ABISTREAM, "{");
 }
 
-/* ARGSUSED */
 static void
-print_enum(ctf_id_t base, ulong_t off, printarg_t *pap)
+print_enum(ctf_id_t base, ulong_t off __unused, printarg_t *pap)
 {
 	ctf_file_t *ctfp = pap->pa_ctfp;
 	const char *ename;
@@ -276,9 +269,9 @@ print_enum(ctf_id_t base, ulong_t off, printarg_t *pap)
 	(void) fflush(ABISTREAM);
 }
 
-/* ARGSUSED */
 static void
-print_tag(ctf_id_t base, ulong_t off, printarg_t *pap)
+print_tag(ctf_id_t base __unused, ulong_t off __unused,
+    printarg_t *pap __unused)
 {
 	(void) fprintf(ABISTREAM, "; ");
 }

@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <link.h>
 #include <dlfcn.h>
 #include <sys/types.h>
@@ -326,9 +324,8 @@ la_version(uint_t version)
 	return (LAV_CURRENT);
 }
 
-/* ARGSUSED1 */
 uint_t
-la_objopen(Link_map *lmp, Lmid_t lmid, uintptr_t *cookie)
+la_objopen(Link_map *lmp, Lmid_t lmid __unused, uintptr_t *cookie)
 {
 	uint_t		flags;
 	static int	first = 1;
@@ -402,14 +399,13 @@ static void
 apptrace_preinit_fail(void)
 {
 	(void) fprintf(stderr,
-			dgettext(TEXT_DOMAIN, "apptrace: la_preinit: %s\n"),
-			dlerror());
+	    dgettext(TEXT_DOMAIN, "apptrace: la_preinit: %s\n"),
+	    dlerror());
 	exit(EXIT_FAILURE);
 }
 
-/* ARGSUSED */
 void
-la_preinit(uintptr_t *cookie)
+la_preinit(uintptr_t *cookie __unused)
 {
 	void	*h = NULL;
 
@@ -470,15 +466,15 @@ la_preinit(uintptr_t *cookie)
 	(void) dlclose(h);
 }
 
-/* ARGSUSED1 */
 #if defined(_LP64)
 uintptr_t
-la_symbind64(Elf64_Sym *symp, uint_t symndx, uintptr_t *refcook,
-    uintptr_t *defcook, uint_t *sb_flags, char const *sym_name)
+la_symbind64(Elf64_Sym *symp, uint_t symndx __unused,
+    uintptr_t *refcook __unused, uintptr_t *defcook __unused, uint_t *sb_flags,
+    char const *sym_name)
 #else
 uintptr_t
-la_symbind32(Elf32_Sym *symp, uint_t symndx, uintptr_t *refcook,
-    uintptr_t *defcook, uint_t *sb_flags)
+la_symbind32(Elf32_Sym *symp, uint_t symndx __unused,
+    uintptr_t *refcook __unused, uintptr_t *defcook __unused, uint_t *sb_flags)
 #endif
 {
 #if !defined(_LP64)
@@ -551,25 +547,25 @@ end:
 	return (ret);
 }
 
-/* ARGSUSED1 */
 #if	defined(__sparcv9)
 uintptr_t
-la_sparcv9_pltenter(Elf64_Sym *symp, uint_t symndx, uintptr_t *refcookie,
-	uintptr_t *defcookie, La_sparcv9_regs *regset, uint_t *sb_flags,
-	char const *sym_name)
+la_sparcv9_pltenter(Elf64_Sym *symp, uint_t symndx __unused,
+    uintptr_t *refcookie, uintptr_t *defcookie, La_sparcv9_regs *regset,
+    uint_t *sb_flags, char const *sym_name)
 #elif	defined(__sparc)
 uintptr_t
-la_sparcv8_pltenter(Elf32_Sym *symp, uint_t symndx, uintptr_t *refcookie,
-	uintptr_t *defcookie, La_sparcv8_regs *regset, uint_t *sb_flags)
+la_sparcv8_pltenter(Elf32_Sym *symp, uint_t symndx __unused,
+    uintptr_t *refcookie, uintptr_t *defcookie, La_sparcv8_regs *regset,
+    uint_t *sb_flags)
 #elif   defined(__amd64)
 uintptr_t
-la_amd64_pltenter(Elf64_Sym *symp, uint_t symndx, uintptr_t *refcookie,
-	uintptr_t *defcookie, La_amd64_regs *regset, uint_t *sb_flags,
-	char const *sym_name)
+la_amd64_pltenter(Elf64_Sym *symp, uint_t symndx __unused,
+    uintptr_t *refcookie, uintptr_t *defcookie, La_amd64_regs *regset,
+    uint_t *sb_flags, char const *sym_name)
 #elif   defined(__i386)
 uintptr_t
-la_i86_pltenter(Elf32_Sym *symp, uint_t symndx, uintptr_t *refcookie,
-	uintptr_t *defcookie, La_i86_regs *regset, uint_t *sb_flags)
+la_i86_pltenter(Elf32_Sym *symp, uint_t symndx __unused, uintptr_t *refcookie,
+    uintptr_t *defcookie, La_i86_regs *regset, uint_t *sb_flags)
 #endif
 {
 	char		*defname = (char *)(*defcookie);
@@ -705,15 +701,15 @@ fail:
 	return (symp->st_value);
 }
 
-/* ARGSUSED */
 #if	defined(_LP64)
 uintptr_t
-la_pltexit64(Elf64_Sym *symp, uint_t symndx, uintptr_t *refcookie,
-	uintptr_t *defcookie, uintptr_t retval, const char *sym_name)
+la_pltexit64(Elf64_Sym *symp __unused, uint_t symndx __unused,
+    uintptr_t *refcookie, uintptr_t *defcookie, uintptr_t retval,
+    const char *sym_name)
 #else
 uintptr_t
-la_pltexit(Elf32_Sym *symp, uint_t symndx, uintptr_t *refcookie,
-	uintptr_t *defcookie, uintptr_t retval)
+la_pltexit(Elf32_Sym *symp, uint_t symndx __unused, uintptr_t *refcookie,
+   uintptr_t *defcookie, uintptr_t retval)
 #endif
 {
 #if	!defined(_LP64)
