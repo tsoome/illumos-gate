@@ -672,18 +672,19 @@ prune_sib(struct node_list **headp)
 	prev = *headp;
 	curr = prev->next;
 	while (curr) {
-		if (((curr_par = di_parent_node(curr->node)) != DI_NODE_NIL) &&
-		    ((curr_par == parent) || ((curr_gpar =
-		    di_parent_node(curr_par)) != DI_NODE_NIL) &&
-		    (curr_gpar == parent))) {
+		if (((curr_par = di_parent_node(curr->node)) != DI_NODE_NIL &&
+		    curr_par == parent) ||
+		    ((curr_gpar = di_parent_node(curr_par)) != DI_NODE_NIL &&
+		    curr_gpar == parent)) {
 			/*
 			 * match parent/grandparent: delete curr
 			 */
 			prev->next = curr->next;
 			free(curr);
 			curr = prev->next;
-		} else
+		} else {
 			curr = curr->next;
+		}
 	}
 
 	/*
