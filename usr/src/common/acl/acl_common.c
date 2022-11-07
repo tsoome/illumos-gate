@@ -220,9 +220,8 @@ cmp2acls(void *a, void *b)
 	return (0);
 }
 
-/*ARGSUSED*/
 static void *
-cacl_realloc(void *ptr, size_t size, size_t new_size)
+cacl_realloc(void *ptr, size_t size __unused, size_t new_size)
 {
 #if defined(_KERNEL) || defined(_FAKE_KERNEL)
 	void *tmp;
@@ -251,9 +250,8 @@ cacl_malloc(void **ptr, size_t size)
 #endif
 }
 
-/*ARGSUSED*/
 static void
-cacl_free(void *ptr, size_t size)
+cacl_free(void *ptr, size_t size __unused)
 {
 #if defined(_KERNEL) || defined(_FAKE_KERNEL)
 	kmem_free(ptr, size);

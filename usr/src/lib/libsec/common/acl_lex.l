@@ -44,7 +44,7 @@ static int input();
 static void unput(int);
 
 int
-yyerror(const char *s)
+yyerror(const char *s __unused)
 {
 	return (0);
 }
