@@ -23,8 +23,6 @@
  * Copyright 2016 Nexenta Systems, Inc.  All rights reserved.
  */
 
-/*LINTLIBRARY*/
-
 #include <grp.h>
 #include <pwd.h>
 #include <string.h>
@@ -124,7 +122,6 @@ getsidname(uid_t who, boolean_t user, char **sidp, boolean_t noresolve)
 	idmap_stat status;
 	idmap_rid_t rid;
 	int error = IDMAP_ERR_NORESULT;
-	int len;
 	char *domain = NULL;
 
 	*sidp = NULL;
@@ -154,12 +151,8 @@ getsidname(uid_t who, boolean_t user, char **sidp, boolean_t noresolve)
 			if (error == IDMAP_SUCCESS &&
 			    idmap_get_mappings(get_hdl) == 0) {
 				if (status == IDMAP_SUCCESS) {
-					len = snprintf(NULL, 0,
+					(void) asprintf(sidp,
 					    "%s-%d", domain, rid);
-					if (*sidp = malloc(len + 1)) {
-						(void) snprintf(*sidp, len + 1,
-						    "%s-%d", domain, rid);
-					}
 				}
 			}
 		}
@@ -403,15 +396,17 @@ ace_type_txt(dynaclstr_t *dynstr, ace_t *acep, int flags)
 
 	case ACE_IDENTIFIER_GROUP:
 		if ((flags & ACL_SID_FMT) && acep->a_who > MAXUID) {
-			if (error = str_append(dynstr,
-			    GROUPSID_TXT))
+			error = str_append(dynstr, GROUPSID_TXT);
+			if (error != 0)
 				break;
-			if (error = getsidname(acep->a_who, B_FALSE,
-			    &sidp, flags & ACL_NORESOLVE))
+			error = getsidname(acep->a_who, B_FALSE,
+			    &sidp, flags & ACL_NORESOLVE);
+			if (error != 0)
 				break;
 			error = str_append(dynstr, sidp);
 		} else {
-			if (error = str_append(dynstr, GROUP_TXT))
+			error = str_append(dynstr, GROUP_TXT);
+			if (error != 0)
 				break;
 			error = str_append(dynstr, prgname(acep->a_who, idp,
 			    sizeof (idp), flags & ACL_NORESOLVE));
@@ -426,14 +421,17 @@ ace_type_txt(dynaclstr_t *dynstr, ace_t *acep, int flags)
 
 	case 0:
 		if ((flags & ACL_SID_FMT) && acep->a_who > MAXUID) {
-			if (error = str_append(dynstr, USERSID_TXT))
+			error = str_append(dynstr, USERSID_TXT);
+			if (error != 0)
 				break;
-			if (error = getsidname(acep->a_who, B_TRUE,
-			    &sidp, flags & ACL_NORESOLVE))
+			error = getsidname(acep->a_who, B_TRUE,
+			    &sidp, flags & ACL_NORESOLVE);
+			if (error != 0)
 				break;
 			error = str_append(dynstr, sidp);
 		} else {
-			if (error = str_append(dynstr, USER_TXT))
+			error = str_append(dynstr, USER_TXT);
+			if (error != 0)
 				break;
 			error = str_append(dynstr, pruname(acep->a_who, idp,
 			    sizeof (idp), flags & ACL_NORESOLVE));
@@ -756,9 +754,11 @@ aclent_acltotext(aclent_t  *aclp, int aclcnt, int flags)
 	dstr->d_pos = 0;
 
 	for (i = 0; i < aclcnt; i++, aclp++) {
-		if (error = aclent_type_txt(dstr, aclp, flags))
+		error = aclent_type_txt(dstr, aclp, flags);
+		if (error != 0)
 			break;
-		if (error = aclent_perm_txt(dstr, aclp->a_perm))
+		error = aclent_perm_txt(dstr, aclp->a_perm);
+		if (error != 0)
 			break;
 
 		if ((flags & ACL_APPEND_ID) && ((aclp->a_type == USER) ||
@@ -766,16 +766,20 @@ aclent_acltotext(aclent_t  *aclp, int aclcnt, int flags)
 		    (aclp->a_type == DEF_GROUP))) {
 			char id[ID_STR_MAX], *idstr;
 
-			if (error = str_append(dstr, ":"))
+			error = str_append(dstr, ":");
+			if (error != 0)
 				break;
 			id[ID_STR_MAX - 1] = '\0'; /* null terminate buffer */
 			idstr = lltostr(aclp->a_id, &id[ID_STR_MAX - 1]);
-			if (error = str_append(dstr, idstr))
+			error = str_append(dstr, idstr);
+			if (error != 0)
 				break;
 		}
-		if (i < aclcnt - 1)
-			if (error = str_append(dstr, ","))
+		if (i < aclcnt - 1) {
+			error = str_append(dstr, ",");
+			if (error != 0)
 				break;
+		}
 	}
 	if (error) {
 		if (dstr->d_aclexport)
@@ -912,14 +916,18 @@ ace_acltotext(acl_t *aceaclp, int flags)
 
 	for (i = 0; i < aclcnt; i++, aclp++) {
 
-		if (error = ace_type_txt(dstr, aclp, flags))
+		error = ace_type_txt(dstr, aclp, flags);
+		if (error != 0)
 			break;
-		if (error = ace_perm_txt(dstr, aclp->a_access_mask,
-		    aclp->a_flags, isdir, flags))
+		error = ace_perm_txt(dstr, aclp->a_access_mask,
+		    aclp->a_flags, isdir, flags);
+		if (error != 0)
 			break;
-		if (error = ace_inherit_txt(dstr, aclp->a_flags, flags))
+		error = ace_inherit_txt(dstr, aclp->a_flags, flags);
+		if (error != 0)
 			break;
-		if (error = ace_access_txt(dstr, aclp->a_type))
+		error = ace_access_txt(dstr, aclp->a_type);
+		if (error != 0)
 			break;
 
 		if ((flags & ACL_APPEND_ID) &&
@@ -928,7 +936,8 @@ ace_acltotext(acl_t *aceaclp, int flags)
 		    ACE_IDENTIFIER_GROUP))) {
 			char id[ID_STR_MAX], *idstr;
 
-			if (error = str_append(dstr, ":"))
+			error = str_append(dstr, ":");
+			if (error != 0)
 				break;
 
 			rawsidp = NULL;
@@ -949,7 +958,8 @@ ace_acltotext(acl_t *aceaclp, int flags)
 				idstr = lltostr(aclp->a_who,
 				    &id[ID_STR_MAX - 1]);
 			}
-			if (error = str_append(dstr, idstr))
+			error = str_append(dstr, idstr);
+			if (error != 0)
 				break;
 			if (rawsidp) {
 				free(rawsidp);
@@ -957,7 +967,8 @@ ace_acltotext(acl_t *aceaclp, int flags)
 			}
 		}
 		if (i < aclcnt - 1) {
-			if (error = str_append(dstr, ","))
+			error = str_append(dstr, ",");
+			if (error != 0)
 				break;
 		}
 	}
@@ -1104,7 +1115,8 @@ ace_printacl(acl_t *aclp, int cols, int flgs)
 	do {
 		(void) printf("     %d:", slot++);
 		split_line(token, cols - 5);
-	} while (token = strtok(NULL, ","));
+		token = strtok(NULL, ",");
+	} while (token != NULL);
 	free(acltext);
 }
 
