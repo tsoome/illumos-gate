@@ -555,6 +555,7 @@ lx_prstatus64_to_lwp(lx_prstatus64_t *prs64, lwp_info_t *lwp)
 
 	lwp->lwp_status.pr_reg[REG_RIP] = prs64->pr_reg.lxr_rip;
 	lwp->lwp_status.pr_reg[REG_CS] = prs64->pr_reg.lxr_cs;
+#ifdef __amd64
 	lwp->lwp_status.pr_reg[REG_RSP] = prs64->pr_reg.lxr_rsp;
 	lwp->lwp_status.pr_reg[REG_FS] = prs64->pr_reg.lxr_fs;
 	lwp->lwp_status.pr_reg[REG_SS] = prs64->pr_reg.lxr_ss;
@@ -564,6 +565,7 @@ lx_prstatus64_to_lwp(lx_prstatus64_t *prs64, lwp_info_t *lwp)
 
 	lwp->lwp_status.pr_reg[REG_GSBASE] = prs64->pr_reg.lxr_gs_base;
 	lwp->lwp_status.pr_reg[REG_FSBASE] = prs64->pr_reg.lxr_fs_base;
+#endif
 }
 
 static void
