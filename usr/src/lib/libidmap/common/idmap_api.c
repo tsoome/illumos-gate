@@ -1432,7 +1432,7 @@ idmap_get_mappings(idmap_get_handle_t *gh)
 	idmap_retcode	retcode;
 	idmap_ids_res	res;
 	idmap_id	*res_id;
-	int		i;
+	uint64_t	i;
 	idmap_id	*req_id;
 	int		direction;
 

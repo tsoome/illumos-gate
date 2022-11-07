@@ -170,7 +170,7 @@ directory_get_v(
 		goto err;
 	}
 
-	assert(dr.directory_results_rpc_u.entries.entries_len == nids);
+	assert(dr.directory_results_rpc_u.entries.entries_len == (uint_t)nids);
 
 	users = dr.directory_results_rpc_u.entries.entries_val;
 
@@ -201,9 +201,7 @@ directory_free(directory_entry_list_t del)
 {
 	directory_entry_t *ent;
 	directory_attribute_value_t dav;
-	int i;
-	int j;
-	int k;
+	size_t i, j, k;
 
 	if (del == NULL)
 		return;
