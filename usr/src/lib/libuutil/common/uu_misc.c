@@ -259,10 +259,10 @@ void
 uu_dump(FILE *out, const char *prefix, const void *buf, size_t len)
 {
 	const unsigned char *p = buf;
-	int i;
+	size_t i;
 
 	for (i = 0; i < len; i += 16) {
-		int j;
+		size_t j;
 
 		(void) fprintf(out, "%s", prefix);
 		for (j = 0; j < 16 && i + j < len; j++) {
