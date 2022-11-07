@@ -1199,10 +1199,9 @@ devfs_phys_to_logical(struct boot_dev **bootdev_array, const int array_size,
  * sees if there are any matches.  If so, it saves the logical device
  * name off in the appropriate list in dev_list
  */
-/* ARGSUSED */
 static int
-check_logical_dev(const char *node, const struct stat *node_stat, int flags,
-    struct FTW *ftw_info)
+check_logical_dev(const char *node, const struct stat *node_stat __unused,
+    int flags, struct FTW *ftw_info __unused)
 {
 	char link_buf[MAXPATHLEN];
 	int link_buf_len;

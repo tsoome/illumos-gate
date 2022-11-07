@@ -69,9 +69,8 @@ di_dim_fini(di_dim_t dim)
 	free(idim);
 }
 
-/*ARGSUSED*/
 char *
-di_dim_path_devices(di_dim_t dim, char *drv_name, int instance,
+di_dim_path_devices(di_dim_t dim __unused, char *drv_name, int instance,
     char *minor_name)
 {
 	major_t	major;

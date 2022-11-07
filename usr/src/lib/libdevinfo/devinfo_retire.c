@@ -102,9 +102,8 @@ rio_assert(di_retire_t *dp, const char *EXstr, int line, const char *file)
 	dp->rt_abort(dp->rt_hdl, buf);
 }
 
-/*ARGSUSED*/
 static int
-enclosure_minor(di_node_t node, di_minor_t minor, void *arg)
+enclosure_minor(di_node_t node __unused, di_minor_t minor __unused, void *arg)
 {
 	rcm_arg_t *rp = (rcm_arg_t *)arg;
 	di_retire_t *dp = rp->rcm_dp;
@@ -144,9 +143,8 @@ enclosure_select(di_node_t node, rcm_arg_t *rp)
 	return (rarg.rcm_supp);
 }
 
-/*ARGSUSED*/
 static int
-smp_minor(di_node_t node, di_minor_t minor, void *arg)
+smp_minor(di_node_t node __unused, di_minor_t minor __unused, void *arg)
 {
 	rcm_arg_t *rp = (rcm_arg_t *)arg;
 	di_retire_t *dp = rp->rcm_dp;
@@ -179,9 +177,8 @@ smp_select(di_node_t node, rcm_arg_t *rp)
 	return (rarg.rcm_supp);
 }
 
-/*ARGSUSED*/
 static int
-disk_minor(di_node_t node, di_minor_t minor, void *arg)
+disk_minor(di_node_t node __unused, di_minor_t minor, void *arg)
 {
 	rcm_arg_t *rp = (rcm_arg_t *)arg;
 	di_retire_t *dp = rp->rcm_dp;
@@ -416,9 +413,9 @@ rcm_finalize(rcm_arg_t *rp, int retcode)
 	}
 	rp->rcm_rsrc_minors = NULL;
 }
-/*ARGSUSED*/
+
 static int
-call_offline(di_node_t node, di_minor_t minor, void *arg)
+call_offline(di_node_t node __unused, di_minor_t minor, void *arg)
 {
 	rcm_arg_t	*rp = (rcm_arg_t *)arg;
 	di_retire_t	*dp = rp->rcm_dp;
@@ -666,8 +663,6 @@ out:
 	return (rp->rcm_retcode);
 }
 
-
-/*ARGSUSED*/
 int
 di_retire_device(char *devpath, di_retire_t *dp, int flags)
 {
@@ -829,7 +824,6 @@ out:
 	return (retval);
 }
 
-/*ARGSUSED*/
 int
 di_unretire_device(char *devpath, di_retire_t *dp)
 {

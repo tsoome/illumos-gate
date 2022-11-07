@@ -2199,9 +2199,9 @@ walk_dev(struct di_devlink_handle *hdp, link_desc_t *linkp)
 	return (linkp->retval);
 }
 
-/* ARGSUSED */
 static int
-cache_dev_link(struct di_devlink_handle *hdp, void *data, const char *link)
+cache_dev_link(struct di_devlink_handle *hdp, void *data __unused,
+    const char *link)
 {
 	int flags;
 	cache_link_t *clp;
@@ -3841,8 +3841,6 @@ debug_print(debug_level_t msglevel, const char *fmt, va_list ap)
 	(void) fflush(stderr);
 }
 
-/* ARGSUSED */
-/* PRINTFLIKE2 */
 void
 dprintf(debug_level_t msglevel, const char *fmt, ...)
 {

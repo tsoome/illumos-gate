@@ -22,10 +22,6 @@
  * Copyright (c) 2004, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-#ifdef	lint
-#define	_REENTRANT	/* for localtime_r */
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -170,9 +166,8 @@ find_eol(FILE *fp)
 }
 
 /* ignore parsing errors */
-/*ARGSUSED*/
 static void
-file_err(struct conf_file *filep, char *fmt, ...)
+file_err(struct conf_file *filep __unused, char *fmt __unused, ...)
 {
 #ifdef DEBUG
 	va_list ap;
