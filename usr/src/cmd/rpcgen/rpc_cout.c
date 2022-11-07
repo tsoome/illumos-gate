@@ -156,7 +156,7 @@ print_header(definition *def)
 	if (inlinelen == 0)
 		return;
 	/* May cause lint to complain. but  ... */
-	f_print(fout, "\trpc_inline_t *buf;\n\n");
+	f_print(fout, "\trpc_inline_t *buf __unused;\n\n");
 }
 
 static void
@@ -363,6 +363,9 @@ emit_union(definition *def)
 			print_ifstat(2, dflt->prefix, dflt->type, dflt->rel,
 			    dflt->array_max, object, dflt->name);
 			free(object);
+			f_print(fout, "\t\tbreak;\n");
+		} else {
+			f_print(fout, "\tdefault:\n");
 			f_print(fout, "\t\tbreak;\n");
 		}
 	} else {
