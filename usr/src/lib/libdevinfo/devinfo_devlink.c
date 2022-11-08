@@ -3469,20 +3469,19 @@ daemon_call(const char *root, struct dca_off *dcp)
 	(void) sigfillset(&nset);
 	(void) sigemptyset(&oset);
 	(void) sigprocmask(SIG_SETMASK, &nset, &oset);
-	if (door_call(fd, &arg)) {
-		door_error = 1;
+	door_error = door_call(fd, &arg);
+	if (door_error == -1) {
 		dcp->dca_error = errno;
 	}
 	(void) sigprocmask(SIG_SETMASK, &oset, NULL);
 
 	(void) close(fd);
 
-	if (door_error)
+	if (door_error != 0)
 		return (install);
 
 	assert(arg.data_ptr);
 
-	/*LINTED*/
 	dcp->dca_error = ((struct dca_off *)arg.data_ptr)->dca_error;
 
 	/*
