@@ -3787,9 +3787,11 @@ di_lookup_node_impl(di_node_t root, char *devfspath)
 		pname = slash + 1;
 		node = di_child_node(node);
 
-		if (slash = strchr(pname, '/'))
+		slash = strchr(pname, '/');
+		if (slash != NULL)
 			*slash = '\0';
-		if (paddr = strchr(pname, '@'))
+		paddr = strchr(pname, '@');
+		if (paddr != NULL)
 			*paddr++ = '\0';
 
 		for (; node != DI_NODE_NIL; node = di_sibling_node(node)) {
