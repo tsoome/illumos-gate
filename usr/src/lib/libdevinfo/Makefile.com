@@ -38,6 +38,7 @@ include ../../Makefile.rootfs
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lnvpair -lsec -lc -lgen
 
+CSTD=		$(CSTD_GNU99)
 CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-I..
 CERRWARN +=	-_gcc=-Wno-parentheses

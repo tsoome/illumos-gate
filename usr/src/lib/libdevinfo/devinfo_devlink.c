@@ -1442,7 +1442,7 @@ lookup_minor(
 static void *
 lookup_node(struct di_devlink_handle *hdp, char *path, const int flags)
 {
-	struct tnode tnd = {NULL};
+	struct tnode tnd = { .node = NULL };
 
 	tnd.node = get_last_node(hdp, path, flags);
 	if (tnd.node != NULL)
@@ -1915,7 +1915,7 @@ synchronize_db(di_devlink_handle_t hdp)
 	int hval;
 	cache_link_t *clp;
 	char pdup[PATH_MAX];
-	recurse_t rec = {NULL};
+	recurse_t rec = { .data = NULL };
 	const char *fcn = "synchronize_db";
 
 	rec.data = NULL;
@@ -2050,7 +2050,7 @@ di_devlink_walk(
 {
 	int rv;
 	regex_t reg;
-	link_desc_t linkd = {NULL};
+	link_desc_t linkd = { .regp = NULL };
 
 	if (hdp == NULL || !HDL_RDONLY(hdp)) {
 		errno = EINVAL;
@@ -2148,7 +2148,7 @@ static int
 cache_dev(struct di_devlink_handle *hdp)
 {
 	size_t sz;
-	recurse_t rec = {NULL};
+	recurse_t rec = { .data = NULL };
 
 	assert(hdp);
 	assert(HDL_RDONLY(hdp));
@@ -2249,7 +2249,7 @@ walk_all_links(struct di_devlink_handle *hdp, link_desc_t *linkp)
 		 * initializer so that it gets rezeroed
 		 * for each iteration.
 		 */
-		struct di_devlink vlink = {NULL};
+		struct di_devlink vlink = { .rel_path = NULL };
 
 		if ((dlp = get_link(hdp, nidx)) == NULL)
 			continue;
@@ -2285,7 +2285,7 @@ walk_matching_links(struct di_devlink_handle *hdp, link_desc_t *linkp)
 	for (;;) {
 		nidx = dmp ? dmp->link : DB_HDR(hdp)->dngl_idx;
 		for (; (dlp = get_link(hdp, nidx)) != NULL; nidx = dlp->sib) {
-			struct di_devlink vlink = {NULL};
+			struct di_devlink vlink = { .rel_path = NULL };
 
 			vlink.rel_path = get_string(hdp, dlp->path);
 			vlink.content = get_string(hdp, dlp->content);
@@ -3634,7 +3634,7 @@ walk_cache_links(di_devlink_handle_t hdp, cache_link_t *clp, link_desc_t *linkp)
 	 */
 	for (i = 0; i < 2; i++) {
 		for (; clp != NULL; clp = clp->sib) {
-			struct di_devlink vlink = {NULL};
+			struct di_devlink vlink = { .rel_path = NULL };
 
 			assert(clp->path[0] != '/');
 
@@ -3670,7 +3670,7 @@ walk_all_cache(di_devlink_handle_t hdp, link_desc_t *linkp)
 	for (i = 0; i < CACHE(hdp)->hash_sz; i++) {
 		clp = CACHE_HASH(hdp, i);
 		for (; clp; clp = clp->hash) {
-			struct di_devlink vlink = {NULL};
+			struct di_devlink vlink = { .rel_path = NULL };
 
 			assert(clp->path[0] != '/');
 
@@ -3749,7 +3749,7 @@ di_devlink_cache_walk(di_devlink_handle_t hdp,
 	int (*devlink_callback)(di_devlink_t, void *))
 {
 	regex_t reg;
-	link_desc_t linkd = {NULL};
+	link_desc_t linkd = { .regp = NULL};
 
 	if (hdp == NULL || path == NULL || !link_flag(flags) ||
 	    !HDL_RDWR(hdp) || devlink_callback == NULL) {
