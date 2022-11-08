@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Copyright (c) 2003 Constantin S. Svintsoff <kostik@iclub.nsu.ru>
  *
@@ -119,7 +117,7 @@ s_realpath(const char *path, char *resolved)
 		 */
 		p = strchr(left, '/');
 		s = p ? p : left + left_len;
-		if (s - left >= sizeof (next_token)) {
+		if (s - left >= (int)sizeof (next_token)) {
 			errno = ENAMETOOLONG;
 			return (NULL);
 		}
@@ -214,7 +212,7 @@ s_realpath(const char *path, char *resolved)
 			 */
 			if (p != NULL) {
 				if (symlink[slen - 1] != '/') {
-					if (slen + 1 >= sizeof (symlink)) {
+					if (slen + 1 >= (int)sizeof (symlink)) {
 						errno = ENAMETOOLONG;
 						return (NULL);
 					}

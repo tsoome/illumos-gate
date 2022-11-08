@@ -287,7 +287,8 @@ static struct di_devlink_handle *handle_alloc(const char *dev_dir,
     uint_t flags);
 static int cache_alloc(struct di_devlink_handle *hdp);
 static int open_db(struct di_devlink_handle *hdp, int flags);
-static int invalid_db(struct di_devlink_handle *hdp, size_t fsize, long pg_sz);
+static int invalid_db(struct di_devlink_handle *hdp, size_t fsize,
+    size_t pg_sz);
 static int read_nodes(struct di_devlink_handle *hdp, cache_node_t *pcnp,
     uint32_t nidx);
 static int read_minors(struct di_devlink_handle *hdp, cache_node_t *pcnp,

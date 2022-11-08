@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -142,7 +140,7 @@ restart:
 		if ((strcmp(dp->d_name, ".") == 0) ||
 		    (strcmp(dp->d_name, "..") == 0))
 			continue;
-		if (n == handle->npaths) {
+		if (n == (size_t)handle->npaths) {
 			/*
 			 * restart if directory contents have out-grown
 			 * buffer allocated in the first pass.

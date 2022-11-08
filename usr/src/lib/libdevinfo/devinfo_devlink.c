@@ -219,8 +219,8 @@ get_db_path(
 static int
 open_db(struct di_devlink_handle *hdp, int flags)
 {
-	size_t sz;
-	long page_sz;
+	size_t sz, page_sz;
+	long n;
 	int fd, rv, flg;
 	struct stat sbuf;
 	uint32_t count[DB_TYPES] = {0};
@@ -235,9 +235,11 @@ open_db(struct di_devlink_handle *hdp, int flags)
 		return (-1);
 	}
 #endif
-	if ((page_sz = sysconf(_SC_PAGE_SIZE)) == -1) {
+	n = sysconf(_SC_PAGE_SIZE);
+	if (n == -1) {
 		return (-1);
 	}
+	page_sz = n;
 
 	/*
 	 * Use O_TRUNC flag for write access, so that the subsequent ftruncate()
@@ -484,7 +486,7 @@ cache_alloc(struct di_devlink_handle *hdp)
 
 
 static int
-invalid_db(struct di_devlink_handle *hdp, size_t fsize, long page_sz)
+invalid_db(struct di_devlink_handle *hdp, size_t fsize, size_t page_sz)
 {
 	int i;
 	char *cp;
@@ -1912,7 +1914,7 @@ di_devlink_update(di_devlink_handle_t hdp)
 static int
 synchronize_db(di_devlink_handle_t hdp)
 {
-	int hval;
+	uint_t hval;
 	cache_link_t *clp;
 	char pdup[PATH_MAX];
 	recurse_t rec = { .data = NULL };
@@ -2536,7 +2538,8 @@ do_recurse(
 	const char *rel;
 	struct stat sbuf;
 	char cur[PATH_MAX], *cp;
-	int i, rv = DI_WALK_CONTINUE;
+	int rv = DI_WALK_CONTINUE;
+	uint_t i;
 	finddevhdl_t handle;
 	char *d_name;
 
@@ -2866,7 +2869,7 @@ map_seg(
 	int prot,
 	db_seg_t seg)
 {
-	int s;
+	db_seg_t s;
 	off_t off;
 	size_t slen;
 	caddr_t addr;
@@ -3234,13 +3237,14 @@ s_readlink(const char *link, char *buf, size_t blen)
 {
 	int rv;
 
-	if ((rv = readlink(link, buf, blen)) == -1)
+	rv = readlink(link, buf, blen);
+	if (rv == -1)
 		goto bad;
 
-	if (rv >= blen && buf[blen - 1] != '\0') {
+	if ((size_t)rv >= blen && buf[blen - 1] != '\0') {
 		errno = ENAMETOOLONG;
 		goto bad;
-	} else if (rv < blen) {
+	} else if ((size_t)rv < blen) {
 		buf[rv] = '\0';
 	}
 
@@ -3661,7 +3665,7 @@ out:
 static void
 walk_all_cache(di_devlink_handle_t hdp, link_desc_t *linkp)
 {
-	int i;
+	uint_t i;
 	cache_link_t *clp;
 
 	dprintf(DBG_INFO, "walk_all_cache: entered\n");
@@ -3823,9 +3827,9 @@ debug_print(debug_level_t msglevel, const char *fmt, va_list ap)
 	/* debug msgs are enabled */
 	assert(_devlink_debug > 0);
 
-	if (_devlink_debug < msglevel)
+	if (_devlink_debug < (int)msglevel)
 		return;
-	if ((_devlink_debug == DBG_LCK) && (msglevel != _devlink_debug))
+	if ((_devlink_debug == DBG_LCK) && ((int)msglevel != _devlink_debug))
 		return;
 
 	/* Print a distinctive label for error msgs */

@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains kernel property decode routines adopted from
  * sunddi.c and ddi_impl.c. The following changes have been applied.
@@ -971,7 +969,7 @@ di_slot_names_decode(uchar_t *rawdata, int rawlen,
 	int maxslots = 0;
 	di_slot_name_t *slot_names = NULL;
 
-	if (rawlen < sizeof (slots))
+	if ((size_t)rawlen < sizeof (slots))
 		goto ERROUT;
 
 	slots = impl_di_prop_int_from_prom(rawdata, sizeof (slots));

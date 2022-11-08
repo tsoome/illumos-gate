@@ -649,11 +649,11 @@ rcm_notify(rcm_arg_t *rp, char **pp, size_t *clen)
 		p = tmp->rpt_next;
 		(void) strcpy(s, tmp->rpt_path);
 		s += strlen(s) + 1;
-		RIO_ASSERT(dp, s - plistp < len);
+		RIO_ASSERT(dp, (uintptr_t)(s - plistp) < len);
 		free(tmp);
 	}
 	rp->rcm_cons_nodes = NULL;
-	RIO_ASSERT(dp, s - plistp == len - 1);
+	RIO_ASSERT(dp, (uintptr_t)(s - plistp) == len - 1);
 	*s = '\0';
 
 	dp->rt_debug(dp->rt_hdl, "[INFO]: constraint str = %p\n", plistp);

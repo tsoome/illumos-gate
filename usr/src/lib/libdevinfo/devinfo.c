@@ -62,7 +62,7 @@ typedef enum {
 	DI_TRACE2
 } di_debug_t;
 
-int di_debug = DI_QUIET;
+di_debug_t di_debug = DI_QUIET;
 
 #define	DPRINTF(args)	{ if (di_debug != DI_QUIET) dprint args; }
 
@@ -1266,7 +1266,7 @@ is_generic(const char *name, int len)
 
 	for (gp = generic_names; *gp; gp++) {
 		if ((strncmp(*gp, name, len) == 0) &&
-		    (strlen(*gp) == len))
+		    (strlen(*gp) == (size_t)len))
 			return (1);
 	}
 	return (0);
