@@ -50,6 +50,7 @@ SRCDIR = ../common
 
 CLEANFILES += ../common/smb_tables.c
 
+CSTD = $(CSTD_GNU99)
 CPPFLAGS += -I../common -I$(COMMON_SRCDIR)
 CFLAGS += $(CCVERBOSE)
 LDLIBS += -ldevinfo -lc
