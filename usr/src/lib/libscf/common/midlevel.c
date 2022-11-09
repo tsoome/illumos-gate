@@ -1735,7 +1735,7 @@ scf_simple_prop_get(scf_handle_t *hin, const char *instance, const char *pgname,
 
 	if ((svc = scf_service_create(h)) == NULL ||
 	    (prop = scf_property_create(h)) == NULL)
-		goto error1;
+		goto error;
 	if (scf_handle_decode_fmri(h, fmri_buf, NULL, NULL, NULL, NULL, prop,
 	    SCF_DECODE_FMRI_REQUIRE_INSTANCE) == -1) {
 		switch (scf_error()) {
@@ -1748,27 +1748,27 @@ scf_simple_prop_get(scf_handle_t *hin, const char *instance, const char *pgname,
 		case SCF_ERROR_NOT_FOUND:
 			if (scf_handle_decode_fmri(h, fmri_buf, NULL, svc,
 			    NULL, NULL, NULL, SCF_DECODE_FMRI_TRUNCATE) == -1)
-				goto error1;
+				goto error;
 
 			fmri_sz = scf_limit(SCF_LIMIT_MAX_FMRI_LENGTH) + 1;
 			assert(fmri_sz > 0);
 
 			if (scf_service_to_fmri(svc, fmri_buf, fmri_sz) == -1)
-				goto error1;
+				goto error;
 			if ((svcfmri = assemble_fmri(h, fmri_buf, pgname,
 			    propname)) == NULL)
-				goto error1;
+				goto error;
 			if (scf_handle_decode_fmri(h, svcfmri, NULL, NULL,
 			    NULL, NULL, prop, 0) == -1) {
 				free(svcfmri);
-				goto error1;
+				goto error;
 			}
 			free(svcfmri);
 			break;
 		case SCF_ERROR_CONSTRAINT_VIOLATED:
 			(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		default:
-			goto error1;
+			goto error;
 		}
 	}
 	/*
@@ -1777,7 +1777,7 @@ scf_simple_prop_get(scf_handle_t *hin, const char *instance, const char *pgname,
 	 * scf_simple_prop_t.
 	 */
 	if ((ret = fill_prop(prop, pgname, propname, h)) == NULL)
-		goto error1;
+		goto error;
 
 	scf_service_destroy(svc);
 	scf_property_destroy(prop);
@@ -1791,10 +1791,9 @@ scf_simple_prop_get(scf_handle_t *hin, const char *instance, const char *pgname,
 	 * for failures at various stages during the function.
 	 */
 
-error1:
+error:
 	scf_service_destroy(svc);
 	scf_property_destroy(prop);
-error2:
 	free(fmri_buf);
 	if (local_h)
 		scf_handle_destroy(h);
