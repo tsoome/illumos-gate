@@ -67,12 +67,10 @@ di_debug_t di_debug = DI_QUIET;
 #define	DPRINTF(args)	{ if (di_debug != DI_QUIET) dprint args; }
 
 void dprint(di_debug_t msglevel, const char *fmt, ...);
-
-
-#pragma init(_libdevinfo_init)
+void _libdevinfo_init(void) __attribute__((constructor));
 
 void
-_libdevinfo_init()
+_libdevinfo_init(void)
 {
 	char	*debug_str = getenv("_LIBDEVINFO_DEBUG");
 
