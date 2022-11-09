@@ -4831,7 +4831,7 @@ static struct _tmpl_error_access {
 	{ (get_em)_get_tmpl_pg_type_desc, (get_em)_get_tmpl_pg_type_val },
 	{ (get_em)_get_tmpl_prop_name_desc, (get_em)_get_tmpl_prop_name_val },
 	{ (get_em)_get_tmpl_prop_type_desc, (get_em)_get_tmpl_prop_type_val },
-	{ NULL }
+	{ NULL, NULL }
 };
 
 /*
