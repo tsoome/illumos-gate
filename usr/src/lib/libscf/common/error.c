@@ -141,7 +141,7 @@ scf_error(void)
 {
 	scf_error_t ret;
 
-	ret = (scf_error_t)pthread_getspecific(scf_error_key);
+	ret = (scf_error_t)(uintptr_t)pthread_getspecific(scf_error_key);
 	if (ret == 0)
 		return (_scf_fallback_error);
 	assert(LOOKS_VALID(ret));
