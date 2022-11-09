@@ -5310,6 +5310,8 @@ _add_tmpl_count_error(scf_tmpl_errors_t *errs, scf_tmpl_error_type_t type,
 	case SCF_TERR_VALUE_OUT_OF_RANGE:
 		/* keep pg_name = NULL and prop_name = NULL */
 		break;
+	default:
+		break;
 	}
 	if (scf_tmpl_pg_name(pt->prt_t, &t_pg_name) == -1) {
 		goto cleanup;
@@ -5429,6 +5431,8 @@ _add_tmpl_constraint_error(scf_tmpl_errors_t *errs, scf_tmpl_error_type_t type,
 			goto cleanup;
 		}
 		break;
+	default:
+		break;
 	}
 	if (scf_tmpl_pg_name(pt->prt_t, &t_pg_name) == -1) {
 		goto cleanup;
@@ -5509,6 +5513,8 @@ _add_tmpl_int_error(scf_tmpl_errors_t *errs, scf_tmpl_error_type_t type,
 		break;
 	case SCF_TERR_VALUE_OUT_OF_RANGE:
 		/* keep pg_name = NULL and prop_name = NULL */
+		break;
+	default:
 		break;
 	}
 	if (scf_tmpl_pg_name(pt->prt_t, &t_pg_name) == -1) {

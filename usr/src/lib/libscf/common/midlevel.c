@@ -737,6 +737,8 @@ error:
 	case SCF_ERROR_NOT_FOUND:
 		/* success */
 		ret = 0;
+	default:
+		break;
 	}
 
 out:
@@ -991,6 +993,8 @@ set_inst_action(const char *fmri, const char *action)
 				break;
 			case SCF_ERROR_DELETED:
 				(void) scf_set_error(SCF_ERROR_NOT_FOUND);
+				break;
+			default:
 				break;
 			}
 		}
