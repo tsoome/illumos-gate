@@ -104,7 +104,7 @@ _enum_common_p(const char *cprofiles,
 
 	COPYTOSTACK(profiles, cprofiles)
 
-	while (prof = strtok_r(profiles, KV_SEPSTR, &last)) {
+	while ((prof = strtok_r(profiles, KV_SEPSTR, &last)) != NULL) {
 
 		profiles = NULL;	/* For next iterations of strtok_r */
 
@@ -238,7 +238,7 @@ _enum_auths_a(const char *cauths, int (*cb)(const char *, void *, void *),
 
 	COPYTOSTACK(auths, cauths)
 
-	while (auth = strtok_r(auths, KV_SEPSTR, &last)) {
+	while ((auth = strtok_r(auths, KV_SEPSTR, &last)) != NULL) {
 		auths = NULL;		/* For next iterations of strtok_r */
 
 		res = cb(auth, ctxt, pres);
