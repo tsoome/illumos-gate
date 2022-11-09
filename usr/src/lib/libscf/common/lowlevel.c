@@ -329,7 +329,7 @@ static const struct {
 static rep_protocol_value_type_t
 scf_type_to_protocol_type(scf_type_t t)
 {
-	int i;
+	uint_t i;
 
 	for (i = 0; i < SCF_TYPE_INFO_COUNT; i++)
 		if (scf_type_info[i].ti_type == t)
@@ -341,7 +341,7 @@ scf_type_to_protocol_type(scf_type_t t)
 static scf_type_t
 scf_protocol_type_to_type(rep_protocol_value_type_t t)
 {
-	int i;
+	uint_t i;
 
 	for (i = 0; i < SCF_TYPE_INFO_COUNT; i++)
 		if (scf_type_info[i].ti_proto_type == t)
@@ -353,7 +353,7 @@ scf_protocol_type_to_type(rep_protocol_value_type_t t)
 const char *
 scf_type_to_string(scf_type_t ty)
 {
-	int i;
+	uint_t i;
 
 	for (i = 0; i < SCF_TYPE_INFO_COUNT; i++)
 		if (scf_type_info[i].ti_type == ty)
@@ -365,9 +365,9 @@ scf_type_to_string(scf_type_t ty)
 scf_type_t
 scf_string_to_type(const char *name)
 {
-	int i;
+	uint_t i;
 
-	for (i = 0; i < sizeof (scf_type_info) / sizeof (*scf_type_info); i++)
+	for (i = 0; i < ARRAY_SIZE(scf_type_info); i++)
 		if (strcmp(scf_type_info[i].ti_name, name) == 0)
 			return (scf_type_info[i].ti_type);
 
@@ -378,6 +378,7 @@ int
 scf_type_base_type(scf_type_t type, scf_type_t *out)
 {
 	rep_protocol_value_type_t t = scf_type_to_protocol_type(type);
+
 	if (t == REP_PROTOCOL_TYPE_INVALID)
 		return (scf_set_error(SCF_ERROR_INVALID_ARGUMENT));
 
@@ -882,11 +883,11 @@ scf_handle_decorate(scf_handle_t *handle, const char *name, scf_value_t *v)
 		} else {
 			ssize_t len;
 
-			if ((len = scf_value_get_astring(v, name,
-			    sizeof (name))) < 0) {
+			len = scf_value_get_astring(v, name, sizeof (name));
+			if (len < 0) {
 				return (-1);		/* error already set */
 			}
-			if (len == 0 || len >= sizeof (name)) {
+			if (len == 0 || (size_t)len >= sizeof (name)) {
 				return (scf_set_error(
 				    SCF_ERROR_INVALID_ARGUMENT));
 			}
@@ -932,10 +933,11 @@ scf_handle_decorate(scf_handle_t *handle, const char *name, scf_value_t *v)
 			return (0);
 		}
 
-		if ((len = scf_value_get_astring(v, zone, sizeof (zone))) < 0)
+		len = scf_value_get_astring(v, zone, sizeof (zone));
+		if (len < 0)
 			return (-1);
 
-		if (len == 0 || len >= sizeof (zone))
+		if (len == 0 || (size_t)len >= sizeof (zone))
 			return (scf_set_error(SCF_ERROR_INVALID_ARGUMENT));
 
 		if (zone_get_rootpath(zone, root, sizeof (root)) != Z_OK) {
@@ -946,8 +948,9 @@ scf_handle_decorate(scf_handle_t *handle, const char *name, scf_value_t *v)
 			}
 		}
 
-		if (snprintf(door, sizeof (door), "%s/%s", root,
-		    default_door_path) >= sizeof (door))
+		len = snprintf(door, sizeof (door), "%s/%s", root,
+		    default_door_path);
+		if (len < 0 || (size_t)len >= sizeof (door))
 			return (scf_set_error(SCF_ERROR_INTERNAL));
 
 		(void) pthread_mutex_lock(&handle->rh_lock);
@@ -2460,7 +2463,7 @@ datael_iter_next(scf_iter_t *iter, scf_datael_t *out)
 		return (scf_set_error(SCF_ERROR_NOT_SET));
 	}
 
-	if (out->rd_type != iter->iter_type) {
+	if (out->rd_type != (uint32_t)iter->iter_type) {
 		(void) pthread_mutex_unlock(&h->rh_lock);
 		return (scf_set_error(SCF_ERROR_INVALID_ARGUMENT));
 	}
@@ -3597,7 +3600,7 @@ property_type_locked(const scf_property_t *prop,
 		DOOR_ERRORS_BLOCK(r);
 
 	if (response.rpr_response != REP_PROTOCOL_SUCCESS ||
-	    r < sizeof (response)) {
+	    (uint_t)r < sizeof (response)) {
 		return (scf_set_error(proto_error(response.rpr_response)));
 	}
 	*out = response.rpr_value;
@@ -3741,7 +3744,7 @@ scf_transaction_start(scf_transaction_t *tran, scf_propertygroup_t *pg)
 	/* r < sizeof (response) cannot happen because sizeof (response) == 4 */
 
 	if (response.rpr_response != REP_PROTOCOL_SUCCESS ||
-	    r < sizeof (response)) {
+	    (uint_t)r < sizeof (response)) {
 		(void) pthread_mutex_unlock(&h->rh_lock);
 		return (scf_set_error(proto_error(response.rpr_response)));
 	}
@@ -4039,7 +4042,7 @@ commit_process(scf_transaction_entry_t *cur,
 		val_data += len;
 	}
 
-	assert(val_data - data == sz);
+	assert((uintptr_t)(val_data - data) == sz);
 
 	if (out != NULL)
 		out->rptc_size = REP_PROTOCOL_TRANSACTION_CMD_SIZE(sz);
@@ -5690,7 +5693,8 @@ reset_args:
 ssize_t
 scf_scope_to_fmri(const scf_scope_t *scope, char *out, size_t sz)
 {
-	ssize_t r, len;
+	ssize_t r;
+	size_t len;
 
 	char tmp[REP_PROTOCOL_NAME_LEN];
 
@@ -5745,7 +5749,7 @@ scf_service_to_fmri(const scf_service_t *svc, char *out, size_t sz)
 	if (len < 0)
 		return (-1);
 
-	if (out == NULL || len >= sz)
+	if (out == NULL || (size_t)len >= sz)
 		len += sizeof (SCF_FMRI_SERVICE_PREFIX) - 1;
 	else
 		len = strlcat(out, SCF_FMRI_SERVICE_PREFIX, sz);
@@ -5754,7 +5758,7 @@ scf_service_to_fmri(const scf_service_t *svc, char *out, size_t sz)
 	if (r < 0)
 		return (r);
 
-	if (out == NULL || len >= sz)
+	if (out == NULL || (size_t)len >= sz)
 		len += r;
 	else
 		len = strlcat(out, tmp, sz);
@@ -5784,7 +5788,7 @@ scf_instance_to_fmri(const scf_instance_t *inst, char *out, size_t sz)
 	if (len < 0)
 		return (len);
 
-	if (len >= sz)
+	if ((size_t)len >= sz)
 		len += sizeof (SCF_FMRI_INSTANCE_PREFIX) - 1;
 	else
 		len = strlcat(out, SCF_FMRI_INSTANCE_PREFIX, sz);
@@ -5793,7 +5797,7 @@ scf_instance_to_fmri(const scf_instance_t *inst, char *out, size_t sz)
 	if (r < 0)
 		return (r);
 
-	if (len >= sz)
+	if ((size_t)len >= sz)
 		len += r;
 	else
 		len = strlcat(out, tmp, sz);
@@ -5825,7 +5829,7 @@ scf_pg_to_fmri(const scf_propertygroup_t *pg, char *out, size_t sz)
 		DOOR_ERRORS_BLOCK(r);
 
 	if (response.rpr_response != REP_PROTOCOL_SUCCESS ||
-	    r < sizeof (response)) {
+	    (size_t)r < sizeof (response)) {
 		return (scf_set_error(proto_error(response.rpr_response)));
 	}
 
@@ -5887,7 +5891,10 @@ scf_pg_to_fmri(const scf_propertygroup_t *pg, char *out, size_t sz)
 	if (r != SCF_SUCCESS)
 		return (r);
 
-	if (len >= sz)
+	if (len < 0)
+		return (scf_set_error(SCF_ERROR_INTERNAL));
+
+	if ((size_t)len >= sz)
 		len += sizeof (SCF_FMRI_PROPERTYGRP_PREFIX) - 1;
 	else
 		len = strlcat(out, SCF_FMRI_PROPERTYGRP_PREFIX, sz);
@@ -5897,7 +5904,7 @@ scf_pg_to_fmri(const scf_propertygroup_t *pg, char *out, size_t sz)
 	if (r < 0)
 		return (r);
 
-	if (len >= sz)
+	if ((size_t)len >= sz)
 		len += r;
 	else
 		len = strlcat(out, tmp, sz);
@@ -5925,7 +5932,10 @@ scf_property_to_fmri(const scf_property_t *prop, char *out, size_t sz)
 
 	HANDLE_RELE_PG(h);
 
-	if (len >= sz)
+	if (len < 0)
+		return (scf_set_error(SCF_ERROR_INTERNAL));
+
+	if ((size_t)len >= sz)
 		len += sizeof (SCF_FMRI_PROPERTY_PREFIX) - 1;
 	else
 		len = strlcat(out, SCF_FMRI_PROPERTY_PREFIX, sz);
@@ -5935,7 +5945,7 @@ scf_property_to_fmri(const scf_property_t *prop, char *out, size_t sz)
 	if (r < 0)
 		return (r);
 
-	if (len >= sz)
+	if ((size_t)len >= sz)
 		len += r;
 	else
 		len = strlcat(out, tmp, sz);
@@ -6398,7 +6408,7 @@ scf_walk_fmri(scf_handle_t *h, int argc, char **argv, int flags,
 		const char *scope_name, *svc_name, *inst_name, *pg_name;
 		const char *prop_name;
 
-		if (strlen(argv[i]) > max_fmri_length) {
+		if (strlen(argv[i]) > (size_t)max_fmri_length) {
 			errfunc(scf_get_msg(SCF_MSG_ARGTOOLONG), argv[i]);
 			if (err != NULL)
 				*err = UU_EXIT_FATAL;
@@ -7270,7 +7280,7 @@ scf_decode32(const char *in, size_t inlen, char *outbuf, size_t outmax,
 				/* Group not completed by pads */
 				return (-1);
 			}
-			if ((c < 0) || (c >= sizeof (index32))) {
+			if ((c < 0) || ((uint_t)c >= sizeof (index32))) {
 				/* Illegal character. */
 				return (-1);
 			}

@@ -411,8 +411,7 @@ static int
 get_nvpair_vals(scf_handle_t *h, scf_transaction_entry_t *te, nvpair_t *p)
 {
 	scf_value_t *val = scf_value_create(h);
-	uint_t n = 1;
-	int i;
+	uint_t n = 1, i;
 
 	if (val == NULL)
 		return (SCF_FAILED);

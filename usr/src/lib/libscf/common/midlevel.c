@@ -1804,7 +1804,7 @@ error:
 void
 scf_simple_prop_free(scf_simple_prop_t *prop)
 {
-	int i;
+	uint_t i;
 
 	if (prop == NULL)
 		return;

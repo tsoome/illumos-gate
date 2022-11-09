@@ -729,7 +729,7 @@ _add_locale_to_name(const char *name, const char *locale)
 	}
 
 	(void) strlcpy(lname, name, lsz);
-	if (strlcat(lname, loc, lsz) >= lsz) {
+	if (strlcat(lname, loc, lsz) >= (size_t)lsz) {
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		free(lname);
 		lname = NULL;
@@ -770,7 +770,7 @@ _tmpl_pg_name(const char *pg, const char *type, int use_type)
 
 	if (pg == NULL && type == NULL) {
 		if (strlcpy(name, SCF_PG_TM_PG_PATTERN_PREFIX, limit) >=
-		    limit) {
+		    (size_t)limit) {
 			assert(0);
 			abort();
 		}
@@ -4183,28 +4183,28 @@ _make_value_name(char *desc_name, const char *value)
 
 	(void) strlcpy(name, SCF_PROPERTY_TM_VALUE_PREFIX, sz);
 
-	if (strlcat(name, encoded, sz) >= sz) {
+	if (strlcat(name, encoded, sz) >= (size_t)sz) {
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		free(name);
 		free(encoded);
 		return (NULL);
 	}
 
-	if (strlcat(name, "_", sz) >= sz) {
+	if (strlcat(name, "_", sz) >= (size_t)sz) {
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		free(name);
 		free(encoded);
 		return (NULL);
 	}
 
-	if (strlcat(name, desc_name, sz) >= sz) {
+	if (strlcat(name, desc_name, sz) >= (size_t)sz) {
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		free(name);
 		free(encoded);
 		return (NULL);
 	}
 
-	if (strlcat(name, "_", sz) >= sz) {
+	if (strlcat(name, "_", sz) >= (size_t)sz) {
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		free(name);
 		free(encoded);
@@ -5981,7 +5981,7 @@ _validate_cardinality(scf_propertygroup_t *pg, scf_prop_tmpl_t *pt,
 	scf_handle_t *h;
 	scf_iter_t *iter = NULL;
 	scf_value_t *val = NULL;
-	int count = 0;
+	uint64_t count = 0;
 	int ret = -1;
 	int r;
 
@@ -6037,7 +6037,7 @@ _validate_cardinality(scf_propertygroup_t *pg, scf_prop_tmpl_t *pt,
 
 	if (count < min || count > max)
 		if (_add_tmpl_count_error(errs, SCF_TERR_CARDINALITY_VIOLATION,
-		    pg, pt, prop, (uint64_t)count, &min, &max) == -1)
+		    pg, pt, prop, count, &min, &max) == -1)
 			goto cleanup;
 
 	ret = 0;
