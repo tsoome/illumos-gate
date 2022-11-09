@@ -124,7 +124,8 @@ _enum_common_p(const char *cprofiles,
 		/* find the profiles for this profile */
 		pa = getprofnam(prof);
 
-		if (cb != NULL && (!wantattr || pa != NULL && pa->attr != NULL))
+		if (cb != NULL &&
+		    (!wantattr || (pa != NULL && pa->attr != NULL)))
 			res = cb(prof, pa ? pa->attr : NULL, ctxt, pres);
 
 		if (pa != NULL) {
