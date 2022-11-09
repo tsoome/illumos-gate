@@ -7279,7 +7279,7 @@ scf_decode32(const char *in, size_t inlen, char *outbuf, size_t outmax,
 				pad_seen = B_TRUE;
 				continue;
 			}
-			if ((g[j++] = index32[c]) == 0xff) {
+			if ((g[j++] = index32[(int)c]) == 0xff) {
 				/* Illegal character */
 				return (-1);
 			}
