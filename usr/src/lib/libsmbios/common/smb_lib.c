@@ -41,7 +41,8 @@
 #include <fcntl.h>
 #include <libdevinfo.h>
 
-#pragma init(smb_init)
+static void smb_init(void) __attribute__((constructor));
+
 static void
 smb_init(void)
 {
