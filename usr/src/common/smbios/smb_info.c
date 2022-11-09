@@ -1298,14 +1298,13 @@ smbios_has_oemstr(smbios_hdl_t *shp, const char *oemstr)
 {
 	const smb_struct_t *stp = shp->sh_structs;
 	smb_strtab_t s;
-	int i, j;
 
-	for (i = 0; i < shp->sh_nstructs; i++, stp++) {
+	for (uint_t i = 0; i < shp->sh_nstructs; i++, stp++) {
 		if (stp->smbst_hdr->smbh_type != SMB_TYPE_OEMSTR)
 			continue;
 
 		smb_info_bcopy(stp->smbst_hdr, &s, sizeof (s));
-		for (j = 0; j < s.smbtb_count; j++)
+		for (int j = 0; j < s.smbtb_count; j++)
 			if (strcmp(smb_strptr(stp, j + 1), oemstr) == 0)
 				return (B_TRUE);
 	}

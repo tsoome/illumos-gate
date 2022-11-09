@@ -467,9 +467,9 @@ smbios_iter(smbios_hdl_t *shp, smbios_struct_f *func, void *data)
 {
 	const smb_struct_t *sp = shp->sh_structs;
 	smbios_struct_t s;
-	int i, rv = 0;
+	int rv = 0;
 
-	for (i = 0; i < shp->sh_nstructs; i++, sp++) {
+	for (uint_t i = 0; i < shp->sh_nstructs; i++, sp++) {
 		if (sp->smbst_hdr->smbh_type != SMB_TYPE_INACTIVE &&
 		    (rv = func(shp, smb_export(sp, &s), data)) != 0)
 			break;

@@ -90,7 +90,8 @@ smb_fileopen(int fd, int version, int flags, int *errp)
 	if (stbuf == NULL)
 		return (smb_open_error(shp, errp, ESMB_NOMEM));
 
-	if ((n = pread64(fd, stbuf, smbe_stlen, smbe_staddr)) != smbe_stlen) {
+	n = pread64(fd, stbuf, smbe_stlen, smbe_staddr);
+	if ((uint32_t)n != smbe_stlen) {
 		smb_free(stbuf, smbe_stlen);
 		return (smb_open_error(shp, errp, n < 0 ? errno : ESMB_NOSTAB));
 	}
