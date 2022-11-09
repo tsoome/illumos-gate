@@ -258,9 +258,8 @@ typedef struct ccomm2auth {
 	void *ctxt;
 } ccomm2auth;
 
-/*ARGSUSED*/
 static int
-comm2auth(const char *name, kva_t *attr, void *ctxt, void *pres)
+comm2auth(const char *name __unused, kva_t *attr, void *ctxt, void *pres)
 {
 	ccomm2auth *ca = ctxt;
 	char *auths;

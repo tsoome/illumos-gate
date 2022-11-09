@@ -230,9 +230,8 @@ typedef struct result {
 	execattr_t *prev;
 } result;
 
-/*ARGSUSED*/
 static int
-findexecattr(const char *prof, kva_t *kva, void *ctxt, void *res)
+findexecattr(const char *prof, kva_t *kva __unused, void *ctxt, void *res)
 {
 	execattr_t *exec;
 	call *c = ctxt;
