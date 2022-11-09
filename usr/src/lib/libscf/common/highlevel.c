@@ -369,7 +369,8 @@ struct group_desc {
 };
 
 int
-scf_default_secflags(scf_handle_t *hndl, scf_secflags_t *flags)
+scf_default_secflags(scf_handle_t *hndl __unused,
+    scf_secflags_t *flags __unused)
 {
 #if !defined(NATIVE_BUILD)
 	scf_property_t *prop;

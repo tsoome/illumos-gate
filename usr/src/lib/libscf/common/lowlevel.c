@@ -183,9 +183,9 @@ handle_rele_subhandles(scf_handle_t *h, int mask)
 #define	HANDLE_RELE_PROPERTY(h)	RELE_HANDLE((h), RH_HOLD_PROPERTY)
 #define	HANDLE_RELE_VALUE(h)	RELE_HANDLE((h), RH_HOLD_VALUE)
 
-/*ARGSUSED*/
 static int
-transaction_entry_compare(const void *l_arg, const void *r_arg, void *private)
+transaction_entry_compare(const void *l_arg, const void *r_arg,
+    void *private __unused)
 {
 	const char *l_prop =
 	    ((scf_transaction_entry_t *)l_arg)->entry_property;
@@ -2664,7 +2664,6 @@ scf_scope_get_name(const scf_scope_t *rep, char *out, size_t len)
 	return (datael_get_name(&rep->rd_d, out, len, RP_ENTITY_NAME_NAME));
 }
 
-/*ARGSUSED*/
 int
 scf_scope_get_parent(const scf_scope_t *child, scf_scope_t *parent)
 {

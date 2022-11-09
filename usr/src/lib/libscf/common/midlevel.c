@@ -3126,9 +3126,8 @@ _check_services(char **svcs)
 	}
 }
 
-/*ARGSUSED*/
 static int
-str_compare(const char *s1, const char *s2, size_t n)
+str_compare(const char *s1, const char *s2, size_t n __unused)
 {
 	return (strcmp(s1, s2));
 }
