@@ -435,7 +435,7 @@ get_default_attrs(const char *user)
 {
 	void *defp;
 	kva_t *kva;
-	int i;
+	uint_t i;
 
 	kva = malloc(sizeof (kva_t) + sizeof (kv_t) * NDFLTPLY);
 
