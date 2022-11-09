@@ -606,7 +606,7 @@ smbios_info_chassis_elts(smbios_hdl_t *shp, id_t id, uint_t *nentsp,
 }
 
 void
-smbios_info_chassis_elts_free(smbios_hdl_t *shp, uint_t nents,
+smbios_info_chassis_elts_free(smbios_hdl_t *shp __unused, uint_t nents,
     smbios_chassis_entry_t *ent)
 {
 	size_t sz = nents * sizeof (smbios_chassis_entry_t);
@@ -813,7 +813,7 @@ smbios_info_slot(smbios_hdl_t *shp, id_t id, smbios_slot_t *sp)
 }
 
 void
-smbios_info_slot_peers_free(smbios_hdl_t *shp, uint_t npeers,
+smbios_info_slot_peers_free(smbios_hdl_t *shp __unused, uint_t npeers,
     smbios_slot_peer_t *peer)
 {
 	size_t sz = npeers * sizeof (smbios_slot_peer_t);
@@ -2010,7 +2010,7 @@ smbios_info_fwinfo_comps(smbios_hdl_t *shp, id_t id, uint_t *ncompsp,
 }
 
 void
-smbios_info_fwinfo_comps_free(smbios_hdl_t *shp, uint_t ncomps,
+smbios_info_fwinfo_comps_free(smbios_hdl_t *shp __unused, uint_t ncomps,
     smbios_fwinfo_comp_t *comps)
 {
 	size_t sz = ncomps * sizeof (smbios_fwinfo_comp_t);

@@ -68,9 +68,8 @@ smb_zalloc(size_t len)
 	return (buf);
 }
 
-/*ARGSUSED*/
 void
-smb_free(void *buf, size_t len)
+smb_free(void *buf, size_t len __unused)
 {
 	free(buf);
 }
