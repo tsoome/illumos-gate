@@ -284,17 +284,19 @@ del_pg(scf_service_t *s, scf_instance_t *i, const char *n,
     scf_propertygroup_t *pg)
 {
 	if ((s == NULL ? scf_instance_get_pg(i, n, pg) :
-	    scf_service_get_pg(s, n, pg)) != SCF_SUCCESS)
+	    scf_service_get_pg(s, n, pg)) != SCF_SUCCESS) {
 		if (scf_error() == SCF_ERROR_NOT_FOUND)
 			return (SCF_SUCCESS);
 		else
 			return (SCF_FAILED);
+	}
 
-	if (scf_pg_delete(pg) != SCF_SUCCESS)
+	if (scf_pg_delete(pg) != SCF_SUCCESS) {
 		if (scf_error() == SCF_ERROR_DELETED)
 			return (SCF_SUCCESS);
 		else
 			return (SCF_FAILED);
+	}
 
 	return (SCF_SUCCESS);
 }
@@ -1309,12 +1311,13 @@ smf_notify_set_params(const char *class, nvlist_t *attr)
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		goto cleanup;
 	}
-	if (decode_fmri(fmri, h, &s, &i) != SCF_SUCCESS)
+	if (decode_fmri(fmri, h, &s, &i) != SCF_SUCCESS) {
 		if (scf_error() == SCF_ERROR_CONSTRAINT_VIOLATED) {
 			(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		} else if (check_scf_error(scf_error(), errs_1)) {
 			goto cleanup;
 		}
+	}
 
 	if (is_stn) {
 		tset |= class_to_transition(class);
