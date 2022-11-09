@@ -970,6 +970,8 @@ values_get(scf_property_t *prop, scf_values_t *v)
 
 	if (scf_property_type(prop, &type) != SCF_SUCCESS)
 		goto cleanup;
+
+	cursz = count = v->value_count;
 	if (scf_property_is_type(prop, v->value_type) != SCF_SUCCESS)
 		goto error;
 
@@ -979,7 +981,6 @@ values_get(scf_property_t *prop, scf_values_t *v)
 	p = get_v_pointer(v);
 	assert(p != NULL);
 
-	cursz = count = v->value_count;
 	if (scf_iter_property_values(it, prop) != 0) {
 		goto error;
 	}

@@ -1169,7 +1169,7 @@ _walk_template_instances(scf_service_t *svc, scf_instance_t *inst,
 {
 	scf_instance_t *tmpl_inst = NULL;
 	scf_handle_t *h;
-	int ret;
+	int ret = SCF_WALK_DONE;
 	char *tg = NULL;
 
 	assert(svc != NULL || inst != NULL);
@@ -1508,6 +1508,7 @@ _find_template_pg_match(scf_service_t *svc, scf_instance_t *inst,
 	 */
 
 	/* First look for a template with name and type set and matching. */
+	ret = SCF_WALK_DONE;
 	*tmpl_pg_name = _tmpl_pg_name(pg_name, pg_type, 1);
 	if (*tmpl_pg_name == NULL)
 		goto fail;
@@ -1628,8 +1629,7 @@ _find_template_pg_match(scf_service_t *svc, scf_instance_t *inst,
 	(void) scf_set_error(SCF_ERROR_NOT_FOUND);
 fail:
 	scf_pg_destroy(pg);
-	if (*tmpl_pg_name != NULL)
-		free(*tmpl_pg_name);
+	free(*tmpl_pg_name);
 	*tmpl_pg_name = NULL;
 	pg = NULL;
 done:
@@ -2715,7 +2715,7 @@ scf_tmpl_iter_props(scf_pg_tmpl_t *t, scf_prop_tmpl_t *pt, int flags)
 	scf_prop_tmpl_t *prop_tmpl;
 	char *pg_pat;
 	char *pg_name = NULL;
-	int err;
+	int err = 0;
 	int ret;
 	ssize_t size = scf_limit(SCF_LIMIT_MAX_NAME_LENGTH) + 1;
 	uint8_t required;

@@ -171,11 +171,17 @@ scf_get_boot_config(uint8_t *boot_config)
 		 * Property vector for BOOT_CONFIG_PG_PARAMS property group.
 		 */
 		scf_propvec_t ua_boot_config[] = {
-			{ FASTREBOOT_DEFAULT, NULL, SCF_TYPE_BOOLEAN, NULL,
-			    UA_FASTREBOOT_DEFAULT },
-			{ FASTREBOOT_ONPANIC, NULL, SCF_TYPE_BOOLEAN, NULL,
-			    UA_FASTREBOOT_ONPANIC },
-			{ NULL }
+			{
+				.pv_prop = FASTREBOOT_DEFAULT,
+				.pv_type = SCF_TYPE_BOOLEAN,
+				.pv_aux = UA_FASTREBOOT_DEFAULT
+			},
+			{
+				.pv_prop = FASTREBOOT_ONPANIC,
+				.pv_type = SCF_TYPE_BOOLEAN,
+				.pv_aux = UA_FASTREBOOT_ONPANIC
+			},
+			{ .pv_prop = NULL }
 		};
 		scf_propvec_t	*prop;
 
@@ -231,11 +237,17 @@ scf_getset_boot_config_ovr(int set, uint8_t *boot_config_ovr)
 		 * Property vector for BOOT_CONFIG_PG_OVR property group.
 		 */
 		scf_propvec_t ua_boot_config_ovr[] = {
-			{ FASTREBOOT_DEFAULT, NULL, SCF_TYPE_BOOLEAN, NULL,
-			    UA_FASTREBOOT_DEFAULT },
-			{ FASTREBOOT_ONPANIC, NULL, SCF_TYPE_BOOLEAN, NULL,
-			    UA_FASTREBOOT_ONPANIC },
-			{ NULL }
+			{
+				.pv_prop = FASTREBOOT_DEFAULT,
+				.pv_type = SCF_TYPE_BOOLEAN,
+				.pv_aux = UA_FASTREBOOT_DEFAULT
+			},
+			{
+				.pv_prop = FASTREBOOT_ONPANIC,
+				.pv_type = SCF_TYPE_BOOLEAN,
+				.pv_aux = UA_FASTREBOOT_ONPANIC
+			},
+			{ .pv_prop = NULL }
 		};
 		scf_propvec_t	*prop;
 
