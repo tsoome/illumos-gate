@@ -1512,8 +1512,8 @@ get_stn_pg(scf_service_t *s, scf_instance_t *i, scf_instance_t *g,
     const char *pgname, scf_propertygroup_t *pg)
 {
 	if (get_pg(s, i, pgname, pg, 1) == 0 ||
-	    scf_error() == SCF_ERROR_NOT_FOUND &&
-	    get_pg(NULL, g, pgname, pg, 0) == 0)
+	    (scf_error() == SCF_ERROR_NOT_FOUND &&
+	    get_pg(NULL, g, pgname, pg, 0) == 0))
 		return (SCF_SUCCESS);
 
 	return (SCF_FAILED);

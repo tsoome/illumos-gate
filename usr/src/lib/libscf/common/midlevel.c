@@ -1111,8 +1111,8 @@ set_inst_enabled_flags(const char *fmri, int flags, uint8_t desired,
 	scf_handle_t *h;
 	scf_instance_t *inst;
 
-	if (flags & ~(SMF_TEMPORARY | SMF_AT_NEXT_BOOT) ||
-	    flags & SMF_TEMPORARY && flags & SMF_AT_NEXT_BOOT) {
+	if ((flags & ~(SMF_TEMPORARY | SMF_AT_NEXT_BOOT)) ||
+	    ((flags & SMF_TEMPORARY) && (flags & SMF_AT_NEXT_BOOT))) {
 		(void) scf_set_error(SCF_ERROR_INVALID_ARGUMENT);
 		return (ret);
 	}
