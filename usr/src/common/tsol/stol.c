@@ -107,7 +107,7 @@ htol(const char *s, m_label_t *l)
 	const char	*h = &s[2];	/* skip 0[xX] */
 	uchar_t *lp = (uchar_t *)&(((_mac_label_impl_t *)l)->_lclass);
 	size_t	len = sizeof (_mac_label_impl_t) - 4;
-	int	bytes;
+	size_t	bytes;
 
 	/* unpack 16 bit signed classification */
 	if (!unhex(&h, lp, 2) || (LCLASS(l) < 0)) {
@@ -133,9 +133,9 @@ htol(const char *s, m_label_t *l)
 		bzero(lp, len);
 		h++;	/* skip '-' */
 	}
-	bytes = strlen(h)/2;
+	bytes = strlen(h) / 2;
 	if ((bytes > len) ||
-	    (bytes*2 != strlen(h)) ||
+	    (bytes * 2 != strlen(h)) ||
 	    !unhex(&h, lp, bytes)) {
 		return (-1);
 	}

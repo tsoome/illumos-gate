@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include	<stdlib.h>
 #include	<strings.h>
 #include	<zone.h>
@@ -81,7 +79,7 @@ getzoneidbylabel(const m_label_t *label)
 	zoneid_t 	*zids;
 	uint_t		nzents;
 	uint_t		nzents_saved;
-	int		i;
+	uint_t		i;
 
 	bsllow(&admin_low);
 	bslhigh(&admin_high);
@@ -199,7 +197,7 @@ getlabelbypath(const char *path)
 	zoneid_t 	*zids;
 	uint_t		nzents;
 	uint_t		nzents_saved;
-	int		i;
+	uint_t		i;
 
 	if (getzoneid() != GLOBAL_ZONEID) {
 		errno = EINVAL;

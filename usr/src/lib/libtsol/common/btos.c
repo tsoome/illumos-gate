@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *      Binary label to label string translations.
  */
@@ -56,7 +54,7 @@ static char	*sstring;	/* return string for sb*tos */
 static size_t	ssize;		/* current size of return string */
 
 static int
-return_string(char **string, int str_len, char *val)
+return_string(char **string, size_t str_len, char *val)
 {
 	char	*cpyptr;
 	size_t	val_len = strlen(val) + 1;
@@ -318,7 +316,7 @@ sbsltos(const bslabel_t *label, size_t len)
 {
 	ssize_t	slen;		/* length including NULL */
 	wchar_t *wstring;
-	int	wccount;
+	size_t	wccount;
 
 	if (ssize == 0) {
 		/* Allocate string memory. */
@@ -351,9 +349,11 @@ again:
 	} else if (len < MIN_SL_LEN) {
 		return (NULL);
 	}
-	if ((wstring = malloc(slen * sizeof (wchar_t))) == NULL)
+	wstring = malloc(slen * sizeof (wchar_t));
+	if (wstring == NULL)
 		return (NULL);
-	if ((wccount = mbstowcs(wstring, sstring, slen - 1)) == -1) {
+	wccount = mbstowcs(wstring, sstring, slen - 1);
+	if (wccount == (size_t)-1) {
 		free(wstring);
 		return (NULL);
 	}
@@ -370,15 +370,17 @@ again:
 			int newsize;
 
 			/* sstring not long enough */
-			if ((newsize = alloc_string(&sstring, ssize, 's')) ==
-			    0) {
+			newsize = alloc_string(&sstring, ssize, 's');
+			if (newsize == 0) {
 				/* Can't get more memory */
 				return (NULL);
 			}
 			ssize += newsize;
 		}
 
-		if ((wccount = wcstombs(sstring, wstring, ssize)) == -1) {
+
+		wccount = wcstombs(sstring, wstring, ssize);
+		if (wccount == (size_t)-1) {
 			free(wstring);
 			return (NULL);
 		}
@@ -414,7 +416,7 @@ sbcleartos(const bclear_t *clearance, size_t len)
 {
 	ssize_t	slen;		/* length including NULL */
 	wchar_t *wstring;
-	int	wccount;
+	size_t	wccount;
 
 	if (ssize == 0) {
 		/* Allocate string memory. */
@@ -447,9 +449,11 @@ again:
 	} else if (len < MIN_CLR_LEN) {
 		return (NULL);
 	}
-	if ((wstring = malloc(slen * sizeof (wchar_t))) == NULL)
+	wstring = malloc(slen * sizeof (wchar_t));
+	if (wstring == NULL)
 		return (NULL);
-	if ((wccount = mbstowcs(wstring, sstring, slen - 1)) == -1) {
+	wccount = mbstowcs(wstring, sstring, slen - 1);
+	if (wccount == (size_t)-1) {
 		free(wstring);
 		return (NULL);
 	}
@@ -466,15 +470,16 @@ again:
 			int newsize;
 
 			/* sstring not long enough */
-			if ((newsize = alloc_string(&sstring, ssize, 'c')) ==
-			    0) {
+			newsize = alloc_string(&sstring, ssize, 'c');
+			if (newsize == 0) {
 				/* Can't get more memory */
 				free(wstring);
 				return (NULL);
 			}
 			ssize += newsize;
 		}
-		if ((wccount = wcstombs(sstring, wstring, ssize)) == -1) {
+		wccount = wcstombs(sstring, wstring, ssize);
+		if (wccount == (size_t)-1) {
 			free(wstring);
 			return (NULL);
 		}
