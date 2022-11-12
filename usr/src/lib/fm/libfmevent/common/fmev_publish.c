@@ -449,13 +449,18 @@ _i_fmev_publish_nvl(
     fmev_pri_t pri, nvlist_t *attr)
 {
 	fmev_err_t rc;
+	/*
+	 * XXXARM: We need a real va_list, because it's not necessarily a pointer.
+	 * an empty one should do fine, but this is ugly
+	 */
+	va_list ap = {0};
 
 	if ((rc = vrfy(&ruleset, &class, &subclass, &pri)) != FMEV_OK)
 		return (rc);		/* any attr not freed */
 
 	return (do_publish(file, func, line,
 	    ruleset, class, subclass,
-	    pri, attr, 0, NULL));	/* any attr freed iff success */
+	    pri, attr, 0, ap));	/* any attr freed iff success */
 }
 
 fmev_err_t

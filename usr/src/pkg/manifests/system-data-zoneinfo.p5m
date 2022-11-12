@@ -660,7 +660,7 @@ hardlink path=usr/share/lib/zoneinfo/Universal target=Etc/UTC
 hardlink path=usr/share/lib/zoneinfo/W-SU target=Europe/Moscow
 file path=usr/share/lib/zoneinfo/WET
 hardlink path=usr/share/lib/zoneinfo/Zulu target=Etc/UTC
-link path=usr/share/lib/zoneinfo/posixrules target=./US/Eastern
+$(not_aarch64)link path=usr/share/lib/zoneinfo/posixrules target=./US/Eastern
 dir  path=usr/share/lib/zoneinfo/src
 file path=usr/share/lib/zoneinfo/src/README
 file path=usr/share/lib/zoneinfo/src/africa

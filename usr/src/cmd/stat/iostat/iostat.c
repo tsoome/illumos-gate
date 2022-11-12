@@ -802,7 +802,9 @@ show_disk(void *v1, void *v2, void *data)
 		for (i = 0; i < NUMBER_OF_ERR_COUNTERS; i++) {
 			switch (knp[i].data_type) {
 				case KSTAT_DATA_ULONG:
+#ifndef _LP64
 				case KSTAT_DATA_ULONGLONG:
+#endif
 					err_counters[i] = knp[i].value.ui32;
 					toterrs += knp[i].value.ui32;
 					break;
@@ -1043,11 +1045,9 @@ show_disk_errors(void *v1, void *v2, void *d)
 				}
 				break;
 			case KSTAT_DATA_ULONG:
-				push_out("%s: %u ", knp[i].name,
-				    knp[i].value.ui32);
-				col += 4;
-				break;
+#ifndef _LP64
 			case KSTAT_DATA_ULONGLONG:
+#endif
 				if (strcmp(knp[i].name, "Size") == 0) {
 					do_newline();
 					push_out("%s: %2.2fGB <%llu bytes>",

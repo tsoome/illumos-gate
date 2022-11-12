@@ -127,6 +127,8 @@ $if _ELF64
 	sh	{ ASSERT = { TYPE = OBJECT; SIZE = 1888; }; };
 	$elif _sparc
 	sh	{ ASSERT = { TYPE = OBJECT; SIZE = 1920; }; };
+	$elif _arm
+	sh	{ ASSERT = { TYPE = OBJECT; SIZE = 2064; }; };
 	$else
 	$error Unknown architecture
 	$endif

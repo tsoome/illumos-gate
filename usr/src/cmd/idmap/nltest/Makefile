@@ -34,7 +34,7 @@ SRCS =		$(CLIENTSRCS)
 include ../../Makefile.cmd
 
 POFILE =	$(PROG)_all.po
-LDLIBS +=	-lads -luuid
+LDLIBS +=	-lads -luuid -L$(ADJUNCT_PROTO)/usr/lib/mps
 FILEMODE =	0555
 
 INCS += -I.

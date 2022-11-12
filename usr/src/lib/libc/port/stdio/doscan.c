@@ -23,6 +23,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
@@ -673,7 +676,7 @@ number(int *chcount, int *flag_eof, int stow, int type, int len, int size,
 				form = invalid_form;
 		}
 		if (stow && (form != invalid_form)) {
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 			dm.rd = _QgetRD();
 			if (size == 'L') {		/* long double */
 				if ((int)form < 0)

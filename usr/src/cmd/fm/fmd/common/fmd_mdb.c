@@ -1276,7 +1276,7 @@ fcf_sec_walk_init(mdb_walk_state_t *wsp)
 static int
 fcf_sec_walk_step(mdb_walk_state_t *wsp)
 {
-	uint_t i = (uint_t)wsp->walk_arg;
+	uint_t i = (uint_t)(uintptr_t)wsp->walk_arg;
 	size_t off = sizeof (fcf_hdr_t) + sizeof (fcf_sec_t) * i;
 	fcf_hdr_t *hp = wsp->walk_data;
 	fcf_sec_t *sp = (fcf_sec_t *)((uintptr_t)hp + off);
@@ -1284,7 +1284,7 @@ fcf_sec_walk_step(mdb_walk_state_t *wsp)
 	if (i >= hp->fcfh_secnum)
 		return (WALK_DONE);
 
-	wsp->walk_arg = (void *)(i + 1);
+	wsp->walk_arg = (void *)(uintptr_t)(i + 1);
 	return (wsp->walk_callback(wsp->walk_addr + off, sp, wsp->walk_cbdata));
 }
 

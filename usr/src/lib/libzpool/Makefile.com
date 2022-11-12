@@ -24,15 +24,21 @@
 # Copyright 2020 Joyent, Inc.
 #
 
+include $(SRC)/Makefile.master
+
 LIBRARY= libzpool.a
 VERS= .1
 
 # include the list of ZFS sources
 include ../../../uts/common/Makefile.files
 KERNEL_OBJS = kernel.o util.o
-DTRACE_OBJS = zfs.o
+# XXXARM: No cross DTrace
+$(NOT_AARCH64_BLD)DTRACE_OBJS = zfs.o
 
 OBJECTS=$(LUA_OBJS) $(ZFS_COMMON_OBJS) $(ZFS_SHARED_OBJS) $(KERNEL_OBJS)
+
+# XXXARM
+$(AARCH64_BLD)DTRACE_OBJS=
 
 # include library definitions
 include ../../Makefile.lib
@@ -62,7 +68,7 @@ INCS += -I../../libzutil/common
 CLEANFILES += ../common/zfs.h
 CLEANFILES += $(EXTPICS)
 
-$(LIBS): ../common/zfs.h
+$(NOT_AARCH64_BLD)$(LIBS): ../common/zfs.h
 
 CSTD=	$(CSTD_GNU99)
 
@@ -99,15 +105,15 @@ pics/%.o: ../../../uts/common/fs/zfs/%.c ../common/zfs.h
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: ../../../uts/common/fs/zfs/lua/%.c
+pics/%.o: ../../../uts/common/fs/zfs/lua/%.c ../common/zfs.h
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: ../../../common/zfs/%.c ../common/zfs.h
+pics/%.o: ../../../common/zfs/%.c $(NOT_AARCH64_BLD)../common/zfs.h
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: ../../../common/lz4/%.c ../common/zfs.h
+pics/%.o: ../../../common/lz4/%.c $(NOT_AARCH64_BLD)../common/zfs.h
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
@@ -115,5 +121,10 @@ pics/%.o: ../common/%.d $(PICS)
 	$(COMPILE.d) -C -s $< -o $@ $(PICS)
 	$(POST_PROCESS_O)
 
+# XXXARM: We don't have DTrace, so we have to stub this
 ../common/%.h: ../common/%.d
-	$(DTRACE) -xnolibs -h -s $< -o $@
+	if [[ $(MACH) == "aarch64" ]]; then \
+		$(DTRACE) -xnolibs -h -s $< -o $@; \
+	else \
+		touch $@; \
+	fi;

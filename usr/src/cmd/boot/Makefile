@@ -30,8 +30,9 @@ COMMON_SUBDIRS=		\
 	filelist	\
 	fiocompress	\
 	scripts		\
-	bootadm		\
-	installboot
+	bootadm
+
+$(NOT_AARCH64_BLD)COMMON_SUBDIRS += installboot
 
 i386_SUBDIRS=		\
 	installgrub	\

@@ -58,7 +58,7 @@ include $(SRC)/Makefile.master
 # either in the environment or in XRMAKEFILE.  To use regular cscope, set
 # CSCOPE to cscope and CSFLAGS to -b.
 #
-CSCOPE	= $(BUILD_TOOLS)/onbld/bin/$(MACH)/cscope-fast
+CSCOPE	= $(BUILD_TOOLS)/onbld/bin/$(NATIVE_MACH)/cscope-fast
 CSFLAGS	= -bq
 CTAGS	= /usr/bin/ctags
 CTFLAGS	= -wt

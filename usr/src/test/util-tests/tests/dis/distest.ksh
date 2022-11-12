@@ -210,6 +210,10 @@ run_single_file()
 	[[ -n $gas ]] || fatal "encountered test $sfile, but missing assembler"
 
 	case "$arch" in
+	"arm")
+		asflags32="-march=armv7-a"
+		asflags64="-march=armv8-a"
+		;;
 	"risc-v")
 		asflags32="-march=rv32g"
 		asflags64="-march=rv64g"

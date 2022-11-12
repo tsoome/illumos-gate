@@ -61,7 +61,7 @@ extern "C" {
 
 extern	char	*p_error_msg_ptr;
 
-#ifdef __x86
+#if defined(__x86) || defined(__aarch64__)
 #include <nl_types.h>
 extern nl_catd l_catd;
 #define	L_SET1			1   /* catalog set number */
@@ -226,7 +226,7 @@ extern const	int EXPERT;
 #define		NOT_IGNORE_DANGLING_LINK	2
 
 #include <hbaapi.h>
-#ifndef __x86
+#if !defined(__x86) && !defined(__aarch64__)
 #include <sys/scsi/generic/mode.h>
 #include <sys/scsi/generic/sense.h>
 #include <sys/scsi/impl/uscsi.h>

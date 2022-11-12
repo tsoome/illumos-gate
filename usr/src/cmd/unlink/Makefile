@@ -38,9 +38,11 @@ SMATCH=off
 
 all: $(PROG)
 
-install: all $(ROOTUSRSBINPROG)
+$(ROOTETCPROG):
 	-$(RM) $(ROOTETCPROG)
 	-$(SYMLINK) ../usr/sbin/$(PROG) $(ROOTETCPROG)
+
+install: all $(ROOTUSRSBINPROG) $(ROOTETCPROG)
 
 clean:
 

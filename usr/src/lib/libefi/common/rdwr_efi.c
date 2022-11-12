@@ -23,6 +23,7 @@
  * Copyright (c) 2002, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright 2015 Nexenta Systems, Inc.  All rights reserved.
  * Copyright 2014 Toomas Soome <tsoome@me.com>
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 OmniOS Community Edition (OmniOSce) Association.
  * Copyright 2019 Joyent, Inc.
  */
@@ -86,7 +87,10 @@ static struct uuid_to_ptag {
 	{ EFI_FREEBSD_UFS, V_FREEBSD_UFS },
 	{ EFI_FREEBSD_VINUM, V_FREEBSD_VINUM },
 	{ EFI_FREEBSD_ZFS, V_FREEBSD_ZFS },
-	{ EFI_FREEBSD_NANDFS, V_FREEBSD_NANDFS }
+	{ EFI_FREEBSD_NANDFS, V_FREEBSD_NANDFS },
+	{ EFI_UBOOT_ENV, V_UBOOT_ENV },
+	{ EFI_UBOOT_DTB, V_UBOOT_DTB },
+	{ EFI_UBOOT_FIT, V_UBOOT_FIT }
 };
 
 /*
@@ -104,7 +108,7 @@ struct dk_map2  default_vtoc_map[NDKMAP] = {
 
 #if defined(_SUNOS_VTOC_16)
 
-#if defined(i386) || defined(__amd64)
+#if defined(i386) || defined(__amd64) || defined(__aarch64__)
 	{	V_BOOT,		V_UNMNT	},		/* i - 8 */
 	{	V_ALTSCTR,	0	},		/* j - 9 */
 

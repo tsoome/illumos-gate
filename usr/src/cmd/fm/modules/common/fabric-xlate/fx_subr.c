@@ -190,10 +190,10 @@ fab_send_erpt(fmd_hdl_t *hdl, fab_data_t *data, fab_err_tbl_t *tbl)
 
 	erpt_tbl = tbl->erpt_tbl;
 	if (tbl->reg_size == 16) {
-		reg = (uint32_t)*((uint16_t *)
-		    ((uint32_t)data + tbl->reg_offset));
+		reg = (uint32_t)*((uint16_t *)(uintptr_t)
+		    ((uint32_t)(uintptr_t)data + tbl->reg_offset));
 	} else {
-		reg = *((uint32_t *)((uint32_t)data + tbl->reg_offset));
+		reg = *((uint32_t *)(uintptr_t)((uint32_t)(uintptr_t)data + tbl->reg_offset));
 	}
 
 	for (entry = erpt_tbl; entry->err_class; entry++) {

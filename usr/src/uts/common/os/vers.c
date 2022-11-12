@@ -24,15 +24,16 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
- * Template utsname; appropriate values for UTS_RELEASE, UTS_VERSION and
  * UTS_PLATFORM must be passed in by the build process.
  */
 
 #include <sys/utsname.h>
 
 struct utsname utsname = {
-	"SunOS", "", UTS_RELEASE, UTS_VERSION, UTS_PLATFORM
+	.sysname = "SunOS",
+	.nodename = "",
+	.release = UTS_RELEASE,
+	.version = UTS_VERSION,
+	.machine = UTS_PLATFORM
 };

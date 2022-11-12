@@ -20,6 +20,9 @@ include ../Makefile.cmd
 CSTD = $(CSTD_GNU99)
 LDLIBS += -lm
 
+# XXXARM: intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
+
 all: $(PROG)
 
 install: all $(ROOTPROG)

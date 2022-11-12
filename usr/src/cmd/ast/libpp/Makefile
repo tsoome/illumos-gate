@@ -48,7 +48,8 @@ include Makefile.defs
 HDRS= $(HEADERINSTALL)
 HDRDIR32= $(ASTSRC)
 HDRDIR64= $(ASTSRC)
-include ../Makefile.asthdr
+$(NOT_AARCH64_BLD)include ../Makefile.asthdr
+$(AARCH64_BLD)include ../Makefile.asthdr.64only
 
 install_h: $(ROOTHDRS)
 install: install_h

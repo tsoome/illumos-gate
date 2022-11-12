@@ -1022,7 +1022,7 @@ consconfig_load_drivers(cons_state_t *sp)
 	    mousedev, diagdev);
 }
 
-#if !defined(__x86)
+#if defined(__sparc)
 void
 consconfig_virtual_console_vp(cons_state_t *sp)
 {
@@ -1546,7 +1546,7 @@ dynamic_console_config(void)
 	consconfig_init_framebuffer(consconfig_sp);
 	consconfig_init_input(consconfig_sp);
 
-#if !defined(__x86)
+#if defined(__sparc)
 	/* initialize virtual console vp for logging if needed */
 	consconfig_virtual_console_vp(consconfig_sp);
 #endif

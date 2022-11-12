@@ -37,6 +37,7 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/param.h>
@@ -82,7 +83,7 @@ extern char  *New_cmd_lines; /* svc_code, cmd_line, mod_list (on reread)*/
  * all data base routines under read_dbf log there own errors and return -1
  * in case of an error.
  *
- * if 're_read' is non-zero, this stuff is being called to read a new 
+ * if 're_read' is non-zero, this stuff is being called to read a new
  * data base file after the listener's initialization.
  */
 
@@ -97,7 +98,6 @@ int	re_read;	/* zero means first time	*/
 	unsigned scan_dbf();
 	extern dbf_t *Dbfhead;		/* Dbfentries (when allocated)	*/
 	extern dbf_t *Newdbf;		/* Dbfentries (on re-read)	*/
-	extern char *calloc();
 
 	DEBUG((9,"in read_dbf"));
 
@@ -134,9 +134,9 @@ int	re_read;	/* zero means first time	*/
 	   || !(cmd_p = calloc(size, 1)))  {
 		DEBUG((1,"cannot calloc %u + %u bytes", size,
 			(Dbfentries+1)*(unsigned)sizeof(dbf_t)));
-		error( E_DBF_ALLOC, exit_flag);	/* if init, exit */	 
+		error( E_DBF_ALLOC, exit_flag);	/* if init, exit */
 
-		/* if still here, this is a re-read	*/	
+		/* if still here, this is a re-read	*/
 
 		if (dbf_p)
 			free(dbf_p);
@@ -150,8 +150,8 @@ int	re_read;	/* zero means first time	*/
 		error(E_DBF_IO, exit_flag | NO_MSG);
 
 		/* if still here, this is a re_read */
-		free(dbf_p);     
-		free(cmd_p);		
+		free(dbf_p);
+		free(cmd_p);
 		return(-1);
 	}
 
@@ -264,9 +264,9 @@ register char *cmd_p;
 			i = strlen(private_p);
 			if (i >= PRV_ADR_SZ) {
 				goto p_reject;
-			}	
+			}
 			Dbf_entries++;
-		} 
+		}
 
 		/*
 		 * legal, non-duplicate entry: copy it into internal data base
@@ -298,7 +298,7 @@ register char *cmd_p;
 		if (strlen(private_p) != 0) {
 			strcpy(cmd_p, private_p);
 			dbf_p->dbf_prv_adr = cmd_p;
-			cmd_p += strlen(private_p) + 1;	
+			cmd_p += strlen(private_p) + 1;
 		}
 		else
 			dbf_p->dbf_prv_adr = NULL;
@@ -326,7 +326,7 @@ p_reject:
 
 /*
  * scan_dbf:	Take a quick pass through the data base file to figure out
- *		approx. how many items in the file we'll need to 
+ *		approx. how many items in the file we'll need to
  *		allocate storage for.  Essentially, returns the number
  *		of non-null, non-comment lines in the data base file.
  *
@@ -387,7 +387,7 @@ register char *path;
  *		given buffer (up to DBFLINESZ bytes).
  *		Skips 'ignore' lines.
  *
- *		Returns:	0 = done, -1 = error, 
+ *		Returns:	0 = done, -1 = error,
  * 				other = cmd line size incl. terminating null.
  *				*svc_code_p = service code;
  *				*id_p = user id string;
@@ -725,7 +725,7 @@ check_version(void)
 		logmessage(dbfopenmsg);
 		error(E_DBF_IO, EXIT | NOCORE | NO_MSG);
 	}
-	if ((line = (char *) malloc(DBFLINESZ)) == NULL)
+	if ((line = malloc(DBFLINESZ)) == NULL)
 		error(E_DBF_ALLOC, EXIT | NOCORE);
 	p = line;
 	while (fgets(p, DBFLINESZ, fp)) {
@@ -867,7 +867,7 @@ register dbf_t	*dbp;
 /*
  *
  * getentry: Given a fd, this routine will return a
- *		    dbf entry.  If the entry doesn't exist it will 
+ *		    dbf entry.  If the entry doesn't exist it will
  *		    return NULL.
  */
 

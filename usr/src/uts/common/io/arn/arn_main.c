@@ -195,7 +195,7 @@ uint32_t arn_dbg_mask = 0;
  * Exception/warning cases not leading to panic.
  */
 void
-arn_problem(const int8_t *fmt, ...)
+arn_problem(const char *fmt, ...)
 {
 	va_list args;
 
@@ -212,7 +212,7 @@ arn_problem(const int8_t *fmt, ...)
  * Normal log information independent of debug.
  */
 void
-arn_log(const int8_t *fmt, ...)
+arn_log(const char *fmt, ...)
 {
 	va_list args;
 
@@ -226,7 +226,7 @@ arn_log(const int8_t *fmt, ...)
 }
 
 void
-arn_dbg(uint32_t dbg_flags, const int8_t *fmt, ...)
+arn_dbg(uint32_t dbg_flags, const char *fmt, ...)
 {
 	va_list args;
 

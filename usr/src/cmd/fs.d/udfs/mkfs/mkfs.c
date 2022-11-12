@@ -175,7 +175,7 @@ static uint32_t oldfssize;
 static char *oldlabel;
 
 int
-main(int32_t argc, int8_t *argv[])
+main(int argc, char *argv[])
 {
 	long i;
 	FILE *mnttab;
@@ -183,7 +183,7 @@ main(int32_t argc, int8_t *argv[])
 	char *special, *raw_special;
 	struct stat statarea;
 	struct ustat ustatarea;
-	int32_t	c;
+	int	c;
 	uint32_t temp_secsz;
 	int isfs;
 
@@ -653,17 +653,17 @@ volseqinit(void)
 	nsp = (struct nsr_desc *)buf;
 	nsp->nsr_str_type = 0;
 	nsp->nsr_ver = 1;
-	(void) strncpy((int8_t *)nsp->nsr_id, "BEA01", 5);
+	(void) strncpy(nsp->nsr_id, "BEA01", 5);
 
 	nsp = (struct nsr_desc *)&buf[2048];
 	nsp->nsr_str_type = 0;
 	nsp->nsr_ver = 1;
-	(void) strncpy((int8_t *)nsp->nsr_id, "NSR02", 5);
+	(void) strncpy(nsp->nsr_id, "NSR02", 5);
 
 	nsp = (struct nsr_desc *)&buf[4096];
 	nsp->nsr_str_type = 0;
 	nsp->nsr_ver = 1;
-	(void) strncpy((int8_t *)nsp->nsr_id, "TEA01", 5);
+	(void) strncpy(nsp->nsr_id, "TEA01", 5);
 
 	wtfs(nextblock, 8192, buf);
 	bzero(buf, MAXBSIZE);

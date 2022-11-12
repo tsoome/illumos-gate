@@ -272,7 +272,7 @@ static caddr_t _data;
  * variable to modify it - within krtld, of course -
  * outside of krtld, e_data is used in all kernels.
  */
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 static caddr_t _edata;
 #else
 extern caddr_t _edata;
@@ -404,7 +404,7 @@ kobj_init(
 	}
 #else
 	{
-		/* on x86, we always boot with a ramdisk */
+		/* on x86 and aarch64, we always boot with a ramdisk */
 		(void) kobj_boot_mountroot();
 
 		/*
@@ -663,6 +663,11 @@ attr_val(val_t *bootaux)
 			dynseg = phdr->p_vaddr;
 			dynsize = phdr->p_memsz;
 #else
+#if defined(__aarch64__)
+			ASSERT(phdr->p_flags & PF_W);
+			_data = (caddr_t)phdr->p_vaddr;
+			_edata = _data + phdr->p_memsz;
+#endif
 			ASSERT(phdr->p_vaddr == 0);
 #endif
 		} else {

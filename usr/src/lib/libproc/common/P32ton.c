@@ -22,6 +22,8 @@
 /*
  * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <sys/types.h>
@@ -49,7 +51,7 @@ prexpldev(dev32_t d)
 dev32_t
 prcmpldev(dev_t d)
 {
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (d == PRNODEV) {
 		return (PRNODEV32);
 	} else {
@@ -66,8 +68,7 @@ prcmpldev(dev_t d)
 #endif
 }
 
-#ifdef _LP64
-
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 void
 timestruc_32_to_n(const timestruc32_t *src, timestruc_t *dst)
 {

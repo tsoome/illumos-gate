@@ -18,7 +18,7 @@ include $(SRC)/Makefile.master
 install all: softcore.c
 
 SOFTCORE=	$(SRC)/common/ficl/softcore
-PROG=		$(ONBLD_TOOLS)/bin/$(MACH)/makesoftcore
+PROG=		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/makesoftcore
 
 #
 # not needed: file access

@@ -198,7 +198,7 @@ static mac_callbacks_t rt2560_m_callbacks = {
 uint32_t ral_dbg_flags = 0;
 
 void
-ral_debug(uint32_t dbg_flags, const int8_t *fmt, ...)
+ral_debug(uint32_t dbg_flags, const char *fmt, ...)
 {
 	va_list args;
 

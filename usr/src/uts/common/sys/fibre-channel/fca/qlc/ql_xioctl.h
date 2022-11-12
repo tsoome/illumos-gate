@@ -288,7 +288,7 @@ typedef struct {
 typedef struct ql_fcache {
 	struct ql_fcache	*next;
 	uint32_t		type;
-	int8_t			verstr[FCHBA_OPTION_ROM_VERSION_LEN];
+	char			verstr[FCHBA_OPTION_ROM_VERSION_LEN];
 	uint32_t		buflen;
 	uint8_t			*buf;
 } ql_fcache_t;

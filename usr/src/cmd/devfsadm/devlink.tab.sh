@@ -115,6 +115,14 @@ case "$MACH" in
 	cat <<-EOM
 	EOM
 	;;
+  "aarch64" )
+	#
+	# These are the sparc specific entries
+	# It depends on the build machine being an sparc
+	#
+	cat <<-EOM
+	EOM
+	;;
   * )
 	echo "Unknown Architecture"
 	exit 1

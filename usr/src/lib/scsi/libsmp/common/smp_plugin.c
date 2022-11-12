@@ -21,6 +21,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <sys/types.h>
@@ -273,7 +274,7 @@ smp_plugin_load_dir(smp_target_t *tp, const char *pluginroot)
 	(void) snprintf(path, sizeof (path), "%s/%s",
 	    pluginroot, LIBSMP_PLUGIN_FRAMEWORK);
 
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (sysinfo(SI_ARCHITECTURE_64, isa, sizeof (isa)) < 0)
 		isa[0] = '\0';
 #else

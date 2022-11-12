@@ -83,8 +83,10 @@ $(ROOTSHLIB)/termcap: $(TERMCAPSRC) $(EXTRATC)
 		$(EGREP) -hv '^(#|$$)' $(TERMCAPSRC) $(EXTRATC) > $@
 
 install:	all $(ROOTTERMDIR) $(ROOTTERMDIR)/s/sun $(ROOTTABDIR) \
-		$(ROOTTABSET) $(ROOTSHLIB)/termcap  $(ROOTSYMLINK) \
+		$(ROOTTABSET) $(ROOTSHLIB)/termcap \
 		$(ROOTLIBSYMLINK) $(ROOTEXTRATI) $(ROOTSHSYMLINK)
+
+install: $(ROOTSYMLINK)
 
 $(ROOTSYMLINK):
 		$(RM) $@; $(SYMLINK) $(RELROOTETC)/termcap $@

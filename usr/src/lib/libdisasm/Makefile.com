@@ -60,6 +60,8 @@ SRCS_sparc=		$(COMDIR)/dis_sparc.c \
 			$(COMDIR)/dis_sparc_instr.c
 SRCS_s390x=		$(COMDIR)/dis_s390x.c
 SRCS_riscv=		$(COMDIR)/dis_riscv.c
+SRCS_arm=		$(COMDIR)/dis_arm_32.c \
+			$(COMDIR)/dis_arm_64.c
 
 OBJECTS_i386=		dis_i386.o \
 			dis_tables.o
@@ -68,6 +70,8 @@ OBJECTS_sparc=		dis_sparc.o \
 			dis_sparc_instr.o
 OBJECTS_s390x=		dis_s390x.o
 OBJECTS_riscv=		dis_riscv.o
+OBJECTS_arm=		dis_arm_32.o
+OBJECTS_aarch64=	dis_arm_64.o
 
 #
 # We build the regular shared library with support for all architectures.
@@ -78,7 +82,9 @@ OBJECTS_library=	$(OBJECTS_common) \
 			$(OBJECTS_i386) \
 			$(OBJECTS_sparc) \
 			$(OBJECTS_s390x) \
-			$(OBJECTS_riscv)
+			$(OBJECTS_riscv) \
+			$(OBJECTS_arm) \
+			$(OBJECTS_aarch64)
 OBJECTS_standalone=	$(OBJECTS_common) \
 			$(OBJECTS_$(MACH))
 OBJECTS=		$(OBJECTS_$(CURTYPE))
@@ -89,7 +95,9 @@ SRCS_library=		$(SRCS_common) \
 			$(SRCS_i386) \
 			$(SRCS_sparc) \
 			$(SRCS_s390x) \
-			$(SRCS_riscv)
+			$(SRCS_riscv) \
+			$(SRCS_arm) \
+			$(SRCS_aarch64) \
 SRCS_standalone=	$(SRCS_common) \
 			$(SRCS_$(MACH))
 SRCS=			$(SRCS_$(CURTYPE))

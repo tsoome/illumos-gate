@@ -22,14 +22,15 @@
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-# 
 
 i386_SUBDIRS=           \
 	i386
 
 sparc_SUBDIRS=		\
 	sparc
+
+aarch64_SUBDIRS=	\
+	aarch64
 
 all:=		TARGET= all
 install:=	TARGET= install

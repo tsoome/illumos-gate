@@ -164,7 +164,7 @@ predicate(int warn)
 	 * first gather the args
 	 */
 
-	index = (int)hashref(pp.strtab, pp.token);
+	index = (int)(uintptr_t)hashref(pp.strtab, pp.token);
 	if (warn && peekchr() != '(') switch (index)
 	{
 	case X_DEFINED:
@@ -226,7 +226,7 @@ predicate(int warn)
 				pp.mode |= HOSTED;
 				pp.flags |= PP_hosted;
 			}
-			return *(args + 9) ? (int)hashref(pp.strtab, args + 9) : 1;
+			return *(args + 9) ? (int)(uintptr_t)hashref(pp.strtab, args + 9) : 1;
 		}
 		break;
 	case X_EXISTS:
@@ -261,7 +261,7 @@ predicate(int warn)
 	return 0;
 }
 
-/*   
+/*
  * evaluate a long integer subexpression with precedence
  * taken from the library routine streval()
  * may be called recursively
@@ -620,7 +620,7 @@ ppexpr(int* pun)
 int
 ppoption(char* s)
 {
-	switch ((int)hashget(pp.strtab, s))
+	switch ((int)(uintptr_t)hashget(pp.strtab, s))
 	{
 	case X_ALLMULTIPLE:
 		return pp.mode & ALLMULTIPLE;

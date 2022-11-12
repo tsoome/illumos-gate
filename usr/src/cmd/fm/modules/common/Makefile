@@ -22,22 +22,28 @@
 # Copyright (c) 2004, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
-SUBDIRS = cpumem-retire \
-	disk-lights	\
-	disk-monitor	\
-	disk-transport	\
-	eversholt 	\
-	ext-event-transport \
-	fabric-xlate \
-	fdd-msg \
-	io-retire	\
-	ip-transport	\
-	sensor-transport \
-	ses-log-transport \
-	sw-diag-response \
-	sp-monitor	\
-	syslog-msgs	\
-	zfs-diagnosis	\
+include $(SRC)/Makefile.master
+
+SUBDIRS =			\
+	disk-lights		\
+	disk-monitor		\
+	disk-transport		\
+	eversholt		\
+	ext-event-transport	\
+	fabric-xlate		\
+	fdd-msg			\
+	io-retire		\
+	ip-transport		\
+	sensor-transport	\
+	ses-log-transport	\
+	sw-diag-response	\
+	sp-monitor		\
+	syslog-msgs		\
+	zfs-diagnosis		\
 	zfs-retire
+
+# XXXARM: not ported
+$(NOT_AARCH64_BLD)SUBDIRS += cpumem-retire 
+
 
 include ../../Makefile.subdirs

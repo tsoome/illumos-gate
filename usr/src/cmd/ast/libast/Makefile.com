@@ -42,6 +42,9 @@ MAPFILES= ../mapfile-vers
 LIBS= $(DYNLIB)
 LDLIBS += -lm -lc -lsocket
 
+# XXXARM: intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
+
 # We use "=" here since using $(CPPFLAGS.master) is very tricky in our
 # case - it MUST come as the last element but future changes in -D options
 # may then cause silent breakage in the AST sources because the last -D

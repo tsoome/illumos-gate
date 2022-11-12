@@ -39,6 +39,10 @@ PROGSRCS= convert.cc file.cc main.cc parse.cc
 
 OBJS= $(PROGSRCS:%.cc=%.o)
 
+# XXXARM: Disable exceptions because that requires a dynamic libgcc_s, at least,
+# and also we don't use exceptions
+CCFLAGS += -_gcc=-fno-exceptions
+
 LDLIBS += -laudio -lm -lc
 
 LDFLAGS += -L../utilities

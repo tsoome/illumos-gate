@@ -77,9 +77,9 @@ CERRWARN +=	-_gcc=-Wno-unused-function
 SMATCH=off
 
 LDLIBS +=	-lnsl
-chkey :=	LDLIBS += -lsldap
+chkey :=	LDLIBS += -lsldap -L$(ADJUNCT_PROTO)/usr/lib/mps 
 keyserv :=	LDLIBS += -lmp
-newkey  :=	LDLIBS += -lsldap -lsocket
+newkey  :=	LDLIBS += -lsldap -lsocket -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 .KEEP_STATE:
 

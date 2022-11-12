@@ -190,7 +190,7 @@ _readbufline(char *mapbuf,	/* input mmap buffer */
 		}
 		/* Buffer overflow -- eat rest of line and loop again */
 		while (mapbuf[*lastlen] != '\n') {
-			if (mapbuf[*lastlen] == EOF) {
+			if (mapbuf[*lastlen] == (char)EOF) {
 				return (-1);
 			}
 			(*lastlen)++;

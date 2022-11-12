@@ -21,6 +21,7 @@
 
 #
 # Copyright (c) 1994, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright 2017 Hayashi Naoyuki
 # Copyright (c) 2018, Joyent, Inc.
 # Copyright 2019 OmniOS Community Edition (OmniOSce) Association.
 #
@@ -54,7 +55,11 @@ ELFCAP =	$(SRC)/common/elfcap
 PLAT_i386 =	intel/ia32
 PLAT_amd64 =	intel/amd64
 PLAT_sparc =	sparc
+PLAT_aarch64 =	aarch64
 PLAT = $(PLAT_$(BASEPLAT))
+
+# XXXARM: We're linking with ld(1), so need to lose the sysroot
+SYSROOT=
 
 # DTrace needs an executable data segment.
 MAPFILE.NED=
@@ -138,11 +143,13 @@ SGSMSGSPARC64=	../common/rtld.sparc64.msg
 SGSMSGINTEL=	../common/rtld.intel.msg
 SGSMSGINTEL32=	../common/rtld.intel32.msg
 SGSMSGINTEL64=	../common/rtld.intel64.msg
+SGSMSGAARCH64=	../common/rtld.aarch64.msg
 SGSMSGCHK=	../common/rtld.chk.msg
 SGSMSGTARG=	$(SGSMSGCOM)
 SGSMSGALL=	$(SGSMSGCOM) $(SGSMSG32) $(SGSMSG64) \
 		$(SGSMSGSPARC) $(SGSMSGSPARC32) $(SGSMSGSPARC64) \
-		$(SGSMSGINTEL) $(SGSMSGINTEL32) $(SGSMSGINTEL64)
+		$(SGSMSGINTEL) $(SGSMSGINTEL32) $(SGSMSGINTEL64) \
+		$(SGSMSGAARCH64)
 
 SGSMSGFLAGS1=	$(SGSMSGFLAGS) -m $(BLTMESG)
 SGSMSGFLAGS2=	$(SGSMSGFLAGS) -h $(BLTDEFS) -d $(BLTDATA) -n rtld_msg

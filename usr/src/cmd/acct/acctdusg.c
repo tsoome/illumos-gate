@@ -27,8 +27,6 @@
  * Use is subject to license terms.
  */
 
-
-#ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.8	*/
 /*
  *	acctdusg [-u file] [-p file] > dtmp-file
  *	-u	file for names of files not charged to anyone

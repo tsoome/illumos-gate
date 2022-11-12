@@ -25,8 +25,6 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -483,7 +481,7 @@ bogus:
 		statemap[inumber] = FCLEAR;
 	}
 	if (reply("CLEAR") == 1) {
-		(void) tdelete((void *)inumber, &limbo_dirs, ino_t_cmp);
+		(void) tdelete((void *)(intptr_t)inumber, &limbo_dirs, ino_t_cmp);
 		freeino(inumber, TI_PARENT);
 		inodirty();
 	} else {

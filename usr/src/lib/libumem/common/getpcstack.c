@@ -22,7 +22,9 @@
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
  * Copyright (c) 2016 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include "misc.h"
@@ -42,8 +44,9 @@ extern void flush_windows(void);
  */
 #define	UMEM_FRAMESIZE	(sizeof (struct frame))
 
-#else
-#error needs update for new architecture
+#elif defined(__aarch64__)
+
+#define UMEM_FRAMESIZE (sizeof (struct frame))
 #endif
 
 /*

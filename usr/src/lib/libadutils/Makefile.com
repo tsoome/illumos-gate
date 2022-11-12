@@ -36,7 +36,7 @@ include ../../Makefile.lib
 CSTD=	$(CSTD_GNU99)
 
 LIBS =		$(DYNLIB)
-LDLIBS +=	-lldap -lresolv -lsocket -lnsl -lc
+LDLIBS +=	-lldap -lresolv -lsocket -lnsl -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 SRCDIR =	../common
 
 CFLAGS +=	$(CCVERBOSE)

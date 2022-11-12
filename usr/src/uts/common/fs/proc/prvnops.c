@@ -3322,7 +3322,7 @@ prgetattr(vnode_t *vp, vattr_t *vap, int flags, cred_t *cr,
 			 */
 			mutex_exit(&p->p_lock);
 			AS_LOCK_ENTER(as, RW_WRITER);
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 			vap->va_size = iam32bit?
 			    prpdsize32(as) : prpdsize(as);
 #else
@@ -3338,7 +3338,7 @@ prgetattr(vnode_t *vp, vattr_t *vap, int flags, cred_t *cr,
 		else {
 			mutex_exit(&p->p_lock);
 			AS_LOCK_ENTER(as, RW_WRITER);
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 			vap->va_size = iam32bit?
 			    oprpdsize32(as) : oprpdsize(as);
 #else

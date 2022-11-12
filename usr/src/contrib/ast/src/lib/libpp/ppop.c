@@ -77,7 +77,7 @@ inithash(register Hash_table_t* tab, register struct ppkeyword* key)
 	{
 		if (!ppisid(*s))
 			s++;
-		hashput(tab, s, key->value);
+		hashput(tab, s, (uintptr_t)key->value);
 	}
 }
 
@@ -1372,7 +1372,7 @@ ppop(int op, ...)
 				p++;
 			else
 				n |= OPT_PASS;
-			if ((c = (int)hashref(pp.strtab, p)) > 0 && c <= X_last_option)
+			if ((c = (int)(uintptr_t)hashref(pp.strtab, p)) > 0 && c <= X_last_option)
 				pp.optflags[c] = n;
 		}
 		break;
@@ -1599,7 +1599,7 @@ ppop(int op, ...)
 	before:
 		error(3, "ppop(%d): preprocessor operation must be done before PP_INIT", op);
 		break;
-	default: 
+	default:
 		error(3, "ppop(%d): invalid preprocessor operation", op);
 		break;
 	}

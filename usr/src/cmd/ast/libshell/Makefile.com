@@ -45,6 +45,8 @@ LIBSHELLBASE=..
 
 LIBS= $(DYNLIB)
 LDLIBS += -lcmd -ldll -last -lsocket -lm -lc
+# XXXARM: intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
 
 # We use "=" here since using $(CPPFLAGS.master) is very tricky in our
 # case - it MUST come as the last element but future changes in -D options

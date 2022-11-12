@@ -19,11 +19,10 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2015 Nexenta Systems, Inc.  All rights reserved.
- *
- * Copyright (c) 2011 Gary Mills
- *
  * Copyright (c) 1993, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Gary Mills
+ * Copyright 2015 Nexenta Systems, Inc.  All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -144,7 +143,7 @@ static char *other_ctlrs[] = {
 	};
 #define	OTHER_CTLRS 1
 
-#elif defined(i386)
+#elif defined(i386) || defined(__aarch64__)
 static char *other_ctlrs[] = {
 	"ISP-80"
 	};

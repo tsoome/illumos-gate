@@ -106,20 +106,17 @@ SYMBOL_VERSION ILLUMOS_0.1 {
 	tcpd_buf		{
 				  ASSERT = {
 					  TYPE = OBJECT;
-					  $if _x86 && _ELF64
-
+$if _x86 && _ELF64
 					  SIZE = addrsize[8];
-					  $elif _x86 && _ELF32
-
+$elif _x86 && _ELF32
 					  SIZE = addrsize[10];
-					  $elif _sparc
-
+$elif _sparc
 					  SIZE = addrsize[12];
-					  $else
-
-					  $error Unknown architecture
-
-					  $endif
+$elif _arm
+					  SIZE = addrsize[30];
+$else
+$error Unknown architecture
+$endif
 
 					};
 				};

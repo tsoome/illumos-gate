@@ -22,6 +22,9 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 /*	Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T	*/
@@ -44,7 +47,7 @@
 #include <sys/int_types.h>
 
 #if defined(__GNUC__) && defined(_ASM_INLINES) && \
-	(defined(__i386) || defined(__amd64))
+	(defined(__i386) || defined(__amd64) || defined(__aarch64__))
 #include <asm/byteorder.h>
 #endif
 

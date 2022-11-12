@@ -58,7 +58,7 @@ SYMBOL_VERSION SUNWprivate_2.1 {
 				  ASSERT = {
 					  BINDING = WEAK;
 					  TYPE = OBJECT;
-					  SIZE = 4;
+					  SIZE = addrsize;
 					};
 				};
 	createQuery;
@@ -126,7 +126,11 @@ SYMBOL_VERSION SUNWprivate_2.1 {
 	ldapConfig		{
 				  ASSERT = {
 					  TYPE = OBJECT;
+$if _ELF32
 					  SIZE = 60;
+$else
+					  SIZE = 88;
+$endif
 					};
 				};
 $if _x86
@@ -153,6 +157,19 @@ $elif _sparc
 				  ASSERT = {
 					  TYPE = OBJECT;
 					  SIZE = 344;
+					};
+				};
+$elif _arm
+	ldapDBTableMapping	{
+				  ASSERT = {
+					  TYPE = OBJECT;
+					  SIZE = 208;
+					};
+				};
+	ldapMappingList		{
+				  ASSERT = {
+					  TYPE = OBJECT;
+					  SIZE = 608;
 					};
 				};
 $else
@@ -215,7 +232,7 @@ $endif
 					  SIZE = 4;
 					};
 				};
-	numMisaligned		{ ASSERT = { TYPE = OBJECT; SIZE = 4; }; };
+	numMisaligned		{ ASSERT = { TYPE = OBJECT; SIZE = addrsize; }; };
 	objFromLDAP;
 	objToLDAP;
 	p2buf;
@@ -258,7 +275,11 @@ $endif
 	tbl_prototype		{
 				  ASSERT = {
 					  TYPE = OBJECT;
+$if _ELF32
 					  SIZE = 24;
+$else
+					  SIZE = 40;
+$endif
 					};
 				};
 	unlock_core;

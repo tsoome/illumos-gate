@@ -21,9 +21,9 @@
 /*
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <fs/fs_subr.h>
 
@@ -626,7 +626,9 @@ objfs_data_read(vnode_t *vp, uio_t *uio, int ioflag, cred_t *cr,
 		ehdr.e_shentsize = sizeof (Elf32_Shdr);
 #endif
 
-#ifdef __sparc
+#if defined(__aarch64__)
+		ehdr.e_machine = EM_AARCH64;
+#elif defined(__sparc)
 #ifdef __sparcv9
 		ehdr.e_machine = EM_SPARCV9;
 #else
@@ -634,8 +636,10 @@ objfs_data_read(vnode_t *vp, uio_t *uio, int ioflag, cred_t *cr,
 #endif
 #elif defined(__amd64)
 		ehdr.e_machine = EM_AMD64;
-#else
+#elif defined(__i386)
 		ehdr.e_machine = EM_386;
+#else
+#error Unknown platform
 #endif
 
 		ehdr.e_version = EV_CURRENT;

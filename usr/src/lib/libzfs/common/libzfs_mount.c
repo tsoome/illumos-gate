@@ -21,14 +21,12 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- */
-
-/*
  * Copyright 2019 Nexenta Systems, Inc.
  * Copyright (c) 2014, 2016 by Delphix. All rights reserved.
  * Copyright 2016 Igor Kozhukhov <ikozhukhov@gmail.com>
  * Copyright 2017 Joyent, Inc.
  * Copyright 2017 RackTop Systems.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 OmniOS Community Edition (OmniOSce) Association.
  */
 
@@ -643,7 +641,7 @@ _zfs_init_libshare(void)
 	char path[MAXPATHLEN];
 	char isa[MAXISALEN];
 
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (sysinfo(SI_ARCHITECTURE_64, isa, MAXISALEN) == -1)
 		isa[0] = '\0';
 #else

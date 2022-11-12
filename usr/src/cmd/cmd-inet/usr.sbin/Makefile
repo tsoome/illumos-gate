@@ -21,16 +21,21 @@
 
 #
 # Copyright (c) 1990, 2010, Oracle and/or its affiliates. All rights reserved.
-# Copyright 2022 Garrett D'Amore <garrett@damore.org>
 # Copyright 2019, Joyent, Inc.
+# Copyright 2022 Garrett D'Amore <garrett@damore.org>
 #
+
+include $(SRC)/Makefile.master
 
 SYNCPROG=	syncinit syncloop syncstat
 
 PROG=		6to4relay arp if_mpadm \
-		in.comsat in.fingerd in.rarpd in.rexecd in.rlogind \
-		in.rshd in.rwhod in.telnetd in.tftpd ipaddrsel \
+		in.fingerd in.rexecd \
+		in.rwhod in.telnetd in.tftpd ipaddrsel \
 		ndd ndp $(SYNCPROG)
+
+# XXXARM: Not 64bit clean 
+$(NOT_AARCH64_BLD)PROG += in.rarpd in.rlogind in.rshd in.comsat
 
 MANIFEST=	rarp.xml telnet.xml comsat.xml finger.xml \
 		login.xml shell.xml rexec.xml
@@ -62,10 +67,14 @@ K5RSHDOBJS=	in.rshd.o
 K5TELNETOBJS=	in.telnetd.o
 SRCS=		$(PROGSRCS) $(OTHERSRC)
 
-SUBDIRS=	ifconfig ilbadm in.rdisc in.routed \
-		in.talkd inetadm inetconv ipadm ipmpstat ipqosconf ipsecutils \
-		nwamadm nwamcfg ping routeadm \
-		snoop sppptun traceroute wificonfig
+SUBDIRS=	in.rdisc \
+		in.talkd inetadm inetconv ipmpstat ipqosconf \
+		nwamadm nwamcfg routeadm \
+		wificonfig ifconfig traceroute ping ipsecutils ipadm \
+		ilbadm
+
+# XXXARM: not 64bit clean
+$(NOT_AARCH64_BLD)SUBDIRS += in.routed snoop sppptun
 
 MSGSUBDIRS=	ifconfig ilbadm in.routed in.talkd \
 		inetadm inetconv ipadm ipmpstat ipqosconf ipsecutils \

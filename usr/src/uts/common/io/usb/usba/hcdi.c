@@ -657,7 +657,7 @@ static void
 hcdi_do_cb(usba_pipe_handle_data_t *ph_data, usba_req_wrapper_t *req_wrp,
     usba_hcdi_t *hcdi)
 {
-	usb_cr_t		completion_reason;
+	usb_cr_t		completion_reason = 0;
 	usb_req_attrs_t		attrs = req_wrp->wr_attrs;
 
 	switch (req_wrp->wr_ph_data->p_ep.bmAttributes &

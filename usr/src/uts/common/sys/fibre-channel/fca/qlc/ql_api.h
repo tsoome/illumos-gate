@@ -1024,7 +1024,7 @@ typedef union ql_comb_ip_init_cb {
  */
 struct fw_table {
 	uint16_t	fw_class;
-	int8_t		*fw_version;
+	char		*fw_version;
 };
 
 /*
@@ -1517,7 +1517,7 @@ typedef struct ql_adapter_state {
 	ddi_iblock_cookie_t	iblock_cookie;
 	fc_fca_tran_t		*tran;
 	uint32_t		instance;
-	int8_t			*devpath;
+	char			*devpath;
 	uint32_t		fru_hba_index;
 	uint32_t		fru_port_index;
 	uint8_t			adapInfo[18];

@@ -82,9 +82,10 @@ UNSHAREOBJS=	$(UNSHARESRCS:%.c=%.o)
 
 POFILE= autofs.po
 
-$(AUTO) :=	LDLIBS += -lnsl -lsldap -lscf
+$(AUTO) :=	LDLIBS += -lnsl -lsldap -lscf -L$(ADJUNCT_PROTO)/usr/lib/mps
 $(MOUNT):=	LDLIBS += -lscf
-$(TYPEPROG) :=	LDLIBS += -lrpcsvc -lsocket -lnsl -lsldap -lkstat -lscf
+$(TYPEPROG) :=	LDLIBS += -lrpcsvc -lsocket -lnsl -lsldap -lkstat -lscf \
+    -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 CFLAGS +=	$(CCVERBOSE) -D_FILE_OFFSET_BITS=64
 CPPFLAGS=	-I. -I.. -I../nfs/lib $(CPPFLAGS.master) -D_REENTRANT  \

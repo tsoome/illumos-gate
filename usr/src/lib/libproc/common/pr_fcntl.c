@@ -22,9 +22,9 @@
 /*
  * Copyright (c) 1997-2000 by Sun Microsystems, Inc.
  * All rights reserved.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <sys/isa_defs.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@ pr_fcntl(struct ps_prochandle *Pr, int fd, int cmd, void *argp)
 	adp->arg_size = 0;
 
 	adp++;			/* cmd argument */
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32) {
 		/*
 		 * Guilty knowledge of the large file compilation environment
@@ -102,13 +102,13 @@ pr_fcntl(struct ps_prochandle *Pr, int fd, int cmd, void *argp)
 		case F_FREESP:
 			adp->arg_size = sizeof (struct flock);
 			break;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		case 33:
 		case 34:
 		case 35:
 		case 27:
 			adp->arg_size = sizeof (struct flock64_32);
-#else	/* _LP64 */
+#elif !defined(_LP64)	/* _LP64 */
 		case F_GETLK64:
 		case F_SETLK64:
 		case F_SETLKW64:

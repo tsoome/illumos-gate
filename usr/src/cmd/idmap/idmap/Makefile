@@ -46,7 +46,7 @@ CERRWARN +=	-_gcc=-Wno-address
 SMATCH=off
 
 POFILE =	$(PROG)_all.po
-LDLIBS +=	-lidmap -ladutils -lsldap -lldap
+LDLIBS +=	-lidmap -ladutils -lsldap -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
 FILEMODE =	0555
 
 INCS += -I. \

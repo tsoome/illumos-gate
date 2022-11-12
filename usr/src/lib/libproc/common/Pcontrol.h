@@ -25,6 +25,7 @@
 /*
  * Copyright 2012 DEY Storage Systems, Inc.  All rights reserved.
  * Copyright (c) 2013 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 Joyent, Inc.
  * Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
  * Copyright 2021 Oxide Computer Company
@@ -307,6 +308,8 @@ extern char	procfs_path[PATH_MAX];
 #define	BPT	((instr_t)0x91d02001)
 #elif defined(__i386) || defined(__amd64)
 #define	BPT	((instr_t)0xcc)
+#elif defined(__aarch64__)
+#define	BPT	((instr_t)0xd4207d00)
 #endif
 
 /*

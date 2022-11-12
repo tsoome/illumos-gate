@@ -37,8 +37,8 @@ set name=variant.arch value=$(ARCH)
 dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys
-file path=kernel/drv/$(ARCH64)/fp group=sys
-file path=kernel/drv/fp.conf group=sys \
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/fp group=sys
+$(not_aarch64)file path=kernel/drv/fp.conf group=sys \
     original_name=SUNWfctl:kernel/drv/fp.conf preserve=true
 dir  path=kernel/misc group=sys
 dir  path=kernel/misc/$(ARCH64) group=sys

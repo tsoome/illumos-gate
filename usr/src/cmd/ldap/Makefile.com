@@ -108,13 +108,13 @@ CPPFLAGS +=	-DSUN -DSVR4 -DSOLARIS_LDAP_CMD \
 		-DHAVE_SASL_OPTIONS -DSOLARIS_LDAP_CMD
 LDLIBS +=	$(COMPLIB)
 
-ldapmodrdn :=	LDLIBS += -lldap
-ldapsearch :=	LDLIBS += -lldap
-ldapdelete :=	LDLIBS += -lldap
-ldapmodify :=	LDLIBS += -lldap
-ldaplist :=	LDLIBS += -lsldap
-ldapaddent :=	LDLIBS += -lsldap -lnsl -lsecdb
-ldapclient :=	LDLIBS += -lsldap -lscf
+ldapmodrdn :=	LDLIBS += -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
+ldapsearch :=	LDLIBS += -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
+ldapdelete :=	LDLIBS += -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
+ldapmodify :=	LDLIBS += -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
+ldaplist :=	LDLIBS += -lsldap -L$(ADJUNCT_PROTO)/usr/lib/mps
+ldapaddent :=	LDLIBS += -lsldap -lnsl -lsecdb -L$(ADJUNCT_PROTO)/usr/lib/mps
+ldapclient :=	LDLIBS += -lsldap -lscf -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 ldaplist :=	CSTD = $(CSTD_GNU99)
 ldapaddent :=	CSTD = $(CSTD_GNU99)

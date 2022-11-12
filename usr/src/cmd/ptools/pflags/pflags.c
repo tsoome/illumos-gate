@@ -22,10 +22,9 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-
-/*
+ *
  * Copyright (c) 2013, Joyent, Inc. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <stdio.h>
@@ -563,6 +562,15 @@ static const char * const regname[NPRGREG] = {
 	"%ebx", "%edx", "%ecx", "%eax", "%trapno", "%err", "%eip", " %cs",
 	"%efl", "%uesp", " %ss"
 };
+#elif defined(__aarch64__)
+static const char * const regname[NPRGREG] = {
+	"x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9",
+	"x10", "x11", "x12", "x13", "x14", "x15", "x16", "x17", "x18", "x19",
+	"x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28", "x29",
+	"x30", "sp", "pc", "tp"
+};
+#else
+#error Unknown platform
 #endif /* __i386 */
 
 #if defined(__amd64) && defined(_LP64)

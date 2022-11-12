@@ -21,6 +21,8 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2019 Peter Tribble.
  */
 
@@ -318,7 +320,7 @@ opromclose(dev_t dev, int flag, int otype, cred_t *cred_p)
 	return (0);
 }
 
-#ifdef __sparc
+#if defined(__sparc) || defined(__aarch64__)
 static int
 get_bootpath_prop(char *bootpath)
 {
@@ -388,7 +390,7 @@ opromioctl_cb(void *avp, int has_changed)
 	 * and weed out unsupported commands on x86 platform
 	 */
 	switch (cmd) {
-#if !defined(__x86)
+#if !defined(__x86) && !defined(__aarch64__)
 	case OPROMLISTKEYSLEN:
 		valsize = prom_asr_list_keys_len();
 		opp = (struct openpromio *)kmem_zalloc(
@@ -458,12 +460,12 @@ opromioctl_cb(void *avp, int has_changed)
 
 	case OPROMSETOPT:
 	case OPROMSETOPT2:
-#if !defined(__x86)
+#if defined(__sparc)
 		if (mode & FWRITE) {
 			node_id = options_nodeid;
 			break;
 		}
-#endif /* !__x86 */
+#endif /* __sparc */
 		return (EPERM);
 
 	case OPROMNEXT:
@@ -488,10 +490,10 @@ opromioctl_cb(void *avp, int has_changed)
 	case OPROMGETVERSION:
 	case OPROMPATH2DRV:
 	case OPROMPROM2DEVNAME:
-#if !defined(__x86)
+#if defined(__sparc)
 	case OPROMGETFBNAME:
 	case OPROMDEV2PROMNAME:
-#endif	/* !__x86 */
+#endif	/* !__sparc */
 		if ((mode & FREAD) == 0) {
 			return (EPERM);
 		}
@@ -730,7 +732,7 @@ opromioctl_cb(void *avp, int has_changed)
 	}
 
 	case OPROMGETBOOTPATH: {
-#if defined(__sparc) && defined(_OBP)
+#if (defined(__sparc) && defined(_OBP)) || defined(__aarch64__)
 
 		char bpath[OBP_MAXPATHLEN];
 		if (get_bootpath_prop(bpath) != 0) {
@@ -864,7 +866,7 @@ opromioctl_cb(void *avp, int has_changed)
 			error = EFAULT;
 		break;
 
-#if !defined(__x86)
+#if defined(__sparc)
 	case OPROMGETFBNAME:
 		/*
 		 * Return stdoutpath, if it's a frame buffer.
@@ -977,7 +979,7 @@ opromioctl_cb(void *avp, int has_changed)
 
 		break;
 	}
-#endif	/* !__x86 */
+#endif	/* __sparc */
 	}	/* switch (cmd)	*/
 
 	kmem_free(opp, userbufsize + sizeof (uint_t) + 1);

@@ -222,7 +222,7 @@ search(register struct ppfile* fp, register struct ppdirs* dp, int type, int fla
 						*s++ = 0;
 					if (!*e)
 						break;
-					switch ((int)hashref(pp.strtab, e))
+					switch ((int)(uintptr_t)hashref(pp.strtab, e))
 					{
 					case X_CHECKPOINT:
 #if CHECKPOINT

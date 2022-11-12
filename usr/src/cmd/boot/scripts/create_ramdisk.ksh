@@ -20,15 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2016 Toomas Soome <tsoome@me.com>
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-
-#
 # Copyright (c) 2014 by Delphix. All rights reserved.
+# Copyright 2016 Toomas Soome <tsoome@me.com>
+# Copyright 2017 Hayashi Naoyuki
 # Copyright 2018 OmniOS Community Edition (OmniOSce) Association.
-#
 
 ALT_ROOT=
 EXTRACT_ARGS=
@@ -43,7 +41,7 @@ This utility is a component of the bootadm(8) implementation and it is not
 recommended for stand-alone use. Please use bootadm(8) instead.
 
 Usage: ${0##*/}: [-R <root>] [-p <platform>] [ -f <format> ] [--nocompress]
-where <platform> is one of i86pc, sun4u or sun4v
+where <platform> is one of i86pc, sun4u, sun4v or aarch64
   and <format> is one of ufs, ufs-nocompress or cpio
 	EOM
 	exit
@@ -124,6 +122,11 @@ sun4u|sun4v)	ISA=sparc
 		ARCH64=sparcv9
 		BOOT_ARCHIVE_SUFFIX=boot_archive
 		compress=no
+		;;
+aarch64|armv8)  PLATFORM=armv8
+		ISA=aarch64
+		ARCH64=armv8
+		BOOT_ARCHIVE_SUFFIX=boot_archive
 		;;
 *)		usage
 		;;
@@ -337,7 +340,7 @@ function create_ufs_archive
 	# sanity check the archive before moving it into place
 	#
 	ARCHIVE_SIZE=`ls -l "${archive}-new" 2> /dev/null | nawk '{ print $5 }'`
-	if [ $compress = yes ] || [ $ISA = sparc ] ; then
+	if [ $compress = yes ] || [ $ISA != i386 ] ; then
 		#
 		# 'file' will report "English text" for uncompressed
 		# boot_archives.  Checking for that doesn't seem stable,
@@ -397,7 +400,7 @@ function create_cpio_archive
 	touch "$tarchive" \
 	    || fatal_error "Cannot create temporary archive $tarchive"
 
-	if [ $ISA = sparc ] ; then
+	if [ $ISA != i386 ] ; then
 		# compression does not work (yet?).
 		# The krtld does not support gzip but fiocompress
 		# does not seem to work either.

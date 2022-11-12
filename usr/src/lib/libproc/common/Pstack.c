@@ -22,6 +22,8 @@
 /*
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -189,7 +191,7 @@ load_uclist(uclist_t *ucl, const lwpstatus_t *psp)
 			} else
 				break; /* abort if allocation failure */
 		}
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		if (P->status.pr_dmodel == PR_MODEL_ILP32) {
 			ucontext32_t u32;
 

@@ -19,13 +19,7 @@
 #
 # CDDL HEADER END
 #
-#
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 1990 by Sun Microsystems, Inc.
-#
-# cmd/pwck/Makefile
-#
 
 PROG= 		pwck
 
@@ -44,7 +38,5 @@ $(ROOTSYMLINK):
 	-$(RM) $@; $(SYMLINK) $(RELUSRSBIN)/$(PROG) $@
 
 clean:
-
-lint:	lint_PROG
 
 include ../Makefile.targ

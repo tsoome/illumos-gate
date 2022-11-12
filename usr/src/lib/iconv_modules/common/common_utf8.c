@@ -67,7 +67,7 @@ is_valid_utf8_string(uchar_t *str, int utf8_len)
    uchar_t first_byte;
    int is_second_byte = 0, len=utf8_len;
 
-   if (number_of_bytes_in_utf8_char[*ib] == ICV_TYPE_ILLEGAL_CHAR ||
+   if (number_of_bytes_in_utf8_char[*ib] == (char)ICV_TYPE_ILLEGAL_CHAR ||
        number_of_bytes_in_utf8_char[*ib] != utf8_len ) return 0;
 
    first_byte = *ib;

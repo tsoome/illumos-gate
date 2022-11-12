@@ -313,6 +313,9 @@ sl_mach(Half mach)
 	case EM_AMD64:
 		return (struct_layout_amd64());
 
+	case EM_AARCH64:
+		return (struct_layout_aarch64());
+
 	case EM_SPARC:
 	case EM_SPARC32PLUS:
 		return (struct_layout_sparc());

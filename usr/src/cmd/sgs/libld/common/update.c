@@ -1990,6 +1990,7 @@ update_osym(Ofl_desc *ofl)
 	/*
 	 * Now display GOT debugging information if required.
 	 */
+	/* XXXARM: Should display .got.plt too */
 	DBG_CALL(Dbg_got_display(ofl, 0, 0,
 	    ld_targ.t_m.m_got_xnumber, ld_targ.t_m.m_got_entsize));
 

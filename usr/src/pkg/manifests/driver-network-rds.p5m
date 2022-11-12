@@ -41,9 +41,9 @@ dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys
 file path=kernel/drv/$(ARCH64)/rds group=sys
-file path=kernel/drv/$(ARCH64)/rdsib group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/rdsib group=sys
 file path=kernel/drv/rds.conf group=sys
-file path=kernel/drv/rdsib.conf group=sys
+$(not_aarch64)file path=kernel/drv/rdsib.conf group=sys
 driver name=rds perms="* 0644 root sys"
 driver name=rdsib perms="* 0644 root sys"
 legacy pkg=SUNWrds desc="Sun Reliable Datagram Sockets" \

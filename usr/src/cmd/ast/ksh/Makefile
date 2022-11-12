@@ -39,6 +39,8 @@ SUBDIRS += builtins
 
 ARCH32_i386= i86
 ARCH32_sparc= sparcv7
+# XXXARM: Not multilib, this should be tidied up
+ARCH32_aarch64= aarch64
 ARCH32= $(ARCH32_$(MACH))
 
 all		:=	TARGET = all

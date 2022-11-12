@@ -3505,7 +3505,7 @@ sbd_open_zfs_meta(sbd_lu_t *sl)
 	for (i = 0; i < len; i += 2) {
 		ch = sbd_ctoi(*tmp++);
 		cl = sbd_ctoi(*tmp++);
-		if (ch == -1 || cl == -1) {
+		if (ch == (char)-1 || cl == (char)-1) {
 			rc = SBD_FAILURE;
 			break;
 		}

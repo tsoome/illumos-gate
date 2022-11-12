@@ -28,15 +28,12 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.17	*/
-/* EMACS_MODES: !fill, lnumb, !overwrite, !nodelete, !picture */
-
-#include "stdio.h"
-#include "string.h"
-#include "errno.h"
-#include "limits.h"
-#include "unistd.h"
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <libintl.h>
+#include <limits.h>
+#include <unistd.h>
 
 #include "lp.h"
 
@@ -449,7 +446,7 @@ envlist(int fd, char **list)
 			continue;
 		*value++ = 0;
 		if (!strchr(value, '\''))
-			fdprintf(fd, (char *)gettext("export %s; %s='%s'\n"),
+			fdprintf(fd, gettext("export %s; %s='%s'\n"),
 				env, env, value);
 		*--value = '=';
 	}
@@ -467,25 +464,25 @@ printalert(FILE *fp, FALERT *alertp, int isfault)
 {
 	if (!alertp->shcmd) {
 		if (isfault)
-			(void)fprintf (fp, (char *)gettext("On fault: no alert\n"));
+			(void)fprintf (fp, gettext("On fault: no alert\n"));
 		else
-			(void)fprintf (fp, (char *)gettext("No alert\n"));
+			(void)fprintf (fp, gettext("No alert\n"));
 
 	} else {
 		register char	*copy = Strdup(alertp->shcmd),
 				*cp;
 
 		if (isfault)
-			(void)fprintf (fp, (char *)gettext("On fault: "));
+			(void)fprintf (fp, gettext("On fault: "));
 		else
 			if (alertp->Q > 1)
 				(void)fprintf (
 					fp,
-					(char *)gettext("When %d are queued: "),
+					gettext("When %d are queued: "),
 					alertp->Q
 				);
 			else
-				(void)fprintf (fp, (char *)gettext("Upon any being queued: "));
+				(void)fprintf (fp, gettext("Upon any being queued: "));
 
 		if (copy && (cp = strchr(copy, ' ')))
 			while (*cp == ' ')
@@ -501,12 +498,12 @@ printalert(FILE *fp, FALERT *alertp, int isfault)
 		)
 			(void)fprintf (fp, "%s to %s ", copy, cp);
 		else
-			(void)fprintf (fp, (char *)gettext("alert with \"%s\" "), alertp->shcmd);
+			(void)fprintf (fp, gettext("alert with \"%s\" "), alertp->shcmd);
 
 		if (alertp->W > 0)
-			(void)fprintf (fp, (char *)gettext("every %d minutes\n"), alertp->W);
+			(void)fprintf (fp, gettext("every %d minutes\n"), alertp->W);
 		else
-			(void)fprintf (fp, (char *)gettext("once\n"));
+			(void)fprintf (fp, gettext("once\n"));
 
 		Free (copy);
 	}

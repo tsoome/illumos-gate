@@ -5450,7 +5450,7 @@ mark_subgraph(graph_edge_t *e, void *arg)
 {
 	graph_vertex_t *v;
 	int r;
-	int optional = (int)arg;
+	int optional = (int)(intptr_t)arg;
 
 	v = e->ge_vertex;
 
@@ -5479,7 +5479,7 @@ mark_subgraph(graph_edge_t *e, void *arg)
 		return (UU_WALK_NEXT);
 
 	r = uu_list_walk(v->gv_dependencies, (uu_walk_fn_t *)mark_subgraph,
-	    (void *)optional, 0);
+	    (void *)(uintptr_t)optional, 0);
 	assert(r == 0);
 	return (UU_WALK_NEXT);
 }
@@ -6342,7 +6342,7 @@ process_actions(scf_handle_t *h, scf_propertygroup_t *pg, scf_instance_t *inst)
 			}
 		}
 
-		r = scf_value_get_integer(val, &action_ts[i]);
+		r = scf_value_get_integer(val, (int64_t *)&action_ts[i]);
 		assert(r == 0);
 	}
 

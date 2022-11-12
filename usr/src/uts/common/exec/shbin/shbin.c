@@ -82,6 +82,8 @@ static char *shell_list[] =
 #elif defined(__x86)
 	"/usr/bin/amd64/ksh93",
 	"/usr/bin/i86/ksh93",
+#elif defined(__aarch64__)
+	"/usr/bin/ksh93"
 #else
 #error "Unrecognized platform/CPU (use /usr/bin/ksh93 when in doubt)."
 #endif

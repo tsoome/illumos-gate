@@ -22,17 +22,19 @@ set name=pkg.summary value="BSD hypervisor (libraries)"
 set name=pkg.description value="BSD hypervisor (libraries)"
 set name=info.classification \
     value=org.opensolaris.category.2008:System/Virtualization
-set name=variant.arch value=i386
+# XXXARM: This is because lib9p isn't in its own package
+set name=variant.arch value=aarch64 value=i386
 dir  path=lib group=bin
 dir  path=lib/$(ARCH64) group=bin
-file path=lib/$(ARCH64)/libvmm.so.1
-file path=lib/$(ARCH64)/libvmmapi.so.1
+$(not_aarch64)file path=lib/$(ARCH64)/libvmm.so.1
+$(not_aarch64)file path=lib/$(ARCH64)/libvmmapi.so.1
 dir  path=usr group=sys
 dir  path=usr/lib group=bin
 dir  path=usr/lib/$(ARCH64) group=bin
-file path=usr/lib/$(ARCH64)/lib9p.so.1
-file path=usr/lib/$(ARCH64)/libppt.so.1
-file path=usr/lib/libppt.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/lib9p.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libppt.so.1
+$(aarch64_ONLY)file path=usr/lib/lib9p.so.1
+$(not_aarch64)file path=usr/lib/libppt.so.1
 license lic_CDDL license=lic_CDDL
 license usr/src/lib/lib9p/COPYRIGHT license=usr/src/lib/lib9p/COPYRIGHT
 license usr/src/lib/libvmmapi/THIRDPARTYLICENSE \

@@ -26,6 +26,8 @@
  */
 /*
  * Copyright (c) 2017 Joyent, Inc.
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef _SYS_KOBJ_H
@@ -202,7 +204,8 @@ extern void do_hotinlines(struct module *);
 
 extern int kobj_filbuf(struct _buf *);
 extern void kobj_sync(void);
-#if defined(__i386) || defined(__sparc) || defined(__amd64)
+#if defined(__i386) || defined(__sparc) || defined(__amd64) || \
+	defined(__aarch64__)
 extern void kobj_vmem_init(vmem_t **, vmem_t **);
 #else
 #error "ISA not supported"

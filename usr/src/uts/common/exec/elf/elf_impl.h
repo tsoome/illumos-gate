@@ -26,8 +26,6 @@
 #ifndef _ELF_ELF_IMPL_H
 #define	_ELF_ELF_IMPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -59,6 +57,10 @@ typedef	auxv_t		aux_entry_t;
 
 #if defined(__amd64)
 #define	USR_LIB_RTLD	"/usr/lib/amd64/ld.so.1"
+#endif
+
+#if defined(__aarch64__)
+#define	USR_LIB_RTLD	"/usr/lib/ld.so.1"
 #endif
 
 #endif	/* !_LP64 || _ELF32_COMPAT */

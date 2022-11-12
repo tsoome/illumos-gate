@@ -32,6 +32,10 @@ include ../../Makefile.lib
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lc -lsocket -luuid -lnvpair -lsysevent -lsec -lbrand \
 		-lpool -lscf -lproc -luutil -lbsm -lsecdb
+
+# XXXARM: intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
+
 # DYNLIB libraries do not have lint libs and are not linted
 $(DYNLIB) :=	LDLIBS += -lxml2
 NATIVE_LIBS +=	libxml2.so

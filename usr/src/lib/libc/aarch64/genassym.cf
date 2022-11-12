@@ -1,0 +1,65 @@
+include <sys/types.h>
+include <sys/time_impl.h>
+include <signal.h>
+include "thr_uberdata.h"
+
+define	TV_SEC			offsetof(timespec_t, tv_sec)
+define	TV_NSEC			offsetof(timespec_t, tv_nsec)
+define	UL_SIGLINK		offsetof(ulwp_t, ul_siglink)
+define	UL_USTACK		offsetof(ulwp_t, ul_ustack)
+define	SS_SP			offsetof(stack_t, ss_sp)
+define	SS_SIZE			offsetof(stack_t, ss_size)
+define	SIGSEGV			SIGSEGV
+define	UC_MCONTEXT_GREGS	offsetof(ucontext_t, uc_mcontext.gregs)
+define	UC_MCONTEXT_UC_LINK	offsetof(ucontext_t, uc_link)
+define	UC_MCONTEXT		((sizeof(ucontext_t) + 15) & ~15)
+define	UL_TLSENT		offsetof(ulwp_t, ul_tlsent)
+define	UL_NTLSENT		offsetof(ulwp_t, ul_ntlsent)
+define	UL_SIGMASK		offsetof(ulwp_t, ul_sigmask)
+define	UL_VFORK		offsetof(ulwp_t, ul_vfork)
+define	UL_SCHEDCTL		offsetof(ulwp_t, ul_schedctl)
+define	UL_SCHEDCTL_CALLED	offsetof(ulwp_t, ul_schedctl_called)
+define	TI_MODULEID		offsetof(TLS_index, ti_moduleid)
+define	MASKSET0		MASKSET0
+define	MASKSET1		MASKSET1
+define	MASKSET2		MASKSET2
+define	MASKSET3		MASKSET3
+define	SIG_SETMASK		SIG_SETMASK
+define	WAITERMASK		WAITERMASK
+define	MUTEX_LOCKW		offsetof(lwp_mutex_t, mutex_lockw)
+define	MUTEX_LOCK_WORD		offsetof(lwp_mutex_t, mutex_lockword)
+
+define	REG_X0			REG_X0
+define	REG_X1			REG_X1
+define	REG_X2			REG_X2
+define	REG_X3			REG_X3
+define	REG_X4			REG_X4
+define	REG_X5			REG_X5
+define	REG_X6			REG_X6
+define	REG_X7			REG_X7
+define	REG_X8			REG_X8
+define	REG_X9			REG_X9
+define	REG_X10			REG_X10
+define	REG_X11			REG_X11
+define	REG_X12			REG_X12
+define	REG_X13			REG_X13
+define	REG_X14			REG_X14
+define	REG_X15			REG_X15
+define	REG_X16			REG_X16
+define	REG_X17			REG_X17
+define	REG_X18			REG_X18
+define	REG_X19			REG_X19
+define	REG_X20			REG_X20
+define	REG_X21			REG_X21
+define	REG_X22			REG_X22
+define	REG_X23			REG_X23
+define	REG_X24			REG_X24
+define	REG_X25			REG_X25
+define	REG_X26			REG_X26
+define	REG_X27			REG_X27
+define	REG_X28			REG_X28
+define	REG_X29			REG_X29
+define	REG_X30			REG_X30
+define	REG_SP			REG_SP
+define	REG_PC			REG_PC
+define	REG_TP			REG_TP

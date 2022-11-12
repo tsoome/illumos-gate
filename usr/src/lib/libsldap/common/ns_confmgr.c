@@ -65,7 +65,7 @@ read_line(FILE *fp, char *buffer, int buflen, char *errstr)
 
 	for (linelen = 0; linelen < buflen; ) {
 		c = getc(fp);
-		if (c == EOF)
+		if (c == (char)EOF)
 			break;
 		switch (c) {
 		case '\n':

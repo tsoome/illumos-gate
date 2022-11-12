@@ -28,6 +28,9 @@
 /*
  * Copyright (c) 2012, Joyent, Inc.  All rights reserved.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 #ifndef	__RTLD_H
 #define	__RTLD_H
 
@@ -663,7 +666,11 @@ extern void		call_fini(Lm_list *, Rt_map **, Rt_map *);
 extern void		call_init(Rt_map **, int);
 extern int		callable(Rt_map *, Rt_map *, Grp_hdl *, uint_t);
 extern Rt_map		*_caller(caddr_t, int);
+#ifdef __GNUC__
+#define caller()	__builtin_return_address(0)
+#else
 extern caddr_t		caller(void);
+#endif
 extern void		*calloc(size_t, size_t);
 extern int		cap_alternative(void);
 extern int		cap_check_fdesc(Fdesc *, Cap *, char *, Rej_desc *);

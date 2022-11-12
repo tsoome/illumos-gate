@@ -25,6 +25,8 @@
 # Copyright 2019 OmniOS Community Edition (OmniOSce) Association.
 #
 
+include $(SRC)/Makefile.master
+
 .KEEP_STATE:
 .KEEP_STATE_FILE: .make.state.$(MACH)
 
@@ -109,7 +111,7 @@ DTEXTDOM =
 # Define any generic sgsmsg(1l) flags.  The default message generation system
 # is to use gettext(3i), add the -C flag to switch to catgets(3c).
 
-SGSMSG =		$(ONBLD_TOOLS)/bin/$(MACH)/sgsmsg
+SGSMSG =		$(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/sgsmsg
 SGSMSG_PIGLATIN_NL =	perl $(SGSTOOLS)/common/sgsmsg_piglatin_nl.pl
 CHKMSG =		$(SGSHOME)/tools/chkmsg.sh
 

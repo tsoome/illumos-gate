@@ -315,6 +315,16 @@ getmore:
 				    MSG_ORIG(MSG_TARG_X86)) == 0) {
 					mach32 = EM_386;
 					mach64 = EM_AMD64;
+				} else if (strcasecmp(pstr,
+				    MSG_ORIG(MSG_TARG_AARCH64)) == 0) {
+					mach64 = EM_AARCH64;
+					if ((class != ELFCLASSNONE) &&
+					    (class != ELFCLASS64)) {
+						eprintf(0, ERR_FATAL,
+						    MSG_INTL(MSG_ERR_TARGNO32),
+						    pstr);
+					}
+					class = ELFCLASS64;
 				} else {
 					eprintf(0, ERR_FATAL,
 					    MSG_INTL(MSG_ERR_BADTARG), pstr);
@@ -447,11 +457,17 @@ getmore:
 	 * use the native machine.
 	 */
 	*mach = (class == ELFCLASS64) ? mach64 : mach32;
-	if (*mach == EM_NONE)
-		if (ar_found)
+	if (*mach == EM_NONE) {
+		if (ar_found) {
 			*mach = ar_mach;
-		else
+		} else {
+#if !defined(__aarch64__)	/* XXXARM: Eugh */
 			*mach = (class == ELFCLASS64) ? M_MACH_64 : M_MACH_32;
+#else
+			*mach = M_MACH_64;
+#endif
+		}
+	}
 
 	return (0);
 }

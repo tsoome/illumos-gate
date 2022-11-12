@@ -119,7 +119,7 @@ acquire_psets(struct snapshot *ss)
 {
 	psetid_t *pids = NULL;
 	struct pset_snapshot *ps;
-	size_t pids_nr;
+	uint_t pids_nr;
 	size_t i, j;
 
 	/*

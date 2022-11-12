@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Routines to handle ether_*to* calls in nscd
  */
@@ -34,6 +32,7 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <string.h>
+#include <strings.h>
 #include "cache.h"
 
 #define	host_db	ctx->nsc_db[0]

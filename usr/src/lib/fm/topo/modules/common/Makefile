@@ -25,6 +25,8 @@
 # Copyright (c) 2018, Joyent, Inc.
 #
 
+include $(SRC)/Makefile.master
+
 SUBDIRS =		\
 	disk		\
 	fac_prov_ahci	\
@@ -32,10 +34,12 @@ SUBDIRS =		\
 	fac_prov_mptsas	\
 	ipmi		\
 	nic		\
-	ses		\
 	smbios		\
 	usb		\
 	xfp
+
+# XXXARM: needs libses
+$(NOT_AARCH64_BLD)SUBDIRS += ses
 
 ses:	disk
 

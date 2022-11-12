@@ -21,11 +21,11 @@
 
 #
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
-# Copyright 2015, Richard Lowe
 # Copyright 2012, Piotr Jasiukajtis
+# Copyright 2015, Richard Lowe
 # Copyright 2014 Garrett D'Amore <garrett@damore.org>
-# Copyright 2019 Joyent, Inc.
 # Copyright 2016 Toomas Soome <tsoome@me.com>
+# Copyright 2019 Joyent, Inc.
 # Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
 # Copyright 2022 Jason King
 #
@@ -41,12 +41,17 @@ set name=info.classification \
 # to be upgraded without upgrading the entire system.
 #
 set name=org.opensolaris.noincorp value=true
-set name=variant.arch value=$(ARCH)
+# XXXARM: This is built and packaged native for the build machine
+# which obviously doesn't work for aarch64 right now
+set name=variant.arch value=i386 value=sparc
 dir  path=opt group=sys
 dir  path=opt/onbld
 dir  path=opt/onbld/bin
 dir  path=opt/onbld/bin/$(ARCH)
-$(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/aw mode=0555
+$(i386_ONLY)link path=opt/onbld/bin/$(ARCH)/aw target=aw.i386
+$(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/aw.aarch64 mode=0555
+$(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/aw.i386 mode=0555
+$(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/aw.sparc mode=0555
 $(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/btxld mode=0555
 $(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/cpcgen mode=0555
 file path=opt/onbld/bin/$(ARCH)/cscope-fast mode=0555
@@ -56,7 +61,11 @@ file path=opt/onbld/bin/$(ARCH)/ctfdump mode=0555
 file path=opt/onbld/bin/$(ARCH)/ctfmerge mode=0555
 file path=opt/onbld/bin/$(ARCH)/ctfstabs mode=0555
 file path=opt/onbld/bin/$(ARCH)/ctfstrip mode=0555
-file path=opt/onbld/bin/$(ARCH)/cw mode=0555
+$(i386_ONLY)link path=opt/onbld/bin/$(ARCH)/cw target=cw.i386
+$(sparc_ONLY)link path=opt/onbld/bin/$(ARCH)/cw target=cw.sparc
+file path=opt/onbld/bin/$(ARCH)/cw.aarch64 mode=0555
+file path=opt/onbld/bin/$(ARCH)/cw.i386 mode=0555
+file path=opt/onbld/bin/$(ARCH)/cw.sparc mode=0555
 link path=opt/onbld/bin/$(ARCH)/dmake target=make
 $(i386_ONLY)file path=opt/onbld/bin/$(ARCH)/elfextract mode=0555
 file path=opt/onbld/bin/$(ARCH)/find_elf mode=0555

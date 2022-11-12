@@ -763,7 +763,7 @@ set_legacy_service(scf_propertygroup_t *pg, const char *script, ino_t inode)
 	}
 
 	if (add_new_property(h, tx, SCF_PROPERTY_CONTRACT, SCF_TYPE_COUNT,
-	    (void *)ctid) != 0)
+	    (void *)(intptr_t)ctid) != 0)
 		goto err;
 
 	for (;;) {

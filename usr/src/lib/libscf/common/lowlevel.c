@@ -7271,7 +7271,7 @@ scf_decode32(const char *in, size_t inlen, char *outbuf, size_t outmax,
 				/* Group not completed by pads */
 				return (-1);
 			}
-			if ((c < 0) || (c >= sizeof (index32))) {
+			if (((signed char)c < 0) || (c >= sizeof (index32))) {
 				/* Illegal character. */
 				return (-1);
 			}

@@ -107,6 +107,9 @@ CC_i386_32	= $(i386_CC)
 CC_i386_64	= $(amd64_CC)
 CC_amd64_64	= $(amd64_CC)
 
+CC_aarch64_32	= $(aarch64_CC) # mmm...
+CC_aarch64_64	= $(aarch64_CC)
+
 CC		= $(CC_$(MACH)_$(CLASS))
 
 AS_sparc_32	= $(sparc_AS)
@@ -116,6 +119,9 @@ AS_i386_32	= $(i386_AS)
 AS_i386_64	= $(amd64_AS)
 AS_amd64_64	= $(amd64_AS)
 
+AS_aarch64_32	= $(aarch64_AS)
+AS_aarch64_64	= $(aarch64_AS)
+
 AS		= $(AS_$(MACH)_$(CLASS))
 
 LD_sparc_32	= $(sparc_LD)
@@ -124,6 +130,9 @@ LD_sparc_64	= $(sparcv9_LD)
 LD_i386_32	= $(i386_LD)
 LD_i386_64	= $(amd64_LD)
 LD_amd64_64	= $(amd64_LD)
+
+LD_aarch64_32	= $(aarch64_LD)
+LD_aarch64_64	= $(aarch64_LD)
 
 LD		= $(LD_$(MACH)_$(CLASS))
 
@@ -137,9 +146,15 @@ MODEL		= $(MODEL_$(CLASS))
 EXTRA_OPTIONS		=
 AS_DEFS			= -D_ASM -D__STDC__=0
 
+i386_ALWAY_DEFS_64	= -D_SYSCALL32 -D_SYSCALL32_IMPL
+sparc_ALWAY_DEFS_64	= -D_SYSCALL32 -D_SYSCALL32_IMPL
+# XXXARM: These shouldn't be necessary, but code has become messy without a
+# pure 64bit platform
+aarch64_ALWAYS_DEFS_64	= -D_SYSCALL32
+
 ALWAYS_DEFS_32		= -D_KERNEL -D_SYSCALL32 -D_DDI_STRICT
-ALWAYS_DEFS_64		= -D_KERNEL -D_SYSCALL32 -D_SYSCALL32_IMPL -D_ELF64 \
-			-D_DDI_STRICT
+ALWAYS_DEFS_64		= -D_KERNEL -D_ELF64 -D_DDI_STRICT $($(MACH)_ALWAYS_DEFS_64)
+
 #
 # XX64	This should be defined by the compiler!
 #
@@ -184,15 +199,28 @@ CERRWARN += -_smatch=-p=illumos_kernel
 include $(SRC)/Makefile.smatch
 
 #
+# Unfortunately, _IOWR() is regularly used with a third argument of 0,
+# so we have to disable all these smatch checks.
+#
+SMOFF += sizeof
+
+#
 # Ensure that the standard function prologue remains at the very start
 # of a function, so DTrace fbt will instrument the right place.
 #
 CFLAGS_uts_i386 += -_gcc=-fno-shrink-wrap
+CFLAGS_uts_aarch64 += -_gcc=-fno-shrink-wrap
 #
 # retpoline support
 #
 CFLAGS_uts_i386 += -_gcc=-mindirect-branch=thunk-extern
 CFLAGS_uts_i386 += -_gcc=-mindirect-branch-register
+
+#
+# XXXARM: For some reason, the compiler is defaulting -fPIC
+# (probably for PIE?)
+#
+CFLAGS_uts_aarch64 += -_gcc=-fno-pic
 
 CSTD = $(CSTD_GNU99)
 
@@ -302,6 +330,7 @@ CTFMRGFLAGS += -l "$(UTS_LABEL)"
 #
 CTFMERGE_GUDIR_sparc	= sun4u
 CTFMERGE_GUDIR_i386	= intel
+CTFMERGE_GUDIR_aarch64	= aarch64
 CTFMERGE_GUDIR		= $(CTFMERGE_GUDIR_$(MACH))
 
 CTFMERGE_GENUNIX	= \
@@ -364,6 +393,7 @@ $(DTRACESTUBS)		:= SONAME = dtracestubs
 #
 SUBDIR64_sparc		= sparcv9
 SUBDIR64_i386		= amd64
+SUBDIR64_aarch64	= aarch64
 SUBDIR64		= $(SUBDIR64_$(MACH))
 
 ROOT_MOD_DIR		= $(ROOT)/kernel
@@ -612,3 +642,6 @@ PRIVS_DEF = $(SRC)/uts/common/os/priv_defs
 #
 USBDEVS_AWK =	$(SRC)/uts/common/io/usb/usbdevs2h.awk
 USBDEVS_DATA =	$(SRC)/uts/common/io/usb/usbdevs
+
+# XXXARM: needs a cross-smatch
+$(AARCH64_BLD)SMATCH=off

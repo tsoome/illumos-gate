@@ -74,7 +74,7 @@ clobber:
 # directory and copies or creates other files needed by this package.
 #
 
-$(ROOTTIMEDIR) $(ROOTMSGDIR):
+$(ROOTDIR) $(ROOTTIMEDIR) $(ROOTMSGDIR):
 	$(INS.dir)
 
 $(ROOTMSGDIR)/%: $(ROOTMSGDIR) %

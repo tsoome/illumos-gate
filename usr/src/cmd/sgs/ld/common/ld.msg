@@ -37,6 +37,7 @@
 @ MSG_SYS_ALLOC		"alloc failed: %s"
 
 @ MSG_ERR_BADTARG	"unknown target platform: %s"
+@ MSG_ERR_TARGNO32	"target platform '%s' has no 32-bit support"
 
 # Generic error diagnostic labels
 
@@ -68,3 +69,4 @@
 
 @ MSG_TARG_SPARC	"sparc"
 @ MSG_TARG_X86		"x86"
+@ MSG_TARG_AARCH64	"aarch64"

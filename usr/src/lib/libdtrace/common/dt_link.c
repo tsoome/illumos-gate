@@ -22,7 +22,9 @@
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
  * Copyright 2016 Mark Johnston.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #define	ELF_TARGET_ALL
@@ -227,6 +229,8 @@ prepare_elf32(dtrace_hdl_t *dtp, const dof_hdr_t *dof, dof_elf32_t *dep)
 			    dofr[j].dofr_offset + 4;
 			rel->r_info = ELF32_R_INFO(count + dep->de_global,
 			    R_SPARC_32);
+/* XXXARM: No actual 32bit ISA here */
+#elif defined(__aarch64__)
 #else
 #error unknown ISA
 #endif
@@ -399,6 +403,11 @@ prepare_elf64(dtrace_hdl_t *dtp, const dof_hdr_t *dof, dof_elf64_t *dep)
 			    dofr[j].dofr_offset;
 			rel->r_info = ELF64_R_INFO(count + dep->de_global,
 			    R_SPARC_64);
+#elif defined(__aarch64__)
+			rel->r_offset = s->dofs_offset +
+			    dofr[j].dofr_offset;
+			rel->r_info = ELF64_R_INFO(count + dep->de_global,
+			    R_AARCH64_ABS64);
 #else
 #error unknown ISA
 #endif
@@ -489,6 +498,9 @@ dump_elf32(dtrace_hdl_t *dtp, const dof_hdr_t *dof, int fd)
 	elf_file.ehdr.e_machine = EM_SPARC;
 #elif defined(__i386) || defined(__amd64)
 	elf_file.ehdr.e_machine = EM_386;
+#elif defined(__aarch64__)	/* XXXARM: Not actually 32bit */
+#else
+#error Unknown platform
 #endif
 	elf_file.ehdr.e_version = EV_CURRENT;
 	elf_file.ehdr.e_shoff = sizeof (Elf32_Ehdr);
@@ -626,6 +638,10 @@ dump_elf64(dtrace_hdl_t *dtp, const dof_hdr_t *dof, int fd)
 	elf_file.ehdr.e_machine = EM_SPARCV9;
 #elif defined(__i386) || defined(__amd64)
 	elf_file.ehdr.e_machine = EM_AMD64;
+#elif defined(__aarch64__)
+	elf_file.ehdr.e_machine = EM_AARCH64;
+#else
+#error Unknown platform
 #endif
 	elf_file.ehdr.e_version = EV_CURRENT;
 	elf_file.ehdr.e_shoff = sizeof (Elf64_Ehdr);
@@ -646,6 +662,7 @@ dump_elf64(dtrace_hdl_t *dtp, const dof_hdr_t *dof, int fd)
 
 	shp = &elf_file.shdr[ESHDR_DOF];
 	shp->sh_name = 11; /* DTRACE_SHSTRTAB64[11] = ".SUNW_dof" */
+	/* XXXARM: Hayashi made this writeable */
 	shp->sh_flags = SHF_ALLOC;
 	shp->sh_type = SHT_SUNW_dof;
 	shp->sh_offset = off;
@@ -973,6 +990,58 @@ dt_modtext(dtrace_hdl_t *dtp, char *p, int isenabled, GElf_Rela *rela,
 	return (0);
 }
 
+#elif defined(__aarch64__)
+
+#define	DT_OP_NOP		0xd503201f
+#define	DT_OP_RET		0xd65f03c0
+#define	DT_OP_CALL26		0x94000000
+#define	DT_OP_JUMP26		0x14000000
+
+/*ARGSUSED*/
+static int
+dt_modtext(dtrace_hdl_t *dtp, char *p, int isenabled, GElf_Rela *rela,
+    uint32_t *off)
+{
+	uint32_t *ip;
+
+	if ((rela->r_offset & (sizeof (uint32_t) - 1)) != 0)
+		return (-1);
+
+	ip = (uint32_t *)(p + rela->r_offset);
+
+	/*
+	 * We only know about some specific relocation types.
+	 */
+	if (GELF_R_TYPE(rela->r_info) != R_AARCH64_CALL26 &&
+	    GELF_R_TYPE(rela->r_info) != R_AARCH64_JUMP26 &&
+	    GELF_R_TYPE(rela->r_info) != R_AARCH64_NONE)
+		return (-1);
+
+	/*
+	 * We may have already processed this object file in an earlier linker
+	 * invocation. Check to see if the present instruction sequence matches
+	 * the one we would install below.
+	 */
+	if (ip[0] == DT_OP_NOP || ip[0] == DT_OP_RET)
+		return (0);
+
+	/*
+	 * We only expect call instructions with a displacement of 0.
+	 */
+	if (!(ip[0] == DT_OP_CALL26 || ip[0] == DT_OP_JUMP26)) {
+		dt_dprintf("found %x instead of a call or jmp instruction at "
+		    "%llx\n", ip[0], (u_longlong_t)rela->r_offset);
+		return (-1);
+	}
+
+	if (ip[0] == DT_OP_CALL26)
+		ip[0] = DT_OP_NOP;
+	else
+		ip[0] = DT_OP_RET;
+
+	return (0);
+}
+
 #else
 #error unknown ISA
 #endif
@@ -1064,6 +1133,8 @@ process_obj(dtrace_hdl_t *dtp, const char *obj, int *eprobesp)
 		emachine1 = emachine2 = EM_SPARCV9;
 #elif defined(__i386) || defined(__amd64)
 		emachine1 = emachine2 = EM_AMD64;
+#elif defined(__aarch64__)
+		emachine1 = emachine2 = EM_AARCH64;
 #endif
 		symsize = sizeof (Elf64_Sym);
 	} else {
@@ -1073,6 +1144,8 @@ process_obj(dtrace_hdl_t *dtp, const char *obj, int *eprobesp)
 		emachine2 = EM_SPARC32PLUS;
 #elif defined(__i386) || defined(__amd64)
 		emachine1 = emachine2 = EM_386;
+#elif defined(__aarch64__)
+		assert(0 && "Trying to create 32bit AArch64 DTrace object");
 #endif
 		symsize = sizeof (Elf32_Sym);
 	}
@@ -1444,6 +1517,16 @@ process_obj(dtrace_hdl_t *dtp, const char *obj, int *eprobesp)
 				rsym.st_shndx = SHN_SUNW_IGNORE;
 				(void) gelf_update_sym(data_sym, ndx, &rsym);
 			}
+
+			if (shdr_rel.sh_type == SHT_RELA) {
+				rela.r_info = GELF_R_INFO(ndx, 0);
+				gelf_update_rela(data_rel, i, &rela);
+			} else {
+				GElf_Rel rel;
+				rel.r_offset = rela.r_offset;
+				rel.r_info = GELF_R_INFO(ndx, 0);
+				gelf_update_rel(data_rel, i, &rel);
+			}
 		}
 	}
 
@@ -1592,14 +1675,54 @@ dtrace_program_link(dtrace_hdl_t *dtp, dtrace_prog_t *pgp, uint_t dflags,
 
 	if (!dtp->dt_lazyload) {
 		const char *fmt = "%s -o %s -r -Blocal -Breduce /dev/fd/%d %s";
+		int found = 0;
+		dt_dirpath_t *dirp;
 
-		if (dtp->dt_oflags & DTRACE_O_LP64) {
-			(void) snprintf(drti, sizeof (drti),
-			    "%s/64/drti.o", _dtrace_libdir);
-		} else {
-			(void) snprintf(drti, sizeof (drti),
-			    "%s/drti.o", _dtrace_libdir);
+				for (dirp = dt_list_next(&dtp->dt_lib_path);
+		    dirp != NULL; dirp = dt_list_next(dirp)) {
+
+#if defined(_MULTI_DATAMODEL)
+			if (dtp->dt_oflags & DTRACE_O_LP64) {
+				(void) snprintf(drti, sizeof (drti),
+				    "%s/64/drti.o", dirp->dir_path);
+			} else
+#endif
+			{
+				(void) snprintf(drti, sizeof (drti),
+				    "%s/drti.o", dirp->dir_path);
+			}
+
+			int drtifd = open64(drti, O_RDONLY);
+			if (drtifd >= 0) {
+				Elf *elf = elf_begin(drtifd, ELF_C_READ, NULL);
+				if (elf) {
+					GElf_Ehdr ehdr;
+					if (elf_kind(elf) == ELF_K_ELF &&
+					    gelf_getehdr(elf, &ehdr) != NULL) {
+						if (ehdr.e_machine ==
+#if defined(__sparc)
+						    EM_SPARCV9
+#elif (defined(__i386) || defined(__amd64))
+						    EM_AMD64
+#elif defined(__aarch64__)
+						    EM_AARCH64
+#else
+#error Unknown platform
+#endif
+						   ) {
+							found = 1;
+						}
+					}
+					elf_end(elf);
+				}
+				close(drtifd);
+			}
+			if (found)
+				break;
 		}
+		if (found == 0)
+			return (dt_link_error(dtp, NULL, -1, NULL,
+				    "drti.o not found\n"));
 
 		len = snprintf(&tmp, 1, fmt, dtp->dt_ld_path, file, fd,
 		    drti) + 1;

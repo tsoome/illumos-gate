@@ -4240,7 +4240,7 @@ do_modify_iptun(int argc, char *argv[], const char *use)
 static void
 do_show_iptun(int argc, char *argv[], const char *use)
 {
-	char		option;
+	int		option;
 	datalink_id_t	linkid;
 	uint32_t	flags = DLADM_OPT_ACTIVE;
 	char		*name = NULL;
@@ -8099,7 +8099,7 @@ do_add_bridge(int argc, char **argv, const char *use)
 static void
 do_delete_bridge(int argc, char **argv, const char *use)
 {
-	char			option;
+	int			option;
 	char			*altroot = NULL;
 	uint32_t		flags = DLADM_OPT_ACTIVE | DLADM_OPT_PERSIST;
 	dladm_status_t		status;
@@ -8132,7 +8132,7 @@ do_delete_bridge(int argc, char **argv, const char *use)
 static void
 do_remove_bridge(int argc, char **argv, const char *use)
 {
-	char		option;
+	int		option;
 	uint_t		n, nlink;
 	char		*links[MAXPORT];
 	datalink_id_t	linkids[MAXPORT];
@@ -9964,7 +9964,7 @@ typedef struct showoverlay_state {
 	const char		*sho_linkname;
 	dladm_overlay_propinfo_handle_t sho_info;
 	uint8_t			sho_value[DLADM_OVERLAY_PROP_SIZEMAX];
-	uint32_t		sho_size;
+	size_t		sho_size;
 } showoverlay_state_t;
 
 typedef struct showoverlay_fma_state {

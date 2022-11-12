@@ -696,6 +696,7 @@ extern Sdf_desc		*sdf_find(const char *, APlist *);
 #define	ld_make_bss		ld64_make_bss
 #define	ld_make_data		ld64_make_data
 #define	ld_make_got		ld64_make_got
+#define	ld_make_gotplt		ld64_make_gotplt
 #define	ld_make_parexpn_data	ld64_make_parexpn_data
 #define	ld_make_sunwmove	ld64_make_sunmove
 #define	ld_make_text		ld64_make_text
@@ -796,6 +797,7 @@ extern Sdf_desc		*sdf_find(const char *, APlist *);
 #define	ld_make_bss		ld32_make_bss
 #define	ld_make_data		ld32_make_data
 #define	ld_make_got		ld32_make_got
+#define	ld_make_gotplt		ld32_make_gotplt
 #define	ld_make_parexpn_data	ld32_make_parexpn_data
 #define	ld_make_sunwmove	ld32_make_sunmove
 #define	ld_make_text		ld32_make_text
@@ -917,6 +919,7 @@ extern Xword		ld_lcm(Xword, Xword);
 extern uintptr_t	ld_make_bss(Ofl_desc *, Xword, Xword, uint_t);
 extern Is_desc		*ld_make_data(Ofl_desc *, size_t);
 extern uintptr_t	ld_make_got(Ofl_desc *);
+extern uintptr_t	ld_make_gotplt(Ofl_desc *);
 extern uintptr_t	ld_make_parexpn_data(Ofl_desc *, size_t, Xword);
 extern uintptr_t	ld_make_sunwmove(Ofl_desc *, int);
 extern Is_desc		*ld_make_text(Ofl_desc *, size_t);

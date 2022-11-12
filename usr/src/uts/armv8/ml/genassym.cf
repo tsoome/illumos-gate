@@ -1,0 +1,211 @@
+include <sys/modctl.h>
+include <sys/cpu.h>
+include <sys/thread.h>
+include <sys/cpuvar.h>
+include <sys/ontrap.h>
+include <sys/lockstat.h>
+include <sys/rwlock_impl.h>
+include <sys/mutex_impl.h>
+include <sys/machlock.h>
+include <sys/machtypes.h>
+include <sys/trap.h>
+include <sys/ontrap.h>
+include <sys/sunddi.h>
+include <sys/dditypes.h>
+include <sys/ddi.h>
+include <sys/ddi_isa.h>
+include <sys/systm.h>
+include <sys/gic.h>
+include <sys/dtrace.h>
+
+define	MODS_SIZE		sizeof(struct mod_stub_info)
+define	MODS_INSTFCN		offsetof(struct mod_stub_info, mods_func_adr)
+define	MODS_RETFCN		offsetof(struct mod_stub_info, mods_errfcn)
+define	MODS_FLAG		offsetof(struct mod_stub_info, mods_flag)
+define	MODS_WEAK		MODS_WEAK
+define	MODS_NOUNLOAD		MODS_NOUNLOAD
+define	MODS_INSTALLED		MODS_INSTALLED
+
+define	CPU_THREAD		offsetof(cpu_t, cpu_thread)
+define	CPU_IDLE_THREAD		offsetof(cpu_t, cpu_idle_thread)
+define	CPU_LWP			offsetof(cpu_t, cpu_lwp)
+define	CPU_KPRUNRUN		offsetof(cpu_t, cpu_kprunrun)
+define	CPU_STATS_SYS_SYSCALL	offsetof(cpu_t, cpu_stats.sys.syscall)
+define	CPU_STATS_SYS_CPUMIGRATE	offsetof(cpu_t, cpu_stats.sys.cpumigrate)
+define	CPU_PRI			offsetof(cpu_t, cpu_pri)
+define	CPU_INTR_STACK		offsetof(cpu_t, cpu_intr_stack)
+define	CPU_SOFTINFO		offsetof(cpu_t, cpu_softinfo.st_pending)
+
+define	OT_PROT			offsetof(struct on_trap_data, ot_prot)
+define	OT_TRAP			offsetof(struct on_trap_data, ot_trap)
+define	OT_TRAMPOLINE		offsetof(struct on_trap_data, ot_trampoline)
+define	OT_JMPBUF		offsetof(struct on_trap_data, ot_jmpbuf)
+define	OT_PREV			offsetof(struct on_trap_data, ot_prev)
+define	OT_HANDLE		offsetof(struct on_trap_data, ot_handle)
+define	OT_PAD1			offsetof(struct on_trap_data, ot_pad1)
+
+define	T_ONFAULT		offsetof(struct _kthread, t_onfault)
+define	T_LOFAULT		offsetof(struct _kthread, t_lofault)
+define	T_COPYOPS		offsetof(struct _kthread, t_copyops)
+define	T_LOCKSTAT		offsetof(struct _kthread, t_lockstat)
+define	T_CPU			offsetof(struct _kthread, t_cpu)
+define	T_ONTRAP		offsetof(struct _kthread, t_ontrap)
+define	T_INTR_START		offsetof(struct _kthread, t_intr_start)
+define	T_CTX			offsetof(struct _kthread, t_ctx)
+define	T_FLAG			offsetof(struct _kthread, t_flag)
+define	T_LOCK			offsetof(struct _kthread, t_lock)
+define	T_PROCP			offsetof(struct _kthread, t_procp)
+define	T_LWP			offsetof(struct _kthread, t_lwp)
+define	T_ASTFLAG		offsetof(struct _kthread, t_astflag)
+define	T_POST_SYS_AST		offsetof(struct _kthread, t_post_sys_ast)
+define	T_STACK			offsetof(struct _kthread, t_stk)
+define	T_LPL			offsetof(struct _kthread, t_lpl)
+define	T_PIL			offsetof(struct _kthread, t_pil)
+define	T_SYSNUM		offsetof(struct _kthread, t_sysnum)
+define	T_PREEMPT_LK		offsetof(struct _kthread, t_preempt_lk)
+define	T_PRE_SYS		offsetof(struct _kthread, t_pre_sys)
+define	T_LABEL_X19		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X19])
+define	T_LABEL_X20		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X20])
+define	T_LABEL_X21		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X21])
+define	T_LABEL_X22		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X22])
+define	T_LABEL_X23		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X23])
+define	T_LABEL_X24		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X24])
+define	T_LABEL_X25		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X25])
+define	T_LABEL_X26		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X26])
+define	T_LABEL_X27		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X27])
+define	T_LABEL_X28		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X28])
+define	T_LABEL_X29		offsetof(struct _kthread, t_pcb.val[LABEL_REG_X29])
+define	T_LABEL_PC		offsetof(struct _kthread, t_pcb.val[LABEL_REG_PC])
+define	T_LABEL_SP		offsetof(struct _kthread, t_pcb.val[LABEL_REG_SP])
+define	T_INTR_THREAD		T_INTR_THREAD
+
+define	AHI_PUT8		offsetof(ddi_acc_impl_t, ahi_put8)
+define	AHI_GET8		offsetof(ddi_acc_impl_t, ahi_get8)
+define	AHI_REP_PUT8		offsetof(ddi_acc_impl_t, ahi_rep_put8)
+define	AHI_REP_GET8		offsetof(ddi_acc_impl_t, ahi_rep_get8)
+define	AHI_PUT16		offsetof(ddi_acc_impl_t, ahi_put16)
+define	AHI_GET16		offsetof(ddi_acc_impl_t, ahi_get16)
+define	AHI_REP_PUT16		offsetof(ddi_acc_impl_t, ahi_rep_put16)
+define	AHI_REP_GET16		offsetof(ddi_acc_impl_t, ahi_rep_get16)
+define	AHI_PUT32		offsetof(ddi_acc_impl_t, ahi_put32)
+define	AHI_GET32		offsetof(ddi_acc_impl_t, ahi_get32)
+define	AHI_REP_PUT32		offsetof(ddi_acc_impl_t, ahi_rep_put32)
+define	AHI_REP_GET32		offsetof(ddi_acc_impl_t, ahi_rep_get32)
+define	AHI_PUT64		offsetof(ddi_acc_impl_t, ahi_put64)
+define	AHI_GET64		offsetof(ddi_acc_impl_t, ahi_get64)
+define	AHI_REP_PUT64		offsetof(ddi_acc_impl_t, ahi_rep_put64)
+define	AHI_REP_GET64		offsetof(ddi_acc_impl_t, ahi_rep_get64)
+
+
+define	TS_ONPROC		TS_ONPROC
+define	T_STATE			offsetof(struct _kthread, t_state)
+define	T_LOCKP			offsetof(struct _kthread, t_lockp)
+define	CPU_THREAD_LOCK		offsetof(cpu_t, cpu_thread_lock)
+define	RW_WRITER		RW_WRITER
+define	RW_READER		RW_READER
+define	RW_WRITE_LOCKED		RW_WRITE_LOCKED
+define	RW_WRITE_WANTED		RW_WRITE_WANTED
+define	RW_READ_LOCK		RW_READ_LOCK
+define	LOCK_HELD_VALUE		LOCK_HELD_VALUE
+define	MUTEX_THREAD		MUTEX_THREAD
+define	RW_WRITE_CLAIMED	RW_WRITE_CLAIMED
+
+define	CP_COPYIN		offsetof(struct copyops, cp_copyin)
+define	CP_COPYOUT		offsetof(struct copyops, cp_copyout)
+define	CP_XCOPYIN		offsetof(struct copyops, cp_xcopyin)
+define	CP_XCOPYOUT		offsetof(struct copyops, cp_xcopyout)
+define	CP_COPYINSTR		offsetof(struct copyops, cp_copyinstr)
+define	CP_COPYOUTSTR		offsetof(struct copyops, cp_copyoutstr)
+define	CP_FUWORD8		offsetof(struct copyops, cp_fuword8)
+define	CP_FUWORD16		offsetof(struct copyops, cp_fuword16)
+define	CP_FUWORD32		offsetof(struct copyops, cp_fuword32)
+define	CP_FUWORD64		offsetof(struct copyops, cp_fuword64)
+define	CP_SUWORD8		offsetof(struct copyops, cp_suword8)
+define	CP_SUWORD16		offsetof(struct copyops, cp_suword16)
+define	CP_SUWORD32		offsetof(struct copyops, cp_suword32)
+define	CP_SUWORD64		offsetof(struct copyops, cp_suword64)
+define	CP_PHYSIO		offsetof(struct copyops, cp_physio)
+
+
+define	PSR_M_MASK		PSR_M_MASK
+define	PSR_M_EL0t		PSR_M_EL0t
+define	PSR_C			PSR_C
+define	LMS_SYSTEM		LMS_SYSTEM
+define	LMS_USER		LMS_USER
+define	NSYSCALL		NSYSCALL
+define	LWP_USER		LWP_USER
+define	LWP_SYS			LWP_SYS
+
+define	LWP_RU_SYSC		offsetof(struct _klwp, lwp_ru.sysc)
+define	LWP_STATE		offsetof(struct _klwp, lwp_state)
+define	LWP_PCB_TPIDR		offsetof(struct _klwp, lwp_pcb.pcb_tpidr)
+
+define	SYSENT_SIZE		sizeof(struct sysent)
+define	SY_CALLC		offsetof(struct sysent, sy_callc)
+define	SY_FLAGS		offsetof(struct sysent, sy_flags)
+define	SE_32RVAL2		SE_32RVAL2
+
+define	P_PCTX			offsetof(struct proc, p_pctx)
+define	P_AS			offsetof(struct proc, p_as)
+define	A_HAT			offsetof(struct as, a_hat)
+
+define	LABEL_REG_X19		LABEL_REG_X19
+define	LABEL_REG_X20		LABEL_REG_X20
+define	LABEL_REG_X21		LABEL_REG_X21
+define	LABEL_REG_X22		LABEL_REG_X22
+define	LABEL_REG_X23		LABEL_REG_X23
+define	LABEL_REG_X24		LABEL_REG_X24
+define	LABEL_REG_X25		LABEL_REG_X25
+define	LABEL_REG_X26		LABEL_REG_X26
+define	LABEL_REG_X27		LABEL_REG_X27
+define	LABEL_REG_X28		LABEL_REG_X28
+define	LABEL_REG_X29		LABEL_REG_X29
+define	LABEL_REG_SP		LABEL_REG_SP
+define	LABEL_REG_PC		LABEL_REG_PC
+
+define	CPACR_FPEN_MASK		CPACR_FPEN_MASK
+define	CPACR_FPEN_EN		CPACR_FPEN_EN
+define	CPACR_FPEN_DIS		CPACR_FPEN_DIS
+
+define	LOCK_LEVEL		LOCK_LEVEL
+
+define	GIC_CPUIF_IAR		offsetof(struct gic_cpuif, iar)
+define	GIC_CPUIF_EOIR		offsetof(struct gic_cpuif, eoir)
+
+define	MMU_PAGESHIFT	MMU_PAGESHIFT
+define	DEFAULTSTKSZ	DEFAULTSTKSZ
+define	MMU_PAGESIZE	MMU_PAGESIZE
+
+define	TIMESPEC_SIZE	sizeof(timespec_t)
+define	TV_SEC		offsetof(timespec_t, tv_sec)
+define	TV_NSEC		offsetof(timespec_t, tv_nsec)
+define	T_LASTFAST	T_LASTFAST
+define	LPL_LGRPID	offsetof(struct lgrp_ld, lpl_lgrpid)
+define	CPU_ID		offsetof(struct cpu, cpu_id)
+
+define	STARTUP_MAIR	offsetof(struct cpu_startup_data, mair)
+define	STARTUP_TCR	offsetof(struct cpu_startup_data, tcr)
+define	STARTUP_TTBR0	offsetof(struct cpu_startup_data, ttbr0)
+define	STARTUP_TTBR1	offsetof(struct cpu_startup_data, ttbr1)
+define	STARTUP_SCTLR	offsetof(struct cpu_startup_data, sctlr)
+
+define	CPU_AFFINITY	offsetof(struct cpu, cpu_m.affinity)
+
+define SCTLR_I		SCTLR_I
+define SCTLR_C		SCTLR_C
+define SCTLR_A		SCTLR_A
+define SCTLR_M		SCTLR_M
+define NCPU		NCPU
+
+define SPSR_EL3_VAL	(PSR_F | PSR_I | PSR_M_EL1h)
+define SPSR_EL2_VAL	(PSR_F | PSR_I | PSR_M_EL1h)
+
+define HCR_RW		HCR_RW
+define CNTHCTL_EL1PCTEN	CNTHCTL_EL1PCTEN
+define CNTHCTL_EL1PCEN	CNTHCTL_EL1PCEN
+define CPTR_EL2_RES1	CPTR_EL2_RES1
+define SCTLR_EL2_RES1	SCTLR_EL2_RES1
+define MPIDR_AFF_MASK	MPIDR_AFF_MASK
+
+define DTRACE_INVOP_NOP	DTRACE_INVOP_NOP
+define DTRACE_INVOP_RET	DTRACE_INVOP_RET

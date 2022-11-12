@@ -23,6 +23,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 #include "lint.h"
 #include "base_conversion.h"
@@ -382,6 +385,249 @@ __aconvert(double arg, int ndigits, int *exp, int *sign, char *buf)
 	ldarg = a.d;
 	__qaconvert(&ldarg, ndigits, exp, sign, buf);
 }
+
+#elif defined(__aarch64__)
+
+void
+__aconvert(double arg, int ndigits, int *exp, int *sign, char *buf)
+{
+	union {
+		unsigned int	i[2];
+		long long	l;
+		double		d;
+	} a, c;
+	int		ha, i, s;
+	unsigned int	d;
+
+	a.d = arg;
+	*sign = s = a.i[HIWORD] >> 31;
+	ha = a.i[HIWORD] & ~0x80000000;
+
+	/* check for infinity or nan */
+	if (ha >= 0x7ff00000) {
+		*exp = 0;
+		__infnanstring((ha == 0x7ff00000 && a.i[LOWORD] == 0)?
+		    fp_infinity : fp_quiet, ndigits, buf);
+		return;
+	}
+
+	/* check for subnormal or zero */
+	if (ha < 0x00100000) {
+		if ((ha | a.i[LOWORD]) == 0) {
+			*exp = 0;
+			for (i = 0; i < ndigits; i++)
+				buf[i] = '0';
+			buf[ndigits] = '\0';
+			return;
+		}
+
+		/*
+		 * Normalize.  It would be much simpler if we could just
+		 * multiply by a power of two here, but some SPARC imple-
+		 * mentations would flush the subnormal operand to zero
+		 * when nonstandard mode is enabled.
+		 */
+		a.i[HIWORD] = ha;
+		a.d = (double)a.l;
+		if (s)
+			a.d = -a.d;
+		ha = a.i[HIWORD] & ~0x80000000;
+		*exp = (ha >> 20) - 0x3ff - 1074;
+	} else {
+		*exp = (ha >> 20) - 0x3ff;
+	}
+
+	if (ndigits < 14) {
+		/*
+		 * Round the significand at the appropriate bit by adding
+		 * and subtracting a power of two.  This will also raise
+		 * the inexact exception if anything is rounded off.
+		 */
+		c.i[HIWORD] = (0x43700000 | (s << 31)) - (ndigits << 22);
+		c.i[LOWORD] = 0;
+		a.i[HIWORD] = (a.i[HIWORD] & 0x800fffff) | 0x3ff00000;
+		a.d = (a.d + c.d) - c.d;
+		ha = a.i[HIWORD] & ~0x80000000;
+		if (ha >= 0x40000000)
+			(*exp)++;
+	}
+
+	/* convert to hex digits */
+	buf[0] = '1';
+	d = ha << 12;
+	for (i = 1; i < ndigits && i < 6; i++) {
+		buf[i] = hexchar[d >> 28];
+		d <<= 4;
+	}
+	d = a.i[LOWORD];
+	for (; i < ndigits && i < 14; i++) {
+		buf[i] = hexchar[d >> 28];
+		d <<= 4;
+	}
+	for (; i < ndigits; i++)
+		buf[i] = '0';
+	buf[ndigits] = '\0';
+}
+
+#if __SIZEOF_LONG_DOUBLE__ == 16
+void
+__qaconvert(long double *arg, int ndigits, int *exp, int *sign, char *buf)
+{
+	union {
+		unsigned int	i[4];
+		long double	q;
+	} a;
+	enum fp_direction_type	rd;
+	int			ha, i, s;
+	unsigned int		b, r, d;
+
+	a.q = *arg;
+	*sign = a.i[HIXWORD] >> 31;
+	ha = a.i[HIXWORD] &= ~0x80000000;
+
+	/* check for infinity or nan */
+	if (ha >= 0x7fff0000) {
+		*exp = 0;
+		__infnanstring((ha == 0x7fff0000 && (a.i[MHXWORD] | a.i[MLXWORD] | a.i[LOXWORD])
+		    == 0)? fp_infinity : fp_quiet, ndigits, buf);
+		return;
+	}
+
+	/* check for subnormal or zero */
+	if (ha < 0x00010000) {
+		if ((ha | a.i[MHXWORD] | a.i[MLXWORD] | a.i[LOXWORD]) == 0) {
+			*exp = 0;
+			for (i = 0; i < ndigits; i++)
+				buf[i] = '0';
+			buf[ndigits] = '\0';
+			return;
+		}
+
+		/* normalize */
+		i = 0;
+		while ((a.i[HIXWORD] | (a.i[MHXWORD] & 0xffff0000)) == 0) {
+			a.i[HIXWORD] = a.i[MHXWORD];
+			a.i[MHXWORD] = a.i[MLXWORD];
+			a.i[MLXWORD] = a.i[LOXWORD];
+			a.i[LOXWORD] = 0;
+			i += 32;
+		}
+		while ((a.i[HIXWORD] & 0x7fff0000) == 0) {
+			a.i[HIXWORD] = (a.i[HIXWORD] << 1) | (a.i[MHXWORD] >> 31);
+			a.i[MHXWORD] = (a.i[MHXWORD] << 1) | (a.i[MLXWORD] >> 31);
+			a.i[MLXWORD] = (a.i[MLXWORD] << 1) | (a.i[LOXWORD] >> 31);
+			a.i[LOXWORD] <<= 1;
+			i++;
+		}
+		*exp = -0x3ffe - i;
+	} else {
+		*exp = (ha >> 16) - 0x3fff;
+	}
+
+	if (ndigits < 29) {
+		/*
+		 * Round the significand at the appropriate bit using
+		 * integer arithmetic.  Explicitly raise the inexact
+		 * exception if anything is rounded off.
+		 */
+		a.i[HIXWORD] = (a.i[HIXWORD] & 0xffff) | 0x10000;
+		if (ndigits <= 5) {
+			/*
+			 * i and b are the index and bit position in a.i[]
+			 * of the last bit to be retained.  r holds the bits
+			 * to be rounded off, left-adjusted and sticky.
+			 */
+			i = HIXWORD;
+			s = (5 - ndigits) << 2;
+			b = 1 << s;
+			r = ((a.i[HIXWORD] << 1) << (31 - s)) | (a.i[MHXWORD] >> s);
+			if ((a.i[MHXWORD] & (b - 1)) | a.i[MLXWORD] | a.i[LOXWORD])
+				r |= 1;
+			a.i[HIXWORD] &= ~(b - 1);
+			a.i[MHXWORD] = a.i[MLXWORD] = a.i[LOXWORD] = 0;
+		} else if (ndigits <= 13) {
+			i = MHXWORD;
+			s = (13 - ndigits) << 2;
+			b = 1 << s;
+			r = ((a.i[MHXWORD] << 1) << (31 - s)) | (a.i[MLXWORD] >> s);
+			if ((a.i[MLXWORD] & (b - 1)) | a.i[LOXWORD])
+				r |= 1;
+			a.i[MHXWORD] &= ~(b - 1);
+			a.i[MLXWORD] = a.i[LOXWORD] = 0;
+		} else if (ndigits <= 21) {
+			i = MLXWORD;
+			s = (21 - ndigits) << 2;
+			b = 1 << s;
+			r = ((a.i[MLXWORD] << 1) << (31 - s)) | (a.i[LOXWORD] >> s);
+			if (a.i[LOXWORD] & (b - 1))
+				r |= 1;
+			a.i[MLXWORD] &= ~(b - 1);
+			a.i[LOXWORD] = 0;
+		} else {
+			i = LOXWORD;
+			s = (29 - ndigits) << 2;
+			b = 1 << s;
+			r = (a.i[LOXWORD] << 1) << (31 - s);
+			a.i[LOXWORD] &= ~(b - 1);
+		}
+
+		/* conversion is inexact if r is not zero */
+		if (r) {
+			__base_conversion_set_exception(
+			    (fp_exception_field_type)(1 << fp_inexact));
+
+			/* massage the rounding direction based on the sign */
+			rd = _QgetRD();
+			if (*sign && (rd == fp_positive || rd == fp_negative))
+				rd = fp_positive + fp_negative - rd;
+
+			/* decide whether to round up */
+			if (rd == fp_positive || (rd == fp_nearest &&
+			    (r > 0x80000000u || (r == 0x80000000u &&
+			    (a.i[i] & b))))) {
+				a.i[i] += b;
+				while (a.i[i] == 0)
+					a.i[++i]++;
+				if (a.i[HIXWORD] >= 0x20000)
+					(*exp)++;
+			}
+		}
+	}
+
+	/* convert to hex digits */
+	buf[0] = '1';
+	d = a.i[HIXWORD] << 16;
+	for (i = 1; i < ndigits && i < 5; i++) {
+		buf[i] = hexchar[d >> 28];
+		d <<= 4;
+	}
+	d = a.i[MHXWORD];
+	for (; i < ndigits && i < 13; i++) {
+		buf[i] = hexchar[d >> 28];
+		d <<= 4;
+	}
+	d = a.i[MLXWORD];
+	for (; i < ndigits && i < 21; i++) {
+		buf[i] = hexchar[d >> 28];
+		d <<= 4;
+	}
+	d = a.i[LOXWORD];
+	for (; i < ndigits && i < 29; i++) {
+		buf[i] = hexchar[d >> 28];
+		d <<= 4;
+	}
+	for (; i < ndigits; i++)
+		buf[i] = '0';
+	buf[ndigits] = '\0';
+}
+#else
+void
+__qaconvert(long double *arg, int ndigits, int *exp, int *sign, char *buf)
+{
+	__aconvert(*arg, ndigits, exp, sign, buf);
+}
+
+#endif // #ifdef __LONG_DOUBLE_128__
 
 #else
 #error Unknown architecture

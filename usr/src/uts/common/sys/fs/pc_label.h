@@ -23,6 +23,9 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 #ifndef	_SYS_FS_PC_LABEL_H
 #define	_SYS_FS_PC_LABEL_H
@@ -100,7 +103,7 @@ extern "C" {
 /*
  * conversions to/from little endian format
  */
-#if defined(_LITTLE_ENDIAN)
+#if defined(_LITTLE_ENDIAN) && (_ALIGNMENT_REQUIRED==0)
 /* e.g. i386 machines */
 #define	ltohs(S)	(*((ushort_t *)(&(S))))
 #define	ltohi(I)	(*((uint_t *)(&(I))))

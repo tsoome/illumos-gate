@@ -20,15 +20,15 @@
 # CDDL HEADER END
 #
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 1999-2000 by Sun Microsystems, Inc.
 # All rights reserved.
 #
-# cmd/picl/plugins/common/Makefile
-#
 
-SUBDIRS=	piclevent .WAIT devtree .WAIT memcfg .WAIT frutree .WAIT
+include $(SRC)/Makefile.master
+
+SUBDIRS=	piclevent .WAIT devtree .WAIT frutree .WAIT
+# XXXARM: Not 64bit clean
+$(NOT_AARCH64_BLD)SUBDIRS += .WAIT memcfg
 
 all :=		TARGET= all
 install :=	TARGET= install

@@ -918,6 +918,11 @@ cexp_ident_init(void)
 		if (cexp_ident_add(NULL, MSG_ORIG(MSG_STR_USPARC)) == 0)
 			return (FALSE);
 		break;
+
+	case EM_AARCH64:
+		if (cexp_ident_add(NULL, MSG_ORIG(MSG_STR_UARM)) == 0)
+			return (FALSE);
+		break;
 	}
 
 	/* true is always defined */

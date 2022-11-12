@@ -29,6 +29,9 @@
  * Copyright (c) 2012, Joyent, Inc.  All rights reserved.
  * Copyright 2022 Oxide Computer Company
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*
  * Object file dependent support for ELF objects.
@@ -54,7 +57,7 @@
  * Default and secure dependency search paths.
  */
 static Spath_defn _elf_def_dirs[] = {
-#if	defined(_ELF64)
+#if	defined(_ELF64) && defined(_MULTI_DATAMODEL)
 	{ MSG_ORIG(MSG_PTH_LIB_64),		MSG_PTH_LIB_64_SIZE },
 	{ MSG_ORIG(MSG_PTH_USRLIB_64),		MSG_PTH_USRLIB_64_SIZE },
 #else
@@ -65,7 +68,7 @@ static Spath_defn _elf_def_dirs[] = {
 };
 
 static Spath_defn _elf_sec_dirs[] = {
-#if	defined(_ELF64)
+#if	defined(_ELF64) && defined(_MULTI_DATAMODEL)
 	{ MSG_ORIG(MSG_PTH_LIBSE_64),		MSG_PTH_LIBSE_64_SIZE },
 	{ MSG_ORIG(MSG_PTH_USRLIBSE_64),	MSG_PTH_USRLIBSE_64_SIZE },
 #else
@@ -959,7 +962,7 @@ _elf_lookup_filtee(Slookup *slp, Sresult *srp, uint_t *binfo, uint_t ndx,
 			 * our interpretor.  The most common filter is
 			 * libdl.so.1, which is a filter on ld.so.1.
 			 */
-#if	defined(_ELF64)
+#if	defined(_ELF64) && defined(_MULTI_DATAMODEL)
 			if (strcmp(filtee, MSG_ORIG(MSG_PTH_RTLD_64)) == 0) {
 #else
 			if (strcmp(filtee, MSG_ORIG(MSG_PTH_RTLD)) == 0) {

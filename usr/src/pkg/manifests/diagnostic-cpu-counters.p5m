@@ -36,15 +36,15 @@ dir  path=usr/bin
 $(i386_ONLY)dir path=usr/bin/$(ARCH32)
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/cputrack mode=0555
 dir  path=usr/bin/$(ARCH64)
-file path=usr/bin/$(ARCH64)/cputrack mode=0555
-hardlink path=usr/bin/cputrack target=../lib/isaexec
+$(not_aarch64)file path=usr/bin/$(ARCH64)/cputrack mode=0555
+$(not_aarch64)hardlink path=usr/bin/cputrack target=../lib/isaexec
 dir  path=usr/include
 file path=usr/include/libcpc.h
 file path=usr/include/libpctx.h
 dir  path=usr/include/sys
 dir  path=usr/kernel group=sys
-dir  path=usr/kernel/pcbe group=sys
-dir  path=usr/kernel/pcbe/$(ARCH64) group=sys
+$(not_aarch64)dir path=usr/kernel/pcbe group=sys
+$(not_aarch64)dir path=usr/kernel/pcbe/$(ARCH64) group=sys
 $(i386_ONLY)file path=usr/kernel/pcbe/$(ARCH64)/pcbe.AuthenticAMD group=sys \
     mode=0755
 $(i386_ONLY)file path=usr/kernel/pcbe/$(ARCH64)/pcbe.GenuineIntel.15 group=sys \
@@ -138,17 +138,17 @@ $(i386_ONLY)link path=usr/kernel/pcbe/amd64/pcbe.GenuineIntel.6.94 \
 $(i386_ONLY)link path=usr/kernel/pcbe/amd64/pcbe.GenuineIntel.6.95 \
     target=pcbe.GenuineIntel.6.15
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libcpc.so target=./libcpc.so.1
-file path=usr/lib/$(ARCH64)/libcpc.so.1
-link path=usr/lib/$(ARCH64)/libpctx.so target=./libpctx.so.1
-file path=usr/lib/$(ARCH64)/libpctx.so.1
-link path=usr/lib/libcpc.so target=./libcpc.so.1
-file path=usr/lib/libcpc.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libcpc.so target=./libcpc.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libcpc.so.1
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libpctx.so target=./libpctx.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libpctx.so.1
+$(not_aarch64)link path=usr/lib/libcpc.so target=./libcpc.so.1
+$(not_aarch64)file path=usr/lib/libcpc.so.1
 link path=usr/lib/libpctx.so target=./libpctx.so.1
 file path=usr/lib/libpctx.so.1
 dir  path=usr/sbin
-file path=usr/sbin/cpustat mode=0555
+$(not_aarch64)file path=usr/sbin/cpustat mode=0555
 dir  path=usr/share/man/man1
 file path=usr/share/man/man1/cputrack.1
 dir  path=usr/share/man/man3cpc

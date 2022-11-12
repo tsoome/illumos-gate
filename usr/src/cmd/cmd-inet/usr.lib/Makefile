@@ -24,6 +24,8 @@
 # Copyright 2022 Garrett D'Amore
 #
 
+include $(SRC)/Makefile.master
+
 SUBDIRS=	bridged ilbd in.chargend in.daytimed \
 		in.discardd in.echod in.mpathd in.ndpd \
 		in.ripngd in.timed inetd mdnsd pppoe \

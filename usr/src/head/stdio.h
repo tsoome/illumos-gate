@@ -19,13 +19,13 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright 2014 Garrett D'Amore <garrett@damore.org>
- * Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
- */
-
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
+
+/*
+ * Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
+ */
 
 /*
  * User-visible pieces of the ANSI C standard I/O package.

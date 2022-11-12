@@ -24,8 +24,6 @@
  * Copyright (c) 2016 by Delphix. All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * file_object.c - enter objects into and load them from the backend
  *
@@ -1448,7 +1446,7 @@ static object_info_t info[] = {
 		propertygrp_delete_start,
 	},
 	{REP_PROTOCOL_ENTITY_PROPERTY},
-	{-1UL}
+	{-1U}
 };
 #define	NUM_INFO (sizeof (info) / sizeof (*info))
 

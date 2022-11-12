@@ -86,6 +86,8 @@ $elif _sparc && _ELF32
 				  SIZE = 44;
 $elif _sparc && _ELF64
 				  SIZE = 80;
+$elif _arm && _ELF64
+				  SIZE = 80;
 $else
 $error Unknown platform
 $endif
@@ -163,6 +165,8 @@ $if _x86
 				  SIZE = addrsize[132];
 $elif _sparc
 				  SIZE = addrsize[264];
+$elif _arm
+				  SIZE = 1;
 $else
 $error Unknown architecture
 $endif
@@ -177,6 +181,8 @@ $if _x86
 				  SIZE = addrsize[86];
 $elif _sparc
 				  SIZE = addrsize[176];
+$elif _arm
+				  SIZE = addrsize[2066];
 $else
 $error Unknown architecture
 $endif

@@ -1109,7 +1109,7 @@ done:
 static void
 bd_xfer_free(bd_xfer_impl_t *xi)
 {
-	if (xi->i_dmah) {
+	if ((xi->i_dmah != NULL) && (xi->i_num_win > 0)) {
 		(void) ddi_dma_unbind_handle(xi->i_dmah);
 	}
 	if (xi->i_dfl != NULL) {

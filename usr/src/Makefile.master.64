@@ -77,5 +77,6 @@ BUILDCCC.SO=	$(BUILDCCC64.SO)
 # ld(1) requires the -64 option to create a 64-bit filter solely from a mapfile
 #
 MAPFILECLASS=	-64
+LD_TARGET=	$(LD_TARGET64)
 
 MAPFILE.NGB =	$(MAPFILE.NGB_$(MACH64))

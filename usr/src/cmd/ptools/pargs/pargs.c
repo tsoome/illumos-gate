@@ -734,6 +734,9 @@ at_hwcap(long val, char *instr, size_t n, char *str)
 #elif defined(__i386) || defined(__amd64)
 	(void) elfcap_hw1_to_str(ELFCAP_STYLE_UC, val, str, n,
 	    ELFCAP_FMT_PIPSPACE, EM_386);
+#elif defined(__aarch64__)
+	(void) elfcap_hw1_to_str(ELFCAP_STYLE_UC, val, str, n,
+	    ELFCAP_FMT_PIPSPACE, EM_AARCH64);
 #else
 #error	"port me"
 #endif
@@ -750,6 +753,9 @@ at_hwcap2(long val, char *instr, size_t n, char *str)
 #elif defined(__i386) || defined(__amd64)
 	(void) elfcap_hw2_to_str(ELFCAP_STYLE_UC, val, str, n,
 	    ELFCAP_FMT_PIPSPACE, EM_386);
+#elif defined(__aarch64__)
+	(void) elfcap_hw2_to_str(ELFCAP_STYLE_UC, val, str, n,
+	    ELFCAP_FMT_PIPSPACE, EM_AARCH64);
 #else
 #error	"port me"
 #endif
@@ -762,6 +768,9 @@ at_hwcap3(long val, char *instr, size_t n, char *str)
 #if defined(__i386) || defined(__amd64)
 	(void) elfcap_hw3_to_str(ELFCAP_STYLE_UC, val, str, n,
 	    ELFCAP_FMT_PIPSPACE, EM_386);
+#elif defined(__aarch64__)
+	(void) elfcap_hw3_to_str(ELFCAP_STYLE_UC, val, str, n,
+	    ELFCAP_FMT_PIPSPACE, EM_AARCH64);
 #else
 #error	"port me"
 #endif

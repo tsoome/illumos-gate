@@ -78,6 +78,7 @@ extern char wake_sched_sec;	/* causes clock to wake swapper after a sec */
 
 extern pgcnt_t	maxmem;		/* max available memory (pages) */
 extern pgcnt_t	physmem;	/* physical memory (pages) on this CPU */
+extern pfn_t	physmin;	/* lowest numbered physical page present */
 extern pfn_t	physmax;	/* highest numbered physical page present */
 extern pgcnt_t	physinstalled;	/* physical pages including PROM/boot use */
 

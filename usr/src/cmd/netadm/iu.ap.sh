@@ -20,12 +20,15 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2019 Peter Tribble.
+#	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T
+#	  All Rights Reserved
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T
-#	  All Rights Reserved
+# Copyright 2017 Hayashi Naoyuki
+# Copyright 2019 Peter Tribble.
+
 
 
 case "$MACH" in
@@ -77,6 +80,25 @@ case "$MACH" in
 	ipsecah	-1	0	ipsecah
 	oplmsu	0	0	ldterm ttcompat
 " >iu.ap
+	;;
+  "aarch64")
+	echo "# /dev/console and /dev/contty autopush setup
+#
+#       major minor   lastminor       modules
+
+	wc	-1	0	ldterm ttcompat
+	asy	-1	0	ldterm ttcompat
+	platuart	-1	0	ldterm ttcompat
+	ptsl	0	47	ldterm ttcompat
+	usbsacm -1	0	ldterm ttcompat
+	usbser_edge	-1	0	ldterm ttcompat
+	usbsprl	-1	0	ldterm ttcompat
+	usbsksp	-1	0	ldterm ttcompat
+	usbftdi	-1	0	ldterm ttcompat
+	ipsecesp -1	0	ipsecesp
+	ipsecah	-1	0	ipsecah
+	pcser	0	255	ldterm ttcompat
+ " > iu.ap
 	;;
   * )
 	echo "Unknown architecture."

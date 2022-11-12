@@ -22,6 +22,8 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #pragma	weak _crypt = crypt
@@ -62,10 +64,10 @@
 #define	CRYPT_CONFLINELENGTH	1024
 
 #define	CRYPT_MODULE_ISA	"/$ISA/"
-#ifdef	_LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 #define	CRYPT_MODULE_DIR	"/usr/lib/security/64/"
 #define	CRYPT_ISA_DIR		"/64/"
-#else	/* !_LP64 */
+#else	/* !_LP64 && _MULTI_DATAMODEL */
 #define	CRYPT_MODULE_DIR	"/usr/lib/security/"
 #define	CRYPT_ISA_DIR		"/"
 #endif	/* _LP64 */

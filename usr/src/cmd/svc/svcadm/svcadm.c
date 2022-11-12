@@ -2044,7 +2044,7 @@ set_fmri_action(void *action, scf_walkinfo_t *wip)
 static int
 force_degraded(void *data, scf_walkinfo_t *wip)
 {
-	int flags = (int)data;
+	int flags = (int)(intptr_t)data;
 	char state[MAX_SCF_STATE_STRING_SZ];
 
 	if (inst_get_state(wip->inst, state, wip->fmri, NULL) != 0) {
@@ -2070,7 +2070,7 @@ force_degraded(void *data, scf_walkinfo_t *wip)
 static int
 force_maintenance(void *data, scf_walkinfo_t *wip)
 {
-	int flags = (int)data;
+	int flags = (int)(intptr_t)data;
 	const char *prop;
 
 	if (svcsearch) {

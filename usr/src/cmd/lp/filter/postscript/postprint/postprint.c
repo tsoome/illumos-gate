@@ -101,6 +101,7 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -278,8 +279,6 @@ options(void)
 {
     int		ch;			/* return value from getopt() */
     int		euro = 0;
-    extern char *getenv(char *);
-
 
 /*
  *
@@ -921,5 +920,3 @@ redirect(int pg)
 
 
 /*****************************************************************************/
-
-

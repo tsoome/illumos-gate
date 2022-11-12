@@ -27,8 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *
  * download - host resident font downloader
@@ -84,6 +82,8 @@
  */
 
 #include <stdio.h>
+#include <strings.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -563,8 +563,8 @@ allocate(Map *ptr, int num)
  */
 
     if ( ptr == NULL )
-	ptr = (Map *)malloc(num * sizeof(Map));
-    else ptr = (Map *)realloc(ptr, num * sizeof(Map));
+	ptr = malloc(num * sizeof(Map));
+    else ptr = realloc(ptr, num * sizeof(Map));
 
     if ( ptr == NULL )
 	error(FATAL, "no map memory");

@@ -105,8 +105,8 @@ typedef struct uccid_cmd_status {
 	uint8_t		ucs_atr[UCCID_ATR_MAX];
 	uint8_t		ucs_atrlen;
 	uint8_t		ucs_pad[6];
-	int8_t		ucs_product[256];
-	int8_t		ucs_serial[256];
+	char		ucs_product[256];
+	char		ucs_serial[256];
 	ccid_class_descr_t	ucs_class;
 	uccid_prot_t	ucs_prot;
 	ccid_params_t	ucs_params;

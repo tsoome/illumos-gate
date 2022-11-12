@@ -27,8 +27,8 @@ int yylineno =1;
 # define YYU(x) x
 # define NLSTATE yyprevious=YYNEWLINE
 struct yysvf *yylstate [YYLMAX], **yylsp, **yyolsp;
-char yysbuf[YYLMAX];
-char *yysptr = yysbuf;
+signed char yysbuf[YYLMAX];
+signed char *yysptr = yysbuf;
 int *yyfnd;
 extern struct yysvf *yyestate;
 int yyprevious = YYNEWLINE;
@@ -44,7 +44,7 @@ yylook(void)
 # ifdef LEXDEBUG
 	int debug;
 # endif
-	char *yylastch;
+	signed char *yylastch;
 	/* start off machines */
 # ifdef LEXDEBUG
 	debug = 0;

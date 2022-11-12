@@ -887,7 +887,10 @@ cb_update_domain(void *arg)
 {
 	char	*new_dname = (char *)arg;
 
+	/* XXXARM: No dtrace yet, especially cross-dtrace */
+#ifndef __aarch64__
 	DTRACE_PROBE1(nfsmapid, daemon__domain, new_dname);
+#endif
 	update_diag_file(new_dname);
 	idmap_kcall(FLUSH_KCACHES_ONLY);
 

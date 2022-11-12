@@ -88,9 +88,7 @@ struct brand_mach_ops sn1_mops = {
 	sn1_brand_syscall32_callback
 };
 
-#else	/* sparc */
-
-#ifdef	__amd64
+#elif defined(__amd64)
 
 struct brand_mach_ops sn1_mops = {
 	sn1_brand_sysenter_callback,
@@ -99,7 +97,13 @@ struct brand_mach_ops sn1_mops = {
 	sn1_brand_syscall32_callback
 };
 
-#else	/* ! __amd64 */
+#elif defined(__aarch64__)
+
+struct brand_mach_ops sn1_mops = {
+	sn1_brand_syscall_callback,
+};
+
+#else	/* ! __aarch64__ */
 
 struct brand_mach_ops sn1_mops = {
 	sn1_brand_sysenter_callback,
@@ -108,8 +112,6 @@ struct brand_mach_ops sn1_mops = {
 	NULL
 };
 #endif	/* __amd64 */
-
-#endif	/* _sparc */
 
 struct brand	sn1_brand = {
 	BRAND_VER_1,

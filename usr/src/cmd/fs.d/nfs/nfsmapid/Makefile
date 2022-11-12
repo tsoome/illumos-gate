@@ -36,8 +36,8 @@ LDLIBS   +=	-L$(ROOT)/usr/lib/nfs -R/usr/lib/nfs
 $(TYPEPROG) := LDLIBS += -lnsl -lmapid -ldtrace -lidmap
 COMMON    =	nfs_resolve.o
 SRCS	  =	nfsmapid.c ../lib/nfs_resolve.c nfsmapid_server.c
-DSRC	  =	nfsmapid_dt.d
-DOBJ	  =	$(DSRC:%.d=%.o)
+$(NOT_AARCH64_BLD)DSRC	  =	nfsmapid_dt.d
+$(NOT_AARCH64_BLD)DOBJ	  =	$(DSRC:%.d=%.o)
 OBJS	  =	nfsmapid.o nfsmapid_server.o $(COMMON)
 CPPFLAGS +=	-I../lib -D_POSIX_PTHREAD_SEMANTICS
 
@@ -52,7 +52,7 @@ SMATCH=off
 all:		$(TYPEPROG) $(TESTPROG)
 
 $(TYPEPROG):	$(OBJS) $(DSRC)
-		$(COMPILE.d) -s $(DSRC) -o $(DOBJ) $(OBJS)
+		$(NOT_AARCH64_BLD)$(COMPILE.d) -s $(DSRC) -o $(DOBJ) $(OBJS)
 		$(LINK.c) $(ZIGNORE) -o $@ $(DOBJ) $(OBJS) $(LDLIBS)
 		$(POST_PROCESS)
 
@@ -79,5 +79,3 @@ $(POFILE):	$(SRCS)
 
 clean:
 		$(RM) $(OBJS) $(TESTPROG) $(TESTOBJS) $(DOBJ) $(POFILE)
-
-lint:		$(SRCS) lint_SRCS

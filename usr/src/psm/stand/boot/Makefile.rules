@@ -18,6 +18,7 @@
 #
 # CDDL HEADER END
 #
+# Copyright 2017 Hayashi Naoyuki
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
@@ -64,6 +65,11 @@
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
+%.o: $(PORT_DIR)/%.c
+	$(COMPILE.c) -o $@ $<
+	$(POST_PROCESS_O)
+
+#
 #
 # Rules to compile libraries needed to build the boot loaders.
 #

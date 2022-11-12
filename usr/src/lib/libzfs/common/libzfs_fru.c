@@ -22,6 +22,8 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <dlfcn.h>
@@ -195,7 +197,7 @@ libzfs_init_fru(void)
 	char path[MAXPATHLEN];
 	char isa[257];
 
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (sysinfo(SI_ARCHITECTURE_64, isa, sizeof (isa)) < 0)
 		isa[0] = '\0';
 #else

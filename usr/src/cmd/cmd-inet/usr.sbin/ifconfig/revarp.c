@@ -326,7 +326,7 @@ rarp_recv(dlpi_handle_t dh, struct arphdr *ans, size_t msglen,
 void
 dlpi_print_address(const char *linkname)
 {
-	uint_t	physaddrlen = DLPI_PHYSADDR_MAX;
+	size_t	physaddrlen = DLPI_PHYSADDR_MAX;
 	uchar_t	physaddr[DLPI_PHYSADDR_MAX];
 	char	*str;
 	int	retv;

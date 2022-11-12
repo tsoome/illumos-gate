@@ -27,7 +27,7 @@
 #
 
 case "$MACH" in
-  "u3b2"|"sparc"|"i386"|"ppc" )
+  "u3b2"|"sparc"|"i386"|"ppc"|"aarch64")
 	echo "
 # Do not modify this file directly.
 # Use the sharemgr(8) command for all share management

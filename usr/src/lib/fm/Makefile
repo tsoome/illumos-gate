@@ -26,21 +26,28 @@
 
 include ../Makefile.lib
 
-SUBDIRS = \
-	libfmd_agent \
-	libdiagcode \
-	libdiskstatus \
-	libseslog \
-	libfmd_adm \
-	libfmd_log \
-	libfmd_msg \
-	libfmd_snmp \
-	libfmevent \
-	.WAIT \
-	libfmnotify \
+SUBDIRS =		\
+	libdiagcode	\
+	libdiskstatus	\
+	libseslog	\
+	libfmd_adm	\
+	libfmd_log	\
+	libfmd_msg	\
+	libfmevent	\
+	libfmnotify	\
+	.WAIT		\
 	topo
 
+# XXXARM:
+# libfm_agent - not ported
+# libfmd_snmp - needs net snmp
+$(NOT_AARCH64_BLD)SUBDIRS += 	\
+	libfmd_agent		\
+	libfmd_snmp
+
+
 libfmd_snmp: libfmd_adm topo
+libfmevent: topo
 
 topo: libfmd_agent libdiskstatus
 

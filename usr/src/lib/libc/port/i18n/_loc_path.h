@@ -23,11 +23,12 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 #ifndef	_LIBC_PORT_I18N_LOCPATH_H
 #define	_LIBC_PORT_I18N_LOCPATH_H
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <sys/isa_defs.h>
 
@@ -47,7 +48,7 @@ extern "C" {
 #define	_GENICONVTBL_PATH1	"geniconvtbl/binarytables/%s%%%s.bt"
 #define	_GENICONVTBL_INT_PATH1	"geniconvtbl.so"
 
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 
 #if defined(__sparcv9)
 

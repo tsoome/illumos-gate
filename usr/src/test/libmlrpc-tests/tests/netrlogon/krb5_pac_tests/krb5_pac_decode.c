@@ -36,7 +36,7 @@ main(int argc, char *argv[])
 {
 	char *pac_file;
 	uchar_t *pac_buf;
-	size_t buflen;
+	uint32_t buflen;
 	smb_token_t *token;
 	uint32_t status;
 

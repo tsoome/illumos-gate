@@ -1,7 +1,7 @@
  /*
   * Routines to parse an inetd.conf or tlid.conf file. This would be a great
   * job for a PERL script.
-  * 
+  *
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
@@ -12,6 +12,7 @@ static char sccsid[] = "@(#) inetcf.c 1.7 97/02/12 02:13:23";
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 
@@ -139,7 +140,7 @@ char   *conf;
 
 	    /*
 	     * We're reading a tlid.conf file, the format is:
-	     * 
+	     *
 	     * ...stuff... path arg_count arguments mod_count modules
 	     */
 	    if ((arg0 = strtok((char *) 0, whitespace)) == 0) {
@@ -274,8 +275,7 @@ void    inet_set(name, type)
 char   *name;
 int     type;
 {
-    struct inet_ent *ip =
-    (struct inet_ent *) malloc(sizeof(struct inet_ent) + strlen(name));
+    struct inet_ent *ip = malloc(sizeof(struct inet_ent) + strlen(name));
 
     if (ip == 0) {
 	fprintf(stderr, "out of memory\n");

@@ -317,7 +317,7 @@ smb_mangle(const char *name, ino64_t fid, char *buf, size_t buflen)
 	p = name;
 	pbuf = buf;
 	for (i = 0; (i < avail) && (*p != '\0') && (*p != '.'); ++i, ++p) {
-		if ((c = smb_mangle_char(*p)) == -1)
+		if ((c = smb_mangle_char(*p)) == (char)-1)
 			continue;
 		*pbuf++ = c;
 	}
@@ -333,7 +333,7 @@ smb_mangle(const char *name, ino64_t fid, char *buf, size_t buflen)
 	if (((p = strrchr(name, '.')) != NULL) && (*(++p) != '\0')) {
 		*pbuf++ = '.';
 		for (i = 0; (i < SMB_NAME83_EXTLEN) && (*p != '\0'); ++i, ++p) {
-			if ((c = smb_mangle_char(*p)) == -1)
+			if ((c = smb_mangle_char(*p)) == (char)-1)
 				continue;
 			*pbuf++ = c;
 		}

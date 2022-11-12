@@ -25,6 +25,7 @@
  * Copyright (c) 2015 by Delphix. All rights reserved.
  * Copyright 2016 Toomas Soome <tsoome@me.com>
  * Copyright 2017 Nexenta Systems, Inc.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 OmniOS Community Edition (OmniOSce) Association.
  */
 
@@ -70,11 +71,11 @@
 #include <sys/filio.h>
 #include <libbe.h>
 #include <deflt.h>
-#ifdef i386
+#if defined(__x86) || defined(__aarch64__)
 #include <libfdisk.h>
 #endif
 
-#if !defined(_OBP)
+#if defined(__x86)
 #include <sys/ucode.h>
 #endif
 
@@ -299,7 +300,7 @@ static void append_to_flist(filelist_t *, char *);
 static int ufs_add_to_sign_list(char *sign);
 static error_t synchronize_BE_menu(void);
 
-#if !defined(_OBP)
+#if defined(__x86)
 static void ucode_install();
 #endif
 
@@ -330,10 +331,6 @@ static subcmd_defn_t inst_subcmds[] = {
 	"install_bootloader",	OPT_ABSENT,	install_bootloader, 0, /* PUB */
 	NULL,			0,		NULL, 0	/* must be last */
 };
-
-#define	build_path(buf, len, root, prefix, suffix) \
-    snprintf((buf), (len), "%s%s%s%s%s", (root), (prefix), get_machine(), \
-    is_flag_on(IS_SPARC_TARGET) ? "" : "/amd64", (suffix))
 
 /*
  * Directory specific flags:
@@ -374,15 +371,18 @@ typedef struct _dirinfo {
  * Update flags:
  * NEED_CACHE_DIR : cache directory is missing and needs to be created
  * IS_SPARC_TARGET : the target mountpoint is a SPARC environment
+ * IS_AARCH64_TARGET : the target mountpoint is an AArch64 environment
+ * (the absence of these two indicates the target is x86)
  * UPDATE_ERROR : an error occourred while traversing the list of files
  * RDONLY_FSCHK : the target filesystem is read-only
  * RAMDSK_FSCHK : the target filesystem is on a ramdisk
  */
 #define	NEED_CACHE_DIR		0x00000001
 #define	IS_SPARC_TARGET		0x00000002
-#define	UPDATE_ERROR		0x00000004
-#define	RDONLY_FSCHK		0x00000008
-#define	INVALIDATE_CACHE	0x00000010
+#define IS_AARCH64_TARGET	0x00000004
+#define	UPDATE_ERROR		0x00000008
+#define	RDONLY_FSCHK		0x00000010
+#define	INVALIDATE_CACHE	0x00000020
 
 #define	is_flag_on(flag)	(walk_arg.update_flags & flag ? 1 : 0)
 #define	set_flag(flag)		(walk_arg.update_flags |= flag)
@@ -392,13 +392,13 @@ typedef struct _dirinfo {
  * struct walk_arg :
  * update_flags: flags related to the current updating process
  * new_nvlp/old_nvlp: new and old list of archive-files / attributes pairs
- * sparcfile: list of file paths for mkisofs -path-list (SPARC only)
+ * isofile: list of file paths for mkisofs -path-list (SPARC only)
  */
 static struct {
 	int		update_flags;
 	nvlist_t	*new_nvlp;
 	nvlist_t	*old_nvlp;
-	FILE		*sparcfile;
+	FILE		*isofile;
 	dirinfo_t	dirinfo;
 } walk_arg;
 
@@ -447,6 +447,23 @@ struct iso_pdesc {
 
 static int sync_menu = 1;	/* whether we need to sync the BE menus */
 
+
+static inline int
+build_path(char *buf, size_t len, char *root, char *prefix, char *suffix)
+{
+	char *isadir;
+
+	if (is_flag_on(IS_SPARC_TARGET)||
+	    is_flag_on(IS_AARCH64_TARGET)) {
+		isadir = "";
+	} else {		/* x86 */
+		isadir = "/amd64";
+	}
+
+	return (snprintf(buf, len, "%s%s%s%s%s", root, prefix, get_machine(),
+	    isadir, suffix));
+}
+
 static void
 usage(void)
 {
@@ -458,15 +475,14 @@ usage(void)
 	    "[-F format]\n", prog);
 	(void) fprintf(stderr,
 	    "\t%s list-archive [-R altroot [-p platform]]\n", prog);
-#if defined(_OBP)
+#if !defined(__x86)
 	(void) fprintf(stderr,
 	    "\t%s install-bootloader [-fv] [-R altroot] [-P pool]\n", prog);
 #else
 	(void) fprintf(stderr,
 	    "\t%s install-bootloader [-Mfv] [-R altroot] [-P pool]\n", prog);
 #endif
-#if !defined(_OBP)
-	/* x86 only */
+#if defined(__x86)
 	(void) fprintf(stderr, "\t%s set-menu [-R altroot] key=value\n", prog);
 	(void) fprintf(stderr, "\t%s list-menu [-R altroot]\n", prog);
 #endif
@@ -662,7 +678,7 @@ parse_args_internal(int argc, char *argv[])
 	int c, i, error;
 	extern char *optarg;
 	extern int optind, opterr;
-#if defined(_OBP)
+#if !defined(__x86)
 	const char *optstring = "a:d:fF:i:m:no:veQCLR:p:P:XZ";
 #else
 	const char *optstring = "a:d:fF:i:m:no:veQCMLR:p:P:XZ";
@@ -737,7 +753,7 @@ parse_args_internal(int argc, char *argv[])
 			bam_cmd = BAM_MENU;
 			bam_subcmd = optarg;
 			break;
-#if !defined(_OBP)
+#if defined(__x86)
 		case 'M':
 			bam_mbr = 1;
 			break;
@@ -798,11 +814,12 @@ parse_args_internal(int argc, char *argv[])
 			bam_alt_platform = 1;
 			bam_platform = optarg;
 			if ((strcmp(bam_platform, "i86pc") != 0) &&
+			    (strcmp(bam_platform, "aarch64") != 0) &&
 			    (strcmp(bam_platform, "sun4u") != 0) &&
 			    (strcmp(bam_platform, "sun4v") != 0)) {
 				error = 1;
 				bam_error(_("invalid platform %s - must be "
-				    "one of sun4u, sun4v or i86pc\n"),
+				    "one of sun4u, sun4v, i86pc or aarch64\n"),
 				    bam_platform);
 			}
 			break;
@@ -1501,16 +1518,16 @@ bam_menu(char *subcmd, char *opt, int largc, char *largv[])
 		ret = f(menu, ((largc > 0) ? largv[0] : ""),
 		    ((largc > 1) ? largv[1] : ""));
 	} else if (strcmp(subcmd, "disable_hypervisor") == 0) {
-		if (is_sparc()) {
-			bam_error(_("%s operation unsupported on SPARC "
+		if (!is_x86()) {
+			bam_error(_("%s operation only supported on x86 "
 			    "machines\n"), subcmd);
 			ret = BAM_ERROR;
 		} else {
 			ret = f(menu, bam_root, NULL);
 		}
 	} else if (strcmp(subcmd, "enable_hypervisor") == 0) {
-		if (is_sparc()) {
-			bam_error(_("%s operation unsupported on SPARC "
+		if (!is_x86()) {
+			bam_error(_("%s operation only supported on x86 "
 			    "machines\n"), subcmd);
 			ret = BAM_ERROR;
 		} else {
@@ -1619,7 +1636,7 @@ bam_archive(
 	if (strcmp(subcmd, "update_all") == 0)
 		bam_update_all = 1;
 
-#if !defined(_OBP)
+#if defined(__x86)
 	ucode_install(bam_root);
 #endif
 
@@ -2301,7 +2318,7 @@ cmpstat(
 	 * On SPARC we create/update links too.
 	 */
 	if (flags != FTW_F && flags != FTW_D && (flags == FTW_SL &&
-	    !is_flag_on(IS_SPARC_TARGET)))
+	    !is_flag_on(IS_SPARC_TARGET) && !is_flag_on(IS_AARCH64_TARGET)))
 		return (0);
 
 	/*
@@ -2358,14 +2375,15 @@ cmpstat(
 	}
 
 	/*
-	 * On SPARC we create a -path-list file for mkisofs
+	 * On SPARC and AArch64 we create a -path-list file for mkisofs
 	 */
-	if (is_flag_on(IS_SPARC_TARGET) && !bam_nowrite()) {
+	if ((is_flag_on(IS_SPARC_TARGET) || is_flag_on(IS_AARCH64_TARGET)) &&
+	    !bam_nowrite()) {
 		if (flags != FTW_D) {
 			char	*strip;
 
 			strip = (char *)file + strlen(rootbuf);
-			(void) fprintf(walk_arg.sparcfile, "/%s=%s\n", strip,
+			(void) fprintf(walk_arg.isofile, "/%s=%s\n", strip,
 			    file);
 		}
 	}
@@ -2378,7 +2396,8 @@ cmpstat(
 		if (bam_verbose)
 			bam_print(_("    new     %s\n"), file);
 
-		if (is_flag_on(IS_SPARC_TARGET)) {
+		if (is_flag_on(IS_SPARC_TARGET) ||
+		    is_flag_on(IS_AARCH64_TARGET)) {
 			set_dir_flag(NEED_UPDATE);
 			return (0);
 		}
@@ -2402,7 +2421,8 @@ cmpstat(
 		if (bam_smf_check)	/* ignore new during smf check */
 			return (0);
 
-		if (is_flag_on(IS_SPARC_TARGET)) {
+		if (is_flag_on(IS_SPARC_TARGET) ||
+		    is_flag_on(IS_AARCH64_TARGET)) {
 			set_dir_flag(NEED_UPDATE);
 		} else {
 			ret = update_dircache(file, flags);
@@ -2422,7 +2442,7 @@ cmpstat(
 	 * If we got there, the file is already listed as to be included in the
 	 * iso image. We just need to know if we are going to rebuild it or not
 	 */
-	if (is_flag_on(IS_SPARC_TARGET) &&
+	if ((is_flag_on(IS_SPARC_TARGET) || is_flag_on(IS_AARCH64_TARGET)) &&
 	    is_dir_flag_on(NEED_UPDATE) && !bam_nowrite())
 		return (0);
 	/*
@@ -2453,7 +2473,8 @@ cmpstat(
 			}
 		}
 
-		if (is_flag_on(IS_SPARC_TARGET)) {
+		if (is_flag_on(IS_SPARC_TARGET) ||
+		    is_flag_on(IS_AARCH64_TARGET)) {
 			set_dir_flag(NEED_UPDATE);
 		} else {
 			ret = update_dircache(file, flags);
@@ -2531,7 +2552,7 @@ set_cache_dir(char *root)
 	int		ret = 0;
 
 	ret = build_path(get_cachedir(), sizeof (get_cachedir()),
-	    root, ARCHIVE_PREFIX, CACHEDIR_SUFFIX);
+	     root, ARCHIVE_PREFIX, CACHEDIR_SUFFIX);
 
 	if (ret >= sizeof (get_cachedir())) {
 		bam_error(_("unable to create path on mountpoint %s, "
@@ -2666,7 +2687,7 @@ is_valid_archive(char *root)
 		return (BAM_SUCCESS);
 	}
 
-	if (is_flag_on(IS_SPARC_TARGET))
+	if (is_flag_on(IS_SPARC_TARGET) || is_flag_on(IS_AARCH64_TARGET))
 		return (BAM_SUCCESS);
 
 	if (bam_extend && sb.st_size > BA_SIZE_MAX) {
@@ -2707,7 +2728,7 @@ check_flags_and_files(char *root)
 	 * check if cache directories exist on x86.
 	 * check (and always open) the cache file on SPARC.
 	 */
-	if (is_sparc()) {
+	if (is_sparc() || is_aarch64()) {
 		ret = snprintf(get_cachedir(),
 		    sizeof (get_cachedir()), "%s%s%s/%s", root,
 		    ARCHIVE_PREFIX, get_machine(), CACHEDIR_SUFFIX);
@@ -2723,8 +2744,8 @@ check_flags_and_files(char *root)
 			set_dir_flag(NEED_UPDATE);
 		}
 
-		walk_arg.sparcfile = fopen(get_cachedir(), "w");
-		if (walk_arg.sparcfile == NULL) {
+		walk_arg.isofile = fopen(get_cachedir(), "w");
+		if (walk_arg.isofile == NULL) {
 			bam_error(_("failed to open file: %s: %s\n"),
 			    get_cachedir(), strerror(errno));
 			return (BAM_ERROR);
@@ -2980,7 +3001,8 @@ check4stale(char *root)
 			if (bam_verbose)
 				bam_print(_("    stale %s\n"), path);
 
-			if (is_flag_on(IS_SPARC_TARGET)) {
+			if (is_flag_on(IS_SPARC_TARGET) ||
+			    is_flag_on(IS_AARCH64_TARGET)) {
 				set_dir_flag(NEED_UPDATE);
 			} else {
 				if (has_cachedir())
@@ -3115,11 +3137,11 @@ clear_walk_args(void)
 {
 	nvlist_free(walk_arg.old_nvlp);
 	nvlist_free(walk_arg.new_nvlp);
-	if (walk_arg.sparcfile)
-		(void) fclose(walk_arg.sparcfile);
+	if (walk_arg.isofile)
+		(void) fclose(walk_arg.isofile);
 	walk_arg.old_nvlp = NULL;
 	walk_arg.new_nvlp = NULL;
-	walk_arg.sparcfile = NULL;
+	walk_arg.isofile = NULL;
 }
 
 /*
@@ -3149,6 +3171,8 @@ update_required(char *root)
 
 	if (is_sparc())
 		set_flag(IS_SPARC_TARGET);
+	if (is_aarch64())
+		set_flag(IS_AARCH64_TARGET);
 
 	/*
 	 * Check if cache directories and archives are present
@@ -3214,8 +3238,8 @@ update_required(char *root)
 	}
 
 	if (walk_arg.new_nvlp == NULL) {
-		if (walk_arg.sparcfile != NULL)
-			(void) fclose(walk_arg.sparcfile);
+		if (walk_arg.isofile != NULL)
+			(void) fclose(walk_arg.isofile);
 		bam_error(_("cannot create new stat data\n"));
 	}
 
@@ -3226,8 +3250,8 @@ update_required(char *root)
 		return (0);
 	}
 
-	if (walk_arg.sparcfile != NULL)
-		(void) fclose(walk_arg.sparcfile);
+	if (walk_arg.isofile != NULL)
+		(void) fclose(walk_arg.isofile);
 
 	return (1);
 }
@@ -3384,6 +3408,9 @@ use_mkisofs()
 	 * Then check that the system/boot-archive config/format property
 	 * is "hsfs" or empty.
 	 */
+	 /* XXXARM: For complicated reasons, aarch64 _must_ use hsfs right now */
+	if (is_flag_on(IS_AARCH64_TARGET))
+		return (B_TRUE);
 	if ((prop = scf_simple_prop_get(NULL, BOOT_ARCHIVE_FMRI, SCF_PG_CONFIG,
 	    SCF_PROPERTY_FORMAT)) == NULL) {
 		/* Could not find property, use mkisofs */
@@ -3400,6 +3427,7 @@ use_mkisofs()
 		ret = B_TRUE;
 	else
 		ret = strcmp(format, "hsfs") == 0 ? B_TRUE : B_FALSE;
+
 	if (bam_verbose) {
 		if (ret)
 			bam_print("Creating hsfs boot archive\n");
@@ -3449,6 +3477,52 @@ create_sparc_archive(char *archive, char *tempname, char *bootblk, char *list)
 	(void) snprintf(cmdline, sizeof (cmdline), "%s if=\"%s\" of=\"%s\""
 	    " bs=1b oseek=1 count=15 conv=notrunc conv=sync 2>&1", DD_PATH_USR,
 	    bootblk, tempname);
+
+	BAM_DPRINTF(("%s: executing: %s\n", func, cmdline));
+
+	ret = exec_cmd(cmdline, &flist);
+	if (ret != 0 || check_cmdline(flist) == BAM_ERROR)
+		goto out_err;
+
+	filelist_free(&flist);
+
+	/* Did we get a valid archive ? */
+	if (check_archive(tempname) == BAM_ERROR)
+		return (BAM_ERROR);
+
+	return (do_archive_copy(tempname, archive));
+
+out_err:
+	filelist_free(&flist);
+	bam_error(_("boot-archive creation FAILED, command: '%s'\n"), cmdline);
+	(void) unlink(tempname);
+	return (BAM_ERROR);
+}
+
+static int
+create_aarch64_archive(char *archive, char *tempname, char *list)
+{
+	int		ret;
+	char		cmdline[3 * PATH_MAX + 64];
+	filelist_t	flist = {0};
+	const char	*func = "create_aarch64_archive()";
+
+	/*
+	 * Prepare mkisofs command line and execute it
+	 */
+	(void) snprintf(cmdline, sizeof (cmdline), "%s %s -o \"%s\" "
+	    "-path-list \"%s\" 2>&1", MKISOFS_PATH, MKISO_PARAMS,
+	    tempname, list);
+
+	BAM_DPRINTF(("%s: executing: %s\n", func, cmdline));
+
+	ret = exec_cmd(cmdline, &flist);
+	if (ret != 0 || check_cmdline(flist) == BAM_ERROR) {
+		dump_errormsg(flist);
+		goto out_err;
+	}
+
+	filelist_free(&flist);
 
 	BAM_DPRINTF(("%s: executing: %s\n", func, cmdline));
 
@@ -3756,6 +3830,8 @@ mkisofs_archive(char *root)
 
 		ret = create_sparc_archive(boot_archive, temp, bootblk,
 		    get_cachedir());
+	} else if (is_flag_on(IS_AARCH64_TARGET)) {
+		ret = create_aarch64_archive(boot_archive, temp, get_cachedir());
 	} else {
 		if (!is_dir_flag_on(NO_EXTEND)) {
 			if (bam_verbose)
@@ -10258,6 +10334,41 @@ is_sparc(void)
 	return (issparc);
 }
 
+int
+is_aarch64(void)
+{
+	static int isaarch64 = -1;
+	char mbuf[257];	/* from sysinfo(2) manpage */
+
+	if (isaarch64 != -1)
+		return (isaarch64);
+
+	if (bam_alt_platform) {
+		if (strcmp(bam_platform, "aarch64") == 0) {
+			isaarch64 = 1;
+		}
+	} else {
+		if (sysinfo(SI_ARCHITECTURE, mbuf, sizeof (mbuf)) > 0 &&
+		    strcmp(mbuf, "aarch64") == 0) {
+			isaarch64 = 1;
+		}
+	}
+	if (isaarch64 == -1)
+		isaarch64 = 0;
+
+	return (isaarch64);
+}
+
+/*
+ * XXXARM: x86 being "The default" is a mess I'm opting out of right now, but
+ * we need to fix it.
+ */
+int
+is_x86(void)
+{
+	return (!is_sparc() && !is_aarch64());
+}
+
 static void
 append_to_flist(filelist_t *flistp, char *s)
 {
@@ -10272,7 +10383,7 @@ append_to_flist(filelist_t *flistp, char *s)
 	flistp->tail = lp;
 }
 
-#if !defined(_OBP)
+#if defined(__x86)
 
 UCODE_VENDORS;
 

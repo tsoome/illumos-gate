@@ -37,10 +37,11 @@ file path=usr/include/libuutil.h
 file path=usr/include/libzonecfg.h
 file path=usr/include/zonestat_impl.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libbrand.so target=./libbrand.so.1
-link path=usr/lib/$(ARCH64)/libzonecfg.so target=./libzonecfg.so.1
-link path=usr/lib/$(ARCH64)/libzonestat.so target=./libzonestat.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libbrand.so target=./libbrand.so.1
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libzonecfg.so target=./libzonecfg.so.1
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libzonestat.so \
+    target=./libzonestat.so.1
 link path=usr/lib/libbrand.so target=./libbrand.so.1
 link path=usr/lib/libzonecfg.so target=./libzonecfg.so.1
 link path=usr/lib/libzonestat.so target=./libzonestat.so.1

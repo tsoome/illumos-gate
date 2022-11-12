@@ -96,23 +96,24 @@ $(OBJS) := CPPFLAGS += $(INCS) -D_REENTRANT
 $(POFILE) := CPPFLAGS += $(INCS)
 
 CFLAGS += $(CCVERBOSE)
-LDLIBS += \
-	-lsqlite-sys \
-	-lsecdb \
-	-lsocket \
-	-lnsl \
-	-lidmap \
-	-lscf \
-	-lsldap \
-	-lldap \
-	-luuid \
-	-ladutils \
-	-lads \
-	-lumem \
-	-lnvpair \
-	-luutil \
-	-L $(ROOT)/usr/lib/smbsrv \
-	-lsmb
+LDLIBS +=				\
+	-lsqlite-sys			\
+	-lsecdb				\
+	-lsocket			\
+	-lnsl				\
+	-lidmap				\
+	-lscf				\
+	-lsldap				\
+	-lldap				\
+	-luuid				\
+	-ladutils			\
+	-lads				\
+	-lumem				\
+	-lnvpair			\
+	-luutil				\
+	-L $(ROOT)/usr/lib/smbsrv	\
+	-lsmb				\
+	-L$(ADJUNCT_PROTO)/usr/lib/mps
 
 rpc_svc.o := CFLAGS += $(RPC_MSGOUT_OPT)
 

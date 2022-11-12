@@ -25,6 +25,7 @@
  * Use is subject to license terms.
  * Copyright 2015 Nexenta Systems, Inc. All rights reserved.
  * Copyright 2016 Igor Kozhukhov <ikozhukhov@gmail.com>
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -1535,7 +1536,7 @@ build_default_partition(
 		}
 		return (0);
 	}
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 	/*
 	 * Set the default boot partition to 1 cylinder
 	 */

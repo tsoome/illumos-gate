@@ -1,0 +1,99 @@
+    libdis_test:       00 78 00 29  stp w0, w30, [x0]
+    libdis_test+0x4:   1f 7c 20 29  stp wzr, wzr, [x0, #-256]
+    libdis_test+0x8:   ff fb 1f 29  stp wzr, w30, [sp, #252]
+    libdis_test+0xc:   00 78 80 28  stp w0, w30, [x0], #0
+    libdis_test+0x10:  1f 7c a0 28  stp wzr, wzr, [x0], #-256
+    libdis_test+0x14:  ff fb 9f 28  stp wzr, w30, [sp], #252
+    libdis_test+0x18:  00 78 80 29  stp w0, w30, [x0, #0]!
+    libdis_test+0x1c:  1f 7c a0 29  stp wzr, wzr, [x0, #-256]!
+    libdis_test+0x20:  ff fb 9f 29  stp wzr, w30, [sp, #252]!
+    libdis_test+0x24:  00 78 40 29  ldp w0, w30, [x0]
+    libdis_test+0x28:  1f 7c 60 29  ldp wzr, wzr, [x0, #-256]
+    libdis_test+0x2c:  ff fb 5f 29  ldp wzr, w30, [sp, #252]
+    libdis_test+0x30:  00 78 c0 28  ldp w0, w30, [x0], #0
+    libdis_test+0x34:  1f 7c e0 28  ldp wzr, wzr, [x0], #-256
+    libdis_test+0x38:  ff fb df 28  ldp wzr, w30, [sp], #252
+    libdis_test+0x3c:  00 78 c0 29  ldp w0, w30, [x0, #0]!
+    libdis_test+0x40:  1f 7c e0 29  ldp wzr, wzr, [x0, #-256]!
+    libdis_test+0x44:  ff fb df 29  ldp wzr, w30, [sp, #252]!
+    libdis_test+0x48:  00 00 00 2d  stp s0, s0, [x0]
+    libdis_test+0x4c:  1f 78 20 2d  stp s31, s30, [x0, #-256]
+    libdis_test+0x50:  fe ff 1f 2d  stp s30, s31, [sp, #252]
+    libdis_test+0x54:  00 00 80 2c  stp s0, s0, [x0], #0
+    libdis_test+0x58:  1f 78 a0 2c  stp s31, s30, [x0], #-256
+    libdis_test+0x5c:  fe ff 9f 2c  stp s30, s31, [sp], #252
+    libdis_test+0x60:  00 00 80 2d  stp s0, s0, [x0, #0]!
+    libdis_test+0x64:  1f 78 a0 2d  stp s31, s30, [x0, #-256]!
+    libdis_test+0x68:  fe ff 9f 2d  stp s30, s31, [sp, #252]!
+    libdis_test+0x6c:  00 00 00 6d  stp d0, d0, [x0]
+    libdis_test+0x70:  1f 78 20 6d  stp d31, d30, [x0, #-512]
+    libdis_test+0x74:  fe ff 1f 6d  stp d30, d31, [sp, #504]
+    libdis_test+0x78:  00 00 80 6c  stp d0, d0, [x0], #0
+    libdis_test+0x7c:  1f 78 a0 6c  stp d31, d30, [x0], #-512
+    libdis_test+0x80:  fe ff 9f 6c  stp d30, d31, [sp], #504
+    libdis_test+0x84:  00 00 80 6d  stp d0, d0, [x0, #0]!
+    libdis_test+0x88:  1f 78 a0 6d  stp d31, d30, [x0, #-512]!
+    libdis_test+0x8c:  fe ff 9f 6d  stp d30, d31, [sp, #504]!
+    libdis_test+0x90:  00 00 00 ad  stp q0, q0, [x0]
+    libdis_test+0x94:  1f 78 20 ad  stp q31, q30, [x0, #-1024]
+    libdis_test+0x98:  fe ff 1f ad  stp q30, q31, [sp, #1008]
+    libdis_test+0x9c:  00 00 80 ac  stp q0, q0, [x0], #0
+    libdis_test+0xa0:  1f 78 a0 ac  stp q31, q30, [x0], #-1024
+    libdis_test+0xa4:  fe ff 9f ac  stp q30, q31, [sp], #1008
+    libdis_test+0xa8:  00 00 80 ad  stp q0, q0, [x0, #0]!
+    libdis_test+0xac:  1f 78 a0 ad  stp q31, q30, [x0, #-1024]!
+    libdis_test+0xb0:  fe ff 9f ad  stp q30, q31, [sp, #1008]!
+    libdis_test+0xb4:  00 00 40 2d  ldp s0, s0, [x0]
+    libdis_test+0xb8:  1f 78 60 2d  ldp s31, s30, [x0, #-256]
+    libdis_test+0xbc:  fe ff 5f 2d  ldp s30, s31, [sp, #252]
+    libdis_test+0xc0:  00 00 c0 2c  ldp s0, s0, [x0], #0
+    libdis_test+0xc4:  1f 78 e0 2c  ldp s31, s30, [x0], #-256
+    libdis_test+0xc8:  fe ff df 2c  ldp s30, s31, [sp], #252
+    libdis_test+0xcc:  00 00 c0 2d  ldp s0, s0, [x0, #0]!
+    libdis_test+0xd0:  1f 78 e0 2d  ldp s31, s30, [x0, #-256]!
+    libdis_test+0xd4:  fe ff df 2d  ldp s30, s31, [sp, #252]!
+    libdis_test+0xd8:  00 00 40 6d  ldp d0, d0, [x0]
+    libdis_test+0xdc:  1f 78 60 6d  ldp d31, d30, [x0, #-512]
+    libdis_test+0xe0:  fe ff 5f 6d  ldp d30, d31, [sp, #504]
+    libdis_test+0xe4:  00 00 c0 6c  ldp d0, d0, [x0], #0
+    libdis_test+0xe8:  1f 78 e0 6c  ldp d31, d30, [x0], #-512
+    libdis_test+0xec:  fe ff df 6c  ldp d30, d31, [sp], #504
+    libdis_test+0xf0:  00 00 c0 6d  ldp d0, d0, [x0, #0]!
+    libdis_test+0xf4:  1f 78 e0 6d  ldp d31, d30, [x0, #-512]!
+    libdis_test+0xf8:  fe ff df 6d  ldp d30, d31, [sp, #504]!
+    libdis_test+0xfc:  00 00 40 ad  ldp q0, q0, [x0]
+    libdis_test+0x100: 1f 78 60 ad  ldp q31, q30, [x0, #-1024]
+    libdis_test+0x104: fe ff 5f ad  ldp q30, q31, [sp, #1008]
+    libdis_test+0x108: 00 00 c0 ac  ldp q0, q0, [x0], #0
+    libdis_test+0x10c: 1f 78 e0 ac  ldp q31, q30, [x0], #-1024
+    libdis_test+0x110: fe ff df ac  ldp q30, q31, [sp], #1008
+    libdis_test+0x114: 00 00 c0 ad  ldp q0, q0, [x0, #0]!
+    libdis_test+0x118: 1f 78 e0 ad  ldp q31, q30, [x0, #-1024]!
+    libdis_test+0x11c: fe ff df ad  ldp q30, q31, [sp, #1008]!
+    libdis_test+0x120: 00 78 40 69  ldpsw x0, x30, [x0]
+    libdis_test+0x124: 1f 7c 60 69  ldpsw xzr, xzr, [x0, #-256]
+    libdis_test+0x128: ff fb 5f 69  ldpsw xzr, x30, [sp, #252]
+    libdis_test+0x12c: 00 78 c0 68  ldpsw x0, x30, [x0], #0
+    libdis_test+0x130: 1f 7c e0 68  ldpsw xzr, xzr, [x0], #-256
+    libdis_test+0x134: ff fb df 68  ldpsw xzr, x30, [sp], #252
+    libdis_test+0x138: 00 78 c0 69  ldpsw x0, x30, [x0, #0]!
+    libdis_test+0x13c: 1f 7c e0 69  ldpsw xzr, xzr, [x0, #-256]!
+    libdis_test+0x140: ff fb df 69  ldpsw xzr, x30, [sp, #252]!
+    libdis_test+0x144: 00 78 00 a9  stp x0, x30, [x0]
+    libdis_test+0x148: 1f 7c 20 a9  stp xzr, xzr, [x0, #-512]
+    libdis_test+0x14c: ff fb 1f a9  stp xzr, x30, [sp, #504]
+    libdis_test+0x150: 00 78 80 a8  stp x0, x30, [x0], #0
+    libdis_test+0x154: 1f 7c a0 a8  stp xzr, xzr, [x0], #-512
+    libdis_test+0x158: ff fb 9f a8  stp xzr, x30, [sp], #504
+    libdis_test+0x15c: 00 78 80 a9  stp x0, x30, [x0, #0]!
+    libdis_test+0x160: 1f 7c a0 a9  stp xzr, xzr, [x0, #-512]!
+    libdis_test+0x164: ff fb 9f a9  stp xzr, x30, [sp, #504]!
+    libdis_test+0x168: 00 78 40 a9  ldp x0, x30, [x0]
+    libdis_test+0x16c: 1f 7c 60 a9  ldp xzr, xzr, [x0, #-512]
+    libdis_test+0x170: ff fb 5f a9  ldp xzr, x30, [sp, #504]
+    libdis_test+0x174: 00 78 c0 a8  ldp x0, x30, [x0], #0
+    libdis_test+0x178: 1f 7c e0 a8  ldp xzr, xzr, [x0], #-512
+    libdis_test+0x17c: ff fb df a8  ldp xzr, x30, [sp], #504
+    libdis_test+0x180: 00 78 c0 a9  ldp x0, x30, [x0, #0]!
+    libdis_test+0x184: 1f 7c e0 a9  ldp xzr, xzr, [x0, #-512]!
+    libdis_test+0x188: ff fb df a9  ldp xzr, x30, [sp, #504]!

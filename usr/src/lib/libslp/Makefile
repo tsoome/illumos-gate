@@ -25,7 +25,9 @@
 
 include $(SRC)/Makefile.master
 
-SLP_COMPONENTS= javalib etc
+SLP_COMPONENTS= etc
+# XXXARM: No java
+$(NOT_AARCH64_BLD)SLP_COMPONENTS += javalib
 SUBDIRS =	$(SLP_COMPONENTS) $(MACH)
 $(BUILD64)SUBDIRS += $(MACH64)
 

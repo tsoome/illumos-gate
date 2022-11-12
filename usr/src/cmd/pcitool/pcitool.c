@@ -74,12 +74,12 @@ typedef struct {
  * of little endian data end up switched if read as little endian.
  * They are in correct order if read as big endian.
  */
-#if defined(__sparc)
+#if defined(_BIG_ENDIAN)
 #define	NATIVE_ENDIAN	PCITOOL_ACC_ATTR_ENDN_BIG
-#elif defined(__x86)
+#elif defined(_LITTLE_ENDIAN)
 #define	NATIVE_ENDIAN	PCITOOL_ACC_ATTR_ENDN_LTL
 #else
-#error "ISA is neither __sparc nor __x86"
+#error "ISA is neither big nor little endian"
 #endif
 
 /* status error lookup table. */

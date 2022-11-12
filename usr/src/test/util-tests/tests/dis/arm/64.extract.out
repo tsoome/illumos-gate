@@ -1,0 +1,8 @@
+    libdis_test:      e0 01 9f 13  extr w0, w15, wzr, #0
+    libdis_test+0x4:  e0 7d 9f 13  extr w0, w15, wzr, #31
+    libdis_test+0x8:  e0 01 df 93  extr x0, x15, xzr, #0
+    libdis_test+0xc:  e0 fd df 93  extr x0, x15, xzr, #63
+    libdis_test+0x10: e0 03 9f 13  ror w0, wzr, #0
+    libdis_test+0x14: e0 7f 9f 13  ror w0, wzr, #31
+    libdis_test+0x18: e0 03 df 93  ror x0, xzr, #0
+    libdis_test+0x1c: e0 7f df 93  ror x0, xzr, #31

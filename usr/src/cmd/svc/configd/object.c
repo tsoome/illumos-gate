@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file only contains the transaction commit logic.
  */
@@ -322,8 +320,8 @@ tx_process_cmds(tx_commit_data_t *data)
 				if (r != REP_PROTOCOL_SUCCESS)
 					break;
 
-				/*LINTED alignment*/
-				v = (uint32_t *)((caddr_t)str + TX_SIZE(*v));
+				v = (uint32_t *)((caddr_t)str +
+				    (uint32_t)(TX_SIZE(*v)));
 			}
 		}
 		if (r != REP_PROTOCOL_SUCCESS)
@@ -638,9 +636,8 @@ tx_cmd_value(tx_commit_data_t *tx_data, size_t cmd_no, uint32_t val_no,
 	/* Find the correct value */
 	bp = (char *)cur->tx_values;
 	for (i = 0; i < val_no; i++) {
-		/* LINTED alignment */
 		value_len = *(uint32_t *)bp;
-		bp += sizeof (uint32_t) + TX_SIZE(value_len);
+		bp += sizeof (uint32_t) + (uint32_t)(TX_SIZE(value_len));
 	}
 
 	/* Bypass the count & return pointer to value. */

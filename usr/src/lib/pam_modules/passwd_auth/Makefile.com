@@ -32,7 +32,7 @@ OBJECTS=	passwd_auth.o
 
 include		../../Makefile.pam_modules
 
-LDLIBS		+= -lpam -lc
+LDLIBS		+= -lpam -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 all:	$(LIBS)
 

@@ -62,7 +62,7 @@ ppbuiltin(void)
 		error(2, "%s: #(<identifier>...) expected", p);
 		*p = 0;
 	}
-	switch (op = (int)hashget(pp.strtab, p))
+	switch (op = (int)(uintptr_t)hashget(pp.strtab, p))
 	{
 	case V_DEFAULT:
 		n = 0;

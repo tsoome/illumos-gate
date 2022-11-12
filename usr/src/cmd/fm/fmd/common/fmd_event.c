@@ -348,7 +348,7 @@ fmd_event_match(fmd_event_t *e, uint_t type, const void *data)
 	if (type == FMD_EVT_PROTOCOL)
 		return (fmd_strmatch(ep->ev_data, data));
 	else if (type == FMD_EVT_TIMEOUT)
-		return ((id_t)data == ((fmd_modtimer_t *)ep->ev_data)->mt_id);
+		return ((id_t)(intptr_t)data == ((fmd_modtimer_t *)ep->ev_data)->mt_id);
 	else
 		return (ep->ev_data == data);
 }

@@ -18,22 +18,19 @@
  *
  * CDDL HEADER END
  */
-/*
- * Copyright (c) 2004, 2010, Oracle and/or its affiliates. All rights reserved.
- */
-
-/*
- * Copyright 2012 Joyent, Inc.  All rights reserved.
- */
-
 /* Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T */
 /*	All Rights Reserved   */
+
+/*
+ * Copyright (c) 2004, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Joyent, Inc.  All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*
  * Portions of this source code were derived from Berkeley 4.3 BSD
  * under license from the Regents of the University of California.
  */
-
 
 /*
  * This file contains common functions to access and manage the page lists.
@@ -1060,6 +1057,7 @@ page_ctrs_adjust(int mnode)
 	 * mnode may have just been added and not have
 	 * valid page counters.
 	 */
+#if MMU_PAGE_SIZES > 1
 	if (interleaved_mnodes) {
 		for (i = 0; i < max_mem_nodes; i++)
 			if (PAGE_COUNTERS_COUNTERS(i, 1) != NULL)
@@ -1067,6 +1065,7 @@ page_ctrs_adjust(int mnode)
 		ASSERT(i < max_mem_nodes);
 		oldmnode = i;
 	} else
+#endif
 		oldmnode = mnode;
 
 	old_nranges = mnode_nranges[mnode];
@@ -3068,6 +3067,7 @@ page_freecnt(int mnode, page_t *pp, uchar_t szc)
 		return (pgfree);
 	}
 
+#if MMU_PAGE_SIZES > 1
 	while (--r > 0) {
 		idx = PNUM_TO_IDX(mnode, r, pp->p_pagenum);
 		full = FULL_REGION_CNT(r);
@@ -3083,6 +3083,7 @@ page_freecnt(int mnode, page_t *pp, uchar_t szc)
 		}
 		range *= full;
 	}
+#endif
 	rw_exit(&page_ctrs_rwlock[mnode]);
 	return (pgfree);
 }

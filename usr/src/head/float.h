@@ -24,10 +24,11 @@
 
 
 /*
- * Copyright 2014 Garrett D'Amore <garrett@damore.org>
- *
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #ifndef _FLOAT_H
@@ -39,7 +40,7 @@
 extern "C" {
 #endif
 
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 
 extern int __flt_rounds(void);
 #define	FLT_ROUNDS	__flt_rounds()
@@ -92,7 +93,8 @@ extern int __flt_rounds;
 	(!defined(_STRICT_STDC) && !defined(__XOPEN_OR_POSIX))
 #if defined(__sparc)
 #define	DECIMAL_DIG	36
-#elif defined(__i386) || defined(__amd64)
+/* XXXARM: Really? */
+#elif defined(__i386) || defined(__amd64) || defined(__aarch64__)
 #define	DECIMAL_DIG	21
 #endif
 #endif /* defined(__EXTENSIONS__) || defined(_STDC_C99)... */
@@ -112,6 +114,20 @@ extern int __flt_rounds;
 #define	LDBL_MAX_10_EXP	(+4932)
 
 #elif defined(__sparc)
+
+/* Follows IEEE standards for 128-bit floating point */
+#define	LDBL_MANT_DIG	113
+#define	LDBL_EPSILON	1.925929944387235853055977942584927319E-34L
+#define	LDBL_DIG	33
+#define	LDBL_MIN_EXP	(-16381)
+#define	LDBL_MIN	3.362103143112093506262677817321752603E-4932L
+#define	LDBL_MIN_10_EXP	(-4931)
+#define	LDBL_MAX_EXP	(+16384)
+#define	LDBL_MAX	1.189731495357231765085759326628007016E+4932L
+#define	LDBL_MAX_10_EXP	(+4932)
+
+#elif defined(__aarch64__)
+/* XXXARM: We should verify these against the compiler builtins */
 
 /* Follows IEEE standards for 128-bit floating point */
 #define	LDBL_MANT_DIG	113

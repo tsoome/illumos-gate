@@ -29,6 +29,8 @@ libvarpd_isaext(void)
 	return ("64");
 #elif defined(__i386)
 	return ("");
+#elif defined(__aarch64__)
+	return ("");
 #else
 #error	"unknown ISA"
 #endif

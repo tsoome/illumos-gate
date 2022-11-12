@@ -79,6 +79,8 @@ extern "C" {
 #define	DRVDIR64	"amd64"
 #elif defined(__sparc)
 #define	DRVDIR64	"sparcv9"
+#elif defined(__aarch64__)
+#define	DRVDIR64	"aarch64"
 #endif
 
 /* pointers to add_drv/rem_drv database files */

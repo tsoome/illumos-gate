@@ -28,13 +28,11 @@
 /*	  All Rights Reserved  	*/
 
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-/* EMACS_MODES: !fill, lnumb, !overwrite, !nodelete, !picture */
-
-#include "stdio.h"
-#include "string.h"
-#include "errno.h"
-#include "sys/types.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
 #include <syslog.h>
 
 #include "lp.h"
@@ -86,7 +84,7 @@ getclass(char *name)
 	}
 	Free (file);
 
-	clsp = (CLASS *)calloc(sizeof (*clsp), 1);
+	clsp = calloc(sizeof (*clsp), 1);
 
 	if (!(clsp->name = Strdup(name))) {
 		Free (clsp);

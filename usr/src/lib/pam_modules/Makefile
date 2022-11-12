@@ -31,8 +31,8 @@ include $(SRC)/Makefile.master
 
 SUBDIRS = \
 	allow	\
-	authtok_get	\
 	authtok_check	\
+	authtok_get	\
 	authtok_store	\
 	deny		\
 	dhkeys		\
@@ -49,8 +49,8 @@ SUBDIRS = \
 	smbfs		\
 	timestamp	\
 	tsol_acct	\
-	unix_auth	\
 	unix_account	\
+	unix_auth	\
 	unix_cred	\
 	unix_session
 

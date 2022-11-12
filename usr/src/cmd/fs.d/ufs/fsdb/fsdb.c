@@ -2900,9 +2900,11 @@ get(short lngth)
 	case SHADOW_DATA:
 		/*LINTED*/
 		return ((offset_t)(*(long *)bptr));
+#ifndef _LP64
 	case U_OFFSET_T:
 		/*LINTED*/
 		return (*(offset_t *)bptr);
+#endif
 	}
 	return (0);
 }

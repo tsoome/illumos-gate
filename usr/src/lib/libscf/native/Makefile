@@ -35,6 +35,8 @@ CPPFLAGS =	$(MY_NATIVE_CPPFLAGS)
 LDFLAGS =
 LDLIBS =	$(MY_NATIVE_LDLIBS)
 NATIVE_LIBS +=	libsmbios.so libnvpair.so libgen.so libc.so
+# XXXARM: Native so no sysroot
+SYSROOT=
 
 all: libuutil .WAIT $(LIBS)
 

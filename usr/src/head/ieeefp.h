@@ -20,10 +20,11 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2014 Garrett D'Amore <garrett@damore.org>
- *
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*	Copyright (c) 1988 AT&T */
@@ -106,6 +107,21 @@ typedef	enum	fp_rnd {
 	FP_RZ = 1,	/* round toward zero (truncate) */
 	FP_RP = 2,	/* round toward plus infinity */
 	FP_RM = 3	/* round toward minus infinity */
+} fp_rnd;
+
+#endif
+
+#if defined(__aarch64__)
+
+/*
+ * NOTE: the values given are chosen to match those used by the
+ * RD (Round Direction) field of the FSR (Floating Point State Register).
+ */
+typedef	enum	fp_rnd {
+	FP_RN = 0,	/* round to nearest representable number, tie -> even */
+	FP_RP = 1,	/* round toward plus infinity */
+	FP_RM = 2,	/* round toward minus infinity */
+	FP_RZ = 3,	/* round toward zero (truncate) */
 } fp_rnd;
 
 #endif

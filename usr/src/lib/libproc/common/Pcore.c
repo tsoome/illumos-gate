@@ -27,6 +27,7 @@
  * Copyright (c) 2018, Joyent, Inc. All rights reserved.
  * Copyright (c) 2013 by Delphix. All rights reserved.
  * Copyright 2015 Gary Mills
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
  * Copyright 2021 Oxide Computer Company
  */
@@ -385,7 +386,7 @@ lwpid2info(struct ps_prochandle *P, lwpid_t id)
 static int
 note_pstatus(struct ps_prochandle *P, size_t nbytes)
 {
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	core_info_t *core = P->data;
 
 	if (core->core_dmodel == PR_MODEL_ILP32) {
@@ -419,7 +420,7 @@ note_lwpstatus(struct ps_prochandle *P, size_t nbytes)
 	lwp_info_t *lwp;
 	lwpstatus_t lps;
 
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	core_info_t *core = P->data;
 
 	if (core->core_dmodel == PR_MODEL_ILP32) {
@@ -662,7 +663,7 @@ err:
 static int
 note_psinfo(struct ps_prochandle *P, size_t nbytes)
 {
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	core_info_t *core = P->data;
 
 	if (core->core_dmodel == PR_MODEL_ILP32) {
@@ -696,7 +697,7 @@ note_lwpsinfo(struct ps_prochandle *P, size_t nbytes)
 	lwp_info_t *lwp;
 	lwpsinfo_t lps;
 
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	core_info_t *core = P->data;
 
 	if (core->core_dmodel == PR_MODEL_ILP32) {
@@ -1024,7 +1025,7 @@ note_auxv(struct ps_prochandle *P, size_t nbytes)
 {
 	size_t n, i;
 
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	core_info_t *core = P->data;
 
 	if (core->core_dmodel == PR_MODEL_ILP32) {
@@ -1058,7 +1059,7 @@ note_auxv(struct ps_prochandle *P, size_t nbytes)
 			P->auxv = NULL;
 			return (-1);
 		}
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATA_MODEL)
 	}
 #endif
 
@@ -1124,7 +1125,7 @@ note_gwindows(struct ps_prochandle *P, size_t nbytes)
 	 * and the size of the gwindows_t type.  It doesn't matter if the read
 	 * fails since we have to zero out gwindows first anyway.
 	 */
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (core->core_dmodel == PR_MODEL_ILP32) {
 		gwindows32_t g32;
 
@@ -1137,7 +1138,7 @@ note_gwindows(struct ps_prochandle *P, size_t nbytes)
 		(void) memset(lwp->lwp_gwins, 0, sizeof (gwindows_t));
 		(void) read(P->asfd, lwp->lwp_gwins,
 		    MIN(nbytes, sizeof (gwindows_t)));
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	}
 #endif
 	return (0);
@@ -1172,7 +1173,7 @@ note_asrs(struct ps_prochandle *P, size_t nbytes)
 static int
 note_spymaster(struct ps_prochandle *P, size_t nbytes)
 {
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	core_info_t *core = P->data;
 
 	if (core->core_dmodel == PR_MODEL_ILP32) {

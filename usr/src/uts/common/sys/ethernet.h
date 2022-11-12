@@ -119,7 +119,8 @@ struct ether_vlan_extinfo {
  * bcmp, we return zero if they are the SAME.
  */
 
-#if defined(__sparc) || defined(__i386) || defined(__amd64)
+#if defined(__sparc) || defined(__i386) || defined(__amd64) || \
+	defined(__aarch64__)
 #define	ether_cmp(a, b) (((short *)b)[2] != ((short *)a)[2] || \
 	((short *)b)[1] != ((short *)a)[1] || \
 	((short *)b)[0] != ((short *)a)[0])

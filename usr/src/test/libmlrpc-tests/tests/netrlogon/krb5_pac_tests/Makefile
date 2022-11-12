@@ -25,5 +25,6 @@ include ../../Makefile.com
 
 LDFLAGS += -R/usr/lib/smbsrv
 LDLIBS += -L$(ROOT)/usr/lib/smbsrv
+LDLIBS += -L$(ADJUNCT_PROTO)/usr/lib/mps
 LDLIBS += -lmlsvc -lsmb
 CPPFLAGS += -Dsyslog=smb_syslog

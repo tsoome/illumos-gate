@@ -21,6 +21,8 @@
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -325,7 +327,7 @@ scsi_expert(void)
 	return (SCSI && expert_mode);
 }
 
-#if	defined(i386)
+#if defined(i386) || defined(__aarch64__)
 /*
  * Return true for menu items enabled if expert mode is enabled
  */
@@ -366,7 +368,7 @@ support_fdisk_on_sparc(void)
 	} else {
 		return (0);
 	}
-#elif defined(i386)
+#elif defined(i386) || defined(__aarch64__)
 	return (1);
 #else
 #error  No Platform defined

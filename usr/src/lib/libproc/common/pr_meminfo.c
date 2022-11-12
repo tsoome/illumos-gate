@@ -22,9 +22,9 @@
 /*
  * Copyright 2002 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@ pr_meminfo(struct ps_prochandle *Pr, const uint64_t *addrs,
 	argdes_t argd[7];
 	argdes_t *adp = &argd[0];
 	struct meminfo m;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	struct meminfo32 m32;
 	int model;
 #endif
@@ -93,7 +93,7 @@ pr_meminfo(struct ps_prochandle *Pr, const uint64_t *addrs,
 		goto out;
 	}
 
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	model = Pr->status.pr_dmodel;
 	if (model == PR_MODEL_ILP32) {
 		m32.mi_info_count = info_count;
@@ -139,7 +139,7 @@ pr_meminfo(struct ps_prochandle *Pr, const uint64_t *addrs,
 	 */
 
 	adp->arg_value = 0;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (model == PR_MODEL_ILP32) {
 		adp->arg_object = &m32;
 		adp->arg_size = sizeof (struct meminfo32);

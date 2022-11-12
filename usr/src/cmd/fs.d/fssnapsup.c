@@ -24,14 +24,13 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Routines to support fssnap subcommand of switchout.  See switchout.c for
  * the real fssnap command.
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <kstat.h>
 #include <libintl.h>
 #include <sys/fssnap_if.h>
@@ -136,7 +135,7 @@ fssnap_show_status(char *mountpoint, char *opts, int labels, int brief)
 
 	if (opts) {
 		i = 0;
-		order = (int *)malloc(orderlen * sizeof (int));
+		order = malloc(orderlen * sizeof (int));
 		if (order == NULL) {
 			fprintf(stderr,
 			    gettext("cannot allocate order list.\n"));
@@ -163,7 +162,7 @@ fssnap_show_status(char *mountpoint, char *opts, int labels, int brief)
 		}
 		order[i] = MAX_INFO_DESCRIPTORS;
 	} else {
-		order = (int *)malloc(orderlen * sizeof (int));
+		order = malloc(orderlen * sizeof (int));
 		if (order == NULL) {
 			fprintf(stderr,
 			    gettext("cannot allocate order list.\n"));

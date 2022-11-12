@@ -125,8 +125,7 @@ sock_connect(int sock, char *host, int timeout)
 		return (-1);
 	}
 
-	/* linux style NULL usage */
-	(void) memset((char *)&sin, (int)NULL, sizeof (sin));
+	(void) memset((char *)&sin, 0, sizeof (sin));
 
 #if defined(HAVE_GETIPNODEBYNAME) && defined(HAVE_RRESVPORT_AF)
 	if ((hp = getipnodebyname(host, AF_INET6, AI_DEFAULT,

@@ -35,6 +35,7 @@ CPPFLAGS =	-I. $(MY_NATIVE_CPPFLAGS)
 LDFLAGS =
 LDLIBS =	$(MY_NATIVE_LDLIBS)
 NATIVE_LIBS +=	libc.so
+SYSROOT=			#XXXARM: Native build no sysroot
 
 #
 # We must use the build's avl headers, to match the common avl.c

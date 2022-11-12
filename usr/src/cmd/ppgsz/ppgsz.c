@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -597,7 +595,7 @@ err:
 }
 
 static struct memcntl_mha	gmha;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 static struct memcntl_mha32	gmha32;
 #endif
 
@@ -605,7 +603,7 @@ static caddr_t
 /* ARGSUSED */
 setup_mha(uint_t command, size_t pagesize, int dmodel)
 {
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (dmodel == PR_MODEL_ILP32) {
 		gmha32.mha_cmd = command;
 		gmha32.mha_flags = 0;

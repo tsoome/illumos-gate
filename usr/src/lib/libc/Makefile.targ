@@ -288,6 +288,10 @@ pics/%.o: $(SRC)/common/atomic/$(TARGETMACH)/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
+pics/%.o: $(SRC)/common/atomic/$(TARGETMACH)/%.c
+	$(COMPILE.c) $< -o $@
+	$(POST_PROCESS_O)
+
 $(COMOBJS:%=pics/%): $(SRC)/common/util/$$(@F:.o=.c)
 	$(COMPILE.c) -o $@ $(SRC)/common/util/$(@F:.o=.c)
 	$(POST_PROCESS_O)

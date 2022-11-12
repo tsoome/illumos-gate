@@ -1,0 +1,88 @@
+    libdis_test:       bf 40 00 d5  msr spsel, #0x0
+    libdis_test+0x4:   df 47 03 d5  msr daifset, #0x7
+    libdis_test+0x8:   ff 4f 03 d5  msr daifclr, #0xf
+    libdis_test+0xc:   1f 20 03 d5  nop
+    libdis_test+0x10:  3f 20 03 d5  yield
+    libdis_test+0x14:  5f 20 03 d5  wfe
+    libdis_test+0x18:  7f 20 03 d5  wfi
+    libdis_test+0x1c:  9f 20 03 d5  sev
+    libdis_test+0x20:  bf 20 03 d5  sevl
+    libdis_test+0x24:  df 20 03 d5  hint #0x6
+    libdis_test+0x28:  ff 2f 03 d5  hint #0x7f
+    libdis_test+0x2c:  5f 30 03 d5  clrex #0x0
+    libdis_test+0x30:  5f 3f 03 d5  clrex
+    libdis_test+0x34:  9f 30 03 d5  dsb #0x00
+    libdis_test+0x38:  bf 30 03 d5  dmb #0x00
+    libdis_test+0x3c:  df 30 03 d5  isb #0x0
+    libdis_test+0x40:  9f 31 03 d5  dsb oshld
+    libdis_test+0x44:  bf 31 03 d5  dmb oshld
+    libdis_test+0x48:  df 31 03 d5  isb #0x1
+    libdis_test+0x4c:  9f 32 03 d5  dsb oshst
+    libdis_test+0x50:  bf 32 03 d5  dmb oshst
+    libdis_test+0x54:  df 32 03 d5  isb #0x2
+    libdis_test+0x58:  9f 33 03 d5  dsb osh
+    libdis_test+0x5c:  bf 33 03 d5  dmb osh
+    libdis_test+0x60:  df 33 03 d5  isb #0x3
+    libdis_test+0x64:  9f 34 03 d5  dsb #0x04
+    libdis_test+0x68:  bf 34 03 d5  dmb #0x04
+    libdis_test+0x6c:  df 34 03 d5  isb #0x4
+    libdis_test+0x70:  9f 35 03 d5  dsb nshld
+    libdis_test+0x74:  bf 35 03 d5  dmb nshld
+    libdis_test+0x78:  df 35 03 d5  isb #0x5
+    libdis_test+0x7c:  9f 36 03 d5  dsb nshst
+    libdis_test+0x80:  bf 36 03 d5  dmb nshst
+    libdis_test+0x84:  df 36 03 d5  isb #0x6
+    libdis_test+0x88:  9f 37 03 d5  dsb nsh
+    libdis_test+0x8c:  bf 37 03 d5  dmb nsh
+    libdis_test+0x90:  df 37 03 d5  isb #0x7
+    libdis_test+0x94:  9f 38 03 d5  dsb #0x08
+    libdis_test+0x98:  bf 38 03 d5  dmb #0x08
+    libdis_test+0x9c:  df 38 03 d5  isb #0x8
+    libdis_test+0xa0:  9f 39 03 d5  dsb ishld
+    libdis_test+0xa4:  bf 39 03 d5  dmb ishld
+    libdis_test+0xa8:  df 39 03 d5  isb #0x9
+    libdis_test+0xac:  9f 3a 03 d5  dsb ishst
+    libdis_test+0xb0:  bf 3a 03 d5  dmb ishst
+    libdis_test+0xb4:  df 3a 03 d5  isb #0xa
+    libdis_test+0xb8:  9f 3b 03 d5  dsb ish
+    libdis_test+0xbc:  bf 3b 03 d5  dmb ish
+    libdis_test+0xc0:  df 3b 03 d5  isb #0xb
+    libdis_test+0xc4:  9f 3c 03 d5  dsb #0x0c
+    libdis_test+0xc8:  bf 3c 03 d5  dmb #0x0c
+    libdis_test+0xcc:  df 3c 03 d5  isb #0xc
+    libdis_test+0xd0:  9f 3d 03 d5  dsb ld
+    libdis_test+0xd4:  bf 3d 03 d5  dmb ld
+    libdis_test+0xd8:  df 3d 03 d5  isb #0xd
+    libdis_test+0xdc:  9f 3e 03 d5  dsb st
+    libdis_test+0xe0:  bf 3e 03 d5  dmb st
+    libdis_test+0xe4:  df 3e 03 d5  isb #0xe
+    libdis_test+0xe8:  9f 3f 03 d5  dsb sy
+    libdis_test+0xec:  bf 3f 03 d5  dmb sy
+    libdis_test+0xf0:  df 3f 03 d5  isb
+    libdis_test+0xf4:  15 78 08 d5  at s1e1r, x21
+    libdis_test+0xf8:  ff 78 0c d5  at s12e0w, xzr
+    libdis_test+0xfc:  35 74 0b d5  dc zva, x21
+    libdis_test+0x100: 5f 7e 08 d5  dc cisw, xzr
+    libdis_test+0x104: 1f 71 08 d5  ic ialluis
+    libdis_test+0x108: 35 75 0b d5  ic ivau, x21
+    libdis_test+0x10c: 35 80 0c d5  tlbi ipas2e1is, x21
+    libdis_test+0x110: ff 87 08 d5  tlbi vaale1
+    libdis_test+0x114: 15 00 08 d5  sys #0, C0, C0, #0, x21
+    libdis_test+0x118: ff ff 0f d5  sys #7, C15, C15, #7
+    libdis_test+0x11c: 15 00 10 d5  msr s2_0_c0_c0_0, x21
+    libdis_test+0x120: 1f 00 30 d5  mrs xzr, s2_0_c0_c0_0
+    libdis_test+0x124: 15 00 18 d5  msr midr_el1, x21
+    libdis_test+0x128: 1f 00 38 d5  mrs xzr, midr_el1
+    libdis_test+0x12c: 35 00 10 d5  msr s2_0_c0_c0_1, x21
+    libdis_test+0x130: 3f 00 30 d5  mrs xzr, s2_0_c0_c0_1
+    libdis_test+0x134: 35 00 18 d5  msr s3_0_c0_c0_1, x21
+    libdis_test+0x138: 3f 00 38 d5  mrs xzr, s3_0_c0_c0_1
+    libdis_test+0x13c: f5 ef 13 d5  msr s2_3_c14_c15_7, x21
+    libdis_test+0x140: ff ef 33 d5  mrs xzr, s2_3_c14_c15_7
+    libdis_test+0x144: f5 ef 1b d5  msr pmccfiltr_el0, x21
+    libdis_test+0x148: ff ef 3b d5  mrs xzr, pmccfiltr_el0
+    libdis_test+0x14c: f5 ff 17 d5  msr s2_7_c15_c15_7, x21
+    libdis_test+0x150: ff ff 37 d5  mrs xzr, s2_7_c15_c15_7
+    libdis_test+0x154: f5 ff 1f d5  msr s3_7_c15_c15_7, x21
+    libdis_test+0x158: ff ff 3f d5  mrs xzr, s3_7_c15_c15_7
+    libdis_test+0x15c: 15 00 28 d5  sysl x21, #0, C0, C0, #0

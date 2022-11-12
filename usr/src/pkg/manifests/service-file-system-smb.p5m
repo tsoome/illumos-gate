@@ -44,34 +44,34 @@ dir  path=usr/kernel/drv group=sys
 dir  path=usr/kernel/drv/$(ARCH64) group=sys
 file path=usr/kernel/drv/$(ARCH64)/smbsrv group=sys
 file path=usr/kernel/drv/smbsrv.conf group=sys
-dir  path=usr/kernel/kmdb group=sys
-dir  path=usr/kernel/kmdb/$(ARCH64) group=sys
-file path=usr/kernel/kmdb/$(ARCH64)/smbsrv group=sys mode=0555
+$(not_aarch64)dir path=usr/kernel/kmdb group=sys
+$(not_aarch64)dir path=usr/kernel/kmdb/$(ARCH64) group=sys
+$(not_aarch64)file path=usr/kernel/kmdb/$(ARCH64)/smbsrv group=sys mode=0555
 dir  path=usr/lib
 dir  path=usr/lib/fs group=sys
 dir  path=usr/lib/fs/smb group=sys
 dir  path=usr/lib/fs/smb/$(ARCH64) group=sys
-file path=usr/lib/fs/smb/$(ARCH64)/libshare_smb.so.1
+$(not_aarch64)file path=usr/lib/fs/smb/$(ARCH64)/libshare_smb.so.1
 file path=usr/lib/fs/smb/libshare_smb.so.1
-dir  path=usr/lib/mdb group=sys
-dir  path=usr/lib/mdb/kvm group=sys
-dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-file path=usr/lib/mdb/kvm/$(ARCH64)/smbsrv.so group=sys mode=0555
-dir  path=usr/lib/mdb/proc group=sys
-file path=usr/lib/mdb/proc/libmlsvc.so group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/mdb group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/smbsrv.so group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/mdb/proc group=sys
+$(not_aarch64)file path=usr/lib/mdb/proc/libmlsvc.so group=sys mode=0555
 dir  path=usr/lib/reparse
 link path=usr/lib/reparse/libreparse_smb.so target=libreparse_smb.so.1
 file path=usr/lib/reparse/libreparse_smb.so.1
 dir  path=usr/lib/security
-dir  path=usr/lib/security/$(ARCH64)
-link path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so \
+$(not_aarch64)dir path=usr/lib/security/$(ARCH64)
+$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so \
     target=pam_smb_passwd.so.1
-file path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so.1
+$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so.1
 link path=usr/lib/security/pam_smb_passwd.so target=pam_smb_passwd.so.1
 file path=usr/lib/security/pam_smb_passwd.so.1
 dir  path=usr/lib/smbsrv
 dir  path=usr/lib/smbsrv/$(ARCH64)
-file path=usr/lib/smbsrv/$(ARCH64)/libsmb.so.1
+$(not_aarch64)file path=usr/lib/smbsrv/$(ARCH64)/libsmb.so.1
 dir  path=usr/lib/smbsrv/dtrace
 file path=usr/lib/smbsrv/dtrace/nbl-conflict.d mode=0555
 file path=usr/lib/smbsrv/dtrace/smb-trace.d mode=0555

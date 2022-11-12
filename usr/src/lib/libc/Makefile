@@ -168,13 +168,13 @@ install:	all			\
 		inslib32		\
 		$(ROOTCOMPATLINKS)
 
-$(BUILD64)install: inslib64 $(ROOTCOMPATLINKS64)
+$(NOT_AARCH64_BLD)$(BUILD64)install: inslib64 $(ROOTCOMPATLINKS64)
 
 inslib32:	$(ROOTFS_LIBS) $(ROOTFS_LINKS) $(ROOTVARIANTLIBS)
 
 inslib64:	$(ROOTFS_LIBS64) $(ROOTFS_LINKS64) $(ROOTVARIANTLIBS64)
 
-install_h: all_h $(ROOTHDRS)
+install_h: $(ROOTHDRS)
 
 all_h:	$(MACH)/assym.h $(MACH64)/assym.h
 

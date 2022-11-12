@@ -129,7 +129,7 @@ _icv_iconv(_iconv_st *st, char **inbuf, size_t*inbytesleft,
 		    if ((**inbuf & 0xe0) == 0xc0) { /* 0xc2..0xdf */
 
 		        /* invalid sequence if the first char is either 0xc0 or 0xc1 */
-		        if ( number_of_bytes_in_utf8_char[((uchar_t)**inbuf)] == ICV_TYPE_ILLEGAL_CHAR )
+		        if ( number_of_bytes_in_utf8_char[((uchar_t)**inbuf)] == (char)ICV_TYPE_ILLEGAL_CHAR )
 			 {
 			    errno = EILSEQ;
 		            break;
@@ -144,7 +144,7 @@ _icv_iconv(_iconv_st *st, char **inbuf, size_t*inbytesleft,
 			st->_cbuf[0] = **inbuf;
 		    } else {
 		        /* four bytes of UTF-8 sequences */
-		        if ( number_of_bytes_in_utf8_char[((uchar_t)**inbuf)] == ICV_TYPE_ILLEGAL_CHAR )
+		        if ( number_of_bytes_in_utf8_char[((uchar_t)**inbuf)] == (char)ICV_TYPE_ILLEGAL_CHAR )
 			  {
 			    errno = EILSEQ;
 		            break;

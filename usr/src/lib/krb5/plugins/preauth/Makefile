@@ -29,8 +29,8 @@ include ../../../../Makefile.master
 # Build everything in parallel; use .WAIT for dependencies
 .PARALLEL:
 
-SUBDIRS= \
-	pkinit
+# XXXARM: Relies on internals which, in libressl, are now private and not exposed
+$(NOT_AARCH64_BLD)SUBDIRS= pkinit
 
 all :=		TARGET= all
 install :=	TARGET= install

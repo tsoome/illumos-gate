@@ -39,7 +39,7 @@ usage() {
 	echo "Please use bootadm(8) instead."
 	echo ""
 	echo "Usage: ${0##*/}: [-R <root>] [-p <platform>] <filelist> ..."
-	echo "where <platform> is one of i86pc, sun4u or sun4v"
+	echo "where <platform> is one of i86pc, aarch64, sun4u or sun4v"
 	exit 2
 }
 
@@ -50,9 +50,9 @@ build_platform() {
 	(
 		cd $altroot/
 		if [ -z "$STRIP" ] ; then
-			ls -d platform/*/kernel
+			ls -1d platform/*/kernel
 		else
-			ls -d platform/*/kernel | grep -v $STRIP
+			ls -1d platform/*/kernel | grep -v $STRIP
 		fi
 	)
 }
@@ -96,6 +96,9 @@ filtering=no
 if [ "$altroot" == "" ] || [ $platform_provided = yes ]; then
 	case $PLATFORM in
 	i86pc)
+		STRIP=
+		;;
+	aarch64)
 		STRIP=
 		;;
 	sun4u)

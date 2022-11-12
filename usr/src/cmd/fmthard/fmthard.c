@@ -120,7 +120,7 @@ static diskaddr_t	lastlba = 0;	/* last LBA on 64-bit VTOC */
 #if defined(sparc)
 static char	*uboot = "boot";
 
-#elif defined(i386)
+#elif defined(i386) || defined(__aarch64__)
 /* use installboot(8) to install boot blocks */
 static char *uboot = "";
 #else
@@ -153,7 +153,7 @@ main(int argc, char **argv)
 	disk_efi = NULL;
 	dfile = NULL;
 	vname = NULL;
-#if defined(sparc)
+#if defined(sparc) || defined(__aarch64__)
 	while ((c = getopt(argc, argv, "ed:u:in:qs:")) != EOF)
 
 #elif defined(i386)
@@ -679,7 +679,7 @@ load64(FILE *fp, int fd, struct dk_gpt **efi)
 static void
 usage()
 {
-#if defined(sparc)
+#if defined(sparc) || defined(__aarch64__)
 	(void) fprintf(stderr,
 "Usage:	fmthard [ -i ] [ -n volumename ] [ -s datafile ] [ -d arguments] \
 raw-device\n");

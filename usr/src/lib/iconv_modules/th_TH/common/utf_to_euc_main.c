@@ -146,7 +146,7 @@ size_t _icv_iconv(int* cd, char** inbuf, size_t* inbufleft,
 
 			errno = 0;
 			offset = number_of_bytes_in_utf8_char[*ib];
-			if (offset == ICV_TYPE_ILLEGAL_CHAR )
+			if (offset == (char)ICV_TYPE_ILLEGAL_CHAR )
 			{
 				errno = EILSEQ;
 			}

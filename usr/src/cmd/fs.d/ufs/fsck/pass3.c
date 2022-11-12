@@ -25,8 +25,6 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -229,7 +227,7 @@ pass3a(void)
 			 * != orphan, since there's no dynamic memory
 			 * to free here.
 			 */
-			if (tsearch((void *)orphan, &limbo_dirs,
+			if (tsearch((void *)(intptr_t)orphan, &limbo_dirs,
 				    ino_t_cmp) == NULL)
 				errexit("out of memory");
 			statemap[orphan] |= INORPHAN;

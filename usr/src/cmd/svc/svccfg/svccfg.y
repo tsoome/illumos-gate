@@ -26,8 +26,10 @@
 
 
 #include <libintl.h>
-
 #include "svccfg.h"
+#include "svccfg_libscf.h"
+#include "svccfg_engine.h"
+#include "svccfg_lxml.h"
 
 uu_list_pool_t *string_pool;
 

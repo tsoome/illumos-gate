@@ -50,7 +50,7 @@ include	../../Makefile.lib
 LIBNAME=	passwdutil
 
 LIBS=		$(DYNLIB)
-LDLIBS		+= -lsldap -lnsl -lc
+LDLIBS		+= -lsldap -lnsl -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 CPPFLAGS	+= -DENABLE_SUNOS_AGING -D_REENTRANT \
 		   -I$(SRC)/lib/libsldap/common -I$(SRC)/lib/libnsl/include

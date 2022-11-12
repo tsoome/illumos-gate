@@ -1,0 +1,6 @@
+    libdis_test:      20 00 02 2e  ext v0.8b, v1.8b, v2.8b, #0
+    libdis_test+0x4:  20 38 02 2e  ext v0.8b, v1.8b, v2.8b, #7
+    libdis_test+0x8:  dd 03 1f 6e  ext v29.16b, v30.16b, v31.16b, #0
+    libdis_test+0xc:  dd 3b 1f 6e  ext v29.16b, v30.16b, v31.16b, #7
+    libdis_test+0x10: dd 43 1f 6e  ext v29.16b, v30.16b, v31.16b, #8
+    libdis_test+0x14: dd 7b 1f 6e  ext v29.16b, v30.16b, v31.16b, #15

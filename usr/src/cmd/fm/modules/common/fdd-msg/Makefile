@@ -31,5 +31,7 @@ include ../../Makefile.plugin
 
 LDLIBS_i386 = -L$(ROOT)/usr/lib/fm -lipmi -lumem -lfmd_agent
 LDFLAGS_i386 = -R/usr/lib/fm
+LDLIBS_aarch64 = -L$(ROOT)/usr/lib/fm -lipmi -lumem
+LDFLAGS_aarch64 = -R/usr/lib/fm
 LDLIBS += $(LDLIBS_$(MACH))
 LDFLAGS += $(LDFLAGS_$(MACH))

@@ -67,7 +67,7 @@ LINTOUT=        lint.out
 
 # TCOV_FLAG=	-ql
 
-LDLIBS +=	-lumem -lsldap
+LDLIBS +=	-lumem -lsldap -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 # install macros and rule
 #

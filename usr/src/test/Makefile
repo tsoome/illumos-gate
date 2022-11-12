@@ -17,20 +17,24 @@
 # Copyright 2022 Oxide Computer Company
 #
 
+include $(SRC)/Makefile.master
+
 .PARALLEL: $(SUBDIRS)
 
-SUBDIRS = \
-	bhyve-tests \
-	crypto-tests \
-	elf-tests \
-	libc-tests \
-	libmlrpc-tests \
-	net-tests \
-	os-tests \
+SUBDIRS =		\
+	crypto-tests	\
+	elf-tests	\
+	libc-tests	\
+	libmlrpc-tests	\
+	net-tests	\
+	os-tests	\
 	smbclient-tests \
-	smbsrv-tests \
-	test-runner \
-	util-tests \
-	zfs-tests
+	smbsrv-tests	\
+	test-runner	\
+	util-tests	\
+	zfs-tests	\
+
+SUBDIRS_i386 = bhyve-tests
+SUBDIRS += $(SUBDIRS_$(MACH))
 
 include Makefile.com

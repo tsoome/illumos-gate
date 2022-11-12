@@ -33,9 +33,9 @@ set name=variant.arch value=$(ARCH)
 dir  path=etc group=sys
 dir  path=usr group=sys
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libsun_fc.so target=libsun_fc.so.1
-file path=usr/lib/$(ARCH64)/libsun_fc.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libsun_fc.so target=libsun_fc.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libsun_fc.so.1
 link path=usr/lib/libsun_fc.so target=libsun_fc.so.1
 file path=usr/lib/libsun_fc.so.1
 legacy pkg=SUNWfchba desc="SNIA HBA library for Sun Fibre Channel adapters" \

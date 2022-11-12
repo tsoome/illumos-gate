@@ -94,9 +94,9 @@
 #define	TEXT_DOMAIN	"SYS_TEST"
 #endif
 
-#if defined(__sparc)
+#if defined(_BIG_ENDIAN)
 #define	CUR_ELFDATA	ELFDATA2MSB
-#elif defined(__x86)
+#elif defined(_LITTLE_ENDIAN)
 #define	CUR_ELFDATA	ELFDATA2LSB
 #endif
 
@@ -474,7 +474,7 @@ halt_zones()
 {
 	pid_t pid;
 	zoneid_t *zones;
-	size_t nz = 0, old_nz;
+	uint32_t nz = 0, old_nz;
 	int i;
 	char zname[ZONENAME_MAX];
 
@@ -560,7 +560,7 @@ static void
 check_zones_haltedness()
 {
 	int t = 0, t_prog = 0;
-	size_t nz = 0, last_nz;
+	uint32_t nz = 0, last_nz;
 
 	do {
 		last_nz = nz;

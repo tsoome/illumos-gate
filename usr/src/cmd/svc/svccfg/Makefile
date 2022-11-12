@@ -60,6 +60,8 @@ $(NATIVE_BUILD)NOT_NATIVE=$(POUND_SIGN)
 
 $(NATIVE_BUILD)PROG = $(MYPROG:%=%-native)
 $(NATIVE_BUILD)OBJS = $(MYOBJS:%.o=%-native.o)
+# XXXARM: native, no sysroot
+$(NATIVE_BUILD)SYSROOT=
 
 # svccfg has a name clash with main() and libl.so.1.  However, svccfg must
 # still export a number of "yy*" (libl) interfaces.  Reduce all other symbols
@@ -72,7 +74,6 @@ CPPFLAGS +=	$(MYCPPFLAGS)
 LDFLAGS +=	$(MAPOPTS)
 
 CERRWARN +=	-_gcc=-Wno-unused-label
-CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 CERRWARN +=	-_gcc=-Wno-switch
 CERRWARN +=	$(CNOWARN_UNINIT)
 CERRWARN +=	-_gcc=-Wno-unused-variable
@@ -90,8 +91,13 @@ CLOBBERFILES += svccfg_lex.c svccfg_grammar.c svccfg_grammar.h \
 SVCCFG_EXTRA_LIBS = -lxml2 -lscf -ll -luutil -lumem -lmd5 -lnvpair
 $(NOT_NATIVE)SVCCFG_EXTRA_LIBS += -ltecla
 #
-# If no adjunct, then we'll already find /usr/lib via LDLIBS below.
+# If no adjunct, then we'll already find /usr/lib via LDLIBS below.  But if
+# doing a native build, we want and expect to maybe find the native libraries.
 #
+# XXXARM: another case of the native builds being a mess
+#
+$(NATIVE_BUILD)NATIVE_LIBS += libxml2.so libl.so libumem.so \
+    libmd5.so libnvpair.so libc.so
 $(NO_ADJUNCT_PROTO)NATIVE_LIBS += libxml2.so libl.so libumem.so \
     libmd5.so libnvpair.so libc.so
 
@@ -116,8 +122,6 @@ $(NATIVE_BUILD)LDLIBS = \
 	-L$(LIBSCF)/native -R $(LIBSCF)/native \
 	-L$(ADJUNCT_PROTO)/usr/lib -R$(ADJUNCT_PROTO)/usr/lib \
 	$(SVCCFG_EXTRA_LIBS)
-
-svccfg_lex.o svccfg_grammar.o := CCVERBOSE =
 
 svccfg_help.po := XGETFLAGS =	-a
 

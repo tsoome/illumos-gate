@@ -21,6 +21,8 @@
 /*
  * Copyright (c) 1998, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2016 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef _SYS_DUMPHDR_H
@@ -209,6 +211,7 @@ extern uint_t dump_plat_mincpu_default;
 #define	DUMP_PLAT_SUN4V_MINCPU		0
 #define	DUMP_PLAT_X86_64_MINCPU		0
 #define	DUMP_PLAT_X86_32_MINCPU		0
+#define	DUMP_PLAT_AARCH64_MINCPU	0
 
 /*
  * Override the per-platform default by setting this variable with

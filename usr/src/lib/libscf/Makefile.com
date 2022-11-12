@@ -76,6 +76,7 @@ MY_NATIVE_CPPFLAGS =\
 MY_NATIVE_LDLIBS = -L$(LIBUUTIL)/native -R$(LIBUUTIL)/native -luutil -lc -lgen \
 		   -lnvpair
 MY_NATIVE_LDLIBS_i386 = -lsmbios
+MY_NATIVE_LDLIBS_aarch64 = -lsmbios
 MY_NATIVE_LDLIBS += $(MY_NATIVE_LDLIBS_$(MACH))
 
 .KEEP_STATE:

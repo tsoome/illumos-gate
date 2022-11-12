@@ -21,6 +21,8 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <fcntl.h>
@@ -312,7 +314,7 @@ partition_has_fdisk(disk_t *dp, int fd)
 {
 	char		bootsect[512 * 3]; /* 3 sectors to be safe */
 
-#ifdef sparc
+#ifdef _NO_FDISK_PRESENT
 	if (dp->drv_type == DM_DT_FIXED) {
 		/* on sparc, only removable media can have fdisk parts. */
 		return (0);
@@ -444,7 +446,7 @@ get_attrs(descriptor_t *dp, struct ipart *iparts, nvlist_t *attrs)
 	 * partition it is: logical, extended, or primary.
 	 * Collect the information for the partition.
 	 */
-#if defined(i386) || defined(__amd64)
+#if (defined(i386) || defined(__amd64)) && defined(_FIRMWARE_NEEDS_FDISK)
 	if (part_num > FD_NUMPART) {
 		if (nvlist_add_uint32(attrs, DM_PARTITION_TYPE,
 		    DM_LOGICAL) != 0)  {
@@ -464,7 +466,7 @@ get_attrs(descriptor_t *dp, struct ipart *iparts, nvlist_t *attrs)
 	}
 #endif
 
-#ifdef sparc
+#ifdef _NO_FDISK_PRESENT
 	if (nvlist_add_uint32(attrs, DM_PARTITION_TYPE,
 	    DM_PRIMARY) != 0) {
 		return (ENOMEM);
@@ -792,7 +794,7 @@ open_disk(disk_t *diskp, char *opath, int len)
 	 * Just open the first devpath.
 	 */
 	if (diskp->aliases != NULL && diskp->aliases->devpaths != NULL) {
-#ifdef sparc
+#ifdef _NO_FDISK_PRESENT
 	if (opath != NULL) {
 		(void) strlcpy(opath, diskp->aliases->devpaths->devpath, len);
 	}

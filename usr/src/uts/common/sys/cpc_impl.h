@@ -21,6 +21,9 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef	_SYS_CPC_IMPL_H
@@ -201,13 +204,27 @@ enum dcpc_mask_attr {
 	DCPC_EMASK = 0x2	/* The platform supports an "emask" attribute */
 };
 
-#ifdef __sparc
+#if defined(__sparc)
 extern uint64_t ultra_gettick(void);
 #define	KCPC_GET_TICK ultra_gettick
+#elif defined(__aarch64__)
+/*
+ * XXXARM: this is _wrong_ - the OS should only read the CNTVCT, phys is
+ * (mostly) for type 2 hypervisors.
+ *
+ * In a processor that doesn't support the virtualization extensions, CNTVCT is
+ * identical to CNTPCT.
+ *
+ * Why not CNTPCT?
+ * ... Is always accessible from PL1 modes. However, if hypervisor extensions
+ * are supported accesses to CNTPCT will generate a hyp-trap from PL1 unless
+ * CNTHCTL.PL1PCTEN is set to 1.
+ */
+#define	KCPC_GET_TICK read_cntpct
 #else
 extern hrtime_t tsc_read(void);
 #define	KCPC_GET_TICK tsc_read
-#endif /* __sparc */
+#endif
 
 #define	PCBE_NAMELEN 30 /* Enough room for "pcbe." plus full PCBE name spec */
 

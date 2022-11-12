@@ -79,11 +79,23 @@ export CODEMGR_WS="`git rev-parse --show-toplevel`"
 #
 # To disable shadow compilation, unset SHADOW_* or set them to the empty string.
 #
-export GNUC_ROOT=/usr/gcc/7
-export PRIMARY_CC=gcc7,$GNUC_ROOT/bin/gcc,gnu
-export PRIMARY_CCC=gcc7,$GNUC_ROOT/bin/g++,gnu
-export SHADOW_CCS=gcc10,/usr/gcc/10/bin/gcc,gnu
-export SHADOW_CCCS=gcc10,/usr/gcc/10/bin/g++,gnu
+export sparc_GNUC_ROOT=/usr/gcc/7
+export sparc_PRIMARY_CC=gcc7,$sparc_GNUC_ROOT/bin/gcc,gnu
+export sparc_PRIMARY_CCC=gcc7,$sparc_GNUC_ROOT/bin/g++,gnu
+export sparc_SHADOW_CCS=gcc10,/usr/gcc/10/bin/gcc,gnu
+export sparc_SHADOW_CCCS=gcc10,/usr/gcc/10/bin/g++,gnu
+
+export i386_GNUC_ROOT=/usr/gcc/7
+export i386_PRIMARY_CC=gcc7,$i386_GNUC_ROOT/bin/gcc,gnu
+export i386_PRIMARY_CCC=gcc7,$i386_GNUC_ROOT/bin/g++,gnu
+export i386_SHADOW_CCS=gcc10,/usr/gcc/10/bin/gcc,gnu
+export i386_SHADOW_CCCS=gcc10,/usr/gcc/10/bin/g++,gnu
+
+export aarch64_GNUC_ROOT=/usr/gcc/7
+export aarch64_PRIMARY_CC=gcc7,$aarch64_GNUC_ROOT/bin/gcc,gnu
+export aarch64_PRIMARY_CCC=gcc7,$aarch64_GNUC_ROOT/bin/g++,gnu
+export aarch64_SHADOW_CCS=gcc10,/usr/gcc/10/bin/gcc,gnu
+export aarch64_SHADOW_CCCS=gcc10,/usr/gcc/10/bin/g++,gnu
 
 # comment to disable smatch
 export ENABLE_SMATCH=1
@@ -204,10 +216,11 @@ export MAILTO="${MAILTO:-$STAFFER}"
 # specified, the build is simply run in a new task in the current project.
 export BUILD_PROJECT=''
 
-# You should not need to change the next three lines
+# You should not need to change the next four lines
 export ATLOG="$CODEMGR_WS/log"
 export LOGFILE="$ATLOG/nightly.log"
 export MACH="$(uname -p)"
+export NATIVE_MACH="${MACH}"
 
 #
 #  The following macro points to the closed binaries.  Once illumos has
@@ -288,6 +301,8 @@ export SPRO_VROOT="$SPRO_ROOT"
 #CHECK_PATHS='y'
 
 if [[ "$ENABLE_SMATCH" == "1" ]]; then
-	SMATCHBIN=$CODEMGR_WS/usr/src/tools/proto/root_$MACH-nd/opt/onbld/bin/$MACH/smatch
-	export SHADOW_CCS="$SHADOW_CCS smatch,$SMATCHBIN,smatch"
+	SMATCHBIN=$CODEMGR_WS/usr/src/tools/proto/root_$MACH-nd/opt/onbld/bin/$NATIVE_MACH/smatch
+	export sparc_SHADOW_CCS="$sparc_SHADOW_CCS smatch,$SMATCHBIN,smatch"
+	export i386_SHADOW_CCS="$i386_SHADOW_CCS smatch,$SMATCHBIN,smatch"
+	export aarch64_SHADOW_CCS="$aarch64_SHADOW_CCS smatch,$SMATCHBIN,smatch"
 fi

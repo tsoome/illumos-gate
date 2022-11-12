@@ -747,6 +747,15 @@ noscfout:
 	}
 
 	/*
+	 * XXXARM: For the present time, force verbose boot for a better idea
+	 * what's going on.
+	 *
+	 * Obviously this needs to come out when boot arguments work correctly.
+	 */
+	st->st_boot_flags = STARTD_BOOT_VERBOSE;
+	st->st_log_level_min = LOG_INFO;
+
+	/*
 	 * Options passed in as boot arguments override repository defaults.
 	 */
 	env_opts = getenv("SMF_OPTIONS");
@@ -907,7 +916,7 @@ startup(void)
 	 */
 	utmpx_init();
 
-	(void) startd_thread_create(fork_configd_thread, (void *)configd_ctid);
+	(void) startd_thread_create(fork_configd_thread, (void *)(uintptr_t)configd_ctid);
 
 	/*
 	 * Await, if necessary, configd's initial arrival.

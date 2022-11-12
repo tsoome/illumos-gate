@@ -114,7 +114,7 @@ uberdata_addr(struct ps_prochandle *Pr, char dmodel)
 
 	if (Plookup_by_name(Pr, "libc.so", "_tdb_bootstrap", &sym) < 0)
 		return ((uintptr_t)NULL);
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (dmodel != PR_MODEL_NATIVE) {
 		caddr32_t uaddr;
 		caddr32_t addr;
@@ -233,7 +233,7 @@ look(char *arg)
 		aharrlen = 0;
 		intfnaddr = 0;
 	} else {
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		if (psinfo.pr_dmodel != PR_MODEL_NATIVE) {
 			caddr32_t addr;
 			aharraddr = uberaddr +
@@ -409,7 +409,7 @@ deinterpose(int sig, void *aharr, psinfo_t *psinfo, struct sigaction *sp)
 {
 	if (sp->sa_handler == SIG_DFL || sp->sa_handler == SIG_IGN)
 		return ((uintptr_t)sp->sa_handler);
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (psinfo->pr_dmodel != PR_MODEL_NATIVE) {
 		struct sigaction32 *sa32 = (struct sigaction32 *)
 		    ((uintptr_t)aharr + sig * sizeof (siguaction32_t) +

@@ -27,6 +27,10 @@ include ../Makefile.ast
 CC= $(NATIVECC)
 LD= $(NATIVELD)
 CFLAGS= $(NATIVE_CFLAGS)
+NATIVE_LIBS=libc.so
+
+# XXXARM: Native build
+SYSROOT=
 
 all install install_h: $(TOOLS)
 _msg _feature:

@@ -75,7 +75,7 @@ major_t	nulldriver_major;
 static void impl_create_root_class(void);
 static void create_devinfo_tree(void);
 
-#if defined(__x86)
+#if defined(__x86) || defined(__aarch64__)
 char *bootpath_prop = NULL;
 char *fstype_prop = NULL;
 #endif
@@ -197,7 +197,7 @@ impl_create_root_class(void)
 	 */
 	(void) BOP_GETPROP(bootops, "impl-arch-name", platform);
 
-#if defined(__x86)
+#if defined(__x86) || defined(__aarch64__)
 	/*
 	 * Retrieve and honor the bootpath and optional fstype properties
 	 */
@@ -373,7 +373,7 @@ create_devinfo_tree(void)
 	pnode_t nodeid;
 
 	i_ddi_node_cache_init();
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	nodeid = prom_nextnode(0);
 #else /* x86 */
 	nodeid = DEVI_SID_NODEID;

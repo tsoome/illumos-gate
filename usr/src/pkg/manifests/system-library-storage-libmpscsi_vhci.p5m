@@ -37,9 +37,10 @@ set name=info.classification value=org.opensolaris.category.2008:System/Hardware
 set name=variant.arch value=$(ARCH)
 dir  path=etc group=sys
 dir  path=lib
-dir  path=lib/$(ARCH64)
-link path=lib/$(ARCH64)/libmpscsi_vhci.so target=libmpscsi_vhci.so.1
-file path=lib/$(ARCH64)/libmpscsi_vhci.so.1
+$(not_aarch64)dir path=lib/$(ARCH64)
+$(not_aarch64)link path=lib/$(ARCH64)/libmpscsi_vhci.so \
+    target=libmpscsi_vhci.so.1
+$(not_aarch64)file path=lib/$(ARCH64)/libmpscsi_vhci.so.1
 link path=lib/libmpscsi_vhci.so target=libmpscsi_vhci.so.1
 file path=lib/libmpscsi_vhci.so.1
 legacy pkg=SUNWmpsvplr \

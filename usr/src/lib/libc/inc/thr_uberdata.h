@@ -25,7 +25,9 @@
 
 /*
  * Copyright 2016 Joyent, Inc.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 Nexenta Systems, Inc.
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef _THR_UBERDATA_H
@@ -122,7 +124,7 @@
 #define	WAITERMASK64	0x00000000000000ffULL
 #define	SPINNERMASK64	0x0000000000ff0000ULL
 
-#elif defined(__x86)
+#elif defined(__x86) || defined(__aarch64__)
 
 /* lock.lock64.pad[x]	   7 6 5 4 */
 #define	LOCKMASK	0xff000000
@@ -140,7 +142,7 @@
 #define	SPINNERMASK64	0x0000ff0000000000ULL
 
 #else
-#error "neither __sparc nor __x86 is defined"
+#error "none of __sparc, __x86 or __aarch64__ are defined"
 #endif
 
 /*
@@ -250,6 +252,17 @@ typedef struct {
 	greg32_t	fpu_en;
 } fpuenv32_t;
 #endif	/* _SYSCALL32 */
+
+#elif defined(__aarch64__)
+
+typedef struct {	/* structure returned by fnstenv */
+	uint32_t	fctrl;		/* control word */
+	uint32_t	fstat;		/* control word */
+} fpuenv_t;
+
+#ifdef _SYSCALL32
+typedef fpuenv_t fpuenv32_t;
+#endif
 
 #endif	/* __x86 */
 
@@ -556,6 +569,9 @@ typedef struct ulwp {
 	uint8_t		ul_dinstr[40];	/* scratch space for dtrace */
 #elif defined(__amd64)
 	uint8_t		ul_dinstr[56];	/* scratch space for dtrace */
+#elif defined(__aarch64__)
+	uint32_t	ul_dinstr;	/* scratch space for dtrace */
+	uint32_t	ul_dftret;	/* dtrace: return probe fasttrap */
 #endif
 	struct uberdata *ul_uberdata;	/* uber (super-global) data */
 	tls_t		ul_tls;		/* dynamic thread-local storage base */

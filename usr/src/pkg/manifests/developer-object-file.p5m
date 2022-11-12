@@ -33,15 +33,16 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/bin
-dir  path=usr/bin/$(ARCH64)
-file path=usr/bin/$(ARCH64)/ar mode=0555
-link path=usr/bin/$(ARCH64)/dump target=../../bin/dump
-link path=usr/bin/$(ARCH64)/elfdump target=../../bin/elfdump
-file path=usr/bin/$(ARCH64)/elfedit mode=0555
-file path=usr/bin/$(ARCH64)/mcs mode=0555
-file path=usr/bin/$(ARCH64)/nm mode=0555
-link path=usr/bin/$(ARCH64)/size target=../../bin/size
-hardlink path=usr/bin/$(ARCH64)/strip target=../../bin/$(ARCH64)/mcs
+$(not_aarch64)dir path=usr/bin/$(ARCH64)
+$(not_aarch64)file path=usr/bin/$(ARCH64)/ar mode=0555
+$(not_aarch64)link path=usr/bin/$(ARCH64)/dump target=../../bin/dump
+$(not_aarch64)link path=usr/bin/$(ARCH64)/elfdump target=../../bin/elfdump
+$(not_aarch64)file path=usr/bin/$(ARCH64)/elfedit mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/mcs mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/nm mode=0555
+$(not_aarch64)link path=usr/bin/$(ARCH64)/size target=../../bin/size
+$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/strip \
+    target=../../bin/$(ARCH64)/mcs
 file path=usr/bin/ar mode=0555
 file path=usr/bin/demangle mode=0555
 file path=usr/bin/dis mode=0555
@@ -51,29 +52,36 @@ file path=usr/bin/elfedit mode=0555
 file path=usr/bin/error mode=0555
 file path=usr/bin/gprof mode=0555
 file path=usr/bin/lari mode=0555
-file path=usr/bin/lex mode=0555
+$(not_aarch64)file path=usr/bin/lex mode=0555
 file path=usr/bin/lorder mode=0555
 file path=usr/bin/mcs mode=0555
 file path=usr/bin/nm mode=0555
-file path=usr/bin/prof mode=0555
+$(not_aarch64)file path=usr/bin/prof mode=0555
 file path=usr/bin/ranlib mode=0555
 file path=usr/bin/rpcgen mode=0555
 file path=usr/bin/size mode=0555
 hardlink path=usr/bin/strip target=../bin/mcs
 file path=usr/bin/symorder mode=0555
-file path=usr/bin/tsort mode=0555
+$(not_aarch64)file path=usr/bin/tsort mode=0555
 file path=usr/bin/unifdef mode=0555
-file path=usr/bin/yacc mode=0555
+$(not_aarch64)file path=usr/bin/yacc mode=0555
 dir  path=usr/ccs
 dir  path=usr/ccs/bin
-dir  path=usr/ccs/bin/$(ARCH64)
-link path=usr/ccs/bin/$(ARCH64)/ar target=../../../bin/$(ARCH64)/ar
-link path=usr/ccs/bin/$(ARCH64)/dump target=../../../bin/$(ARCH64)/dump
-link path=usr/ccs/bin/$(ARCH64)/elfdump target=../../../bin/$(ARCH64)/elfdump
-link path=usr/ccs/bin/$(ARCH64)/mcs target=../../../bin/$(ARCH64)/mcs
-link path=usr/ccs/bin/$(ARCH64)/nm target=../../../bin/$(ARCH64)/nm
-link path=usr/ccs/bin/$(ARCH64)/size target=../../../bin/$(ARCH64)/size
-link path=usr/ccs/bin/$(ARCH64)/strip target=../../../bin/$(ARCH64)/strip
+$(not_aarch64)dir path=usr/ccs/bin/$(ARCH64)
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/ar \
+    target=../../../bin/$(ARCH64)/ar
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/dump \
+    target=../../../bin/$(ARCH64)/dump
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/elfdump \
+    target=../../../bin/$(ARCH64)/elfdump
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/mcs \
+    target=../../../bin/$(ARCH64)/mcs
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/nm \
+    target=../../../bin/$(ARCH64)/nm
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/size \
+    target=../../../bin/$(ARCH64)/size
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/strip \
+    target=../../../bin/$(ARCH64)/strip
 link path=usr/ccs/bin/ar target=../../bin/ar
 link path=usr/ccs/bin/dis target=../../bin/dis
 link path=usr/ccs/bin/dump target=../../bin/dump
@@ -81,34 +89,35 @@ link path=usr/ccs/bin/elfdump target=../../bin/elfdump
 link path=usr/ccs/bin/error target=../../bin/error
 link path=usr/ccs/bin/gprof target=../../bin/gprof
 link path=usr/ccs/bin/lari target=../../bin/lari
-link path=usr/ccs/bin/lex target=../../bin/lex
+$(not_aarch64)link path=usr/ccs/bin/lex target=../../bin/lex
 link path=usr/ccs/bin/lorder target=../../bin/lorder
 link path=usr/ccs/bin/mcs target=../../bin/mcs
 link path=usr/ccs/bin/nm target=../../bin/nm
-link path=usr/ccs/bin/prof target=../../bin/prof
+$(not_aarch64)link path=usr/ccs/bin/prof target=../../bin/prof
 link path=usr/ccs/bin/ranlib target=../../bin/ranlib
 link path=usr/ccs/bin/size target=../../bin/size
 link path=usr/ccs/bin/strip target=../../bin/strip
 link path=usr/ccs/bin/symorder target=../../bin/symorder
-link path=usr/ccs/bin/tsort target=../../bin/tsort
+$(not_aarch64)link path=usr/ccs/bin/tsort target=../../bin/tsort
 link path=usr/ccs/bin/unifdef target=../../bin/unifdef
-link path=usr/ccs/bin/yacc target=../../bin/yacc
-link path=usr/ccs/bin/yaccpar target=../../share/lib/ccs/yaccpar
+$(not_aarch64)link path=usr/ccs/bin/yacc target=../../bin/yacc
+$(not_aarch64)link path=usr/ccs/bin/yaccpar target=../../share/lib/ccs/yaccpar
 dir  path=usr/ccs/lib
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
 dir  path=usr/lib/elfedit
 dir  path=usr/lib/elfedit/$(ARCH64)
-file path=usr/lib/elfedit/$(ARCH64)/cap.so
-file path=usr/lib/elfedit/$(ARCH64)/dyn.so
-file path=usr/lib/elfedit/$(ARCH64)/ehdr.so
-file path=usr/lib/elfedit/$(ARCH64)/phdr.so
-file path=usr/lib/elfedit/$(ARCH64)/shdr.so
-file path=usr/lib/elfedit/$(ARCH64)/str.so
-file path=usr/lib/elfedit/$(ARCH64)/sym.so
-file path=usr/lib/elfedit/$(ARCH64)/syminfo.so
-link path=usr/lib/elfedit/32 target=.
-link path=usr/lib/elfedit/64 target=$(ARCH64)
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/cap.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/dyn.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/ehdr.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/phdr.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/shdr.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/str.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/sym.so
+$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/syminfo.so
+$(not_aarch64)link path=usr/lib/elfedit/32 target=.
+$(not_aarch64)link path=usr/lib/elfedit/64 target=$(ARCH64)
+$(aarch64_ONLY)link path=usr/lib/elfedit/64 target=.
 file path=usr/lib/elfedit/cap.so
 file path=usr/lib/elfedit/dyn.so
 file path=usr/lib/elfedit/ehdr.so
@@ -122,10 +131,10 @@ dir  path=usr/share/lib
 dir  path=usr/share/lib/ccs
 file path=usr/share/lib/ccs/gprof.callg.blurb mode=0444
 file path=usr/share/lib/ccs/gprof.flat.blurb mode=0444
-file path=usr/share/lib/ccs/nceucform
-file path=usr/share/lib/ccs/ncform
-file path=usr/share/lib/ccs/nrform
-file path=usr/share/lib/ccs/yaccpar
+$(not_aarch64)file path=usr/share/lib/ccs/nceucform
+$(not_aarch64)file path=usr/share/lib/ccs/ncform
+$(not_aarch64)file path=usr/share/lib/ccs/nrform
+$(not_aarch64)file path=usr/share/lib/ccs/yaccpar
 dir  path=usr/share/man/man1
 file path=usr/share/man/man1/ar.1
 file path=usr/share/man/man1/demangle.1
@@ -155,5 +164,5 @@ license cr_Sun license=cr_Sun
 license lic_CDDL license=lic_CDDL
 license usr/src/cmd/backup/dump/THIRDPARTYLICENSE \
     license=usr/src/cmd/backup/dump/THIRDPARTYLICENSE
-depend type=require fmri=developer/macro/cpp
-depend type=require fmri=runtime/perl$(PERL_PKGVERS)
+$(not_aarch64)depend type=require fmri=developer/macro/cpp
+$(not_aarch64)depend type=require fmri=runtime/perl$(PERL_PKGVERS)

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
@@ -50,9 +48,13 @@
 
 #define	MECH_LIB_PREFIX2	"amd64/"
 
-#else   /* __sparc */
+#elif !defined(_MULTI_DATAMODEL)
 
-you need to define where under /usr the LP64 libraries live for this platform
+#define MECH_LIB_PREFIX2	""
+
+#else
+
+#error you need to define where under /usr the LP64 libraries live for this platform
 
 #endif  /* __sparc */
 

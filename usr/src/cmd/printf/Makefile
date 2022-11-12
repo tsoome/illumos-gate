@@ -17,6 +17,9 @@ PROG= printf
 
 include ../Makefile.cmd
 
+# XXXARM: intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
+
 .KEEP_STATE:
 
 all: $(PROG) 

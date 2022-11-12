@@ -25,8 +25,6 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/sysmacros.h>
@@ -629,7 +627,7 @@ linkup(fsck_ino_t orphan, fsck_ino_t parentdir, caddr_t name)
 	 */
 noconnect:
 	if (lostdir) {
-		intree = tsearch((void *)orphan, &limbo_dirs,
+		intree = tsearch((void *)(intptr_t)orphan, &limbo_dirs,
 		    ino_t_cmp);
 		if (intree == NULL)
 			errexit("linkup: out of memory");
@@ -739,7 +737,7 @@ do_reconnect(fsck_ino_t orphan, fsck_ino_t parentdir, caddr_t name)
 	 */
 noconnect:
 	if (lostdir) {
-		intree = tsearch((void *)orphan, &limbo_dirs,
+		intree = tsearch((void *)(intptr_t)orphan, &limbo_dirs,
 		    ino_t_cmp);
 		if (intree == NULL)
 		errexit("linkup: out of memory");

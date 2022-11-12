@@ -43,7 +43,11 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	kdb_function_table	{
 				  ASSERT = {
 					  TYPE = OBJECT;
+$if _ELF32
 					  SIZE = addrsize[39];
+$else
+					  SIZE = addrsize[38];
+$endif
 					};
 				};
     local:

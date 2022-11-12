@@ -241,7 +241,7 @@ int32_t ud_verify_tag(ud_handle_t, struct tag *,
 	uint16_t, uint32_t, int32_t, int32_t);
 void	ud_make_tag(ud_handle_t, struct tag *, uint16_t, uint32_t, uint16_t);
 uint32_t ud_xlate_to_daddr(ud_handle_t, uint16_t, uint32_t);
-void	ud_convert2local(int8_t *, int8_t *, int32_t);
+void	ud_convert2local(char *, char *, int32_t);
 
 void	print_charspec(FILE *, char *, struct charspec *);
 void	print_dstring(FILE *, char *, uint16_t, char *, uint8_t);

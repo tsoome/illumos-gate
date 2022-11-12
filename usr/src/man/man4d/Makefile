@@ -24,7 +24,7 @@ include		$(SRC)/Makefile.master
 
 MANSECT=	4d
 
-_MANFILES=	aac.4d		\
+MANFILES=	aac.4d		\
 		afe.4d		\
 		audio.4d	\
 		audio1575.4d	\
@@ -57,7 +57,6 @@ _MANFILES=	aac.4d		\
 		fcoet.4d	\
 		fcp.4d		\
 		fctl.4d		\
-		fd.4d		\
 		fp.4d		\
 		full.4d		\
 		gld.4d		\
@@ -66,7 +65,6 @@ _MANFILES=	aac.4d		\
 		hid.4d		\
 		hme.4d		\
 		hubd.4d		\
-		hxge.4d		\
 		ib.4d		\
 		ibcm.4d		\
 		ibd.4d		\
@@ -93,14 +91,11 @@ _MANFILES=	aac.4d		\
 		msglog.4d	\
 		mt.4d		\
 		mxfe.4d		\
-		myri10ge.4d	\
 		null.4d		\
 		nulldriver.4d	\
 		nxge.4d		\
 		ohci.4d		\
 		openprom.4d	\
-		pcic.4d		\
-		pcmcia.4d	\
 		physmem.4d	\
 		pm.4d		\
 		poll.4d		\
@@ -159,14 +154,19 @@ sparc_MANFILES=	audiocs.4d	\
 		dr.4d		\
 		eri.4d		\
 		fas.4d		\
+		fd.4d		\
 		gpio_87317.4d	\
 		grbeep.4d	\
+		hxge.4d		\
 		mc-opl.4d	\
+		myri10ge.4d	\
 		n2rng.4d	\
 		ntwdt.4d	\
 		oplkmdrv.4d	\
 		oplmsu.4d	\
 		oplpanel.4d	\
+		pcic.4d		\
+		pcmcia.4d	\
 		pcicmu.4d	\
 		pcipsy.4d	\
 		pcisch.4d	\
@@ -205,6 +205,8 @@ i386_MANFILES=	ahci.4d		\
 		dnet.4d		\
 		ecpp.4d		\
 		elxl.4d		\
+		fd.4d		\
+		hxge.4d		\
 		i40e.4d		\
 		imc.4d		\
 		imcstub.4d	\
@@ -216,10 +218,13 @@ i386_MANFILES=	ahci.4d		\
 		iwn.4d		\
 		mega_sas.4d	\
 		mlxcx.4d	\
+		myri10ge.4d	\
 		npe.4d		\
 		ntxn.4d		\
 		nv_sata.4d	\
 		nvme.4d		\
+		pcic.4d		\
+		pcmcia.4d	\
 		pchtemp.4d	\
 		pcn.4d		\
 		qede.4d		\
@@ -249,7 +254,54 @@ i386_MANFILES=	ahci.4d		\
 		zen_udf.4d	\
 		zyd.4d
 
-_MANLINKS=	1394.4d		\
+aarch64_MANFILES=	ahci.4d		\
+			arn.4d		\
+			asy.4d		\
+			atge.4d		\
+			atu.4d		\
+			audio810.4d	\
+			audiocmi.4d	\
+			audiocmihd.4d	\
+			audioemu10k.4d	\
+			audiohd.4d 	\
+			audioixp.4d	\
+			audiosolo.4d	\
+			audiovia823x.4d	\
+			bfe.4d		\
+			cmdk.4d		\
+			elxl.4d		\
+			ena.4d		\
+			iprb.4d		\
+			ipw.4d		\
+			iwh.4d		\
+			iwi.4d		\
+			iwn.4d		\
+			mega_sas.4d	\
+			ntxn.4d		\
+			nvme.4d		\
+			pcn.4d		\
+			qede.4d		\
+			ral.4d		\
+			rtw.4d		\
+			rum.4d		\
+			rwd.4d		\
+			rwn.4d		\
+			sda.4d		\
+			sdhost.4d	\
+			sfxge.4d	\
+			si3124.4d	\
+			skd.4d		\
+			uath.4d		\
+			ural.4d		\
+			urtw.4d		\
+			vio9p.4d	\
+			vioblk.4d	\
+			vioif.4d	\
+			virtio.4d	\
+			wpi.4d		\
+			zyd.4d
+
+MANLINKS=	1394.4d		\
 		allkmem.4d	\
 		fdc.4d		\
 		firewire.4d	\
@@ -265,8 +317,8 @@ sparc_MANLINKS=	drmach.4d
 
 i386_MANLINKS=	amdzen_stub.4d
 
-MANFILES =	$(_MANFILES) $($(MACH)_MANFILES)
-MANLINKS =	$(_MANLINKS) $($(MACH)_MANLINKS)
+MANFILES +=	$($(MACH)_MANFILES)
+MANLINKS +=	$($(MACH)_MANLINKS)
 
 amdzen_stub.4d	:= LINKSRC = amdzen.4d
 

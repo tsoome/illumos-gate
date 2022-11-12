@@ -133,7 +133,7 @@ static const struct ieee80211_rateset zyd_rateset_11g = {
 uint32_t zyd_dbg_flags;
 
 void
-zyd_dbg(uint32_t dbg_mask, const int8_t *fmt, ...)
+zyd_dbg(uint32_t dbg_mask, const char *fmt, ...)
 {
 	va_list args;
 
@@ -146,7 +146,7 @@ zyd_dbg(uint32_t dbg_mask, const int8_t *fmt, ...)
 #endif
 
 void
-zyd_warn(const int8_t *fmt, ...)
+zyd_warn(const char *fmt, ...)
 {
 	va_list args;
 

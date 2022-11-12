@@ -29,6 +29,9 @@
 /*
  * Copyright (c) 2014 by Delphix. All rights reserved.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*
  * Utility routines for run-time linker.  some are duplicated here from libc
@@ -170,7 +173,7 @@ rd_event(Lm_list *lml, rd_event_e event, r_state_e state)
 	r_debug.rtd_rdebug.r_rdevent = RD_NONE;
 }
 
-#if	defined(__sparc) || defined(__x86)
+#if	defined(__sparc) || defined(__x86) || defined(__aarch64__)
 /*
  * Stack Cleanup.
  *
@@ -1828,7 +1831,7 @@ ld_generic_env(const char *s1, size_t len, const char *s2, Word *lmflags,
 			select |= SEL_ACT_SPEC_2;
 			variable = ENV_FLG_TRACE_OBJS;
 
-#if	defined(__sparc) || defined(__x86)
+#if	defined(__sparc) || defined(__x86) || defined(__aarch64__)
 			/*
 			 * The simplest way to "disable" this variable is to
 			 * truncate this string to "LD_'\0'". This string is

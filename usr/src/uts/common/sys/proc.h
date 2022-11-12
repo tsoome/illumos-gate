@@ -21,8 +21,10 @@
 
 /*
  * Copyright (c) 1988, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2021 Joyent, Inc.
  * Copyright 2021 Oxide Computer Company
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
@@ -625,6 +627,8 @@ extern void upcount_dec(uid_t, zoneid_t);
 extern int upcount_get(uid_t, zoneid_t);
 #if defined(__x86)
 extern selector_t setup_thrptr(proc_t *, uintptr_t);
+#endif
+#if defined(__x86) || defined(__aarch64__)
 extern void deferred_singlestep_trap(caddr_t);
 #endif
 

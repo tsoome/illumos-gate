@@ -270,6 +270,8 @@
 			 value 0x%llx does not fit"
 @ MSG_REL_NONALIGN	"relocation error: %s: file %s: symbol %s: \
 			 offset 0x%llx is non-aligned"
+@ MSG_REL_VALNONALIGN	"relocation error: %s: file %s: symbol %s: \
+			 value 0x%llx is non-aligned"
 @ MSG_REL_NULL		"relocation error: file %s: section [%u]%s: \
 			 skipping null relocation record"
 @ MSG_REL_NOTSUP	"relocation error: %s: file %s: section [%u]%s: \
@@ -752,6 +754,7 @@
 @ MSG_STR_UELF64	"_ELF64"
 @ MSG_STR_USPARC	"_sparc"
 @ MSG_STR_UX86		"_x86"
+@ MSG_STR_UARM		"_arm"
 @ MSG_STR_TRUE		"true"
 
 @ MSG_STR_CDIR_ADD	"$add"

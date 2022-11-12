@@ -783,7 +783,7 @@ main(int argc, char *argv[])
 			if (state_to_flags(cur_state) & LSEL_RUNLEVEL) {
 				char rl = state_to_name(cur_state);
 
-				if (rl != -1)
+				if (rl != (char)-1)
 					lscf_set_runlevel(rl);
 			}
 

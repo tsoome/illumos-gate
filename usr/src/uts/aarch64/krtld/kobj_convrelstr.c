@@ -1,0 +1,304 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
+#include	<sys/types.h>
+#include	"reloc.h"
+
+/*
+ * This is a 'stub' of the orignal version defined in liblddbg.so.  This stub
+ * returns the 'int string' of the relocation in question instead of converting
+ * the relocation to it's full syntax.
+ *
+ * NB: We don't use a table here, because the AArch64 relocation table is so sparse
+ */
+const char *
+conv_reloc_aarch64_type(Word type)
+{
+	static char 	strbuf[32];
+	int		ndx = 31;
+
+	switch (type) {
+	case R_AARCH64_NONE:
+		return ("R_AARCH64_NONE");
+	case R_AARCH64_ALSO_NONE:
+		return ("R_AARCH64_ALSO_NONE");
+	case R_AARCH64_ABS64:
+		return ("R_AARCH64_ABS64");
+	case R_AARCH64_ABS32:
+		return ("R_AARCH64_ABS32");
+	case R_AARCH64_ABS16:
+		return ("R_AARCH64_ABS16");
+	case R_AARCH64_PREL64:
+		return ("R_AARCH64_PREL64");
+	case R_AARCH64_PREL32:
+		return ("R_AARCH64_PREL32");
+	case R_AARCH64_PREL16:
+		return ("R_AARCH64_PREL16");
+	case R_AARCH64_PLT32:
+		return ("R_AARCH64_PLT32");
+	case R_AARCH64_MOVW_UABS_G0:
+		return ("R_AARCH64_MOVW_UABS_G0");
+	case R_AARCH64_MOVW_UABS_G0_NC:
+		return ("R_AARCH64_MOVW_UABS_G0_NC");
+	case R_AARCH64_MOVW_UABS_G1:
+		return ("R_AARCH64_MOVW_UABS_G1");
+	case R_AARCH64_MOVW_UABS_G1_NC:
+		return ("R_AARCH64_MOVW_UABS_G1_NC");
+	case R_AARCH64_MOVW_UABS_G2:
+		return ("R_AARCH64_MOVW_UABS_G2");
+	case R_AARCH64_MOVW_UABS_G2_NC:
+		return ("R_AARCH64_MOVW_UABS_G2_NC");
+	case R_AARCH64_MOVW_UABS_G3:
+		return ("R_AARCH64_MOVW_UABS_G3");
+	case R_AARCH64_MOVW_SABS_G0:
+		return ("R_AARCH64_MOVW_SABS_G0");
+	case R_AARCH64_MOVW_SABS_G1:
+		return ("R_AARCH64_MOVW_SABS_G1");
+	case R_AARCH64_MOVW_SABS_G2:
+		return ("R_AARCH64_MOVW_SABS_G2");
+	case R_AARCH64_LD_PREL_LO19:
+		return ("R_AARCH64_LD_PREL_LO19");
+	case R_AARCH64_ADR_PREL_LO21:
+		return ("R_AARCH64_ADR_PREL_LO21");
+	case R_AARCH64_ADR_PREL_PG_HI21:
+		return ("R_AARCH64_ADR_PREL_PG_HI21");
+	case R_AARCH64_ADR_PREL_PG_HI21_NC:
+		return ("R_AARCH64_ADR_PREL_PG_HI21_NC");
+	case R_AARCH64_ADD_ABS_LO12_NC:
+		return ("R_AARCH64_ADD_ABS_LO12_NC");
+	case R_AARCH64_LDST8_ABS_LO12_NC:
+		return ("R_AARCH64_LDST8_ABS_LO12_NC");
+	case R_AARCH64_LDST16_ABS_LO12_NC:
+		return ("R_AARCH64_LDST16_ABS_LO12_NC");
+	case R_AARCH64_LDST32_ABS_LO12_NC:
+		return ("R_AARCH64_LDST32_ABS_LO12_NC");
+	case R_AARCH64_LDST64_ABS_LO12_NC:
+		return ("R_AARCH64_LDST64_ABS_LO12_NC");
+	case R_AARCH64_LDST128_ABS_LO12_NC:
+		return ("R_AARCH64_LDST128_ABS_LO12_NC");
+	case R_AARCH64_TSTBR14:
+		return ("R_AARCH64_TSTBR14");
+	case R_AARCH64_CONDBR19:
+		return ("R_AARCH64_CONDBR19");
+	case R_AARCH64_JUMP26:
+		return ("R_AARCH64_JUMP26");
+	case R_AARCH64_CALL26:
+		return ("R_AARCH64_CALL26");
+	case R_AARCH64_MOVW_PREL_G0:
+		return ("R_AARCH64_MOVW_PREL_G0");
+	case R_AARCH64_MOVW_PREL_G0_NC:
+		return ("R_AARCH64_MOVW_PREL_G0_NC");
+	case R_AARCH64_MOVW_PREL_G1:
+		return ("R_AARCH64_MOVW_PREL_G1");
+	case R_AARCH64_MOVW_PREL_G1_NC:
+		return ("R_AARCH64_MOVW_PREL_G1_NC");
+	case R_AARCH64_MOVW_PREL_G2:
+		return ("R_AARCH64_MOVW_PREL_G2");
+	case R_AARCH64_MOVW_PREL_G2_NC:
+		return ("R_AARCH64_MOVW_PREL_G2_NC");
+	case R_AARCH64_MOVW_PREL_G3:
+		return ("R_AARCH64_MOVW_PREL_G3");
+	case R_AARCH64_MOVW_GOTOFF_G0:
+		return ("R_AARCH64_MOVW_GOTOFF_G0");
+	case R_AARCH64_MOVW_GOTOFF_G0_NC:
+		return ("R_AARCH64_MOVW_GOTOFF_G0_NC");
+	case R_AARCH64_MOVW_GOTOFF_G1:
+		return ("R_AARCH64_MOVW_GOTOFF_G1");
+	case R_AARCH64_MOVW_GOTOFF_G1_NC:
+		return ("R_AARCH64_MOVW_GOTOFF_G1_NC");
+	case R_AARCH64_MOVW_GOTOFF_G2:
+		return ("R_AARCH64_MOVW_GOTOFF_G2");
+	case R_AARCH64_MOVW_GOTOFF_G2_NC:
+		return ("R_AARCH64_MOVW_GOTOFF_G2_NC");
+	case R_AARCH64_MOVW_GOTOFF_G3:
+		return ("R_AARCH64_MOVW_GOTOFF_G3");
+	case R_AARCH64_GOTREL64:
+		return ("R_AARCH64_GOTREL64");
+	case R_AARCH64_GOTREL32:
+		return ("R_AARCH64_GOTREL32");
+	case R_AARCH64_GOT_LD_PREL19:
+		return ("R_AARCH64_GOT_LD_PREL19");
+	case R_AARCH64_LD64_GOTOFF_LO15:
+		return ("R_AARCH64_LD64_GOTOFF_LO15");
+	case R_AARCH64_ADR_GOT_PAGE:
+		return ("R_AARCH64_ADR_GOT_PAGE");
+	case R_AARCH64_LD64_GOT_LO12_NC:
+		return ("R_AARCH64_LD64_GOT_LO12_NC");
+	case R_AARCH64_LD64_GOTPAGE_LO15:
+		return ("R_AARCH64_LD64_GOTPAGE_LO15");
+	case R_AARCH64_TLSGD_ADR_PREL21:
+		return ("R_AARCH64_TLSGD_ADR_PREL21");
+	case R_AARCH64_TLSGD_ADR_PAGE21:
+		return ("R_AARCH64_TLSGD_ADR_PAGE21");
+	case R_AARCH64_TLSGD_ADD_LO12_NC:
+		return ("R_AARCH64_TLSGD_ADD_LO12_NC");
+	case R_AARCH64_TLSGD_MOVW_G1:
+		return ("R_AARCH64_TLSGD_MOVW_G1");
+	case R_AARCH64_TLSGD_MOVW_G0_NC:
+		return ("R_AARCH64_TLSGD_MOVW_G0_NC");
+	case R_AARCH64_TLSLD_ADR_PREL21:
+		return ("R_AARCH64_TLSLD_ADR_PREL21");
+	case R_AARCH64_TLSLD_ADR_PAGE21:
+		return ("R_AARCH64_TLSLD_ADR_PAGE21");
+	case R_AARCH64_TLSLD_ADD_LO12_NC:
+		return ("R_AARCH64_TLSLD_ADD_LO12_NC");
+	case R_AARCH64_TLSLD_MOVW_G1:
+		return ("R_AARCH64_TLSLD_MOVW_G1");
+	case R_AARCH64_TLSLD_MOVW_G0_NC:
+		return ("R_AARCH64_TLSLD_MOVW_G0_NC");
+	case R_AARCH64_TLSLD_LD_PREL19:
+		return ("R_AARCH64_TLSLD_LD_PREL19");
+	case R_AARCH64_TLSLD_MOVW_DTPREL_G2:
+		return ("R_AARCH64_TLSLD_MOVW_DTPREL_G2");
+	case R_AARCH64_TLSLD_MOVW_DTPREL_G1:
+		return ("R_AARCH64_TLSLD_MOVW_DTPREL_G1");
+	case R_AARCH64_TLSLD_MOVW_DTPREL_G1_NC:
+		return ("R_AARCH64_TLSLD_MOVW_DTPREL_G1_NC");
+	case R_AARCH64_TLSLD_MOVW_DTPREL_G0:
+		return ("R_AARCH64_TLSLD_MOVW_DTPREL_G0");
+	case R_AARCH64_TLSLD_MOVW_DTPREL_G0_NC:
+		return ("R_AARCH64_TLSLD_MOVW_DTPREL_G0_NC");
+	case R_AARCH64_TLSLD_ADD_DTPREL_HI12:
+		return ("R_AARCH64_TLSLD_ADD_DTPREL_HI12");
+	case R_AARCH64_TLSLD_ADD_DTPREL_LO12:
+		return ("R_AARCH64_TLSLD_ADD_DTPREL_LO12");
+	case R_AARCH64_TLSLD_ADD_DTPREL_LO12_NC:
+		return ("R_AARCH64_TLSLD_ADD_DTPREL_LO12_NC");
+	case R_AARCH64_TLSLD_LDST8_DTPREL_LO12:
+		return ("R_AARCH64_TLSLD_LDST8_DTPREL_LO12");
+	case R_AARCH64_TLSLD_LDST8_DTPREL_LO12_NC:
+		return ("R_AARCH64_TLSLD_LDST8_DTPREL_LO12_NC");
+	case R_AARCH64_TLSLD_LDST16_DTPREL_LO12:
+		return ("R_AARCH64_TLSLD_LDST16_DTPREL_LO12");
+	case R_AARCH64_TLSLD_LDST16_DTPREL_LO12_NC:
+		return ("R_AARCH64_TLSLD_LDST16_DTPREL_LO12_NC");
+	case R_AARCH64_TLSLD_LDST32_DTPREL_LO12:
+		return ("R_AARCH64_TLSLD_LDST32_DTPREL_LO12");
+	case R_AARCH64_TLSLD_LDST32_DTPREL_LO12_NC:
+		return ("R_AARCH64_TLSLD_LDST32_DTPREL_LO12_NC");
+	case R_AARCH64_TLSLD_LDST64_DTPREL_LO12:
+		return ("R_AARCH64_TLSLD_LDST64_DTPREL_LO12");
+	case R_AARCH64_TLSLD_LDST64_DTPREL_LO12_NC:
+		return ("R_AARCH64_TLSLD_LDST64_DTPREL_LO12_NC");
+	case R_AARCH64_TLSLD_LDST128_DTPREL_LO12:
+		return ("R_AARCH64_TLSLD_LDST128_DTPREL_LO12");
+	case R_AARCH64_TLSLD_LDST128_DTPREL_LO12_NC:
+		return ("R_AARCH64_TLSLD_LDST128_DTPREL_LO12_NC");
+	case R_AARCH64_TLSIE_MOVW_GOTTPREL_G1:
+		return ("R_AARCH64_TLSIE_MOVW_GOTTPREL_G1");
+	case R_AARCH64_TLSIE_MOVW_GOTTPREL_G0_NC:
+		return ("R_AARCH64_TLSIE_MOVW_GOTTPREL_G0_NC");
+	case R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21:
+		return ("R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21");
+	case R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC:
+		return ("R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC");
+	case R_AARCH64_TLSIE_LD_GOTTPREL_PREL19:
+		return ("R_AARCH64_TLSIE_LD_GOTTPREL_PREL19");
+	case R_AARCH64_TLSLE_MOVW_TPREL_G2:
+		return ("R_AARCH64_TLSLE_MOVW_TPREL_G2");
+	case R_AARCH64_TLSLE_MOVW_TPREL_G1:
+		return ("R_AARCH64_TLSLE_MOVW_TPREL_G1");
+	case R_AARCH64_TLSLE_MOVW_TPREL_G1_NC:
+		return ("R_AARCH64_TLSLE_MOVW_TPREL_G1_NC");
+	case R_AARCH64_TLSLE_MOVW_TPREL_G0:
+		return ("R_AARCH64_TLSLE_MOVW_TPREL_G0");
+	case R_AARCH64_TLSLE_MOVW_TPREL_G0_NC:
+		return ("R_AARCH64_TLSLE_MOVW_TPREL_G0_NC");
+	case R_AARCH64_TLSLE_ADD_TPREL_HI12:
+		return ("R_AARCH64_TLSLE_ADD_TPREL_HI12");
+	case R_AARCH64_TLSLE_ADD_TPREL_LO12:
+		return ("R_AARCH64_TLSLE_ADD_TPREL_LO12");
+	case R_AARCH64_TLSLE_ADD_TPREL_LO12_NC:
+		return ("R_AARCH64_TLSLE_ADD_TPREL_LO12_NC");
+	case R_AARCH64_TLSLE_LDST8_TPREL_LO12:
+		return ("R_AARCH64_TLSLE_LDST8_TPREL_LO12");
+	case R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC:
+		return ("R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC");
+	case R_AARCH64_TLSLE_LDST16_TPREL_LO12:
+		return ("R_AARCH64_TLSLE_LDST16_TPREL_LO12");
+	case R_AARCH64_TLSLE_LDST16_TPREL_LO12_NC:
+		return ("R_AARCH64_TLSLE_LDST16_TPREL_LO12_NC");
+	case R_AARCH64_TLSLE_LDST32_TPREL_LO12:
+		return ("R_AARCH64_TLSLE_LDST32_TPREL_LO12");
+	case R_AARCH64_TLSLE_LDST32_TPREL_LO12_NC:
+		return ("R_AARCH64_TLSLE_LDST32_TPREL_LO12_NC");
+	case R_AARCH64_TLSLE_LDST64_TPREL_LO12:
+		return ("R_AARCH64_TLSLE_LDST64_TPREL_LO12");
+	case R_AARCH64_TLSLE_LDST64_TPREL_LO12_NC:
+		return ("R_AARCH64_TLSLE_LDST64_TPREL_LO12_NC");
+	case R_AARCH64_TLSLE_LDST128_TPREL_LO12:
+		return ("R_AARCH64_TLSLE_LDST128_TPREL_LO12");
+	case R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC:
+		return ("R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC");
+	case R_AARCH64_TLSDESC_LD_PREL19:
+		return ("R_AARCH64_TLSDESC_LD_PREL19");
+	case R_AARCH64_TLSDESC_ADR_PREL21:
+		return ("R_AARCH64_TLSDESC_ADR_PREL21");
+	case R_AARCH64_TLSDESC_ADR_PAGE21:
+		return ("R_AARCH64_TLSDESC_ADR_PAGE21");
+	case R_AARCH64_TLSDESC_LD64_LO12:
+		return ("R_AARCH64_TLSDESC_LD64_LO12");
+	case R_AARCH64_TLSDESC_ADD_LO12:
+		return ("R_AARCH64_TLSDESC_ADD_LO12");
+	case R_AARCH64_TLSDESC_OFF_G1:
+		return ("R_AARCH64_TLSDESC_OFF_G1");
+	case R_AARCH64_TLSDESC_OFF_G0_NC:
+		return ("R_AARCH64_TLSDESC_OFF_G0_NC");
+	case R_AARCH64_TLSDESC_LDR:
+		return ("R_AARCH64_TLSDESC_LDR");
+	case R_AARCH64_TLSDESC_ADD:
+		return ("R_AARCH64_TLSDESC_ADD");
+	case R_AARCH64_TLSDESC_CALL:
+		return ("R_AARCH64_TLSDESC_CALL");
+	case R_AARCH64_COPY:
+		return ("R_AARCH64_COPY");
+	case R_AARCH64_GLOB_DAT:
+		return ("R_AARCH64_GLOB_DAT");
+	case R_AARCH64_JUMP_SLOT:
+		return ("R_AARCH64_JUMP_SLOT");
+	case R_AARCH64_RELATIVE:
+		return ("R_AARCH64_RELATIVE");
+	case R_AARCH64_TLS_DTPMOD:
+		return ("R_AARCH64_TLS_DTPMOD");
+	case R_AARCH64_TLS_DTPREL:
+		return ("R_AARCH64_TLS_DTPREL");
+	case R_AARCH64_TLS_TPREL:
+		return ("R_AARCH64_TLS_TPREL");
+	case R_AARCH64_TLSDESC:
+		return ("R_AARCH64_TLSDESC");
+	case R_AARCH64_IRELATIVE:
+		return ("R_AARCH64_IRELATIVE");
+	}
+
+	strbuf[ndx--] = '\0';
+	do {
+		strbuf[ndx--] = '0' + (type % 10);
+		type = type / 10;
+	} while ((ndx >= (int)0) && (type > (Word)0));
+
+	return (&strbuf[ndx + 1]);
+}

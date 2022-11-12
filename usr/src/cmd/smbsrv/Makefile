@@ -25,9 +25,17 @@
 # Copyright 2017 Nexenta Systems, Inc.  All rights reserved.
 #
 
-SUBDIRS = smbadm smbd smbstat dtrace fksmbd bind-helper \
-	nvlprint testoplock test-msgbuf
+include $(SRC)/Makefile.master
+
+SUBDIRS = smbadm smbd smbstat dtrace bind-helper \
+	nvlprint
+
+# XXXARM: No fksmb yet
+$(NOT_AARCH64_BLD)SUBDIRS += fksmbd testoplock test-msgbuf
+
 MSGSUBDIRS = smbadm smbstat
+
+
 
 include ../Makefile.cmd
 include ./Makefile.subdirs

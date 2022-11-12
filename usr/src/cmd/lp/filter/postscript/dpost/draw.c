@@ -37,8 +37,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *
  * Drawing routines used by dpost. Almost no real work is done here. Instead
@@ -129,6 +127,7 @@
 
 
 #include <stdio.h>
+#include <strings.h>
 #include <math.h>
 
 #include "gen.h"			/* general purpose definitions */
@@ -471,7 +470,7 @@ drawpath(char *buf, int copy)
  * was expected to be legitimate PostScript that manipulated the current path.
  * The old escape sequence will be supported for a while (for Ravi), and always
  * call this routine with copy set to TRUE.
- * 
+ *
  *
  */
 

@@ -48,6 +48,9 @@ $(INTEL_BLD)AST64BITCPPSYMBOL = __amd64
 # "/usr/bin/diff -D <64bit>" (and for some exceptions a manual path) to
 # generate an unified version of the include files (and add a boilerplate text
 # which explains the interface stability status).
+#
+# We only do this on multilib platforms however, due to the lack of 32bit
+# headers anywhere else.
 $(ROOTHDRDIR)/%: $(HDRDIR32)/% $(HDRDIR64)/%
 	@mkdir -p tmpastinclude ; \
 	typeset boilerplate="" ; \

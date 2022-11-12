@@ -494,7 +494,10 @@ int tune_t_flckrec = 512;	/* max # of active frlocks */
  */
 pgcnt_t pages_pp_maximum = 0;
 
-int boothowto;			/* boot flags passed to kernel */
+
+/* XXXARM: for bringup */
+#include <sys/reboot.h>
+int boothowto = RB_VERBOSE;			/* boot flags passed to kernel */
 struct var v;			/* System Configuration Information */
 
 /*
@@ -523,6 +526,10 @@ char hw_provider[] = "Oracle Corporation";
 
 char architecture[] = "amd64";
 char architecture_32[] = "i386";
+char hw_provider[SYS_NMLN] = "";
+
+#elif defined(__aarch64__)
+char architecture[] = "aarch64";
 char hw_provider[SYS_NMLN] = "";
 
 #else

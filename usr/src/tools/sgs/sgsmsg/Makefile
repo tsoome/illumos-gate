@@ -35,9 +35,8 @@
 #
 
 include		../Makefile.com
-include		../../Makefile.tools
 include		$(SRC)/cmd/Makefile.cmd
-
+include		../../Makefile.tools
 
 PROG=	sgsmsg
 

@@ -23,15 +23,16 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-#
 
 PROG= dtrace
 
 include ../Makefile.cmd
 
-SUBDIRS=	$(MACH) demo test
+SUBDIRS=	$(MACH) demo
 $(BUILD64)SUBDIRS += $(MACH64)
+
+# XXXARM: Tests cannot currently be cross-built
+$(NOT_AARCH64_BLD)SUBDIRS += test
 
 all	:=	TARGET = all
 install	:=	TARGET = install

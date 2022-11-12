@@ -23,6 +23,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*
  * Copyright (c) 2018, Joyent, Inc.
@@ -62,7 +65,10 @@
 #ifdef _LP64
 static int64_t kaioc(long, long, long, long, long, long);
 #endif
+
+#ifdef _SYSCALL32_IMPL
 static int kaio(ulong_t *, rval_t *);
+#endif
 
 
 #define	AIO_64	0
@@ -108,14 +114,14 @@ static int aio_cancel(int, void *, long	*, int);
 static int arw(int, int, char *, int, offset_t, aio_result_t *, int);
 static int aiorw(int, void *, int, int);
 
-static int alioLF(int, void *, int, void *);
 static int aio_req_setupLF(aio_req_t **, aio_t *, aiocb64_32_t *,
     aio_result_t *, vnode_t *, int);
-static int alio32(int, void *, int, void *);
 static int driver_aio_write(vnode_t *vp, struct aio_req *aio, cred_t *cred_p);
 static int driver_aio_read(vnode_t *vp, struct aio_req *aio, cred_t *cred_p);
 
 #ifdef  _SYSCALL32_IMPL
+static int alioLF(int, void *, int, void *);
+static int alio32(int, void *, int, void *);
 static void aiocb_LFton(aiocb64_32_t *, aiocb_t *);
 void	aiocb_32ton(aiocb32_t *, aiocb_t *);
 #endif /* _SYSCALL32_IMPL */
@@ -298,6 +304,7 @@ kaioc(
 }
 #endif
 
+#if defined(_SYSCALL32_IMPL)
 static int
 kaio(
 	ulong_t *uap,
@@ -392,6 +399,7 @@ kaio(
 	rvp->r_val1 = rval;
 	return (error);
 }
+#endif
 
 /*
  * wake up LWPs in this process that are sleeping in
@@ -2874,6 +2882,7 @@ driver_aio_read(vnode_t *vp, struct aio_req *aio, cred_t *cred_p)
 	return ((*cb->cb_aread)(dev, aio, cred_p));
 }
 
+#ifdef _SYSCALL32_IMPL
 /*
  * This routine is called when a largefile call is made by a 32bit
  * process on a ILP32 or LP64 kernel. All 64bit processes are large
@@ -3237,6 +3246,7 @@ done:
 	}
 	return (error);
 }
+#endif
 
 #ifdef  _SYSCALL32_IMPL
 static void
@@ -3350,6 +3360,7 @@ aio_req_setupLF(
 	return (0);
 }
 
+#ifdef _SYSCALL32_IMPL
 /*
  * This routine is called when a non largefile call is made by a 32bit
  * process on a ILP32 or LP64 kernel.
@@ -3742,6 +3753,7 @@ done:
 	}
 	return (error);
 }
+#endif
 
 
 #ifdef  _SYSCALL32_IMPL

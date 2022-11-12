@@ -43,8 +43,24 @@
  * does, but they induce unusual control flow which the compiler should treat
  * in the same manner (make all registers dead, etc.).
  */
+#if !defined(__aarch64__)
 extern	void	_ex_clnup_handler(void *, void (*)(void *)) __RETURNS_TWICE;
 extern	void	_ex_unwind_local(void) __RETURNS_TWICE;
+#else
+/* XXXARM: Stub these for right now, yow */
+void __RETURNS_TWICE
+_ex_clnup_handler(void *a, void (*b)(void *))
+{
+	ASSERT(0 && "_ex_clnup_handler not implemented");
+}
+
+void __RETURNS_TWICE
+_ex_unwind_local(void)
+{
+	ASSERT(0 && "_ex_unwind_local not implemented");
+}
+#endif	/* __aarch64__ */
+
 #pragma unknown_control_flow(_ex_clnup_handler)
 #pragma unknown_control_flow(_ex_unwind_local)
 

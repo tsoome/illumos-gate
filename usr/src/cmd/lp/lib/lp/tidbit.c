@@ -303,7 +303,7 @@ tidbit(term, cap, va_alist)
 		pt->boolean_offset = pt->tiebuf + 6 * 2 + pt->snames;
 
 		pt->number_offset = pt->boolean_offset + pt->nbools;
-		if ((unsigned int)pt->number_offset & 1)
+		if ((unsigned int)(uintptr_t)pt->number_offset & 1)
 			pt->number_offset++;
 
 		pt->string_offset = pt->number_offset + pt->nints * 2;

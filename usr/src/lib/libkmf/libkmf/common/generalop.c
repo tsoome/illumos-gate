@@ -167,8 +167,12 @@ static void DestroyPlugin(KMF_PLUGIN *);
 #define	ISA_PATH	"/"
 #elif defined(__i386)
 #define	ISA_PATH	"/"
+#elif defined(__aarch64__)
+#define	ISA_PATH	"/"
 #elif defined(__amd64)
 #define	ISA_PATH	"/amd64"
+#else
+#error Unknown ISA
 #endif
 
 #define	DEFAULT_KEYSTORE_NUM	3

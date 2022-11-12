@@ -3248,7 +3248,7 @@ libscf_unset_action(scf_handle_t *h, scf_propertygroup_t *pg,
 				assert(0);
 				abort();
 			}
-		} else if (scf_value_get_integer(val, &rep_ts) == -1) {
+		} else if (scf_value_get_integer(val, (int64_t *)&rep_ts) == -1) {
 			assert(scf_error() == SCF_ERROR_TYPE_MISMATCH);
 			rep_ts = 0;
 		}

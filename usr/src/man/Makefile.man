@@ -14,7 +14,7 @@
 # Copyright 2017 Nexenta Systems, Inc.
 #
 
-MANDOC=		$(ONBLD_TOOLS)/bin/${MACH}/mandoc
+MANDOC=		$(ONBLD_TOOLS)/bin/${NATIVE_MACH}/mandoc
 ROOTMAN=	$(ROOT)/usr/share/man
 ROOTHASMAN=	$(ROOT)/usr/has/man
 FILEMODE=	0444

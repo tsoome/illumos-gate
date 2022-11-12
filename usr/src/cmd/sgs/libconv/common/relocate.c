@@ -23,7 +23,6 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * String conversion routine for relocation types.
@@ -42,13 +41,17 @@ conv_reloc_type(Half mach, Word type, Conv_fmt_flags_t fmt_flags,
 	case EM_386:
 		return (conv_reloc_386_type(type, fmt_flags, inv_buf));
 
+	case EM_AARCH64:
+		return (conv_reloc_aarch64_type(type, fmt_flags, inv_buf));
+
+	case EM_AMD64:
+		return (conv_reloc_amd64_type(type, fmt_flags, inv_buf));
+
 	case EM_SPARC:
 	case EM_SPARC32PLUS:
 	case EM_SPARCV9:
 		return (conv_reloc_SPARC_type(type, fmt_flags, inv_buf));
 
-	case EM_AMD64:
-		return (conv_reloc_amd64_type(type, fmt_flags, inv_buf));
 	}
 
 	/* If didn't match a machine type, use integer value */

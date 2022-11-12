@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * libfstyp module for udfs
  */
@@ -182,7 +180,7 @@ get_attr(fstyp_udfs_t *h)
 	uint32_t len;
 	uint64_t off;
 	uint8_t *buf;
-	int8_t str[64];
+	char str[64];
 	int ret = 0;
 
 	v = (udfs->flags & VALID_MVDS) ? &udfs->mvds : &udfs->rvds;

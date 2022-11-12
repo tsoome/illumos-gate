@@ -19,11 +19,11 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
- */
-/*
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #ifndef _FENV_H
@@ -51,6 +51,17 @@ extern "C" {
 #define	FE_DOWNWARD	1
 #define	FE_UPWARD	2
 #define	FE_TOWARDZERO	3
+
+#elif defined(__aarch64__)
+
+#define	FE_TONEAREST	0
+#define	FE_UPWARD	1
+#define	FE_DOWNWARD	2
+#define	FE_TOWARDZERO	3
+
+#else
+
+#error Unknown platform
 
 #endif
 
@@ -89,6 +100,18 @@ extern int fesetprec(int);
 #define	FE_UNDERFLOW	0x10
 #define	FE_INEXACT	0x20
 #define	FE_ALL_EXCEPT	0x3d
+
+#elif defined(__aarch64__)
+#define	FE_INVALID	0x0001
+#define	FE_DIVBYZERO	0x0002
+#define	FE_OVERFLOW	0x0004
+#define	FE_UNDERFLOW	0x0008
+#define	FE_INEXACT	0x0010
+#define	FE_ALL_EXCEPT	(FE_DIVBYZERO | FE_INEXACT | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW)
+
+#else
+
+#error Unknown ISA
 
 #endif
 

@@ -1262,7 +1262,7 @@ scsi_wwnstr_to_wwn(const char *wwnstr, uint64_t *wwnp)
 	for (i = 0; i < 8; i++) {
 		ch = ctoi(*wwnstr++);
 		cl = ctoi(*wwnstr++);
-		if (cl == -1 || ch == -1) {
+		if (cl == (char)-1 || ch == (char)-1) {
 			return (DDI_FAILURE);
 		}
 		tmp = (ch << 4) + cl;

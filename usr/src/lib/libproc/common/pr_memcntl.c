@@ -22,9 +22,9 @@
 /*
  * Copyright (c) 1998-2001 by Sun Microsystems, Inc.
  * All rights reserved.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -76,7 +76,7 @@ pr_memcntl(struct ps_prochandle *Pr,
 		adp->arg_object = arg;
 		adp->arg_type = AT_BYREF;
 		adp->arg_inout = AI_INPUT;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		if (Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32)
 			adp->arg_size = sizeof (struct memcntl_mha32);
 		else

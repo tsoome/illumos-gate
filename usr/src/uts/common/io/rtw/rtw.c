@@ -236,7 +236,7 @@ _fini(void)
 }
 
 void
-rtw_dbg(uint32_t dbg_flags, const int8_t *fmt, ...)
+rtw_dbg(uint32_t dbg_flags, const char *fmt, ...)
 {
 	va_list args;
 

@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Library of support routines for UDFS data structures and conversions.
  */
@@ -530,7 +528,7 @@ setcharspec(struct charspec *cp, int32_t type, uint8_t *info)
 {
 	cp->cs_type = type;
 	bzero(cp->cs_info, sizeof (cp->cs_info));
-	(void) strncpy(cp->cs_info, (int8_t *)info, sizeof (cp->cs_info));
+	(void) strncpy(cp->cs_info, (char *)info, sizeof (cp->cs_info));
 }
 
 static unsigned short crctab[] = {

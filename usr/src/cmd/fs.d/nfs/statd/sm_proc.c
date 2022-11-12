@@ -455,8 +455,8 @@ insert_mon(mon *monp)
 	}
 
 	if (debug)
-		(void) printf("add_mon(%x) %s (id=%d)\n",
-		    (int)new, new->id.mon_id.mon_name, *((int *)new->id.priv));
+		(void) printf("add_mon(%p) %s (id=%d)\n",
+		    new, new->id.mon_id.mon_name, *((int *)new->id.priv));
 
 	/*
 	 * Record the name, and all addresses which have been registered
@@ -615,8 +615,8 @@ delete_onemon(char *mon_name, my_id *my_idp, mon_entry **monitor_q)
 			    my_idp->my_proc == nl_idp->my_proc) {
 				/* found */
 				if (debug)
-					(void) printf("delete_mon(%x): %s\n",
-					    (int)nl, mon_name ?
+					(void) printf("delete_mon(%p): %s\n",
+					    nl, mon_name ?
 					    mon_name : "<NULL>");
 				/*
 				 * Remove the monitor name from the
@@ -874,8 +874,8 @@ pr_mon(char *name)
 			}
 			(void) printf("*****monitor_q:\n ");
 			while (nl != NULL) {
-				(void) printf("%s:(%x), ",
-				    nl->id.mon_id.mon_name, (int)nl);
+				(void) printf("%s:(%p), ",
+				    nl->id.mon_id.mon_name, nl);
 				nl = nl->nxt;
 			}
 			mutex_unlock(&mon_table[hash].lock);
@@ -890,8 +890,8 @@ pr_mon(char *name)
 		} else {
 			(void) printf("*****monitor_q:\n ");
 			while (nl != NULL) {
-				(void) printf("%s:(%x), ",
-				    nl->id.mon_id.mon_name, (int)nl);
+				(void) printf("%s:(%p), ",
+				    nl->id.mon_id.mon_name, nl);
 				nl = nl->nxt;
 			}
 			(void) printf("\n");

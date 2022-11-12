@@ -727,7 +727,7 @@ st_setallstrings(Str_tbl *stp)
 
 	for (Str_master *str = stp->st_mstrlist; str != NULL;
 	    str = str->sm_next) {
-		int res = 0;
+		int res __unused = 0;
 
 		res = st_setstring(stp, str->sm_str, NULL);
 		assert(res == 0);

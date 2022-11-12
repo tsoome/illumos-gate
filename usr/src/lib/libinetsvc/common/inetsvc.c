@@ -1305,7 +1305,7 @@ get_rpc_prognum(const char *svc_name)
 {
 	struct rpcent	rpc;
 	char		buf[INETSVC_SVC_BUF_MAX];
-	int		pnum;
+	long		pnum;
 	char		*endptr;
 
 	if (getrpcbyname_r(svc_name, &rpc, buf, sizeof (buf)) != NULL)
@@ -1318,7 +1318,7 @@ get_rpc_prognum(const char *svc_name)
 		return (-1);
 	}
 
-	return (pnum);
+	return ((int)pnum);
 }
 
 /*

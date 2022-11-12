@@ -36,8 +36,10 @@ SUBDIRS = \
 	libsoftcrypto   \
 	libkcfd		\
 	pkcs11_kernel	\
-	pkcs11_softtoken \
-	pkcs11_tpm
+	pkcs11_softtoken
+
+# XXXARM: No TPM?
+$(NOT_AARCH64_BLD) SUBDIRS += pkcs11_tpm
 
 all	:=	TARGET= all
 clean	:=	TARGET= clean

@@ -26,14 +26,15 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/bin group=bin
-dir  path=usr/bin/$(ARCH32) group=bin
-file path=usr/bin/$(ARCH32)/ficl-sys group=sys mode=0555
+$(not_aarch64)dir path=usr/bin/$(ARCH32) group=bin
+$(not_aarch64)file path=usr/bin/$(ARCH32)/ficl-sys group=sys mode=0555
 dir  path=usr/bin/$(ARCH64) group=bin
 file path=usr/bin/$(ARCH64)/ficl-sys group=sys mode=0555
 hardlink path=usr/bin/ficl-sys target=../../usr/lib/isaexec
 dir  path=usr/lib group=bin
-dir  path=usr/lib/$(ARCH64) group=bin
-file path=usr/lib/$(ARCH64)/libficl-sys.so.4.1.0 group=sys mode=0755
+$(not_aarch64)dir path=usr/lib/$(ARCH64) group=bin
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libficl-sys.so.4.1.0 group=sys \
+    mode=0755
 file path=usr/lib/libficl-sys.so.4.1.0 group=sys mode=0755
 license lic_CDDL license=lic_CDDL
 license usr/src/common/ficl/LICENSE license=usr/src/common/ficl/LICENSE

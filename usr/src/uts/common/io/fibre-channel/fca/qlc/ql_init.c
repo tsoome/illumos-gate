@@ -1542,7 +1542,7 @@ ql_23_properties(ql_adapter_state_t *ha, nvram_t *nv)
 
 	/* Get adapter id string for Sun branded 23xx only */
 	if ((CFG_IST(ha, CFG_CTRL_2300)) && nv->adapInfo[0] != 0) {
-		(void) snprintf((int8_t *)ha->adapInfo, 16, "%s",
+		(void) snprintf((char *)ha->adapInfo, 16, "%s",
 		    nv->adapInfo);
 	}
 

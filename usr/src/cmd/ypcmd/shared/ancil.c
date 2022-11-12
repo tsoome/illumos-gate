@@ -32,19 +32,15 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <dirent.h>
+#include <string.h>
 #include "../ypsym.h"
 #include "../ypdefs.h"
 USE_YPDBPATH
 USE_DBM
 
 bool onmaplist();
-extern unsigned int strlen();
-extern int strcmp();
 extern int isvar_sysv();
-extern char *strncpy();
 extern bool ypcheck_domain_yptol();
 
 /*

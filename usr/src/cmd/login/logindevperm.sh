@@ -88,10 +88,10 @@ case "$MACH" in
 	cat <<-EOM
 	EOM
 	;;
-    "ppc" )
+    "aarch64" )
 	# 
-	# These are the ppc specific entries
-	# It depends on the build machine being a ppc
+	# These are the sparc specific entries
+	# It depends on the build machine being a sparc
 	#
 	cat <<-EOM
 	EOM

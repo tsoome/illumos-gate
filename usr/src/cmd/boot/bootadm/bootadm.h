@@ -224,6 +224,8 @@ extern void unlink_line(menu_t *mp, line_t *lp);
 extern void line_free(line_t *lp);
 extern char *s_strdup(char *);
 extern int is_sparc(void);
+extern int is_aarch64(void);
+extern int is_x86(void);
 extern int is_pcfs(char *);
 extern int is_zfs(char *);
 extern int bootadm_digest(const char *, char **);

@@ -51,6 +51,7 @@ BOOT_SUBDIRS=		\
 	ctf
 
 COMMON_SUBDIRS=		\
+	aw		\
 	codesign	\
 	cscope-fast	\
 	env		\
@@ -90,13 +91,14 @@ sparc_SUBDIRS=			\
 	tokenize
 
 i386_SUBDIRS=			\
-	aw			\
 	cpcgen			\
 	elfextract		\
 	mbh_patch		\
 	btxld
 
 $(INTEL_BLD)sgs: aw
+
+$(AARCH64_BLD)sgs: aw
 
 SUBDIRS=			\
 	$($(MACH)_SUBDIRS)	\
@@ -109,11 +111,11 @@ ROOTDIRS=					\
 	$(ROOTOPT)				\
 	$(ROOTONBLD)				\
 	$(ROOTONBLD)/bin			\
-	$(ROOTONBLD)/bin/$(MACH)		\
-	$(ROOTONBLD)/bin/$(MACH64)		\
+	$(ROOTONBLD)/bin/$(NATIVE_MACH)		\
+	$(ROOTONBLD)/bin/$(NATIVE_MACH64)	\
 	$(ROOTONBLD)/lib			\
-	$(ROOTONBLD)/lib/$(MACH)		\
-	$(ROOTONBLD)/lib/$(MACH)/64		\
+	$(ROOTONBLD)/lib/$(NATIVE_MACH)		\
+	$(ROOTONBLD)/lib/$(NATIVE_MACH)/64	\
 	$(ROOTONBLD)/lib/perl			\
 	$(ROOTONBLD)/env			\
 	$(ROOTONBLD)/etc			\

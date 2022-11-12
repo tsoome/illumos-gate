@@ -21,6 +21,7 @@ set name=pkg.summary \
 set name=pkg.description value="ksh93 - the AT&T Korn Shell"
 set name=info.classification value=org.opensolaris.category.2008:System/Shells
 set name=org.opensolaris.incorp-facet value=true
+set name=variant.arch value=$(ARCH)
 file path=etc/ksh.kshrc group=sys original_name=SUNWcs:etc/ksh.kshrc \
     preserve=renameold
 file path=etc/skel/.kshrc group=other original_name=SUNWcs:etc/skel/.kshrc \
@@ -30,10 +31,10 @@ link path=sbin/jsh target=../usr/bin/ksh93
 link path=sbin/sh target=../usr/bin/$(ARCH32)/ksh93
 dir  path=usr/bin
 dir  path=usr/bin/$(ARCH32)
-hardlink path=usr/bin/$(ARCH32)/ksh target=ksh93
-file path=usr/bin/$(ARCH32)/ksh93 mode=0555
-hardlink path=usr/bin/$(ARCH32)/rksh target=ksh93
-hardlink path=usr/bin/$(ARCH32)/rksh93 target=ksh93
+$(not_aarch64)hardlink path=usr/bin/$(ARCH32)/ksh target=ksh93
+$(not_aarch64)file path=usr/bin/$(ARCH32)/ksh93 mode=0555
+$(not_aarch64)hardlink path=usr/bin/$(ARCH32)/rksh target=ksh93
+$(not_aarch64)hardlink path=usr/bin/$(ARCH32)/rksh93 target=ksh93
 dir  path=usr/bin/$(ARCH64)
 hardlink path=usr/bin/$(ARCH64)/ksh target=ksh93
 file path=usr/bin/$(ARCH64)/ksh93 mode=0555
@@ -68,7 +69,8 @@ hardlink path=usr/bin/read target=alias
 hardlink path=usr/bin/rev target=alias
 hardlink path=usr/bin/rksh target=../lib/isaexec
 hardlink path=usr/bin/rksh93 target=../lib/isaexec
-link path=usr/bin/sh target=$(ARCH32)/ksh93
+$(not_aarch64)link path=usr/bin/sh target=$(ARCH32)/ksh93
+$(aarch64_ONLY)link path=usr/bin/sh target=$(ARCH64)/ksh93
 file path=usr/bin/shcomp mode=0555
 hardlink path=usr/bin/sum target=alias
 hardlink path=usr/bin/tee target=alias
@@ -81,12 +83,12 @@ hardlink path=usr/bin/uniq target=alias
 hardlink path=usr/bin/wait target=alias
 hardlink path=usr/bin/wc target=alias
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-file path=usr/lib/$(ARCH64)/libast.so.1
-file path=usr/lib/$(ARCH64)/libcmd.so.1
-file path=usr/lib/$(ARCH64)/libdll.so.1
-file path=usr/lib/$(ARCH64)/libshell.so.1
-file path=usr/lib/$(ARCH64)/libsum.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libast.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libcmd.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libdll.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libshell.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libsum.so.1
 file path=usr/lib/libast.so.1
 file path=usr/lib/libcmd.so.1
 file path=usr/lib/libdll.so.1

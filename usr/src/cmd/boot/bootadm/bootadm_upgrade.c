@@ -117,10 +117,10 @@ get_boot_cap(const char *osroot)
 	int		error;
 	const char	*fcn = "get_boot_cap()";
 
-	if (is_sparc()) {
+	if (is_sparc() || is_aarch64()) {
 		/* there is no non dboot sparc new-boot */
 		bam_direct = BAM_DIRECT_DBOOT;
-		BAM_DPRINTF(("%s: is sparc - always DBOOT\n", fcn));
+		BAM_DPRINTF(("%s: is sparc or aarch64 - always DBOOT\n", fcn));
 		return (BAM_SUCCESS);
 	}
 

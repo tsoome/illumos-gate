@@ -41,6 +41,7 @@ SHFILES= \
 	cstyle \
 	elfcmp \
 	flg.flp \
+	genassym \
 	genoffsets \
 	onu \
 	protocmp.terse \

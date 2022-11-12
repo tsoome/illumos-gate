@@ -24,7 +24,7 @@
 #
 # Copyright (c) 2018, Joyent, Inc.
 
-LDFLAGS	=	$(DYNFLAGS) $(LDLIBS)
+LDFLAGS	=	$(SYSROOT) $(DYNFLAGS) $(LDLIBS)
 
 # needs work
 SMATCH=off

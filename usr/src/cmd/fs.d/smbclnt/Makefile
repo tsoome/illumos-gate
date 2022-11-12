@@ -33,7 +33,10 @@ include $(SRC)/Makefile.master
 
 SUBDIRS_CATALOG=	smbutil mount umount share
 SUBDIRS=		$(SUBDIRS_CATALOG) chacl lsacl \
-			smbiod smbiod-svc svc fksmbcl
+			smbiod smbiod-svc svc
+
+# XXXARM: No fksmb
+$(NOT_AARCH64_BLD)SUBDIRS += fksmbcl
 
 # for messaging catalog files
 #

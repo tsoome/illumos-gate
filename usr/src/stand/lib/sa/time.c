@@ -26,8 +26,6 @@
  * Time routines, snagged from libc.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/bootvfs.h>

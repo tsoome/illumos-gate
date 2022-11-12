@@ -26,7 +26,7 @@ include		$(SRC)/Makefile.master
 
 MANSECT=	8
 
-_MANFILES=	6to4relay.8		\
+MANFILES=	6to4relay.8		\
 		Intro.8			\
 		Uutry.8			\
 		accept.8		\
@@ -550,6 +550,9 @@ i386_MANFILES=			\
 		pptadm.8	\
 		rdmsr.8
 
+aarch64_MANFILES=		\
+		nvmeadm.8
+
 sparc_MANFILES=	dcs.8		\
 		drd.8		\
 		efdaemon.8	\
@@ -635,7 +638,7 @@ MANLINKS=	acctcon1.8			\
 		ypxfr_2perday.8			\
 		ypxfrd.8
 
-MANFILES=	$(_MANFILES) $($(MACH)_MANFILES)
+MANFILES +=	$($(MACH)_MANFILES)
 
 intro.8			:= LINKSRC = Intro.8
 

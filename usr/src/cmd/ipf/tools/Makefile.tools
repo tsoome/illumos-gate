@@ -87,19 +87,22 @@ ROOTUSRSBINLINKS=	$(PROG:%=$(ROOTUSRSBIN)/%)
 
 all:
 
-$(ROOTIPF32):
+$(ROOTIPF):
 	$(INS.dir)
 
-$(ROOTIPF64):
+$(ROOTIPF32): $(ROOTIPF)
 	$(INS.dir)
 
-$(ROOTIPF)/%: %
+$(ROOTIPF64): $(ROOTIPF)
+	$(INS.dir)
+
+$(ROOTIPF)/%: % $(ROOTIPF)
 	$(INS.file)
 
-$(ROOTIPF32)/%: %
+$(ROOTIPF32)/%: % $(ROOTIPF32)
 	$(INS.file)
 
-$(ROOTIPF64)/%: %
+$(ROOTIPF64)/%: % $(ROOTIPF64)
 	$(INS.file)
 
 $(ROOTUSRSBINLINKS): FRC

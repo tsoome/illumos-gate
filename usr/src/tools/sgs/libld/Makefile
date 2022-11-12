@@ -47,8 +47,15 @@ CPPFLAGS = $(NATIVE_CPPFLAGS) -DUSE_LIBLD_MALLOC -I$(SRC)/lib/libc/inc \
 LDLIBS +=	-L../libconv -lconv -L$(ROOTONBLDLIBMACH64) -llddbg -lelf -lc
 NATIVE_LIBS +=	libc.so
 
-DYNFLAGS +=	$(VERSREF) '-R$$ORIGIN'
-CFLAGS = $(NATIVE_CFLAGS)
+DYNFLAGS +=	$(VERSREF) '-Wl,-R$$ORIGIN'
+
+# XXXARM: These have to be reset because of the Makefile ordering crud, ugh
+SYSROOT=
+CC=	$(NATIVECC)
+CC64=	$(NATIVECC)
+CFLAGS = $(NATIVE_CFLAGS) $(C_PICFLAGS)
+CFLAGS64 = $(NATIVE_CFLAGS) $(C_PICFLAGS)
+CERRWARN += -_gcc=-Wno-unused-but-set-variable
 
 all:		$(DYNLIB) $(LIBLINKS)
 

@@ -21,6 +21,8 @@
 /*
  * Copyright (c) 2009-2010, Intel Corporation.
  * All rights reserved.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -67,7 +69,7 @@
 /* Define normal state for CPU on different platforms. */
 #if defined(__x86)
 #define	CPU_IDLE_STATE_NORMAL		IDLE_STATE_C0
-#elif defined(__sparc)
+#elif defined(__sparc) || defined(__aarch64__)
 /*
  * At the time of this implementation IDLE_STATE_NORMAL is defined
  * in mach_startup.c, and not in a header file.  So if we find it is
@@ -736,7 +738,7 @@ cpu_idle_exit(int flag)
 {
 	int i;
 	cpu_idle_cb_item_t *cip;
-	cpu_idle_cb_state_t *sp;
+	cpu_idle_cb_state_t *sp __unused; /* XXXARM */
 	cpu_idle_callback_context_t ctx;
 #if defined(__x86)
 	ulong_t iflags;

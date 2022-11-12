@@ -33,14 +33,32 @@
 
 include $(SRC)/Makefile.master
 
-SUBDIR1=	exportfs nfsd rquotad \
-		statd nfsstat mountd dfshares \
-		nfsfind nfs4cbd share tests dtrace
+SUBDIR1=		\
+	dfshares	\
+	dtrace		\
+	exportfs	\
+	mountd		\
+	nfs4cbd		\
+	nfsd		\
+	nfsfind		\
+	nfsstat		\
+	rquotad		\
+	share		\
+	statd		\
+	tests
 
 # These do "make catalog"
-SUBDIR2=	clear_locks lockd umount showmount \
-		mount dfmounts nfslog nfsmapid \
-		nfsref rp_basic
+SUBDIR2=		\
+	clear_locks	\
+	dfmounts	\
+	lockd		\
+	mount		\
+	nfslog		\
+	nfsmapid	\
+	nfsref		\
+	rp_basic	\
+	showmount	\
+	umount
 
 SUBDIR3=	etc svc
 SUBDIRS=	$(SUBDIR1) $(SUBDIR2) $(SUBDIR3)

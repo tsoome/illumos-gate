@@ -23,11 +23,12 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * This file is based on /usr/src/lib/libc/port/gen/strtod.c and
@@ -67,7 +68,7 @@ wcstod(const wchar_t *cp, wchar_t **ptr)
 		return (0.0);	/* Shameful kluge for SVID's sake. */
 #if defined(__i386) || defined(__amd64)
 	mr.rd = __xgetRD();
-#elif defined(__sparc)
+#elif defined(__sparc) || defined(__aarch64__)
 	mr.rd = _QgetRD();
 #else
 #error Unknown architecture!
@@ -97,7 +98,7 @@ wcstof(const wchar_t *cp, wchar_t **ptr)
 		return (0.0f);
 #if defined(__i386) || defined(__amd64)
 	mr.rd = __xgetRD();
-#elif defined(__sparc)
+#elif defined(__sparc) || defined(__aarch64__)
 	mr.rd = _QgetRD();
 #else
 #error Unknown architecture!
@@ -131,7 +132,7 @@ wcstold(const wchar_t *cp, wchar_t **ptr)
 		__hex_to_extended(&dr, mr.rd, (extended *)&x, &fs);
 	else
 		decimal_to_extended((extended *)&x, &mr, &dr, &fs);
-#elif defined(__sparc)
+#elif defined(__sparc) || defined(__aarch64__)
 	mr.rd = _QgetRD();
 	if (form < 0)
 		__hex_to_quadruple(&dr, mr.rd, &x, &fs);

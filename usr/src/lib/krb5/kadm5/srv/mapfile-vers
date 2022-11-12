@@ -58,13 +58,21 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	hist_db		{
 			  ASSERT = {
 				  TYPE = OBJECT;
+$if _ELF32
 				  SIZE = 68;
+$else
+				  SIZE = 88;
+$endif
 				};
 			};
 	hist_key	{
 			  ASSERT = {
 				  TYPE = OBJECT;
+$if _ELF32
 				  SIZE = 28;
+$else
+				  SIZE = 48;
+$endif
 				};
 			};
 	hist_kvno	{
@@ -76,7 +84,7 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	hist_princ	{
 			  ASSERT = {
 				  TYPE = OBJECT;
-				  SIZE = 4;
+				  SIZE = addrsize;
 				};
 			};
 	init_dict;
@@ -165,13 +173,17 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	master_db	{
 			  ASSERT = {
 				  TYPE = OBJECT;
+$if _ELF32
 				  SIZE = 68;
+$else
+				  SIZE = 88;
+$endif
 				};
 			};
 	master_princ	{
 			  ASSERT = {
 				  TYPE = OBJECT;
-				  SIZE = 4;
+				  SIZE = addrsize;
 				};
 			};
 	osa_free_princ_ent;

@@ -40,7 +40,7 @@ Layout of /opt/onbld
 /opt/onbld/bin
 	basic bin directory - contains scripts.
 
-/opt/onbld/bin/${MACH}
+/opt/onbld/bin/${NATIVE_MACH}
 	architecture-specific bin directory for binaries.
 
 /opt/onbld/env

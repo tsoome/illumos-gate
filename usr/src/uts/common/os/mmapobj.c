@@ -22,6 +22,7 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  * Copyright 2014 Joyent, Inc.  All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2022 Garrett D'Amore <garrett@damore.org>
  */
 
@@ -201,6 +202,10 @@ struct mobj_stats {
 #define	OVERLAPS_STACK(addr, p)						\
 	((p->p_model == DATAMODEL_LP64) &&				\
 	(addr >= (p->p_usrstack - ((p->p_stk_ctl + PAGEOFFSET) & PAGEMASK))))
+#elif defined(__aarch64__)
+#define	OVERLAPS_STACK(addr, p)	0 /* XXXARM */
+#else
+#error Unknown ISA
 #endif
 
 /* lv_flags values - bitmap */

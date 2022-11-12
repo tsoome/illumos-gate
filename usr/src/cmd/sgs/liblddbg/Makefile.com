@@ -69,7 +69,7 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 CERRWARN +=	-_gcc=-Wno-parentheses
 
 CPPFLAGS +=	-I$(SRC)/lib/libc/inc
-DYNFLAGS +=	$(VERSREF) '-R$$ORIGIN'
+DYNFLAGS +=	$(VERSREF) -Wl,-R'$$ORIGIN'
 LDLIBS +=	$(CONVLIBDIR) -lconv -lc
 
 BLTDEFS =	msg.h
@@ -90,4 +90,3 @@ LIBSRCS =	$(COMOBJS:%.o=$(SRCDIR)/common/%.c) \
 
 CLEANFILES +=	$(BLTFILES)
 CLOBBERFILES +=	$(DYNLIB) $(LIBLINKS)
-

@@ -327,7 +327,7 @@ ppcontrol(void)
 		directive = INCLUDE;
 		goto linesync;
 	case T_ID:
-		switch (directive = (int)hashref(pp.dirtab, pp.token))
+		switch (directive = (int)(uintptr_t)hashref(pp.dirtab, pp.token))
 		{
 		case ELIF:
 		else_if:
@@ -367,7 +367,7 @@ ppcontrol(void)
 		case ELSE:
 			if ((pp.option & ALLPOSSIBLE) && !pp.in->prev->prev)
 				goto eatdirective;
-			if ((pp.option & ELSEIF) && (c = pplex()) == T_ID && ((n = (int)hashref(pp.dirtab, pp.token)) == IF || n == IFDEF || n == IFNDEF))
+			if ((pp.option & ELSEIF) && (c = pplex()) == T_ID && ((n = (int)(uintptr_t)hashref(pp.dirtab, pp.token)) == IF || n == IFDEF || n == IFNDEF))
 			{
 				error(1, "#%s %s is non-standard -- use #%s", dirname(directive), dirname(n), dirname(ELIF));
 				directive = n;
@@ -930,7 +930,7 @@ ppcontrol(void)
 							c = '>';
 							goto checkvalue;
 						}
-					if (var.type == TOK_BUILTIN) switch ((int)hashget(pp.strtab, pp.token))
+					if (var.type == TOK_BUILTIN) switch ((int)(uintptr_t)hashget(pp.strtab, pp.token))
 					{
 					case V_DEFAULT:
 					case V_EMPTY:
@@ -974,7 +974,7 @@ ppcontrol(void)
 							if (n3 & NEWLINE)
 							{
 								pp.state &= ~NOEXPAND;
-								switch ((int)hashref(pp.dirtab, pp.token))
+								switch ((int)(uintptr_t)hashref(pp.dirtab, pp.token))
 								{
 								case ENDMAC:
 									if (!i2--) goto gotdefinition;
@@ -1303,7 +1303,7 @@ ppcontrol(void)
 				error(2, "%s: invalid predicate name", pptokstr(pp.token, 0));
 				goto eatdirective;
 			}
-			switch ((int)hashref(pp.strtab, pp.token))
+			switch ((int)(uintptr_t)hashref(pp.strtab, pp.token))
 			{
 			case X_DEFINED:
 			case X_EXISTS:
@@ -1658,7 +1658,7 @@ ppcontrol(void)
 				n = 0;
 			i2 = *p4;
 			*p4 = 0;
-			if (((i1 = (int)hashref(pp.strtab, p3 + (i0 ? 0 : 2))) < 1 || i1 > X_last_option) && (i0 || (i1 = (int)hashref(pp.strtab, p3)) > X_last_option))
+			if (((i1 = (int)(uintptr_t)hashref(pp.strtab, p3 + (i0 ? 0 : 2))) < 1 || i1 > X_last_option) && (i0 || (i1 = (int)(uintptr_t)hashref(pp.strtab, p3)) > X_last_option))
 				i1 = 0;
 			if ((pp.state & (COMPATIBILITY|STRICT)) == STRICT && !(pp.mode & (HOSTED|RELAX)))
 			{
@@ -1864,7 +1864,7 @@ ppcontrol(void)
 	/*
 	 * #pragma pp:map [id ...] "/from/[,/to/]" [ "/old/new/[glnu]" ... ]
 	 */
-	
+
 	if (!i0)
 	{
 		error(2, "%s: option cannot be unset", p3);
@@ -1879,15 +1879,15 @@ ppcontrol(void)
 	while ((c = pplex()) == T_ID)
 	{
 		sfsprintf(pp.tmpbuf, MAXTOKEN, "__%s__", s = pp.token);
-		if (c = (int)hashget(pp.dirtab, s))
+		if (c = (int)(uintptr_t)hashget(pp.dirtab, s))
 		{
 			hashput(pp.dirtab, 0, 0);
-			hashput(pp.dirtab, pp.tmpbuf, c);
+			hashput(pp.dirtab, pp.tmpbuf, (uintptr_t)c);
 		}
-		if (c = (int)hashget(pp.strtab, s))
+		if (c = (int)(uintptr_t)hashget(pp.strtab, s))
 		{
 			hashput(pp.strtab, 0, 0);
-			hashput(pp.strtab, pp.tmpbuf, c);
+			hashput(pp.strtab, pp.tmpbuf, (uintptr_t)c);
 		}
 	}
 	if (c != T_STRING || !*(s = pp.token))
@@ -1897,11 +1897,11 @@ ppcontrol(void)
 		goto eatmap;
 	}
 	map = newof(0, struct map, 1, 0);
-	
+
 	/*
 	 * /from/
 	 */
-	
+
 	if (i0 = regcomp(&map->re, s, REG_AUGMENTED|REG_DELIMITED|REG_LENIENT|REG_NULL))
 		regfatal(&map->re, 4, i0);
 	if (*(s += map->re.re_npat))
@@ -1913,7 +1913,7 @@ ppcontrol(void)
 	/*
 	 * /old/new/[flags]
 	 */
-	
+
 	edit = 0;
 	while ((c = pplex()) == T_STRING)
 	{

@@ -263,7 +263,7 @@ struct s1394_node_s {
 	cfgrom_dir_t		dir_stack[S1394_DIR_STACK_SIZE];
 	ushort_t		cur_dir_start;
 	ushort_t		cur_dir_size;
-	char			dir_stack_top;
+	int8_t			dir_stack_top;
 	uchar_t			expected_type;
 	uchar_t			expected_dir_quad;
 	ushort_t		cfgrom_quad_to_read;

@@ -64,6 +64,8 @@ $elif _sparc && _ELF64
 	env		{ ASSERT = { TYPE = OBJECT; SIZE = 96; }; };
 $elif _sparc && _ELF32
 	env		{ ASSERT = { TYPE = OBJECT; SIZE = 48; }; };
+$elif _arm
+	env		{ ASSERT = { TYPE = OBJECT; SIZE = 240; }; };
 $else
 $error Unknown architecture
 $endif

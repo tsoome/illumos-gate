@@ -43,6 +43,8 @@ SHELL= /usr/bin/ksh93
 # environment.
 #
 SUPPRESSPKGDEP= false
+# XXXARM: We need to teach pkgdepend about aarch64
+$(aarch64_BLD)SUPPRESSPKGDEP= true
 
 #
 # Comment this line out or set "PKGDEBUG=" in your build environment
@@ -155,6 +157,10 @@ PKGVERS= $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 i386_ARCH32= i86
 i386_ARCH64= amd64
 
+# XXXARM: This is bogus as heck
+aarch64_ARCH32= aarch64
+aarch64_ARCH64= aarch64
+
 #
 # macros and transforms needed by pkgmogrify
 #
@@ -174,8 +180,15 @@ JAVA_11_ONLY=
 $(BLD_JAVA_11)JAVA_8_ONLY=$(POUND_SIGN)
 $(JAVA_8_ONLY)JAVA_11_ONLY=$(POUND_SIGN)
 
+# XXXARM: sparc_ONLY went away, now is coming back for convenience temporarily
 PKGMOG_DEFINES= \
 	i386_ONLY=$(POUND_SIGN) \
+	aarch64_ONLY=$(POUND_SIGN) \
+	sparc_ONLY=$(POUND_SIGN) \
+	not_i386= \
+	not_sparc= \
+	not_aarch64= \
+	not_$(PKGMACH)=$(POUND_SIGN) \
 	$(PKGMACH)_ONLY= \
 	ARCH=$(PKGMACH) \
 	ARCH32=$($(PKGMACH)_ARCH32) \
@@ -535,7 +548,7 @@ $(PDIR)/%.mog: manifests/%.p5m
 		if [ "$$NODEPEND" != "false" ]; then \
 			 $(TOUCH) $(@:%.mog=%.nodepend); \
 		fi; \
-		$(LN) -s $(@F) \
+		$(LN) -fs $(@F) \
 			$(PDIR)/$(@F:%.mog=%).metadata.$$PKGSTAT.$$REPO; \
 		if [ \( "$$PKGSTAT" = "current" \) -o \
 		     \( "$$PKGSTAT" = "renamed" \) ]; \
@@ -607,7 +620,7 @@ $(PROC_SYNTH_PKGS): $(PKGLISTS) $$(@F:%.mog=%.p5m)
 		$(PM_TRANSFORMS) synthetic
 	$(PKGDEBUG)eval REPO=redist PKGSTAT=current `$(CAT) -s $(@).vars`; \
 	if [ -f $(@) ]; then \
-		$(LN) -s $(@F) \
+		$(LN) -fs $(@F) \
 			$(PDIR)/$(@F:%.mog=%).metadata.$$PKGSTAT.$$REPO; \
 	else \
 		$(TOUCH) $(@); \
@@ -683,12 +696,12 @@ stage-licenses: license-list FRC
 		}' license-list` > /dev/null;
 
 protocmp: makesilent
-	@validate_pkg -a $(PKGMACH) -v \
+	@$(ONBLD_TOOLS)/bin/validate_pkg -a $(PKGMACH) -v \
 		$(EXCEPTIONS:%=-e $(CODEMGR_WS)/exception_lists/%) \
 		-m $(PDIR) -p $(PKGROOT) -p $(TOOLSROOT)
 
 pmodes: makesilent
-	@validate_pkg -a $(PKGMACH) -M -m $(PDIR) \
+	@$(ONBLD_TOOLS)/bin/validate_pkg -a $(PKGMACH) -M -m $(PDIR) \
 		-e $(CODEMGR_WS)/exception_lists/pmodes
 
 pkglint: makesilent
@@ -714,7 +727,7 @@ check: protocmp pmodes pkglint
 protolist: proto_list_$(PKGMACH)
 
 proto_list_$(PKGMACH): $(PROC_PKGS)
-	@validate_pkg -a $(PKGMACH) -L -m $(PDIR) > $(@)
+	@$(ONBLD_TOOLS)/bin/validate_pkg -a $(PKGMACH) -L -m $(PDIR) > $(@)
 
 $(PROC_PKGS): $(PDIR)
 

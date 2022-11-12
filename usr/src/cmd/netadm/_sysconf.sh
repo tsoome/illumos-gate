@@ -27,7 +27,7 @@
 #ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.2	*/
 
 case "$MACH" in
-  "u3b2"|"sparc"|"i386"|"ppc" )
+  "u3b2"|"sparc"|"i386"|"ppc"|"aarch64")
 	echo "# This is the per-system configuration file
 " >_sysconfig
 	;;

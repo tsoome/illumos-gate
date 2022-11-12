@@ -1,0 +1,80 @@
+    libdis_test:       e0 01 1e 0a  and w0, w15, w30
+    libdis_test+0x4:   ff 01 1e 0a  and wzr, w15, w30
+    libdis_test+0x8:   e0 7f 5e 0a  and w0, wzr, w30, lsr #31
+    libdis_test+0xc:   e0 01 9f 0a  and w0, w15, wzr, asr #0
+    libdis_test+0x10:  ff 7f df 0a  and wzr, wzr, wzr, ror #31
+    libdis_test+0x14:  e0 01 1e 8a  and x0, x15, x30
+    libdis_test+0x18:  ff 01 1e 8a  and xzr, x15, x30
+    libdis_test+0x1c:  e0 ff 5e 8a  and x0, xzr, x30, lsr #63
+    libdis_test+0x20:  e0 01 9f 8a  and x0, x15, xzr, asr #0
+    libdis_test+0x24:  ff ff df 8a  and xzr, xzr, xzr, ror #63
+    libdis_test+0x28:  e0 01 3e 0a  bic w0, w15, w30
+    libdis_test+0x2c:  ff 01 3e 0a  bic wzr, w15, w30
+    libdis_test+0x30:  e0 7f 7e 0a  bic w0, wzr, w30, lsr #31
+    libdis_test+0x34:  e0 01 bf 0a  bic w0, w15, wzr, asr #0
+    libdis_test+0x38:  ff 7f ff 0a  bic wzr, wzr, wzr, ror #31
+    libdis_test+0x3c:  e0 01 3e 8a  bic x0, x15, x30
+    libdis_test+0x40:  ff 01 3e 8a  bic xzr, x15, x30
+    libdis_test+0x44:  e0 ff 7e 8a  bic x0, xzr, x30, lsr #63
+    libdis_test+0x48:  e0 01 bf 8a  bic x0, x15, xzr, asr #0
+    libdis_test+0x4c:  ff ff ff 8a  bic xzr, xzr, xzr, ror #63
+    libdis_test+0x50:  e0 01 1e 2a  orr w0, w15, w30
+    libdis_test+0x54:  ff 01 1e 2a  orr wzr, w15, w30
+    libdis_test+0x58:  e0 7f 5e 2a  orr w0, wzr, w30, lsr #31
+    libdis_test+0x5c:  e0 01 9f 2a  orr w0, w15, wzr, asr #0
+    libdis_test+0x60:  ff 7f df 2a  orr wzr, wzr, wzr, ror #31
+    libdis_test+0x64:  e0 01 1e aa  orr x0, x15, x30
+    libdis_test+0x68:  ff 01 1e aa  orr xzr, x15, x30
+    libdis_test+0x6c:  e0 ff 5e aa  orr x0, xzr, x30, lsr #63
+    libdis_test+0x70:  e0 01 9f aa  orr x0, x15, xzr, asr #0
+    libdis_test+0x74:  ff ff df aa  orr xzr, xzr, xzr, ror #63
+    libdis_test+0x78:  e0 01 3e 2a  orn w0, w15, w30
+    libdis_test+0x7c:  ff 01 3e 2a  orn wzr, w15, w30
+    libdis_test+0x80:  e0 7f 7e 2a  mvn w0, w30, lsr #31
+    libdis_test+0x84:  e0 01 bf 2a  orn w0, w15, wzr, asr #0
+    libdis_test+0x88:  ff 7f ff 2a  mvn wzr, wzr, ror #31
+    libdis_test+0x8c:  e0 01 3e aa  orn x0, x15, x30
+    libdis_test+0x90:  ff 01 3e aa  orn xzr, x15, x30
+    libdis_test+0x94:  e0 ff 7e aa  mvn x0, x30, lsr #63
+    libdis_test+0x98:  e0 01 bf aa  orn x0, x15, xzr, asr #0
+    libdis_test+0x9c:  ff ff ff aa  mvn xzr, xzr, ror #63
+    libdis_test+0xa0:  e0 01 1e 4a  eor w0, w15, w30
+    libdis_test+0xa4:  ff 01 1e 4a  eor wzr, w15, w30
+    libdis_test+0xa8:  e0 7f 5e 4a  eor w0, wzr, w30, lsr #31
+    libdis_test+0xac:  e0 01 9f 4a  eor w0, w15, wzr, asr #0
+    libdis_test+0xb0:  ff 7f df 4a  eor wzr, wzr, wzr, ror #31
+    libdis_test+0xb4:  e0 01 1e ca  eor x0, x15, x30
+    libdis_test+0xb8:  ff 01 1e ca  eor xzr, x15, x30
+    libdis_test+0xbc:  e0 ff 5e ca  eor x0, xzr, x30, lsr #63
+    libdis_test+0xc0:  e0 01 9f ca  eor x0, x15, xzr, asr #0
+    libdis_test+0xc4:  ff ff df ca  eor xzr, xzr, xzr, ror #63
+    libdis_test+0xc8:  e0 01 3e 4a  eon w0, w15, w30
+    libdis_test+0xcc:  ff 01 3e 4a  eon wzr, w15, w30
+    libdis_test+0xd0:  e0 7f 7e 4a  eon w0, wzr, w30, lsr #31
+    libdis_test+0xd4:  e0 01 bf 4a  eon w0, w15, wzr, asr #0
+    libdis_test+0xd8:  ff 7f ff 4a  eon wzr, wzr, wzr, ror #31
+    libdis_test+0xdc:  e0 01 3e ca  eon x0, x15, x30
+    libdis_test+0xe0:  ff 01 3e ca  eon xzr, x15, x30
+    libdis_test+0xe4:  e0 ff 7e ca  eon x0, xzr, x30, lsr #63
+    libdis_test+0xe8:  e0 01 bf ca  eon x0, x15, xzr, asr #0
+    libdis_test+0xec:  ff ff ff ca  eon xzr, xzr, xzr, ror #63
+    libdis_test+0xf0:  e0 01 1e 6a  ands w0, w15, w30
+    libdis_test+0xf4:  ff 01 1e 6a  tst w15, w30
+    libdis_test+0xf8:  e0 7f 5e 6a  ands w0, wzr, w30, lsr #31
+    libdis_test+0xfc:  e0 01 9f 6a  ands w0, w15, wzr, asr #0
+    libdis_test+0x100: ff 7f df 6a  tst wzr, wzr, ror #31
+    libdis_test+0x104: e0 01 1e ea  ands x0, x15, x30
+    libdis_test+0x108: ff 01 1e ea  tst x15, x30
+    libdis_test+0x10c: e0 ff 5e ea  ands x0, xzr, x30, lsr #63
+    libdis_test+0x110: e0 01 9f ea  ands x0, x15, xzr, asr #0
+    libdis_test+0x114: ff ff df ea  tst xzr, xzr, ror #63
+    libdis_test+0x118: e0 01 3e 6a  bics w0, w15, w30
+    libdis_test+0x11c: ff 01 3e 6a  bics wzr, w15, w30
+    libdis_test+0x120: e0 7f 7e 6a  bics w0, wzr, w30, lsr #31
+    libdis_test+0x124: e0 01 bf 6a  bics w0, w15, wzr, asr #0
+    libdis_test+0x128: ff 7f ff 6a  bics wzr, wzr, wzr, ror #31
+    libdis_test+0x12c: e0 01 3e ea  bics x0, x15, x30
+    libdis_test+0x130: ff 01 3e ea  bics xzr, x15, x30
+    libdis_test+0x134: e0 ff 7e ea  bics x0, xzr, x30, lsr #63
+    libdis_test+0x138: e0 01 bf ea  bics x0, x15, xzr, asr #0
+    libdis_test+0x13c: ff ff ff ea  bics xzr, xzr, xzr, ror #63

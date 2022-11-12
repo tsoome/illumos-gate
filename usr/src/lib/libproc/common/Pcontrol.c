@@ -27,6 +27,7 @@
  * Copyright 2012 DEY Storage Systems, Inc.  All rights reserved.
  * Copyright (c) 2013 by Delphix. All rights reserved.
  * Copyright 2015, Joyent, Inc.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
  * Copyright 2021 Oxide Computer Company
  */
@@ -3791,7 +3792,7 @@ Lstack(struct ps_lwphandle *L, stack_t *stkp)
 	if (P->status.pr_dmodel == PR_MODEL_NATIVE) {
 		if (Pread(P, stkp, sizeof (*stkp), addr) != sizeof (*stkp))
 			return (-1);
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATA_MODEL)
 	} else {
 		stack32_t stk32;
 
@@ -3827,7 +3828,7 @@ Lmain_stack(struct ps_lwphandle *L, stack_t *stkp)
 		if (Pread(P, stkp, sizeof (*stkp),
 		    (uintptr_t)&ctxp->uc_stack) != sizeof (*stkp))
 			return (-1);
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	} else {
 		ucontext32_t *ctxp = (void *)L->lwp_status.pr_oldcontext;
 		stack32_t stk32;

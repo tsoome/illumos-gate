@@ -265,12 +265,12 @@ file path=usr/lib/help/profiles/locale/RtZoneSecurity.html
 dir  path=usr/lib/locale
 dir  path=usr/lib/locale/C
 dir  path=usr/lib/locale/C/LC_MESSAGES
-file path=usr/lib/locale/C/LC_MESSAGES/AMD.po
+$(i386_ONLY)file path=usr/lib/locale/C/LC_MESSAGES/AMD.po
 file path=usr/lib/locale/C/LC_MESSAGES/DISK.po
 file path=usr/lib/locale/C/LC_MESSAGES/FMD.po
 file path=usr/lib/locale/C/LC_MESSAGES/FMNOTIFY.po
-file path=usr/lib/locale/C/LC_MESSAGES/GMCA.po
-file path=usr/lib/locale/C/LC_MESSAGES/INTEL.po
+$(i386_ONLY)file path=usr/lib/locale/C/LC_MESSAGES/GMCA.po
+$(i386_ONLY)file path=usr/lib/locale/C/LC_MESSAGES/INTEL.po
 file path=usr/lib/locale/C/LC_MESSAGES/NIC.po
 file path=usr/lib/locale/C/LC_MESSAGES/NXGE.po
 file path=usr/lib/locale/C/LC_MESSAGES/PCI.po
@@ -288,7 +288,8 @@ file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_OSCMD.po group=sys
 file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_OSLIB.po group=sys
 file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_SGS.po group=sys
 file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_SYSOSPAM.po group=sys
-file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_UCBCMD.po group=sys
+$(not_aarch64)file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_UCBCMD.po \
+    group=sys
 file path=usr/lib/locale/C/LC_MESSAGES/SUNW_OST_ZONEINFO.po group=sys
 file path=usr/lib/locale/C/LC_MESSAGES/ZFS.po
 file path=usr/lib/locale/C/LC_MESSAGES/libast group=sys
@@ -305,18 +306,22 @@ dir  path=usr/lib/locale/C/LC_TIME
 file path=usr/lib/locale/C/LC_TIME/SUNW_OST_OSCMD.po group=sys
 dir  path=usr/share
 dir  path=usr/share/lib
-dir  path=usr/share/lib/locale
-dir  path=usr/share/lib/locale/com
-dir  path=usr/share/lib/locale/com/sun
-dir  path=usr/share/lib/locale/com/sun/admin
-dir  path=usr/share/lib/locale/com/sun/admin/pm
-dir  path=usr/share/lib/locale/com/sun/admin/pm/client
-file path=usr/share/lib/locale/com/sun/admin/pm/client/pmHelpResources.java \
+$(not_aarch64)dir path=usr/share/lib/locale
+$(not_aarch64)dir path=usr/share/lib/locale/com
+$(not_aarch64)dir path=usr/share/lib/locale/com/sun
+$(not_aarch64)dir path=usr/share/lib/locale/com/sun/admin
+$(not_aarch64)dir path=usr/share/lib/locale/com/sun/admin/pm
+$(not_aarch64)dir path=usr/share/lib/locale/com/sun/admin/pm/client
+$(not_aarch64)file \
+    path=usr/share/lib/locale/com/sun/admin/pm/client/pmHelpResources.java \
     group=lp
-file path=usr/share/lib/locale/com/sun/admin/pm/client/pmResources.java group=lp
-dir  path=usr/share/lib/locale/com/sun/slp
-file path=usr/share/lib/locale/com/sun/slp/ClientLib_en.properties group=sys
-file path=usr/share/lib/locale/com/sun/slp/Server_en.properties group=sys
+$(not_aarch64)file \
+    path=usr/share/lib/locale/com/sun/admin/pm/client/pmResources.java group=lp
+$(not_aarch64)dir path=usr/share/lib/locale/com/sun/slp
+$(not_aarch64)file \
+    path=usr/share/lib/locale/com/sun/slp/ClientLib_en.properties group=sys
+$(not_aarch64)file path=usr/share/lib/locale/com/sun/slp/Server_en.properties \
+    group=sys
 legacy pkg=SUNW0on arch=all \
     desc="localizable message files for the OS-Networking consolidation" \
     name="Localizable ON message files" version=11.11,REV=2009.11.10

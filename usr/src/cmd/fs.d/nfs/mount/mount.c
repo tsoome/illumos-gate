@@ -1390,7 +1390,7 @@ make_secure(struct nfs_args *args, char *hostname, struct netconfig *nconf,
  * This is a potential routine to move to ../lib for common usage.
  */
 static struct netbuf *
-get_the_addr(char *hostname, ulong_t prog, ulong_t vers,
+get_the_addr(char *hostname, rpcprog_t prog, rpcvers_t vers,
 	struct netconfig *nconf, ushort_t port, struct t_info *tinfo,
 	caddr_t *fhp, bool_t get_pubfh, char *fspath, err_ret_t *error)
 {
@@ -1748,9 +1748,10 @@ check_nconf(struct netconfig *nconf, int nthtry, int *valid_proto)
  *
  */
 static struct netbuf *
-get_addr(char *hostname, ulong_t prog, ulong_t vers, struct netconfig **nconfp,
-	char *proto, ushort_t port, struct t_info *tinfo, caddr_t *fhp,
-	bool_t get_pubfh, char *fspath, err_ret_t *error)
+get_addr(char *hostname, rpcprog_t prog, rpcvers_t vers,
+    struct netconfig **nconfp, char *proto, ushort_t port,
+    struct t_info *tinfo, caddr_t *fhp, bool_t get_pubfh,
+    char *fspath, err_ret_t *error)
 {
 	struct netbuf *nb = NULL;
 	struct netconfig *nconf = NULL;

@@ -618,6 +618,7 @@
 @ MSG_ISA_SPARC_64	"sparcv9"
 @ MSG_ISA_X86_32	"i386"
 @ MSG_ISA_X86_64	"amd64"
+@ MSG_ISA_AARCH64	"aarch64"
 
 # Format strings
 

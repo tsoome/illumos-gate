@@ -31,9 +31,15 @@ LDLIBS =	-lumem -L../libconv -L$(ROOTONBLDLIBMACH64) -lld -lelf -lconv
 NATIVE_LIBS +=	libc.so libumem.so
 CPPFLAGS =	$(NATIVE_CPPFLAGS)
 CFLAGS =	$(NATIVE_CFLAGS)
+SGSMSGDIR =	$(SGSHOME)/messages/$(NATIVE_MACH)
 MAPFILES =	$(SRCDIR)/common/mapfile-intf
-RPATH =		'-R$$ORIGIN/../../lib/$(MACH)/64'
+RPATH =		'-R$$ORIGIN/../../lib/$(NATIVE_MACH)/64'
 CW_LINKER =
+
+# XXXARM: These have to be reset because of the Makefile ordering crud, ugh
+SYSROOT=
+CC=	$(NATIVECC)
+CC64=	$(NATIVECC)
 
 install: $(ROOTONBLDMACH64PROG)
 

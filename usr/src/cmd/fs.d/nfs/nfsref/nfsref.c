@@ -319,7 +319,8 @@ extern int optind, optopt;
 int
 main(int argc, char *argv[])
 {
-	char c, *command, *sl_path, *svc_type;
+	char *command, *sl_path, *svc_type;
+	int c;
 	int type_set, err;
 
 	(void) setlocale(LC_ALL, "");

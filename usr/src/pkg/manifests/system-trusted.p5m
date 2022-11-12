@@ -32,32 +32,33 @@ dir  path=lib
 dir  path=lib/svc
 dir  path=lib/svc/manifest group=sys
 dir  path=lib/svc/manifest/system group=sys
-file path=lib/svc/manifest/system/tsol-zones.xml group=sys mode=0444
+$(not_aarch64)file path=lib/svc/manifest/system/tsol-zones.xml group=sys \
+    mode=0444
 dir  path=lib/svc/method
-file path=lib/svc/method/svc-tsol-zones mode=0555
+$(not_aarch64)file path=lib/svc/method/svc-tsol-zones mode=0555
 dir  path=sbin group=sys
-file path=sbin/tnctl group=sys mode=0555
+$(not_aarch64)file path=sbin/tnctl group=sys mode=0555
 dir  path=usr group=sys
 dir  path=usr/bin
-file path=usr/bin/getlabel mode=0555
-file path=usr/bin/getzonepath mode=0555
-file path=usr/bin/plabel mode=0555
-file path=usr/bin/setlabel mode=0555
-file path=usr/bin/updatehome mode=0555
+$(not_aarch64)file path=usr/bin/getlabel mode=0555
+$(not_aarch64)file path=usr/bin/getzonepath mode=0555
+$(not_aarch64)file path=usr/bin/plabel mode=0555
+$(not_aarch64)file path=usr/bin/setlabel mode=0555
+$(not_aarch64)file path=usr/bin/updatehome mode=0555
 dir  path=usr/demo
-dir  path=usr/demo/tsol
-file path=usr/demo/tsol/clonebylabel.sh mode=0555
-file path=usr/demo/tsol/getmounts.sh mode=0555
-file path=usr/demo/tsol/runinzone.ksh mode=0555
-file path=usr/demo/tsol/runwlabel.ksh mode=0555
-file path=usr/demo/tsol/waitforzone.ksh mode=0555
+$(not_aarch64)dir path=usr/demo/tsol
+$(not_aarch64)file path=usr/demo/tsol/clonebylabel.sh mode=0555
+$(not_aarch64)file path=usr/demo/tsol/getmounts.sh mode=0555
+$(not_aarch64)file path=usr/demo/tsol/runinzone.ksh mode=0555
+$(not_aarch64)file path=usr/demo/tsol/runwlabel.ksh mode=0555
+$(not_aarch64)file path=usr/demo/tsol/waitforzone.ksh mode=0555
 dir  path=usr/include
 dir  path=usr/include/bsm
 dir  path=usr/lib
 dir  path=usr/lib/brand
 dir  path=usr/lib/brand/labeled group=sys
-file path=usr/lib/brand/labeled/config.xml mode=0444
-file path=usr/lib/brand/labeled/platform.xml mode=0444
+$(not_aarch64)file path=usr/lib/brand/labeled/config.xml mode=0444
+$(not_aarch64)file path=usr/lib/brand/labeled/platform.xml mode=0444
 dir  path=usr/lib/help
 dir  path=usr/lib/help/auths
 dir  path=usr/lib/help/auths/locale
@@ -87,9 +88,9 @@ dir  path=usr/lib/help/profiles/locale/C
 file path=usr/lib/help/profiles/locale/C/RtInfoSec.html
 file path=usr/lib/help/profiles/locale/C/RtObjectLabelMngmnt.html
 file path=usr/lib/help/profiles/locale/C/RtOutsideAccred.html
-file path=usr/lib/labeld mode=0555
-dir  path=usr/lib/lp group=lp
-dir  path=usr/lib/lp/bin group=lp
+$(not_aarch64)file path=usr/lib/labeld mode=0555
+$(not_aarch64)dir path=usr/lib/lp group=lp
+$(not_aarch64)dir path=usr/lib/lp/bin group=lp
 file path=usr/lib/lp/bin/lp.tsol_separator group=lp mode=0555
 dir  path=usr/lib/lp/model group=lp
 file path=usr/lib/lp/model/tsol_netstandard group=lp mode=0555
@@ -102,21 +103,21 @@ file path=usr/lib/lp/postscript/tsol_separator.ps group=lp mode=0555 \
     original_name=SUNWts:usr/lib/lp/postscript/tsol_separator.ps \
     preserve=renamenew
 file path=usr/lib/lp/postscript/tsol_trailer.ps group=lp mode=0555
-file path=usr/lib/lslabels group=sys mode=0555
-dir  path=usr/lib/zones
-file path=usr/lib/zones/zoneshare group=sys mode=0555
-file path=usr/lib/zones/zoneunshare group=sys mode=0555
+$(not_aarch64)file path=usr/lib/lslabels group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/zones
+$(not_aarch64)file path=usr/lib/zones/zoneshare group=sys mode=0555
+$(not_aarch64)file path=usr/lib/zones/zoneunshare group=sys mode=0555
 dir  path=usr/sbin
 file path=usr/sbin/add_allocatable mode=0555
-file path=usr/sbin/atohexlabel group=sys mode=0555
-file path=usr/sbin/chk_encodings group=sys mode=0555
-file path=usr/sbin/hextoalabel group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/atohexlabel group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/chk_encodings group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/hextoalabel group=sys mode=0555
 hardlink path=usr/sbin/remove_allocatable target=add_allocatable
-file path=usr/sbin/tnchkdb group=sys mode=0555
-link path=usr/sbin/tnctl target=../../sbin/tnctl
-file path=usr/sbin/tnd group=sys mode=0555
-file path=usr/sbin/tninfo group=sys mode=0555
-file path=usr/sbin/txzonemgr group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/tnchkdb group=sys mode=0555
+$(not_aarch64)link path=usr/sbin/tnctl target=../../sbin/tnctl
+$(not_aarch64)file path=usr/sbin/tnd group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/tninfo group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/txzonemgr group=sys mode=0555
 dir  path=usr/share/man
 dir  path=usr/share/man/man1
 file path=usr/share/man/man1/getlabel.1

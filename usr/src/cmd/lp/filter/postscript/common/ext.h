@@ -22,9 +22,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.1	*/
-
 /*
  *
  * External varible declarations - many are defined in glob.c.
@@ -47,13 +44,3 @@ extern char	*temp_file;		/* temporary file - for some programs */
 
 extern char	*optarg;		/* for getopt() */
 extern int	optind;
-
-extern char	*malloc();
-extern char	*calloc();
-extern char	*tempnam();
-extern char	*strtok();
-extern long	ftell();
-extern double	atof();
-extern double	sqrt();
-extern double	atan2();
-

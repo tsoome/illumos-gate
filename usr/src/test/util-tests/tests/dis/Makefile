@@ -17,16 +17,18 @@ include $(SRC)/Makefile.master
 
 ROOTOPTPKG = $(ROOT)/opt/util-tests
 TESTDIR = $(ROOTOPTPKG)/tests/dis
-ARCHS = i386 risc-v risc-v-c sparc
+ARCHS = arm i386 risc-v risc-v-c sparc
 
 PROG = distest
 
+ARM_FILES :sh= (cd arm; print *)
 I386_FILES :sh= (cd i386; print *)
 RISCV_FILES :sh= (cd risc-v; print *)
 RISCV_C_FILES :sh= (cd risc-v-c; print *)
 SPARC_FILES :sh= (cd sparc; print *)
 
 ROOTFILES = \
+	$(ARM_FILES:%=$(TESTDIR)/arm/%)			\
 	$(I386_FILES:%=$(TESTDIR)/i386/%)		\
 	$(RISCV_FILES:%=$(TESTDIR)/risc-v/%)		\
 	$(RISCV_C_FILES:%=$(TESTDIR)/risc-v-c/%)	\
@@ -37,7 +39,8 @@ include $(SRC)/test/Makefile.com
 
 ARCHDIRS = $(ARCHS:%=$(TESTDIR)/%)
 CMDS = $(PROG:%=$(TESTDIR)/%)
-FILEMODE=0444
+
+$(ROOTFILES) := FILEMODE = 0444
 $(CMDS) := FILEMODE = 0555
 
 install: $(CMDS) $(ROOTFILES)

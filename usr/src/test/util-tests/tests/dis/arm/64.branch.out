@@ -1,0 +1,31 @@
+    libdis_test:      00 00 00 34  cbz w0, +0x0 	<libdis_test>
+    libdis_test+0x4:  7f 00 00 b4  cbz xzr, +0xc 	<libdis_test+0x10>
+    libdis_test+0x8:  df ff ff 35  cbnz wzr, -0x8 	<libdis_test>
+    libdis_test+0xc:  1e 02 00 b5  cbnz x30, +0x40 	<libdis_test+0x4c>
+    libdis_test+0x10: 00 00 00 54  b.eq +0x0 	<libdis_test+0x10>
+    libdis_test+0x14: c1 01 00 54  b.ne +0x38 	<libdis_test+0x4c>
+    libdis_test+0x18: c2 ff ff 54  b.cs -0x8 	<libdis_test+0x10>
+    libdis_test+0x1c: 83 01 00 54  b.cc +0x30 	<libdis_test+0x4c>
+    libdis_test+0x20: 84 ff ff 54  b.mi -0x10 	<libdis_test+0x10>
+    libdis_test+0x24: 45 01 00 54  b.pl +0x28 	<libdis_test+0x4c>
+    libdis_test+0x28: 46 ff ff 54  b.vs -0x18 	<libdis_test+0x10>
+    libdis_test+0x2c: 07 01 00 54  b.vc +0x20 	<libdis_test+0x4c>
+    libdis_test+0x30: 88 fe ff 54  b.hi -0x30 	<libdis_test>
+    libdis_test+0x34: 49 01 00 54  b.ls +0x28 	<libdis_test+0x5c>
+    libdis_test+0x38: 4a fe ff 54  b.ge -0x38 	<libdis_test>
+    libdis_test+0x3c: 0b 01 00 54  b.lt +0x20 	<libdis_test+0x5c>
+    libdis_test+0x40: 0c fe ff 54  b.gt -0x40 	<libdis_test>
+    libdis_test+0x44: cd 00 00 54  b.le +0x18 	<libdis_test+0x5c>
+    libdis_test+0x48: ce fd ff 54  b.al -0x48 	<libdis_test>
+    libdis_test+0x4c: 20 fe 07 36  tbz w0, #0, -0x3c 	<libdis_test+0x10>
+    libdis_test+0x50: ff ff ff b6  tbz xzr, #63, -0x4 	<libdis_test+0x4c>
+    libdis_test+0x54: 7f fd 07 37  tbnz wzr, #0, -0x54 	<libdis_test>
+    libdis_test+0x58: 3e 00 f8 b7  tbnz x30, #63, +0x4 	<libdis_test+0x5c>
+    libdis_test+0x5c: fc ff ff 17  b -0x10 	<libdis_test+0x4c>
+    libdis_test+0x60: ff ff ff 97  bl -0x4 	<libdis_test+0x5c>
+    libdis_test+0x64: 00 00 1f d6  br x0
+    libdis_test+0x68: c0 03 3f d6  blr x30
+    libdis_test+0x6c: c0 03 5f d6  ret
+    libdis_test+0x70: 00 00 5f d6  ret x0
+    libdis_test+0x74: e0 03 9f d6  eret
+    libdis_test+0x78: e0 03 bf d6  drps

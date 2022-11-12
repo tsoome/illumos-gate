@@ -22,6 +22,7 @@
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012 by Delphix. All rights reserved.
  * Copyright 2016 Nexenta Systems, Inc. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2022 OmniOS Community Edition (OmniOSce) Association.
  */
 
@@ -83,7 +84,7 @@
 #if defined(__i386) || defined(__amd64)
 #define	PHYS_PATH	":q"
 #define	RAW_SLICE	"p0"
-#elif defined(__sparc)
+#elif defined(__sparc) || defined(__aarch64__)
 #define	PHYS_PATH	":c"
 #define	RAW_SLICE	"s2"
 #else

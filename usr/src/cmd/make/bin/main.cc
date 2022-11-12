@@ -73,10 +73,12 @@ extern void job_adjust_fini();
 #define	LD_SUPPORT_ENV_VAR_32	"SGS_SUPPORT_32"
 #define	LD_SUPPORT_ENV_VAR_64	"SGS_SUPPORT_64"
 #define	LD_SUPPORT_MAKE_LIB	"libmakestate.so.1"
-#ifdef __x86
+#if defined(__x86)
 #define	LD_SUPPORT_MAKE_ARCH	"i386"
-#elif __sparc
+#elif defined(__sparc)
 #define	LD_SUPPORT_MAKE_ARCH	"sparc"
+#elif defined(__aarch64__)	// XXXARM: Probably wrong
+#define	LD_SUPPORT_MAKE_ARCH	"aarch64"
 #else
 #error "Unsupported architecture"
 #endif

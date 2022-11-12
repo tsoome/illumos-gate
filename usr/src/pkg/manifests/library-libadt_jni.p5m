@@ -30,12 +30,13 @@ set name=pkg.description \
     value="Java Solaris Auditing interface / AuditService Implementation"
 set name=info.classification \
     value="org.opensolaris.category.2008:System/Administration and Configuration"
-set name=variant.arch value=$(ARCH)
+# XXXARM
+set name=variant.arch value=i386 value=sparc
 dir  path=usr group=sys
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libadt_jni.so target=./libadt_jni.so.1
-file path=usr/lib/$(ARCH64)/libadt_jni.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libadt_jni.so target=./libadt_jni.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libadt_jni.so.1
 dir  path=usr/lib/audit
 file path=usr/lib/audit/Audit.jar
 link path=usr/lib/libadt_jni.so target=./libadt_jni.so.1

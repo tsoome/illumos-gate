@@ -29,8 +29,10 @@ SUBDIRS1 = \
 	digest \
 	elfsign \
 	kmfcfg \
-	pktool \
-	tpmadm
+	pktool
+
+# XXXARM: No tpm
+$(NOT_AARCH64_BLD)SUBDIRS1 += tpmadm
 
 SUBDIRS2 = \
 	etc \

@@ -23,11 +23,8 @@
 #	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T
 #	  All Rights Reserved
 
-
-#ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.2	*/
-
 case "$MACH" in
-  "u3b2"|"sparc"|"i386"|"ppc" )
+  "u3b2"|"sparc"|"i386"|"ppc"|"aarch64" )
 	echo "# VERSION=1
 
 zsmon:ttymon::0:/usr/lib/saf/ttymon	# " >_sactab

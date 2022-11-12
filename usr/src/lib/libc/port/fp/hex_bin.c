@@ -23,8 +23,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 #include "lint.h"
 #include "base_conversion.h"
@@ -153,7 +154,7 @@ __hex_to_double(decimal_record *pd, enum fp_direction_type rd, double *px,
 	}
 }
 
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 
 void
 __hex_to_quadruple(decimal_record *pd, enum fp_direction_type rd, quadruple *px,

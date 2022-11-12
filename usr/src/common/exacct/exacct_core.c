@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/exacct.h>
 #include <sys/exacct_catalog.h>
@@ -262,8 +260,14 @@ ea_set_item(ea_object_t *obj, ea_catalog_t tag,
 		item->ei_size = sizeof (uint64_t);
 		break;
 	case EXT_DOUBLE:
+		/*
+		 * XXXARM: This pulls us into floating point and hurts
+		 * would it hurt less for -mno-fpu than -mgeneral-regs-only?
+		 */
+#ifndef __aarch64__
 		item->ei_u.ei_u_double = *(double *)value;
 		item->ei_size = sizeof (double);
+#endif
 		break;
 	case EXT_STRING:
 		if ((item->ei_string = ea_strdup((char *)value)) == NULL) {

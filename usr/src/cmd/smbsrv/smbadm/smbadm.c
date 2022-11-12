@@ -470,7 +470,7 @@ smbadm_join(int argc, char **argv)
 	char *username = NULL;
 	uint32_t mode = 0;
 	boolean_t do_prompt = B_TRUE;
-	char option;
+	int option;
 
 	while ((option = getopt(argc, argv, "pu:wy")) != -1) {
 		if (mode != 0) {
@@ -884,7 +884,7 @@ smbadm_group_create(int argc, char **argv)
 {
 	char *gname = NULL;
 	char *desc = NULL;
-	char option;
+	int option;
 	int status;
 
 	while ((option = getopt(argc, argv, "d:")) != -1) {
@@ -1028,7 +1028,7 @@ smbadm_group_show(int argc, char **argv)
 	char *gname = NULL;
 	boolean_t show_privs;
 	boolean_t show_members;
-	char option;
+	int option;
 	int status;
 	smb_group_t grp;
 	smb_giter_t gi;
@@ -1170,7 +1170,7 @@ smbadm_group_setprop(int argc, char **argv)
 	char *gname = NULL;
 	smbadm_prop_t props[SMBADM_NPROP];
 	smbadm_prop_handle_t *phandle;
-	char option;
+	int option;
 	int pcnt = 0;
 	int ret = 0;
 	int p;
@@ -1230,7 +1230,7 @@ smbadm_group_getprop(int argc, char **argv)
 	char *gname = NULL;
 	smbadm_prop_t props[SMBADM_NPROP];
 	smbadm_prop_handle_t *phandle;
-	char option;
+	int option;
 	int pcnt = 0;
 	int ret = 0;
 	int p;
@@ -1292,7 +1292,7 @@ smbadm_group_addmember(int argc, char **argv)
 {
 	char *gname = NULL;
 	char **mname;
-	char option;
+	int option;
 	int mcnt = 0;
 	int ret = 0;
 	int i;
@@ -1349,7 +1349,7 @@ smbadm_group_delmember(int argc, char **argv)
 {
 	char *gname = NULL;
 	char **mname;
-	char option;
+	int option;
 	int mcnt = 0;
 	int ret = 0;
 	int i;

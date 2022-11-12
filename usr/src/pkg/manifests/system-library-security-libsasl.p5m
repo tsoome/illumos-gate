@@ -34,17 +34,17 @@ set name=info.classification \
 set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libsasl.so target=libsasl.so.1
-file path=usr/lib/$(ARCH64)/libsasl.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libsasl.so target=libsasl.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libsasl.so.1
 link path=usr/lib/libsasl.so target=libsasl.so.1
 file path=usr/lib/libsasl.so.1
 dir  path=usr/lib/sasl
 dir  path=usr/lib/sasl/$(ARCH64)
-file path=usr/lib/sasl/$(ARCH64)/crammd5.so.1
-file path=usr/lib/sasl/$(ARCH64)/digestmd5.so.1
-file path=usr/lib/sasl/$(ARCH64)/login.so.1
-file path=usr/lib/sasl/$(ARCH64)/plain.so.1
+$(not_aarch64)file path=usr/lib/sasl/$(ARCH64)/crammd5.so.1
+$(not_aarch64)file path=usr/lib/sasl/$(ARCH64)/digestmd5.so.1
+$(not_aarch64)file path=usr/lib/sasl/$(ARCH64)/login.so.1
+$(not_aarch64)file path=usr/lib/sasl/$(ARCH64)/plain.so.1
 file path=usr/lib/sasl/crammd5.so.1
 file path=usr/lib/sasl/digestmd5.so.1
 file path=usr/lib/sasl/login.so.1

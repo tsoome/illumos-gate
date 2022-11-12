@@ -45,18 +45,18 @@ dir  path=usr group=sys
 dir  path=usr/include
 file path=usr/include/slp.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libslp.so target=libslp.so.1
-file path=usr/lib/$(ARCH64)/libslp.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libslp.so target=libslp.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libslp.so.1
 dir  path=usr/lib/inet
 file path=usr/lib/inet/slpd mode=0555
 link path=usr/lib/libslp.so target=libslp.so.1
 file path=usr/lib/libslp.so.1
-dir  path=usr/share
-dir  path=usr/share/lib
-dir  path=usr/share/lib/slp
-file path=usr/share/lib/slp/slp.jar group=sys
-file path=usr/share/lib/slp/slpd.jar group=sys mode=0600
+$(not_aarch64)dir path=usr/share
+$(not_aarch64)dir path=usr/share/lib
+$(not_aarch64)dir path=usr/share/lib/slp
+$(not_aarch64)file path=usr/share/lib/slp/slp.jar group=sys
+$(not_aarch64)file path=usr/share/lib/slp/slpd.jar group=sys mode=0600
 dir  path=usr/share/man
 dir  path=usr/share/man/man3lib
 file path=usr/share/man/man3lib/libslp.3lib

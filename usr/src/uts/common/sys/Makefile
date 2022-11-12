@@ -55,6 +55,9 @@ i386_HDRS=			\
 	nvme.h			\
 	ucode.h
 
+aarch64_HDRS=			\
+	asy.h
+
 sparc_HDRS=			\
 	mouse.h			\
 	scsi/targets/ssddef.h	\
@@ -1091,16 +1094,18 @@ DKTPHDRS=		\
 	tgcom.h		\
 	tgdk.h
 
-# "pc" header files used on i386
+# "pc" header files used on i386 and aarch64 (XXXARM??)
 PCHDRS=			\
 	avintr.h	\
 	dma_engine.h	\
 	i8272A.h	\
-	pcic_reg.h	\
-	pcic_var.h	\
 	pic.h		\
 	pit.h		\
 	rtc.h
+
+PCMCIAHDRS=		\
+	pcic_reg.h	\
+	pcic_var.h
 
 NXGEHDRS=			\
 	nxge.h			\

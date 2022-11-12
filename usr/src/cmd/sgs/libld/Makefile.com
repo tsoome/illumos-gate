@@ -31,24 +31,68 @@ VERS =		.4
 
 COMOBJS =	debug.o		globals.o	util.o
 
-COMOBJS32 =	args32.o	entry32.o	exit32.o	groups32.o \
-		ldentry32.o	ldlibs32.o	ldmachdep32.o	ldmain32.o \
-		libs32.o	files32.o	map32.o		map_core32.o \
-		map_support32.o	map_v232.o	order32.o	outfile32.o \
-		place32.o	relocate32.o	resolve32.o	sections32.o \
-		sunwmove32.o	support32.o	syms32.o	update32.o \
-		unwind32.o	version32.o	wrap32.o
+COMOBJS32 =	args_32.o		\
+		entry_32.o		\
+		exit_32.o		\
+		groups_32.o		\
+		ldentry_32.o		\
+		ldlibs_32.o		\
+		ldmachdep_32.o		\
+		ldmain_32.o		\
+		libs_32.o		\
+		files_32.o		\
+		map_32.o		\
+		map_core_32.o		\
+		map_support_32.o	\
+		map_v2_32.o		\
+		order_32.o		\
+		outfile_32.o		\
+		place_32.o		\
+		relocate_32.o		\
+		resolve_32.o		\
+		sections_32.o		\
+		sunwmove_32.o		\
+		support_32.o		\
+		syms_32.o		\
+		update_32.o		\
+		unwind_32.o		\
+		version_32.o		\
+		wrap_32.o
 
-COMOBJS64 =	args64.o	entry64.o	exit64.o	groups64.o \
-		ldentry64.o	ldlibs64.o	ldmachdep64.o	ldmain64.o \
-		libs64.o	files64.o	map64.o		map_core64.o \
-		map_support64.o	map_v264.o	order64.o	outfile64.o \
-		place64.o	relocate64.o	resolve64.o	sections64.o \
-		sunwmove64.o	support64.o	syms64.o	update64.o \
-		unwind64.o	version64.o	wrap64.o
+COMOBJS64 =	args_64.o		\
+		entry_64.o		\
+		exit_64.o		\
+		groups_64.o		\
+		ldentry_64.o		\
+		ldlibs_64.o		\
+		ldmachdep_64.o		\
+		ldmain_64.o		\
+		libs_64.o		\
+		files_64.o		\
+		map_64.o		\
+		map_core_64.o		\
+		map_support_64.o	\
+		map_v2_64.o		\
+		order_64.o		\
+		outfile_64.o		\
+		place_64.o		\
+		relocate_64.o		\
+		resolve_64.o		\
+		sections_64.o		\
+		sunwmove_64.o		\
+		support_64.o		\
+		syms_64.o		\
+		update_64.o		\
+		unwind_64.o		\
+		version_64.o		\
+		wrap_64.o
 
-SGSCOMMONOBJ =	alist.o		assfail.o	findprime.o	string_table.o \
+SGSCOMMONOBJ =	alist.o		\
+		assfail.o	\
+		findprime.o	\
+		string_table.o	\
 		strhash.o
+
 AVLOBJ =	avl.o
 
 # Relocation engine objects.
@@ -56,17 +100,16 @@ G_MACHOBJS32 =	doreloc_sparc_32.o doreloc_x86_32.o
 G_MACHOBJS64 =	doreloc_sparc_64.o doreloc_x86_64.o doreloc_aarch64_64.o
 
 # Target specific objects (sparc/sparcv9)
-L_SPARC_MACHOBJS32 =	machrel.sparc32.o	machsym.sparc32.o
-L_SPARC_MACHOBJS64 =	machrel.sparc64.o	machsym.sparc64.o
+L_SPARC_MACHOBJS32 =	machrel.sparc_32.o	machsym.sparc_32.o
+L_SPARC_MACHOBJS64 =	machrel.sparc_64.o	machsym.sparc_64.o
 
 # Target specific objects (i386/amd64)
 E_X86_COMMONOBJ =	leb128.o
-L_X86_MACHOBJS32 =	machrel.intel32.o
-L_X86_MACHOBJS64 =	machrel.amd64.o
+L_X86_MACHOBJS32 =	machrel.intel_32.o
+L_X86_MACHOBJS64 =	machrel.amd_64.o
 
 # Target specific objects (aarch64)
-# XXXARM: Wow, that's unfortunate
-L_AARCH64_MACHOBJS64 = machrel.aarch6464.o
+L_AARCH64_MACHOBJS64 = machrel.aarch64_64.o
 
 # All target specific objects rolled together
 E_COMMONOBJ =	$(E_SPARC_COMMONOBJ) \
@@ -115,18 +158,18 @@ CPPFLAGS +=	-DUSE_LIBLD_MALLOC -I$(SRC)/lib/libc/inc \
 LDLIBS +=	$(CONVLIBDIR) -lconv $(LDDBGLIBDIR) -llddbg \
 		    $(ELFLIBDIR) -lelf $(DLLIB) -lc
 
-DYNFLAGS +=	$(VERSREF) '-R$$ORIGIN'
+DYNFLAGS +=	$(VERSREF) -Wl,-R'$$ORIGIN'
 
 # too hairy
-pics/sections32.o :=	SMATCH=off
-pics/sections64.o :=	SMATCH=off
+pics/sections_32.o :=	SMATCH=off
+pics/sections_64.o :=	SMATCH=off
 # confused about our strange allocation choices
-pics/syms32.o :=	SMOFF += check_kmalloc_wrong_size
-pics/syms64.o :=	SMOFF += check_kmalloc_wrong_size
-pics/entry32.o :=	SMOFF += check_kmalloc_wrong_size
-pics/entry64.o :=	SMOFF += check_kmalloc_wrong_size
-pics/relocate32.o :=	SMOFF += check_kmalloc_wrong_size
-pics/relocate64.o :=	SMOFF += check_kmalloc_wrong_size
+pics/syms_32.o :=	SMOFF += check_kmalloc_wrong_size
+pics/syms_64.o :=	SMOFF += check_kmalloc_wrong_size
+pics/entry_32.o :=	SMOFF += check_kmalloc_wrong_size
+pics/entry_64.o :=	SMOFF += check_kmalloc_wrong_size
+pics/relocate_32.o :=	SMOFF += check_kmalloc_wrong_size
+pics/relocate_64.o :=	SMOFF += check_kmalloc_wrong_size
 
 BLTDEFS =	msg.h
 BLTDATA =	msg.c
@@ -149,9 +192,9 @@ SGSMSGFLAGS1 =	$(SGSMSGFLAGS) -m $(BLTMESG)
 SGSMSGFLAGS2 =	$(SGSMSGFLAGS) -h $(BLTDEFS) -d $(BLTDATA) -n libld_msg
 
 CHKSRCS =	$(SRC)/uts/common/krtld/reloc.h \
-		$(COMOBJS32:%32.o=$(SRCDIR)/common/%.c) \
-		$(L_MACHOBJS32:%32.o=$(SRCDIR)/common/%.c) \
-		$(L_MACHOBJS64:%64.o=$(SRCDIR)/common/%.c) \
+		$(COMOBJS32:%_32.o=$(SRCDIR)/common/%.c) \
+		$(L_MACHOBJS32:%_32.o=$(SRCDIR)/common/%.c) \
+		$(L_MACHOBJS64:%_64.o=$(SRCDIR)/common/%.c) \
 		$(KRTLD_AARCH64)/doreloc.c \
 		$(KRTLD_I386)/doreloc.c \
 		$(KRTLD_AMD64)/doreloc.c \

@@ -1,0 +1,6 @@
+    libdis_test:      40 00 00 18  ldr w0, 8 	<libdis_test+0x8>
+    libdis_test+0x4:  ff ff ff 58  ldr xzr, 0 	<libdis_test>
+    libdis_test+0x8:  00 00 00 1c  ldr s0, 8 	<libdis_test+0x8>
+    libdis_test+0xc:  5e 00 00 5c  ldr d30, 14 	<libdis_test+0x14>
+    libdis_test+0x10: 9f ff ff 9c  ldr q31, 0 	<libdis_test>
+    libdis_test+0x14: be ff ff 98  ldrsw x30, 8 	<libdis_test+0x8>

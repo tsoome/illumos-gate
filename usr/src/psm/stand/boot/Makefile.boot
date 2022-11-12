@@ -67,3 +67,5 @@ LINTFLAGS = -nmsF -erroff=E_BAD_PTR_CAST_ALIGN \
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-char-subscripts
+
+CFLAGS +=	-_gcc=-ffunction-sections -_gcc=-fdata-sections

@@ -24,6 +24,8 @@
 #
 # Copyright (c) 2018, Joyent, Inc.
 
+include $(SRC)/Makefile.master
+
 PROG = vmstat
 OBJS = vmstat.o
 SRCS =$(OBJS:%.o=%.c) $(COMMON_SRCS)
@@ -32,6 +34,8 @@ include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/cmd/stat/Makefile.stat
 
 LDLIBS += -ldevinfo -lkstat -lavl
+# XXXARM: intrinsics
+$(AARCH64_BLD) LDLIBS += -lgcc
 CFLAGS += $(CCVERBOSE) -I${STATCOMMONDIR}
 CERRWARN += -_gcc=-Wno-switch
 CERRWARN += -_gcc=-Wno-parentheses

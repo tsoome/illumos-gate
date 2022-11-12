@@ -24,6 +24,8 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  * Copyright 2016 Joyent, Inc.
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef	_SYS_ISA_DEFS_H
@@ -480,6 +482,60 @@ extern "C" {
 #else
 #error	"unknown SPARC version"
 #endif
+
+/*
+ * The following set of definitions characterize Solaris on ARM's
+ * 64-bit systems.
+ */
+#elif defined(__aarch64__)
+
+/*
+ * Define the appropriate "processor characteristics"
+ */
+#define	_LITTLE_ENDIAN
+#define	_STACK_GROWS_DOWNWARD
+#define	_LONG_LONG_LTOH
+#define	_BIT_FIELDS_LTOH
+#define	_IEEE_754
+
+/*
+ * See the Procedure Call Standard for the Arm 64-bit Architecture.
+ *
+ * We're missing quad support here.
+ */
+#define	_CHAR_IS_UNSIGNED
+#define	_BOOL_ALIGNMENT			1
+#define	_CHAR_ALIGNMENT			1
+#define	_SHORT_ALIGNMENT		2
+#define	_INT_ALIGNMENT			4
+#define	_FLOAT_ALIGNMENT		4
+#define	_FLOAT_COMPLEX_ALIGNMENT	4
+#define	_LONG_ALIGNMENT			8
+#define	_LONG_LONG_ALIGNMENT		8
+#define	_DOUBLE_ALIGNMENT		8
+#define	_DOUBLE_COMPLEX_ALIGNMENT	8
+#define	_LONG_DOUBLE_ALIGNMENT		16
+#define	_LONG_DOUBLE_COMPLEX_ALIGNMENT	16
+#define	_POINTER_ALIGNMENT		8
+#define	_MAX_ALIGNMENT			16
+#define	_ALIGNMENT_REQUIRED		1
+#define	_MAX_ALIGNMENT_TYPE		long double
+
+#define	_LONG_LONG_ALIGNMENT_32		_LONG_LONG_ALIGNMENT
+
+/*
+ * Define the appropriate "implementation choices".
+ */
+#if !defined(_LP64)
+#define	_LP64
+#endif
+#define	_SUNOS_VTOC_16
+#define	_DMA_USES_PHYSADDR
+#define	_FIRMWARE_NEEDS_FDISK
+#define	_PSM_MODULES
+#define	_RTC_CONFIG
+#define	_SOFT_HOSTID
+#define	_DONT_USE_1275_GENERIC_NAMES
 
 /*
  * #error is strictly ansi-C, but works as well as anything for K&R systems.

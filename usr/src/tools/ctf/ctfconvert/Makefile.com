@@ -20,7 +20,7 @@ NATIVE_LIBS += libelf.so libc.so
 
 LDFLAGS = \
 	-L$(ROOTONBLDLIBMACH) \
-	'-R$$ORIGIN/../../lib/$(MACH)' \
+	'-R$$ORIGIN/../../lib/$(NATIVE_MACH)' \
 	$(BDIRECT) $(ZLAZYLOAD)
 
 CPPFLAGS += -include ../../common/ctf_headers.h

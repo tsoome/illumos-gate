@@ -43,6 +43,10 @@ static void brand_plat_interposition_disable(void);
 struct brand_mach_ops native_mach_ops  = {
 		NULL, NULL
 };
+#elif defined(__aarch64__)
+struct brand_mach_ops native_mach_ops  = {
+		NULL
+};
 #else /* !__sparcv9 */
 struct brand_mach_ops native_mach_ops  = {
 		NULL, NULL, NULL, NULL
@@ -675,7 +679,7 @@ brand_solaris_elfexec(vnode_t *vp, execa_t *uap, uarg_t *args,
 		err = elfexec(nvp, uap, args, idatap, INTP_MAXDEPTH + 1, execsz,
 		    setid, exec_file, cred, brand_action);
 	}
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	else {
 		err = elf32exec(nvp, uap, args, idatap, INTP_MAXDEPTH + 1,
 		    execsz, setid, exec_file, cred, brand_action);
@@ -727,7 +731,7 @@ brand_solaris_elfexec(vnode_t *vp, execa_t *uap, uarg_t *args,
 		    &voffset, exec_file, &interp, &env.ex_bssbase,
 		    &env.ex_brkbase, &env.ex_brksize, NULL);
 	}
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	else {
 		Elf32_Ehdr ehdr32;
 		Elf32_Addr uphdr_vaddr32;
@@ -788,7 +792,7 @@ brand_solaris_elfexec(vnode_t *vp, execa_t *uap, uarg_t *args,
 			    &uphdr_vaddr, &voffset, exec_file, &interp,
 			    NULL, NULL, NULL, &lddata);
 		}
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		else {
 			Elf32_Ehdr ehdr32;
 			Elf32_Addr uphdr_vaddr32;

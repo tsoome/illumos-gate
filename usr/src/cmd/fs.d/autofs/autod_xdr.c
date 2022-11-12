@@ -439,7 +439,7 @@ xdr_autofs_putrddirres(xdrs, rddir, reqsize)
 }
 
 #define	DIRENT64_RECLEN(namelen)	\
-	(((int)(((dirent64_t *)0)->d_name) + 1 + (namelen) + 7) & ~ 7)
+	((offsetof(dirent64_t, d_name) + 1 + (namelen) + 7) & ~ 7)
 #define	reclen(namlen)	DIRENT64_RECLEN((namlen))
 
 /*

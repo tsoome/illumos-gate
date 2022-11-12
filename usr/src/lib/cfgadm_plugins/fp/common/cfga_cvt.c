@@ -68,7 +68,7 @@ cvt_dyncomp_to_lawwn(const char *dyncomp, la_wwn_t *port_wwn)
 
 		c = ctoi(*dyncomp++);
 		c1 = ctoi(*dyncomp++);
-		if (c == -1 || c1 == -1)
+		if (c == (char)-1 || c1 == (char)-1)
 			return (-1);
 		*wwnp = ((c << 4) + c1);
 	}

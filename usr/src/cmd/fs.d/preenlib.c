@@ -19,7 +19,7 @@
  *
  * CDDL HEADER END
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+
 /*
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
@@ -29,6 +29,7 @@
  * common routines for parallelization (used by both fsck and quotacheck)
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <dlfcn.h>
 #include <macros.h>
@@ -120,7 +121,7 @@ preen_addev(char *devnm)
 		return (-1);
 	}
 	(void) close(fd);
-	if ((rdp = (struct rawdev *)malloc(sizeof (struct rawdev))) == NULL) {
+	if ((rdp = malloc(sizeof (struct rawdev))) == NULL) {
 		(void) fprintf(stderr, "out of memory in preenlib\n");
 		return (-1);
 	}
@@ -357,7 +358,7 @@ alloc_dev(int did)
 {
 	struct onedev *devp;
 
-	devp = (struct onedev *)malloc(sizeof (struct onedev));
+	devp = malloc(sizeof (struct onedev));
 	if (devp == NULL) {
 		(void) fprintf(stderr, "out of memory in preenlib\n");
 		exit(1);
@@ -380,7 +381,7 @@ addunit(struct onedev *devp, uint_t unit)
 		devp->unitmap = devp->mapsize ?
 		    (uint_t *)realloc(devp->unitmap,
 		    newsize * sizeof (uint_t)) :
-		    (uint_t *)malloc(newsize * sizeof (uint_t));
+		    malloc(newsize * sizeof (uint_t));
 		if (devp->unitmap == NULL) {
 			(void) fprintf(stderr, "out of memory in preenlib\n");
 			exit(1);
@@ -420,7 +421,7 @@ makebusy(struct onedev *dev)
 		drvp->busymap = drvp->mapsize ?
 		    (uint_t *)realloc(drvp->busymap,
 		    newsize * sizeof (uint_t)) :
-		    (uint_t *)malloc(newsize * sizeof (uint_t));
+		    malloc(newsize * sizeof (uint_t));
 		if (drvp->busymap == NULL) {
 			(void) fprintf(stderr, "out of memory in preenlib\n");
 			exit(1);

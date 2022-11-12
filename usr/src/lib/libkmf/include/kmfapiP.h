@@ -202,8 +202,12 @@ typedef struct _kmf_handle {
 #define	KMF_PLUGIN_PATH "/lib/crypto/"
 #elif defined(__i386)
 #define	KMF_PLUGIN_PATH "/lib/crypto/"
+#elif defined(__aarch64__)
+#define	KMF_PLUGIN_PATH "/lib/crypto/"
 #elif defined(__amd64)
 #define	KMF_PLUGIN_PATH "/lib/crypto/amd64/"
+#else
+#error Unsupported ISA
 #endif
 #endif /* !KMF_PLUGIN_PATH */
 

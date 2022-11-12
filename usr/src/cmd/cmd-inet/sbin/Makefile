@@ -23,10 +23,10 @@
 # Copyright 1999-2002 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-#
 
-SUBDIRS=	dhcpagent dhcpinfo ifparse netstrategy
+include $(SRC)/Makefile.master
+
+SUBDIRS=	dhcpinfo ifparse netstrategy dhcpagent
 
 include ../../Makefile.cmd
 

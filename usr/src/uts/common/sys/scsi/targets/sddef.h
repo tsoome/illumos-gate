@@ -658,7 +658,7 @@ struct sd_lun {
  * for physio, for devices without tagged queuing enabled.
  * The default for devices with tagged queuing enabled is SD_MAX_XFER_SIZE
  */
-#if defined(__i386) || defined(__amd64)
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 #define	SD_DEFAULT_MAX_XFER_SIZE	(256 * 1024)
 #endif
 #define	SD_MAX_XFER_SIZE		(1024 * 1024)

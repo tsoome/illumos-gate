@@ -21,6 +21,7 @@
 /*
  * Copyright (c) 1991, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2019 Joyent, Inc.
  * Copyright 2021 Oxide Computer Company
  */
@@ -2222,8 +2223,7 @@ static struct {
 #if defined(__sparcv9)
 	kstat_named_t ci_device_ID;
 	kstat_named_t ci_cpu_fru;
-#endif
-#if defined(__x86)
+#elif defined(__x86)
 	kstat_named_t ci_vendorstr;
 	kstat_named_t ci_family;
 	kstat_named_t ci_model;
@@ -2236,6 +2236,14 @@ static struct {
 	kstat_named_t ci_curr_cstate;
 	kstat_named_t ci_cacheid;
 	kstat_named_t ci_sktstr;
+#elif defined(__aarch64__)
+	kstat_named_t ci_features;
+	kstat_named_t ci_implementer;
+	kstat_named_t ci_variant;
+	kstat_named_t ci_part;
+	kstat_named_t ci_revision;
+#else
+#error Unknown platform
 #endif
 } cpu_info_template = {
 	{ "state",			KSTAT_DATA_CHAR },
@@ -2253,8 +2261,7 @@ static struct {
 #if defined(__sparcv9)
 	{ "device_ID",			KSTAT_DATA_UINT64 },
 	{ "cpu_fru",			KSTAT_DATA_STRING },
-#endif
-#if defined(__x86)
+#elif defined(__x86)
 	{ "vendor_id",			KSTAT_DATA_STRING },
 	{ "family",			KSTAT_DATA_INT32 },
 	{ "model",			KSTAT_DATA_INT32 },
@@ -2267,6 +2274,14 @@ static struct {
 	{ "current_cstate",		KSTAT_DATA_INT32 },
 	{ "cache_id",			KSTAT_DATA_INT32 },
 	{ "socket_type",		KSTAT_DATA_STRING },
+#elif defined(__aarch64__)
+	{ "features",			KSTAT_DATA_STRING },
+	{ "implementer",		KSTAT_DATA_STRING },
+	{ "variant",			KSTAT_DATA_STRING },
+	{ "part",			KSTAT_DATA_STRING },
+	{ "revision",			KSTAT_DATA_STRING },
+#else
+#error Unknown platform
 #endif
 };
 
@@ -2313,8 +2328,7 @@ cpu_info_kstat_update(kstat_t *ksp, int rw)
 	cpu_info_template.ci_device_ID.value.ui64 =
 	    cpunodes[cp->cpu_id].device_id;
 	kstat_named_setstr(&cpu_info_template.ci_cpu_fru, cpu_fru_fmri(cp));
-#endif
-#if defined(__x86)
+#elif defined(__x86)
 	kstat_named_setstr(&cpu_info_template.ci_vendorstr,
 	    cpuid_getvendorstr(cp));
 	cpu_info_template.ci_family.value.l = cpuid_getfamily(cp);
@@ -2330,6 +2344,14 @@ cpu_info_kstat_update(kstat_t *ksp, int rw)
 	cpu_info_template.ci_cacheid.value.i32 = cpuid_get_cacheid(cp);
 	kstat_named_setstr(&cpu_info_template.ci_sktstr,
 	    cpuid_getsocketstr(cp));
+#elif defined(__aarch64__)
+	kstat_named_setstr(&cpu_info_template.ci_features, cp->cpu_features);
+	kstat_named_setstr(&cpu_info_template.ci_implementer, cp->cpu_implementer);
+	kstat_named_setstr(&cpu_info_template.ci_variant, cp->cpu_variant);
+	kstat_named_setstr(&cpu_info_template.ci_part, cp->cpu_partnum);
+	kstat_named_setstr(&cpu_info_template.ci_revision, cp->cpu_revision);
+#else
+#error Unknown platform
 #endif
 
 	return (0);

@@ -25,9 +25,9 @@ dir  path=usr/include
 file path=usr/include/winscard.h
 file path=usr/include/wintypes.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libpcsc.so target=./libpcsc.so.1
-file path=usr/lib/$(ARCH64)/libpcsc.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libpcsc.so target=./libpcsc.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libpcsc.so.1
 link path=usr/lib/libpcsc.so target=./libpcsc.so.1
 file path=usr/lib/libpcsc.so.1
 depend type=require fmri=driver/misc/ccid

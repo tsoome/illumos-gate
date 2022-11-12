@@ -34,20 +34,20 @@ set name=variant.arch value=$(ARCH)
 dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys
-file path=kernel/drv/$(ARCH64)/fct group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/fct group=sys
 file path=kernel/drv/$(ARCH64)/pppt group=sys
-file path=kernel/drv/$(ARCH64)/qlt group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/qlt group=sys
 file path=kernel/drv/$(ARCH64)/stmf group=sys
 file path=kernel/drv/$(ARCH64)/stmf_sbd group=sys
-file path=kernel/drv/fct.conf group=sys
+$(not_aarch64)file path=kernel/drv/fct.conf group=sys
 file path=kernel/drv/pppt.conf group=sys
-file path=kernel/drv/qlt.conf group=sys
+$(not_aarch64)file path=kernel/drv/qlt.conf group=sys
 file path=kernel/drv/stmf.conf group=sys
 file path=kernel/drv/stmf_sbd.conf group=sys
-dir  path=kernel/kmdb group=sys
-dir  path=kernel/kmdb/$(ARCH64) group=sys
-file path=kernel/kmdb/$(ARCH64)/stmf group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/stmf_sbd group=sys mode=0555
+$(not_aarch64)dir path=kernel/kmdb group=sys
+$(not_aarch64)dir path=kernel/kmdb/$(ARCH64) group=sys
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/stmf group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/stmf_sbd group=sys mode=0555
 dir  path=lib variant.opensolaris.zone=global
 dir  path=lib/svc variant.opensolaris.zone=global
 dir  path=lib/svc/manifest group=sys variant.opensolaris.zone=global
@@ -76,20 +76,22 @@ file path=usr/include/sys/stmf.h
 file path=usr/include/sys/stmf_defines.h
 file path=usr/include/sys/stmf_ioctl.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libstmf.so target=libstmf.so.1
-file path=usr/lib/$(ARCH64)/libstmf.so.1
-link path=usr/lib/$(ARCH64)/libstmfproxy.so target=libstmfproxy.so.1
-file path=usr/lib/$(ARCH64)/libstmfproxy.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libstmf.so target=libstmf.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libstmf.so.1
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libstmfproxy.so \
+    target=libstmfproxy.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libstmfproxy.so.1
 link path=usr/lib/libstmf.so target=libstmf.so.1
 file path=usr/lib/libstmf.so.1
 link path=usr/lib/libstmfproxy.so target=libstmfproxy.so.1
 file path=usr/lib/libstmfproxy.so.1
-dir  path=usr/lib/mdb group=sys
-dir  path=usr/lib/mdb/kvm group=sys
-dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-file path=usr/lib/mdb/kvm/$(ARCH64)/stmf.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/stmf_sbd.so group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/mdb group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf_sbd.so group=sys \
+    mode=0555
 dir  path=usr/sbin
 file path=usr/sbin/sbdadm mode=0555
 file path=usr/sbin/stmfadm mode=0555

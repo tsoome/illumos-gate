@@ -1163,7 +1163,7 @@ parse_ps(int argc, char **argv, ike_ps_t **presharedpp, int *len)
 		FREE_HE(loche);
 	} else {
 		psp->ps_localid_len = sizeof (sadb_ident_t) + locidlen;
-		sidp = (sadb_ident_t *)((int)psp + psp->ps_localid_off);
+		sidp = (sadb_ident_t *)((intptr_t)psp + psp->ps_localid_off);
 		sidp->sadb_ident_len = psp->ps_localid_len;
 		sidp->sadb_ident_type = locidtype;
 		(void) strlcpy((char *)(sidp + 1), locid, a_locidtotal);
@@ -1197,7 +1197,7 @@ parse_ps(int argc, char **argv, ike_ps_t **presharedpp, int *len)
 		if (remidlen & 0x1)
 			remidlen++;
 		psp->ps_remoteid_len = sizeof (sadb_ident_t) + remidlen;
-		sidp = (sadb_ident_t *)((int)psp + psp->ps_remoteid_off);
+		sidp = (sadb_ident_t *)((intptr_t)psp + psp->ps_remoteid_off);
 		sidp->sadb_ident_len = psp->ps_remoteid_len;
 		sidp->sadb_ident_type = remidtype;
 		(void) strlcpy((char *)(sidp + 1), remid, a_remidtotal);
@@ -1206,7 +1206,7 @@ parse_ps(int argc, char **argv, ike_ps_t **presharedpp, int *len)
 	psp->ps_key_off = psp->ps_remoteid_off + a_remidtotal;
 	psp->ps_key_len = keylen;
 	psp->ps_key_bits = keybits;
-	(void) memcpy((uint8_t *)((int)psp + psp->ps_key_off), keyp, keylen);
+	(void) memcpy((uint8_t *)((intptr_t)psp + psp->ps_key_off), keyp, keylen);
 	if (locpfx != NULL && ((pfxlen = atoi(locpfx)) > 0))
 		psp->ps_localid_plen = pfxlen;
 	if (rempfx != NULL && ((pfxlen = atoi(rempfx)) > 0))
@@ -2000,7 +2000,7 @@ print_p1(ike_p1_sa_t *p1)
 	 * the stat len might be 0; but still make the call
 	 * to print_lifetime() to pick up the xform info
 	 */
-	sp = (ike_p1_stats_t *)((int)(p1) + p1->p1sa_stat_off);
+	sp = (ike_p1_stats_t *)((intptr_t)(p1) + p1->p1sa_stat_off);
 	print_lifetime("LIFTM:", &p1->p1sa_xform, sp, p1->p1sa_stat_len);
 
 	if (p1->p1sa_stat_len > 0) {
@@ -2008,22 +2008,22 @@ print_p1(ike_p1_sa_t *p1)
 	}
 
 	if (p1->p1sa_error_len > 0) {
-		ep = (ike_p1_errors_t *)((int)(p1) + p1->p1sa_error_off);
+		ep = (ike_p1_errors_t *)((intptr_t)(p1) + p1->p1sa_error_off);
 		print_errs("ERRS: ", ep, p1->p1sa_error_len);
 	}
 
 	if (p1->p1sa_localid_len > 0) {
-		lidp = (sadb_ident_t *)((int)(p1) + p1->p1sa_localid_off);
+		lidp = (sadb_ident_t *)((intptr_t)(p1) + p1->p1sa_localid_off);
 		print_id("LOCID:", lidp, lstat);
 	}
 
 	if (p1->p1sa_remoteid_len > 0) {
-		ridp = (sadb_ident_t *)((int)(p1) + p1->p1sa_remoteid_off);
+		ridp = (sadb_ident_t *)((intptr_t)(p1) + p1->p1sa_remoteid_off);
 		print_id("REMID:", ridp, rstat);
 	}
 
 	if (p1->p1sa_key_len > 0) {
-		kp = (ike_p1_key_t *)((int)(p1) + p1->p1sa_key_off);
+		kp = (ike_p1_key_t *)((intptr_t)(p1) + p1->p1sa_key_off);
 		print_keys("KEY:  ", kp, p1->p1sa_key_len);
 	}
 }
@@ -2071,7 +2071,7 @@ print_ps(ike_ps_t *ps)
 	    xchgstr(ps->ps_ike_mode));
 
 	if (ps->ps_key_len > 0) {
-		keyp = (uint8_t *)((int)(ps) + ps->ps_key_off);
+		keyp = (uint8_t *)((intptr_t)(ps) + ps->ps_key_off);
 		(void) printf(gettext("PSKEY: Pre-shared key (%d bytes): "),
 		    ps->ps_key_len);
 		(void) dump_key(keyp, ps->ps_key_bits, 0, stdout, B_FALSE);
@@ -2084,7 +2084,7 @@ print_ps(ike_ps_t *ps)
 	 */
 	if (ps->ps_localid_len > 0) {
 		lidp = (sadb_ident_t *)
-		    ((int)(ps) + ps->ps_localid_off);
+		    ((intptr_t)(ps) + ps->ps_localid_off);
 		print_id("LOCID:", lidp, DONT_PRINT_INIT);
 	} else {
 		print_addr("LOCIP:", &ps->ps_ipaddrs.loc_addr, DONT_PRINT_INIT,
@@ -2093,7 +2093,7 @@ print_ps(ike_ps_t *ps)
 
 	if (ps->ps_remoteid_len > 0) {
 		ridp = (sadb_ident_t *)
-		    ((int)(ps) + ps->ps_remoteid_off);
+		    ((intptr_t)(ps) + ps->ps_remoteid_off);
 		print_id("REMID:", ridp, DONT_PRINT_INIT);
 	} else {
 		print_addr("REMIP:", &ps->ps_ipaddrs.rem_addr, DONT_PRINT_INIT,
@@ -2154,7 +2154,7 @@ print_rule(ike_rule_t *rp)
 
 	if (rp->rule_locip_cnt > 0) {
 		(void) printf(gettext("LOCIP: IP address range(s):\n"));
-		lipp = (ike_addr_pr_t *)((int)rp + rp->rule_locip_off);
+		lipp = (ike_addr_pr_t *)((intptr_t)rp + rp->rule_locip_off);
 		for (i = 0; i < rp->rule_locip_cnt; i++, lipp++) {
 			print_addr_range("LOCIP:", lipp);
 		}
@@ -2162,27 +2162,27 @@ print_rule(ike_rule_t *rp)
 
 	if (rp->rule_remip_cnt > 0) {
 		(void) printf(gettext("REMIP: IP address range(s):\n"));
-		ripp = (ike_addr_pr_t *)((int)rp + rp->rule_remip_off);
+		ripp = (ike_addr_pr_t *)((intptr_t)rp + rp->rule_remip_off);
 		for (i = 0; i < rp->rule_remip_cnt; i++, ripp++) {
 			print_addr_range("REMIP:", ripp);
 		}
 	}
 
 	if (rp->rule_locid_inclcnt + rp->rule_locid_exclcnt > 0) {
-		lidp = (char *)((int)rp + rp->rule_locid_off);
+		lidp = (char *)((intptr_t)rp + rp->rule_locid_off);
 		print_idspec("LOCID:", lidp, rp->rule_locid_inclcnt,
 		    rp->rule_locid_exclcnt);
 	}
 
 	if (rp->rule_remid_inclcnt + rp->rule_remid_exclcnt > 0) {
-		ridp = (char *)((int)rp + rp->rule_remid_off);
+		ridp = (char *)((intptr_t)rp + rp->rule_remid_off);
 		print_idspec("REMID:", ridp, rp->rule_remid_inclcnt,
 		    rp->rule_remid_exclcnt);
 	}
 
 	if (rp->rule_xform_cnt > 0) {
 		(void) printf(gettext("XFRMS: Available Transforms:\n"));
-		xfp = (ike_p1_xform_t *)((int)rp +  rp->rule_xform_off);
+		xfp = (ike_p1_xform_t *)((intptr_t)rp +  rp->rule_xform_off);
 		for (i = 0; i < rp->rule_xform_cnt; i++, xfp++) {
 			(void) snprintf(prefix, PREFIXLEN, "XF %2u:", i);
 			print_xform(prefix, xfp, B_TRUE);
@@ -3430,7 +3430,7 @@ parseit(int argc, char **argv, char *notused, boolean_t notused_either)
 int
 main(int argc, char **argv)
 {
-	char	ch;
+	int	ch;
 
 	(void) setlocale(LC_ALL, "");
 #if !defined(TEXT_DOMAIN)

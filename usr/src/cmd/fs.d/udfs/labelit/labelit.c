@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Label a file system volume.
  */
@@ -49,11 +47,11 @@
 static uint8_t buf[MAXBSIZE];
 static uint64_t off;
 #define	BUF_LEN	0x200
-static int8_t	lvinfo1_buf[BUF_LEN];
-static int8_t	lvinfo2_buf[BUF_LEN];
-static int8_t	lvinfo3_buf[BUF_LEN];
-static int8_t	fsname[BUF_LEN];
-static int8_t	volname[BUF_LEN];
+static char	lvinfo1_buf[BUF_LEN];
+static char	lvinfo2_buf[BUF_LEN];
+static char	lvinfo3_buf[BUF_LEN];
+static char	fsname[BUF_LEN];
+static char	volname[BUF_LEN];
 static int32_t fsname_len;
 
 #define	SET_LVINFO1	0x01
@@ -72,11 +70,11 @@ static void usage();
 static void label(ud_handle_t, uint32_t);
 static void print_info(struct vds *, char *, ud_handle_t);
 static void label_vds(struct vds *, uint32_t, ud_handle_t);
-static int32_t convert_string(int8_t *, int8_t *, int32_t, int32_t, int8_t *);
-static int32_t ud_convert2unicode(int8_t *, int8_t *, int32_t);
+static int32_t convert_string(char *, char *, int32_t, int32_t, char *);
+static int32_t ud_convert2unicode(char *, char *, int32_t);
 
 
-int8_t *labelit_subopts[] = {
+char *labelit_subopts[] = {
 #define	LVINFO1	0x00
 	"lvinfo1",
 #define	LVINFO2	0x01
@@ -92,8 +90,8 @@ main(int32_t argc, char *argv[])
 	int32_t		opt = 0;
 	int32_t		flags = 0;
 	int32_t		ret = 0;
-	int8_t		*options = NULL;
-	int8_t		*value = NULL;
+	char		*options = NULL;
+	char		*value = NULL;
 	uint32_t	set_flags = 0;
 	ud_handle_t	udh;
 
@@ -292,7 +290,7 @@ label(ud_handle_t udh, uint32_t set_flags)
 static void
 print_info(struct vds *v, char *name, ud_handle_t udh)
 {
-	uint8_t		outbuf[BUF_LEN];
+	char		outbuf[BUF_LEN];
 
 	if (v->pvd_len != 0) {
 		off = v->pvd_loc * udh->udfs.lbsize;
@@ -306,8 +304,8 @@ print_info(struct vds *v, char *name, ud_handle_t udh)
 
 			bzero(outbuf, BUF_LEN);
 			(void) ud_convert2local(
-					(int8_t *)pvd->pvd_vsi,
-					(int8_t *)outbuf, strlen(pvd->pvd_vsi));
+					pvd->pvd_vsi,
+					outbuf, strlen(pvd->pvd_vsi));
 			(void) fprintf(stdout,
 				gettext("fsname in  %s : %s\n"),
 					name, outbuf);
@@ -315,8 +313,8 @@ print_info(struct vds *v, char *name, ud_handle_t udh)
 			bzero(outbuf, BUF_LEN);
 			pvd->pvd_vol_id[31] = '\0';
 			(void) ud_convert2local(
-					(int8_t *)pvd->pvd_vol_id,
-					(int8_t *)outbuf,
+					pvd->pvd_vol_id,
+					outbuf,
 					strlen(pvd->pvd_vol_id));
 			(void) fprintf(stdout,
 				gettext("volume label in %s : %s\n"),
@@ -336,8 +334,8 @@ print_info(struct vds *v, char *name, ud_handle_t udh)
 			bzero(outbuf, BUF_LEN);
 			iud->iuvd_ifo1[35] = '\0';
 			(void) ud_convert2local(
-					(int8_t *)iud->iuvd_ifo1,
-					(int8_t *)outbuf,
+					iud->iuvd_ifo1,
+					outbuf,
 					strlen(iud->iuvd_ifo1));
 			(void) fprintf(stdout,
 				gettext("LVInfo1 in  %s : %s\n"),
@@ -346,8 +344,8 @@ print_info(struct vds *v, char *name, ud_handle_t udh)
 			bzero(outbuf, BUF_LEN);
 			iud->iuvd_ifo2[35] = '\0';
 			(void) ud_convert2local(
-					(int8_t *)iud->iuvd_ifo2,
-					(int8_t *)outbuf,
+					iud->iuvd_ifo2,
+					outbuf,
 					strlen(iud->iuvd_ifo2));
 			(void) fprintf(stdout,
 				gettext("LVInfo2 in  %s : %s\n"),
@@ -356,8 +354,8 @@ print_info(struct vds *v, char *name, ud_handle_t udh)
 			bzero(outbuf, BUF_LEN);
 			iud->iuvd_ifo3[35] = '\0';
 			(void) ud_convert2local(
-					(int8_t *)iud->iuvd_ifo3,
-					(int8_t *)outbuf,
+					iud->iuvd_ifo3,
+					outbuf,
 					strlen(iud->iuvd_ifo3));
 			(void) fprintf(stdout,
 				gettext("LVInfo3 in  %s : %s\n"),
@@ -384,7 +382,7 @@ label_vds(struct vds *v, uint32_t set_flags, ud_handle_t udh)
 			/* LINTED */
 			pvd = (struct pri_vol_desc *)buf;
 			bzero((int8_t *)&pvd->pvd_vsi[9], 119);
-			(void) strncpy((int8_t *)&pvd->pvd_vsi[9],
+			(void) strncpy(&pvd->pvd_vsi[9],
 					&fsname[1], fsname_len - 1);
 
 			set_dstring(pvd->pvd_vol_id,
@@ -466,8 +464,8 @@ label_vds(struct vds *v, uint32_t set_flags, ud_handle_t udh)
 
 
 int32_t
-convert_string(int8_t *value, int8_t *out_buf, int32_t out_len,
-	int32_t len, int8_t *error_string)
+convert_string(char *value, char *out_buf, int32_t out_len,
+	int32_t len, char *error_string)
 {
 	int32_t		out_length = 0;
 
@@ -481,7 +479,7 @@ convert_string(int8_t *value, int8_t *out_buf, int32_t out_len,
 }
 
 static int32_t
-ud_convert2unicode(int8_t *mb, int8_t *comp, int32_t out_len)
+ud_convert2unicode(char *mb, char *comp, int32_t out_len)
 {
 	wchar_t		buf4c[128];
 	int32_t		len = 0;

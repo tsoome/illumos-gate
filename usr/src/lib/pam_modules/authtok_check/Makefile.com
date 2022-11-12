@@ -31,7 +31,7 @@ OBJECTS=	authtok_check.o \
 
 include		../../Makefile.pam_modules
 
-LDLIBS		+= -lpam -lc
+LDLIBS		+= -lpam -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 CPPFLAGS	+= -D_FILE_OFFSET_BITS=64
 CERRWARN	+= -_gcc=-Wno-parentheses

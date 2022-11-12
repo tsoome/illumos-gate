@@ -1,0 +1,577 @@
+/*
+ * Copyright (c) 2016 Andreas Farber
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPL or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This library is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This library is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/gxbb.h>
+#include <dt-bindings/gpio/gxbb.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/reset/aml_gxbb.h>
+
+/ {
+	compatible = "amlogic,meson-gxbb";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <0x2>;
+		#size-cells = <0x0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0x0 0x0>;
+			enable-method = "psci";
+		};
+
+		cpu1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0x0 0x1>;
+			enable-method = "psci";
+		};
+
+		cpu2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0x0 0x2>;
+			enable-method = "psci";
+		};
+
+		cpu3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0x0 0x3>;
+			enable-method = "psci";
+		};
+	};
+
+	arm-pmu {
+		compatible = "arm,cortex-a53-pmu";
+		interrupts = <GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 153 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&cpu0>, <&cpu1>, <&cpu2>, <&cpu3>;
+	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI 13
+			(GIC_CPU_MASK_RAW(0xff) | IRQ_TYPE_EDGE_RISING)>,
+			     <GIC_PPI 14
+			(GIC_CPU_MASK_RAW(0xff) | IRQ_TYPE_EDGE_RISING)>,
+			     <GIC_PPI 11
+			(GIC_CPU_MASK_RAW(0xff) | IRQ_TYPE_EDGE_RISING)>,
+			     <GIC_PPI 10
+			(GIC_CPU_MASK_RAW(0xff) | IRQ_TYPE_EDGE_RISING)>;
+	};
+
+	xtal: xtal-clk {
+		compatible = "fixed-clock";
+		clock-frequency = <24000000>;
+		clock-output-names = "xtal";
+		#clock-cells = <0>;
+	};
+
+	clk81: clk81-clk {
+		compatible = "fixed-clock";
+		clock-frequency = <166666666>;
+		clock-output-names = "clk81";
+		#clock-cells = <0>;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		gic: interrupt-controller@c4301000 {
+			compatible = "arm,gic-400";
+			reg = <0x0 0xc4301000 0 0x1000>,
+			      <0x0 0xc4302000 0 0x2000>,
+			      <0x0 0xc4304000 0 0x2000>,
+			      <0x0 0xc4306000 0 0x2000>;
+			interrupt-controller;
+			interrupts = <GIC_PPI 9
+				(GIC_CPU_MASK_SIMPLE(8) | IRQ_TYPE_LEVEL_HIGH)>;
+			#interrupt-cells = <3>;
+			#address-cells = <0>;
+		};
+
+		uart_A: serial@c11084c0 {
+			device_type = "serial";
+			compatible = "amlogic,meson-uart";
+			reg = <0x0 0xc11084c0 0x0 0x14>;
+			interrupts = <GIC_SPI 26 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&xtal>;
+			status = "disabled";
+		};
+
+		uart_AO: serial@c81004c0 {
+			device_type = "serial";
+			compatible = "amlogic,meson-uart";
+			reg = <0x0 0xc81004c0 0x0 0x14>;
+			interrupts = <GIC_SPI 193 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&xtal>;
+			status = "disabled";
+		};
+
+		dwmac: ethernet@c9410000 {
+			compatible = "amlogic,gxbb-rgmii-dwmac";
+			reg = <0x0 0xc9410000 0x0 0x10000
+			       0x0 0xc8834540 0x0 0x8>;
+			interrupts = <0 8 IRQ_TYPE_LEVEL_HIGH>;
+			phy-mode= "rgmii";
+			pinctrl-names = "eth_pins";
+			pinctrl-0 = <&eth_pins>;
+			rst_pin-gpios = <&gpio GPIOZ_14 0>;
+			mc_val = <0x1621>;
+			resets = <&clock GCLK_IDX_ETHERNET>;
+			reset-names = "ethpower";
+			interrupt-names = "macirq";
+			clocks = <&clock CLK_81>;
+			clock-names = "ethclk81";
+		};
+		i2c_a: i2c@c1108500{ /*I2C-A*/
+			compatible = "amlogic,meson-i2c";
+			dev_name = "i2c-A";
+			status = "disabled";
+			reg = <0x0 0xc1108500 0x0 0x20>;
+			device_id = <1>;
+			pinctrl-names="default";
+			pinctrl-0=<&a_i2c_master>;/*p200 i2c-A multiplex with usb PWR*/
+			#address-cells = <1>;
+			#size-cells = <0>;
+			use_pio = <0>;
+			master_i2c_speed = <300000>;
+			clocks = <&clk81>;
+			resets = <&clock GCLK_IDX_I2C>;
+		};
+		i2c_b: i2c@c11087c0{ /*I2C-B*/
+			compatible = "amlogic,meson-i2c";
+			dev_name = "i2c-B";
+			status = "disabled";
+			reg = <0x0 0xc11087c0 0x0 0x20>;
+			device_id = <2>;
+			pinctrl-names="default";
+			pinctrl-0=<&b_i2c_master>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			use_pio = <0>;
+			master_i2c_speed = <300000>;
+			clocks = <&clk81>;
+			resets = <&clock GCLK_IDX_I2C>;
+		};
+		i2c_c: i2c@c11087e0{ /*I2C-C*/
+			compatible = "amlogic,meson-i2c";
+			dev_name = "i2c-C";
+			status = "disabled";
+			reg = <0x0 0xc11087e0 0x0 0x20>;
+			device_id = <3>;
+			pinctrl-names="default";
+			pinctrl-0=<&c_i2c_master>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			use_pio = <0>;
+			master_i2c_speed = <300000>;
+			clocks = <&clk81>;
+			resets = <&clock GCLK_IDX_I2C>;
+		};
+		i2c_d: i2c@c1108d20{ /*I2C-D*/
+			compatible = "amlogic,meson-i2c";
+			dev_name = "i2c-D";
+			status = "disabled";
+			reg = <0x0 0xc1108d20 0x0 0x20>;
+			device_id = <4>;
+			pinctrl-names="default";
+			pinctrl-0=<&d_i2c_master>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			use_pio = <0>;
+			master_i2c_speed = <300000>;
+			clocks = <&clk81>;
+			resets = <&clock GCLK_IDX_I2C>;
+		};
+		sd: sd@d0072000{
+			compatible = "amlogic,aml_sd_emmc";
+			dev_name = "aml_newsd.0";
+			status = "disabled";
+			reg = <0x0 0xd0072000 0x0 0x2000>;
+			interrupts = <0 217 1
+				      0 67 1
+				      0 69 1>;
+			pinctrl-names = "sd_clk_cmd_pins", "sd_all_pins";
+			pinctrl-0 = <&sd_clk_cmd_pins>;
+			pinctrl-1 = <&sd_all_pins>;
+			sd {
+				status = "disabled";
+				pinname = "sd";
+				ocr_avail = <0x00200080>;
+				caps =	"MMC_CAP_4_BIT_DATA",
+					"MMC_CAP_MMC_HIGHSPEED",
+					"MMC_CAP_SD_HIGHSPEED",
+					"MMC_CAP_UHS_SDR12",
+					"MMC_CAP_UHS_SDR25",
+					"MMC_CAP_UHS_SDR50",
+					"MMC_CAP_UHS_SDR104";
+				f_min = <400000>;
+				f_max = <200000000>;
+				max_req_size = <0x20000>; /**128KB*/
+				gpio_dat3 = <&gpio CARD_4 GPIO_ACTIVE_HIGH>;
+				jtag_pin = <&gpio CARD_0 GPIO_ACTIVE_HIGH>;
+				gpio_cd = <&gpio CARD_6 GPIO_ACTIVE_HIGH>;
+				gpio_volsw = <&gpio_ao GPIOAO_3 GPIO_ACTIVE_LOW>;
+				gpio_power = <&gpio GPIOY_12 GPIO_ACTIVE_HIGH>;
+				power_level = <1>;
+				irq_in = <3>;
+				irq_out = <5>;
+				card_type = <5>;
+			};
+		};
+		emmc: emmc@d0074000 {
+			compatible = "amlogic,aml_sd_emmc";
+			dev_name = "aml_newsd.0";
+			status = "disabled";
+			reg = <0x0 0xd0074000 0x0 0x2000>;
+			interrupts = <0 218 1>;
+			pinctrl-names = "emmc_clk_cmd_pins", "emmc_all_pins";
+			pinctrl-0 = <&emmc_clk_cmd_pins>;
+			pinctrl-1 = <&emmc_all_pins>;
+			emmc {
+				status = "disabled";
+				pinname = "emmc";
+				ocr_avail = <0x200080>;
+				caps =	"MMC_CAP_8_BIT_DATA",
+					"MMC_CAP_MMC_HIGHSPEED",
+					"MMC_CAP_SD_HIGHSPEED",
+					"MMC_CAP_NONREMOVABLE",
+					"MMC_CAP_1_8V_DDR",
+					"MMC_CAP_HW_RESET",
+					"MMC_CAP_ERASE";
+				caps2 =	"MMC_CAP2_HS200_1_8V_SDR",
+					"MMC_CAP2_HS400_1_8V",
+					"MMC_CAP2_BROKEN_VOLTAGE",
+					"MMC_CAP2_BOOTPART_NOACC";
+				f_min = <400000>;
+				f_max = <100000000>;
+				max_req_size = <0x20000>; /**256KB*/
+				gpio_dat3 = <&gpio BOOT_3 GPIO_ACTIVE_HIGH>;
+				hw_reset =  <&gpio BOOT_9 GPIO_ACTIVE_HIGH>;
+				card_type = <1>;
+			};
+		};
+
+		clock: meson_clock {
+			compatible = "amlogic,gxbb-clock";
+			reg = <0x0 0xc883c000 0x0 0x1000>,   /* HIU BUS*/
+			      <0x0 0xc8100000 0x0 0x1000>;   //AOBUS
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+			sys_max = <1536000000>;
+		};
+
+		pinmux: pinmux{
+			compatible = "amlogic,pinmux-gxbb";
+			dev_name = "pinmux";
+			#pinmux-cells=<2>;
+			#address-cells = <2>;
+			#size-cells = <2>;
+			reg = <0x0 0xc1109880 0x0 0x10>;
+			interrupts = <	0 64 1	 /* gpio irq 0 = 64 + 32 = 96 */
+					0 65 1
+					0 66 1
+					0 67 1
+					0 68 1
+					0 69 1
+					0 70 1
+					0 71 1>; /* gpio irq bank 7 = 71 + 32 = 103 */
+			ranges;
+			gpio: banks@c11080b0 {
+				reg = <0x0 0xc88344b0 0x0 0x28>,
+				<0x0 0xc88344e8 0x0 0x14>,
+				<0x0 0xc8834520 0x0 0x14>,
+				<0x0 0xc8834430 0x0 0x40>;
+				reg-names = "mux", "pull", "pull-enable", "gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+			gpio_ao: ao-bank@c1108030 {
+				reg = <0x0 0xc8100014 0x0 0x8>,
+				<0x0 0xc810002c 0x0 0x4>,
+				<0x0 0xc810002c 0x0 0x4>,
+				<0x0 0xc8100024 0x0 0x8>;
+				reg-names = "mux", "pull", "pull-enable", "gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+			eth_pins:eth_pins{
+	                        amlogic,setmask =<6 0x3fff>;
+	                        amlogic,clrmask =<6 0xc000>,
+	                                         <5 0x3c0000f0>,
+	                                         <4 0x300>;
+	                        amlogic,pins="GPIOZ_0","GPIOZ_1","GPIOZ_2","GPIOZ_3",
+	                                "GPIOZ_4","GPIOZ_5","GPIOZ_6","GPIOZ_7",
+	                                "GPIOZ_8","GPIOZ_9","GPIOZ_10","GPIOZ_11",
+	                                "GPIOZ_12","GPIOZ_13","GPIOZ_15";
+	                };
+			remote_pins:remote_pin{
+				amlogic,setmask = <AO 0x1>;
+				amlogic,pins = "GPIOAO_7";
+			};
+			ao_uart_pins:ao_uart{
+				amlogic,setmask=<AO 0x1800>;
+				amlogic,pins="GPIOAO_0", "GPIOAO_1";
+			};
+			ao_b_uart_pins:ao_b_uart{
+				amlogic,setmask=<AO 0x1800000>;
+				amlogic,pins="GPIOAO_4", "GPIOAO_5";
+			};
+			a_uart_pins:a_uart{
+				amlogic,setmask=<4 0x3c00>;
+				amlogic,pins="GPIOX_12", "GPIOX_13", "GPIOX_14", "GPIOX_15";
+			};
+			b_uart_pins:b_uart{
+				amlogic,setmask=<2 0x30000000>;
+				amlogic,pins="GPIODV_24", "GPIODV_25";
+			};
+			c_uart_pins:c_uart{
+				amlogic,setmask=<1 0xc0000>;
+				amlogic,pins="GPIOY_13", "GPIOY_14";
+			};
+			wifi_32k_pins:wifi_32k_pins{
+				amlogic,setmask=<2 0x40000000>;
+				amlogic,clrmask=<2 0x400000
+													3 0x8000>;
+				amlogic,pins="GPIOX_19";
+			};
+			sd_clk_cmd_pins:sd_clk_cmd_pins{
+			    amlogic,setmask=<2 0x00000c00>,
+													<AO 0x00001800>;
+			    amlogic,pins = "CARD_2","CARD_3"; /* CARD_2:CLK, CARD_3:CMD */
+			    amlogic,enable-output=<1>; /* 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			sd_all_pins:sd_all_pins{
+			    amlogic,setmask=<2 0x0000fc00>,
+													<AO 0x00001800>;
+			    amlogic,pins="CARD_0","CARD_1","CARD_2","CARD_3","CARD_4","CARD_5";
+			    amlogic,enable-output=<1>; /* 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			sd_1bit_pins:sd_1bit_pins{
+				amlogic,setmask=<2 0x00008c00>,
+													<AO 0x00001800>;
+				amlogic,pins = "CARD_1","CARD_2","CARD_3";
+				amlogic,enable-output=<1>; /* 0:output, 1:input */
+				amlogic,pullup=<1>;
+				amlogic,pullupen=<1>;
+			};
+			sd_clk_cmd_uart_pins:sd_clk_cmd_uart_pins{
+			    amlogic,setmask=<2 0x00000c00>,
+											<8 0x00000600>;
+			    amlogic,pins = "CARD_2","CARD_3"; /* CARD_2:CLK, CARD_3:CMD */
+			    amlogic,enable-output=<1>; /* 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			sd_1bit_uart_pins:sd_1bit_uart_pins{
+				amlogic,setmask=<2 0x00008c00>,
+												<8 0x00000600>;
+				amlogic,pins = "CARD_1","CARD_2","CARD_3";
+				amlogic,enable-output=<1>; /* 0:output, 1:input */
+				amlogic,pullup=<1>;
+				amlogic,pullupen=<1>;
+			};
+			sd_to_ao_uart_pins:sd_to_ao_uart_pins{
+				amlogic,setmask=<AO 0x00001800>;
+				amlogic,clrmask=<8 0x00000600>;
+				amlogic,pins = "GPIOAO_0","GPIOAO_1";
+				amlogic,enable-output=<1>; /* 0:output, 1:input */
+				amlogic,pullup=<1>;
+				amlogic,pullupen=<1>;
+			};
+			ao_to_sd_uart_pins:ao_to_sd_uart_pins{
+				amlogic,setmask=<8 0x00000600>;
+				amlogic,clrmask=<AO 0x00001800>,
+												<2 0x00003000>;
+				amlogic,pins = "CARD_4","CARD_5";
+				amlogic,enable-output=<1>; /* 0:output, 1:input */
+				amlogic,pullup=<1>;
+				amlogic,pullupen=<1>;
+			};
+			emmc_clk_cmd_pins:emmc_clk_cmd_pins{
+			    amlogic,setmask=<4 0xc00c0000>;
+			    amlogic,pins = "BOOT_8","BOOT_10"; /** BOOT_10:CMD, BOOT_8:CLK */
+			    amlogic,enable-output=<1>; /** 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			emmc_all_pins:emmc_all_pins{
+			    amlogic,setmask=<4 0xc00c0000>;         /*sdhc c*/
+			    amlogic,pins = "BOOT_0","BOOT_1","BOOT_2","BOOT_3","BOOT_4",
+							"BOOT_5","BOOT_6","BOOT_7","BOOT_8","BOOT_10";
+			    amlogic,enable-output=<1>; /** 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			sdio_clk_cmd_pins:sdio_clk_cmd_pins{
+			    amlogic,setmask=<8 0x00000003>;
+			    amlogic,pins = "GPIOX_4","GPIOX_5"; /** GPIOX_5:CMD, GPIOX_4:CLK */
+			    amlogic,enable-output=<1>; /** 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			sdio_all_pins:sdio_all_pins{
+			    amlogic,setmask=<8 0x0000003f>;
+			    amlogic,pins = "GPIOX_0","GPIOX_1","GPIOX_2","GPIOX_3","GPIOX_4","GPIOX_5";
+			    amlogic,enable-output=<1>; /** 0:output, 1:input */
+			    amlogic,pullup=<1>;
+			    amlogic,pullupen=<1>;
+			};
+			/*cam_gpio_b: cam_gpio_b{
+					amlogic,setmask=<5 0xf0>;
+					amlogic,clrmask=<4 0x300
+							5 0xc000000
+							6 0x1ff3>;
+					amlogic,pins = "GPIOZ_0","GPIOZ_1","GPIOZ_3","GPIOZ_4","GPIOZ_5","GPIOZ_6","GPIOZ_7","GPIOZ_8","GPIOZ_9","GPIOZ_10","GPIOZ_11";
+			};
+			cam_gpio_a: cam_gpio_a{
+					amlogic,setmask=<2 0x3f0000>;
+					amlogic,clrmask=<1 0x7030ff
+							3 0x37>;
+					amlogic,pins = "GPIOY_1","GPIOY_0","GPIOY_2","GPIOY_15","GPIOY_16",
+						"GPIOY_3","GPIOY_4","GPIOY_5","GPIOY_6",
+						"GPIOY_7","GPIOY_8","GPIOY_9","GPIOY_10";
+			};*/
+			conf_nand_pulldown: conf_nand_pulldown{
+				amlogic,pins = "BOOT_0","BOOT_1","BOOT_2","BOOT_3","BOOT_4",
+							"BOOT_5","BOOT_6","BOOT_7","BOOT_15";
+				amlogic,pullup=<0>;
+				amlogic,pullupen=<1>;
+			};
+			conf_nand_pullup: conf_nand_pullup{
+				amlogic,pins = "BOOT_8", "BOOT_10";
+				amlogic,pullup=<1>;
+				amlogic,pullupen=<1>;
+			};
+			all_nand_pins: all_nand_pins{
+				amlogic,setmask=<4 0x7ff00000>;
+				amlogic,clrmask=<0 0x80000
+								4 0x800c0000
+								5 0xf>;
+				amlogic,pins = "BOOT_0","BOOT_1","BOOT_2","BOOT_3","BOOT_4",
+							"BOOT_5","BOOT_6","BOOT_7","BOOT_8","BOOT_9",
+							"BOOT_10","BOOT_11","BOOT_12","BOOT_13",
+							"BOOT_14","BOOT_15","BOOT_16","BOOT_17";
+				amlogic,enable-output=<1>;
+			};
+			nand_cs_pins: nand_cs{
+				amlogic,setmask=<4 0xc000000>;
+				amlogic,clrmask=<4 0x40000>;
+				amlogic,pins = "BOOT_8","BOOT_9";
+			};
+			hdmitx_hpd: hdmitx_hpd {
+				amlogic,setmask=<1 0x04000000>;
+				amlogic,pins="GPIOH_0";
+			};
+			hdmitx_ddc: hdmitx_ddc {
+				amlogic,setmask=<1 0x03000000>;
+				amlogic,pins="GPIOH_1", "GPIOH_2";
+			};
+			hdmitx_aocec: hdmitx_aocec {
+				amlogic,setmask=<AO  0x00008000>;
+				amlogic,clrmask=<AO  0x00024000
+						 AO2 0x00000001>;
+				amlogic,pins="GPIOAO_12";
+			};
+			hdmitx_eecec: hdmitx_eecec {
+				amlogic,setmask=<AO  0x00004000>;
+				amlogic,clrmask=<AO  0x00028000
+						 AO2 0x00000001>;
+				amlogic,pins="GPIOAO_12";
+			};
+	
+			/*p200 i2c-A multiplex with usb PWR*/
+			a_i2c_master:a_i2c{
+				amlogic,setmask=<7 0xc000000>;
+				amlogic,clrmask=<0 0x18c0 2 0x30000000 5 0x1800>;
+				amlogic,pins="GPIODV_24","GPIODV_25";
+			};
+			b_i2c_master:b_i2c{
+				amlogic,setmask=<7 0x3000000>;
+				amlogic,clrmask=<0 0x600 2 0xc000000 5 0x700>;
+				amlogic,pins="GPIODV_26","GPIODV_27";
+			};
+			c_i2c_master:c_i2c{
+				amlogic,setmask=<7 0xc00000>;
+				amlogic,clrmask=<3 0x700000>;
+				amlogic,pins="GPIODV_28","GPIODV_29";
+			};
+			d_i2c_master:d_i2c{
+				amlogic,setmask=<4 0xc>;
+				amlogic,clrmask=<2 0x3000000 3 0x1000>;
+				amlogic,pins="GPIOX_16","GPIOX_17";
+			};
+			dvb_p_ts0_pins: dvb_p_ts0_pins {
+				amlogic,setmask = <3 0x37>;
+				amlogic,clrmask = <2 0xf0000 1 0x30ff>;
+				amlogic,pins = "GPIOY_0","GPIOY_1","GPIOY_2", "GPIOY_3","GPIOY_4","GPIOY_5","GPIOY_6","GPIOY_7","GPIOY_8","GPIOY_9","GPIOY_10";
+			};
+			dvb_s_ts0_pins: dvb_s_ts0_pins {
+				amlogic,setmask = <3 0x17>;
+				amlogic,clrmask = <2 0xf0000 1 0x7>;
+				amlogic,pins = "GPIOY_0","GPIOY_1","GPIOY_2","GPIOY_3";
+			};
+		};
+	};
+};

@@ -311,7 +311,7 @@ kadmin(int cmd, int fcn, void *mdep, cred_t *credp)
 	case A_CONFIG:
 		switch (fcn) {
 		case AD_UPDATE_BOOT_CONFIG:
-#ifndef	__sparc
+#if defined(__x86)
 		{
 			extern void fastboot_update_config(const char *);
 
@@ -382,7 +382,7 @@ kadmin(int cmd, int fcn, void *mdep, cred_t *credp)
 		} else
 			panic_bootstr = mdep;
 
-#ifndef	__sparc
+#if defined(__x86)
 		extern void fastboot_update_and_load(int, char *);
 
 		fastboot_update_and_load(fcn, mdep);

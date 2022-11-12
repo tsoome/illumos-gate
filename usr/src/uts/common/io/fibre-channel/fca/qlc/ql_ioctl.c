@@ -75,7 +75,7 @@ static int ql_adm_vpd_dump(ql_adapter_state_t *, ql_adm_op_t *, int);
 static int ql_adm_vpd_load(ql_adapter_state_t *, ql_adm_op_t *, int);
 static int ql_adm_vpd_gettag(ql_adapter_state_t *, ql_adm_op_t *, int);
 static int ql_adm_updfwmodule(ql_adapter_state_t *, ql_adm_op_t *, int);
-static uint8_t *ql_vpd_findtag(ql_adapter_state_t *, uint8_t *, int8_t *);
+static uint8_t *ql_vpd_findtag(ql_adapter_state_t *, uint8_t *, char *);
 
 /* ************************************************************************ */
 /*				cb_ops functions			    */
@@ -1381,7 +1381,7 @@ ql_vpd_dump(ql_adapter_state_t *ha, void *bp, int mode)
  *	Kernel context.
  */
 static uint8_t *
-ql_vpd_findtag(ql_adapter_state_t *ha, uint8_t *vpdbuf, int8_t *opcode)
+ql_vpd_findtag(ql_adapter_state_t *ha, uint8_t *vpdbuf, char *opcode)
 {
 	uint8_t		*vpd = vpdbuf;
 	uint8_t		*end = vpdbuf + QL_24XX_VPD_SIZE;
@@ -1486,7 +1486,7 @@ ql_vpd_lookup(ql_adapter_state_t *ha, uint8_t *opcode, uint8_t *bp,
 		return (len);
 	}
 
-	if ((vpd = ql_vpd_findtag(ha, vpdbuf, (int8_t *)opcode)) != NULL) {
+	if ((vpd = ql_vpd_findtag(ha, vpdbuf, (char *)opcode)) != NULL) {
 		/*
 		 * Found the tag
 		 */
@@ -1525,7 +1525,7 @@ ql_vpd_lookup(ql_adapter_state_t *ha, uint8_t *opcode, uint8_t *bp,
 		}
 
 		/* copy the data back */
-		(void) strncpy((int8_t *)bp, (int8_t *)(vpd+3), (int64_t)len);
+		(void) strncpy((char *)bp, (char *)(vpd+3), len);
 		bp[len] = 0;
 	} else {
 		/* error -- couldn't find tag */
@@ -2386,7 +2386,7 @@ ql_adm_vpd_gettag(ql_adapter_state_t *ha, ql_adm_op_t *dop, int mode)
 			EL(ha, "failed vpd_lookup\n");
 		} else {
 			if (ddi_copyout(lbuf, (void *)(uintptr_t)dop->buffer,
-			    strlen((int8_t *)lbuf)+1, mode) != 0) {
+			    strlen((char *)lbuf)+1, mode) != 0) {
 				EL(ha, "failed, ddi_copyout\n");
 				rval = EFAULT;
 			} else {

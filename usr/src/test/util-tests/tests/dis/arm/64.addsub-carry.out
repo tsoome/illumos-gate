@@ -1,0 +1,32 @@
+    libdis_test:      e0 01 1e 1a  adc w0, w15, w30
+    libdis_test+0x4:  ff 01 1e 1a  adc wzr, w15, w30
+    libdis_test+0x8:  e0 03 1e 1a  adc w0, wzr, w30
+    libdis_test+0xc:  e0 01 1f 1a  adc w0, w15, wzr
+    libdis_test+0x10: e0 01 1e 9a  adc x0, x15, x30
+    libdis_test+0x14: ff 01 1e 9a  adc xzr, x15, x30
+    libdis_test+0x18: e0 03 1e 9a  adc x0, xzr, x30
+    libdis_test+0x1c: e0 01 1f 9a  adc x0, x15, xzr
+    libdis_test+0x20: e0 01 1e 3a  adcs w0, w15, w30
+    libdis_test+0x24: ff 01 1e 3a  adcs wzr, w15, w30
+    libdis_test+0x28: e0 03 1e 3a  adcs w0, wzr, w30
+    libdis_test+0x2c: e0 01 1f 3a  adcs w0, w15, wzr
+    libdis_test+0x30: e0 01 1e ba  adcs x0, x15, x30
+    libdis_test+0x34: ff 01 1e ba  adcs xzr, x15, x30
+    libdis_test+0x38: e0 03 1e ba  adcs x0, xzr, x30
+    libdis_test+0x3c: e0 01 1f ba  adcs x0, x15, xzr
+    libdis_test+0x40: e0 01 1e 5a  sbc w0, w15, w30
+    libdis_test+0x44: ff 01 1e 5a  sbc wzr, w15, w30
+    libdis_test+0x48: e0 03 1e 5a  ngc w0, w30
+    libdis_test+0x4c: e0 01 1f 5a  sbc w0, w15, wzr
+    libdis_test+0x50: e0 01 1e da  sbc x0, x15, x30
+    libdis_test+0x54: ff 01 1e da  sbc xzr, x15, x30
+    libdis_test+0x58: e0 03 1e da  ngc x0, x30
+    libdis_test+0x5c: e0 01 1f da  sbc x0, x15, xzr
+    libdis_test+0x60: e0 01 1e 7a  sbcs w0, w15, w30
+    libdis_test+0x64: ff 01 1e 7a  sbcs wzr, w15, w30
+    libdis_test+0x68: e0 03 1e 7a  ngcs w0, w30
+    libdis_test+0x6c: e0 01 1f 7a  sbcs w0, w15, wzr
+    libdis_test+0x70: e0 01 1e fa  sbcs x0, x15, x30
+    libdis_test+0x74: ff 01 1e fa  sbcs xzr, x15, x30
+    libdis_test+0x78: e0 03 1e fa  ngcs x0, x30
+    libdis_test+0x7c: e0 01 1f fa  sbcs x0, x15, xzr

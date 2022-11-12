@@ -23,9 +23,12 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*	Copyright (c) 1988 AT&T	*/
-/*	  All Rights Reserved	*/
+/*	  All Rights Reserved  	*/
 
 /*
  *	_doprnt: common code for printf, fprintf, sprintf
@@ -55,7 +58,8 @@
 static const char nullstr[] = "(null)";
 static const wchar_t widenullstr[] = L"(null)";
 
-#if defined(__i386) || defined(__amd64) || defined(__sparcv9)
+#if defined(__i386) || defined(__amd64) || \
+    defined(__sparcv9) || defined(__aarch64__)
 #define	GETQVAL(arg)	(va_arg(arg, long double))
 #else /* !defined(__i386) && !defined(__sparcv9) */
 #define	GETQVAL(arg)	*(va_arg(arg, long double *))
@@ -166,9 +170,9 @@ static const wchar_t widenullstr[] = L"(null)";
 	}
 
 #define	PAD(s, n)    { ssize_t nn; \
-			for (nn = n; nn > PAD_LEN; nn -= PAD_LEN) \
-					if (!_dowrite(s, PAD_LEN, iop, &bufptr)) \
-						return (EOF); \
+		    for (nn = n; nn > PAD_LEN; nn -= PAD_LEN) \
+			if (!_dowrite(s, PAD_LEN, iop, &bufptr)) \
+				return (EOF); \
 			PUT(s, nn); \
 		}
 
@@ -522,7 +526,7 @@ _ndoprnt(const char *format, va_list in_args, FILE *iop, int prflag)
 	ssize_t	prefixlength, suffixlength;
 
 	/* Combined length of leading zeroes, trailing zeroes, and suffix */
-	ssize_t	otherlength;
+	ssize_t 	otherlength;
 
 	/* The value being converted, if integer */
 	ssize_t	val;
@@ -1280,7 +1284,7 @@ _ndoprnt(const char *format, va_list in_args, FILE *iop, int prflag)
 
 				/* establish default precision */
 				if (!(flagword & DOTSEEN))
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 					prec = HEXFP_QUAD_DIG - 1;
 #elif defined(__i386) || defined(__amd64)
 					prec = HEXFP_EXTENDED_DIG - 1;

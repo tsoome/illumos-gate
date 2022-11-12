@@ -22,6 +22,7 @@
 /*
  * Copyright (c) 2003, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <unistd.h>
@@ -436,7 +437,7 @@ dt_header_decl(dt_idhash_t *dhp, dt_ident_t *idp, void *data)
 		return (dt_set_errno(dtp, errno));
 
 	if (fprintf(infop->dthi_out,
-	    "#ifndef\t__sparc\n"
+	    "#if\t!defined(__sparc) && !defined(__aarch64__)\n"
 	    "extern int __dtraceenabled_%s___%s(void);\n"
 	    "#else\n"
 	    "extern int __dtraceenabled_%s___%s(long);\n"
@@ -504,7 +505,7 @@ dt_header_probe(dt_idhash_t *dhp, dt_ident_t *idp, void *data)
 
 	if (!infop->dthi_empty) {
 		if (fprintf(infop->dthi_out,
-		    "#ifndef\t__sparc\n"
+		    "#if\t!defined(__sparc) && !defined(__aarch64__)\n"
 		    "#define\t%s_%s_ENABLED() \\\n"
 		    "\t__dtraceenabled_%s___%s()\n"
 		    "#else\n"

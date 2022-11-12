@@ -1539,7 +1539,7 @@ static char	*speeds[] = {
 	"0", "50", "75", "110", "134", "150", "200", "300",
 	"600", "1200", "1800", "2400", "4800", "9600", "19200", "38400",
 	"57600", "76800", "115200", "153600", "230400", "307200", "460800",
-	"921600", "1000000", "1152000", "1500000", "2000000", "2500000", 
+	"921600", "1000000", "1152000", "1500000", "2000000", "2500000",
 	"3000000", "3500000", "4000000"
 };
 
@@ -2456,7 +2456,12 @@ static void
 display_last_login_time(void)
 {
 	if (lastlogok) {
-		(void) printf("Last login: %.*s ", 24-5, ctime(&ll.ll_time));
+		/*
+		 * Times in the lastlog are 32bit time_t, promote it to native
+		 * if necessary
+		 */
+		time_t tm = ll.ll_time;
+		(void) printf("Last login: %.*s ", 24-5, ctime(&tm));
 
 		if (*ll.ll_host != '\0')
 			(void) printf("from %.*s\n", sizeof (ll.ll_host),

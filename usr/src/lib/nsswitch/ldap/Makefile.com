@@ -56,5 +56,5 @@ OBJECTS =	getauthattr.o	\
 include		../../Makefile.com
 
 CPPFLAGS +=	-I../../../libsldap/common
-LDLIBS +=	-lsldap -lnsl -lldap
+LDLIBS +=	-lsldap -lnsl -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
 DYNLIB1 =	nss_ldap.so$(VERS)

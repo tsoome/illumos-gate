@@ -39,7 +39,7 @@ extern "C" {
 
 
 /* On the sparc platform, error codes come from stgcom.h */
-#ifdef __x86
+#if defined(__x86) || defined(__aarch64__)
 
 /*
  * All error numbers below this base value

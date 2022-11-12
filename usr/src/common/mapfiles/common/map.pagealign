@@ -33,7 +33,7 @@ $if _sparc
 
 LOAD_SEGMENT data { ROUND = 0x2000 };
 
-$elif _x86
+$elif _x86 || _arm
 
 LOAD_SEGMENT data { ROUND = 0x1000 };
 

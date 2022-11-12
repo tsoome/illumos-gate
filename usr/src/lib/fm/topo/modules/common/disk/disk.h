@@ -49,7 +49,7 @@ extern "C" {
  */
 #if defined(__i386) || defined(__amd64)
 #define	PHYS_EXTN	":q,raw"
-#elif defined(__sparc) || defined(__sparcv9)
+#elif defined(__sparc) || defined(__sparcv9) || defined(__aarch64__)
 #define	PHYS_EXTN	":c,raw"
 #else
 #error	Unknown architecture

@@ -1441,7 +1441,12 @@ psig(void)
 
 		if (p->p_model == DATAMODEL_NATIVE)
 			rc = sendsig(sig, sip, func);
-#ifdef _SYSCALL32_IMPL
+/*
+ * XXXARM:
+ * _MULTI_DATAMODEL is only necessary because SYSCALL32_IMPL is wrong on aarch64
+ * for the present
+ */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 		else
 			rc = sendsig32(sig, sip, func);
 #endif	/* _SYSCALL32_IMPL */
@@ -2678,7 +2683,11 @@ realsigprof_fast(int sysnum, int nsysarg, int error)
 	lwp->lwp_ru.nsignals++;
 	if (p->p_model == DATAMODEL_NATIVE)
 		rc = sendsig(SIGPROF, sip, func);
-#ifdef _SYSCALL32_IMPL
+/*
+ * XXXARM:
+ * _MULTI_DATAMODEL is only necessary because aarch64 gets _SYSCALL32_IMPL wrong
+ */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 	else
 		rc = sendsig32(SIGPROF, sip, func);
 #endif	/* _SYSCALL32_IMPL */

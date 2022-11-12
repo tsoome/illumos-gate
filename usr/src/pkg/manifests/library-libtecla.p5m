@@ -38,9 +38,9 @@ file path=usr/bin/enhance mode=0555
 dir  path=usr/include
 file path=usr/include/libtecla.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libtecla.so target=libtecla.so.1
-file path=usr/lib/$(ARCH64)/libtecla.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libtecla.so target=libtecla.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libtecla.so.1
 link path=usr/lib/libtecla.so target=libtecla.so.1
 file path=usr/lib/libtecla.so.1
 dir  path=usr/share/man

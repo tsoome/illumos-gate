@@ -489,7 +489,7 @@ static int
 fmevt_cb(sysevent_t *sep, void *arg)
 {
 	char *ruleset = NULL, *rawclass, *rawsubclass;
-	uint32_t cbarg = (uint32_t)arg;
+	uint32_t cbarg = (uint32_t)(uintptr_t)arg;
 	nvlist_t *rawattr = NULL;
 	struct fmevt_ppargs ea;
 	nvlist_t *dtcr;
@@ -603,7 +603,7 @@ fmevt_init_inbound(fmd_hdl_t *hdl)
 		    cip->ci_cbarg & CBF_HV ? 'h' : 'l');
 
 		err = sysevent_evc_xsubscribe(cip->ci_binding, cip->ci_sid,
-		    EC_ALL, fmevt_cb, (void *)cip->ci_cbarg,
+		    EC_ALL, fmevt_cb, (void *)(uintptr_t)cip->ci_cbarg,
 		    cip->ci_sflags, subattr);
 
 		if (err == EEXIST)

@@ -36,14 +36,14 @@ set name=pkg.description \
     value="Atheros AR5523 USB IEEE802.11b/g Wireless Network Driver"
 set name=info.classification \
     value=org.opensolaris.category.2008:Drivers/Networking
-set name=variant.arch value=i386
+set name=variant.arch value=aarch64 value=i386
 dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys
 file path=kernel/drv/$(ARCH64)/uath group=sys
 dir  path=kernel/misc group=sys
 dir  path=kernel/misc/$(ARCH64) group=sys
-file path=kernel/misc/$(ARCH64)/uathfw group=sys mode=0755
+$(not_aarch64)file path=kernel/misc/$(ARCH64)/uathfw group=sys mode=0755
 dir  path=usr/share/man
 dir  path=usr/share/man/man4d
 file path=usr/share/man/man4d/uath.4d

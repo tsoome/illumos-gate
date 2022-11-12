@@ -133,7 +133,7 @@ int		modunload_disable_count;
 
 int	isminiroot;		/* set if running as miniroot */
 int	modrootloaded;		/* set after root driver and fs are loaded */
-int	moddebug = 0x0;		/* debug flags for module writers */
+int	moddebug = 0;		/* debug flags for module writers */
 int	swaploaded;		/* set after swap driver and fs are loaded */
 int	bop_io_quiesced = 0;	/* set when BOP I/O can no longer be used */
 int	last_module_id;
@@ -268,8 +268,8 @@ mod_setup(void)
 #endif
 		}
 	}
-
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 	/*
 	 * Allocate loadable system call locks for 32-bit compat syscalls
 	 */
@@ -412,11 +412,10 @@ modctl_modinfo(modid_t id, struct modinfo *umodi)
 	int retval;
 	struct modinfo modi;
 #if defined(_SYSCALL32_IMPL)
-	int nobase;
+	int nobase = 0;
 	struct modinfo32 modi32;
 #endif
 
-	nobase = 0;
 	if (get_udatamodel() == DATAMODEL_NATIVE) {
 		if (copyin(umodi, &modi, sizeof (struct modinfo)) != 0)
 			return (EFAULT);
@@ -3420,7 +3419,7 @@ mod_load(struct modctl *mp, int usepath)
 		lt.owner = curthread;
 		sema_init(&lt.sema, 0, NULL, SEMA_DEFAULT, NULL);
 
-		/* create thread to hand of call to */
+		/* create thread to hand off call to */
 		(void) thread_create(NULL, DEFAULTSTKSZ * 2,
 		    modload_thread, &lt, 0, &p0, TS_RUN, maxclsyspri);
 

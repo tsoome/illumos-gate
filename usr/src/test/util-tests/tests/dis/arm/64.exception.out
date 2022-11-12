@@ -1,0 +1,16 @@
+    libdis_test:      01 00 00 d4  svc #0x0
+    libdis_test+0x4:  e1 ff 1f d4  svc #0xffff
+    libdis_test+0x8:  02 00 00 d4  hvc #0x0
+    libdis_test+0xc:  e2 ff 1f d4  hvc #0xffff
+    libdis_test+0x10: 03 00 00 d4  smc #0x0
+    libdis_test+0x14: e3 ff 1f d4  smc #0xffff
+    libdis_test+0x18: 00 00 20 d4  brk #0x0
+    libdis_test+0x1c: e0 ff 3f d4  brk #0xffff
+    libdis_test+0x20: 00 00 40 d4  hlt #0x0
+    libdis_test+0x24: e0 ff 5f d4  hlt #0xffff
+    libdis_test+0x28: 01 00 a0 d4  dcps1
+    libdis_test+0x2c: e1 ff bf d4  dcps1 #0xffff
+    libdis_test+0x30: 02 00 a0 d4  dcps2
+    libdis_test+0x34: e2 ff bf d4  dcps2 #0xffff
+    libdis_test+0x38: 03 00 a0 d4  dcps3
+    libdis_test+0x3c: e3 ff bf d4  dcps3 #0xffff

@@ -27,8 +27,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -193,14 +191,14 @@ static int
 skeqn(void)
 {
 	while ((c = getc(infile)) != rdelim) {
-		if (c == EOF) {
+		if (c == (char)EOF) {
 			c = eof();
 		} else if (c == '"') {
 			while ((c = getc(infile)) != '"') {
-				if (c == EOF) {
+				if (c == (char)EOF) {
 					c = eof();
 				} else if (c == '\\') {
-					if ((c = getc(infile)) == EOF) {
+					if ((c = getc(infile)) == (char)EOF) {
 						c = eof();
 					}
 				}

@@ -34,8 +34,10 @@ dir  path=usr group=sys
 dir  path=usr/include
 file path=usr/include/instzones_api.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libinstzones.so target=./libinstzones.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libinstzones.so \
+    target=./libinstzones.so.1
+$(aarch64_ONLY)link path=usr/lib/libinstzones.so target=./libinstzones.so.1
 link path=usr/lib/libinstzones.so target=./libinstzones.so.1
 legacy pkg=SUNWinstallint desc="Solaris Install internal files" \
     name="Solaris Install Internal Files"

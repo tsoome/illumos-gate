@@ -147,18 +147,19 @@ file path=usr/include/sys/fasttrap_isa.h
 file path=usr/include/sys/lockstat.h
 file path=usr/include/sys/sdt.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libdtrace.so target=libdtrace.so.1
-file path=usr/lib/$(ARCH64)/libdtrace.so.1
-link path=usr/lib/$(ARCH64)/libdtrace_jni.so target=libdtrace_jni.so.1
-file path=usr/lib/$(ARCH64)/libdtrace_jni.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libdtrace.so target=libdtrace.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libdtrace.so.1
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libdtrace_jni.so \
+    target=libdtrace_jni.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libdtrace_jni.so.1
 dir  path=usr/lib/devfsadm group=sys
 dir  path=usr/lib/devfsadm/linkmod group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_dtrace_link.so group=sys
 dir  path=usr/lib/dtrace
-dir  path=usr/lib/dtrace/64
-file path=usr/lib/dtrace/64/drti.o mode=0444
-file path=usr/lib/dtrace/64/libdtrace_forceload.so mode=0555
+$(not_aarch64)dir path=usr/lib/dtrace/64
+$(not_aarch64)file path=usr/lib/dtrace/64/drti.o mode=0444
+$(not_aarch64)file path=usr/lib/dtrace/64/libdtrace_forceload.so mode=0555
 file path=usr/lib/dtrace/drti.o mode=0444
 file path=usr/lib/dtrace/errno.d mode=0444
 file path=usr/lib/dtrace/fc.d mode=0444
@@ -182,19 +183,19 @@ file path=usr/lib/dtrace/udp.d mode=0444
 file path=usr/lib/dtrace/unistd.d mode=0444
 link path=usr/lib/libdtrace.so target=libdtrace.so.1
 file path=usr/lib/libdtrace.so.1
-link path=usr/lib/libdtrace_jni.so target=libdtrace_jni.so.1
-file path=usr/lib/libdtrace_jni.so.1
-dir  path=usr/lib/mdb group=sys
-dir  path=usr/lib/mdb/kvm group=sys
-dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-file path=usr/lib/mdb/kvm/$(ARCH64)/dtrace.so group=sys mode=0555
-dir  path=usr/lib/mdb/raw group=sys
-dir  path=usr/lib/mdb/raw/$(ARCH64) group=sys
-file path=usr/lib/mdb/raw/$(ARCH64)/dof.so group=sys mode=0555
-file path=usr/lib/mdb/raw/dof.so group=sys mode=0555
+$(not_aarch64)link path=usr/lib/libdtrace_jni.so target=libdtrace_jni.so.1
+$(not_aarch64)file path=usr/lib/libdtrace_jni.so.1
+$(not_aarch64)dir path=usr/lib/mdb group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/dtrace.so group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/mdb/raw group=sys
+$(not_aarch64)dir path=usr/lib/mdb/raw/$(ARCH64) group=sys
+$(not_aarch64)file path=usr/lib/mdb/raw/$(ARCH64)/dof.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/raw/dof.so group=sys mode=0555
 dir  path=usr/sbin
 dir  path=usr/sbin/$(ARCH32)
-file path=usr/sbin/$(ARCH32)/dtrace mode=0555
+$(not_aarch64)file path=usr/sbin/$(ARCH32)/dtrace mode=0555
 $(i386_ONLY)file path=usr/sbin/$(ARCH32)/intrstat mode=0555
 $(i386_ONLY)file path=usr/sbin/$(ARCH32)/lockstat mode=0555
 $(i386_ONLY)file path=usr/sbin/$(ARCH32)/plockstat mode=0555
@@ -209,8 +210,8 @@ hardlink path=usr/sbin/lockstat target=../../usr/lib/isaexec
 hardlink path=usr/sbin/plockstat target=../../usr/lib/isaexec
 dir  path=usr/share
 dir  path=usr/share/lib
-dir  path=usr/share/lib/java group=sys
-file path=usr/share/lib/java/dtrace.jar group=sys
+$(not_aarch64)dir path=usr/share/lib/java group=sys
+$(not_aarch64)file path=usr/share/lib/java/dtrace.jar group=sys
 dir  path=usr/share/man/man3lib
 file path=usr/share/man/man3lib/libdtrace.3lib
 dir  path=usr/share/man/man8

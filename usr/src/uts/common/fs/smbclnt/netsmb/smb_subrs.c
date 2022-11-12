@@ -126,10 +126,15 @@ smb_errmsg(int cel, const char *func_name, const char *fmt, ...)
 		 * then let vcmn_err do the args.
 		 */
 		(void) snprintf(buf, sizeof (buf), "?%s: %s", func_name, fmt);
+/*
+ * XXXARM: This doesn't work with an ARM va_list, since it's not a pointer.
+ */
+#if 0
 		DTRACE_PROBE3(debugmsg3,
 		    (char *), func_name,
 		    (char *), buf,
 		    va_list, adx);
+#endif
 		vcmn_err(cel, buf, adx);
 	}
 	va_end(adx);

@@ -9034,7 +9034,7 @@ ql_get_xgmac_statistics(ql_adapter_state_t *ha, EXT_IOCTL *cmd, int mode)
 {
 	int			rval;
 	uint32_t		size;
-	int8_t			*tmp_buf;
+	caddr_t			tmp_buf;
 	EXT_MENLO_MANAGE_INFO	info;
 
 	QL_PRINT_9(CE_CONT, "(%d): started\n", ha->instance);

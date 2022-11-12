@@ -228,9 +228,9 @@ enum ARN_DEBUG {
 };
 
 /* Debug and log functions */
-void arn_dbg(uint32_t dbg_flags, const int8_t *fmt, ...); /* debug function */
-void arn_log(const int8_t *fmt, ...); /* event log function */
-void arn_problem(const int8_t *fmt, ...); /* run-time problem function */
+void arn_dbg(uint32_t dbg_flags, const char *fmt, ...); /* debug function */
+void arn_log(const char *fmt, ...); /* event log function */
+void arn_problem(const char *fmt, ...); /* run-time problem function */
 
 #ifdef DEBUG
 #define	ARN_DDB(command)	do {				\

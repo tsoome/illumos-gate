@@ -1585,7 +1585,7 @@ static int
 backend_switch_check(struct sqlite *be_db, char **errp)
 {
 	struct run_single_int_info info;
-	uint32_t val = -1UL;
+	uint32_t val = -1U;
 	int r;
 
 	info.rs_out = &val;
@@ -1834,7 +1834,7 @@ backend_create(backend_type_t backend_id, const char *db_file,
 	char *integrity_results = NULL;
 	sqlite_backend_t *be;
 	int r;
-	uint32_t val = -1UL;
+	uint32_t val = -1U;
 	struct run_single_int_info info;
 	int fd;
 

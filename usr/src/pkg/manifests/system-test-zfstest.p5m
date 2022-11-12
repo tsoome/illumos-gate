@@ -543,6 +543,8 @@ file \
     path=opt/zfs-tests/tests/functional/channel_program/synctask_core/tst.terminate_by_signal \
     mode=0555
 dir  path=opt/zfs-tests/tests/functional/checksum
+$(aarch64_ONLY)file \
+    path=opt/zfs-tests/tests/functional/checksum/edonr_test.aarch64 mode=0555
 $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/edonr_test.amd64 \
     mode=0555
 $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/edonr_test.i386 \
@@ -550,10 +552,14 @@ $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/edonr_test.i386 \
 file path=opt/zfs-tests/tests/functional/checksum/run_edonr_test mode=0555
 file path=opt/zfs-tests/tests/functional/checksum/run_sha2_test mode=0555
 file path=opt/zfs-tests/tests/functional/checksum/run_skein_test mode=0555
+$(aarch64_ONLY)file \
+    path=opt/zfs-tests/tests/functional/checksum/sha2_test.aarch64 mode=0555
 $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/sha2_test.amd64 \
     mode=0555
 $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/sha2_test.i386 \
     mode=0555
+$(aarch64_ONLY)file \
+    path=opt/zfs-tests/tests/functional/checksum/skein_test.aarch64 mode=0555
 $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/skein_test.amd64 \
     mode=0555
 $(i386_ONLY)file path=opt/zfs-tests/tests/functional/checksum/skein_test.i386 \

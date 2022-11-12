@@ -46,7 +46,7 @@ ALL_SOS	= $(U2E) $(E2U) $(723) $(327)
 
 CFLAGS += -I$(COMMON)
 
-LDFLAGS = $(DYNFLAGS) $(LDLIBS)
+LDFLAGS = $(SYSROOT) $(DYNFLAGS) $(LDLIBS)
 
 install: all
 

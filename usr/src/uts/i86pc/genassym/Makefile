@@ -82,6 +82,7 @@ CPPFLAGS += -I../../i86pc/io/ppm
 # Create assym.h
 #
 $(GENASSYM): $(GENASSYM_SRC)
+	[[ -e $@ ]] && $(RM) $@
 	$(NATIVECC) $(NATIVE_CFLAGS) $(ALWAYS_DEFS) $(GENASSYM_DEFS) \
 	   $(NATIVE_INC_PATH) -o $@ $(GENASSYM_SRC)
 

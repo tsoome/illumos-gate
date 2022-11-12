@@ -22,7 +22,6 @@
 #
 # Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
 # Copyright 2018 Nexenta Systems, Inc.
-# Copyright 2022 Garrett D'Amore
 #
 
 include ../Makefile.master
@@ -40,6 +39,8 @@ sparc_ARCHITECTURES = sun4v sun4u sparc
 
 i386_ARCHITECTURES = i86pc i86xpv intel
 
+aarch64_ARCHITECTURES = armv8 aarch64
+
 #
 # For i386 all architectures can be compiled in parallel.
 #
@@ -56,6 +57,14 @@ i386_PARALLEL = $(i386_ARCHITECTURES)
 #
 sparc_PREREQ = sun4
 sparc_PARALLEL = $(sparc_ARCHITECTURES)
+
+#
+# For aarch64 all architectures can be compiled in parallel.
+#
+# aarch64/Makefile knows how to build prerequisites needed for parallel build.
+#
+aarch64_PREREQ = aarch64
+aarch64_PARALLEL = $(aarch64_ARCHITECTURES)
 
 #
 # Platforms defined in $(MACH)_PARALLEL are built in parallel. DUMMY is placed
@@ -172,6 +181,7 @@ DYNHDRDIRS =	common/gssapi \
 
 sparc_HDRDIRS= sun/sys
 i386_HDRDIRS= i86pc/vm i86xpv/vm
+aarch64_HDRDIRS= aarch64/asm aarch64/sys
 
 HDRDIRS= $(COMMON_HDRDIRS) $($(MACH)_HDRDIRS)
 install_h check: $(HDRDIRS) $($(MACH)_ARCHITECTURES)
@@ -208,8 +218,8 @@ modlist: $($(MACH)_ARCHITECTURES)
 # the user will be interested in), it's historically been set to
 # mirror the $(XRDIRS) list, and that works kinda sorta okay.
 #
-XRDIRS = $(sparc_ARCHITECTURES) $(i386_ARCHITECTURES) sun4 sfmmu	\
-	sun common
+XRDIRS = $(sparc_ARCHITECTURES) $(i386_ARCHITECTURES) $(aarch64_ARCHITECTURES) \
+	sun4 sfmmu sun common
 
 XRINCDIRS = $(XRDIRS)
 

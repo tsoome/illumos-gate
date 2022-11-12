@@ -22,17 +22,21 @@
 # Copyright (c) 2004, 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+include $(SRC)/Makefile.master
+
 SUBDIRS = \
 	cpu \
 	dev \
 	fmd \
 	hc  \
 	legacy-hc \
-	mem \
 	mod \
 	pkg \
 	sw \
 	svc \
 	zfs
+
+# XXXARM: Not ported
+$(NOT_AARCH64_BLD)SUBDIRS += mem
 
 include ../Makefile.subdirs

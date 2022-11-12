@@ -286,7 +286,7 @@ ld_perform_outreloc(Rel_desc * orsp, Ofl_desc * ofl, Boolean *remain_seen)
 	Sxword		raddend;
 	Rela		rea;
 	char		*relbits;
-	Sym_desc *	sdp, * psym = (Sym_desc *)0;
+	Sym_desc *	sdp, * psym = NULL;
 	int		sectmoved = 0;
 
 	raddend = orsp->rel_raddend;
@@ -375,7 +375,7 @@ ld_perform_outreloc(Rel_desc * orsp, Ofl_desc * ofl, Boolean *remain_seen)
 		roffset = value;
 
 		/*
-		 * The raddend doesn't mean anything in a R_SPARC_COPY
+		 * The raddend doesn't mean anything in a R_AMD64_COPY
 		 * relocation.  Null it out because it can confuse people.
 		 */
 		raddend = 0;

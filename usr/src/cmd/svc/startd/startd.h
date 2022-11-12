@@ -670,7 +670,7 @@ char *libscf_get_method(scf_handle_t *, int, restarter_inst_t *,
 void libscf_populate_graph(scf_handle_t *h);
 int update_fault_count(restarter_inst_t *, int);
 int libscf_unset_action(scf_handle_t *, scf_propertygroup_t *, admin_action_t,
-    int64_t);
+    hrtime_t);
 int libscf_get_startd_properties(scf_instance_t *, scf_snapshot_t *, uint_t *,
     char **);
 int libscf_get_template_values(scf_instance_t *, scf_snapshot_t *, char **,

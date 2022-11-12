@@ -28,8 +28,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *
  * MODULE: dat_api.c
@@ -580,7 +578,7 @@ DAT_RETURN dat_lmr_sync_rdma_read(
 		return (DAT_ERROR(DAT_INVALID_HANDLE, DAT_INVALID_HANDLE_IA));
 	}
 
-#if defined(__x86)
+#if defined(__x86) || defined(__aarch64__)
 	return (DAT_SUCCESS);
 #elif defined(__sparc)
 	return (DAT_LMR_SYNC_RDMA_READ(ia_handle, local_segments,
@@ -600,7 +598,7 @@ DAT_RETURN dat_lmr_sync_rdma_write(
 		return (DAT_ERROR(DAT_INVALID_HANDLE, DAT_INVALID_HANDLE_IA));
 	}
 
-#if defined(__x86)
+#if defined(__x86) || defined(__aarch64__)
 	return (DAT_SUCCESS);
 #elif defined(__sparc)
 	return (DAT_LMR_SYNC_RDMA_WRITE(ia_handle, local_segments,

@@ -45,6 +45,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -117,7 +118,7 @@ struct	call_list	*Priv_call;	/* call save pending list 	*/
  *		and dup'ed to 0.
  *	fd 2:	In the parent, a connection to _pmpipe.  Dup'ed in the child
  *		to 0.
- *	fd 3:	Originally opened to /dev/null, this file descriptor is 
+ *	fd 3:	Originally opened to /dev/null, this file descriptor is
  *		reserved to open the STREAMS pipe when passing the connection
  *		to a standing server.
  *	fd 4:	Opened to the pid file.  We have to keep it open to keep the
@@ -243,7 +244,7 @@ main(int argc, char **argv)
 		logexit(1, badstart);
 	}
 
-	while ((c = getopt(argc, argv, "m:")) != EOF) 
+	while ((c = getopt(argc, argv, "m:")) != EOF)
 		switch (c) {
 		case 'm':
 			Minor_prefix = optarg;
@@ -269,7 +270,7 @@ main(int argc, char **argv)
 		logexit(1, badstart);
 	}
 
-	/* 
+	/*
 	 * SAC will start the listener in the correct directory, so we
 	 * don't need to chdir there, as we did in older versions
 	 */
@@ -289,7 +290,7 @@ main(int argc, char **argv)
 
 
 #ifdef	DEBUGMODE
-	if ((!Logfp) || (!Debugfp)) 
+	if ((!Logfp) || (!Debugfp))
 #else
 	if (!Logfp)
 #endif
@@ -339,7 +340,7 @@ main(int argc, char **argv)
 	/* Find out what state to start in.  If not in env, exit */
 	if ((scratch_p = getenv("ISTATE")) == NULL)
 		logexit(1, "ERROR: ISTATE variable not set in environment");
-	
+
 	if (!strcmp(scratch_p, "enabled")) {
 		State = PM_ENABLED;
 		logmessage("Starting state: ENABLED");
@@ -358,8 +359,8 @@ main(int argc, char **argv)
 
 	catch_signals();
 
-	/* 
-	 * Allocate memory for private address and file descriptor table 
+	/*
+	 * Allocate memory for private address and file descriptor table
 	 * Here we are assuming that no matter how many private addresses
 	 * exist in the system if the system limit is 20 then we will only
 	 * get 20 file descriptors
@@ -458,12 +459,12 @@ init_files(void)
 	}
 
 }
-		
+
 
 /*
  * net_open: open and bind communications channels
- *		The name generation code in net_open, open_bind and bind is, 
- * 		for the	most part, specific to STARLAN NETWORK.  
+ *		The name generation code in net_open, open_bind and bind is,
+ * 		for the	most part, specific to STARLAN NETWORK.
  *		This name generation code is included in the listener
  *		as a developer debugging aid.
  */
@@ -486,8 +487,8 @@ net_open(void)
 	Free_call_p->cl_tail = (struct callsave *) NULL;
 
 	/* Pending calls are linked in a structure, one per fild descriptor */
-	if ((Priv_call = (struct call_list *) malloc(Ndesc *(sizeof(
-				struct call_list)))) == NULL)  
+	if ((Priv_call = malloc(Ndesc *(sizeof(
+				struct call_list)))) == NULL)
 		error(E_MALLOC,NOCORE | EXIT);
 
 	i = 0;
@@ -512,7 +513,7 @@ net_open(void)
 		i++;
 	}
 
-	sprintf(scratch, "Net opened, %d %s bound, %d fds free", Valid_addrs, 
+	sprintf(scratch, "Net opened, %d %s bound, %d fds free", Valid_addrs,
 		(Valid_addrs == 1) ? "address" : "addresses",
 		Ndesc-Valid_addrs-USEDFDS);
 	logmessage(scratch);
@@ -611,11 +612,11 @@ struct call_list *head;
  *
  * open the network and bind the endpoint to 'name'
  * this routine is also used by listen(), so it can't exit
- * under all error conditions: 
- *	if there are no minor devices avaliable in the network driver, 
+ * under all error conditions:
+ *	if there are no minor devices avaliable in the network driver,
  * 		open_bind returns -1.  (error message will be logged).
- *	if the open fails because all file descriptors are in use, 
- *		open_bind returns -2.  (no message logged).  This should 
+ *	if the open fails because all file descriptors are in use,
+ *		open_bind returns -2.  (no message logged).  This should
  *		only happen when too many private addresses are specified.
  *	if the bind fails, open_bind returns -3  (no message logged).  This
  *		happens when a duplicate address is bound, and the message
@@ -623,8 +624,8 @@ struct call_list *head;
  * All other errors cause an exit.
  *
  * If clen is zero, transport provider picks the name and these
- * routines (open_bind and bind) ignore name and qlen -- 
- * this option is used when binding a name for accepting a connection 
+ * routines (open_bind and bind) ignore name and qlen --
+ * this option is used when binding a name for accepting a connection
  * (not for listening.)  You MUST supply a name, qlen and clen when
  * opening/binding a name for listening.
  *
@@ -700,7 +701,7 @@ char **ap;
 	char scratch[BUFSIZ];
 
 	DEBUG((9,"in bind, fd = %d, clen = %d", fd, clen));
-	
+
 	if (clen)  {
 		errno = t_errno = 0;
 		while (!(req = (struct t_bind *)t_alloc(fd,T_BIND,T_ALL)) ) {
@@ -719,7 +720,7 @@ char **ap;
 		}
 
 		if (clen > (int) req->addr.maxlen)  {
-			sprintf(scratch,"Truncating name size from %d to %d", 
+			sprintf(scratch,"Truncating name size from %d to %d",
 				clen, req->addr.maxlen);
 			logmessage(scratch);
 			clen = req->addr.maxlen;
@@ -778,7 +779,7 @@ char **ap;
 		retval = ret->qlen;
 		if (clen == -1) {
 			/* dynamic address */
-			*ap = (char *) malloc(((ret->addr.len) << 1) + 3);
+			*ap = malloc(((ret->addr.len) << 1) + 3);
 			if (*ap) {
 				(*ap)[0] = '\\';
 				(*ap)[1] = 'x';
@@ -787,8 +788,8 @@ char **ap;
 		}
 		else if ( (ret->addr.len != req->addr.len) ||
 		     (memcmp( req->addr.buf, ret->addr.buf, (int) req->addr.len)) )  {
-			p = (char *) malloc(((ret->addr.len) << 1) + 1);
-			q = (char *) malloc(((req->addr.len) << 1) + 1);
+			p = malloc(((ret->addr.len) << 1) + 1);
+			q = malloc(((req->addr.len) << 1) + 1);
 			if (p && q) {
 				nlsaddr2c(p, ret->addr.buf, (int)ret->addr.len);
 				nlsaddr2c(q, req->addr.buf, (int)req->addr.len);
@@ -899,8 +900,8 @@ listen(void)
 	struct		call_list *phead; /* pending head */
 
 	DEBUG((9,"in listen, tag %s", Pmmsg.pm_tag));
-	
-	if ((Pollfds = (struct pollfd *) malloc(Ndesc * sizeof(struct pollfd)))
+
+	if ((Pollfds = malloc(Ndesc * sizeof(struct pollfd)))
 			== NULL)
 		error(E_MALLOC,NOCORE | EXIT);
 
@@ -1012,7 +1013,7 @@ check_sac_mesg()
 	struct	sacmsg sacmsg;
 
 	DEBUG((9, "in check_sac_mesg..."));
-	
+
 	/* read all messages out of pipe */
 	while ((length = read(Pmpipefd, &sacmsg, sizeof(sacmsg))) != 0) {
 		if (length < 0) {
@@ -1107,7 +1108,7 @@ doevent(struct call_list *phead, int fd)
 					DEBUG((9,"listen - fd not transport end point"));
 				if ((t_errno != TSYSERR) || (errno != EAGAIN))
 					tli_error(E_T_ALLOC, EXIT);
-				else  
+				else
 					tli_error(E_T_ALLOC, CONTINUE);
 			}
 		}
@@ -1124,7 +1125,7 @@ doevent(struct call_list *phead, int fd)
 	DEBUG((9, "case default"));
 		tli_error(E_T_LOOK, CONTINUE);
 		break;
-		
+
 	}
 }
 
@@ -1301,7 +1302,7 @@ cleanup:
 #endif
 				exit(1); /* server failed, don't log */
 					/* no return */
-			}	
+			}
 			/* only parent gets here */
 			clr_call(call);
 			t_close(Acceptfd);
@@ -1316,9 +1317,9 @@ cleanup:
 
 /*
  * common code to  start a server process (for any service)
- * The first argument in argv is the full pathname of server. 
+ * The first argument in argv is the full pathname of server.
  * Before exec-ing the server, the caller's
- * logical address, opt and udata are addded to the environment. 
+ * logical address, opt and udata are addded to the environment.
  */
 
 static char homeenv[BUFSIZ];
@@ -1355,7 +1356,7 @@ dbf_t *dbp;
 		char	dummy[PMTAGSIZE + 1];
 		struct	utmpx utline;
 
-		/* 
+		/*
 		 * create a utmpx entry --
 		 * we do an extra fork here to make init this process's
 		 * parent.  this lets init clean up the utmpx entry when
@@ -1372,7 +1373,7 @@ dbf_t *dbp;
 		if (tmp)
 			exit(0);	/* kill parent */
 
-		/* 
+		/*
 		 * child continues processing, creating utmp and exec'ing
 		 * the service
 		 */
@@ -1422,7 +1423,7 @@ dbf_t *dbp;
 	}
 
 	rst_signals();
-	
+
 	DEBUG((9, "Running doconfig on %s", dbp->dbf_svc_code));
 	if ((i = doconfig(Acceptfd, dbp->dbf_svc_code, 0)) != 0) {
 		DEBUG((9, "doconfig exited with code %d", i));
@@ -1435,7 +1436,7 @@ dbf_t *dbp;
 		sprintf(msgbuf, "Missing or bad passwd entry for <%s>",dbp->dbf_id);
 		logmessage(msgbuf);
 		exit(2); /* server, don't log */
-	}		
+	}
 
 	if (setgid(pwdp->pw_gid)) {
 		if ((grpp = getgrgid(pwdp->pw_gid)) == NULL) {
@@ -1513,7 +1514,7 @@ struct t_call *call;
 	if (getenv("PATH") == NULL)
 		putenv("PATH=/usr/sbin:/usr/bin");
 
-	if ((p = (char *)malloc(((call->addr.len)<<1) + 18)) == NULL)
+	if ((p = malloc(((call->addr.len)<<1) + 18)) == NULL)
 		return(-1);
 	strcpy(p, NLSADDR);
 	strcat(p, "=");
@@ -1521,7 +1522,7 @@ struct t_call *call;
 	DEBUG((7, "Adding %s to server's environment", p));
 	putenv(p);
 
-	if ((p = (char *)malloc(((call->opt.len)<<1) + 16)) == NULL)
+	if ((p = malloc(((call->opt.len)<<1) + 16)) == NULL)
 		return(-1);
 	strcpy(p, NLSOPT);
 	strcat(p, "=");
@@ -1547,7 +1548,7 @@ struct t_call *call;
 	DEBUG((7, "Adding %s to environment", p));
 	putenv(p);
 
-	if ((p = (char *)malloc(((call->udata.len)<<1) + 20)) == NULL)
+	if ((p = malloc(((call->udata.len)<<1) + 20)) == NULL)
 		return(-1);
 	strcpy(p, NLSUDATA);
 	strcat(p, "=");
@@ -1669,7 +1670,7 @@ pitchcall(struct call_list *pending, struct t_discon *discon)
 
 /*
  * add_prvaddr:  open and bind the private address specified in the database
- *               entry passed into the routine.  Update the maxcon and fd 
+ *               entry passed into the routine.  Update the maxcon and fd
  *               entries in the database structure
  *
  *	This routine is very sloppy with malloc'ed memory, but addresses
@@ -1696,7 +1697,7 @@ dbf_t *dbp;
 
 	DEBUG((9,"in add_prvaddr, addr %s, svc %s",
 		(dbp->dbf_sflags & DFLAG) ? "DYNAMIC" : dbp->dbf_prv_adr,
-		dbp->dbf_svc_code)); 
+		dbp->dbf_svc_code));
 	netbuf.buf = NULL;
 	netbuf.maxlen = 0;
 	netbuf.len = 0;
@@ -1731,7 +1732,7 @@ dbf_t *dbp;
 			return(-1);
 			break;
 		default:
-			error(E_OPENBIND, EXIT);	
+			error(E_OPENBIND, EXIT);
 		}
 	}
 	if (clen == -1) {
@@ -1749,14 +1750,14 @@ dbf_t *dbp;
 	temp_pend->cl_head = (struct callsave *) NULL;
 	temp_pend->cl_tail = (struct callsave *) NULL;
 	for (j=0; j < maxcon; ++j)  {
-		if ((tmp = (struct callsave *) malloc(sizeof(struct callsave))) == NULL)  {
+		if ((tmp = malloc(sizeof(struct callsave))) == NULL)  {
 			error (E_MALLOC, NOCORE | EXIT);
 		}
 		if ((tmp->c_cp = (struct t_call *) t_alloc(bindfd, T_CALL,
 				T_ALL)) == NULL) {
 			tli_error(E_T_ALLOC,EXIT);
 		}
-		queue(Free_call_p, tmp);	
+		queue(Free_call_p, tmp);
 	}
 	return(0);
 }
@@ -1776,7 +1777,7 @@ mod_prvaddr(void)
 	struct	pollfd	*sp;
 
 	DEBUG((9, "in mod_prvaddr..."));
-	/* 
+	/*
 	 * for each entry in the new table, check for a svc code match.
 	 * if there is a svc code match and the address matches, all we
 	 * need to do is update the new table.  if the addresses are
@@ -1822,7 +1823,7 @@ mod_prvaddr(void)
 	}
 
 	/* now bind all of the new addresses (fd == -1) */
-	/* 
+	/*
 	 * this tries to bind any addresses that failed to bind successfully
 	 * when the address changed.  This means that if a service is moved to
 	 * an address that is being deleted, the first attempt to bind it will
@@ -1853,7 +1854,7 @@ mod_prvaddr(void)
 	Dbfhead = Newdbf;
 	Newdbf = NULL;
 	Server_cmd_lines = New_cmd_lines;
-	sprintf(scratch, "Re-read complete, %d %s bound, %d fds free", Valid_addrs, 
+	sprintf(scratch, "Re-read complete, %d %s bound, %d fds free", Valid_addrs,
 		(Valid_addrs == 1) ? "address" : "addresses",
 		Ndesc-Valid_addrs-USEDFDS);
 	logmessage(scratch);
@@ -1887,7 +1888,7 @@ dbf_t	*dbp;
 
 	DEBUG((9, "in del_prvaddr..."));
 	rpc_unregister(dbp);
-	if (dbp->dbf_fd < 0) 
+	if (dbp->dbf_fd < 0)
 		return -1;
 
 	q = Priv_call + dbp->dbf_fd;
@@ -1911,7 +1912,7 @@ dbf_t	*dbp;
 
 	t_unbind(dbp->dbf_fd);
 	t_close(dbp->dbf_fd);
-	sprintf(scratch, "Unbind %s: fd %d addr %s", dbp->dbf_svc_code, 
+	sprintf(scratch, "Unbind %s: fd %d addr %s", dbp->dbf_svc_code,
 		dbp->dbf_fd, dbp->dbf_prv_adr);
 	logmessage(scratch);
 	dbp->dbf_fd = -1;
@@ -1919,7 +1920,7 @@ dbf_t	*dbp;
 }
 
 
-/* 
+/*
  * look through the old database file to see if this service code matches
  * one already present
  */

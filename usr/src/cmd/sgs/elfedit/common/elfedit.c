@@ -172,6 +172,11 @@ static const char *isa_i_str = MSG_ORIG(MSG_ISA_X86_64);
 static const char *isa_I_str = MSG_ORIG(MSG_ISA_X86_64);
 #endif
 
+#ifdef __aarch64__
+static const char *isa_i_str = MSG_ORIG(MSG_ISA_AARCH64);
+static const char *isa_I_str = MSG_ORIG(MSG_ISA_AARCH64);
+#endif
+
 
 
 /* Forward declarations */

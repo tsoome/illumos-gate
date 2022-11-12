@@ -18,9 +18,9 @@
 #
 # CDDL HEADER END
 #
-#
+
 # Copyright (c) 1992, 2010, Oracle and/or its affiliates. All rights reserved.
-#
+# Copyright 2017 Hayashi Naoyuki
 # Copyright (c) 2018, Joyent, Inc.
 
 #       Makefile for fdisk
@@ -38,13 +38,14 @@ CPPFLAGS += -D_FILE_OFFSET_BITS=64
 SMATCH=off
 
 LDLIBS_i386= -lfdisk
+LDLIBS_aarch64= -lfdisk
 LDLIBS_sparc=
 LDLIBS += -ladm -lefi $(LDLIBS_$(MACH))
 
 i386_CFLAGS += -D_LARGEFILE64_SOURCE
 i386_CFLAGS += -D_FILE_OFFSET_BITS=64
-
-LINTFLAGS += -erroff=E_BAD_PTR_CAST_ALIGN -erroff=E_NAME_DEF_NOT_USED2
+aarch64_CFLAGS += -D_LARGEFILE64_SOURCE
+aarch64_CFLAGS += -D_FILE_OFFSET_BITS=64
 
 all:	$(ROOTFS_PROG)
 
@@ -56,7 +57,5 @@ $(ROOTSBINLINK):	FRC
 FRC:
 
 clean:
-
-lint:	lint_PROG
 
 include ../Makefile.targ

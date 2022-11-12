@@ -1658,10 +1658,12 @@ TEM_OBJS += tem.o tem_safe.o
 #
 #	Font data for generated console fonts
 #
-i386_FONT	= 8x16
-i386_FONT_SRC= ter-u16b
-sparc_FONT	= 12x22
-sparc_FONT_SRC= Gallant19
+i386_FONT		= 8x16
+i386_FONT_SRC		= ter-u16b
+sparc_FONT		= 12x22
+sparc_FONT_SRC		= Gallant19
+aarch64_FONT		= 0x16
+aarch64_FONT_SRC 	= ter-u16b
 FONT=$($(MACH)_FONT)
 FONT_SRC=$($(MACH)_FONT_SRC)
 FONT_DIR= $(SRC)/data/consfonts

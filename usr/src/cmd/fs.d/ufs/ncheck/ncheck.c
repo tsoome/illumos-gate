@@ -36,8 +36,6 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * ncheck -- obtain file names from reading filesystem
  */
@@ -666,7 +664,7 @@ extend_strngtab(unsigned int size)
 	strngtab_size += size;
 	strngtab = (char *)realloc(strngtab, strngtab_size);
 
-	return ((int)strngtab);
+	return ((int)(intptr_t)strngtab);
 }
 
 /*

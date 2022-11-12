@@ -39,9 +39,9 @@
 
 #include "libgrub_impl.h"
 
-#if defined(__sparc)
+#if defined(_BIG_ENDIAN)
 #define	CUR_ELFDATA	ELFDATA2MSB
-#elif defined(__i386)
+#elif defined(_LITTLE_ENDIAN)
 #define	CUR_ELFDATA	ELFDATA2LSB
 #endif /* __i386 */
 

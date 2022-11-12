@@ -865,7 +865,7 @@ struct FREE_SPACE {
 
 struct nsr_desc {
 	uint8_t		nsr_str_type;
-	uint8_t		nsr_id[5];
+	char		nsr_id[5];
 	uint8_t		nsr_ver;
 	uint8_t		nsr_res;
 	uint8_t		nsr_data[2040];

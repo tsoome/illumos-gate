@@ -1,0 +1,8 @@
+    libdis_test:      20 00 02 0e  tbl v0.8b, {v1.16b}, v2.8b
+    libdis_test+0x4:  83 20 06 4e  tbl v3.16b, {v4.16b, v5.16b}, v6.16b
+    libdis_test+0x8:  07 41 0b 0e  tbl v7.8b, {v8.16b-v10.16b}, v11.8b
+    libdis_test+0xc:  8c 63 0d 4e  tbl v12.16b, {v28.16b-v31.16b}, v13.16b
+    libdis_test+0x10: 20 10 02 0e  tbx v0.8b, {v1.16b}, v2.8b
+    libdis_test+0x14: 83 30 06 4e  tbx v3.16b, {v4.16b, v5.16b}, v6.16b
+    libdis_test+0x18: 07 51 0b 0e  tbx v7.8b, {v8.16b-v10.16b}, v11.8b
+    libdis_test+0x1c: 8c 73 0d 4e  tbx v12.16b, {v28.16b-v31.16b}, v13.16b

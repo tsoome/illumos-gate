@@ -16997,8 +16997,8 @@ ql_destroy_mutex(ql_adapter_state_t *ha)
 uint32_t
 ql_fwmodule_resolve(ql_adapter_state_t *ha)
 {
-	int8_t			module[128];
-	int8_t			fw_version[128];
+	char			module[128];
+	char			fw_version[128];
 	uint32_t		rval = QL_SUCCESS;
 	caddr_t			code, code02;
 	uint8_t			*p_ucfw;

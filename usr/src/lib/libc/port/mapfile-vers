@@ -77,6 +77,12 @@ $endif
 $if _x86 && _ELF64
 $add amd64
 $endif
+$if _arm && _ELF32
+$error Something is wrong with AArch64
+$endif
+$if _arm && _ELF64
+$add aarch64
+$endif
 
 SYMBOL_VERSION ILLUMOS_0.39 {
     protected:
@@ -488,7 +494,8 @@ SYMBOL_VERSION SUNW_1.23 {	# SunOS 5.11 (Solaris 11)
 					};
 				};
 
-$if _ELF32
+#XXXARM: This seems weird, but it's where it has been put as of now
+$if _ELF32 || aarch64
 	dl_iterate_phdr		{
 				  TYPE = FUNCTION;
 				  FILTER = /usr/lib/ld.so.1;
@@ -499,7 +506,7 @@ $elif sparcv9
 				  FILTER = /usr/lib/sparcv9/ld.so.1;
 				};
 $elif amd64
-	dl_iterate_phdr	{
+	dl_iterate_phdr		{
 				  TYPE = FUNCTION;
 				  FILTER = /usr/lib/amd64/ld.so.1;
 				};
@@ -873,7 +880,7 @@ $endif
 
 SYMBOL_VERSION SUNW_1.22 {	# SunOS 5.10 (Solaris 10)
     global:
-$if _ELF32
+$if _ELF32 || aarch64
 	dladdr		{ TYPE = FUNCTION; FILTER = /usr/lib/ld.so.1; };
 	dladdr1		{ TYPE = FUNCTION; FILTER = /usr/lib/ld.so.1; };
 	dlclose		{ TYPE = FUNCTION; FILTER = /usr/lib/ld.so.1; };
@@ -1765,7 +1772,7 @@ $if lf64
 	_xftw64;
 $endif
 
-$if _sparc
+$if _sparc || _arm
 	__flt_rounds;
 $endif
 } SUNW_0.9;
@@ -2068,7 +2075,7 @@ $endif
 	_assert;
 	atoll;
 	brk;
-	__builtin_alloca;
+#	__builtin_alloca;  #XXXARM: We need the stub definition, for those with no builtin
 	cftime;
 	closelog;
 	csetcol;
@@ -3113,7 +3120,7 @@ $if amd64
 SYMBOL_VERSION SYSVABI_1.3 {
 $endif
     global:
-$if !_sparc
+$if x86				#XXXARM
 	__flt_rounds	{ ASSERT = { TYPE = OBJECT; SIZE = 4; }; };
 $endif
 
@@ -3130,7 +3137,7 @@ $if !sparc32
 	_sbrk;
 $endif
 
-$if _x86
+$if _x86 || _arm
 	_fpstart;
 	__fpstart;
 $endif
@@ -3404,7 +3411,7 @@ $endif
 				  FLAGS = NODIRECT;
 				};
 
-$if _ELF32
+$if _ELF32 || aarch64
 	_dladdr			{
 				  TYPE = FUNCTION;
 				  FILTER = /usr/lib/ld.so.1;
@@ -3445,6 +3452,7 @@ $if _ELF32
 				  TYPE = FUNCTION;
 				  FILTER = /usr/lib/ld.so.1;
 				};
+$if !aarch64
 	_sys_errlist		{
 				  ASSERT = {
 					  BINDING = WEAK;
@@ -3476,6 +3484,7 @@ $if _ELF32
 					  SIZE = 4;
 					};
 				};
+$endif
 $elif sparcv9
 	_dladdr			{
 				  TYPE = FUNCTION;
@@ -3627,10 +3636,12 @@ $endif
 	dbm_close_status;
 	dbm_do_nextkey;
 	dbm_setdefwrite;
+$if !aarch64			#XXXARM
 	_D_cplx_div;
 	_D_cplx_div_ix;
 	_D_cplx_div_rx;
 	_D_cplx_mul;
+$endif
 	defclose_r;
 	defcntl;
 	defcntl_r;
@@ -3645,10 +3656,12 @@ $endif
 	_errfp;
 	_errxfp;
 	exportfs;
+$if !aarch64			#XXXARM
 	_F_cplx_div;
 	_F_cplx_div_ix;
 	_F_cplx_div_rx;
 	_F_cplx_mul;
+$endif
 	__fgetwc_xpg5;
 	__fgetws_xpg5;
 	_findbuf;

@@ -48,7 +48,7 @@ extern "C" {
 #define	__func__ ""
 #endif
 
-extern void rtw_dbg(uint32_t dbg_flags, const int8_t *fmt, ...);
+extern void rtw_dbg(uint32_t dbg_flags, const char *fmt, ...);
 
 #define	RTW_DEBUG_TUNE		0x000001
 #define	RTW_DEBUG_PKTFILT	0x000002

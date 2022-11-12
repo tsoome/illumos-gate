@@ -29,5 +29,5 @@
 
 @ _END_
 
-# XXXARM: I'm not sure this is what was really done, because no 32bit...
-@ MSG_PTH_RTLD_AARCH64	"/usr/lib/aarch64/ld.so.1"
+@ MSG_PTH_RTLD_AARCH64	"/lib/ld.so.1"
+@ MSG_SCN_GOTPLT	".got.plt"

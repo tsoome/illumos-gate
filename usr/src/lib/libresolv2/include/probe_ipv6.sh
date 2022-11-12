@@ -40,7 +40,7 @@ cat > ${new} <<EOF
 
 EOF
 
-if ${CC} -c tmp$$a.c > /dev/null 2>&1
+if ${CC} -c tmp$$a.c #> /dev/null 2>&1
 then
         echo "#define HAS_INET6_STRUCTS" >> ${new}
         if ${CC} -c tmp$$b.c > /dev/null 2>&1

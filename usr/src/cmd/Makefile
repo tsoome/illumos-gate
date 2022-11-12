@@ -34,35 +34,23 @@
 
 include ../Makefile.master
 
-#
-#	Note that the commands 'lp', and 'perl' are first in
-#	the list, violating alphabetical order.  This is because they are very
-#	long-running and should be given the most wall-clock time for a
-#	parallel build.
-#
 #	Commands in the FIRST_SUBDIRS list are built before starting the build
 #	of other commands.  Currently this includes only 'isaexec' and
 #	'platexec'.  This is necessary because $(ROOT)/usr/lib/isaexec or
 #	$(ROOT)/usr/lib/platexec must exist when some other commands are built
 #	because their 'make install' creates a hard link to one of them.
 #
-#	Commands are listed one per line so that TeamWare can auto-merge most
-#	changes.
+#	Commands are listed one per line so that most changes can be auto-merged.
 #
 
 FIRST_SUBDIRS=		\
 	isaexec		\
 	platexec
 
-COMMON_SUBDIRS=		\
+COMMON_SUBDIRS=	\
 	allocate	\
-	availdevs	\
-	lp		\
-	perl		\
 	Adm		\
-	abi		\
 	adbgen		\
-	acct		\
 	acctadm		\
 	arch		\
 	asa		\
@@ -71,22 +59,16 @@ COMMON_SUBDIRS=		\
 	auths		\
 	autopush	\
 	awk		\
-	awk_xpg4	\
-	backup		\
 	banner		\
 	bart		\
 	basename	\
-	bc		\
-	bdiff		\
 	beadm		\
-	bnu		\
 	boot		\
 	busstat		\
 	cal		\
 	captoinfo	\
 	cat		\
 	ccidadm		\
-	cdrw		\
 	cfgadm		\
 	checkeq		\
 	checknr		\
@@ -103,12 +85,8 @@ COMMON_SUBDIRS=		\
 	connstat	\
 	consadm		\
 	coreadm		\
-	cpio		\
-	cpc		\
 	cron		\
 	crypt		\
-	csh		\
-	csplit		\
 	ctfconvert	\
 	ctfdiff		\
 	ctfdump		\
@@ -118,7 +96,6 @@ COMMON_SUBDIRS=		\
 	ctwatch		\
 	datadm		\
 	date		\
-	dc		\
 	dd		\
 	demangle	\
 	deroff		\
@@ -147,13 +124,10 @@ COMMON_SUBDIRS=		\
 	dumpadm		\
 	dumpcs		\
 	echo		\
-	ed		\
-	eeprom		\
 	eject		\
 	emul64ioctl	\
 	enhance		\
 	env		\
-	eqn		\
 	etdump		\
 	expand		\
 	expr		\
@@ -167,7 +141,6 @@ COMMON_SUBDIRS=		\
 	fdisk		\
 	ficl		\
 	filesync	\
-	file		\
 	find		\
 	flowadm		\
 	flowstat	\
@@ -175,15 +148,11 @@ COMMON_SUBDIRS=		\
 	fmt		\
 	fmthard		\
 	fmtmsg		\
-	fold		\
-	format		\
 	fs.d		\
 	fstyp		\
 	fuser		\
-	fwflash		\
 	gcore		\
 	gencat		\
-	geniconvtbl	\
 	genmsg		\
 	getconf		\
 	getdevpolicy	\
@@ -197,8 +166,6 @@ COMMON_SUBDIRS=		\
 	groups		\
 	growfs		\
 	grpck		\
-	gss		\
-	hal		\
 	halt		\
 	head		\
 	hostid		\
@@ -217,23 +184,19 @@ COMMON_SUBDIRS=		\
 	intrstat	\
 	ipcrm		\
 	ipcs		\
-	ipdadm		\
 	ipf		\
 	isainfo		\
 	isalist		\
 	iscsiadm	\
 	iscsid		\
 	iscsitsvc	\
-	isns		\
 	itadm		\
 	kbd		\
 	keyserv		\
 	killall		\
-	krb5		\
 	kvmstat		\
 	last		\
 	lastcomm	\
-	latencytop	\
 	ldap		\
 	ldapcachemgr	\
 	lgrpinfo	\
@@ -244,32 +207,29 @@ COMMON_SUBDIRS=		\
 	loadkeys	\
 	locale		\
 	localedef	\
-	lockstat	\
 	locator		\
+	lockstat	\
 	lofiadm		\
 	logadm		\
 	logger		\
 	login		\
 	logins		\
 	logname		\
+	lp		\
 	look		\
 	ls		\
-	luxadm		\
 	mach		\
 	mail		\
 	mailwrapper	\
-	mailx		\
 	make		\
 	makekey		\
 	man		\
 	mandoc		\
-	mdb		\
 	mesg		\
 	mkdir		\
 	mkfifo		\
 	mkfile		\
 	mkmsgs		\
-	mknod		\
 	mkpwdict	\
 	mktemp		\
 	modload		\
@@ -280,7 +240,6 @@ COMMON_SUBDIRS=		\
 	mt		\
 	mv		\
 	mvdir		\
-	ndmpadm		\
 	ndmpd		\
 	ndmpstat	\
 	netadm		\
@@ -292,11 +251,9 @@ COMMON_SUBDIRS=		\
 	nice		\
 	nl		\
 	nlsadmin	\
-	nohup		\
 	nsadmin		\
 	nscd		\
 	oamuser		\
-	oawk		\
 	od		\
 	pack		\
 	pagesize	\
@@ -308,7 +265,6 @@ COMMON_SUBDIRS=		\
 	pcidr		\
 	pcieadm		\
 	pcieb		\
-	pcitool		\
 	pfexec		\
 	pfexecd		\
 	pginfo		\
@@ -316,13 +272,10 @@ COMMON_SUBDIRS=		\
 	pgrep		\
 	picl		\
 	plimit		\
-	policykit	\
+	plockstat	\
 	pools		\
 	power		\
-	powertop	\
 	ppgsz		\
-	pg		\
-	plockstat	\
 	pr		\
 	prctl		\
 	print		\
@@ -333,7 +286,6 @@ COMMON_SUBDIRS=		\
 	projects	\
 	prstat		\
 	prtconf		\
-	prtdiag		\
 	prtvtoc		\
 	ps		\
 	psradm		\
@@ -347,22 +299,16 @@ COMMON_SUBDIRS=		\
 	raidz_test	\
 	ramdiskadm	\
 	rcap		\
-	rcm_daemon	\
 	rctladm		\
-	refer		\
 	regcmp		\
 	renice		\
 	rm		\
 	rmdir		\
-	rmformat	\
-	rmmount		\
 	rmt		\
-	rmvolmgr	\
 	roles		\
 	rpcbind		\
 	rpcgen		\
 	rpcinfo		\
-	rpcsvc		\
 	runat		\
 	sa		\
 	saf		\
@@ -370,16 +316,13 @@ COMMON_SUBDIRS=		\
 	savecore	\
 	sbdadm		\
 	script		\
-	scsi		\
 	sdiff		\
 	sdpadm		\
 	sed		\
-	sendmail	\
 	setfacl		\
 	setmnt		\
 	setpgrp		\
 	sgs		\
-	sh		\
 	sleep		\
 	smbios		\
 	smbsrv		\
@@ -389,7 +332,6 @@ COMMON_SUBDIRS=		\
 	spell		\
 	split		\
 	sqlite		\
-	srchtxt		\
 	srptadm		\
 	srptsvc		\
 	ssh		\
@@ -404,7 +346,6 @@ COMMON_SUBDIRS=		\
 	sulogin		\
 	sunpc		\
 	svc		\
-	svr4pkg		\
 	swap		\
 	sync		\
 	sysdef		\
@@ -412,22 +353,15 @@ COMMON_SUBDIRS=		\
 	syslogd		\
 	tabs		\
 	tail		\
-	tar		\
-	tbl		\
 	tcopy		\
 	tcpd		\
 	th_tools	\
 	tic		\
 	time		\
-	tip		\
 	touch		\
-	tput		\
 	tr		\
 	trapstat	\
-	troff		\
 	true		\
-	truss		\
-	tsol		\
 	tty		\
 	ttymon		\
 	tzreload	\
@@ -445,9 +379,6 @@ COMMON_SUBDIRS=		\
 	valtools	\
 	varpd		\
 	vgrind		\
-	vi		\
-	volcheck	\
-	volrmmount	\
 	vrrpadm		\
 	vscan		\
 	vt		\
@@ -462,7 +393,6 @@ COMMON_SUBDIRS=		\
 	xargs		\
 	xstr		\
 	yes		\
-	ypcmd		\
 	yppasswd	\
 	zdb		\
 	zdump		\
@@ -471,15 +401,152 @@ COMMON_SUBDIRS=		\
 	zic		\
 	zinject		\
 	zlogin		\
-	zoneadm		\
-	zoneadmd	\
 	zonecfg		\
 	zonename	\
-	zpool		\
 	zlook		\
-	zonestat	\
+	zpool		\
 	zstreamdump	\
 	ztest
+
+
+# XXXARM: Things not built on AArch64 yet
+# abi - not interesting
+# perl - not available for the cross
+# availdevs - needs libzfs (and libzfs_jni!?) (and not interesting)
+# bdiff - uses FILE internals not available to LP64
+# bnu - uses FILE internals not available to LP64
+# hal - needs dbus, etc
+# latencytop - needs glib
+# pcitool - not ported
+# policykit - needs dbus
+# powertop - not ported
+# rmformat - not ported (or useful?)
+# rmvolmgr - needs dbus
+# rmmount - needs dbus
+# volcheck - needs dbus
+# volrmmmount - needs dbus
+# cdrw - needs dbus
+#
+# acct - not 64bit clean
+# awk_xpg4 - not 64bit clean
+# bc - not 64bit clean
+# backup - not 64bit clean
+# cpc - not ported (nor libcpc)
+# csh - not 64bit clean
+# cpio - not 64bit clean
+# dc - not 64bit clean
+# csplit - not 64bit clean
+# eqn - not 64bit clean
+# ed - not 64bit clean
+# eeprom - not ported
+# file - wants bits of sys/core.h 64bit apps can't see
+# fwflash - needs libses
+# geniconvtbl - not 64bit clean
+# fold - not 64bit clean
+# mailx - not 64bit clean
+# format - not 64bit clean (but just printf stuff)
+# gss - not 64bit clean
+# ipdadm - needs libipd
+# isns - not 64bit clean
+# krb5 - not 64bit clean
+# luxadm - super confused about platforms, and probably needs libs
+# mknod - not 64bit clean
+# mdb - needs porting
+# ndmpadm - not 64bit clean
+# nohup - not ported (header bits gone awry)
+# oawk - not 64bit clean?
+# pg - not 64bit clean
+# prtdiag - not ported
+# refer - not 64bit clean
+# rcm_daemon - not 64bit clean
+# rpcsvc - not 64bit clean
+# scsi - needs libses libsmp
+# sendmail - not 64bit clean (probably our build of it is hosed)
+# sh - not 64bit clean
+# srchtxt - not 64bit clean
+# svr4pkg - not 64bit clean
+# tar - not 64bit clean
+# tput - not 64bit clean
+# tip - not 64bit clean
+# tbl - not 64bit clean
+# troff - not 64bit clean
+# tsol - not ported (or 64bit clean)
+# truss - not ported
+# vi - not 64bit clean / not ported
+# zoneadm/zoneadm - not 64bit clean, need zone bits
+# ypcmd - not 64bit clean
+# zonestat - not 64bit clean, needs to use the good readdir_r
+$(NOT_AARCH64_BLD)COMMON_SUBDIRS=	\
+	abi		\
+	perl		\
+	availdevs	\
+	bdiff		\
+	acct		\
+	bnu		\
+	cdrw		\
+	awk_xpg4	\
+	bc		\
+	backup		\
+	cpc		\
+	csh		\
+	cpio		\
+	dc		\
+	csplit		\
+	eqn		\
+	ed		\
+	eeprom		\
+	file		\
+	fwflash		\
+	geniconvtbl	\
+	fold		\
+	mailx		\
+	hal		\
+	format		\
+	gss		\
+	ipdadm		\
+	isns		\
+	krb5		\
+	latencytop	\
+	luxadm		\
+	mknod		\
+	mdb		\
+	ndmpadm		\
+	nohup		\
+	oawk		\
+	pcitool		\
+	policykit	\
+	powertop	\
+	praudit		\
+	pg		\
+	prtdiag		\
+	refer		\
+	rcm_daemon	\
+	rmformat	\
+	rmvolmgr	\
+	rmmount		\
+	rpcsvc		\
+	scsi		\
+	sendmail	\
+	sh		\
+	srchtxt		\
+	svr4pkg		\
+	tar		\
+	tput		\
+	tip		\
+	tbl		\
+	troff		\
+	tsol		\
+	truss		\
+	volcheck	\
+	volrmmount	\
+	vi		\
+	zoneadm		\
+	zoneadmd	\
+	ypcmd		\
+	zonestat	\
+
+aarch64_SUBDIRS=	\
+	ahciem
 
 i386_SUBDIRS=		\
 	acpi		\
@@ -661,7 +728,6 @@ MSGSUBDIRS=		\
 	pools		\
 	power		\
 	pr		\
-	praudit		\
 	print		\
 	profiles	\
 	projadd		\
@@ -790,8 +856,10 @@ AUDITSUBDIRS=		\
 	auditrecord	\
 	auditreduce	\
 	auditset	\
-	auditstat	\
-	praudit
+	auditstat
+
+# XXXARM: not 64bit clean
+$(NOT_AARCH64_BLD)AUDITSUBDIRS += praudit
 
 all :=		TARGET = all
 install :=	TARGET = install

@@ -22,8 +22,8 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# cmd/syseventd/modules/Makefile
-#
+
+include $(SRC)/Makefile.master
 
 .PARALLEL:
 

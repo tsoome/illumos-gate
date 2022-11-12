@@ -1,0 +1,202 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright 2017 Hayashi Naoyuki
+# Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013 Andrew Stormont.  All rights reserved.
+#
+
+#
+#	Machine type (implementation architecture):
+#
+PLATFORM	 = armv8
+
+#
+#	uname -m value
+#
+UNAME_M		= $(PLATFORM)
+
+#
+# Definitions for the platform-specific /platform directories.
+#
+# PLATFORMS designates those armv8 machines which have no platform
+# specific code.
+#
+# IMPLEMENTATIONS is used to designate armv8 machines which do have
+# platform specific modules (perhaps including their own unix).  All
+# code specific to a given implementation resides in the appropriately
+# named subdirectory.   This requires these platforms to have their
+# own Makefiles to define ROOT_PLAT_DIRS, USR_PLAT_DIRS, etc.
+#
+# So if we had an implementation named 'foo', we would need the following
+# Makefiles in the foo subdirectory:
+#
+#	armv8/foo/Makefile
+#	armv8/foo/Makefile.foo
+#	armv8/foo/Makefile.targ
+#
+
+#
+#	Define supported builds
+#
+DEF_BUILDS	= $(DEF_BUILDSONLY64)
+ALL_BUILDS	= $(ALL_BUILDSONLY64)
+
+#
+#	Everybody needs to know how to build modstubs.o and to locate unix.o
+#
+UNIX_DIR	 = $(UTSBASE)/armv8/unix
+GENLIB_DIR	 = $(UTSBASE)/aarch64/genunix
+MODSTUBS_DIR	 = $(UNIX_DIR)
+DSF_DIR		 = .
+
+DTRACESTUBS_O	 = $(OBJS_DIR)/dtracestubs.o
+DTRACESTUBS	 = $(OBJS_DIR)/libdtracestubs.so
+
+SYM_MOD		= $(OBJS_DIR)/unix.sym
+
+UNIX_O		 = $(UNIX_DIR)/$(OBJS_DIR)/unix.o
+MODSTUBS_O	 = $(MODSTUBS_DIR)/$(OBJS_DIR)/modstubs.o
+GENLIB	 	 = $(GENLIB_DIR)/$(OBJS_DIR)/libgenunix.so
+# XXXARM: We have no platmods as yet, but this is left here so we remember how
+# they work.
+#PLATMOD		 = platmod
+#PLATLIB		 = $(PLAT_DIR)/$(OBJS_DIR)/libplatmod.so
+MAPFILE		 = $(UTSBASE)/armv8/conf/Mapfile
+
+#
+#	Include the makefiles which define build rule templates, the
+#	collection of files per module, and a few specific flags. Note
+#	that order is significant, just as with an include path. The
+#	first build rule template which matches the files name will be
+#	used. By including these in order from most machine dependent
+#	to most machine independent, we allow a machine dependent file
+#	to be used in preference over a machine independent version
+#	(Such as a machine specific optimization, which preserves the
+#	interfaces.)
+#
+include $(UTSBASE)/armv8/Makefile.files
+include $(UTSBASE)/aarch64/Makefile.files
+include $(UTSBASE)/common/Makefile.files
+
+#
+#	Include machine independent rules. Note that this does not imply
+#	that the resulting module from rules in Makefile.uts is	machine
+#	independent. Only that the build rules are machine independent.
+#
+include $(UTSBASE)/Makefile.uts
+
+IMPLEMENTATIONS	=	\
+	meson-gxbb	\
+	rpi4		\
+	virt
+
+#
+#	kernel-specific optimizations; override default in Makefile.master
+#
+
+CFLAGS_XARCH		= $($(MACH)_CFLAGS)
+
+COPTIMIZE		= $(COPTFLAG)
+
+CFLAGS			= $(CFLAGS_XARCH)
+CFLAGS			+= $(COPTIMIZE)
+CFLAGS			+= $(INLINES) -D_ASM_INLINES
+CFLAGS			+= $(CCMODE)
+CFLAGS			+= $(SPACEFLAG)
+CFLAGS			+= $(CCUNBOUND)
+CFLAGS			+= $(CFLAGS_uts)
+CFLAGS			+= -xstrconst
+CFLAGS			+= -_gcc=-fstack-protector
+
+INC_PATH		+= -I$(UTSBASE)/armv8
+INC_PATH		+= -I$(UTSBASE)/$(MACH)
+INC_PATH		+= -I$(COMMONBASE)
+
+ASFLAGS_XARCH		= $($(MACH)_ASFLAGS)
+
+ASFLAGS			+= $(ASFLAGS_XARCH)
+
+AS_INC_PATH		+= -I$(DSF_DIR)/$(OBJS_DIR)
+
+#
+#	The following must be defined for all implementations:
+#
+#	MAPFILE:	ld mapfile for the build of kernel/unix.
+#	MODSTUBS:	Module stubs source file.
+#	GENASSYM_SRC:	genassym.c
+#
+MAPFILE		 = $(UTSBASE)/armv8/conf/Mapfile
+MODSTUBS	 = $(UTSBASE)/$(MACH)/ml/modstubs.s
+
+#
+#	Define the actual specific platforms
+#
+MACHINE_DEFS	 = -D$(MACH) -D_MACHDEP
+
+#
+#	Debugging level
+#
+#	Special knowledge of which special debugging options effect which
+#	file is used to optimize the build if these flags are changed.
+#
+#	XXX: The above could possibly be done for more flags and files, but
+#	     is left as an experiment to the interested reader. Be forewarned,
+#	     that excessive use could lead to maintenance difficulties.
+#
+DEBUG_DEFS_OBJ32	=
+DEBUG_DEFS_DBG32	= -DDEBUG
+DEBUG_DEFS_OBJ64	=
+DEBUG_DEFS_DBG64	= -DDEBUG
+DEBUG_DEFS		= $(DEBUG_DEFS_$(BUILD_TYPE))
+
+DEBUG_COND_OBJ32	= $(POUND_SIGN)
+DEBUG_COND_DBG32	=
+DEBUG_COND_OBJ64	= $(POUND_SIGN)
+DEBUG_COND_DBG64	=
+IF_DEBUG_OBJ		= $(DEBUG_COND_$(BUILD_TYPE))$(OBJS_DIR)/
+
+#
+#	Collect the preprocessor definitions to be associated with *all*
+#	files.
+#
+ALL_DEFS	 = $(MACHINE_DEFS) $(DEBUG_DEFS) \
+		   $(OPTION_DEFS)
+GENASSYM_DEFS	 = $(MACHINE_DEFS) $(OPTION_DEFS) \
+			-_gcc=-fno-eliminate-unused-debug-symbols \
+			-_gcc=-fno-eliminate-unused-debug-types
+
+#
+#	The kernels modules which are "implementation architecture"
+#	specific for this machine are enumerated below. Note that most
+#	of these modules must exist (in one form or another) for each
+#	architecture.
+#
+#	Common Drivers (usually pseudo drivers) (/kernel/drv):
+#
+
+#
+#	Machine Specific Driver Modules (/kernel/drv):
+#
+DRV_KMODS += simple-bus
+DRV_KMODS += rootnex
+DACF_KMODS += consconfig_dacf

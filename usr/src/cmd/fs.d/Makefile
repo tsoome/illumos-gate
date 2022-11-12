@@ -19,9 +19,10 @@
 # CDDL HEADER END
 #
 # Copyright (c) 1990, 2010, Oracle and/or its affiliates. All rights reserved.
-# Copyright (c) 2018, Joyent, Inc.
 # Copyright 2015 Nexenta Systems, Inc. All rights reserved.
-#
+# Copyright (c) 2018, Joyent, Inc.
+
+include $(SRC)/Makefile.master
 
 # The filesystem independent utilities clri, fsdb, dcopy, labelit, and mkfs
 # are all built from the source file switchout.c. They are all then links
@@ -32,7 +33,7 @@
 # In a similar manner, ncheck is linked to ff.
 
 DFPROG=		df
-PROG=		$(DFPROG) fsck volcopy ff
+PROG=		$(DFPROG) volcopy ff fsck
 ROOTFS_PROG=	mount umount
 SPPROG=		clri
 MNTTAB=		mnttab
@@ -40,9 +41,29 @@ DEFAULTFILES=	fs.dfl
 
 include ../Makefile.cmd
 
-SUBDIR1= bootfs lofs zfs
-SUBDIR2= dev fd pcfs nfs hsfs proc ctfs udfs ufs tmpfs \
-		autofs mntfs objfs sharefs smbclnt reparsed
+SUBDIR1= 	\
+	bootfs	\
+	lofs	\
+	zfs
+
+SUBDIR2=		\
+	autofs		\
+	ctfs		\
+	dev		\
+	fd		\
+	hsfs		\
+	mntfs		\
+	nfs		\
+	objfs		\
+	pcfs		\
+	proc		\
+	reparsed	\
+	sharefs		\
+	smbclnt		\
+	tmpfs		\
+	udfs		\
+	ufs
+
 SUBDIRS= $(SUBDIR1) $(SUBDIR2)
 I18NDIRS= $(SUBDIR2)
 
@@ -55,12 +76,14 @@ clean:=		TARGET= clean
 clobber:=	TARGET= clobber
 _msg:=          TARGET= catalog
 
-USRSBINF=	df clri fsck volcopy ff
+USRSBINF=	df volcopy ff
 USRSBINCLRI=	dcopy fsdb fssnap labelit mkfs
 USRSBINFF=	ncheck
+USRSBINF += clri fsck
 
 ETC2SBIN=	mount umount
-ETC2USRSBIN=	clri fsdb mkfs fsck labelit dcopy volcopy ff ncheck
+ETC2USRSBIN=	fsdb mkfs labelit dcopy volcopy ff ncheck
+ETC2USRSBIN += clri fsck
 USRBIN2USRSBIN=	df
 USRXPG4BIN2USRSBIN= df
 

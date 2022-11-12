@@ -197,6 +197,9 @@ unset \
 	ARCH \
 	CLASSPATH
 
+MACH="$(uname -p)"
+NATIVE_MACH="${MACH}"
+
 #
 # Setup environment variables
 #
@@ -291,7 +294,7 @@ fi
 PKGARCHIVE="${PKGARCHIVE}${SUFFIX}"
 
 #	Set PATH for a build
-PATH="/opt/onbld/bin:/opt/onbld/bin/${MACH}:/opt/SUNWspro/bin:/usr/ccs/bin:/usr/bin:/usr/sbin:/usr/ucb:/usr/etc:/usr/openwin/bin:/usr/sfw/bin:/opt/sfw/bin:."
+PATH="/opt/onbld/bin:/opt/onbld/bin/${NATIVE_MACH}:/opt/SUNWspro/bin:/usr/ccs/bin:/usr/bin:/usr/sbin:/usr/ucb:/usr/etc:/usr/openwin/bin:/usr/sfw/bin:/opt/sfw/bin:."
 if [[ "${SUNWSPRO}" != "" ]]; then
 	export PATH="${SUNWSPRO}/bin:$PATH"
 fi
@@ -306,20 +309,22 @@ if [[ -n "${MAKE}" ]]; then
 fi
 
 TOOLS="${SRC}/tools"
-TOOLS_PROTO="${TOOLS}/proto/root_${MACH}-nd" ; export TOOLS_PROTO
+TOOLS_PROTO="${TOOLS}/proto/root_${NATIVE_MACH}-nd" ; export TOOLS_PROTO
 
 if "${flags.t}" ; then
 	export ONBLD_TOOLS="${ONBLD_TOOLS:=${TOOLS_PROTO}/opt/onbld}"
+	TPONM=${TOOLS_PROTO}/opt/onbld/bin/${NATIVE_MACH}
 
-	export STABS="${TOOLS_PROTO}/opt/onbld/bin/${MACH}/stabs"
-	export CTFSTABS="${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ctfstabs"
+	export STABS="${TPONM}/stabs"
+	export CTFSTABS="${TPONM}/ctfstabs"
 	export GENOFFSETS="${TOOLS_PROTO}/opt/onbld/bin/genoffsets"
 
-	export CTFCONVERT="${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ctfconvert"
-	export CTFMERGE="${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ctfmerge"
-	export NDRGEN="${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ndrgen"
+	export CTFCONVERT="${TPONM}/ctfconvert"
+	export CTFMERGE="${TPONM}/ctfmerge"
+	export NDRGEN="${TPONM}/ndrgen"
 
-	PATH="${TOOLS_PROTO}/opt/onbld/bin/${MACH}:${PATH}"
+	unset TPONM
+	PATH="${TOOLS_PROTO}/opt/onbld/bin/${NATIVE_MACH}:${PATH}"
 	PATH="${TOOLS_PROTO}/opt/onbld/bin:${PATH}"
 	export PATH
 fi
@@ -388,6 +393,11 @@ export \
 printf 'RELEASE      is %s\n'   "$RELEASE"
 printf 'VERSION      is %s\n'   "$VERSION"
 printf 'RELEASE_DATE is %s\n\n' "$RELEASE_DATE"
+
+if [[ -n "$NATIVE_MACH" && "$NATIVE_MACH" != "$MACH" ]]; then
+	printf 'Cross-building enabled\n'
+	printf 'Targeting %s on %s\n\n' "$MACH" "$NATIVE_MACH"
+fi
 
 if [[ -f "$SRC/Makefile" ]] && egrep -s '^setup:' "$SRC/Makefile" ; then
 	print "The top-level 'setup' target is available \c"

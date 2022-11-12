@@ -22,8 +22,8 @@
 /*
  * Copyright 2003 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-/*
+ *
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright (c) 2019, Joyent, Inc.
  */
 
@@ -39,7 +39,7 @@
 #include <zlib.h>
 #include <sys/debug.h>
 
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 static const char *_libctf_zlib = "/usr/lib/64/libz.so.1";
 #else
 static const char *_libctf_zlib = "/usr/lib/libz.so.1";

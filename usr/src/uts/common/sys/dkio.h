@@ -22,9 +22,11 @@
 /*
  * Copyright (c) 1982, 2010, Oracle and/or its affiliates. All rights reserved.
  *
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2017 Nexenta Systems, Inc.  All rights reserved.
  * Copyright 2012 DEY Storage Systems, Inc.  All rights reserved.
  * Copyright 2019 Joyent, Inc.
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef _SYS_DKIO_H
@@ -234,7 +236,7 @@ struct dk_callback {
  */
 #define	DKIOCHOTPLUGGABLE	(DKIOC|35)	/* is hotpluggable */
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 /* ioctl to write extended partition structure into the disk */
 #define	DKIOCSETEXTPART	(DKIOC|46)
 #endif

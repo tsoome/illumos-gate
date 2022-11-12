@@ -37,9 +37,8 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <rpc/rpc.h>
 #include <errno.h>
 #ifdef SYSLOG
@@ -168,7 +167,7 @@ char *servname;			/* name of the service */
 				SVC_DESTROY(xprt);
 				continue;
 			}
-			l = (struct xlist *)malloc(sizeof (struct xlist));
+			l = malloc(sizeof (struct xlist));
 			if (l == (struct xlist *)NULL) {
 				(void) syslog(LOG_ERR,
 					    "svc_create: no memory");

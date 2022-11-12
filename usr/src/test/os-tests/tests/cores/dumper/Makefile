@@ -13,11 +13,14 @@
 # Copyright 2021 Oxide Computer Company
 #
 
+include $(SRC)/Makefile.master
+
 PROGS = dumper
 
-PROGS32 = $(PROGS:%=%.32)
+$(NOT_AARCH64_BLD)PROGS32 = $(PROGS:%=%.32)
 PROGS64 = $(PROGS:%=%.64)
-ALLOBJS = $(PROGS32:%=%.o) $(PROGS64:%=%.o)
+ALLOBJS = $(PROGS64:%=%.o)
+$(NOT_AARCH64_BLD)ALLOBJS += $(PROGS32:%=%.o)
 
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/cmd/Makefile.ctf
@@ -29,12 +32,15 @@ ROOTOPTPROGS = $(PROGS32:%=$(ROOTOPTCORE)/%) \
 LDLIBS += -lproc -L$(ROOTOPTCORE) -ldumper -R\$$ORIGIN
 LDLIBS64 += -lproc -L$(ROOTOPTCORE)/$(MACH64) -ldumper -R\$$ORIGIN/$(MACH64)
 
+# XXXARM: No multilib on aarch64
+$(AARCH64_BLD)LDLIBS64 = $(LDLIBS)
+
 #
 # We need to explicitly set the objects for some of our programs with
 # CTF so that way we can make sure that we have what we need.
 #
 dumper.32	:= OBJS = dumper.32.o
-dumper.64	:= OBJS = dumper.32.o
+dumper.64	:= OBJS = dumper.64.o
 
 #
 # This is admittedly, a bit gross. In particular we need to make sure

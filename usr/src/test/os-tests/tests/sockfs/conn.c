@@ -43,7 +43,7 @@ static void *
 server(void *varg)
 {
 	int ret;
-	int sock = (int)varg;
+	int sock = (int)(intptr_t)varg;
 	unsigned int i;
 
 	for (i = 0; i < 5; i++) {
@@ -111,7 +111,7 @@ listener(void *varg)
 		}
 
 		/* start worker */
-		ret = pthread_create(NULL, NULL, server, (void *)asock);
+		ret = pthread_create(NULL, NULL, server, (void *)(intptr_t)asock);
 		if (ret == -1) {
 			fprintf(stderr, "%s - thread create fail %s\n",
 			    __progname, strerror(errno));

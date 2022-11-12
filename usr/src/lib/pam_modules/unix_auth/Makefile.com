@@ -29,7 +29,7 @@ OBJECTS=	unix_auth.o
 
 include		../../Makefile.pam_modules
 
-LDLIBS		+= -lpam -lsecdb -lc
+LDLIBS		+= -lpam -lsecdb -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 all:	$(LIBS)
 

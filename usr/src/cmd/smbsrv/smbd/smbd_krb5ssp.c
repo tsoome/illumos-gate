@@ -162,8 +162,8 @@ smbd_krb5ssp_work(authsvc_context_t *ctx)
 
 	if (GSS_ERROR(major)) {
 		smbd_report("krb5ssp: gss_accept_sec_context, "
-		    "mech=0x%x, major=0x%x, minor=0x%x",
-		    (int)mech_type, major, minor);
+		    "mech=0x%p, major=0x%x, minor=0x%x",
+		    mech_type, major, minor);
 		smbd_report(" krb5: %s",
 		    krb5_get_error_message(be->be_kctx, minor));
 		status = NT_STATUS_WRONG_PASSWORD;

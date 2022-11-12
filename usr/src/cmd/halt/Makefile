@@ -35,6 +35,7 @@ include ../Makefile.cmd
 #
 sparc_SUBDIRS = smf.sparc
 i386_SUBDIRS = smf.i386
+aarch64_SUBDIRS= smf.aarch64
 SUBDIRS = $($(MACH)_SUBDIRS)
 
 ROOTLINKS = $(ROOTUSRSBIN)/poweroff $(ROOTUSRSBIN)/reboot

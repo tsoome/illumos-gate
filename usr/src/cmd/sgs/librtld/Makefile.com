@@ -50,7 +50,7 @@ SRCDIR =	../common
 CPPFLAGS +=	-I../../rtld/common -I$(SRC)/lib/libc/inc \
 		-I$(SRC)/uts/common/krtld -I$(SRC)/common/sgsrtcid \
 		-I$(SRC)/uts/sparc
-DYNFLAGS +=	$(VERSREF) '-R$$ORIGIN'
+DYNFLAGS +=	$(VERSREF) -Wl,-R'$$ORIGIN'
 LDLIBS +=	$(CONVLIBDIR) -lconv $(ELFLIBDIR) -lelf -lc
 
 CERRWARN +=	-_gcc=-Wno-parentheses

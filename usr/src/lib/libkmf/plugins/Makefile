@@ -22,12 +22,11 @@
 # Use is subject to license terms.
 #
 
-#
-# KMF Prototype Makefile
-#
 include	../../Makefile.lib
 
-SUBDIRS		=	kmf_nss kmf_openssl kmf_pkcs11
+SUBDIRS		=	kmf_pkcs11 kmf_nss
+# XXXARM: Relies on private details that LibreSSL makes invisible
+$(NOT_AARCH64_BLD)SUBDIRS += kmf_openssl
 
 HDRS=
 HDRDIR= include

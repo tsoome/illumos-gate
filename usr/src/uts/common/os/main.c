@@ -75,6 +75,7 @@
 #include <sys/brand.h>
 #include <sys/mmapobj.h>
 #include <sys/smt.h>
+#include <sys/isa_defs.h>
 
 #include <vm/as.h>
 #include <vm/seg_kmem.h>
@@ -333,7 +334,8 @@ again:
  * and non-global zones employ this routine for the functionality which is
  * in common.
  *
- * This program (init, presumably) must be a 32-bit process.
+ * This program (init, presumably) must be a 32-bit process on platforms that
+ * support it.
  */
 int
 start_init_common()
@@ -341,17 +343,25 @@ start_init_common()
 	proc_t *p = curproc;
 	ASSERT_STACK_ALIGNED();
 	p->p_zone->zone_proc_initpid = p->p_pid;
-
 	p->p_cstime = p->p_stime = p->p_cutime = p->p_utime = 0;
-	p->p_usrstack = (caddr_t)USRSTACK32;
-	p->p_model = DATAMODEL_ILP32;
 	p->p_stkprot = PROT_ZFOD & ~PROT_EXEC;
 	p->p_datprot = PROT_ZFOD & ~PROT_EXEC;
-	p->p_stk_ctl = INT32_MAX;
-
 	p->p_as = as_alloc();
 	p->p_as->a_proc = p;
+	p->p_stk_ctl = INT32_MAX;
+
+#if defined(_LP64) && !defined(_MULTI_DATAMODEL)
+	p->p_usrstack = (caddr_t)USRSTACK;
+	p->p_model = DATAMODEL_NATIVE;
+	p->p_as->a_userlimit = (caddr_t)USERLIMIT;
+#elif defined(_ILP32) || defined(_MULTI_DATAMODEL)
+	p->p_usrstack = (caddr_t)USRSTACK32;
+	p->p_model = DATAMODEL_ILP32;
 	p->p_as->a_userlimit = (caddr_t)USERLIMIT32;
+#else
+#error Dont know how to set up proc_t for init
+#endif
+
 	(void) hat_setup(p->p_as->a_hat, HAT_INIT);
 
 	init_core();
@@ -542,7 +552,7 @@ main(void)
 	 * and swap have been set up.
 	 */
 	consconfig();
-#ifndef	__sparc
+#if !defined(__sparc) && !defined(__aarch64__)
 	release_bootstrap();
 #endif
 
@@ -593,7 +603,7 @@ main(void)
 	 */
 	start_other_cpus(0);
 
-#ifdef	__sparc
+#if defined(__sparc) || defined(__aarch64__)
 	/*
 	 * Release bootstrap here since PROM interfaces are
 	 * used to start other CPUs above.

@@ -505,7 +505,7 @@ set_lock_root(void)
 static void
 parse_args(int argc, char *argv[])
 {
-	char opt;
+	int opt;
 	char get_linkcompat_opts = FALSE;
 	char *compat_class;
 	int num_aliases = 0;
@@ -595,8 +595,8 @@ parse_args(int argc, char *argv[])
 		int update_only = 0;
 		build_dev = FALSE;
 
-		while ((opt =
-		    getopt(argc, argv, "a:bc:dfi:m:np:R:r:suvV:x")) != EOF) {
+		while ((opt = getopt(argc, argv,
+		    "a:bc:dfi:m:np:R:r:suvV:x")) != EOF) {
 			switch (opt) {
 			case 'a':
 				ap = calloc(sizeof (struct aliases), 1);
@@ -8428,7 +8428,7 @@ build_and_enq_event(char *class, char *subclass, char *node_path,
 	nvlist_t *nvl;
 
 	vprint(CHATTY_MID, "build_and_enq_event(%s, %s, %s, 0x%8.8x)\n",
-	    class, subclass, node_path, (int)node);
+	    class, subclass, node_path, (int)(intptr_t)node);
 
 	if (node != DI_NODE_NIL)
 		nvl = build_event_attributes(class, subclass, node_path, node,

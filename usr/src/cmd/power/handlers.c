@@ -466,8 +466,7 @@ autopm(void)
 	}
 	(void) strcpy(new_cc.apm_behavior, behavior);
 	return (OKUP);
-#endif
-#if defined(__x86)
+#elif defined(__x86)
 	if (!bp->isdef) {
 		if (ioctl(pm_fd, bp->cmd, NULL) == -1 && errno != bp->Errno) {
 			mesg(MERR, "autopm %s failed, %s\n",
@@ -489,6 +488,10 @@ autopm(void)
 		}
 		return (ret);
 	}
+#elif defined(__aarch64__)	/* XXXARM: Got to do something */
+	return (OKUP);
+#else
+#error Unknown platform
 #endif
 }
 

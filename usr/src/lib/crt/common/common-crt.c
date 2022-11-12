@@ -11,6 +11,7 @@
 
 /*
  * Copyright 2016, Richard Lowe.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
  */
 
@@ -41,6 +42,9 @@ extern int __start_crt_compiler(int argc, char **argv);
 
 #if defined(__x86)
 int __longdouble_used = 0;
+#endif
+
+#if defined(__x86) || defined(__aarch64__)
 extern void __fpstart(void);
 #endif
 
@@ -68,7 +72,7 @@ _start_crt(int argc, char **argv, void (*exit_handler)(void))
 	 *
 	 * On SPARC, we just need to check whether the handler was NULL.
 	 */
-#if defined(__x86)
+#if defined(__x86) || defined(__aarch64__)
 	if (&_DYNAMIC != NULL)
 		(void) atexit(exit_handler);
 #elif defined(__sparc)
@@ -96,7 +100,7 @@ _start_crt(int argc, char **argv, void (*exit_handler)(void))
 		ret = __start_crt_compiler(argc, argv);
 
 	if (ret == 0) {
-#if defined(__x86)
+#if defined(__x86) || defined(__aarch64__)
 		__fpstart();
 #endif
 #if defined(__i386)		/* Not amd64 */

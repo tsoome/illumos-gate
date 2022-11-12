@@ -43,7 +43,7 @@ extern "C" {
 #define	G_PARTITION		6
 #define	H_PARTITION		7
 
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 /*
  * the boot and alts slices only exist in the x86 disk layout.
  */

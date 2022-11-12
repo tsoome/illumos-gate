@@ -531,7 +531,7 @@ recount:
 		while (limbo_dirs != NULL) {
 			limbo_victim = *(fsck_ino_t *)limbo_dirs;
 			if (limbo_victim != 0) {
-				(void) tdelete((void *)limbo_victim,
+				(void) tdelete((void *)(uintptr_t)limbo_victim,
 				    &limbo_dirs,
 				    ino_t_cmp);
 			}

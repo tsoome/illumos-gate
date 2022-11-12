@@ -20,6 +20,7 @@
  */
 /*
  * Copyright (c) 1991, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2019 Joyent, Inc.
  */
 
@@ -49,7 +50,8 @@
  *	p_lckcnt
  *	p_cowcnt
  */
-pad_mutex_t page_llocks[8 * NCPU_P2];
+/* XXXARM: This isn't exactly equivalent to the previous sizing. */
+pad_mutex_t page_llocks[PAGE_LLOCK_SIZE];
 
 /*
  * This is a global lock for the logical page free list.  The

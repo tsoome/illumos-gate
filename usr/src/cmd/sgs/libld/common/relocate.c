@@ -32,6 +32,7 @@
 
 #define	ELF_TARGET_AMD64
 #define	ELF_TARGET_SPARC
+#define	ELF_TARGET_AARCH64
 
 #include	<string.h>
 #include	<stdio.h>
@@ -50,6 +51,12 @@
 #define	IS_GOT_PC(X)	RELTAB_IS_GOT_PC(X, ld_targ.t_mr.mr_reloc_table)
 #define	IS_GOTPCREL(X)	RELTAB_IS_GOTPCREL(X, ld_targ.t_mr.mr_reloc_table)
 #define	IS_GOT_BASED(X)	RELTAB_IS_GOT_BASED(X, ld_targ.t_mr.mr_reloc_table)
+#define	IS_GOTPAGE_BASED(X) \
+	RELTAB_IS_GOTPAGE_BASED(X, ld_targ.t_mr.mr_reloc_table)
+#define	IS_PAGEPC_BASED(X) \
+	RELTAB_IS_PAGEPC_BASED(X, ld_targ.t_mr.mr_reloc_table)
+#define	IS_GOTPAGEPC_BASED(X) \
+	RELTAB_IS_GOTPAGEPC_BASED(X, ld_targ.t_mr.mr_reloc_table)
 #define	IS_GOT_OPINS(X)	RELTAB_IS_GOT_OPINS(X, ld_targ.t_mr.mr_reloc_table)
 #define	IS_GOT_REQUIRED(X) \
 	RELTAB_IS_GOT_REQUIRED(X, ld_targ.t_mr.mr_reloc_table)
@@ -70,6 +77,7 @@
 #define	IS_TLS_LE(X)	RELTAB_IS_TLS_LE(X, ld_targ.t_mr.mr_reloc_table)
 #define	IS_LOCALBND(X)	RELTAB_IS_LOCALBND(X, ld_targ.t_mr.mr_reloc_table)
 #define	IS_SIZE(X)	RELTAB_IS_SIZE(X, ld_targ.t_mr.mr_reloc_table)
+#define	IS_PAGE_BASED(X) RELTAB_IS_PAGE_BASED(X, ld_targ.t_mr.mr_reloc_table)
 
 /*
  * Structure to hold copy relocation items.
@@ -1001,8 +1009,9 @@ ld_reloc_plt(Rel_desc *rsp, Ofl_desc *ofl)
 			return (S_ERROR);
 		rsp->rel_rtype = ortype;
 		return (1);
-	} else
+	} else {
 		return (ld_add_actrel(0, rsp, ofl));
+	}
 }
 
 /*
@@ -1035,8 +1044,9 @@ reloc_exec(Rel_desc *rsp, Ofl_desc *ofl)
 	/*
 	 * Reference is to a function so simply create a plt entry for it.
 	 */
-	if (ELF_ST_TYPE(sym->st_info) == STT_FUNC)
+	if (ELF_ST_TYPE(sym->st_info) == STT_FUNC) {
 		return (ld_reloc_plt(rsp, ofl));
+	}
 
 	/*
 	 * Catch absolutes - these may cause a text relocation.
@@ -1063,9 +1073,9 @@ reloc_exec(Rel_desc *rsp, Ofl_desc *ofl)
 	 */
 	if ((ELF_ST_TYPE(sym->st_info) == STT_OBJECT) &&
 	    (RELAUX_GET_OSDESC(rsp)->os_shdr->sh_flags & SHF_WRITE)) {
-		if (sdp->sd_flags & FLG_SY_MVTOCOMM)
+		if (sdp->sd_flags & FLG_SY_MVTOCOMM) {
 			return (ld_add_actrel(0, rsp, ofl));
-		else
+		} else
 			return ((*ld_targ.t_mr.mr_add_outrel)(0, rsp, ofl));
 	}
 
@@ -1330,11 +1340,16 @@ reloc_relobj(Boolean local, Rel_desc *rsp, Ofl_desc *ofl)
 	 *	the relocation is pc-relative, and
 	 *	the relocation is against a symbol in same section
 	 */
+	/*
+	 * XXXARM: We should tidy this up by not having our own duplicative flags
+	 * and being able to say !IS_PAGE_BASED(rtype).
+	 */
 	if (local && !IS_GOT_RELATIVE(rtype) &&
 	    !IS_GOT_BASED(rtype) && !IS_GOT_PC(rtype) &&
-	    IS_PC_RELATIVE(rtype) &&
-	    ((sdp->sd_isc) && (sdp->sd_isc->is_osdesc == isp->is_osdesc)))
+	    IS_PC_RELATIVE(rtype) && !IS_PAGE_BASED(rtype) &&
+	    ((sdp->sd_isc) && (sdp->sd_isc->is_osdesc == isp->is_osdesc))) {
 		return (ld_add_actrel(0, rsp, ofl));
+	}
 
 	/*
 	 * If -zredlocsym is in effect, translate all local symbol relocations
@@ -1381,9 +1396,10 @@ reloc_relobj(Boolean local, Rel_desc *rsp, Ofl_desc *ofl)
 		 * propagate any addend.
 		 */
 		if ((ELF_ST_TYPE(sdp->sd_sym->st_info) == STT_SECTION) ||
-		    (oflags == FLG_REL_SCNNDX))
+		    (oflags == FLG_REL_SCNNDX)) {
 			if (ld_add_actrel(0, rsp, ofl) == S_ERROR)
 				return (S_ERROR);
+		}
 	}
 	return ((*ld_targ.t_mr.mr_add_outrel)(oflags, rsp, ofl));
 }
@@ -1593,6 +1609,7 @@ ld_process_sym_reloc(Ofl_desc *ofl, Rel_desc *reld, Rel *reloc, Is_desc *isp,
 	 */
 	if ((ofl->ofl_flags & FLG_OF_SHAROBJ) &&
 	    IS_PC_RELATIVE(rtype) &&
+	    (IS_GOTPAGEPC_BASED(rtype) == 0) &&
 	    (IS_GOT_PC(rtype) == 0) &&
 	    (IS_PLT(rtype) == 0)) {
 		if (disp_inspect(ofl, reld, local) == S_ERROR)
@@ -1667,8 +1684,9 @@ ld_process_sym_reloc(Ofl_desc *ofl, Rel_desc *reld, Rel *reloc, Is_desc *isp,
 
 	if ((IS_PLT(rtype) || ((sdp->sd_flags & FLG_SY_CAP) &&
 	    (ELF_ST_TYPE(sdp->sd_sym->st_info) == STT_FUNC))) &&
-	    ((flags & FLG_OF_BFLAG) == 0))
+	    ((flags & FLG_OF_BFLAG) == 0)) {
 		return (ld_reloc_plt(reld, ofl));
+	}
 
 	if ((sdp->sd_ref == REF_REL_NEED) ||
 	    (flags & FLG_OF_BFLAG) || (flags & FLG_OF_SHAROBJ) ||
@@ -1954,7 +1972,8 @@ process_reld(Ofl_desc *ofl, Is_desc *isp, Rel_desc *reld, Word rsndx,
 		return (1);
 	}
 
-	if (((ofl->ofl_flags & FLG_OF_RELOBJ) == 0) &&
+	if ((((ofl->ofl_flags & FLG_OF_RELOBJ) == 0) ||
+	    ((ofl->ofl_flags & FLG_OF_KMOD) != 0)) &&
 	    IS_NOTSUP(rtype)) {
 		ld_eprintf(ofl, ERR_FATAL, MSG_INTL(MSG_REL_NOTSUP),
 		    conv_reloc_type(ifl->ifl_ehdr->e_machine, rtype,

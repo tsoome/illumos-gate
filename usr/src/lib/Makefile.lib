@@ -127,7 +127,7 @@ SONAME=		$(DYNLIB)
 HSONAME=	-Wl,-h$(SONAME)
 DYNFLAGS=	$(HSONAME) $(ZTEXT) $(ZDEFS) $(BDIRECT) \
 		$(MAPFILES:%=-Wl,-M%) $(MAPFILE.PGA:%=-Wl,-M%) $(MAPFILE.NED:%=-Wl,-M%) \
-		$(LDCHECKS)
+		$(LDCHECKS) $(SYSROOT)
 
 LDLIBS=		$(LDLIBS.lib)
 
@@ -149,10 +149,12 @@ BUILD.SO=	$(CC) $(CFLAGS) -o $@ $(GSHARED) $(DYNFLAGS) \
 		$(PICS) $(EXTPICS) $(LDLIBS)
 BUILD64.SO=	$(CC64) $(CFLAGS64) -o $@ $(GSHARED) $(DYNFLAGS) \
 		$(PICS) $(EXTPICS) $(LDLIBS)
+# XXXARM: The use of SYSROOT here shouldn't be needed, but something is
+# clobbering it in C++ builds in a way I don't understand
 BUILDCCC.SO=	$(CCC) $(CCFLAGS) -o $@ $(GSHARED) $(DYNFLAGS) \
-		$(PICS) $(EXTPICS) $(LDLIBS) $(CCNEEDED)
+		$(PICS) $(EXTPICS) $(LDLIBS) $(CCNEEDED) $(SYSROOT)
 BUILDCCC64.SO=	$(CCC64) $(CCFLAGS64) -o $@ $(GSHARED) $(DYNFLAGS) \
-		$(PICS) $(EXTPICS) $(LDLIBS) $(CCNEEDED64)
+		$(PICS) $(EXTPICS) $(LDLIBS) $(CCNEEDED64) $(SYSROOT)
 
 # default dynamic library symlink
 INS.liblink=	-$(RM) $@; $(SYMLINK) $(LIBLINKPATH)$(LIBLINKS)$(VERS) $@
@@ -193,10 +195,12 @@ $(PICS)  :=	sparc_CFLAGS += -xregs=no%appl $(sparc_C_PICFLAGS)
 $(PICS)  :=	sparcv9_CFLAGS += -xregs=no%appl $(sparcv9_C_PICFLAGS)
 $(PICS)  :=	i386_CFLAGS += $(i386_C_PICFLAGS)
 $(PICS)  :=	amd64_CFLAGS += $(amd64_C_PICFLAGS)
+$(PICS)  :=	aarch64_CFLAGS += $(aarch64_C_PICFLAGS)
 $(PICS)  :=	CCFLAGS += $(CC_PICFLAGS)
 $(PICS)  :=	CPPFLAGS += -DPIC -D_REENTRANT
 $(PICS)  :=	sparcv9_CCFLAGS += -xregs=no%appl $(sparcv9_CC_PICFLAGS)
 $(PICS)  :=	amd64_CCFLAGS += $(amd64_CC_PICFLAGS)
+$(PICS)  :=	aarch64_CCFLAGS += $(aarch64_CC_PICFLAGS)
 $(PICS)  :=	CFLAGS += $(CTF_FLAGS)
 $(PICS)	 :=	CFLAGS64 += $(CTF_FLAGS)
 $(PICS)  :=	CTFCONVERT_POST = $(CTFCONVERT_O)

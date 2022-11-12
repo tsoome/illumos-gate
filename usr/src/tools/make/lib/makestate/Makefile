@@ -13,7 +13,7 @@
 
 include $(SRC)/Makefile.master
 
-SUBDIRS=$(MACH) $(MACH64)
+SUBDIRS = $(NATIVE_MACH)
 
 all	:=	TARGET = all
 install :=	TARGET = install

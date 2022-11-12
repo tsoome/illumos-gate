@@ -300,8 +300,8 @@ $elif _ELF32
 $endif
 $elif _sparc
 	kg_vdb	{ ASSERT = { TYPE = OBJECT; SIZE = 48; }; };
-$else
-$error Unknown architecture
+$elif _arm
+	kg_vdb	{ ASSERT = { TYPE = OBJECT; SIZE = 48; }; };
 $endif
 	kpws_error_table;
 	krb5_425_conv_principal;

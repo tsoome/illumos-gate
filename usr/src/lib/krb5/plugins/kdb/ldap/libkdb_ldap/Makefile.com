@@ -82,7 +82,7 @@ CERRWARN +=	-_gcc=-Wno-unused-function
 SMATCH=off
 
 DYNFLAGS +=	$(KRUNPATH) $(KERBRUNPATH) $(KMECHLIB)
-LDLIBS +=	-L $(ROOTLIBDIR) -lkadm5srv -lc -lnsl -lldap
+LDLIBS +=	-L $(ROOTLIBDIR) -lkadm5srv -lc -lnsl -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 .KEEP_STATE:
 

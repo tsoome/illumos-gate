@@ -389,7 +389,11 @@ elf_check(int nfile, char *fname, char *cname, Elf *elf, int fflag)
 	/*
 	 * Compatible machine
 	 */
-	if ((ehdr.e_machine != M_MACH_32) && (ehdr.e_machine != M_MACH_64) &&
+	if (
+#if !defined(__aarch64__)	/* XXXARM: Eugh */
+		(ehdr.e_machine != M_MACH_32) &&
+#endif
+		(ehdr.e_machine != M_MACH_64) &&
 	    (ehdr.e_machine != M_MACHPLUS)) {
 		(void) fprintf(stderr, MSG_INTL(MSG_ELF_MACHTYPE), cname, fname,
 		    conv_ehdr_mach(ehdr.e_machine, 0, &inv_buf));

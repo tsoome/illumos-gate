@@ -39,10 +39,13 @@ POFILE=		sgs.po
 # is formatted as a message text source file (.msg) - see gencat(1).
 
 POFILES=	ld		ldd		libld		liblddbg \
-		librtld		rtld		libelf		ldprof \
+		librtld		rtld		libelf		\
 		libcrle		crle		moe		pvs \
 		elfdump		elfedit		elfwrap		lari \
 	        ar
+# XXXARM: Not build
+$(NOT_AARCH64_BLD)POFILES += ldprof
+
 
 # These message files are generated as a side effect of generating the
 # elfedit messages. Otherwise they are the same thing as POFILES

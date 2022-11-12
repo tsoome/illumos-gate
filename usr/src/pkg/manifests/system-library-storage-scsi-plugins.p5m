@@ -32,26 +32,28 @@ set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/lib
 dir  path=usr/lib/scsi
-dir  path=usr/lib/scsi/plugins
-dir  path=usr/lib/scsi/plugins/ses
-dir  path=usr/lib/scsi/plugins/ses/vendor
-dir  path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)
-file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.0.so
-link path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.1.so \
+$(not_aarch64)dir path=usr/lib/scsi/plugins
+$(not_aarch64)dir path=usr/lib/scsi/plugins/ses
+$(not_aarch64)dir path=usr/lib/scsi/plugins/ses/vendor
+$(not_aarch64)dir path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.0.so
+$(not_aarch64)link \
+    path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.1.so \
     target=LSILOGIC-SASX28-A.0.so
-link path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4200.so \
+$(not_aarch64)link \
+    path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4200.so \
     target=SUN-Storage-J4400.so
-file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4400.so
-file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4500.so
-file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN.so
-file path=usr/lib/scsi/plugins/ses/vendor/LSILOGIC-SASX28-A.0.so
-link path=usr/lib/scsi/plugins/ses/vendor/LSILOGIC-SASX28-A.1.so \
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4400.so
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4500.so
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN.so
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/LSILOGIC-SASX28-A.0.so
+$(not_aarch64)link path=usr/lib/scsi/plugins/ses/vendor/LSILOGIC-SASX28-A.1.so \
     target=LSILOGIC-SASX28-A.0.so
-link path=usr/lib/scsi/plugins/ses/vendor/SUN-Storage-J4200.so \
+$(not_aarch64)link path=usr/lib/scsi/plugins/ses/vendor/SUN-Storage-J4200.so \
     target=SUN-Storage-J4400.so
-file path=usr/lib/scsi/plugins/ses/vendor/SUN-Storage-J4400.so
-file path=usr/lib/scsi/plugins/ses/vendor/SUN-Storage-J4500.so
-file path=usr/lib/scsi/plugins/ses/vendor/SUN.so
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/SUN-Storage-J4400.so
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/SUN-Storage-J4500.so
+$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/SUN.so
 legacy pkg=SUNWscsip desc="Vendor specific SCSI and SES plugins" \
     name="SCSI/SES plugins"
 license cr_Sun license=cr_Sun

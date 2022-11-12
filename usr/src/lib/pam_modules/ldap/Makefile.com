@@ -38,7 +38,7 @@ OBJECTS=	ldap_authenticate.o \
 
 include		../../Makefile.pam_modules
 
-LDLIBS +=	-lpam -lsldap -lc
+LDLIBS +=	-lpam -lsldap -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 CPPFLAGS +=	-I$(SRC)/lib/libsldap/common
 CERRWARN +=	-_gcc=-Wno-parentheses
 

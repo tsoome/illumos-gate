@@ -60,11 +60,15 @@ SYMBOL_VERSION SUNW_1.1 {
 
 SYMBOL_VERSION SUNWprivate_1.1 {
     global:
+$if !_arm
 	_rd_get_dyns32;
 	_rd_get_ehdr32;
 	_rd_loadobj_iter32;
+$endif
 	rd_get_dyns;
+$if !_arm
 	validate_rdebug32;
+$endif
 
 $if _ELF64
 	_rd_get_dyns64;

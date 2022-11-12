@@ -352,7 +352,7 @@ struct ofl_desc {
 	Word		ofl_relocrelcnt; /* tot number of relative */
 					/*	relocations */
 	Word		ofl_gotcnt;	/* no. of .got entries */
-	Word		ofl_pltcnt;	/* no. of .plt entries */
+	Word		ofl_pltcnt;	/* no. of .plt/.got.plt entries */
 	Word		ofl_pltpad;	/* no. of .plt padd entries */
 	Word		ofl_hashbkts;	/* no. of hash buckets required */
 	Is_desc		*ofl_isbss;	/* .bss input section (globals) */
@@ -366,6 +366,7 @@ struct ofl_desc {
 	Os_desc		*ofl_osdynsymsort; /* .SUNW_dynsymsort output section */
 	Os_desc		*ofl_osdyntlssort; /* .SUNW_dyntlssort output section */
 	Os_desc		*ofl_osgot;	/* .got output section */
+	Os_desc		*ofl_osgotplt;	/* (arm-only) .got.plt output section */
 	Os_desc		*ofl_oshash;	/* .hash output section */
 	Os_desc		*ofl_osinitarray; /* .init_array output section */
 	Os_desc		*ofl_osfiniarray; /* .fini_array output section */

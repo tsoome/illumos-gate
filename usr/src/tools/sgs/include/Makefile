@@ -26,26 +26,27 @@ include ../../../Makefile.master
 # on NATIVE_BUILD for a period of time.
 #
 
-ROOTHDRS=	dlfcn.h \
-		gelf.h \
-		libelf.h \
-		proc_service.h \
-		rtld_db.h \
+ROOTHDRS=	dlfcn.h		\
+		gelf.h		\
+		libelf.h	\
+		proc_service.h	\
+		rtld_db.h	\
 		link.h
 
-SYSHDRS=	sys/elf.h \
-		sys/elf_386.h \
-		sys/elf_SPARC.h \
-		sys/elf_notes.h \
-		sys/elf_amd64.h \
-		sys/elftypes.h \
-		sys/auxv.h \
-		sys/auxv_SPARC.h \
-		sys/auxv_386.h \
-		sys/avl.h \
-		sys/link.h \
-		sys/machelf.h \
-		sys/note.h \
+SYSHDRS=	sys/elf.h		\
+		sys/elf_aarch64.h	\
+		sys/elf_386.h		\
+		sys/elf_SPARC.h		\
+		sys/elf_notes.h		\
+		sys/elf_amd64.h		\
+		sys/elftypes.h		\
+		sys/auxv.h		\
+		sys/auxv_SPARC.h	\
+		sys/auxv_386.h		\
+		sys/avl.h		\
+		sys/link.h		\
+		sys/machelf.h		\
+		sys/note.h		\
 		sys/systeminfo.h
 
 sys:

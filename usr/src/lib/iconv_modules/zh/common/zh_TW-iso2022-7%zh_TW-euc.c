@@ -696,7 +696,7 @@ yescSeq(GxCntl *this, IOBuf *obj) {
 			return (0);
 	}
 
-	if ((this->gxc = xgetc(obj)) == -1) {
+	if ((this->gxc = xgetc(obj)) == (char)-1) {
 			xbackup(obj, '$');
 			xbackup(obj, ESC);
 			return (-1);

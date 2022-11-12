@@ -930,8 +930,13 @@ fmd_adm_caseinfo_1_svc(char *uuid, struct fmd_rpc_caseinfo *rvp,
 
 	nvl = fmd_case_mkevent(cp, FM_LIST_SUSPECT_CLASS);
 
+	/*
+	 * XXXARM: this cast is bad if nvlist_pack is allocating the buffer I
+	 * want to make this an actual size_t (on both ISAs) but can't
+	 * defeat rpcgen.
+	 */
 	err = nvlist_pack(nvl, &rvp->rci_evbuf.rci_evbuf_val,
-	    &rvp->rci_evbuf.rci_evbuf_len, NV_ENCODE_XDR, 0);
+	    (size_t *)&rvp->rci_evbuf.rci_evbuf_len, NV_ENCODE_XDR, 0);
 
 	nvlist_free(nvl);
 

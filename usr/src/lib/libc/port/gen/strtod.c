@@ -23,11 +23,12 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include "lint.h"
 #include <errno.h>
@@ -56,7 +57,7 @@ strtod(const char *cp, char **ptr)
 		*ptr = (char *)cp;
 	if (form == invalid_form)
 		return (0.0);	/* Shameful kluge for SVID's sake. */
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	mr.rd = _QgetRD();
 #elif defined(__i386) || defined(__amd64)
 	mr.rd = __xgetRD();
@@ -87,7 +88,7 @@ strtof(const char *cp, char **ptr)
 		*ptr = (char *)cp;
 	if (form == invalid_form)
 		return (0.0f);
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	mr.rd = _QgetRD();
 #elif defined(__i386) || defined(__amd64)
 	mr.rd = __xgetRD();
@@ -118,7 +119,7 @@ strtold(const char *cp, char **ptr)
 		*ptr = (char *)cp;
 	if (form == invalid_form)
 		return (0.0L);
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	mr.rd = _QgetRD();
 	if ((int)form < 0)
 		__hex_to_quadruple(&dr, mr.rd, &x, &fs);

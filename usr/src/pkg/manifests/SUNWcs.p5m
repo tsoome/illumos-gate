@@ -22,14 +22,14 @@
 #
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2013 Gary Mills
-# Copyright 2022 Garrett D'Amore <garrett@damore.org>
+# Copyright (c) 2011, 2015 by Delphix. All rights reserved.
 # Copyright 2017 Nexenta Systems, Inc.
 # Copyright 2017 Toomas Soome <tsoome@me.com>
 # Copyright 2019 Peter Tribble.
 # Copyright 2019 Joyent, Inc.
-# Copyright (c) 2011, 2015 by Delphix. All rights reserved.
 # Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
 # Copyright 2021 Oxide Computer Company
+# Copyright 2022 Garrett D'Amore <garrett@damore.org>
 #
 
 <include SUNWcs.man1.inc>
@@ -76,7 +76,7 @@ file path=etc/default/nss group=sys preserve=true
 file path=etc/default/passwd group=sys preserve=true
 file path=etc/default/su group=sys preserve=true
 file path=etc/default/syslogd group=sys preserve=true
-file path=etc/default/tar group=sys preserve=true
+$(not_aarch64)file path=etc/default/tar group=sys preserve=true
 file path=etc/default/useradd group=sys preserve=true
 file path=etc/default/utmpd group=sys preserve=true
 dir  path=etc/dev group=sys
@@ -91,11 +91,11 @@ file path=etc/dgroup.tab group=sys mode=0444 preserve=true
 dir  path=etc/dhcp group=sys
 file path=etc/dhcp/inittab group=sys preserve=true
 file path=etc/dhcp/inittab6 group=sys preserve=true
-file path=etc/dumpdates group=sys mode=0664 preserve=true
+$(not_aarch64)file path=etc/dumpdates group=sys mode=0664 preserve=true
 link path=etc/ff target=../usr/sbin/ff
 link path=etc/fmthard target=../usr/sbin/fmthard
-link path=etc/format target=../usr/sbin/format
-file path=etc/format.dat group=sys preserve=true
+$(not_aarch64)link path=etc/format target=../usr/sbin/format
+$(not_aarch64)file path=etc/format.dat group=sys preserve=true
 dir  path=etc/fs group=sys
 dir  path=etc/fs/dev group=sys
 file path=etc/fs/dev/mount mode=0555
@@ -126,7 +126,7 @@ file path=etc/inet/services group=sys preserve=true
 link path=etc/inetd.conf target=./inet/inetd.conf
 link path=etc/init target=../sbin/init
 dir  path=etc/init.d group=sys
-file path=etc/init.d/PRESERVE group=sys mode=0744 preserve=true
+$(not_aarch64)file path=etc/init.d/PRESERVE group=sys mode=0744 preserve=true
 file path=etc/init.d/README group=sys preserve=true
 file path=etc/init.d/sysetup group=sys mode=0744 preserve=true
 file path=etc/inittab group=sys preserve=true
@@ -142,13 +142,13 @@ link path=etc/log target=../var/adm/log
 file path=etc/logadm.conf group=sys preserve=true timestamp=19700101T000000Z
 dir  path=etc/logadm.d group=sys
 file path=etc/logindevperm group=sys preserve=true
-file path=etc/magic mode=0444
+$(not_aarch64)file path=etc/magic mode=0444
 dir  path=etc/mail group=mail
-file path=etc/mail/mailx.rc preserve=true
+$(not_aarch64)file path=etc/mail/mailx.rc preserve=true
 file path=etc/mailcap preserve=true
 file path=etc/mime.types preserve=true
 link path=etc/mkfs target=../usr/sbin/mkfs
-link path=etc/mknod target=../usr/sbin/mknod
+$(not_aarch64)link path=etc/mknod target=../usr/sbin/mknod
 file path=etc/mnttab group=root mode=0444 preserve=true
 file path=etc/motd group=sys preserve=true
 link path=etc/mount target=../sbin/mount
@@ -189,7 +189,8 @@ link path=etc/rc2 target=../sbin/rc2
 dir  path=etc/rc2.d group=sys
 file path=etc/rc2.d/README group=sys
 hardlink path=etc/rc2.d/S20sysetup target=../../etc/init.d/sysetup
-hardlink path=etc/rc2.d/S89PRESERVE target=../../etc/init.d/PRESERVE
+$(not_aarch64)hardlink path=etc/rc2.d/S89PRESERVE \
+    target=../../etc/init.d/PRESERVE
 link path=etc/rc3 target=../sbin/rc3
 dir  path=etc/rc3.d group=sys
 file path=etc/rc3.d/README group=sys
@@ -199,8 +200,8 @@ link path=etc/rcS target=../sbin/rcS
 dir  path=etc/rcS.d group=sys
 file path=etc/rcS.d/README group=sys
 link path=etc/reboot target=../usr/sbin/halt
-file path=etc/remote preserve=true
-file path=etc/rpc group=sys preserve=true
+$(not_aarch64)file path=etc/remote preserve=true
+$(not_aarch64)file path=etc/rpc group=sys preserve=true
 dir  path=etc/rpcsec group=sys
 dir  path=etc/saf
 file path=etc/saf/_sactab group=sys preserve=true
@@ -270,9 +271,9 @@ dir  path=etc/sysevent group=sys
 dir  path=etc/sysevent/config group=sys
 file path=etc/sysevent/config/README group=sys mode=0444
 file path=etc/sysevent/config/SUNW,EC_dr,ESC_dr_req,sysevent.conf group=sys
-file path=etc/syslog.conf group=sys preserve=true
+$(not_aarch64)file path=etc/syslog.conf group=sys preserve=true
 dir  path=etc/system.d group=sys
-link path=etc/tar target=../usr/sbin/tar
+$(not_aarch64)link path=etc/tar target=../usr/sbin/tar
 link path=etc/telinit target=../sbin/init
 dir  path=etc/tm group=sys
 file path=etc/ttydefs group=sys preserve=true
@@ -332,7 +333,8 @@ file path=lib/svc/manifest/network/forwarding.xml group=sys mode=0444
 file path=lib/svc/manifest/network/inetd-upgrade.xml group=sys mode=0444
 file path=lib/svc/manifest/network/inetd.xml group=sys mode=0444
 dir  path=lib/svc/manifest/network/ipsec group=sys
-file path=lib/svc/manifest/network/ipsec/ike.xml group=sys mode=0444
+$(not_aarch64)file path=lib/svc/manifest/network/ipsec/ike.xml group=sys \
+    mode=0444
 file path=lib/svc/manifest/network/ipsec/ipsecalgs.xml group=sys mode=0444
 file path=lib/svc/manifest/network/ipsec/manual-key.xml group=sys mode=0444
 file path=lib/svc/manifest/network/ipsec/policy.xml group=sys mode=0444
@@ -456,7 +458,7 @@ file path=lib/svc/method/svc-sockfilter mode=0555
 file path=lib/svc/method/svc-utmpd mode=0555
 file path=lib/svc/method/system-log mode=0555
 file path=lib/svc/method/vtdaemon mode=0555
-file path=lib/svc/method/yp mode=0555
+$(not_aarch64)file path=lib/svc/method/yp mode=0555
 dir  path=lib/svc/monitor
 dir  path=lib/svc/seed
 # global.db is not needed in non-global zones, and it's pretty large.
@@ -539,20 +541,20 @@ $(i386_ONLY)file path=usr/bin/$(ARCH32)/newtask group=sys mode=4555
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/nohup mode=0555
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/prctl mode=0555
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/prstat mode=0555
-file path=usr/bin/$(ARCH32)/savecore mode=0555
-dir  path=usr/bin/$(ARCH64)
-file path=usr/bin/$(ARCH64)/amt mode=0555
-file path=usr/bin/$(ARCH64)/crle mode=0555
-file path=usr/bin/$(ARCH64)/decrypt mode=0555
-file path=usr/bin/$(ARCH64)/digest mode=0555
-hardlink path=usr/bin/$(ARCH64)/encrypt target=decrypt
-file path=usr/bin/$(ARCH64)/ls mode=0555
-hardlink path=usr/bin/$(ARCH64)/mac target=digest
-file path=usr/bin/$(ARCH64)/moe mode=0555
-file path=usr/bin/$(ARCH64)/newtask group=sys mode=4555
-file path=usr/bin/$(ARCH64)/nohup mode=0555
-file path=usr/bin/$(ARCH64)/prctl mode=0555
-file path=usr/bin/$(ARCH64)/prstat mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH32)/savecore mode=0555
+$(not_aarch64)dir path=usr/bin/$(ARCH64)
+$(not_aarch64)file path=usr/bin/$(ARCH64)/amt mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/crle mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/decrypt mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/digest mode=0555
+$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/encrypt target=decrypt
+$(not_aarch64)file path=usr/bin/$(ARCH64)/ls mode=0555
+$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/mac target=digest
+$(not_aarch64)file path=usr/bin/$(ARCH64)/moe mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/newtask group=sys mode=4555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/nohup mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/prctl mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/prstat mode=0555
 file path=usr/bin/$(ARCH64)/savecore mode=0555
 $(i386_ONLY)file path=usr/bin/addbadsec mode=0555
 file path=usr/bin/amt mode=0555
@@ -583,11 +585,11 @@ file path=usr/bin/clear mode=0555
 file path=usr/bin/connstat mode=0555
 file path=usr/bin/coreadm mode=0555
 file path=usr/bin/cp mode=0555
-file path=usr/bin/cpio mode=0555
+$(not_aarch64)file path=usr/bin/cpio mode=0555
 file path=usr/bin/crle mode=0555
 file path=usr/bin/crontab mode=4555
 file path=usr/bin/crypt mode=0555
-file path=usr/bin/csh mode=0555
+$(not_aarch64)file path=usr/bin/csh mode=0555
 file path=usr/bin/ctrun mode=0555
 file path=usr/bin/ctstat mode=0555
 file path=usr/bin/ctwatch mode=0555
@@ -608,8 +610,8 @@ file path=usr/bin/du mode=0555
 file path=usr/bin/dumpcs mode=0555
 file path=usr/bin/dumpkeys mode=0555
 file path=usr/bin/echo mode=0555
-file path=usr/bin/ed mode=0555
-hardlink path=usr/bin/edit target=../has/bin/edit
+$(not_aarch64)file path=usr/bin/ed mode=0555
+$(not_aarch64)hardlink path=usr/bin/edit target=../has/bin/edit
 hardlink path=usr/bin/egrep target=../../usr/bin/grep
 file path=usr/bin/eject mode=0555
 hardlink path=usr/bin/encrypt target=../../usr/lib/isaexec
@@ -619,13 +621,13 @@ file path=usr/bin/false mode=0555
 file path=usr/bin/fdetach mode=0555
 file path=usr/bin/fdformat mode=4555
 hardlink path=usr/bin/fgrep target=../../usr/bin/grep
-file path=usr/bin/file mode=0555
+$(not_aarch64)file path=usr/bin/file mode=0555
 file path=usr/bin/find mode=0555
 file path=usr/bin/fmt mode=0555
 file path=usr/bin/fmtmsg mode=0555
-file path=usr/bin/fold mode=0555
+$(not_aarch64)file path=usr/bin/fold mode=0555
 file path=usr/bin/fsstat mode=0555
-file path=usr/bin/geniconvtbl mode=0555
+$(not_aarch64)file path=usr/bin/geniconvtbl mode=0555
 file path=usr/bin/getconf mode=0555
 file path=usr/bin/getdev mode=0555
 file path=usr/bin/getdgrp mode=0555
@@ -664,8 +666,8 @@ file path=usr/bin/m4 mode=0555
 hardlink path=usr/bin/mac target=../../usr/lib/isaexec
 file path=usr/bin/mach mode=0555
 file path=usr/bin/mail group=mail mode=2511
-file path=usr/bin/mailx group=mail mode=2511
-file path=usr/bin/makedev mode=0555
+$(not_aarch64)file path=usr/bin/mailx group=mail mode=2511
+$(not_aarch64)file path=usr/bin/makedev mode=0555
 file path=usr/bin/mesg mode=0555
 file path=usr/bin/mkdir mode=0555
 file path=usr/bin/mkpwdict mode=0555
@@ -679,19 +681,19 @@ file path=usr/bin/netstat mode=0555
 file path=usr/bin/newgrp group=sys mode=4755
 hardlink path=usr/bin/newtask target=../../usr/lib/isaexec
 file path=usr/bin/nice mode=0555
-hardlink path=usr/bin/nohup target=../../usr/lib/isaexec
+$(not_aarch64)hardlink path=usr/bin/nohup target=../../usr/lib/isaexec
 file path=usr/bin/optisa mode=0555
 hardlink path=usr/bin/page target=../../usr/bin/more
 file path=usr/bin/pagesize mode=0555
 file path=usr/bin/passwd group=sys mode=6555
 file path=usr/bin/pathchk mode=0555
-file path=usr/bin/pax mode=0555
+$(not_aarch64)file path=usr/bin/pax mode=0555
 hardlink path=usr/bin/pfbash target=../../usr/bin/pfexec
 hardlink path=usr/bin/pfcsh target=../../usr/bin/pfexec
 file path=usr/bin/pfexec mode=0555
 hardlink path=usr/bin/pftcsh target=../../usr/bin/pfexec
 hardlink path=usr/bin/pfzsh target=../../usr/bin/pfexec
-file path=usr/bin/pg mode=0555
+$(not_aarch64)file path=usr/bin/pg mode=0555
 file path=usr/bin/pgrep mode=0555
 hardlink path=usr/bin/pkill target=../../usr/bin/pgrep
 file path=usr/bin/pktool mode=0555
@@ -707,7 +709,7 @@ file path=usr/bin/putdev mode=0555
 file path=usr/bin/putdgrp mode=0555
 link path=usr/bin/pwconv target=../sbin/pwconv
 file path=usr/bin/pwd mode=0555
-hardlink path=usr/bin/red target=../../usr/bin/ed
+$(not_aarch64)hardlink path=usr/bin/red target=../../usr/bin/ed
 file path=usr/bin/renice mode=0555
 file path=usr/bin/rm mode=0555
 link path=usr/bin/rmail target=./mail
@@ -733,13 +735,13 @@ file path=usr/bin/svcs mode=0555
 link path=usr/bin/sync target=../../sbin/sync
 file path=usr/bin/tabs mode=0555
 file path=usr/bin/tail mode=0555
-link path=usr/bin/tar target=../sbin/tar
+$(not_aarch64)link path=usr/bin/tar target=../sbin/tar
 file path=usr/bin/tic mode=0555
 file path=usr/bin/time mode=0555
-file path=usr/bin/tip owner=uucp mode=4511
+$(not_aarch64)file path=usr/bin/tip owner=uucp mode=4511
 hardlink path=usr/bin/touch target=../../usr/bin/settime
-file path=usr/bin/tpmadm mode=0555
-file path=usr/bin/tput mode=0555
+$(not_aarch64)file path=usr/bin/tpmadm mode=0555
+$(not_aarch64)file path=usr/bin/tput mode=0555
 file path=usr/bin/tr mode=0555
 file path=usr/bin/true mode=0555
 file path=usr/bin/tty mode=0555
@@ -748,7 +750,7 @@ link path=usr/bin/uname target=../../sbin/uname
 hardlink path=usr/bin/uptime target=w
 file path=usr/bin/userattr mode=0555
 file path=usr/bin/uuidgen mode=0555
-hardlink path=usr/bin/vedit target=../has/bin/edit
+$(not_aarch64)hardlink path=usr/bin/vedit target=../has/bin/edit
 file path=usr/bin/vmstat mode=0555
 file path=usr/bin/vtfontcvt mode=0555
 file path=usr/bin/w mode=4555
@@ -765,16 +767,16 @@ dir  path=usr/demo
 dir  path=usr/games
 dir  path=usr/has
 dir  path=usr/has/bin
-file path=usr/has/bin/edit mode=0555
-hardlink path=usr/has/bin/ex target=edit
-link path=usr/has/bin/jsh target=sh
+$(not_aarch64)file path=usr/has/bin/edit mode=0555
+$(not_aarch64)hardlink path=usr/has/bin/ex target=edit
+$(not_aarch64)link path=usr/has/bin/jsh target=sh
 hardlink path=usr/has/bin/pfsh target=../../bin/pfexec
-file path=usr/has/bin/sh mode=0555
-hardlink path=usr/has/bin/vedit target=edit
-hardlink path=usr/has/bin/vi target=edit
-hardlink path=usr/has/bin/view target=edit
+$(not_aarch64)file path=usr/has/bin/sh mode=0555
+$(not_aarch64)hardlink path=usr/has/bin/vedit target=edit
+$(not_aarch64)hardlink path=usr/has/bin/vi target=edit
+$(not_aarch64)hardlink path=usr/has/bin/view target=edit
 dir  path=usr/has/lib
-link path=usr/has/lib/rsh target=../bin/sh
+$(not_aarch64)link path=usr/has/lib/rsh target=../bin/sh
 dir  path=usr/has/man
 dir  path=usr/has/man/man1has
 file path=usr/has/man/man1has/edit.1has
@@ -804,14 +806,14 @@ file path=usr/kernel/drv/pts.conf group=sys
 file path=usr/kernel/drv/timerfd.conf group=sys
 dir  path=usr/kernel/exec group=sys
 dir  path=usr/kernel/exec/$(ARCH64) group=sys
-file path=usr/kernel/exec/$(ARCH64)/javaexec group=sys mode=0755
+$(not_aarch64)file path=usr/kernel/exec/$(ARCH64)/javaexec group=sys mode=0755
 file path=usr/kernel/exec/$(ARCH64)/shbinexec group=sys mode=0755
 dir  path=usr/kernel/fs group=sys
 dir  path=usr/kernel/fs/$(ARCH64) group=sys
 file path=usr/kernel/fs/$(ARCH64)/fdfs group=sys mode=0755
 file path=usr/kernel/fs/$(ARCH64)/pcfs group=sys mode=0755
-dir  path=usr/kernel/pcbe group=sys
-dir  path=usr/kernel/pcbe/$(ARCH64) group=sys
+$(not_aarch64)dir path=usr/kernel/pcbe group=sys
+$(not_aarch64)dir path=usr/kernel/pcbe/$(ARCH64) group=sys
 dir  path=usr/kernel/sched group=sys
 dir  path=usr/kernel/sched/$(ARCH64) group=sys
 file path=usr/kernel/sched/$(ARCH64)/FX group=sys mode=0755
@@ -833,8 +835,9 @@ dir  path=usr/kvm
 file path=usr/kvm/README group=sys
 dir  path=usr/lib
 dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/ld.so.1 target=../../../lib/$(ARCH64)/ld.so.1
-file path=usr/lib/$(ARCH64)/libshare.so.1
+$(not_aarch64)link path=usr/lib/$(ARCH64)/ld.so.1 \
+    target=../../../lib/$(ARCH64)/ld.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libshare.so.1
 dir  path=usr/lib/audit
 file path=usr/lib/audit/audit_record_attr mode=0444
 dir  path=usr/lib/class
@@ -865,7 +868,8 @@ file path=usr/lib/devfsadm/linkmod/SUNW_fssnap_link.so group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_ieee1394_link.so group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_lofi_link.so group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_misc_link.so group=sys
-file path=usr/lib/devfsadm/linkmod/SUNW_misc_link_$(ARCH).so group=sys
+$(not_aarch64)file path=usr/lib/devfsadm/linkmod/SUNW_misc_link_$(ARCH).so \
+    group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_port_link.so group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_ramdisk_link.so group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_sgen_link.so group=sys
@@ -875,8 +879,8 @@ file path=usr/lib/devfsadm/linkmod/SUNW_usb_link.so group=sys
 $(i386_ONLY)file path=usr/lib/devfsadm/linkmod/SUNW_xen_link.so group=sys
 file path=usr/lib/diffh mode=0555
 link path=usr/lib/embedded_su target=../bin/su
-file path=usr/lib/expreserve mode=0555
-file path=usr/lib/exrecover mode=0555
+$(not_aarch64)file path=usr/lib/expreserve mode=0555
+$(not_aarch64)file path=usr/lib/exrecover mode=0555
 dir  path=usr/lib/fs group=sys
 dir  path=usr/lib/fs/autofs group=sys
 dir  path=usr/lib/fs/autofs/$(ARCH64) group=sys
@@ -933,8 +937,8 @@ file path=usr/lib/fs/ufs/quotaoff mode=0555
 hardlink path=usr/lib/fs/ufs/quotaon target=../../../../usr/lib/fs/ufs/quotaoff
 file path=usr/lib/fs/ufs/repquota mode=0555
 file path=usr/lib/fs/ufs/tunefs mode=0555
-file path=usr/lib/fs/ufs/ufsdump mode=4555
-file path=usr/lib/fs/ufs/ufsrestore mode=4555
+$(not_aarch64)file path=usr/lib/fs/ufs/ufsdump mode=4555
+$(not_aarch64)file path=usr/lib/fs/ufs/ufsrestore mode=4555
 file path=usr/lib/fs/ufs/volcopy mode=0555
 file path=usr/lib/getoptcvt mode=0555
 dir  path=usr/lib/help
@@ -1140,30 +1144,30 @@ file path=usr/lib/help/profiles/locale/C/RtZFSStorageMngmnt.html
 file path=usr/lib/help/profiles/locale/C/RtZoneMngmnt.html
 file path=usr/lib/help/profiles/locale/C/RtZoneSecurity.html
 file path=usr/lib/hotplugd mode=0555
-dir  path=usr/lib/iconv
-file path=usr/lib/iconv/646da.8859.t mode=0444
-file path=usr/lib/iconv/646de.8859.t mode=0444
-file path=usr/lib/iconv/646en.8859.t mode=0444
-file path=usr/lib/iconv/646es.8859.t mode=0444
-file path=usr/lib/iconv/646fr.8859.t mode=0444
-file path=usr/lib/iconv/646it.8859.t mode=0444
-file path=usr/lib/iconv/646sv.8859.t mode=0444
-file path=usr/lib/iconv/8859.646.t mode=0444
-file path=usr/lib/iconv/8859.646da.t mode=0444
-file path=usr/lib/iconv/8859.646de.t mode=0444
-file path=usr/lib/iconv/8859.646en.t mode=0444
-file path=usr/lib/iconv/8859.646es.t mode=0444
-file path=usr/lib/iconv/8859.646fr.t mode=0444
-file path=usr/lib/iconv/8859.646it.t mode=0444
-file path=usr/lib/iconv/8859.646sv.t mode=0444
-file path=usr/lib/iconv/iconv_data mode=0444
+$(not_aarch64)dir path=usr/lib/iconv
+$(not_aarch64)file path=usr/lib/iconv/646da.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/646de.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/646en.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/646es.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/646fr.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/646it.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/646sv.8859.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646da.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646de.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646en.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646es.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646fr.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646it.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/8859.646sv.t mode=0444
+$(not_aarch64)file path=usr/lib/iconv/iconv_data mode=0444
 file path=usr/lib/idmapd mode=0555
 dir  path=usr/lib/inet
 dir  path=usr/lib/inet/$(ARCH64)
-file path=usr/lib/inet/$(ARCH64)/in.iked mode=0555
-file path=usr/lib/inet/certdb mode=0555
-file path=usr/lib/inet/certlocal mode=0555
-file path=usr/lib/inet/certrldb mode=0555
+$(not_aarch64)file path=usr/lib/inet/$(ARCH64)/in.iked mode=0555
+$(not_aarch64)file path=usr/lib/inet/certdb mode=0555
+$(not_aarch64)file path=usr/lib/inet/certlocal mode=0555
+$(not_aarch64)file path=usr/lib/inet/certrldb mode=0555
 hardlink path=usr/lib/inet/in.iked target=../../../usr/lib/isaexec
 file path=usr/lib/inet/inetd mode=0555
 file path=usr/lib/intrd mode=0555
@@ -1180,17 +1184,17 @@ dir  path=usr/lib/locale/C.UTF-8/LC_MESSAGES
 dir  path=usr/lib/locale/C.UTF-8/LC_MONETARY
 dir  path=usr/lib/locale/C.UTF-8/LC_NUMERIC
 dir  path=usr/lib/locale/C.UTF-8/LC_TIME
-dir  path=usr/lib/locale/C/LC_COLLATE
-dir  path=usr/lib/locale/C/LC_CTYPE
-dir  path=usr/lib/locale/C/LC_MESSAGES
-dir  path=usr/lib/locale/C/LC_MONETARY
-dir  path=usr/lib/locale/C/LC_NUMERIC
-dir  path=usr/lib/locale/C/LC_TIME
-link path=usr/lib/locale/POSIX target=./C
+$(not_aarch64)dir path=usr/lib/locale/C/LC_COLLATE
+$(not_aarch64)dir path=usr/lib/locale/C/LC_CTYPE
+$(not_aarch64)dir path=usr/lib/locale/C/LC_MESSAGES
+$(not_aarch64)dir path=usr/lib/locale/C/LC_MONETARY
+$(not_aarch64)dir path=usr/lib/locale/C/LC_NUMERIC
+$(not_aarch64)dir path=usr/lib/locale/C/LC_TIME
+$(not_aarch64)link path=usr/lib/locale/POSIX target=./C
 file path=usr/lib/makekey mode=0555
 file path=usr/lib/more.help
-dir  path=usr/lib/netsvc group=sys
-file path=usr/lib/newsyslog group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/netsvc group=sys
+$(not_aarch64)file path=usr/lib/newsyslog group=sys mode=0555
 file path=usr/lib/passmgmt group=sys mode=0555
 dir  path=usr/lib/pci
 file path=usr/lib/pci/pcidr mode=0555
@@ -1198,22 +1202,22 @@ file path=usr/lib/pci/pcidr_plugin.so
 file path=usr/lib/pci/pcieb mode=0555
 file path=usr/lib/pfexecd mode=0555
 file path=usr/lib/platexec mode=0555
-dir  path=usr/lib/rcm
-dir  path=usr/lib/rcm/modules
-file path=usr/lib/rcm/modules/SUNW_aggr_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_cluster_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_dump_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_filesys_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_ibpart_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_ip_anon_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_ip_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_mpxio_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_network_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_swap_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_vlan_rcm.so mode=0555
-file path=usr/lib/rcm/modules/SUNW_vnic_rcm.so mode=0555
-file path=usr/lib/rcm/rcm_daemon mode=0555
-dir  path=usr/lib/rcm/scripts
+$(not_aarch64)dir path=usr/lib/rcm
+$(not_aarch64)dir path=usr/lib/rcm/modules
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_aggr_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_cluster_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_dump_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_filesys_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_ibpart_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_ip_anon_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_ip_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_mpxio_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_network_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_swap_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_vlan_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/modules/SUNW_vnic_rcm.so mode=0555
+$(not_aarch64)file path=usr/lib/rcm/rcm_daemon mode=0555
+$(not_aarch64)dir path=usr/lib/rcm/scripts
 dir  path=usr/lib/reparse
 file path=usr/lib/reparse/reparsed group=sys mode=0555
 dir  path=usr/lib/saf
@@ -1223,8 +1227,9 @@ file path=usr/lib/saf/sac group=sys mode=0555
 file path=usr/lib/saf/ttymon group=sys mode=0555
 dir  path=usr/lib/secure
 dir  path=usr/lib/secure/$(ARCH64)
-link path=usr/lib/secure/32 target=.
-link path=usr/lib/secure/64 target=$(ARCH64)
+$(not_aarch64)link path=usr/lib/secure/32 target=.
+$(not_aarch64)link path=usr/lib/secure/64 target=$(ARCH64)
+$(aarch64_ONLY)link path=usr/lib/secure/64 target=.
 dir  path=usr/lib/security
 dir  path=usr/lib/sysevent
 dir  path=usr/lib/sysevent/modules
@@ -1343,14 +1348,14 @@ file path=usr/sbin/dminfo mode=0555
 hardlink path=usr/sbin/drvconfig target=./devfsadm
 file path=usr/sbin/dumpadm mode=0555
 link path=usr/sbin/edquota target=../lib/fs/ufs/edquota
-file path=usr/sbin/eeprom group=sys mode=2555
+$(not_aarch64)file path=usr/sbin/eeprom group=sys mode=2555
 link path=usr/sbin/fdisk target=../../sbin/fdisk
 file path=usr/sbin/ff mode=0555
 link path=usr/sbin/fiocompress target=../../sbin/fiocompress
 link path=usr/sbin/flowadm target=../../sbin/flowadm
 link path=usr/sbin/flowstat target=../../sbin/flowstat
 file path=usr/sbin/fmthard group=sys mode=0555
-file path=usr/sbin/format mode=0555
+$(not_aarch64)file path=usr/sbin/format mode=0555
 file path=usr/sbin/fsck mode=0555
 link path=usr/sbin/fsdb target=./clri
 link path=usr/sbin/fsirand target=../lib/fs/ufs/fsirand
@@ -1377,10 +1382,9 @@ file path=usr/sbin/inetconv mode=0555
 link path=usr/sbin/inetd target=../lib/inet/inetd
 link path=usr/sbin/init target=../../sbin/init
 file path=usr/sbin/install mode=0555
-file path=usr/sbin/installboot group=sys mode=0555
+$(not_aarch64)file path=usr/sbin/installboot group=sys mode=0555
 $(i386_ONLY)link path=usr/sbin/installgrub target=../../sbin/installgrub
 file path=usr/sbin/ipaddrsel mode=0555
-link path=usr/sbin/ipadm target=../../sbin/ipadm
 link path=usr/sbin/ipmpstat target=../../sbin/ipmpstat
 file path=usr/sbin/ipsecalgs mode=0555
 file path=usr/sbin/ipsecconf mode=0555
@@ -1394,12 +1398,12 @@ file path=usr/sbin/locator mode=0555
 link path=usr/sbin/lockfs target=../lib/fs/ufs/lockfs
 file path=usr/sbin/lofiadm mode=0555
 file path=usr/sbin/logadm mode=0555
-file path=usr/sbin/makedbm mode=0555
+$(not_aarch64)file path=usr/sbin/makedbm mode=0555
 file path=usr/sbin/mkdevalloc mode=0555
 hardlink path=usr/sbin/mkdevmaps target=../../usr/sbin/mkdevalloc
 file path=usr/sbin/mkfile mode=0555
 link path=usr/sbin/mkfs target=./clri
-file path=usr/sbin/mknod mode=0555
+$(not_aarch64)file path=usr/sbin/mknod mode=0555
 file path=usr/sbin/modinfo group=sys mode=0555
 file path=usr/sbin/modload group=sys mode=0555
 file path=usr/sbin/modunload group=sys mode=0555
@@ -1421,7 +1425,7 @@ file path=usr/sbin/ping mode=4555
 file path=usr/sbin/pmadm group=sys mode=0555
 hardlink path=usr/sbin/ports target=./devfsadm
 hardlink path=usr/sbin/poweroff target=./halt
-file path=usr/sbin/praudit mode=0555
+$(not_aarch64)file path=usr/sbin/praudit mode=0555
 file path=usr/sbin/prtconf group=sys mode=2555
 $(i386_ONLY)file path=usr/sbin/prtdiag group=sys mode=2755
 file path=usr/sbin/prtvtoc group=sys mode=0555
@@ -1474,16 +1478,16 @@ file path=usr/sbin/sysdef group=sys mode=2555
 file path=usr/sbin/syseventadm group=sys mode=0555
 file path=usr/sbin/syslogd group=sys mode=0555
 hardlink path=usr/sbin/tapes target=./devfsadm
-file path=usr/sbin/tar mode=0555
+$(not_aarch64)file path=usr/sbin/tar mode=0555
 file path=usr/sbin/traceroute mode=4555
-file path=usr/sbin/trapstat mode=0555
+$(not_aarch64)file path=usr/sbin/trapstat mode=0555
 file path=usr/sbin/ttyadm group=sys mode=0755
 link path=usr/sbin/tunefs target=../lib/fs/ufs/tunefs
 link path=usr/sbin/tzreload target=../../sbin/tzreload
 link path=usr/sbin/uadmin target=../../sbin/uadmin
 $(i386_ONLY)file path=usr/sbin/ucodeadm mode=0555
-link path=usr/sbin/ufsdump target=../lib/fs/ufs/ufsdump
-link path=usr/sbin/ufsrestore target=../lib/fs/ufs/ufsrestore
+$(not_aarch64)link path=usr/sbin/ufsdump target=../lib/fs/ufs/ufsdump
+$(not_aarch64)link path=usr/sbin/ufsrestore target=../lib/fs/ufs/ufsrestore
 link path=usr/sbin/umount target=../../sbin/umount
 file path=usr/sbin/umountall group=sys mode=0555
 file path=usr/sbin/unlink mode=0555
@@ -1500,10 +1504,10 @@ file path=usr/sbin/zdump mode=0555
 file path=usr/sbin/zic mode=0555
 dir  path=usr/share
 dir  path=usr/share/lib
-dir  path=usr/share/lib/mailx
-file path=usr/share/lib/mailx/mailx.help
-file path=usr/share/lib/mailx/mailx.help.~
-dir  path=usr/share/lib/pub
+$(not_aarch64)dir path=usr/share/lib/mailx
+$(not_aarch64)file path=usr/share/lib/mailx/mailx.help
+$(not_aarch64)file path=usr/share/lib/mailx/mailx.help.~
+$(not_aarch64)dir path=usr/share/lib/pub
 dir  path=usr/share/lib/tabset
 file path=usr/share/lib/tabset/3101
 file path=usr/share/lib/tabset/beehive
@@ -1537,7 +1541,7 @@ link path=usr/src target=./share/src
 link path=usr/tmp target=../var/tmp
 dir  path=var group=sys
 dir  path=var/adm group=sys mode=0775
-file path=var/adm/aculog owner=uucp mode=0600 preserve=true
+$(not_aarch64)file path=var/adm/aculog owner=uucp mode=0600 preserve=true
 dir  path=var/adm/exacct owner=adm group=adm
 dir  path=var/adm/log owner=adm group=adm
 file path=var/adm/spellhist mode=0666 preserve=true
@@ -1552,11 +1556,12 @@ dir  path=var/idmap owner=daemon group=daemon
 dir  path=var/inet group=sys
 dir  path=var/ld
 dir  path=var/ld/$(ARCH64)
-link path=var/ld/32 target=.
-link path=var/ld/64 target=$(ARCH64)
+$(not_aarch64)link path=var/ld/32 target=.
+$(not_aarch64)link path=var/ld/64 target=$(ARCH64)
+$(aarch64_ONLY)link path=var/ld/64 target=.
 dir  path=var/log group=sys
-file path=var/log/authlog group=sys mode=0600 preserve=true
-file path=var/log/syslog group=sys preserve=true
+$(not_aarch64)file path=var/log/authlog group=sys mode=0600 preserve=true
+$(not_aarch64)file path=var/log/syslog group=sys preserve=true
 dir  path=var/logadm
 dir  path=var/mail group=mail mode=1777
 dir  path=var/mail/:saved group=mail mode=0775
@@ -1573,7 +1578,7 @@ dir  path=var/spool/cron/atjobs group=sys
 dir  path=var/spool/cron/crontabs group=sys
 file path=var/spool/cron/crontabs/adm group=sys mode=0600 preserve=true
 file path=var/spool/cron/crontabs/root group=sys mode=0600 preserve=true
-dir  path=var/spool/locks owner=uucp group=uucp
+$(not_aarch64)dir path=var/spool/locks owner=uucp group=uucp
 dir  path=var/svc group=sys
 dir  path=var/svc/log group=sys
 dir  path=var/svc/manifest group=sys
@@ -1669,29 +1674,30 @@ license usr/src/common/bzip2/LICENSE license=usr/src/common/bzip2/LICENSE
 #
 # The bootadm binary needs the etc/release file.
 #
-depend type=require fmri=release/name
+$(not_aarch64)depend type=require fmri=release/name
 #
 # intrd and others use the illumos-defaulted perl interpreter
 #
-depend type=require fmri=runtime/perl$(PERL_PKGVERS)
+$(not_aarch64)depend type=require fmri=runtime/perl$(PERL_PKGVERS)
 #
 # intrd uses sun-solaris Perl modules
 #
-depend type=require fmri=runtime/perl$(PERL_PKGVERS)/module/sun-solaris
+$(not_aarch64)depend type=require \
+    fmri=runtime/perl$(PERL_PKGVERS)/module/sun-solaris
 #
 # shell/ksh93 provides the system /bin/sh
 depend type=require fmri=shell/ksh93
 #
 # The boot loader package
 #
-depend type=require fmri=system/boot/loader
+$(not_aarch64)depend type=require fmri=system/boot/loader
 #
 # The System Console fonts
-depend type=require fmri=system/data/console/fonts
+$(not_aarch64)depend type=require fmri=system/data/console/fonts
 #
 # The loadkeys binary needs the keytables.
 #
-depend type=require fmri=system/data/keyboard/keytables
+$(not_aarch64)depend type=require fmri=system/data/keyboard/keytables
 #
 # Depend on terminfo data.
 #
@@ -1703,4 +1709,4 @@ depend type=require fmri=system/data/zoneinfo
 #
 # The mailx binary calls /usr/lib/sendmail provided by mailwrapper
 #
-depend type=require fmri=system/network/mailwrapper
+$(not_aarch64)depend type=require fmri=system/network/mailwrapper

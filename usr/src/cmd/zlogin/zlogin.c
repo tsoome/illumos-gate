@@ -581,7 +581,7 @@ canonify(char c, char *cc)
 	if (isprint(c)) {
 		cc[0] = c;
 		cc[1] = '\0';
-	} else if (c >= 0 && c <= 31) {	/* ^@ through ^_ */
+	} else if ((signed char)c >= 0 && c <= 31) {	/* ^@ through ^_ */
 		cc[0] = '^';
 		cc[1] = c + '@';
 		cc[2] = '\0';

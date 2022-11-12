@@ -1189,7 +1189,7 @@ select_src_addr(union any_in_addr *dst_addr, int family,
 	struct sockaddr_in *sin = NULL;
 	struct sockaddr_in6 *sin6 = NULL;
 	int tmp_fd;
-	size_t sock_len;
+	socklen_t sock_len;
 
 	sock = (struct sockaddr *)malloc(sizeof (struct sockaddr_in6));
 	if (sock == NULL) {
@@ -1318,7 +1318,7 @@ setup_socket(int family, int *send_sockp, int *recv_sockp, int *if_index,
 	struct sockaddr_in sin;
 	struct sockaddr *sp;
 	struct ipsec_req req;
-	size_t slen;
+	socklen_t slen;
 	int on = 1;
 	uchar_t char_op;
 	int int_op;

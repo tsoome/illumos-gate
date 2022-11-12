@@ -22,9 +22,8 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-
-/*
+ *
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright (c) 2018, Joyent, Inc.
  */
 
@@ -318,7 +317,7 @@ rp_plugin_init()
 	DIR *dir;
 	struct dirent *dent;
 
-#if defined(_LP64)
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (sysinfo(SI_ARCHITECTURE_64, isa, MAXISALEN) == -1)
 		isa[0] = '\0';
 #else

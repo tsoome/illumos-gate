@@ -42,7 +42,7 @@ CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 # not linted
 SMATCH=off
 
-LDLIBS +=	$(LIBNPRT) -lsecdb
+LDLIBS +=	$(LIBNPRT) -lsecdb -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 .KEEP_STATE:
 

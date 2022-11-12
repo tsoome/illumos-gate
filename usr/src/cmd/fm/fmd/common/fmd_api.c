@@ -1949,7 +1949,7 @@ fmd_timer_remove(fmd_hdl_t *hdl, id_t id)
 		fmd_free(t, sizeof (fmd_modtimer_t));
 	fmd_module_unlock(mp);
 
-	fmd_eventq_cancel(mp->mod_queue, FMD_EVT_TIMEOUT, (void *)id);
+	fmd_eventq_cancel(mp->mod_queue, FMD_EVT_TIMEOUT, (void *)(intptr_t)id);
 }
 
 static nvlist_t *

@@ -64,7 +64,7 @@ int	npagesize = 0;
 uint_t	icache_flush = 0;
 char	*cpulist = NULL;
 char	*mmulist = NULL;
-extern char *module_path;		/* path for kernel modules */
+char	*module_path;		/* path for kernel modules */
 
 /*
  * This file gets compiled in LP64 (for sun4u) and ILP32 models.
@@ -809,7 +809,7 @@ read_elf64(int fd, int print, Elf64_Ehdr *elfhdrp)
 				 */
 				if (phdr->p_flags & PF_W)
 					dhdr = phdr;
-				else
+				else if (phdr->p_flags & PF_X)
 					thdr = phdr;
 
 				if (verbosemode)

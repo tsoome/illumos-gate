@@ -1748,7 +1748,7 @@ set_addrmask(int fd,
 		 */
 		/* LINTED pointer alignment */
 		((struct sockaddr_in *)mask->buf)->sin_addr.s_addr =
-		    (ulong_t)~0;
+		    (uint32_t)~0;
 		/* LINTED pointer alignment */
 		((struct sockaddr_in *)mask->buf)->sin_family =
 		    (ushort_t)~0;

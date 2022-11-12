@@ -919,6 +919,12 @@ static const ctf_dwarf_fpmap_t ctf_dwarf_fpmaps[] = {
 		{ 16, { CTF_FP_LDOUBLE, CTF_FP_LDCPLX, CTF_FP_LDIMAGRY } },
 		{ 0, { 0 } }
 	} },
+	{ EM_AARCH64, {
+		{ 4, { CTF_FP_SINGLE, CTF_FP_CPLX, CTF_FP_IMAGRY } },
+		{ 8, { CTF_FP_DOUBLE, CTF_FP_DCPLX, CTF_FP_DIMAGRY } },
+		{ 16, { CTF_FP_LDOUBLE, CTF_FP_LDCPLX, CTF_FP_LDIMAGRY } },
+		{ 0, { 0 } },
+	} },
 	{ EM_X86_64, {
 		{ 4, { CTF_FP_SINGLE, CTF_FP_CPLX, CTF_FP_IMAGRY } },
 		{ 8, { CTF_FP_DOUBLE, CTF_FP_DCPLX, CTF_FP_DIMAGRY } },

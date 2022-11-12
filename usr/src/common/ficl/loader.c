@@ -980,11 +980,11 @@ keyQuestion(ficlVm *pVM)
 	ch = getchar();
 	(void) tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
-	if (ch != -1)
+	if (ch != (char)-1)
 		(void) ungetc(ch, stdin);
 
 	ficlStackPushInteger(ficlVmGetDataStack(pVM),
-	    ch != -1? FICL_TRUE : FICL_FALSE);
+	    ch != (char)-1 ? FICL_TRUE : FICL_FALSE);
 #else
 	ficlStackPushInteger(ficlVmGetDataStack(pVM),
 	    ischar()? FICL_TRUE : FICL_FALSE);

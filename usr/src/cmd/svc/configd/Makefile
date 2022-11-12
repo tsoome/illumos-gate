@@ -55,7 +55,6 @@ MYCPPFLAGS = -I. -I../common -I../../../common/svc \
 CPPFLAGS += $(MYCPPFLAGS)
 CFLAGS	+= $(CCVERBOSE)
 CERRWARN += -_gcc=-Wno-parentheses
-CERRWARN += -_gcc=-Wno-type-limits
 CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-unused-variable
 CERRWARN += -_gcc=-Wno-unused-function
@@ -87,14 +86,20 @@ $(NATIVE_BUILD)CPPFLAGS += -DNATIVE_BUILD
 $(NATIVE_BUILD)LDFLAGS = $(BDIRECT)
 $(NATIVE_BUILD)LDLIBS = -L$(ADJUNCT_PROTO)/usr/lib -R$(ADJUNCT_PROTO)/usr/lib \
 			-L$(LIBUUTIL)/native -R $(LIBUUTIL)/native $(MYLDLIBS)
+# XXXARM: Native, no sysroot
+$(NATIVE_BUILD)SYSROOT=
 
 DIRMODE = 0755
 FILEMODE = 0555
 
 OBJSQLITE =
 LIBSQLITE = -lsqlite-sys
-$(NATIVE_BUILD)OBJSQLITE = $(ROOT)/lib/libsqlite-native.o
-$(NATIVE_BUILD)LIBSQLITE =
+# XXXARM: This is because the 'native' builds of these components is a mess
+# and it's easier to do this for testing than to fix that right now.
+#
+# It must, however, be fixed in future.
+#$(NATIVE_BUILD)OBJSQLITE = $(ROOT)/lib/libsqlite-native.o
+$(NATIVE_BUILD)LIBSQLITE = /lib/libsqlite-sys.so.2.8.15
 
 OBJS += $(OBJSQLITE)
 LDLIBS += $(LIBSQLITE)

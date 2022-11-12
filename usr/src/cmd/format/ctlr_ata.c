@@ -21,6 +21,8 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -40,7 +42,7 @@
 #include <string.h>
 #include <sys/byteorder.h>
 #include <errno.h>
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 #include <sys/dktp/altsctr.h>
 #endif
 #include <sys/dktp/dadkio.h>
@@ -63,7 +65,7 @@ int	read_altsctr();
 int	updatebadsec();
 
 static int	ata_ck_format(void);
-#ifdef i386
+#if defined(i386) || defined(__aarch64__)
 static int	ata_ex_cur(struct defect_list *);
 static int	ata_wr_cur(struct defect_list *);
 static int	ata_repair(diskaddr_t, int);
@@ -103,7 +105,7 @@ struct  ctlr_ops pcmcia_ataops = {
 };
 
 
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 static struct	dkl_partition	*dpart = NULL;
 #endif	/* defined(i386) */
 extern	struct	badsec_lst	*badsl_chain;
@@ -213,8 +215,7 @@ ata_ck_format(void)
 }
 
 
-#if defined(i386)
-
+#if defined(i386) || defined(__aarch64__)
 static int
 get_alts_slice(void)
 {

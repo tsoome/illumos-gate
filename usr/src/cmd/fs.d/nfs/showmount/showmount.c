@@ -37,12 +37,11 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * showmount
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <rpc/rpc.h>
 #include <rpc/rpcb_clnt.h>
@@ -180,8 +179,8 @@ main(int argc, char *argv[])
 	 * Allocate memory for the array and initialize the array.
 	 */
 
-	table = (struct mountbody **)calloc(numentries,
-						sizeof (struct mountbody *));
+	table = calloc(numentries,
+	    sizeof (struct mountbody *));
 	if (table == NULL) {
 		pr_err(gettext("not enough memory for %d entries\n"),
 		    numentries);

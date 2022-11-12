@@ -23,8 +23,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*
  * These functions return the prevailing rounding mode per ANSI C spec:
@@ -40,7 +41,7 @@
 #include <floatingpoint.h>
 #include "libc.h"
 
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 
 int
 __flt_rounds(void)

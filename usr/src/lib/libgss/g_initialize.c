@@ -20,6 +20,7 @@
  */
 /*
  * Copyright (c) 1999, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -77,9 +78,13 @@
 
 #define	MECH_LIB_PREFIX2	"amd64/"
 
+#elif !defined(_MULTI_DATAMODEL)
+
+#define	MECH_LIB_PREFIX2	""
+
 #else	/* __sparc */
 
-you need to define where under /usr the LP64 libraries live for this platform
+#error you need to define where under /usr the LP64 libraries live for this platform
 
 #endif	/* __sparc */
 

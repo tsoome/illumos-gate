@@ -42,7 +42,7 @@
 
 #include <i386/machdep_x86.h>
 
-#elif defined(__arch64)
+#elif defined(__aarch64__)
 
 #include <aarch64/machdep_aarch64.h>
 

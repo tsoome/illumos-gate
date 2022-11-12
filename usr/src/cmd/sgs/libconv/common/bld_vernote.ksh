@@ -25,9 +25,14 @@
 # Use is subject to license terms.
 #
 
+#
+# Copyright 2017 Hayashi Naoyuki
+# Copyright 2022 Michael van der Westhuizen
+#
+
 usage()
 {
-	echo "usage: bld_vernote -R <revision> -r <release> -o <outfile.s>"
+	echo "usage: bld_vernote [-n] -R <revision> -r <release> -o <outfile.s>"
 }
 
 pad_notestring()
@@ -103,12 +108,40 @@ link_ver_string:
 EOF
 }
 
+build_aarch64note()
+{
+	notestring="Solaris Link Editors: $release-$revision (illumos)"
+	#
+	# The 'adjustment' is for the '\0'
+	#
+	pad_notestring -1
+cat > $notefile <<EOF
+	.section	.note
+
+#include <sgs.h>
+
+	.balign	4
+	.long	.endname - .startname	/* note name size */
+	.long	0			/* note desc size */
+	.long	0			/* note type */
+.startname:
+	.string "$notestring"
+.endname:
+
+	.section	.rodata, "a"
+	.globl		link_ver_string
+link_ver_string:
+	.type		link_ver_string,@object
+	.string		"${release}-${revision}\0"
+	.size		link_ver_string, .-link_ver_string
+EOF
+}
 
 notefile=""
 release=""
 revision=""
 
-while getopts R:o:r: c
+while getopts R:o:r:n c
 do
 	case $c in
 	o)
@@ -119,6 +152,9 @@ do
 		;;
 	R)
 		revision=$OPTARG
+		;;
+	n)
+		MACH=$NATIVE_MACH
 		;;
 	\?)
 		usage
@@ -137,6 +173,8 @@ if [[ $MACH = "sparc" ]]; then
 	build_sparcnote
 elif [[ $MACH = "i386" ]]; then
 	build_i386note
+elif [[ $MACH = "aarch64" ]]; then
+	build_aarch64note
 else
 	echo "I don't know how to build a vernote.s for ${MACH}, so sorry"
 	exit 1

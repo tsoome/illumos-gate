@@ -23,7 +23,9 @@
 # Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 # Copyright 2014 Garrett D'Amore <garrett@damore.org>
 # Copyright 2016 Nexenta Systems, Inc.
+# Copyright 2017 Hayashi Naoyuki
 # Copyright 2019 Joyent, Inc.
+# Copyright 2022 Michael van der Westhuizen
 #
 
 # Common definitions for open and closed headers.
@@ -175,12 +177,11 @@ ROOTDIR=	$(ROOT)/usr/include/sys
 
 ROOTDKTPDIR=	$(ROOTDIR)/dktp
 
-sparc_ROOTDIRS=	$(ROOTDKTPDIR) $(ROOTDIR)/scsi/adapters \
-		$(ROOTDIR)/scsi/targets
+sparc_ROOTDIRS=	$(ROOTDKTPDIR)
 
-i386_ROOTDIRS=	$(ROOTDKTPDIR) $(ROOTDIR)/scsi/adapters \
-		$(ROOTDIR)/scsi/targets \
-		$(ROOTDIR)/sata
+i386_ROOTDIRS=	$(ROOTDKTPDIR) $(ROOTDIR)/sata
+
+aarch64_ROOTDIRS=	$(ROOTDKTPDIR) $(ROOTDIR)/sata
 
 ROOTDIRS=			\
 	$(ROOTDIR)		\
@@ -219,9 +220,11 @@ ROOTDIRS=			\
 	$(ROOTDIR)/idm		\
 	$(ROOTDIR)/iscsit	\
 	$(ROOTDIR)/scsi		\
+	$(ROOTDIR)/scsi/adapters	\
 	$(ROOTDIR)/scsi/conf	\
 	$(ROOTDIR)/scsi/generic	\
 	$(ROOTDIR)/scsi/impl	\
+	$(ROOTDIR)/scsi/targets	\
 	$(ROOTDIR)/sdcard	\
 	$(ROOTDIR)/sysevent     \
 	$(ROOTDIR)/contract     \
@@ -326,6 +329,7 @@ ROOTRSMHDRS= $(RSMHDRS:%=$(ROOTDIR)/rsm/%)
 ROOTSDKTPHDRS= $(SDKTPHDRS:%=$(ROOTDIR)/dktp/%)
 ROOTDKTPHDRS= $(DKTPHDRS:%=$(ROOTDIR)/dktp/%)
 ROOTPCHDRS= $(PCHDRS:%=$(ROOTDIR)/%)
+ROOTPCMCIAHDRS=	$(PCMCIAHDRS:%=$(ROOTDIR)/%)
 ROOTHOTPLUGHDRS= $(HOTPLUGHDRS:%=$(ROOTDIR)/hotplug/%)
 ROOTHOTPLUGPCIHDRS= $(HOTPLUGPCIHDRS:%=$(ROOTDIR)/hotplug/pci/%)
 
@@ -336,9 +340,13 @@ sparc_ROOTHDRS=	$(ROOTSDKTPHDRS) $(ROOTSCSICADHDRS) $(ROOTSCSITARGETSHDRS) \
 		$(ROOTUSBAUDHDRS) $(ROOTUSBHIDHDRS) $(ROOTUSBMSHDRS) \
 		$(ROOTUSBPRNHDRS) $(ROOTUGENHDRS) $(ROOTUSBVIDHDRS)
 
-i386_ROOTHDRS=	$(ROOTDKTPHDRS) $(ROOTPCHDRS) $(ROOTSCSITARGETSHDRS)	\
-		$(ROOTSCSIVHCIHDRS) $(ROOTHOTPLUGHDRS) \
+i386_ROOTHDRS=	$(ROOTDKTPHDRS) $(ROOTPCHDRS) $(ROOTPCMCIAHDRS) \
+		$(ROOTSCSITARGETSHDRS) $(ROOTSCSIVHCIHDRS) $(ROOTHOTPLUGHDRS) \
 		$(ROOTHOTPLUGPCIHDRS) $(ROOTSATAGENHDRS)
+
+aarch64_ROOTHDRS=	$(ROOTDKTPHDRS) $(ROOTPCHDRS) $(ROOTSCSITARGETSHDRS) \
+			$(ROOTSCSIVHCIHDRS) $(ROOTHOTPLUGHDRS) \
+			$(ROOTHOTPLUGPCIHDRS) $(ROOTSATAGENHDRS)
 
 # install rules
 $(ROOTDIR)/%: %
@@ -356,7 +364,7 @@ $(ROOTDIR)/fibre-channel/%:	fibre-channel/%
 $(ROOTDIR)/fibre-channel/impl/%:	fibre-channel/impl/%
 	$(INS.file)
 
-$(ROOTDIR)/fibre-channel/ulp/:	fibre-channel/ulp/%
+$(ROOTDIR)/fibre-channel/ulp/%:	fibre-channel/ulp/%
 	$(INS.file)
 
 $(ROOTDIR)/fm/%:                fm/%
@@ -472,4 +480,3 @@ $(ROOTDIR)/tsol/%:	tsol/%
 
 $(ROOTDIRS):
 	$(INS.dir)
-

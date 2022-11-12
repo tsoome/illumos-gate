@@ -24,9 +24,10 @@
 #
 
 include		../Makefile.com
-include		../../Makefile.tools
 include		$(SGSHOME)/libelf/Makefile.com
+include		../../Makefile.tools
 include		$(SRC)/Makefile.master.64
+
 
 CONVLIBDIR =	-L../libconv
 CPPFLAGS =	$(NATIVE_CPPFLAGS)
@@ -34,6 +35,15 @@ CFLAGS =	$(NATIVE_CFLAGS)
 SGSMSGTARG +=	$(SGSMSG32)
 NATIVE_LIBS +=	libc.so
 CW_LINKER =
+
+# XXXARM: These have to be reset because of the Makefile ordering crud, ugh
+SYSROOT=
+CC= 		$(NATIVECC)
+CFLAGS64 +=	$(C_PICFLAGS)
+CONVLIBDIR=	-L../libconv
+CERRWARN +=	-_gcc=-Wno-parentheses
+CERRWARN +=	$(CNOWARN_UNINIT)
+LDLIBS += 	$(CONVLIBDIR) -lconv
 
 # As a bootstrapping issue, we can't use the real mapfile because we build
 # early in tools and thus don't have support for assertions.

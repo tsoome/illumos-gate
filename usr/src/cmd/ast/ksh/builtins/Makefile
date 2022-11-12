@@ -118,6 +118,8 @@ OBJECTS= \
 SRCS=	$(OBJECTS:%.o=%.c)
 
 LDLIBS += -lshell -lcmd -last -lumem
+# XXXARM: intrinsics
+$(AARCH64_BUID)LDLIBS += -lgcc
 
 CPPFLAGS= \
 	$(DTEXTDOM) $(DTS_ERRNO) \

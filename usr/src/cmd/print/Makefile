@@ -28,7 +28,7 @@
 
 include ../Makefile.cmd
 
-JAVA_SUBDIRS = printmgr
+$(NOT_AARCH64_BLD)JAVA_SUBDIRS = printmgr
 
 PRINT_SUBDIRS  =		\
 		scripts		\

@@ -22,6 +22,9 @@
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 #ifndef	_INLINE_RELOC_H
 #define	_INLINE_RELOC_H
 
@@ -65,7 +68,7 @@ _elf_reloc_relative(ulong_t rbgn, ulong_t base, Rt_map *lmp, APlist **textrel,
 	 * Perform a base address update.  This simple operation is required
 	 * for updating .plt relocations in preparation for lazy binding.
 	 */
-#if	defined(__x86)
+#if	defined(__x86) || defined(__aarch64__)
 	if (add) {
 		*((ulong_t *)roffset) += base;
 		return (1);
@@ -79,7 +82,7 @@ _elf_reloc_relative(ulong_t rbgn, ulong_t base, Rt_map *lmp, APlist **textrel,
 	 */
 #if	defined(__sparc)
 	*((ulong_t *)roffset) += base + ((M_RELOC *)rbgn)->r_addend;
-#elif	defined(__amd64)
+#elif	defined(__amd64) || defined(__aarch64__)
 	*((ulong_t *)roffset) = base + ((M_RELOC *)rbgn)->r_addend;
 #else
 	*((ulong_t *)roffset) += base;

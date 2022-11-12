@@ -37,38 +37,38 @@ set name=info.classification \
 set name=variant.arch value=$(ARCH)
 dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
-dir  path=kernel/drv/$(ARCH64) group=sys
-file path=kernel/drv/$(ARCH64)/dcpc group=sys
-file path=kernel/drv/$(ARCH64)/dtrace group=sys
-file path=kernel/drv/$(ARCH64)/fasttrap group=sys
-file path=kernel/drv/$(ARCH64)/fbt group=sys
-file path=kernel/drv/$(ARCH64)/lockstat group=sys
-file path=kernel/drv/$(ARCH64)/profile group=sys
-file path=kernel/drv/$(ARCH64)/sdt group=sys
-file path=kernel/drv/$(ARCH64)/systrace group=sys
-file path=kernel/drv/dcpc.conf group=sys
-file path=kernel/drv/dtrace.conf group=sys
-file path=kernel/drv/fasttrap.conf group=sys
-file path=kernel/drv/fbt.conf group=sys
-file path=kernel/drv/lockstat.conf group=sys
-file path=kernel/drv/profile.conf group=sys
-file path=kernel/drv/sdt.conf group=sys
-file path=kernel/drv/systrace.conf group=sys
-dir  path=kernel/dtrace group=sys
-dir  path=kernel/dtrace/$(ARCH64) group=sys
-hardlink path=kernel/dtrace/$(ARCH64)/dcpc \
+$(not_aarch64)dir path=kernel/drv/$(ARCH64) group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/dcpc group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/dtrace group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/fasttrap group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/fbt group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/lockstat group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/profile group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/sdt group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/systrace group=sys
+$(not_aarch64)file path=kernel/drv/dcpc.conf group=sys
+$(not_aarch64)file path=kernel/drv/dtrace.conf group=sys
+$(not_aarch64)file path=kernel/drv/fasttrap.conf group=sys
+$(not_aarch64)file path=kernel/drv/fbt.conf group=sys
+$(not_aarch64)file path=kernel/drv/lockstat.conf group=sys
+$(not_aarch64)file path=kernel/drv/profile.conf group=sys
+$(not_aarch64)file path=kernel/drv/sdt.conf group=sys
+$(not_aarch64)file path=kernel/drv/systrace.conf group=sys
+$(not_aarch64)dir path=kernel/dtrace group=sys
+$(not_aarch64)dir path=kernel/dtrace/$(ARCH64) group=sys
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/dcpc \
     target=../../../kernel/drv/$(ARCH64)/dcpc
-hardlink path=kernel/dtrace/$(ARCH64)/fasttrap \
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/fasttrap \
     target=../../../kernel/drv/$(ARCH64)/fasttrap
-hardlink path=kernel/dtrace/$(ARCH64)/fbt \
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/fbt \
     target=../../../kernel/drv/$(ARCH64)/fbt
-hardlink path=kernel/dtrace/$(ARCH64)/lockstat \
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/lockstat \
     target=../../../kernel/drv/$(ARCH64)/lockstat
-hardlink path=kernel/dtrace/$(ARCH64)/profile \
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/profile \
     target=../../../kernel/drv/$(ARCH64)/profile
-hardlink path=kernel/dtrace/$(ARCH64)/sdt \
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/sdt \
     target=../../../kernel/drv/$(ARCH64)/sdt
-hardlink path=kernel/dtrace/$(ARCH64)/systrace \
+$(not_aarch64)hardlink path=kernel/dtrace/$(ARCH64)/systrace \
     target=../../../kernel/drv/$(ARCH64)/systrace
 dir  path=usr/share/man
 dir  path=usr/share/man/man4d

@@ -66,6 +66,7 @@ $(SRCDIR)/common/%.c $(SRCDIR)/common/%_machelf.c:	%_msg.h
 
 vernote.s:	bld_vernote $(README_REVISION) $(ONLDREADME)
 		./bld_vernote \
+			$(BLDVERNOTE_TARGET_ARGS) \
 			-R `perl $(README_REVISION) $(ONLDREADME)` \
 			-r "$(RELEASE)" -o $@
 

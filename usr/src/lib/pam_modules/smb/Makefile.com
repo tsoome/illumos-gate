@@ -33,8 +33,8 @@ OBJECTS=	smb_passwd.o
 include		../../Makefile.pam_modules
 
 # These are in LDLIBS32/64 so they come before -lsmb
-LDLIBS32 += -L$(ROOT)/usr/lib/smbsrv
-LDLIBS64 += -L$(ROOT)/usr/lib/smbsrv/$(MACH64)
+LDLIBS32 += -L$(ROOT)/usr/lib/smbsrv -L$(ADJUNCT_PROTO)/usr/lib/mps
+LDLIBS64 += -L$(ROOT)/usr/lib/smbsrv/$(MACH64) -L$(ADJUNCT_PROTO)/usr/lib/mps/64
 
 LDLIBS		+= -lsmb -lpam -lc
 

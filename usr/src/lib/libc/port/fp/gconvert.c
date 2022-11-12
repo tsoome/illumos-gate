@@ -23,8 +23,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 #include "lint.h"
 #include "base_conversion.h"
@@ -131,7 +132,7 @@ gconvert(double number, int ndigits, int trailing, char *buf)
 	decimal_record  dr;
 	fp_exception_field_type fef;
 
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	dm.rd = _QgetRD();
 #elif defined(__i386) || defined(__amd64)
 	dm.rd = __xgetRD();
@@ -158,7 +159,7 @@ sgconvert(single *number, int ndigits, int trailing, char *buf)
 	decimal_record  dr;
 	fp_exception_field_type fef;
 
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	dm.rd = _QgetRD();
 #elif defined(__i386) || defined(__amd64)
 	dm.rd = __xgetRD();
@@ -185,7 +186,7 @@ qgconvert(quadruple *number, int ndigits, int trailing, char *buf)
 	decimal_record  dr;
 	fp_exception_field_type fef;
 
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	dm.rd = _QgetRD();
 #elif defined(__i386) || defined(__amd64)
 	dm.rd = __xgetRD();
@@ -200,7 +201,7 @@ qgconvert(quadruple *number, int ndigits, int trailing, char *buf)
 	else if (ndigits >= DECIMAL_STRING_LENGTH)
 		ndigits = DECIMAL_STRING_LENGTH - 1;
 	dm.ndigits = ndigits;
-#if defined(__sparc)
+#if defined(__sparc) || defined(__aarch64__)
 	quadruple_to_decimal(number, &dm, &dr, &fef);
 #elif defined(__i386) || defined(__amd64)
 	extended_to_decimal((extended *)number, &dm, &dr, &fef);

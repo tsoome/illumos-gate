@@ -45,7 +45,7 @@ extern "C" {
  */
 #define	TRIPLET(u, m, l)	((int)((((u))&0xff<<16) + \
 				(((m)&0xff)<<8) + (l&0xff)))
-#if	defined(i386)
+#if	defined(i386) || defined(__aarch64__)
 extern diskaddr_t	altsec_offset;	/* Alternate sector offset */
 #endif	/* defined(i386) */
 
@@ -53,7 +53,7 @@ extern diskaddr_t	altsec_offset;	/* Alternate sector offset */
  *	Local prototypes for ANSI C compilers
  */
 
-#if	defined(i386)
+#if	defined(i386) || defined(__aarch64__)
 #define	_STATIC
 #else
 #define	_STATIC	static

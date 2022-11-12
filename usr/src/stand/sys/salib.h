@@ -26,8 +26,6 @@
 #ifndef	_SYS_SALIB_H
 #define	_SYS_SALIB_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/memlist.h>
 
@@ -40,6 +38,8 @@
  * #include files (as we do below), since all standalone code is built against
  * an alternate set of C headers (located under $SRC/stand/lib/sa).
  */
+
+#define _SYS_TZFILE_H
 
 #include <assert.h>
 #include <ctype.h>

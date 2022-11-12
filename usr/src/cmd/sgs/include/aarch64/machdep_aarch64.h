@@ -51,7 +51,9 @@ extern "C" {
 #define	M_MACH			EM_AARCH64
 #define	M_CLASS			ELFCLASS64
 #else
-#error "aarch64 has no 32bit support"
+/* XXXARM: A lie to simplify the build */
+#define	M_MACH			EM_AARCH64
+#define	M_CLASS			ELFCLASS32
 #endif
 
 #define	M_MACHPLUS		M_MACH
@@ -72,7 +74,8 @@ extern "C" {
 #if	defined(_ELF64)
 #define	M_SEGSIZE	ELF_AARCH64_MAXPGSZ
 #else
-#error "aarch64 has no 32bit support"
+/* XXXARM: A lie to simplify the build */
+#define	M_SEGSIZE	ELF_AARCH64_MAXPGSZ
 #endif
 
 #define	M_STRUNC(X)	((X) & ~(M_SEGSIZE - 1))
@@ -87,7 +90,6 @@ extern "C" {
  * TLS static segments must be rounded to the following requirements,
  * due to libthread stack allocation.
  */
-/* XXXARM: Thesee are taken straight from the other platforms */
 #if	defined(_ELF64)
 #define	M_TLSSTATALIGN	0x10
 #else
@@ -97,11 +99,11 @@ extern "C" {
 /*
  * Other machine dependent entities
  */
-/* XXXARM: What should these be? */
 #if	defined(_ELF64)
 #define	M_SEGM_ALIGN	0x00010000
 #else
-#define	M_SEGM_ALIGN	ELF_386_MAXPGSZ
+/* XXXARM: A lie to simplify the build */
+#define	M_SEGM_ALIGN	0x00010000
 #endif
 
 #ifdef _ELF64
@@ -114,8 +116,14 @@ extern "C" {
 #define	M_SEGM_AORIGIN	(Addr)0x10000ULL	/* alternative 1st segment */
 						/*    origin */
 #else
-#error "aarch64 has no 32bit support"
+/* XXXARM: A lie to simplify the build */
+#define	M_SEGM_ORIGIN	(Addr)0x400000ULL	/* default 1st segment origin */
+#define	M_SEGM_AORIGIN	(Addr)0x10000ULL	/* alternative 1st segment */
+						/*    origin */
 #endif
+
+#define	M_BIND_ADJ	4		/* adjustment for end of */
+					/*	elf_rtbndr() address */
 
 /*
  * Make common relocation information transparent to the common code
@@ -129,7 +137,13 @@ extern "C" {
 #define	M_REL_ELF_TYPE	ELF_T_RELA	/* data buffer type */
 
 #else /* _ELF32 */
-#error "aarch64 has no 32bit support"
+/* XXXARM: A lie to simplify the build */
+#define	M_REL_DT_TYPE	DT_RELA		/* .dynamic entry */
+#define	M_REL_DT_SIZE	DT_RELASZ	/* .dynamic entry */
+#define	M_REL_DT_ENT	DT_RELAENT	/* .dynamic entry */
+#define	M_REL_DT_COUNT	DT_RELACOUNT	/* .dynamic entry */
+#define	M_REL_SHT_TYPE	SHT_RELA	/* section header type */
+#define	M_REL_ELF_TYPE	ELF_T_RELA	/* data buffer type */
 #endif /* ELF32 */
 
 /*
@@ -145,7 +159,15 @@ extern "C" {
 #define	M_R_ARRAYADDR	R_AARCH64_GLOB_DAT
 #define	M_R_NUM		R_AARCH64_NUM
 #else
-#error "aarch64 has no 32bit support"
+/* XXXARM: A lie to simplify the build */
+#define	M_R_NONE	R_AARCH64_NONE
+#define	M_R_GLOB_DAT	R_AARCH64_GLOB_DAT
+#define	M_R_COPY	R_AARCH64_COPY
+#define	M_R_RELATIVE	R_AARCH64_RELATIVE
+#define	M_R_JMP_SLOT	R_AARCH64_JUMP_SLOT
+#define	M_R_FPTR	R_AARCH64_NONE
+#define	M_R_ARRAYADDR	R_AARCH64_GLOB_DAT
+#define	M_R_NUM		R_AARCH64_NUM
 #endif
 
 /*
@@ -172,7 +194,9 @@ extern "C" {
 #define	M_DATASEG_PERM	(PF_R | PF_W)
 #define	M_STACK_PERM	(PF_R | PF_W)
 #else
-#error "aarch64 has no 32bit support"
+/* XXXARM: A lie to simplify the build */
+#define	M_DATASEG_PERM	(PF_R | PF_W)
+#define	M_STACK_PERM	(PF_R | PF_W)
 #endif
 
 /*
@@ -215,8 +239,7 @@ extern "C" {
 #define	M_ID_CAPINFO	0x04
 #define	M_ID_CAPCHAIN	0x05
 
-#define	M_ID_DYNAMIC	0x06			/* if no .interp, then no */
-						/*    DT_DEBUG is required */
+
 #define	M_ID_UNWINDHDR	0x07
 #define	M_ID_UNWIND	0x08
 
@@ -232,6 +255,13 @@ extern "C" {
 #define	M_ID_ARRAY	0x12
 #define	M_ID_TEXT	0x13
 #define	M_ID_DATA	0x20
+
+/*
+ * XXXARM: This is arranged to be after any text and data,
+ * see the comments in rtld/aarch64/boot.s as to why
+ */
+#define	M_ID_DYNAMIC	0x21			/* if no .interp, then no */
+						/*    DT_DEBUG is required */
 
 /*	M_ID_USER	0x01			dual entry - listed above */
 #define	M_ID_GOT	0x03			/* SHF_ALLOC + SHF_WRITE */

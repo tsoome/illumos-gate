@@ -36,23 +36,23 @@ set name=variant.arch value=$(ARCH)
 dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys
-file path=kernel/drv/$(ARCH64)/emlxs group=sys
+$(not_aarch64)file path=kernel/drv/$(ARCH64)/emlxs group=sys
 file path=kernel/drv/$(ARCH64)/oce group=sys
-file path=kernel/drv/emlxs.conf group=sys \
+$(not_aarch64)file path=kernel/drv/emlxs.conf group=sys \
     original_name=SUNWemlxs:kernel/drv/emlxs.conf preserve=true
-dir  path=kernel/kmdb group=sys
-dir  path=kernel/kmdb/$(ARCH64) group=sys
-file path=kernel/kmdb/$(ARCH64)/emlxs group=sys mode=0555
-dir  path=kernel/misc group=sys
+$(not_aarch64)dir path=kernel/kmdb group=sys
+$(not_aarch64)dir path=kernel/kmdb/$(ARCH64) group=sys
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/emlxs group=sys mode=0555
+$(not_aarch64)dir path=kernel/misc group=sys
 dir  path=kernel/misc/emlxs group=sys
 dir  path=kernel/misc/emlxs/$(ARCH64) group=sys
 file path=kernel/misc/emlxs/$(ARCH64)/emlxs_fw group=sys mode=0755
 dir  path=usr group=sys
 dir  path=usr/lib
-dir  path=usr/lib/mdb group=sys
-dir  path=usr/lib/mdb/kvm group=sys
-dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-file path=usr/lib/mdb/kvm/$(ARCH64)/emlxs.so group=sys mode=0555
+$(not_aarch64)dir path=usr/lib/mdb group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
+$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/emlxs.so group=sys mode=0555
 driver name=emlxs perms="* 0666 root sys" class=fibre-channel \
     alias=lpfs \
     alias=pci10df,f0a5 \

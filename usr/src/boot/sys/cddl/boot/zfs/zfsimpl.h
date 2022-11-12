@@ -123,10 +123,12 @@
 /*
  * Macros to reverse byte order
  */
+#ifndef BSWAP_8
 #define	BSWAP_8(x)	((x) & 0xff)
 #define	BSWAP_16(x)	((BSWAP_8(x) << 8) | BSWAP_8((x) >> 8))
 #define	BSWAP_32(x)	((BSWAP_16(x) << 16) | BSWAP_16((x) >> 16))
 #define	BSWAP_64(x)	((BSWAP_32(x) << 32) | BSWAP_32((x) >> 32))
+#endif	/* BSWAP_8 */
 
 #define	SPA_MINBLOCKSHIFT	9
 #define	SPA_OLDMAXBLOCKSHIFT	17
@@ -1614,12 +1616,15 @@ typedef struct zap_leaf {
 #define	ZFS_DIRENT_OBJ(de) BF64_GET(de, 0, 48)
 #define	ZFS_DIRENT_MAKE(type, obj) (((uint64_t)type << 60) | obj)
 
+
+#ifndef _SYS_ACL_H
 typedef struct ace {
 	uid_t		a_who;		/* uid or gid */
 	uint32_t	a_access_mask;	/* read,write,... */
 	uint16_t	a_flags;	/* see below */
 	uint16_t	a_type;		/* allow or deny */
 } ace_t;
+#endif	/* _SYS_ACL_H */
 
 #define	ACE_SLOT_CNT	6
 

@@ -22,9 +22,10 @@
 /*
  * Copyright 1997-2003 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <sys/isa_defs.h>
 
@@ -48,7 +49,7 @@ pr_sigaction(struct ps_prochandle *Pr,
 	argdes_t argd[3];		/* arg descriptors for sigaction() */
 	argdes_t *adp;
 	int error;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	struct sigaction32 act32;
 	struct sigaction32 oact32;
 #endif	/* _LP64 */
@@ -73,7 +74,7 @@ pr_sigaction(struct ps_prochandle *Pr,
 	} else {
 		adp->arg_type = AT_BYREF;
 		adp->arg_inout = AI_INPUT;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		if (Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32) {
 			sigaction_n_to_32(act, &act32);
 			adp->arg_object = &act32;
@@ -98,7 +99,7 @@ pr_sigaction(struct ps_prochandle *Pr,
 	} else {
 		adp->arg_type = AT_BYREF;
 		adp->arg_inout = AI_OUTPUT;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		if (Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32) {
 			adp->arg_object = &oact32;
 			adp->arg_size = sizeof (oact32);
@@ -118,7 +119,7 @@ pr_sigaction(struct ps_prochandle *Pr,
 		errno = (error > 0)? error : ENOSYS;
 		return (-1);
 	}
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (oact != NULL && Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32)
 		sigaction_32_to_n(&oact32, oact);
 #endif	/* _LP64 */

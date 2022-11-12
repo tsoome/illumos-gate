@@ -29,7 +29,7 @@ OBJECTS=	unix_acct.o
 
 include		../../Makefile.pam_modules
 
-LDLIBS		+= -lpam -lc
+LDLIBS		+= -lpam -lc -L$(ADJUNCT_PROTO)/usr/lib/mps
 # Enable large file support for reading the lastlog file.
 CPPFLAGS	+= -D_FILE_OFFSET_BITS=64
 CERRWARN	+= -_gcc=-Wno-parentheses

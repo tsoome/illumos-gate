@@ -21,7 +21,9 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 Joyent, Inc.
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef _SYS_PCI_IMPL_H
@@ -34,7 +36,7 @@
 extern "C" {
 #endif
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 
 /*
  * There are two ways to access the PCI configuration space on X86
@@ -50,7 +52,7 @@ extern "C" {
 
 #define	PCI_MECHANISM_UNKNOWN		-1
 #define	PCI_MECHANISM_NONE		0
-#if defined(__i386) || defined(__amd64)
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 #define	PCI_MECHANISM_1			1
 #define	PCI_MECHANISM_2			2
 #else
@@ -134,7 +136,19 @@ extern void memlist_merge(struct memlist **, struct memlist **);
 extern struct memlist *memlist_dup(struct memlist *);
 extern int memlist_count(struct memlist *);
 
-#endif /* __i386 || __amd64 */
+#endif /* __i386 || __amd64 || __aarch64__ */
+
+#if defined(__aarch64__) && 0
+
+/* XXXARM: this needs a lot of investigation and cleanup */
+typedef struct	pci_acc_cfblk {
+	uchar_t	c_busnum;		/* bus number */
+	uchar_t	c_devnum;		/* device number */
+	uchar_t	c_funcnum;		/* function number */
+	uchar_t	c_fill;			/* reserve field */
+} pci_acc_cfblk_t;
+
+#endif
 
 /* Definitions for minor numbers */
 #define	PCI_MINOR_NUM(x, y)		(((uint_t)(x) << 8) | ((y) & 0xFF))

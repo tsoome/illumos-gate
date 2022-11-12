@@ -113,8 +113,8 @@ void
 ieee80211_dump_pkt(const uint8_t *buf, int32_t len, int32_t rate, int32_t rssi)
 {
 	struct ieee80211_frame *wh;
-	int8_t buf1[100];
-	int8_t buf2[25];
+	char buf1[100];
+	char buf2[25];
 	int i;
 
 	bzero(buf1, sizeof (buf1));

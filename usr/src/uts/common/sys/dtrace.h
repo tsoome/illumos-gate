@@ -25,6 +25,8 @@
  */
 
 /*
+ * Copyright 2022 Michael van der Westhuizen
+ * Copyright 2017 Hayashi Naoyuki
  * Copyright 2018 Joyent, Inc.
  * Copyright (c) 2013 by Delphix. All rights reserved.
  */
@@ -2309,6 +2311,8 @@ extern int dtrace_mach_aframes(void);
 #if defined(__i386) || defined(__amd64)
 extern int dtrace_instr_size(uchar_t *instr);
 extern int dtrace_instr_size_isa(uchar_t *, model_t, int *);
+#endif
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 extern void dtrace_invop_add(int (*)(uintptr_t, uintptr_t *, uintptr_t));
 extern void dtrace_invop_remove(int (*)(uintptr_t, uintptr_t *, uintptr_t));
 extern void dtrace_invop_callsite(void);
@@ -2332,7 +2336,11 @@ extern void dtrace_getfsr(uint64_t *);
 
 #endif	/* _ASM */
 
-#if defined(__i386) || defined(__amd64)
+/*
+ * XXXARM: This is clearly wrong, to pacify the build
+ * (DTrace isn't ported yet)
+ */
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 
 #define	DTRACE_INVOP_PUSHL_EBP		1
 #define	DTRACE_INVOP_POPL_EBP		2

@@ -151,8 +151,8 @@ static int mod_removesys(struct modlsys *, struct modlinkage *);
 struct mod_ops mod_syscallops = {
 	mod_installsys, mod_removesys, mod_infosys
 };
-
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 /*
  * 32-bit system calls in 64-bit kernel
  */
@@ -877,8 +877,8 @@ mod_removesys(struct modlsys *modl, struct modlinkage *modlp)
 {
 	return (mod_removesys_sysent(modl, modlp, sysent));
 }
-
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 
 /*
  * 32-bit system call status info

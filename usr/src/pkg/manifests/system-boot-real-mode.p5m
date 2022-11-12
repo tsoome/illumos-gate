@@ -28,16 +28,16 @@ set name=pkg.fmri value=pkg:/system/boot/real-mode@$(PKGVERS)
 set name=pkg.summary value="Realmode Modules"
 set name=pkg.description value="Realmode Modules"
 set name=info.classification value=org.opensolaris.category.2008:System/Core
-set name=variant.arch value=i386
-$(i386_ONLY)dir path=boot group=sys
-$(i386_ONLY)dir path=boot/solaris group=sys
+set name=variant.arch value=aarch64 value=i386
+dir  path=boot group=sys
+dir  path=boot/solaris group=sys
 $(i386_ONLY)hardlink path=boot/solaris.xpm target=splashimage.xpm
-$(i386_ONLY)file path=boot/solaris/bootenv.rc group=sys \
+file path=boot/solaris/bootenv.rc group=sys \
     original_name=SUNWrmodr:boot/solaris/bootenv.rc preserve=renamenew
 $(i386_ONLY)file path=boot/splashimage.xpm group=sys
 $(i386_ONLY)legacy pkg=SUNWrmodr desc="Realmode Modules, (Root)" \
     name="Realmode Modules, (Root)"
 $(i386_ONLY)legacy pkg=SUNWrmodu desc="Realmode Modules, (Usr)" \
     name="Realmode Modules, (Usr)"
-$(i386_ONLY)license cr_Sun license=cr_Sun
-$(i386_ONLY)license lic_CDDL license=lic_CDDL
+license cr_Sun license=cr_Sun
+license lic_CDDL license=lic_CDDL

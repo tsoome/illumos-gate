@@ -1,0 +1,351 @@
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.illumos.org/license/CDDL.
+#
+
+#
+# Copyright 2017 Hayashi Naoyuki
+#
+
+#
+# MAPFILE HEADER START
+#
+# WARNING:  STOP NOW.  DO NOT MODIFY THIS FILE.
+# Object versioning must comply with the rules detailed in
+#
+#	usr/src/lib/README.mapfiles
+#
+# You should not be making modifications here until you've read the most current
+# copy of that file. If you need help, contact a gatekeeper for guidance.
+#
+# MAPFILE HEADER END
+#
+
+# XXXARM
+#
+# PAY SPECIAL ATTENTION
+#
+# This math library -- used exclusively on aarch64 -- is a stub awaiting a
+# real port of our math library (or alternately, this to become our math
+# library, as libm.so.3).
+#
+# There are traditional illumos pieces missing, and compatibility with
+# traditional illumos libm is at the level of mathematics, not ABI, or
+# anything more.
+
+$mapfile_version 2
+
+SYMBOL_VERSION ILLUMOS_0.1 {
+global:
+	# XXXARM: These symbol aliases are exposed via headers, this is the
+	# set that libstdc++ needs it is likely there are others
+	__acosf;
+	__asinf;
+	__atanf;
+	__ceilf;
+	__coshf;
+	__fabsf;
+	__fmodf;
+	__sinhf;
+	__tanhf;
+	__sqrtf;
+	__atan2f;
+	__floorf;
+	__frexpf;
+	__ldexpf;
+	__log10f;
+	__cosf;
+	__expf;
+	__logf;
+	__powf;
+	__sinf;
+	__tanf;
+
+	acos;
+	acosf;
+	acosh;
+	acoshf;
+	acoshl;
+	acosl;
+	asin;
+	asinf;
+	asinh;
+	asinhf;
+	asinhl;
+	asinl;
+	atan2;
+	atan2f;
+	atan2l;
+	atan;
+	atanf;
+	atanh;
+	atanhf;
+	atanhl;
+	atanl;
+	cabs;
+	cabsf;
+	cabsl;
+	cacos;
+	cacosf;
+	cacosh;
+	cacoshf;
+	carg;
+	cargf;
+	cargl;
+	casin;
+	casinf;
+	casinh;
+	casinhf;
+	catan;
+	catanf;
+	catanh;
+	catanhf;
+	cbrt;
+	cbrtf;
+	cbrtl;
+	ccos;
+	ccosf;
+#	ccosl;
+	ccosh;
+	ccoshf;
+#	ccoshl;
+	ceil;
+	ceilf;
+	ceill;
+	cexp;
+	cexpf;
+	cexpl;
+	cimag;
+	cimagf;
+	cimagl;
+#	clog;
+	clogf;
+	clogl;
+	conj;
+	conjf;
+	conjl;
+	copysign;
+	copysignf;
+	copysignl;
+	cos;
+	cosf;
+	cosl;
+	cosh;
+	coshf;
+	coshl;
+	cpow;
+	cpowf;
+	cpowl;
+	cproj;
+	cprojf;
+	cprojl;
+	creal;
+	crealf;
+	creall;
+	csin;
+	csinf;
+#	csinl;
+	csinh;
+	csinhf;
+#	csinhl;
+	csqrt;
+	csqrtf;
+	csqrtl;
+	ctan;
+	ctanf;
+#	ctanl;
+	ctanh;
+	ctanhf;
+#	ctanhl;
+	drem;
+	dremf;
+	erf;
+	erfc;
+	erfcf;
+	erfcl;
+	erff;
+	erfl;
+	exp2;
+	exp2f;
+	exp2l;
+	exp;
+	expf;
+	expl;
+	expm1;
+	expm1f;
+	expm1l;
+	fabs;
+	fabsf;
+	fabsl;
+	fdim;
+	fdimf;
+	fdiml;
+	feclearexcept;
+	fegetenv;
+	fegetexceptflag;
+	fegetround;
+	feraiseexcept;
+	feholdexcept;
+	fesetexceptflag;
+	fesetenv;
+	fesetround;
+	fetestexcept;
+	feupdateenv;
+	finite;
+	finitef;
+	floor;
+	floorf;
+	floorl;
+	fma;
+	fmaf;
+	fmal;
+	fmax;
+	fmaxf;
+	fmaxl;
+	fmin;
+	fminf;
+	fminl;
+	fmod;
+	fmodf;
+	fmodl;
+	frexp;
+	frexpf;
+	frexpl;
+	gamma;
+	gamma_r;
+	gammaf;
+	gammaf_r;
+	hypot;
+	hypotf;
+	hypotl;
+	ilogb;
+	ilogbf;
+	ilogbl;
+	isinf;
+	isinff;
+	isinfl;
+	isnan;
+	isnand;
+	isnanf;
+	isnanl;
+	j0;
+	j0f;
+	j1;
+	j1f;
+	jn;
+	jnf;
+	ldexp;
+	ldexpf;
+	ldexpl;
+	lgamma;
+	lgamma_r;
+	lgammaf;
+	lgammaf_r;
+	lgammal;
+	llrint;
+	llrintf;
+	llrintl;
+	llround;
+	llroundf;
+	llroundl;
+	log10;
+	log10f;
+	log10l;
+	log1p;
+	log1pf;
+	log1pl;
+	log2;
+	log2f;
+	log2l;
+	log;
+	logb;
+	logbf;
+	logbl;
+	logf;
+	logl;
+	lrint;
+	lrintf;
+	lrintl;
+	lround;
+	lroundf;
+	lroundl;
+	modf;
+	modff;
+	modfl;
+	nan;
+	nanf;
+	nanl;
+	nearbyint;
+	nearbyintf;
+	nearbyintl;
+	nextafter;
+	nextafterf;
+	nextafterl;
+	nexttoward;
+	nexttowardf;
+	nexttowardl;
+	pow;
+	powf;
+	powl;
+	remainder;
+	remainderf;
+	remainderl;
+	remquo;
+	remquof;
+	remquol;
+	rint;
+	rintf;
+	rintl;
+	round;
+	roundf;
+	roundl;
+	scalb;
+	scalbf;
+	scalbln;
+	scalblnf;
+	scalblnl;
+	scalbn;
+	scalbnf;
+	scalbnl;
+	signgam	 { ASSERT = { TYPE = OBJECt; SIZE = 4; }; };
+	significand;
+	significandf;
+	sin;
+	sincos;
+	sincosf;
+	sincosl;
+	sinf;
+	sinh;
+	sinhf;
+	sinhl;
+	sinl;
+	sqrt;
+	sqrtf;
+	sqrtl;
+	tan;
+	tanf;
+	tanh;
+	tanhf;
+	tanhl;
+	tanl;
+	tgamma;
+	tgammaf;
+#	tgammal;
+	trunc;
+	truncf;
+	truncl;
+	y0;
+	y0f;
+	y1;
+	y1f;
+	yn;
+	ynf;
+local:
+	*;
+};

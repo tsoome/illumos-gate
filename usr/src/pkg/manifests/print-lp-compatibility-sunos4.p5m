@@ -28,7 +28,8 @@ set name=pkg.summary value="Solaris Print - Source Compatibility"
 set name=pkg.description \
     value="print utilities for user interface and source build compatibility with SunOS 4.x"
 set name=info.classification value=org.opensolaris.category.2008:System/Printing
-set name=variant.arch value=$(ARCH)
+# XXXARM
+set name=variant.arch value=i386 value=sparc
 dir  path=usr group=sys
 dir  path=usr/ucb
 link path=usr/ucb/lpc target=../bin/lpc

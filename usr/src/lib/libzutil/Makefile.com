@@ -36,6 +36,9 @@ INCS += -I../../libc/inc
 
 CSTD=		$(CSTD_GNU99)
 LDLIBS +=	-lc -lm -ldevid -lnvpair -ladm -lavl -lefi
+# XXXARM: Intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
+
 CPPFLAGS +=	$(INCS) -D_LARGEFILE64_SOURCE=1 -D_REENTRANT
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 

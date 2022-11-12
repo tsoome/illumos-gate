@@ -320,7 +320,7 @@ au_to_data(char unit_print, char unit_type, char unit_count, char *p)
 	/*
 	 * Check validity of print type
 	 */
-	if (unit_print < AUP_BINARY || unit_print > AUP_STRING)
+	if ((signed char)unit_print < AUP_BINARY || unit_print > AUP_STRING)
 		return (NULL);
 
 	switch (unit_type) {

@@ -59,6 +59,13 @@ extern dis_arch_t dis_arch_s390;
 #if !defined(DIS_STANDALONE) || defined(__riscv)
 extern dis_arch_t dis_arch_riscv;
 #endif
+#if !defined(DIS_STANDALONE) || defined(__arm)
+extern dis_arch_t dis_arch_arm_32;
+#endif
+#if !defined(DIS_STANDALONE) || defined(__aarch64__)
+extern dis_arch_t dis_arch_arm_64;
+#endif
+
 
 static dis_arch_t *dis_archs[] = {
 #if !defined(DIS_STANDALONE) || defined(__i386) || defined(__amd64)
@@ -72,6 +79,12 @@ static dis_arch_t *dis_archs[] = {
 #endif
 #if !defined(DIS_STANDALONE) || defined(__riscv)
 	&dis_arch_riscv,
+#endif
+#if !defined(DIS_STANDALONE) || defined(__arm)
+	&dis_arch_arm_32,
+#endif
+#if !defined(DIS_STANDALONE) || defined(__aarch64__)
+	&dis_arch_arm_64,
 #endif
 	NULL
 };

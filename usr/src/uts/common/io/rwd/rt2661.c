@@ -301,7 +301,7 @@ static mac_callbacks_t rt2661_m_callbacks = {
 
 #ifdef DEBUG
 void
-rt2661_debug(uint32_t dbg_flags, const int8_t *fmt, ...)
+rt2661_debug(uint32_t dbg_flags, const char *fmt, ...)
 {
 	va_list args;
 

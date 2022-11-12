@@ -22,15 +22,12 @@
 # Copyright (c) 1998, 2010, Oracle and/or its affiliates. All rights reserved.
 # Copyright 2019 Joyent, Inc.
 #
-# lib/cfgadm_plugins/Makefile
-#
 
 include $(SRC)/Makefile.master
 
-COMMON_SUBDIRS= scsi pci usb ib fp shp sbd ccid
-sparc_SUBDIRS=	ac sysctrl
-
-i386_SUBDIRS= sata
+COMMON_SUBDIRS= scsi pci usb ib fp shp ccid
+sparc_SUBDIRS=	ac sysctrl sbd
+i386_SUBDIRS= sata sbd
 
 SUBDIRS= $(COMMON_SUBDIRS) $($(MACH)_SUBDIRS)
 

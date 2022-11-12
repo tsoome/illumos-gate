@@ -124,7 +124,7 @@ size_t _icv_iconv(_iconv_st* st, char** inbuf, size_t* inbufleft,
 				/* 0xc0 ~ 0xc1				*/
 
 					if(number_of_bytes_in_utf8_char[(unsigned char) *ib] ==
-					    ICV_TYPE_ILLEGAL_CHAR)
+					    (char)ICV_TYPE_ILLEGAL_CHAR)
 						st->_errno = errno = EILSEQ;
 					else {
 						st->_ustate = U1;
@@ -141,7 +141,7 @@ size_t _icv_iconv(_iconv_st* st, char** inbuf, size_t* inbufleft,
 				/* but, need to screen out the range	*/
 				/* 0xf5 ~ 0xff				*/
 					if(number_of_bytes_in_utf8_char[(unsigned char) *ib] ==
-					    ICV_TYPE_ILLEGAL_CHAR)
+					    (char)ICV_TYPE_ILLEGAL_CHAR)
 						st->_errno = errno = EILSEQ;
 					else {
 						st->_ustate = U4;

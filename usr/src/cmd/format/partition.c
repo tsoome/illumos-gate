@@ -22,6 +22,7 @@
 /*
  * Copyright (c) 1991, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2016 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -51,7 +52,7 @@ struct dk_map2	default_vtoc_map[NDKMAP] = {
 
 #if defined(_SUNOS_VTOC_16)
 
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 	{	V_BOOT,		V_UNMNT	},		/* i - 8 */
 	{	V_ALTSCTR,	0	},		/* j - 9 */
 
@@ -223,7 +224,7 @@ change_partition(int num)
 	 * strict bounds checking is done on the values given.
 	 */
 
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 
 	if (tag != V_UNASSIGNED && tag != V_BACKUP && tag != V_BOOT) {
 		/*
@@ -276,7 +277,7 @@ change_partition(int num)
 	}
 
 
-#if defined(i386)
+#if defined(i386) || defined(__aarch64__)
 
 	if (i < cyl_offset && tag != V_UNASSIGNED && tag != V_BACKUP &&
 	    tag != V_BOOT) {

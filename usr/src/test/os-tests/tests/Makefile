@@ -17,6 +17,8 @@
 # Copyright 2022 Oxide Computer Company
 #
 
+include $(SRC)/Makefile.master
+
 SUBDIRS_i386 = i386 imc zen_umc
 
 SUBDIRS =       \
@@ -34,12 +36,15 @@ SUBDIRS =       \
 		sigqueue \
 		sockfs \
 		spoof-ras \
-		stackalign \
 		stress \
 		syscall \
 		timer \
 		uccid \
 		$(SUBDIRS_$(MACH))
+
+# XXXARM: Not ported
+$(NOT_AARCH64_BLD)SUBDIRS +=	stackalign
+
 
 PROGS = \
 	clock_gettime \

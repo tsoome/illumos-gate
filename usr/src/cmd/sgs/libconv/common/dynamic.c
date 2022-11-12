@@ -28,6 +28,7 @@
  */
 #include	<stdio.h>
 #include	<string.h>
+#include	<sys/elf_aarch64.h>
 #include	<sys/elf_SPARC.h>
 #include	"rtld.h"
 #include	"_conv.h"
@@ -756,6 +757,44 @@ conv_dyn_tag_strings(conv_iter_osabi_t osabi, Half mach,
 	    CONV_DS_MSG_INIT(DT_SPARC_REGISTER, tags_sparc_reg_dmp) };
 
 	/*
+	 * DT_LOPROC - DT_HIPROC range: AArch64 hardware, all osabi
+	 */
+	static const Msg tags_aarch64_cf[] = { MSG_DT_AARCH64_BTI_PLT_CF,
+		0,
+		MSG_DT_AARCH64_PAC_PLT_CF,
+		0,
+		MSG_DT_AARCH64_VARIANT_PCS_CF };
+	static const Msg tags_aarch64_cfnp[] = { MSG_DT_AARCH64_BTI_PLT_CFNP,
+		0,
+		MSG_DT_AARCH64_PAC_PLT_CFNP,
+		0,
+		MSG_DT_AARCH64_VARIANT_PCS_CFNP };
+	static const Msg tags_aarch64_nf[] = { MSG_DT_AARCH64_BTI_PLT_NF,
+		0,
+		MSG_DT_AARCH64_PAC_PLT_NF,
+		0,
+		MSG_DT_AARCH64_VARIANT_PCS_NF };
+	static const Msg tags_aarch64_dmp[] = { MSG_DT_AARCH64_BTI_PLT_DMP,
+		0,
+		MSG_DT_AARCH64_PAC_PLT_DMP,
+		0,
+		MSG_DT_AARCH64_VARIANT_PCS_DMP };
+
+	/*
+	 * XXXARM: I believe the use of DMP here and for DT_SPARC_REGISTER is
+	 * because of length in the output overflowing the column, but I'm not
+	 * sure
+	 */
+	static const conv_ds_msg_t ds_aarch64_cf = {
+		CONV_DS_MSG_INIT(DT_AARCH64_BTI_PLT, tags_aarch64_cf) };
+	static const conv_ds_msg_t ds_aarch64_cfnp = {
+		CONV_DS_MSG_INIT(DT_AARCH64_BTI_PLT, tags_aarch64_cfnp) };
+	static const conv_ds_msg_t ds_aarch64_nf = {
+		CONV_DS_MSG_INIT(DT_AARCH64_BTI_PLT, tags_aarch64_nf) };
+	static const conv_ds_msg_t ds_aarch64_dmp = {
+		CONV_DS_MSG_INIT(DT_AARCH64_BTI_PLT, tags_aarch64_dmp) };
+
+	/*
 	 * DT_LOPROC - DT_HIPROC range: Solaris osabi, all hardware
 	 */
 	static const Msg	tags_auxiliary_cf[] = {
@@ -782,7 +821,7 @@ conv_dyn_tag_strings(conv_iter_osabi_t osabi, Half mach,
 
 	int	ndx = 0;
 	int	fmt_osabi = CONV_TYPE_FMT_ALT(fmt_flags);
-	int	mach_sparc, osabi_solaris, osabi_linux;
+	int	mach_sparc, mach_aarch64, osabi_solaris, osabi_linux;
 
 
 
@@ -791,6 +830,7 @@ conv_dyn_tag_strings(conv_iter_osabi_t osabi, Half mach,
 	osabi_linux = (osabi == ELFOSABI_LINUX) || (osabi == CONV_OSABI_ALL);
 	mach_sparc = (mach == EM_SPARC) || (mach == EM_SPARCV9) ||
 	    (mach == EM_SPARC32PLUS) || (mach == CONV_MACH_ALL);
+	mach_aarch64 = (mach == EM_AARCH64);
 
 	/*
 	 * Fill in retarr with the descriptors for the messages that
@@ -811,6 +851,9 @@ conv_dyn_tag_strings(conv_iter_osabi_t osabi, Half mach,
 		retarr[ndx++] = CONV_DS_ADDR(ds_config_cf);
 		retarr[ndx++] = CONV_DS_ADDR(ds_versym_cf);
 		retarr[ndx++] = CONV_DS_ADDR(ds_relacount_cf);
+		if (mach_aarch64) {
+			retarr[ndx++] = CONV_DS_ADDR(ds_aarch64_cf);
+		}
 		if (osabi_solaris) {
 			retarr[ndx++] = CONV_DS_ADDR(ds_auxiliary_cf);
 			if (mach_sparc) {
@@ -832,6 +875,9 @@ conv_dyn_tag_strings(conv_iter_osabi_t osabi, Half mach,
 		retarr[ndx++] = CONV_DS_ADDR(ds_config_nf);
 		retarr[ndx++] = CONV_DS_ADDR(ds_versym_nf);
 		retarr[ndx++] = CONV_DS_ADDR(ds_relacount_nf);
+		if (mach_aarch64) {
+			retarr[ndx++] = CONV_DS_ADDR(ds_aarch64_nf);
+		}
 		if (osabi_solaris) {
 			retarr[ndx++] = CONV_DS_ADDR(ds_auxiliary_nf);
 			if (mach_sparc) {
@@ -858,6 +904,12 @@ conv_dyn_tag_strings(conv_iter_osabi_t osabi, Half mach,
 		retarr[ndx++] = CONV_DS_ADDR(ds_config_cfnp);
 		retarr[ndx++] = CONV_DS_ADDR(ds_versym_cfnp);
 		retarr[ndx++] = CONV_DS_ADDR(ds_relacount_cfnp);
+		if (mach_aarch64) {
+			retarr[ndx++] =
+			    (fmt_osabi == CONV_FMT_ALT_CFNP) ?
+			    CONV_DS_ADDR(ds_aarch64_cfnp) :
+			    CONV_DS_ADDR(ds_aarch64_dmp);
+		}
 		if (osabi_solaris) {
 			retarr[ndx++] = CONV_DS_ADDR(ds_auxiliary_cfnp);
 			if (mach_sparc) {

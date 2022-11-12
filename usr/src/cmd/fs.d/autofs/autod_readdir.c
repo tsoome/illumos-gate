@@ -27,14 +27,13 @@
  *	autod_readdir.c
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <syslog.h>
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/sysmacros.h>
 #include <errno.h>
 #include <pwd.h>
 #include <locale.h>
@@ -216,7 +215,7 @@ do_readdir(autofs_rddirargs *rda, autofs_rddirres *rd)
 
 #define	roundtoint(x)	(((x) + sizeof (int) - 1) & ~(sizeof (int) - 1))
 #define	DIRENT64_RECLEN(namelen)	\
-	(((int)(((dirent64_t *)0)->d_name) + 1 + (namelen) + 7) & ~ 7)
+	((offsetof(dirent64_t, d_name) + 1 + (namelen) + 7) & ~ 7)
 
 static int
 create_dirents(
@@ -306,7 +305,7 @@ create_dirents(
 		(void) strcpy(dp->d_name, l->name);
 		dp->d_reclen = (ushort_t)this_reclen;
 		outcount += dp->d_reclen;
-		dp = (struct dirent64 *)((int)dp + dp->d_reclen);
+		dp = (struct dirent64 *)((intptr_t)dp + dp->d_reclen);
 		assert(outcount <= total_bytes_wanted);
 		l = l->next;
 	}

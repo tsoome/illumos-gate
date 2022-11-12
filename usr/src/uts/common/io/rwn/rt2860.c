@@ -274,7 +274,7 @@ static mac_callbacks_t rt2860_m_callbacks = {
 
 #ifdef DEBUG
 void
-rt2860_debug(uint32_t dbg_flags, const int8_t *fmt, ...)
+rt2860_debug(uint32_t dbg_flags, const char *fmt, ...)
 {
 	va_list args;
 

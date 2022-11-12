@@ -211,9 +211,21 @@ input(void)
 	/*
 	 * To ensure input is terminated, slip in a newline on EOF.
 	 */
-	if (c == EOF) {
-		if (saw_eof)
+	/* XXXARM: I believe this to be broken because lex(1) unputs() EOF
+	 * (-1) through a char (thus 255), which then gets promoted to int
+	 * (still 255), and thus unputs 255.
+	 *
+	 * We need to fix this in lex, but we don't have a tools lex, so right
+	 * now we do this, while also having made a poor attempt at a fix in
+	 * lex's embeded ncform.
+	 *
+	 * We thus cast EOF to to char and compare that as well, for now.
+	 * which will work even if built with an unfixed lex(1).
+	 */
+	if ((c == EOF) || (c == (char)EOF)) {
+		if (saw_eof) {
 			return (0);
+		}
 
 		saw_eof = 1;
 		return ('\n');

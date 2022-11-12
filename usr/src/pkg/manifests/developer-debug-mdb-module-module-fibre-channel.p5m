@@ -28,7 +28,8 @@ set name=pkg.fmri \
 set name=pkg.summary value="Fibre Channel adb macros and mdb modules"
 set name=pkg.description value="Fibre Channel adb macros and mdb modules"
 set name=info.classification value=org.opensolaris.category.2008:System/Hardware
-set name=variant.arch value=$(ARCH)
+# XXXARM
+set name=variant.arch value=i386 value=sparc
 dir  path=usr group=sys
 dir  path=usr/lib
 dir  path=usr/lib/mdb group=sys

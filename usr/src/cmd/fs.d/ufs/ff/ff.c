@@ -31,8 +31,6 @@
  * under license from the Regents of the University of California.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * ff -- obtain file names from reading filesystem
  */
@@ -355,11 +353,11 @@ check(char *file)
 	}
 
 
-	itab = (struct dinode *)calloc(sblock.fs_ipg, sizeof (struct dinode));
+	itab = calloc(sblock.fs_ipg, sizeof (struct dinode));
 	imax = sblock.fs_ncg * sblock.fs_ipg;
 
 	hsize = sblock.fs_ipg * sblock.fs_ncg - sblock.fs_cstotal.cs_nifree + 1;
-	htab = (struct htab *)calloc(hsize, sizeof (struct htab));
+	htab = calloc(hsize, sizeof (struct htab));
 
 	if (!extend_strngtab(AVG_PATH_LEN * hsize)) {
 		(void) printf("not enough memory to allocate tables\n");
@@ -731,7 +729,7 @@ user_name(int uid)
 			return (hp->name_string);
 		}
 	}
-	hp = (struct name_ent *)calloc(1, sizeof (struct name_ent));
+	hp = calloc(1, sizeof (struct name_ent));
 	hp->name_nxt = hashtable[h_index];
 	hp->name_uid = uid;
 	hashtable[h_index] = hp;
@@ -808,7 +806,7 @@ int
 extend_strngtab(unsigned int size)
 {
 	strngtab_size += size;
-	strngtab = (char *)realloc(strngtab, strngtab_size);
+	strngtab = realloc(strngtab, strngtab_size);
 
-	return ((int)strngtab);
+	return ((int)(intptr_t)strngtab);
 }

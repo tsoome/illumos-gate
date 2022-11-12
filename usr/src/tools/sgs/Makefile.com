@@ -14,5 +14,5 @@
 include $(SRC)/cmd/sgs/Makefile.com
 
 NATIVE_CPPFLAGS =	-I. -I$(SRCDIR) -I$(SRCDIR)/common \
-	-I$(SGSHOME)/include -I$(SGSHOME)/include/$(MACH) \
+	-I$(SGSHOME)/include -I$(SGSHOME)/include/$(NATIVE_MACH) \
 	-I../include $(CPPFLAGS.native) -I$(ELFCAP) -DNATIVE_BUILD

@@ -398,8 +398,8 @@ struct ieee80211_scanparams {
 extern const char *ieee80211_mgt_subtype_name[];
 extern const char *ieee80211_phymode_name[];
 
-void ieee80211_err(const int8_t *, ...);
-void ieee80211_dbg(uint32_t, const int8_t *, ...);
+void ieee80211_err(const char *, ...);
+void ieee80211_dbg(uint32_t, const char *, ...);
 
 void ieee80211_notify(ieee80211com_t *, wpa_event_type);
 void ieee80211_mac_update(ieee80211com_t *);

@@ -15,7 +15,7 @@ typedef int		ti_int __attribute__((mode(TI)));
 typedef union {
 	ti_int all;
 	struct {
-#if _LITTLE_ENDIAN
+#ifdef _LITTLE_ENDIAN
 		du_int low;
 		di_int high;
 #else

@@ -8026,7 +8026,7 @@ stmf_base16_str_to_binary(char *c, int dplen, uint8_t *dp)
 
 		enc_char = *c++;
 		nibble2 = stmf_ctoi(enc_char);
-		if (nibble1 == -1 || nibble2 == -1)
+		if (nibble1 == (char)-1 || nibble2 == (char)-1)
 			return (B_FALSE);
 
 		dp[ii] = (nibble1 << 4) | nibble2;

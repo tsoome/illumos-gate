@@ -38,6 +38,9 @@ $(ROOTUSRSBIN)/ping	:=	FILEMODE= 04555
 # when IPv6 inspired new interfaces are part of standards.
 LDLIBS +=	-lxnet -lsocket -lm -linetutil
 
+# XXXARM: intrinsics
+$(AARCH64_BLD)LDLIBS += -lgcc
+
 # These #defines are required to use SUSv3 interfaces
 CPPFLAGS += -D_XOPEN_SOURCE=600 -D__EXTENSIONS__
 

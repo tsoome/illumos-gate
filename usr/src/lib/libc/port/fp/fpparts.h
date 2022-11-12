@@ -23,12 +23,12 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
-
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * Macros to pull apart parts of single and  double precision
@@ -81,7 +81,7 @@ typedef  union {
 } _fval;
 
 
-#elif defined(__i386) || defined(__amd64)
+#elif defined(__i386) || defined(__amd64) || defined(__aarch64__)
 /* byte order with low order bits at lowest address */
 
 /* double precision */

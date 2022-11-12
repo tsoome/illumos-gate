@@ -98,7 +98,7 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	krb5_kt_kdb_ops		{
 				  ASSERT = {
 					  TYPE = OBJECT;
-					  SIZE = 48;
+					  SIZE = addrsize[12];
 					};
 				};
 	krb5_ktkdb_close;
@@ -108,13 +108,13 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	krb5_mkey_pwd_prompt1	{
 				  ASSERT = {
 					  TYPE = OBJECT;
-					  SIZE = 4;
+					  SIZE = addrsize;
 					};
 				};
 	krb5_mkey_pwd_prompt2	{
 				  ASSERT = {
 					  TYPE = OBJECT;
-					  SIZE = 4;
+					  SIZE = addrsize;
 					};
 				};
 	ulog_add_update;

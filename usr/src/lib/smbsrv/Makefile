@@ -27,11 +27,13 @@
 include ../Makefile.lib
 
 SUBDIRS = \
-	libfksmbsrv \
 	libmlsvc \
-	libsmb \
 	libsmbns \
-	libsmbrp
+	libsmbrp \
+	libsmb 
+
+# XXXARM: Needs cross DTrace
+$(NOT_AARCH64_BLD)SUBDIRS += libfksmbsrv
 
 include ./Makefile.subdirs
 

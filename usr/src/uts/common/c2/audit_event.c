@@ -1863,7 +1863,8 @@ auf_msgsys(struct t_audit_data *tad, int error, rval_t *rval)
 
 		/* need to determine type of executing binary */
 		scid = tad->tad_scid;
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 		if (lwp_getdatamodel(ttolwp(curthread)) == DATAMODEL_NATIVE)
 			sy_flags = sysent[scid].sy_flags & SE_RVAL_MASK;
 		else
@@ -1932,7 +1933,8 @@ auf_semsys(struct t_audit_data *tad, int error, rval_t *rval)
 
 		/* need to determine type of executing binary */
 		scid = tad->tad_scid;
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 		if (lwp_getdatamodel(ttolwp(curthread)) == DATAMODEL_NATIVE)
 			sy_flags = sysent[scid].sy_flags & SE_RVAL_MASK;
 		else
@@ -2291,7 +2293,8 @@ auf_shmsys(struct t_audit_data *tad, int error, rval_t *rval)
 
 		/* need to determine type of executing binary */
 		scid = tad->tad_scid;
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 		if (lwp_getdatamodel(ttolwp(curthread)) == DATAMODEL_NATIVE)
 			sy_flags = sysent[scid].sy_flags & SE_RVAL_MASK;
 		else
@@ -3606,7 +3609,8 @@ auf_accept(
 
 	/* need to determine type of executing binary */
 	scid = tad->tad_scid;
-#ifdef _SYSCALL32_IMPL
+/* XXXARM: only because aarch64 breaks _SYSCALL32_IMPL */
+#if defined(_SYSCALL32_IMPL) && defined(_MULTI_DATAMODEL)
 	if (lwp_getdatamodel(ttolwp(curthread)) == DATAMODEL_NATIVE)
 		sy_flags = sysent[scid].sy_flags & SE_RVAL_MASK;
 	else

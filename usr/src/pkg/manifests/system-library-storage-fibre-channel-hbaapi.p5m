@@ -37,9 +37,9 @@ dir  path=usr group=sys
 dir  path=usr/include
 file path=usr/include/hbaapi.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libHBAAPI.so target=libHBAAPI.so.1
-file path=usr/lib/$(ARCH64)/libHBAAPI.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libHBAAPI.so target=libHBAAPI.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libHBAAPI.so.1
 link path=usr/lib/libHBAAPI.so target=libHBAAPI.so.1
 file path=usr/lib/libHBAAPI.so.1
 dir  path=usr/share/man

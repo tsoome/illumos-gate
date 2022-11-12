@@ -29,8 +29,8 @@
 # Copyright 2018 Nexenta Systems, Inc.
 # Copyright 2018 Jason King
 # Copyright 2019, Joyent, Inc.
-# Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
 # Copyright 2020 Peter Tribble
+# Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
 #
 
 #
@@ -130,8 +130,8 @@ usr/include/ipsec_util.h
 usr/lib/amd64/libike.so			i386
 usr/lib/libipsecutil.so
 usr/lib/amd64/libipsecutil.so		i386
-usr/lib/llib-like
-usr/lib/llib-like.ln
+usr/lib/llib-like			i386 sparc
+usr/lib/llib-like.ln			i386 sparc
 usr/lib/amd64/llib-like.ln		i386
 #
 usr/include/inet/ip_impl.h
@@ -249,9 +249,9 @@ usr/include/sys/pci_tools.h
 usr/include/librcm_event.h
 usr/include/librcm_impl.h
 #
-# MDB deliverables that are not yet public
+# MDB modules for testing
 #
-usr/lib/mdb/proc/mdb_test.so
+usr/lib/mdb/proc/mdb_test.so	i386 sparc
 #
 # these are "removed" from the source product build because the only
 # packages that currently deliver them are removed.
@@ -297,7 +297,7 @@ usr/include/sys/usb/hubd/hubd_impl.h
 #
 # User<->kernel interface used by cfgadm/SATA only
 #
-usr/include/sys/sata/sata_cfgadm.h			i386
+usr/include/sys/sata/sata_cfgadm.h			i386 aarch64
 #
 # Private ucred kernel header
 #
@@ -310,15 +310,15 @@ usr/include/libcontract_priv.h
 usr/include/librestart_priv.h
 usr/include/librestart.h
 usr/lib/librestart.so
-lib/svc/manifest/platform/sun4u					i386
-lib/svc/manifest/platform/sun4v					i386
-var/svc/manifest/platform/sun4u					i386
-var/svc/manifest/platform/sun4v					i386
-etc/svc/profile/platform_sun4v.xml				i386
-etc/svc/profile/platform_SUNW,SPARC-Enterprise.xml		i386
-etc/svc/profile/platform_SUNW,Sun-Fire-880.xml			i386
-etc/svc/profile/platform_SUNW,Sun-Fire-V890.xml			i386
-etc/svc/profile/platform_SUNW,Sun-Fire.xml			i386
+lib/svc/manifest/platform/sun4u					i386 aarch64
+lib/svc/manifest/platform/sun4v					i386 aarch64
+var/svc/manifest/platform/sun4u					i386 aarch64
+var/svc/manifest/platform/sun4v					i386 aarch64
+etc/svc/profile/platform_sun4v.xml				i386 aarch64
+etc/svc/profile/platform_SUNW,SPARC-Enterprise.xml		i386 aarch64
+etc/svc/profile/platform_SUNW,Sun-Fire-880.xml			i386 aarch64
+etc/svc/profile/platform_SUNW,Sun-Fire-V890.xml			i386 aarch64
+etc/svc/profile/platform_SUNW,Sun-Fire.xml			i386 aarch64
 #
 # Private libuutil files
 #
@@ -359,7 +359,7 @@ usr/include/libidspace.h
 #
 usr/include/sys/vxlan.h
 lib/libvarpd.so
-lib/amd64/libvarpd.so
+lib/amd64/libvarpd.so			i386
 #
 # Overlay
 #
@@ -377,7 +377,8 @@ usr/include/aclutils.h
 #
 # USB skeleton driver stays in sync with the rest of USB but doesn't ship.
 #
-kernel/drv/amd64/usbskel	i386
+kernel/drv/amd64/usbskel	i386 
+kernel/drv/aarch64/usbskel	aarch64
 kernel/drv/usbskel.conf
 #
 # Consolidation and Sun private libdevid interfaces
@@ -405,7 +406,7 @@ usr/include/sys/scsi/adapters/mpapi_scsi_vhci.h
 # This library is installed in the proto area by the build of libdisasm, and is
 # only used when building the KMDB disasm module.
 #
-usr/lib/libstanddisasm.so
+usr/lib/libstanddisasm.so		i386 sparc
 usr/lib/amd64/libstanddisasm.so		i386
 #
 # TSol: tsol doesn't ship lint source, and tsnet isn't for customers at all.
@@ -416,25 +417,18 @@ lib/libtsnet.so
 #
 usr/include/nss.h
 #
-# AT&T AST (ksh93) files which are currently needed only to build OS/Net
-# (msgcc&co.)
-# libast
-usr/lib/libast.so
+# AT&T AST (ksh93) files which are needed only to build illumos
+usr/lib/libast.so			i386 sparc aarch64
 usr/lib/amd64/libast.so			i386
-# libdll
-usr/lib/libdll.so
+usr/lib/libdll.so			i386 sparc aarch64
 usr/lib/amd64/libdll.so			i386
-# libpp (a helper library needed by AST's msgcc)
-usr/lib/libpp.so
-usr/lib/locale/C/LC_MESSAGES/libpp
-# libcmd
-usr/lib/libcmd.so
+usr/lib/libpp.so			i386 sparc aarch64
+usr/lib/locale/C/LC_MESSAGES/libpp	i386 sparc aarch64
+usr/lib/libcmd.so			i386 sparc aarch64
 usr/lib/amd64/libcmd.so			i386
-# libshell
-usr/lib/libshell.so
+usr/lib/libshell.so			i386 sparc aarch64
 usr/lib/amd64/libshell.so		i386
-# libsum
-usr/lib/libsum.so
+usr/lib/libsum.so			i386 sparc aarch64
 usr/lib/amd64/libsum.so			i386
 #
 # These files are used by the iSCSI Target and the iSCSI Initiator
@@ -454,16 +448,16 @@ usr/include/sys/iscsit/radius_protocol.h
 #
 # libshare is private and the 64-bit sharemgr is not delivered.
 #
-usr/lib/libshare.so
-usr/lib/amd64/libshare.so		i386
-usr/lib/fs/autofs/libshare_autofs.so
-usr/lib/fs/autofs/amd64/libshare_autofs.so		i386
-usr/lib/fs/nfs/libshare_nfs.so
+usr/lib/libshare.so				i386 sparc aarch64
+usr/lib/amd64/libshare.so			i386
+usr/lib/fs/autofs/libshare_autofs.so		i386 sparc aarch64
+usr/lib/fs/autofs/amd64/libshare_autofs.so	i386
+usr/lib/fs/nfs/libshare_nfs.so			i386 sparc aarch64
 usr/lib/fs/nfs/amd64/libshare_nfs.so		i386
 usr/lib/fs/nfs/test_svc_tp_create
-usr/lib/fs/smb/libshare_smb.so
+usr/lib/fs/smb/libshare_smb.so			i386 sparc aarch64
 usr/lib/fs/smb/amd64/libshare_smb.so		i386
-usr/lib/fs/smbfs/libshare_smbfs.so
+usr/lib/fs/smbfs/libshare_smbfs.so		i386 sparc aarch64
 usr/lib/fs/smbfs/amd64/libshare_smbfs.so	i386
 usr/include/libshare_impl.h
 usr/include/scfutil.h
@@ -514,7 +508,7 @@ usr/include/sys/kiconv_utf8_uhc.h
 # At this time, the directory and its contents
 # are only useful on sun4u systems
 #
-etc/flash/postdeployment			i386
+etc/flash/postdeployment			i386 sparc
 #
 # This header file is shared only between the power commands and
 # ppm/srn modules # and should not be in any package
@@ -536,26 +530,26 @@ usr/lib/amd64/libfakekernel.so			i386
 #
 # Private/Internal libraries of smbsrv. Do not ship.
 #
-usr/lib/mdb/proc/libfksmbsrv.so
+usr/lib/mdb/proc/libfksmbsrv.so			i386 sparc
 usr/lib/mdb/proc/amd64/libfksmbsrv.so		i386
 usr/lib/mdb/proc/amd64/libmlsvc.so		i386
-usr/lib/smbsrv/bind-helper
-usr/lib/smbsrv/fksmbd
-usr/lib/smbsrv/libfksmbsrv.so
-usr/lib/smbsrv/libfksmbsrv.so.1
+usr/lib/smbsrv/bind-helper			i386 sparc aarch64
+usr/lib/smbsrv/fksmbd				i386 sparc
+usr/lib/smbsrv/libfksmbsrv.so			i386 sparc
+usr/lib/smbsrv/libfksmbsrv.so.1			i386 sparc
 usr/lib/smbsrv/amd64/libfksmbsrv.so		i386
 usr/lib/smbsrv/amd64/libfksmbsrv.so.1		i386
-usr/lib/smbsrv/libmlsvc.so
+usr/lib/smbsrv/libmlsvc.so			i386 sparc aarch64
 usr/lib/smbsrv/amd64/libmlsvc.so		i386
 usr/lib/smbsrv/amd64/libmlsvc.so.1		i386
-usr/lib/smbsrv/libsmb.so
+usr/lib/smbsrv/libsmb.so			i386 sparc aarch64
 usr/lib/smbsrv/amd64/libsmb.so			i386
-usr/lib/smbsrv/libsmbns.so
+usr/lib/smbsrv/libsmbns.so			i386 sparc aarch64
 usr/lib/smbsrv/amd64/libsmbns.so		i386
 usr/lib/smbsrv/amd64/libsmbns.so.1		i386
-usr/lib/smbsrv/nvlprint
-usr/lib/smbsrv/test-msgbuf
-usr/lib/smbsrv/testoplock
+usr/lib/smbsrv/nvlprint				i386 sparc aarch64
+usr/lib/smbsrv/test-msgbuf			i386 sparc
+usr/lib/smbsrv/testoplock			i386 sparc
 #
 #
 # Private/Internal 64-bit libraries of smbsrv. Do not ship.
@@ -597,18 +591,18 @@ usr/lib/amd64/libsmbfs.so		i386
 #
 # debug & test program for smbfs (private)
 #
-usr/lib/fs/smbfs/chacl
-usr/lib/fs/smbfs/lsacl
-usr/lib/mdb/proc/libfknsmb.so
-usr/lib/mdb/proc/libfksmbfs.so
+usr/lib/fs/smbfs/chacl			i386 sparc aarch64
+usr/lib/fs/smbfs/lsacl			i386 sparc aarch64
+usr/lib/mdb/proc/libfknsmb.so		i386 sparc
+usr/lib/mdb/proc/libfksmbfs.so		i386 sparc
 usr/lib/mdb/proc/amd64/libfknsmb.so	i386
 usr/lib/mdb/proc/amd64/libfksmbfs.so	i386
 usr/lib/smbfs/amd64			i386
-usr/lib/smbfs/fksmbcl
-usr/lib/smbfs/libfknsmb.so
-usr/lib/smbfs/libfknsmb.so.1
-usr/lib/smbfs/libfksmbfs.so
-usr/lib/smbfs/libfksmbfs.so.1
+usr/lib/smbfs/fksmbcl			i386 sparc
+usr/lib/smbfs/libfknsmb.so		i386 sparc
+usr/lib/smbfs/libfknsmb.so.1		i386 sparc
+usr/lib/smbfs/libfksmbfs.so		i386 sparc
+usr/lib/smbfs/libfksmbfs.so.1		i386 sparc
 #
 # FC related files
 kernel/kmdb/amd64/fcip		i386
@@ -634,9 +628,9 @@ usr/include/sys/pppt_ioctl.h
 #
 # portable object file and dictionary used by libfmd_msg test
 #
-usr/lib/fm/dict/TEST.dict
-usr/lib/locale/C/LC_MESSAGES/TEST.mo
-usr/lib/locale/C/LC_MESSAGES/TEST.po
+usr/lib/fm/dict/TEST.dict	i386 sparc aarch64
+usr/lib/locale/C/LC_MESSAGES/TEST.mo	i386 sparc aarch64
+usr/lib/locale/C/LC_MESSAGES/TEST.po	i386 sparc aarch64
 #
 # Private idmap RPC protocol
 #
@@ -691,7 +685,7 @@ licenses
 #
 # Libbe is private
 #
-usr/include/libbe_priv.h
+usr/include/libbe_priv.h		i386 sparc aarch64
 
 #
 # libsaveargs is private
@@ -715,7 +709,7 @@ usr/include/sys/nvme.h
 #
 # debugging program for libadutils
 #
-usr/bin/test-getdc
+usr/bin/test-getdc			i386 sparc aarch64
 #
 # libficl-sys is private
 #
@@ -752,7 +746,7 @@ lib/libcustr.so
 # smatch is delivered and used only with the source tree
 #
 opt/onbld/bin/i386/smatch	i386
-opt/onbld/share/smatch
+opt/onbld/share/smatch		i386 sparc
 
 #
 # libdwarf is private for the moment
@@ -767,6 +761,7 @@ usr/lib/libdwarf.so
 #
 usr/include/lib9p.h
 usr/lib/amd64/lib9p.so			i386
+usr/lib/lib9p.so		aarch64
 
 #
 # We're not quite ready to ship ctfconvert and ctfmerge
@@ -794,16 +789,38 @@ opt/onbld/lib/i386/64/libld.so		i386
 opt/onbld/lib/i386/64/libld.so.4	i386
 opt/onbld/lib/i386/64/liblddbg.so	i386
 opt/onbld/lib/i386/64/liblddbg.so.4	i386
-opt/onbld/man/man1onbld/sgsmsg.1onbld
+opt/onbld/man/man1onbld/sgsmsg.1onbld	i386 sparc
 
 #
 # The built link-editor demos are not delivered
 #
-opt/SUNWonld/
+opt/SUNWonld			i386 sparc
 
 #
 # Libraries that are built for tests whose compilation symlinks are only
 # needed at build time.
 #
-opt/os-tests/tests/cores/libdumper.so
+opt/os-tests/tests/cores/libdumper.so		i386 sparc aarch64
 opt/os-tests/tests/cores/amd64/libdumper.so	i386
+
+# XXXARM
+# aarch64 weirdness that's easier dealt with by exceptions than by changes
+etc/brand/solaris10		aarch64
+usr/lib/brand/solaris10		aarch64
+
+#XXXARM: i386-only, but somehow escaping a bit
+etc/flash		aarch64
+
+# XXXARM: This is cross-built, and so for the wrong platform.
+opt/onbld		aarch64
+
+# XXXARM: Not delivered on aarch64
+usr/ucb			aarch64
+usr/ucblib		aarch64
+usr/lib/python3.5	aarch64
+
+stand/			aarch64
+
+# The ipmi driver is not built or delivered, but we still need the header at
+# build time
+usr/include/sys/ipmi.h	aarch64

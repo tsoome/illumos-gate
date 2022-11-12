@@ -131,6 +131,10 @@ SRCDIR=		../common
 
 INCS +=		-I$(SRCDIR)
 INCS +=		-I$(SRC)/lib/hbaapi/common
+# XXXARM: I have no idea why the compiler isn't sorting this for us
+# I must have missed something somewhere
+$(AARCH64_BLD)INCS +=		-I$(ADJUNCT_PROTO)/usr/include/c++/10.3.0
+$(AARCH64_BLD)INCS +=		-I$(ADJUNCT_PROTO)/usr/include/c++/10.3.0/aarch64-solaris2.11
 
 CCFLAGS +=	-D_POSIX_PTHREAD_SEMANTICS
 CCFLAGS +=	-compat=5 -_g++=-std=c++98

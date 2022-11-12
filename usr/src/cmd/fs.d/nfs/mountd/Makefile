@@ -37,8 +37,8 @@ LOCAL	  =	mountd.o netgroup.o rmtab.o nfsauth.o \
 OBJS	  =	$(FSLIB) $(LOCAL) $(COMMON)
 SRCS	  =	$(LOCAL:%.o=%.c) $(FSLIBSRC) ../lib/nfs_sec.c \
 		../lib/sharetab.c ../lib/daemon.c ../lib/smfcfg.c
-DSRC	  =	mountd_dt.d
-DOBJ	  =	$(DSRC:%.d=%.o)
+$(NOT_AARCH64_BLD)DSRC	  =	mountd_dt.d
+$(NOT_AARCH64_BLD)DOBJ	  =	$(DSRC:%.d=%.o)
 LDLIBS	 +=	-lrpcsvc -lnsl -lbsm -lsocket -ltsnet -ltsol -lnvpair -lscf -lumem
 CPPFLAGS +=	-D_REENTRANT -I../lib
 
@@ -48,7 +48,7 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 mountd.o :=	SMOFF += check_unreachable
 
 $(TYPEPROG):	$(OBJS)
-		$(COMPILE.d) -s $(DSRC) -o $(DOBJ) $(OBJS)
+		$(NOT_AARCH64_BLD)$(COMPILE.d) -s $(DSRC) -o $(DOBJ) $(OBJS)
 		$(LINK.c) -o $@ $(DOBJ) $(OBJS) $(LDLIBS)
 		$(POST_PROCESS)
 

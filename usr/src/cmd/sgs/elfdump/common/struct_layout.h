@@ -598,6 +598,7 @@ extern	const char	*sl_fmt_num(const char *data, int do_swap,
 extern	const sl_arch_layout_t	*sl_mach(Half);
 extern	const sl_arch_layout_t	*struct_layout_i386(void);
 extern	const sl_arch_layout_t	*struct_layout_amd64(void);
+extern	const sl_arch_layout_t	*struct_layout_aarch64(void);
 extern	const sl_arch_layout_t	*struct_layout_sparc(void);
 extern	const sl_arch_layout_t	*struct_layout_sparcv9(void);
 

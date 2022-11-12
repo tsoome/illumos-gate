@@ -34,6 +34,7 @@ include ../../Makefile.ctf
 include ../Makefile.smbsrv.defs
 
 LDLIBS += -L$(ROOT)/usr/lib/smbsrv -lsmb -lsmbns -lsecdb -lumem
+LDLIBS += -L$(ADJUNCT_PROTO)/usr/lib/mps
 LDFLAGS += -R/usr/lib/smbsrv
 
 .KEEP_STATE:

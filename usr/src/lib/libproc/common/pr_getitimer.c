@@ -22,9 +22,9 @@
 /*
  * Copyright (c) 1997-2000 by Sun Microsystems, Inc.
  * All rights reserved.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <sys/isa_defs.h>
 #include <stdlib.h>
@@ -42,7 +42,7 @@ pr_getitimer(struct ps_prochandle *Pr, int which, struct itimerval *itv)
 	argdes_t argd[2];	/* arg descriptors for getitimer() */
 	argdes_t *adp;
 	int error;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATA_MODEL)
 	int victim32 = (Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32);
 	struct itimerval32 itimerval32;
 #endif
@@ -61,7 +61,7 @@ pr_getitimer(struct ps_prochandle *Pr, int which, struct itimerval *itv)
 	adp->arg_value = 0;
 	adp->arg_type = AT_BYREF;
 	adp->arg_inout = AI_OUTPUT;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (victim32) {
 		adp->arg_object = &itimerval32;
 		adp->arg_size = sizeof (itimerval32);
@@ -80,7 +80,7 @@ pr_getitimer(struct ps_prochandle *Pr, int which, struct itimerval *itv)
 		errno = (error > 0)? error : ENOSYS;
 		return (-1);
 	}
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATA_MODEL)
 	if (victim32) {
 		ITIMERVAL32_TO_ITIMERVAL(itv, &itimerval32);
 	}
@@ -99,7 +99,7 @@ pr_setitimer(struct ps_prochandle *Pr,
 	argdes_t argd[3];	/* arg descriptors for setitimer() */
 	argdes_t *adp;
 	int error;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	int victim32 = (Pstatus(Pr)->pr_dmodel == PR_MODEL_ILP32);
 	struct itimerval32 itimerval32;
 	struct itimerval32 oitimerval32;
@@ -119,7 +119,7 @@ pr_setitimer(struct ps_prochandle *Pr,
 	adp->arg_value = 0;
 	adp->arg_type = AT_BYREF;
 	adp->arg_inout = AI_INPUT;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (victim32) {
 		ITIMERVAL_TO_ITIMERVAL32(&itimerval32, itv);
 		adp->arg_object = (void *)&itimerval32;
@@ -143,7 +143,7 @@ pr_setitimer(struct ps_prochandle *Pr,
 	} else {
 		adp->arg_type = AT_BYREF;
 		adp->arg_inout = AI_OUTPUT;
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 		if (victim32) {
 			adp->arg_object = (void *)&oitimerval32;
 			adp->arg_size = sizeof (oitimerval32);
@@ -163,7 +163,7 @@ pr_setitimer(struct ps_prochandle *Pr,
 		errno = (error > 0)? error : ENOSYS;
 		return (-1);
 	}
-#ifdef _LP64
+#if defined(_LP64) && defined(_MULTI_DATAMODEL)
 	if (victim32 && oitv != NULL) {
 		ITIMERVAL32_TO_ITIMERVAL(oitv, &oitimerval32);
 	}

@@ -364,7 +364,8 @@ function bootstrap_tools {
 
 	rm -f $TMPDIR/make-state ${TOOLS}/$INSTALLOG.out
 	cd ${TOOLS}
-	/bin/time $MAKE -K $TMPDIR/make-state -e TARGET=install bootstrap \
+	ONBLD_TOOLS=${TOOLS_PROTO}/opt/onbld \
+	    /bin/time $MAKE -K $TMPDIR/make-state -e TARGET=install bootstrap \
 	    2>&1 | tee -a ${TOOLS}/$INSTALLOG.out >> $LOGFILE
 
 	echo "\n==== Bootstrap build errors ====\n" >> $mail_msg_file
@@ -801,7 +802,7 @@ if [ -z "$MAILTO" -o "$MAILTO" = "nobody" ]; then
 	export MAILTO
 fi
 
-PATH="$OPTHOME/onbld/bin:$OPTHOME/onbld/bin/${MACH}:/usr/ccs/bin"
+PATH="$OPTHOME/onbld/bin:$OPTHOME/onbld/bin/${NATIVE_MACH}:/usr/ccs/bin"
 PATH="$PATH:$OPTHOME/SUNWspro/bin:/usr/bin:/usr/sbin:/usr/ucb"
 PATH="$PATH:/usr/openwin/bin:/usr/sfw/bin:/opt/sfw/bin:."
 export PATH
@@ -905,7 +906,7 @@ fi
 # overridden on the $MAKE command line in build_tools().
 #
 TOOLS=${SRC}/tools
-TOOLS_PROTO_REL=proto/root_${MACH}-nd
+TOOLS_PROTO_REL=proto/root_${NATIVE_MACH}-nd
 TOOLS_PROTO=${TOOLS}/${TOOLS_PROTO_REL};	export TOOLS_PROTO
 
 unset   CFLAGS LD_LIBRARY_PATH LDFLAGS
@@ -1634,19 +1635,16 @@ if [[ "$t_FLAG" == "y" ]]; then
 	if (( $? != 0 )); then
 		build_ok=n
 	else
-		STABS=${TOOLS_PROTO}/opt/onbld/bin/${MACH}/stabs
-		export STABS
-		CTFSTABS=${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ctfstabs
-		export CTFSTABS
-		GENOFFSETS=${TOOLS_PROTO}/opt/onbld/bin/genoffsets
-		export GENOFFSETS
+		TPONM=${TOOLS_PROTO}/opt/onbld/bin/${NATIVE_MACH}
+		export STABS=${TPONM}/stabs
+		export CTFSTABS=${TPONM}/ctfstabs
+		export GENOFFSETS=${TOOLS_PROTO}/opt/onbld/bin/genoffsets
+		export CTFCONVERT=${TPONM}/ctfconvert
+		export CTFMERGE=${TPONM}/ctfmerge
+		export LD_ALTEXEC=${ONBLD_TOOLS}/bin/${NATIVE_MACH}/ld
+		unset TPONM
 
-		CTFCONVERT=${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ctfconvert
-		export CTFCONVERT
-		CTFMERGE=${TOOLS_PROTO}/opt/onbld/bin/${MACH}/ctfmerge
-		export CTFMERGE
-
-		PATH="${TOOLS_PROTO}/opt/onbld/bin/${MACH}:${PATH}"
+		PATH="${TOOLS_PROTO}/opt/onbld/bin/${NATIVE_MACH}:${PATH}"
 		PATH="${TOOLS_PROTO}/opt/onbld/bin:${PATH}"
 		export PATH
 
@@ -1657,6 +1655,7 @@ if [[ "$t_FLAG" == "y" ]]; then
 		echo "CTFMERGE=${CTFMERGE}" >> $LOGFILE
 		echo "PATH=${PATH}" >> $LOGFILE
 		echo "ONBLD_TOOLS=${ONBLD_TOOLS}" >> $LOGFILE
+		echo "LD_ALTEXEC=${LD_ALTEXEC}" >> $LOGFILE
 	fi
 fi
 

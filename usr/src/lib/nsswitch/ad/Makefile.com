@@ -35,5 +35,5 @@ include		../../Makefile.com
 
 CPPFLAGS +=	-I../../../libadutils/common -I../../../libidmap/common \
 		-I$(IDMAP_PROT_DIR)
-LDLIBS +=	-ladutils -lidmap
+LDLIBS +=	-ladutils -lidmap -L$(ADJUNCT_PROTO)/usr/lib/mps
 DYNLIB1 =	nss_ad.so$(VERS)

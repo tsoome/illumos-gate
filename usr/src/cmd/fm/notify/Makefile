@@ -23,9 +23,13 @@
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
+include $(SRC)/Makefile.master
+
 SUBDIRS = \
 	smtp-notify \
-	snmp-notify
+
+# XXXARM: No net-snmp
+$(NOT_AARCH64_BLD)SUBDIRS += 	snmp-notify
 
 include ./Makefile.subdirs
 include ../../Makefile.cmd

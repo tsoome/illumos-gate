@@ -28,9 +28,6 @@
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *
  * dpost - troff post-processor for PostScript printers.
@@ -262,6 +259,7 @@
 
 
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<fcntl.h>
 #include	<signal.h>
 #include	<math.h>
@@ -1629,7 +1627,7 @@ getdevmap(void)
 		    strcpy((devfontmap + i)->name, temp);
 		    strcpy((devfontmap + i)->use, &temp[3]);
 		    if ( ++i % 10 == 0 )
-			devfontmap = (Devfontmap *) realloc(devfontmap, (i + 10) * sizeof(Devfontmap));
+			devfontmap = realloc(devfontmap, (i + 10) * sizeof(Devfontmap));
 		}   /* End if */
 	    while ( (c = getc(fp)) != '\n' && c != EOF ) ;
 	}   /* End while */

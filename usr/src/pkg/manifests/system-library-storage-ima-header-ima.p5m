@@ -37,9 +37,9 @@ dir  path=usr/include
 file path=usr/include/ima.h
 file path=usr/include/libsun_ima.h
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-link path=usr/lib/$(ARCH64)/libima.so target=libima.so.1
-file path=usr/lib/$(ARCH64)/libima.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)link path=usr/lib/$(ARCH64)/libima.so target=libima.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libima.so.1
 link path=usr/lib/libima.so target=libima.so.1
 file path=usr/lib/libima.so.1
 legacy pkg=SUNWimac \

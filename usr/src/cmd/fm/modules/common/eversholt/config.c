@@ -587,7 +587,7 @@ prttpcache(void *lhs, void *rhs, void *arg)
 static void
 prtcpucache(void *lhs, void *rhs, void *arg)
 {
-	out(O_ALTFP|O_VERB, "%u -> %p", (uint32_t)lhs, rhs);
+	out(O_ALTFP|O_VERB, "%u -> %p", (uint32_t)(uintptr_t)lhs, rhs);
 }
 
 /*
@@ -682,7 +682,7 @@ config_bycpuid_lookup(struct cfgdata *fromcfg, uint32_t id)
 	lut_walk(fromcfg->cpucache, (lut_cb)prtcpucache, NULL);
 
 	if ((find = lut_lookup(fromcfg->cpucache,
-	    (void *)id, NULL)) == NULL)
+	    (void *)(uintptr_t)id, NULL)) == NULL)
 		return (NULL);
 
 	np = config_nodeize(find);
@@ -700,7 +700,7 @@ config_bycpuid_lookup(struct cfgdata *fromcfg, uint32_t id)
 static void
 printprop(const char *lhs, const char *rhs, void *arg)
 {
-	int flags = (int)arg;
+	int flags = (int)(intptr_t)arg;
 
 	out(flags, "\t%s=%s", lhs, rhs);
 }
@@ -721,7 +721,7 @@ pconf(int flags, struct config *cp, char *buf, int offset, int limit)
 	    sep, cp->s, cp->num);
 	if (cp->child == NULL) {
 		out(flags, "%s", buf);
-		lut_walk(cp->props, (lut_cb)printprop, (void *)flags);
+		lut_walk(cp->props, (lut_cb)printprop, (void *)(intptr_t)flags);
 	} else
 		pconf(flags, cp->child, buf, strlen(buf), limit);
 	if (cp->next)

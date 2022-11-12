@@ -22,12 +22,13 @@
 /*
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
+
 
 #ifndef	_PISADEP_H
 #define	_PISADEP_H
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -70,6 +71,9 @@ extern int Pissyscall_text(struct ps_prochandle *, const void *buf,
 /* sparc stack is doubleword aligned for 64-bit values */
 #define	PSTACK_ALIGN32(sp)	((sp) & ~(2 * sizeof (int32_t) - 1))
 #define	PSTACK_ALIGN64(sp)	((sp) & ~(2 * sizeof (int64_t) - 1))
+#elif defined(__aarch64__)
+#define	PSTACK_ALIGN32(sp)	(sp)
+#define	PSTACK_ALIGN64(sp)	(sp)
 #else
 #error	Unknown ISA
 #endif

@@ -48,12 +48,13 @@ CFLAGS		+= $(C_PICFLAGS) $(GSHARED)
 
 DYNFLAGS=	$(GSHARED) $(ZTEXT) $(ZDEFS) $(BDIRECT) \
 		$(MAPFILES:%=-Wl,-M%) $(MAPFILE.PGA:%=-Wl,-M%) $(MAPFILE.NED:%=-Wl,-M%)
-
 LDLIBS=		-lc
 
 ICONV_DIR	= $(ROOT)/usr/lib/iconv
 
-ICONV_DIR_64	= $(ROOT)/usr/lib/iconv/$(MACH64)
+# XXXARM: not multilib
+$(NOT_AARCH64_BLD)ICONV_DIR_64	= $(ROOT)/usr/lib/iconv/$(MACH64)
+$(AARCH64_BLD)ICONV_DIR_64 = $(ROOT)/usr/lib/iconv
 
 ICONV_LIBS	= $(PROGS:%=$(ICONV_DIR)/%)
 
@@ -76,7 +77,7 @@ $(ICONV_DIR)/%: ../%
 	$(INS.file)
 
 %.so: %.o
-	$(CC) $(CFLAGS) $(DYNFLAGS) $(LDLIBS) -o $@ $(@:%.so=%.o)
+	$(CC) $(SYSROOT) $(CFLAGS) $(DYNFLAGS) $(LDLIBS) -o $@ $(@:%.so=%.o)
 	$(POST_PROCESS_SO)
 
 %.o: ../%.c

@@ -114,6 +114,9 @@ extern	const Rel_entry	reloc_table[];
 #define	IS_GOT_PC(X)		RELTAB_IS_GOT_PC(X, reloc_table)
 #define	IS_GOTPCREL(X)		RELTAB_IS_GOTPCREL(X, reloc_table)
 #define	IS_GOT_BASED(X)		RELTAB_IS_GOT_BASED(X, reloc_table)
+#define	IS_GOTPAGE_BASED(X)	RELTAB_IS_GOTPAGE_BASED(X, reloc_table)
+#define	IS_PAGEPC_BASED(X)	RELTAB_IS_PAGEPC_BASED(X, reloc_table)
+#define	IS_GOTPAGEPC_BASED(X)	RELTAB_IS_GOTPAGEPC_BASED(X, reloc_table)
 #define	IS_GOT_OPINS(X)		RELTAB_IS_GOT_OPINS(X, reloc_table)
 #define	IS_GOT_REQUIRED(X)	RELTAB_IS_GOT_REQUIRED(X, reloc_table)
 #define	IS_PC_RELATIVE(X)	RELTAB_IS_PC_RELATIVE(X, reloc_table)
@@ -183,13 +186,13 @@ extern	const Rel_entry	reloc_table[];
  * conditionalize any code not used by all three versions.
  */
 #if defined(_KERNEL)
-extern	int	do_reloc_krtld(uchar_t, uchar_t *, Xword *, const char *,
+extern	int	do_reloc_krtld(Word, uchar_t *, Xword *, const char *,
 		    const char *);
 #elif defined(DO_RELOC_LIBLD)
 extern	int	do_reloc_ld(Rel_desc *, uchar_t *, Xword *,
 		    rel_desc_sname_func_t, const char *, int, void *);
 #else
-extern	int	do_reloc_rtld(uchar_t, uchar_t *, Xword *, const char *,
+extern	int	do_reloc_rtld(Word, uchar_t *, Xword *, const char *,
 		    const char *, void *);
 #endif
 
@@ -216,6 +219,7 @@ extern	int	do_reloc_rtld(uchar_t, uchar_t *, Xword *, const char *,
 #define	MSG_REL_UNIMPL		"unimplemented relocation type: %d"
 #define	MSG_REL_UNSUPSZ		"offset size (%d bytes) is not supported"
 #define	MSG_REL_NONALIGN	"offset 0x%llx is non-aligned"
+#define	MSG_REL_VALNONALIGN	"value 0x%llx is non-aligned"
 #define	MSG_REL_UNNOBITS	"unsupported number of bits: %d"
 #define	MSG_REL_OFFSET		"offset 0x%llx"
 #define	MSG_REL_NOFIT		"value 0x%llx does not fit"
@@ -238,6 +242,11 @@ extern const char	*conv_reloc_386_type(Word);
 
 extern const char	*conv_reloc_SPARC_type(Word);
 #define	CONV_RELOC_TYPE	conv_reloc_SPARC_type
+
+#elif defined(__aarch64__)
+
+extern const char	*conv_reloc_aarch64_type(Word);
+#define	CONV_RELOC_TYPE	conv_reloc_aarch64_type
 
 #else
 #error platform not defined!
@@ -267,6 +276,12 @@ extern const char	*conv_reloc_SPARC_type(Word);
 	_kobj_printf(ops, MSG_REL_FILE, (file)); \
 	_kobj_printf(ops, MSG_REL_SYM, ((sym) ? (sym) : MSG_STR_UNKNOWN)); \
 	_kobj_printf(ops, MSG_REL_NONALIGN, (u_longlong_t)EC_OFF((off)))
+
+#define	REL_ERR_VALNONALIGN(lml, file, sym, rtype, val) \
+	_kobj_printf(ops, MSG_REL_PREGEN, CONV_RELOC_TYPE((rtype))); \
+	_kobj_printf(ops, MSG_REL_FILE, (file)); \
+	_kobj_printf(ops, MSG_REL_SYM, ((sym) ? (sym) : MSG_STR_UNKNOWN)); \
+	_kobj_printf(ops, MSG_REL_VALNONALIGN, (u_longlong_t)val)
 
 #define	REL_ERR_UNNOBITS(lml, file, sym, rtype, nbits) \
 	_kobj_printf(ops, MSG_REL_PREGEN, CONV_RELOC_TYPE((rtype))); \
@@ -306,6 +321,12 @@ extern	const char *demangle(const char *);
 	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_NONALIGN), \
 	    conv_reloc_type_static(M_MACH, (rtype), 0), (file), \
 	    ((sym) ? demangle(sym) : MSG_INTL(MSG_STR_UNKNOWN)), EC_OFF((off))))
+
+#define	REL_ERR_VALNONALIGN(lml, file, sym, rtype, val) \
+	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_VALNONALIGN), \
+	    conv_reloc_type_static(M_MACH, (rtype), 0), (file), \
+	    ((sym) ? demangle(sym) : MSG_INTL(MSG_STR_UNKNOWN)), val))
+
 
 #define	REL_ERR_UNNOBITS(lml, file, sym, rtype, nbits) \
 	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_UNNOBITS), \

@@ -231,7 +231,7 @@ DBOOT_FLAGS	+= $(CCNOAUTOINLINE)
 DBOOT_CC_INCL	= -I$(SRC)/common -I$(SRC)/common/util $(INCLUDE_PATH)
 DBOOT_AS_INCL	= $(AS_INC_PATH)
 
-DBOOT_AS	= $(ONBLD_TOOLS)/bin/$(MACH)/aw
+DBOOT_AS	= $(ONBLD_TOOLS)/bin/$(NATIVE_MACH)/aw.$(MACH)
 
 $(DBOOT_OBJS_DIR)/%.o:		$(UTSBASE)/i86pc/boot/%.c
 	$(i386_CC) $(DBOOT_FLAGS) -O $(DBOOT_DEFS) $(DBOOT_CC_INCL) -c -o $@ $<

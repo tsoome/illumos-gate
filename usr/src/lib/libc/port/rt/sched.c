@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "lint.h"
 #include "thr_uberdata.h"
 #include <sched.h>
@@ -574,7 +572,7 @@ update_sched(ulwp_t *self)
 
 	if ((scp = self->ul_schedctl) == NULL &&
 	    (scp = setup_schedctl()) == NULL) {		/* can't happen? */
-		if (self->ul_policy < 0) {
+		if ((signed char)self->ul_policy < 0) {
 			self->ul_cid = 0;
 			self->ul_pri = 0;
 			membar_producer();
@@ -584,7 +582,7 @@ update_sched(ulwp_t *self)
 		return;
 	}
 
-	if (self->ul_policy >= 0 &&
+	if ((signed char)self->ul_policy >= 0 &&
 	    self->ul_cid == scp->sc_cid &&
 	    (self->ul_pri == scp->sc_cpri ||
 	    (self->ul_epri > 0 && self->ul_epri == scp->sc_cpri))) {

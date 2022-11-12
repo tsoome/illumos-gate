@@ -22,6 +22,9 @@
 /*
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
+ * Copyright 2022 Michael van der Westhuizen
  */
 
 #ifndef _SYS_IEEEFP_H
@@ -103,7 +106,36 @@ enum fp_trap_enable_type {	/* trap enable bits according to bit number */
 	fp_trap_inexact	= 5
 };
 
-#endif	/* __i386 || __amd64 */
+#elif defined(__aarch64__)
+
+enum fp_direction_type {	/* rounding direction */
+	fp_nearest	= 0,
+	fp_positive	= 1,
+	fp_negative	= 2,
+	fp_tozero	= 3
+};
+
+enum fp_exception_type {	/* exceptions according to bit number */
+	fp_inexact	= 0,
+	fp_division	= 1,
+	fp_underflow	= 2,
+	fp_overflow	= 3,
+	fp_invalid	= 4
+};
+#define	N_IEEE_EXCEPTION 5	/* Number of floating-point exceptions. */
+
+/* XXXARM: no precision type? */
+
+enum fp_trap_enable_type {	/* trap enable bits according to bit number */
+	fp_trap_invalid		= 0,
+	fp_trap_division	= 1,
+	fp_trap_overflow	= 2,
+	fp_trap_underflow	= 3,
+	fp_trap_inexact		= 4,
+	fp_trap_denormalized	= 7
+};
+
+#endif	/* __aarch64__ */
 
 enum fp_class_type {		/* floating-point classes */
 	fp_zero		= 0,

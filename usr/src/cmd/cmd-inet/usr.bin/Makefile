@@ -28,14 +28,21 @@
 # Copyright 2022 Garrett D'Amore
 #
 
+include $(SRC)/Makefile.master
+
 PROG=		finger rdate ruptime rwho whois
-SUIDPROG=	rcp rlogin rsh
+# XXXARM: Not 64bit clean, see also below
+$(NOT_AARCH64_BLD)SUIDPROG=	rcp rlogin rsh
 ALL=		$(PROG) $(SUIDPROG)
 SRCS=		$(ALL:%=%.c)
-KCMDPROGS=	rcp rlogin rsh
+
+# XXXARM: not 64bit clean
+$(NOT_AARCH64_BLD)KCMDPROGS= rcp rlogin rsh
 
 SUBDIRS=	chat dns-sd ftp nc netstat \
-		pppd pppdump pppstats rdist talk telnet tftp
+		pppdump pppstats talk telnet tftp
+# XXXARM: Not 64bit clean
+$(NOT_AARCH64_BLD)SUBDIRS += pppd  rdist
 SUBDIR1=	talk
 MSGSUBDIRS=	talk
 

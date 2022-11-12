@@ -19,19 +19,18 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright 2014 Garrett D'Amore <garrett@damore.org>
- *
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- * Copyright 2015 Nexenta Systems, Inc. All rights reserved.
- * Copyright 2016 Toomas Soome <tsoome@me.com>
- */
-
-
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved	*/
 
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ *
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
+ * Copyright 2015 Nexenta Systems, Inc. All rights reserved.
+ * Copyright 2016 Toomas Soome <tsoome@me.com>
+ * Copyright 2017 Hayashi Naoyuki
+ */
 
 #ifndef _SYS_VTOC_H
 #define	_SYS_VTOC_H
@@ -102,6 +101,10 @@ extern "C" {
 #define	V_FREEBSD_VINUM		0x0903
 #define	V_FREEBSD_ZFS		0x0904
 #define	V_FREEBSD_NANDFS	0x0905
+
+#define	V_UBOOT_ENV		0x0102
+#define	V_UBOOT_DTB		0x0103
+#define	V_UBOOT_FIT		0x0104
 
 #define	V_UNKNOWN	0xffff		/* Unknown partition */
 

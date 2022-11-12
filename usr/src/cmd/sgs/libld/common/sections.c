@@ -1324,6 +1324,40 @@ make_dynamic(Ofl_desc *ofl)
 }
 
 /*
+ * XXXARM: Should be in the target descriptor, rather than here.
+ */
+uintptr_t
+ld_make_gotplt(Ofl_desc *ofl)
+{
+	Elf_Data	*data;
+	Shdr	*shdr;
+	Is_desc	*isec;
+
+	size_t	size = (size_t)(ofl->ofl_pltcnt + 3) * ld_targ.t_m.m_got_entsize;
+	/* XXXARM: relocgotpltsz? */
+	size_t	rsize = (size_t)ofl->ofl_relocgotsz;
+
+	if (new_section(ofl, SHT_PROGBITS, MSG_ORIG(MSG_SCN_GOTPLT), 0,
+	    &isec, &shdr, &data) == S_ERROR)
+		return (S_ERROR);
+
+	data->d_size = size;
+
+	shdr->sh_flags |= SHF_WRITE;
+	shdr->sh_size = (Xword)size;
+	shdr->sh_entsize = ld_targ.t_m.m_got_entsize;
+
+	ofl->ofl_osgotplt = ld_place_section(ofl, isec, NULL,
+	    ld_targ.t_id.id_got, NULL);
+	if (ofl->ofl_osgotplt == (Os_desc *)S_ERROR)
+		return (S_ERROR);
+
+	ofl->ofl_osgotplt->os_szoutrels = (Xword)rsize;
+
+	return (1);
+}
+
+/*
  * Build the GOT section and its associated relocation entries.
  */
 uintptr_t
@@ -1351,6 +1385,9 @@ ld_make_got(Ofl_desc *ofl)
 		return (S_ERROR);
 
 	ofl->ofl_osgot->os_szoutrels = (Xword)rsize;
+
+	if (ld_make_gotplt(ofl) != 1)
+		return (S_ERROR);
 
 	return (1);
 }

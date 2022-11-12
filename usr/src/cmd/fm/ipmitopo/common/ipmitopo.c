@@ -119,11 +119,11 @@ entity_print(ipmi_handle_t *ihp, ipmi_entity_t *ep, void *data)
 		    24 - indentation, name, present ? "present" : "absent");
 	}
 	(void) ipmi_entity_iter_sdr(ihp, ep, sdr_print,
-	    (void *)(indentation + 2));
+	    (void *)(uintptr_t)(indentation + 2));
 
 	if (ep->ie_children != 0)
 		(void) ipmi_entity_iter_children(ihp, ep, entity_print,
-		    (void *)(indentation + 2));
+		    (void *)(uintptr_t)(indentation + 2));
 	return (0);
 }
 
@@ -133,7 +133,8 @@ main(int argc, char **argv)
 	ipmi_handle_t *ihp;
 	char *errmsg;
 	uint_t xport_type;
-	char c, *host = NULL, *user = NULL, *passwd = NULL;
+	char *host = NULL, *user = NULL, *passwd = NULL;
+	int c;
 	int err;
 	nvlist_t *params = NULL;
 

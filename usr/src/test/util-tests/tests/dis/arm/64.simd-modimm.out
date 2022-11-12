@@ -1,0 +1,34 @@
+    libdis_test:      00 04 00 0f  movi v0.2s, #0x0
+    libdis_test+0x4:  bf 24 00 4f  movi v31.4s, #0x5, lsl #8
+    libdis_test+0x8:  40 45 00 4f  movi v0.4s, #0xa, lsl #16
+    libdis_test+0xc:  ff 67 07 0f  movi v31.2s, #0xff, lsl #24
+    libdis_test+0x10: 00 14 00 0f  orr v0.2s, #0x0
+    libdis_test+0x14: bf 34 00 4f  orr v31.4s, #0x5, lsl #8
+    libdis_test+0x18: 40 55 00 4f  orr v0.4s, #0xa, lsl #16
+    libdis_test+0x1c: ff 77 07 0f  orr v31.2s, #0xff, lsl #24
+    libdis_test+0x20: a0 84 00 0f  movi v0.4h, #0x5
+    libdis_test+0x24: 5f a5 00 4f  movi v31.8h, #0xa, lsl #8
+    libdis_test+0x28: a0 94 00 0f  orr v0.4h, #0x5
+    libdis_test+0x2c: 5f b5 00 4f  orr v31.8h, #0xa, lsl #8
+    libdis_test+0x30: a0 c4 00 0f  movi v0.2s, #0x5, msl #8
+    libdis_test+0x34: 5f d5 00 4f  movi v31.4s, #0xa, msl #16
+    libdis_test+0x38: 40 e5 00 0f  movi v0.8b, #0xa
+    libdis_test+0x3c: bf e4 00 4f  movi v31.16b, #0x5
+    libdis_test+0x40: 00 04 00 2f  mvni v0.2s, #0x0
+    libdis_test+0x44: bf 24 00 6f  mvni v31.4s, #0x5, lsl #8
+    libdis_test+0x48: 40 45 00 6f  mvni v0.4s, #0xa, lsl #16
+    libdis_test+0x4c: ff 67 07 2f  mvni v31.2s, #0xff, lsl #24
+    libdis_test+0x50: 00 14 00 2f  bic v0.2s, #0x0
+    libdis_test+0x54: bf 34 00 6f  bic v31.4s, #0x5, lsl #8
+    libdis_test+0x58: 40 55 00 6f  bic v0.4s, #0xa, lsl #16
+    libdis_test+0x5c: ff 77 07 2f  bic v31.2s, #0xff, lsl #24
+    libdis_test+0x60: a0 84 00 2f  mvni v0.4h, #0x5
+    libdis_test+0x64: 5f a5 00 6f  mvni v31.8h, #0xa, lsl #8
+    libdis_test+0x68: a0 94 00 2f  bic v0.4h, #0x5
+    libdis_test+0x6c: 5f b5 00 6f  bic v31.8h, #0xa, lsl #8
+    libdis_test+0x70: a0 c4 00 2f  mvni v0.2s, #0x5, msl #8
+    libdis_test+0x74: 5f d5 00 6f  mvni v31.4s, #0xa, msl #16
+    libdis_test+0x78: 00 e4 00 2f  movi d0, #0x0
+    libdis_test+0x7c: 5f e5 05 2f  movi d31, #0xff00ff00ff00ff00
+    libdis_test+0x80: a0 e6 02 6f  movi v0.2d, #0xff00ff00ff00ff
+    libdis_test+0x84: ff e7 07 6f  movi v31.2d, #0xffffffffffffffff

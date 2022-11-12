@@ -19,6 +19,7 @@
 # CDDL HEADER END
 #
 #
+# Copyright 2017 Hayashi Naoyuki
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
@@ -27,6 +28,7 @@ include		../../../Makefile.master
 
 sparcv9_ARCHITECTURES = sparcv9
 sparc_ARCHITECTURES = $(sparcv9_ARCHITECTURES)
+aarch64_ARCHITECTURES = aarch64
 
 SUBDIRS = $($(MACH)_ARCHITECTURES)
 

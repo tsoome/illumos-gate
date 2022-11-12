@@ -23,6 +23,7 @@
  * Copyright (c) 2003, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, Joyent, Inc.
  * Copyright (c) 2012, 2016 by Delphix. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <sys/types.h>
@@ -1037,6 +1038,12 @@ alloc:
 	}
 #endif
 
+#ifdef __aarch64__
+	if (dt_cpp_add_arg(dtp, "-D__aarch64__") == NULL)
+		return (set_open_errno(dtp, errp, EDT_NOMEM));
+	if (dt_cpp_add_arg(dtp, "-D__aarch64") == NULL)
+		return (set_open_errno(dtp, errp, EDT_NOMEM));
+#endif
 	if (dtp->dt_conf.dtc_difversion < DIF_VERSION)
 		return (set_open_errno(dtp, errp, EDT_DIFVERS));
 

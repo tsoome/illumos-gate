@@ -21,11 +21,12 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-/*
+ *
  * Copyright 2014 Nexenta Systems, Inc.  All rights reserved.
  * Copyright 2017 Joyent Inc
+ * Copyright 2017 Hayashi Naoyuki
  */
+
 /* Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T */
 /* All Rights Reserved */
 /*
@@ -91,7 +92,7 @@ static int netbufcmp(struct netbuf *, struct netbuf *);
 static void netbuffree(struct netbuf *);
 static struct netbuf *netbufdup(struct netbuf *);
 static void find_versions(rpcprog_t, char *, rpcvers_t *, rpcvers_t *);
-static rpcblist_ptr find_service(ulong_t, ulong_t, char *);
+static rpcblist_ptr find_service(rpcprog_t, rpcvers_t, char *);
 #ifdef PORTMAP
 static int add_pmaplist(RPCB *);
 #endif
@@ -490,11 +491,11 @@ rpcbproc_taddr2uaddr_com(struct netbuf *taddr, char **result,
 bool_t
 xdr_rpcb_rmtcallargs(XDR *xdrs, rpcb_rmtcallargs *objp)
 {
-	if (!xdr_u_long(xdrs, &objp->prog))
+	if (!xdr_rpcprog(xdrs, &objp->prog))
 		return (FALSE);
-	if (!xdr_u_long(xdrs, &objp->vers))
+	if (!xdr_rpcvers(xdrs, &objp->vers))
 		return (FALSE);
-	if (!xdr_u_long(xdrs, &objp->proc))
+	if (!xdr_rpcproc(xdrs, &objp->proc))
 		return (FALSE);
 	if (!xdr_bytes(xdrs, (char **)&objp->args.args_val,
 	    (uint_t *)&objp->args.args_len, ~0))
@@ -506,7 +507,7 @@ xdr_rpcb_rmtcallargs(XDR *xdrs, rpcb_rmtcallargs *objp)
 bool_t
 xdr_rmtcallres(XDR *xdrs, rmtcallres *objp)
 {
-	if (!xdr_u_long(xdrs, &objp->port))
+	if (!xdr_rpcport(xdrs, &objp->port))
 		return (FALSE);
 	if (!xdr_bytes(xdrs, (char **)&objp->res.res_val,
 	    (uint_t *)&objp->res.res_len, ~0))
@@ -895,7 +896,7 @@ rpcbproc_callit_com(struct svc_req *rqstp, SVCXPRT *transp, ulong_t reply_type,
 	}
 	if (rbl->rpcb_map.r_vers != arg.vers) {
 		if (reply_type == RPCBPROC_INDIRECT) {
-			ulong_t vers_low, vers_high;
+			rpcvers_t vers_low, vers_high;
 
 			find_versions(arg.prog, transp->xp_netid,
 			    &vers_low, &vers_high);
@@ -1024,7 +1025,7 @@ rpcbproc_callit_com(struct svc_req *rqstp, SVCXPRT *transp, ulong_t reply_type,
 		goto error;
 	}
 
-	if (!xdr_u_long(&outxdr, &arg.proc)) {
+	if (!xdr_rpcproc(&outxdr, &arg.proc)) {
 		forward_destroy(fi);
 		(void) mutex_unlock(&finfo_lock);
 		if (reply_type == RPCBPROC_INDIRECT)

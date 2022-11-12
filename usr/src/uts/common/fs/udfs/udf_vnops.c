@@ -1272,7 +1272,7 @@ udf_symlink(
 	struct ud_inode *ip, *dip = VTOI(dvp);
 
 	struct path_comp *pc;
-	int8_t *dname = NULL, *uname = NULL, *sp;
+	char *dname = NULL, *uname = NULL, *sp;
 
 	ud_printf("udf_symlink\n");
 
@@ -1342,7 +1342,7 @@ udf_symlink(
 				dname[outlen] = '\0';
 				(void) strcpy((char *)pc->pc_id, dname);
 				pc = (struct path_comp *)
-				    (((char *)pc) + 4 + outlen);
+				    (pc + 4 + outlen);
 			}
 			while (*target == '/') {
 				target++;
@@ -1359,7 +1359,7 @@ udf_symlink(
 				ioflag |= FDSYNC;
 			}
 			error = ud_rdwri(UIO_WRITE, ioflag, ip,
-			    uname, ((int8_t *)pc) - uname,
+			    uname, ((caddr_t)pc) - uname,
 			    (offset_t)0, UIO_SYSSPACE, (int32_t *)0, cr);
 		}
 		if (error) {
@@ -1399,7 +1399,7 @@ udf_readlink(
 	caller_context_t *ct)
 {
 	int32_t error = 0, off, id_len, size, len;
-	int8_t *dname = NULL, *uname = NULL;
+	char *dname = NULL, *uname = NULL;
 	struct ud_inode *ip;
 	struct fbuf *fbp = NULL;
 	struct path_comp *pc;

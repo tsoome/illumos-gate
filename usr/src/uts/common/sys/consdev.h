@@ -44,7 +44,6 @@ extern "C" {
 #define	CONSMS_PATH	"/pseudo/consms@0:mouse"
 #define	WC_PATH		"/pseudo/wc@0:wscons"
 #define	IWSCN_PATH	"/pseudo/iwscn@0:iwscn"
-#define	CVC_PATH	"/pseudo/cvc@0:cvc"
 
 /*
  * Console redirection.

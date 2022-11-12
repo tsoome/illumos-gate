@@ -137,7 +137,7 @@ main(int argc, char *argv[])
 	(void) setpname(argv[0]);
 
 	for (; optind < argc; optind++) {
-		while ((c = getopt(argc, argv, OPTS)) != (int)EOF) {
+		while ((c = getopt(argc, argv, OPTS)) != EOF) {
 			switch (c) {
 			case 'd':
 				disabled = optarg;

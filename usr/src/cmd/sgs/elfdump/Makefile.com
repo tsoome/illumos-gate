@@ -30,10 +30,15 @@ PROG=		elfdump
 include		$(SRC)/cmd/Makefile.cmd
 include		$(SRC)/cmd/sgs/Makefile.com
 
-COMOBJ =	main.o			corenote.o \
-		dwarf.o			struct_layout.o \
-		struct_layout_i386.o	struct_layout_amd64.o \
-		struct_layout_sparc.o	struct_layout_sparcv9.o
+COMOBJ =	main.o			\
+		corenote.o		\
+		dwarf.o			\
+		struct_layout.o		\
+		struct_layout_i386.o	\
+		struct_layout_amd64.o	\
+		struct_layout_aarch64.o \
+		struct_layout_sparc.o	\
+		struct_layout_sparcv9.o
 
 COMOBJ32 =	elfdump32.o fake_shdr32.o
 

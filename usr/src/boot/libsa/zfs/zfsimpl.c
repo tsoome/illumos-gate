@@ -30,13 +30,11 @@
  *	Stand-alone ZFS file reader.
  */
 
-#include <stdbool.h>
 #include <sys/endian.h>
 #include <sys/stat.h>
 #include <sys/stdint.h>
 #include <sys/list.h>
 #include <sys/zfs_bootenv.h>
-#include <inttypes.h>
 
 #include "zfsimpl.h"
 #include "zfssubr.c"
@@ -1794,7 +1792,7 @@ vdev_read_bootenv(vdev_t *vdev)
 	nvlist_t *benv;
 	vdev_boot_envblock_t *be;
 	char *command;
-	bool ok;
+	boolean_t ok;
 	int rv;
 
 	STAILQ_FOREACH(kid, &vdev->v_children, v_childlink) {
@@ -1849,15 +1847,15 @@ vdev_read_bootenv(vdev_t *vdev)
 
 	default:
 		command = (char *)be;
-		ok = false;
+		ok = B_FALSE;
 
 		/* Check for legacy zfsbootcfg command string */
 		for (int i = 0; command[i] != '\0'; i++) {
 			if (iscntrl(command[i])) {
-				ok = false;
+				ok = B_FALSE;
 				break;
 			} else {
-				ok = true;
+				ok = B_TRUE;
 			}
 		}
 		benv = nvlist_create(NV_UNIQUE_NAME);

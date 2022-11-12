@@ -307,7 +307,7 @@ elfexec(vnode_t *vp, execa_t *uap, uarg_t *args, intpdata_t *idatap,
 	 * Now that we know whether we are exec-ing a 32-bit or 64-bit
 	 * executable, we can set execsz with the appropriate NCARGS.
 	 */
-#ifdef	_LP64
+#if defined(_LP64)
 	if (ehdrp->e_ident[EI_CLASS] == ELFCLASS32) {
 		args->to_model = DATAMODEL_ILP32;
 		*execsz = btopr(SINCR) + btopr(SSIZE) + btopr(NCARGS32-1);
@@ -842,10 +842,12 @@ elfexec(vnode_t *vp, execa_t *uap, uarg_t *args, intpdata_t *idatap,
 			ADDAUX(aux, AT_SUN_HWCAP, auxv_hwcap)
 			ADDAUX(aux, AT_SUN_HWCAP2, auxv_hwcap_2)
 			ADDAUX(aux, AT_SUN_HWCAP3, auxv_hwcap_3)
+#ifdef _SYSCALL32_IMPL
 		} else {
 			ADDAUX(aux, AT_SUN_HWCAP, auxv_hwcap32)
 			ADDAUX(aux, AT_SUN_HWCAP2, auxv_hwcap32_2)
 			ADDAUX(aux, AT_SUN_HWCAP3, auxv_hwcap32_3)
+#endif
 		}
 
 		if (branded) {
@@ -2032,6 +2034,9 @@ top:
 #elif defined(__amd64)
 	ehdr->e_ident[EI_DATA] = ELFDATA2LSB;
 	ehdr->e_machine = EM_AMD64;
+#elif defined(__aarch64__)
+	ehdr->e_ident[EI_DATA] = ELFDATA2LSB;
+	ehdr->e_machine = EM_AARCH64;
 #else
 #error "no recognized 64-bit machine type is defined"
 #endif
@@ -2328,7 +2333,7 @@ exclude:
 			killinfo.prk_info.si_code = SI_NOINFO;
 		}
 
-#if (defined(_SYSCALL32_IMPL) || defined(_LP64))
+#if defined(_SYSCALL32_IMPL)
 		/*
 		 * If this is a 32-bit process, we need to translate from the
 		 * native siginfo to the 32-bit variant.  (Core readers must
@@ -2428,7 +2433,8 @@ static struct modlexec modlexec = {
 	&mod_execops, "exec module for elf", &esw
 };
 
-#ifdef	_LP64
+/* XXXARM: I'm not certain this is the right _SYSCALL* define */
+#if defined(_LP64) && defined(_SYSCALL32_IMPL)
 extern int elf32exec(vnode_t *vp, execa_t *uap, uarg_t *args,
 			intpdata_t *idatap, int level, long *execsz,
 			int setid, caddr_t exec_file, cred_t *cred,
@@ -2452,7 +2458,7 @@ static struct modlexec modlexec32 = {
 static struct modlinkage modlinkage = {
 	MODREV_1,
 	(void *)&modlexec,
-#ifdef	_LP64
+#if defined(_LP64) && defined(_SYSCALL32_IMPL)
 	(void *)&modlexec32,
 #endif	/* _LP64 */
 	NULL

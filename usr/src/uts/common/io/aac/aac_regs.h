@@ -310,7 +310,7 @@ struct vpd_info {
 
 struct aac_supplement_adapter_info {
 	/* The assigned Adapter Type Text, extra byte for null termination */
-	int8_t		AdapterTypeText[17+1];
+	char		AdapterTypeText[17+1];
 	/* Pad for the text above */
 	int8_t		Pad[2];
 	/* Size in bytes of the memory that is flashed */

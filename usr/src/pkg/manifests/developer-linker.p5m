@@ -36,17 +36,17 @@ dir  path=usr/bin/$(ARCH32)
 file path=usr/bin/$(ARCH32)/gcore mode=0555
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/plimit mode=0555
 file path=usr/bin/$(ARCH32)/strings mode=0555
-file path=usr/bin/$(ARCH32)/truss mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH32)/truss mode=0555
 dir  path=usr/bin/$(ARCH64)
-file path=usr/bin/$(ARCH64)/elfwrap mode=0555
-file path=usr/bin/$(ARCH64)/gcore mode=0555
-link path=usr/bin/$(ARCH64)/ld target=../../bin/ld
-link path=usr/bin/$(ARCH64)/ldd target=../../bin/ldd
-file path=usr/bin/$(ARCH64)/plimit mode=0555
-link path=usr/bin/$(ARCH64)/pvs target=../../bin/pvs
-file path=usr/bin/$(ARCH64)/strings mode=0555
-file path=usr/bin/$(ARCH64)/truss mode=0555
-link path=usr/bin/ctags target=../has/bin/ctags mediator=ctags \
+$(not_aarch64)file path=usr/bin/$(ARCH64)/elfwrap mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/gcore mode=0555
+$(not_aarch64)link path=usr/bin/$(ARCH64)/ld target=../../bin/ld
+$(not_aarch64)link path=usr/bin/$(ARCH64)/ldd target=../../bin/ldd
+$(not_aarch64)file path=usr/bin/$(ARCH64)/plimit mode=0555
+$(not_aarch64)link path=usr/bin/$(ARCH64)/pvs target=../../bin/pvs
+$(not_aarch64)file path=usr/bin/$(ARCH64)/strings mode=0555
+$(not_aarch64)file path=usr/bin/$(ARCH64)/truss mode=0555
+$(not_aarch64)link path=usr/bin/ctags target=../has/bin/ctags mediator=ctags \
     mediator-implementation=illumos
 file path=usr/bin/elfsign mode=0555
 file path=usr/bin/elfwrap mode=0555
@@ -58,27 +58,28 @@ file path=usr/bin/od mode=0555
 hardlink path=usr/bin/plimit target=../../usr/lib/isaexec
 file path=usr/bin/pvs mode=0555
 file path=usr/bin/regcmp mode=0555
-file path=usr/bin/sotruss mode=0755
+$(not_aarch64)file path=usr/bin/sotruss mode=0755
 hardlink path=usr/bin/strings target=../../usr/lib/isaexec
-hardlink path=usr/bin/truss target=../../usr/lib/isaexec
-file path=usr/bin/whocalls mode=0755
+$(not_aarch64)hardlink path=usr/bin/truss target=../../usr/lib/isaexec
+$(not_aarch64)file path=usr/bin/whocalls mode=0755
 dir  path=usr/ccs
 dir  path=usr/ccs/bin
 dir  path=usr/ccs/bin/$(ARCH64)
-link path=usr/ccs/bin/$(ARCH64)/ld target=../../../bin/$(ARCH64)/ld
+$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/ld \
+    target=../../../bin/$(ARCH64)/ld
 link path=usr/ccs/bin/ld target=../../bin/ld
 link path=usr/ccs/bin/regcmp target=../../bin/regcmp
 dir  path=usr/ccs/lib
 link path=usr/ccs/lib/link_audit target=../../lib/link_audit
-file path=usr/has/bin/ctags mode=0555
+$(not_aarch64)file path=usr/has/bin/ctags mode=0555
 file path=usr/has/man/man1has/ctags.1has
 dir  path=usr/lib
-dir  path=usr/lib/$(ARCH64)
-file path=usr/lib/$(ARCH64)/lddstub mode=0555
-file path=usr/lib/$(ARCH64)/libldstab.so.1
+$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(not_aarch64)file path=usr/lib/$(ARCH64)/lddstub mode=0555
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libldstab.so.1
 dir  path=usr/lib/abi
-file path=usr/lib/abi/spec2map mode=0755
-file path=usr/lib/abi/spec2trace mode=0755
+$(not_aarch64)file path=usr/lib/abi/spec2map mode=0755
+$(not_aarch64)file path=usr/lib/abi/spec2trace mode=0755
 dir  path=usr/lib/ld
 dir  path=usr/lib/ld/$(ARCH64)
 link path=usr/lib/ld/$(ARCH64)/map.above4G target=../map.above4G
@@ -94,18 +95,19 @@ file path=usr/lib/ld/map.noexbss mode=0444
 file path=usr/lib/ld/map.noexdata mode=0444
 file path=usr/lib/ld/map.noexstk mode=0444
 file path=usr/lib/ld/map.pagealign mode=0444
-file path=usr/lib/lddstub mode=0555
+$(not_aarch64)file path=usr/lib/lddstub mode=0555
 file path=usr/lib/libldstab.so.1
 dir  path=usr/lib/link_audit
 dir  path=usr/lib/link_audit/$(ARCH64)
-file path=usr/lib/link_audit/$(ARCH64)/ldprof.so.1
-file path=usr/lib/link_audit/$(ARCH64)/truss.so.1
-file path=usr/lib/link_audit/$(ARCH64)/who.so.1
-link path=usr/lib/link_audit/32 target=.
-link path=usr/lib/link_audit/64 target=$(ARCH64)
-file path=usr/lib/link_audit/ldprof.so.1
-file path=usr/lib/link_audit/truss.so.1
-file path=usr/lib/link_audit/who.so.1
+$(not_aarch64)file path=usr/lib/link_audit/$(ARCH64)/ldprof.so.1
+$(not_aarch64)file path=usr/lib/link_audit/$(ARCH64)/truss.so.1
+$(not_aarch64)file path=usr/lib/link_audit/$(ARCH64)/who.so.1
+$(not_aarch64)link path=usr/lib/link_audit/32 target=.
+$(not_aarch64)link path=usr/lib/link_audit/64 target=$(ARCH64)
+$(aarch64_ONLY)link path=usr/lib/link_audit/64 target=.
+$(not_aarch64)file path=usr/lib/link_audit/ldprof.so.1
+$(not_aarch64)file path=usr/lib/link_audit/truss.so.1
+$(not_aarch64)file path=usr/lib/link_audit/who.so.1
 dir  path=usr/share/man
 dir  path=usr/share/man/man1
 link path=usr/share/man/man1/ctags.1 \

@@ -20,6 +20,10 @@
  */
 
 /*
+ * Copyright 2022 Michael van der Westhuizen
+ * Copyright 2017 Hayashi Naoyuki
+ */
+/*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -152,7 +156,7 @@ struct mboot {	/* master boot block */
 	ushort_t signature;
 };
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__i386) || defined(__amd64) || defined(__aarch64__)
 
 /* Byte offset of the start of the partition table within the sector */
 #define	FDISK_PART_TABLE_START	446
@@ -164,7 +168,7 @@ struct mboot {	/* master boot block */
 
 #define	MAX_EXT_PARTS	0
 
-#endif	/* if defined(__i386) || defined(__amd64) */
+#endif	/* if defined(__i386) || defined(__amd64) || defined(__aarch64__) */
 
 #ifdef	__cplusplus
 }

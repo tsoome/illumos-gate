@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#if !defined(_STRICT_SYMBOLS) || defined(_STDC_C11)
+#if !defined(__cplusplus) && (!defined(_STRICT_SYMBOLS) || defined(_STDC_C11))
 
 #define	alignas	_Alignas
 #define	alignof	_Alignof

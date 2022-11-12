@@ -65,7 +65,7 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	ss_std_requests	{
 			  ASSERT = {
 				  TYPE = OBJECT;
-				  SIZE = 8;
+				  SIZE = addrsize[2];
 				};
 			};
 	ss_subsystem_name;

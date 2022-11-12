@@ -24,7 +24,8 @@ set name=pkg.fmri value=pkg:/driver/storage/vioscsi@$(PKGVERS)
 set name=pkg.summary value="Virtio SCSI"
 set name=pkg.description value="Virtio SCSI driver"
 set name=info.classification value=org.opensolaris.category.2008:Drivers/Storage
-set name=variant.arch value=$(ARCH)
+# XXXARM
+set name=variant.arch value=i386 value=sparc
 dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys

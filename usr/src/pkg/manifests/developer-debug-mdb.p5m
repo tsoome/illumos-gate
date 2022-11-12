@@ -32,44 +32,44 @@ set name=info.classification \
     value=org.opensolaris.category.2008:Development/System
 set name=variant.arch value=$(ARCH)
 dir  path=kernel group=sys
-dir  path=kernel/kmdb group=sys
-dir  path=kernel/kmdb/$(ARCH64) group=sys
-file path=kernel/kmdb/$(ARCH64)/arp group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/cpc group=sys mode=0555
+$(not_aarch64)dir path=kernel/kmdb group=sys
+$(not_aarch64)dir path=kernel/kmdb/$(ARCH64) group=sys
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/arp group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/cpc group=sys mode=0555
 $(i386_ONLY)file path=kernel/kmdb/$(ARCH64)/cpu.generic group=sys mode=0555
 $(i386_ONLY)file path=kernel/kmdb/$(ARCH64)/cpu_ms.AuthenticAMD.15 group=sys \
     mode=0555
-file path=kernel/kmdb/$(ARCH64)/crypto group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/genunix group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/hook group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/crypto group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/genunix group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/hook group=sys mode=0555
 $(i386_ONLY)file path=kernel/kmdb/$(ARCH64)/i40e group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/ip group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/ipc group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/ipp group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/krtld group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/lofs group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/logindmux group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/mac group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/mdb_ds group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/mm group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/mpt group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/mpt_sas group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/mr_sas group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/neti group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/nfs group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/ptm group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/random group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/s1394 group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/ip group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/ipc group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/ipp group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/krtld group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/lofs group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/logindmux group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/mac group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/mdb_ds group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/mm group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/mpt group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/mpt_sas group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/mr_sas group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/neti group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/nfs group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/ptm group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/random group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/s1394 group=sys mode=0555
 $(i386_ONLY)file path=kernel/kmdb/$(ARCH64)/sata group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/scsi_vhci group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/sctp group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/sd group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/sockfs group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/specfs group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/sppp group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/ufs group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/scsi_vhci group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/sctp group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/sd group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/sockfs group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/specfs group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/sppp group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/ufs group=sys mode=0555
 $(i386_ONLY)file path=kernel/kmdb/$(ARCH64)/uhci group=sys mode=0555
-file path=kernel/kmdb/$(ARCH64)/usba group=sys mode=0555
+$(not_aarch64)file path=kernel/kmdb/$(ARCH64)/usba group=sys mode=0555
 dir  path=platform group=sys variant.opensolaris.zone=global
 $(i386_ONLY)dir path=platform/i86pc group=sys variant.opensolaris.zone=global
 $(i386_ONLY)dir path=platform/i86pc/kernel group=sys \
@@ -98,13 +98,15 @@ $(i386_ONLY)file path=platform/i86xpv/kernel/kmdb/$(ARCH64)/xpv_uppc group=sys \
 dir  path=usr group=sys
 dir  path=usr/bin
 dir  path=usr/bin/$(ARCH32)
-hardlink path=usr/bin/$(ARCH32)/adb target=../../../usr/bin/$(ARCH32)/mdb
-file path=usr/bin/$(ARCH32)/mdb mode=0555
-dir  path=usr/bin/$(ARCH64)
-hardlink path=usr/bin/$(ARCH64)/adb target=../../../usr/bin/$(ARCH64)/mdb
-file path=usr/bin/$(ARCH64)/mdb mode=0555
-hardlink path=usr/bin/adb target=../../usr/lib/isaexec
-hardlink path=usr/bin/mdb target=../../usr/lib/isaexec
+$(not_aarch64)hardlink path=usr/bin/$(ARCH32)/adb \
+    target=../../../usr/bin/$(ARCH32)/mdb
+$(not_aarch64)file path=usr/bin/$(ARCH32)/mdb mode=0555
+$(not_aarch64)dir path=usr/bin/$(ARCH64)
+$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/adb \
+    target=../../../usr/bin/$(ARCH64)/mdb
+$(not_aarch64)file path=usr/bin/$(ARCH64)/mdb mode=0555
+$(not_aarch64)hardlink path=usr/bin/adb target=../../usr/lib/isaexec
+$(not_aarch64)hardlink path=usr/bin/mdb target=../../usr/lib/isaexec
 dir  path=usr/include
 dir  path=usr/include/sys
 file path=usr/include/sys/mdb_modapi.h
@@ -112,77 +114,86 @@ dir  path=usr/lib
 dir  path=usr/lib/mdb group=sys
 dir  path=usr/lib/mdb/kvm group=sys
 dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-file path=usr/lib/mdb/kvm/$(ARCH64)/arp.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/cpc.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/arp.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/cpc.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/cpu.generic.so group=sys \
     mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/cpu_ms.AuthenticAMD.15.so \
     group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/crypto.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/genunix.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/hook.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/crypto.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/genunix.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/hook.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/i40e.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/ip.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/ipc.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/ipp.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/krtld.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/lofs.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/logindmux.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/mac.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/ip.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/ipc.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/ipp.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/krtld.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/lofs.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/logindmux.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/mac.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/mdb_kb.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/mdb_ks.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/mm.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/mpt.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/mpt_sas.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/mr_sas.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/neti.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/nfs.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/ptm.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/random.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/s1394.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/mdb_ks.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/mm.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/mpt.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/mpt_sas.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/mr_sas.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/neti.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/nfs.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/ptm.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/random.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/s1394.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/sata.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/scsi_vhci.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/sctp.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/sd.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/scsi_vhci.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/sctp.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/sd.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/smbios.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/sockfs.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/specfs.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/sppp.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/ufs.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/sockfs.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/specfs.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/sppp.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/ufs.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/uhci.so group=sys mode=0555
-file path=usr/lib/mdb/kvm/$(ARCH64)/usba.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/usba.so group=sys mode=0555
 dir  path=usr/lib/mdb/proc group=sys
-$(i386_ONLY)dir path=usr/lib/mdb/proc/$(ARCH64)
-file path=usr/lib/mdb/proc/$(ARCH64)/ld.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libavl.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libc.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libnvpair.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libproc.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libpython$(PYTHON3_VERSION).so group=sys \
+$(not_sparc)dir path=usr/lib/mdb/proc/$(ARCH64)
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/ld.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libavl.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libc.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libnvpair.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libproc.so group=sys \
+    mode=0555
+$(not_aarch64)file \
+    path=usr/lib/mdb/proc/$(ARCH64)/libpython$(PYTHON3_VERSION).so group=sys \
     mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/proc/$(ARCH64)/libsmbios.so group=sys \
     mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libsysevent.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libtopo.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libumem.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/libuutil.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/list.so group=sys mode=0555
-file path=usr/lib/mdb/proc/$(ARCH64)/mdb_ds.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libsysevent.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libtopo.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libumem.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libuutil.so group=sys \
+    mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/list.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/mdb_ds.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/proc/$(ARCH64)/mdb_test.so group=sys mode=0555
-file path=usr/lib/mdb/proc/ld.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libavl.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libc.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libnvpair.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libproc.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/ld.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libavl.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libc.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libnvpair.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libproc.so group=sys mode=0555
 $(i386_ONLY)file path=usr/lib/mdb/proc/libsmbios.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libsysevent.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libtopo.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libumem.so group=sys mode=0555
-file path=usr/lib/mdb/proc/libuutil.so group=sys mode=0555
-file path=usr/lib/mdb/proc/list.so group=sys mode=0555
-file path=usr/lib/mdb/proc/mdb_ds.so group=sys mode=0555
-file path=usr/lib/mdb/proc/svc.configd.so group=sys mode=0555
-file path=usr/lib/mdb/proc/svc.startd.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libsysevent.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libtopo.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libumem.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/libuutil.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/list.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/mdb_ds.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/svc.configd.so group=sys mode=0555
+$(not_aarch64)file path=usr/lib/mdb/proc/svc.startd.so group=sys mode=0555
 $(i386_ONLY)dir path=usr/lib/mdb/raw group=sys
 $(i386_ONLY)dir path=usr/lib/mdb/raw/$(ARCH64) group=sys
 $(i386_ONLY)file path=usr/lib/mdb/raw/$(ARCH64)/disk_label.so group=sys \

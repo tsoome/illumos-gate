@@ -306,7 +306,7 @@ static void	uath_stop(struct uath_softc *);
 static void	uath_resume(struct uath_softc *);
 
 static void
-uath_debug(uint32_t dbg_flags, const int8_t *fmt, ...)
+uath_debug(uint32_t dbg_flags, const char *fmt, ...)
 {
 	va_list args;
 

@@ -30,19 +30,19 @@ pics/%.o:	$(SRCDIR)/common/%.c
 		$(COMPILE.c) -o $@ $<
 		$(POST_PROCESS_O)
 
-pics/%32.o:	$(SRCDIR)/common/%.c
+pics/%_32.o:	$(SRCDIR)/common/%.c
 		$(COMPILE.c) -o $@ $<
 		$(POST_PROCESS_O)
 
-pics/%64.o:	$(SRCDIR)/common/%.c
+pics/%_64.o:	$(SRCDIR)/common/%.c
 		$(COMPILE.c) -o $@ -D_ELF64 $<
 		$(POST_PROCESS_O)
 
-pics/%32.o:	%.c
+pics/%_32.o:	%.c
 		$(COMPILE.c) -o $@ $<
 		$(POST_PROCESS_O)
 
-pics/%64.o:	%.c
+pics/%_64.o:	%.c
 		$(COMPILE.c) -o $@ -D_ELF64 $<
 		$(POST_PROCESS_O)
 

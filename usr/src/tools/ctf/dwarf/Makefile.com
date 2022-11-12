@@ -103,7 +103,7 @@ CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 # libdwarf not clean
 SMATCH=off
 
-DYNFLAGS += '-R$$ORIGIN/../../lib/$(MACH)'
+DYNFLAGS += '-R$$ORIGIN/../../lib/$(NATIVE_MACH)'
 LDLIBS = -lelf -lc -lz
 NATIVE_LIBS += libelf.so libc.so libz.so
 

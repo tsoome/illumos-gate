@@ -90,6 +90,7 @@ systeminfo(int command, char *buf, long count)
 	case SI_ARCHITECTURE_K:
 		kstr = architecture;
 		break;
+#if defined(_MULTI_DATAMODEL)
 	case SI_ARCHITECTURE_32:
 	case SI_ARCHITECTURE:
 		kstr = architecture_32;
@@ -98,6 +99,15 @@ systeminfo(int command, char *buf, long count)
 		kstr = get_udatamodel() == DATAMODEL_NATIVE ?
 		    architecture : architecture_32;
 		break;
+#else
+	/* XXXARM: SI_ARCHITECTURE_32 will return NULL, is this ok? */
+	case SI_ARCHITECTURE:
+		kstr = architecture;
+		break;
+	case SI_ARCHITECTURE_NATIVE:
+		kstr = architecture;
+		break;
+#endif	/* _MULTI_DATAMODEL */
 #else
 	case SI_ADDRESS_WIDTH:
 		kstr = "32";

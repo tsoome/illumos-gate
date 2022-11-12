@@ -51,7 +51,7 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 #include <openssl/asn1_mac.h>
 #else
 #include <openssl/asn1t.h>

@@ -44,7 +44,7 @@ CPPFLAGS +=	-I../../head -D_REENTRANT
 # not linted
 SMATCH=off
 
-LDLIBS +=	-lnsl -lsocket -lc -lldap
+LDLIBS +=	-lnsl -lsocket -lc -lldap -L$(ADJUNCT_PROTO)/usr/lib/mps
 
 
 .KEEP_STATE:

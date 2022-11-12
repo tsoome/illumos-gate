@@ -20,8 +20,6 @@
 # CDDL HEADER END
 #
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 1989 by Sun Microsystems, Inc.
 #
 
@@ -31,14 +29,16 @@ include ../Makefile.cmd
 
 .KEEP_STATE:
 
-all: $(PROG) 
+all: $(PROG)
 
-install: all $(ROOTUSRSBINPROG)
+$(ROOTETCPROG): FRC
 	$(RM) $(ROOTETCPROG)
-	-$(SYMLINK) ../usr/sbin/$(PROG) $(ROOTETCPROG)
+	$(SYMLINK) ../usr/sbin/$(PROG) $(ROOTETCPROG)
+
+install: all $(ROOTUSRSBINPROG) $(ROOTETCPROG)
 
 clean:
 
-lint:	lint_PROG
-
 include ../Makefile.targ
+
+FRC:

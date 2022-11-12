@@ -55,8 +55,9 @@ SUBDIRS=			\
 	.WAIT
 
 # Build libraries with lots of dependents
+$(NOT_AARCH64_BLD)SUBDIRS += libm
+$(AARCH64_BLD)SUBDIRS += libm_aarch64
 SUBDIRS +=		\
-	libm		\
 	libmd		\
 	libmp		\
 	libnsl		\
@@ -66,14 +67,51 @@ SUBDIRS +=		\
 
 # Build everything else. Aside from explicit dependencies, all libraries
 # are built in parallel.
-SUBDIRS +=				\
-	../cmd/sendmail/libmilter	\
-	../cmd/sgs/libelf	\
-	../cmd/sgs/librtld_db	\
-	abi		\
-	auditd_plugins	\
+
+# XXXARM: Things not built for AArch64 right now
+# libmilter -- seems 32bit and not 64bit clean
+# abi -- not ported/necessary
+# c_synonyms -- not ported/necessary
+# pylibbe, pysolaris, pyzfs -- no python yet
+# libdtrace_jni -- java
+# libzfs_jni -- java
+# libadt_jni -- java
+# libmvec -- not built because AArch64 has a special libm right now
+# libresolv -- libresolv.so.1 for binary compat, not needed
+# libm1 -- not built because AArch64 has a special libm right now
+# hal -- heavy dependencies, little benefit
+# policykit -- heavy dependencies, little benefit
+# smbclnt -- low value, needs cross dtrace
+#
+# libipd -- TLS
+# scsi -- TLS
+# libcpc -- not ported
+# brand -- not ported
+$(NOT_AARCH64_BLD)SUBDIRS += \
+	../cmd/sendmail/libmilter \
+	abi \
 	brand		\
 	c_synonyms	\
+	hal		\
+	libadt_jni	\
+	libcpc		\
+	libdtrace_jni	\
+	libipd		\
+	libmvec		\
+	libresolv	\
+	libzfs_jni	\
+	policykit	\
+	pylibbe		\
+	pysolaris	\
+	pyzfs		\
+	scsi		\
+	smbclnt		\
+	libm1
+
+SUBDIRS +=				\
+	../cmd/sgs/librtld_db	\
+	../cmd/sgs/libelf	\
+	auditd_plugins	\
 	cfgadm_plugins	\
 	crypt_modules	\
 	extendedFILE	\
@@ -83,13 +121,11 @@ SUBDIRS +=				\
 	gss_mechs/mech_dummy	\
 	gss_mechs/mech_krb5	\
 	gss_mechs/mech_spnego	\
-	hal		\
 	hbaapi		\
 	iconv_modules	\
 	krb5		\
 	libadm		\
 	libads		\
-	libadt_jni	\
 	libadutils	\
 	libaio		\
 	libavl		\
@@ -102,7 +138,6 @@ SUBDIRS +=				\
 	libcmdutils	\
 	libcommputil	\
 	libcontract	\
-	libcpc		\
 	libcrypt	\
 	libcryptoutil	\
 	libctf		\
@@ -121,7 +156,6 @@ SUBDIRS +=				\
 	libdns_sd	\
 	libdoor		\
 	libdtrace	\
-	libdtrace_jni	\
 	libdwarf	\
 	libefi		\
 	libelfsign	\
@@ -148,7 +182,6 @@ SUBDIRS +=				\
 	libinstzones	\
 	libintl		\
 	libipadm	\
-	libipd		\
 	libipmi		\
 	libipmp		\
 	libipp		\
@@ -162,7 +195,6 @@ SUBDIRS +=				\
 	libldap5	\
 	liblgrp		\
 	liblm		\
-	libm1		\
 	libmail		\
 	libmalloc	\
 	libmapid	\
@@ -170,7 +202,6 @@ SUBDIRS +=				\
 	libmd5		\
 	libmlrpc	\
 	libmtmalloc	\
-	libmvec		\
 	libndmp		\
 	libnisdb	\
 	libnls		\
@@ -191,7 +222,6 @@ SUBDIRS +=				\
 	librcm		\
 	librename	\
 	libreparse	\
-	libresolv	\
 	libresolv2	\
 	librestart	\
 	librpcsvc	\
@@ -239,11 +269,10 @@ SUBDIRS +=				\
 	libzfs		\
 	libzfsbootenv	\
 	libzfs_core	\
-	libzfs_jni	\
+	libzpool	\
 	libzonecfg	\
 	libzoneinfo	\
 	libzonestat	\
-	libzpool	\
 	libzutil	\
 	madv		\
 	mpapi		\
@@ -253,16 +282,10 @@ SUBDIRS +=				\
 	pam_modules	\
 	passwdutil	\
 	pkcs11		\
-	policykit	\
 	print		\
-	pylibbe		\
-	pysolaris	\
-	pyzfs		\
 	raidcfg_plugins	\
 	rpcsec_gss	\
 	sasl_plugins	\
-	scsi		\
-	smbclnt		\
 	smbsrv		\
 	smhba		\
 	sun_fc		\
@@ -293,6 +316,10 @@ sparc_SUBDIRS=		\
 	libtsalarm	\
 	libv12n
 
+aarch64_SUBDIRS=	\
+	lib9p		\
+	libfdisk
+
 #
 # Create a special version of $(SUBDIRS) with no .WAIT's, for use with the
 # clean and clobber targets (for more information, see those targets, below).
@@ -302,13 +329,10 @@ NOWAIT_SUBDIRS= $(SUBDIRS:.WAIT=)
 DCSUBDIRS=
 
 MSGSUBDIRS=		\
-	abi		\
 	auditd_plugins	\
-	brand		\
 	cfgadm_plugins	\
 	gss_mechs/mech_dh	\
 	gss_mechs/mech_krb5	\
-	krb5		\
 	libbsm		\
 	libc		\
 	libcfgadm	\
@@ -325,7 +349,6 @@ MSGSUBDIRS=		\
 	libipadm	\
 	libipmp		\
 	libipsecutil	\
-	libldap5	\
 	libnsl		\
 	libnwam		\
 	libofmt		\
@@ -338,7 +361,6 @@ MSGSUBDIRS=		\
 	libscf		\
 	libsecdb	\
 	libshare	\
-	libsldap	\
 	libslp		\
 	libsmbfs	\
 	libsmedia	\
@@ -350,16 +372,27 @@ MSGSUBDIRS=		\
 	libzonecfg	\
 	madv		\
 	mpss		\
-	pam_modules	\
-	pyzfs		\
 	rpcsec_gss	\
 	$($(MACH)_MSGSUBDIRS)
+
+# XXXARM
+# matching the reasons above, for actual builds
+$(NOT_AARCH64_BLD)MSGSUBDIRS += \
+	abi		\
+	brand		\
+	krb5		\
+	libldap5	\
+	libsldap	\
+	pam_modules	\
+	pyzfs		\
+
 
 sparc_MSGSUBDIRS=	\
 	libprtdiag	\
 	libprtdiag_psr
 
 i386_MSGSUBDIRS= libfdisk
+aarch64_MSGSUBDIRS= libfdisk
 
 HDRSUBDIRS=				\
 	../cmd/sendmail/libmilter	\
@@ -496,6 +529,10 @@ i386_HDRSUBDIRS=	\
 	libvmm		\
 	libvmmapi
 
+aarch64_HDRSUBDIRS=	\
+	lib9p		\
+	libfdisk
+
 sparc_HDRSUBDIRS=	\
 	libds		\
 	libdscp		\
@@ -572,9 +609,10 @@ abi:		libctf libmapmalloc libproc
 auditd_plugins: libbsm libsecdb libgss libmtmalloc
 brand:		libzonecfg libmapmalloc
 cfgadm_plugins:	libdevice libdevinfo libhotplug librcm hbaapi libkstat libscf
-fm:		libexacct libipmi libzfs scsi libdevinfo libdevid libcfgadm \
+fm:		libexacct libipmi libzfs libdevinfo libdevid libcfgadm \
 		libcontract libsysevent ../cmd/sgs/libelf libdladm libsff \
 		libpcidb libdiskmgt
+$(NOT_AARCH64_BLD)fm: scsi
 $(SPARC_BLD)fm:	libpri
 gss_mechs/mech_dh: libgss
 gss_mechs/mech_dummy: libgss
@@ -594,7 +632,7 @@ libcontract:	libnvpair
 libcmdutils:	libavl libnvpair
 libcpc:		libpctx
 libcrypt:	libgen
-libctf:		libdwarf
+libctf:		libdwarf libavl
 libdemangle:	libcustr
 libdevice:	libnvpair
 libdevid:	libdevinfo
@@ -718,16 +756,10 @@ udapl:		libdevinfo libdladm
 varpd:		libavl libidspace libumem libnsl libnvpair libmd5 librename \
 		libcustr
 
-#
-# The reason this rule checks for the existence of the
-# Makefile is that some of the directories do not exist
-# in certain situations (e.g., exportable source builds,
-# OpenSolaris).
-#
-$(SUBDIRS): FRC
+$(HDRSUBDIRS) $(SUBDIRS): FRC
 	cd $@; pwd; $(MAKE) $(TARGET)
 
-$(SUBDIRS:%=%-nodepend):
+$(HDRSUBDIRS:%=%-nodepend) $(MSGSUBDIRS:%=%-nodepend) $(SUBDIRS:%=%-nodepend):
 	cd $(@:%-nodepend=%); pwd; $(MAKE) $(TARGET)
 
 FRC:

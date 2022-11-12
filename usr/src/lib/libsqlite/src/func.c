@@ -1,6 +1,4 @@
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
 ** 2002 February 23
 **
@@ -13,7 +11,7 @@
 **
 *************************************************************************
 ** This file contains the C functions that implement various SQL
-** functions of SQLite.  
+** functions of SQLite.
 **
 ** There is only one exported symbol in this file - the function
 ** sqliteRegisterBuildinFunctions() found at the bottom of the file.
@@ -33,13 +31,13 @@
 ** Implementation of the non-aggregate min() and max() functions
 */
 static void minmaxFunc(sqlite_func *context, int argc, const char **argv){
-  const char *zBest; 
+  const char *zBest;
   int i;
   int (*xCompare)(const char*, const char*);
   int mask;    /* 0 for min() or 0xffffffff for max() */
 
   if( argc==0 ) return;
-  mask = (int)sqlite_user_data(context);
+  mask = (int)(intptr_t)sqlite_user_data(context);
   zBest = argv[0];
   if( zBest==0 ) return;
   if( argv[1][0]=='n' ){
@@ -284,7 +282,7 @@ out:
 }
 
 /*
-** Implementation of the IFNULL(), NVL(), and COALESCE() functions.  
+** Implementation of the IFNULL(), NVL(), and COALESCE() functions.
 ** All three do the same thing.  They return the first non-NULL
 ** argument.
 */
@@ -299,7 +297,7 @@ static void ifnullFunc(sqlite_func *context, int argc, const char **argv){
 }
 
 /*
-** Implementation of random().  Return a random integer.  
+** Implementation of random().  Return a random integer.
 */
 static void randomFunc(sqlite_func *context, int argc, const char **argv){
   int r;
@@ -346,7 +344,7 @@ static void last_statement_change_count(sqlite_func *context, int arg,
 */
 static void likeFunc(sqlite_func *context, int arg, const char **argv){
   if( argv[0]==0 || argv[1]==0 ) return;
-  sqlite_set_result_int(context, 
+  sqlite_set_result_int(context,
     sqliteLikeCompare((const unsigned char*)argv[0],
                       (const unsigned char*)argv[1]));
 }
@@ -469,7 +467,7 @@ static void soundexFunc(sqlite_func *context, int argc, const char **argv){
 ** generating test data.
 */
 static void randStr(sqlite_func *context, int argc, const char **argv){
-  static const unsigned char zSrc[] = 
+  static const unsigned char zSrc[] =
      "abcdefghijklmnopqrstuvwxyz"
      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
      "0123456789"
@@ -573,7 +571,7 @@ static void stdDevFinalize(sqlite_func *context){
   StdDevCtx *p = sqlite_aggregate_context(context, sizeof(*p));
   if( p && p->cnt>1 ){
     double rCnt = cnt;
-    sqlite_set_result_double(context, 
+    sqlite_set_result_double(context,
        sqrt((p->sum2 - p->sum*p->sum/rCnt)/(rCnt-1.0)));
   }
 }
@@ -597,7 +595,7 @@ static void countStep(sqlite_func *context, int argc, const char **argv){
   if( (argc==0 || argv[0]) && p ){
     p->n++;
   }
-}   
+}
 static void countFinalize(sqlite_func *context){
   CountCtx *p;
   p = sqlite_aggregate_context(context, sizeof(*p));
@@ -629,7 +627,7 @@ static void minmaxStep(sqlite_func *context, int argc, const char **argv){
   }else{
     xCompare = strcmp;
   }
-  mask = (int)sqlite_user_data(context);
+  mask = (int)(intptr_t)sqlite_user_data(context);
   assert( mask==0 || mask==-1 );
   p = sqlite_aggregate_context(context, sizeof(*p));
   if( p==0 || argc<1 ) return;

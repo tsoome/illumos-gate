@@ -50,12 +50,9 @@ SUBDIRS=	 libconv	\
 		0@0		\
 		ld		\
 		ldd		\
-		lddstub		\
 		rtld		\
-		link_audit	\
 		.WAIT		\
 		librtld_db	\
-		ldprof		\
 		pvs		\
 		crle		\
 		ar		\
@@ -73,27 +70,44 @@ SUBDIRS=	 libconv	\
 		mcs		\
 		moe		\
 		nm		\
-		prof		\
 		ranlib		\
 		size		\
 		symorder	\
-		tsort		\
 		unifdef		\
-		yacc		\
-		.WAIT		\
-		demo_rdb
+		yacc
 
+
+# XXXARM: Not built on aarch64 yet
+# lddstub - needs port
+# link_audit - needs port
+# ldprof - not ported
+# prof - not ported
+# tsort - not 64bit clean
+# demo_rdb - not ported
+$(NOT_AARCH64_BLD)SUBDIRS +=	\
+	lddstub		\
+	link_audit	\
+	ldprof		\
+	prof		\
+	tsort		\
+	.WAIT		\
+	demo_rdb
 # Messaging support
 #
-POSUBDIRS=	m4		nm	tsort		yacc
+POSUBDIRS=	m4		nm		yacc
+# XXXARM
+$(NOT_AARCH64_BLD)POSUBDIRS += tsort
+
 POFILE=		sgs.po
 POFILES=	$(POSUBDIRS:%=%/%.po)
 
 MSGSUBDIRS=	ld		ldd		libld		liblddbg \
 		libldstab	librtld		rtld		libelf \
-		ldprof		libcrle		pvs		elfdump	\
+				libcrle		pvs		elfdump	\
 		elfedit		crle		moe		lari \
 		librtld_db	elfwrap		ar
+# XXXARM: Matching SUBDIRS
+$(NOT_AARCH64_BLD)MSGSUBDIRS += ldprof
 
 CHKSUBDIRS=	elfcap.chk
 

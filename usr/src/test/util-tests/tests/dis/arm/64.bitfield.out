@@ -1,0 +1,42 @@
+    libdis_test:      e0 7f 1e 13  asr w0, wzr, #30
+    libdis_test+0x4:  e0 ff 5f 93  asr x0, xzr, #31
+    libdis_test+0x8:  e0 03 1f 13  sbfiz w0, wzr, #1, #1
+    libdis_test+0xc:  e0 03 7f 93  sbfiz x0, xzr, #1, #1
+    libdis_test+0x10: e0 1f 00 13  sxtb w0, wzr
+    libdis_test+0x14: e0 1f 40 93  sxtb x0, wzr
+    libdis_test+0x18: e0 3f 00 13  sxth w0, wzr
+    libdis_test+0x1c: e0 3f 40 93  sxth x0, wzr
+    libdis_test+0x20: e0 7f 00 13  asr w0, wzr, #0
+    libdis_test+0x24: e0 7f 40 93  sxtw x0, wzr
+    libdis_test+0x28: e0 7b 1f 13  sbfiz w0, wzr, #1, #31
+    libdis_test+0x2c: e0 fb 7f 93  sbfiz x0, xzr, #1, #63
+    libdis_test+0x30: e0 7b 1e 13  sbfx w0, wzr, #30, #1
+    libdis_test+0x34: e0 fb 7e 93  sbfx x0, xzr, #62, #1
+    libdis_test+0x38: e0 7f 1e 33  bfxil w0, wzr, #30, #2
+    libdis_test+0x3c: e0 ff 5f b3  bfxil x0, xzr, #31, #33
+    libdis_test+0x40: e0 03 1f 33  bfi w0, wzr, #1, #1
+    libdis_test+0x44: e0 03 7f b3  bfi x0, xzr, #1, #1
+    libdis_test+0x48: e0 1f 00 33  bfxil w0, wzr, #0, #8
+    libdis_test+0x4c: e0 1f 40 b3  bfxil x0, xzr, #0, #8
+    libdis_test+0x50: e0 3f 00 33  bfxil w0, wzr, #0, #16
+    libdis_test+0x54: e0 3f 40 b3  bfxil x0, xzr, #0, #16
+    libdis_test+0x58: e0 7f 00 33  bfxil w0, wzr, #0, #32
+    libdis_test+0x5c: e0 7f 40 b3  bfxil x0, xzr, #0, #32
+    libdis_test+0x60: e0 7b 1f 33  bfi w0, wzr, #1, #31
+    libdis_test+0x64: e0 fb 7f b3  bfi x0, xzr, #1, #63
+    libdis_test+0x68: e0 7b 1e 33  bfxil w0, wzr, #30, #1
+    libdis_test+0x6c: e0 fb 7e b3  bfxil x0, xzr, #62, #1
+    libdis_test+0x70: e0 7f 1e 53  lsr w0, wzr, #30
+    libdis_test+0x74: e0 ff 5f d3  lsr x0, xzr, #31
+    libdis_test+0x78: e0 03 1f 53  ubfiz w0, wzr, #1, #1
+    libdis_test+0x7c: e0 03 7f d3  ubfiz x0, xzr, #1, #1
+    libdis_test+0x80: e0 1f 00 53  uxtb w0, wzr
+    libdis_test+0x84: e0 1f 40 d3  ubfx x0, xzr, #0, #8
+    libdis_test+0x88: e0 3f 00 53  uxth w0, wzr
+    libdis_test+0x8c: e0 3f 40 d3  ubfx x0, xzr, #0, #16
+    libdis_test+0x90: e0 7f 00 53  lsr w0, wzr, #0
+    libdis_test+0x94: e0 7f 40 d3  ubfx x0, xzr, #0, #32
+    libdis_test+0x98: e0 7b 1f 53  lsl w0, wzr, #1
+    libdis_test+0x9c: e0 fb 7f d3  lsl x0, xzr, #1
+    libdis_test+0xa0: e0 7b 1e 53  ubfx w0, wzr, #30, #1
+    libdis_test+0xa4: e0 fb 7e d3  ubfx x0, xzr, #62, #1

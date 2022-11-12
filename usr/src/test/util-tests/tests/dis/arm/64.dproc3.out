@@ -1,0 +1,20 @@
+    libdis_test:      40 79 14 1b  madd w0, w10, w20, w30
+    libdis_test+0x4:  40 7d 14 1b  mul w0, w10, w20
+    libdis_test+0x8:  40 79 14 9b  madd x0, x10, x20, x30
+    libdis_test+0xc:  40 7d 14 9b  mul x0, x10, x20
+    libdis_test+0x10: 40 f9 14 1b  msub w0, w10, w20, w30
+    libdis_test+0x14: 40 fd 14 1b  mneg w0, w10, w20
+    libdis_test+0x18: 40 f9 14 9b  msub x0, x10, x20, x30
+    libdis_test+0x1c: 40 fd 14 9b  mneg x0, x10, x20
+    libdis_test+0x20: 00 78 3e 9b  smaddl x0, w0, w30, x30
+    libdis_test+0x24: 00 7c 3e 9b  smull x0, w0, w30
+    libdis_test+0x28: 00 f8 3e 9b  smsubl x0, w0, w30, x30
+    libdis_test+0x2c: 00 fc 3e 9b  smnegl x0, w0, w30
+    libdis_test+0x30: 00 78 be 9b  umaddl x0, w0, w30, x30
+    libdis_test+0x34: 00 7c be 9b  umull x0, w0, w30
+    libdis_test+0x38: 00 f8 be 9b  umsubl x0, w0, w30, x30
+    libdis_test+0x3c: 00 fc be 9b  umnegl x0, w0, w30
+    libdis_test+0x40: e0 7d 5e 9b  smulh x0, x15, x30
+    libdis_test+0x44: e0 7d 5f 9b  smulh x0, x15, xzr
+    libdis_test+0x48: e0 7d de 9b  umulh x0, x15, x30
+    libdis_test+0x4c: e0 7d df 9b  umulh x0, x15, xzr

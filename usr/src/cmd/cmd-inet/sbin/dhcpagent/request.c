@@ -987,7 +987,7 @@ dhcp_acknak_global(iu_eh_t *ehp, int fd, short events, iu_event_id_t id,
 	boolean_t	isv6 = (fd == v6_sock_fd);
 	struct sockaddr_in sin;
 	const char	*reason;
-	size_t		sinlen = sizeof (sin);
+	socklen_t	sinlen = sizeof (sin);
 	int		sock;
 
 	plp = recv_pkt(fd, get_max_mtu(isv6), isv6);

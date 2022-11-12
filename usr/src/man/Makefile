@@ -16,7 +16,6 @@
 #
 
 SUBDIRS=	man1		\
-		man1b		\
 		man1c		\
 		man1has		\
 		man1s		\
@@ -101,6 +100,12 @@ SUBDIRS=	man1		\
 		man9f		\
 		man9p		\
 		man9s
+
+# XXXARM: Not shipped on AArch64
+i386_SUBDIRS=		man1b
+sparc_SUBDIRS=		man1b
+
+SUBDIRS += $($(MACH)_SUBDIRS)
 
 .PARALLEL: $(SUBDIRS)
 

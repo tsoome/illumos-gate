@@ -21,7 +21,7 @@ link path=usr/bin/dmake target=make
 file path=usr/bin/make mode=0555
 link path=usr/ccs/bin/make target=../../bin/make
 link path=usr/ccs/lib/svr4.make target=../../bin/make
-file path=usr/lib/$(ARCH64)/libmakestate.so.1
+$(not_aarch64)file path=usr/lib/$(ARCH64)/libmakestate.so.1
 file path=usr/lib/libmakestate.so.1
 link path=usr/lib/svr4.make target=../bin/make
 dir  path=usr/share/lib/make

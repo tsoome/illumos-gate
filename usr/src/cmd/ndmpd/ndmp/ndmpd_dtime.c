@@ -75,7 +75,7 @@
  */
 typedef struct dumpdates {
 	char dd_name[TLM_MAX_PATH_NAME];
-	char dd_level;
+	int8_t dd_level;
 	time_t dd_ddate;
 	struct dumpdates *dd_next;
 } dumpdates_t;

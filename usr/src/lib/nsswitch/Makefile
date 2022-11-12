@@ -27,7 +27,15 @@
 
 include $(SRC)/Makefile.master
 
-SUBDIRS= files nis compat dns ldap user mdns ad
+SUBDIRS=	\
+	ad	\
+	compat	\
+	dns	\
+	files	\
+	ldap	\
+	mdns	\
+	nis	\
+	user
 
 all:=		TARGET= all
 clean:=		TARGET= clean

@@ -268,7 +268,7 @@ ql_populate_hba_fru_details(ql_adapter_state_t *ha,
 	if (ha->fcache != NULL) {
 		uint32_t	types = FTYPE_BIOS|FTYPE_FCODE|FTYPE_EFI;
 		ql_fcache_t	*fptr = ha->fcache;
-		int8_t		*orv = &*attrs->option_rom_version;
+		char		*orv = &*attrs->option_rom_version;
 
 		while ((fptr != NULL) && (types != 0)) {
 			/* Get the next image */
@@ -480,12 +480,12 @@ ql_populate_hba_fru_details(ql_adapter_state_t *ha,
 	 */
 	vlen = (strlen(utsname.nodename) > FCHBA_SYMB_NAME_LEN ?
 	    FCHBA_SYMB_NAME_LEN : strlen(utsname.nodename));
-	(void) snprintf((int8_t *)attrs->sym_node_name, vlen, "%s",
+	(void) snprintf((char *)attrs->sym_node_name, vlen, "%s",
 	    utsname.nodename);
 
 	vlen = (strlen(QL_NAME) + 9 > FCHBA_SYMB_NAME_LEN ?
 	    FCHBA_SYMB_NAME_LEN : strlen(QL_NAME) + 9);
-	(void) snprintf((int8_t *)attrs->sym_port_name, vlen,
+	(void) snprintf((char *)attrs->sym_port_name, vlen,
 	    "%s(%d,%d)", QL_NAME, ha->instance, ha->vp_index);
 
 	QL_PRINT_3(CE_CONT, "(%d): done\n", ha->instance);
@@ -585,7 +585,7 @@ ql_get_basedev_len(ql_adapter_state_t *ha, uint32_t *basedev_len,
 {
 	int32_t		dev_off;
 	int32_t		port_off;
-	int8_t		*devstr;
+	char		*devstr;
 
 	QL_PRINT_3(CE_CONT, "(%d): started\n", ha->instance);
 

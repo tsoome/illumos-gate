@@ -46,9 +46,11 @@ $(PROG) $(XPG4): $$(OBJS)
 	$(LINK.c) -o $@ $(OBJS) $(LDLIBS)
 	$(POST_PROCESS)
 
-install: all $(ROOTUSRSBINPROG) $(ROOTXPG4PROG)
+$(ROOTETCPROG):
 	-$(RM) $(ROOTETCPROG)
 	-$(SYMLINK) ../usr/sbin/$(PROG) $(ROOTETCPROG)
+
+install: all $(ROOTUSRSBINPROG) $(ROOTXPG4PROG) $(ROOTETCPROG)
 
 values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 	$(COMPILE.c) -o $@ ../../lib/crt/common/values-xpg4.c

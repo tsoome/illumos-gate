@@ -76,7 +76,7 @@ const char *ieee80211_phymode_name[] = {
  * Print error messages
  */
 void
-ieee80211_err(const int8_t *fmt, ...)
+ieee80211_err(const char *fmt, ...)
 {
 	IEEE80211_DPRINT(CE_WARN, fmt);
 }
@@ -85,7 +85,7 @@ ieee80211_err(const int8_t *fmt, ...)
  * Print debug messages
  */
 void
-ieee80211_dbg(uint32_t flag, const int8_t *fmt, ...)
+ieee80211_dbg(uint32_t flag, const char *fmt, ...)
 {
 	if (flag & ieee80211_debug)
 		IEEE80211_DPRINT(CE_CONT, fmt);

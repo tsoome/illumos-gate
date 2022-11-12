@@ -63,6 +63,7 @@ typedef enum {
 	CMD_SEND_IF_COND = 8,
 	CMD_SEND_CSD = 9,
 	CMD_SEND_CID = 10,
+	CMD_VOLTAGE_SWITCH = 11,
 	CMD_STOP_TRANSMIT = 12,
 	CMD_SEND_STATUS = 13,
 	CMD_GO_INACTIVE = 15,
@@ -173,6 +174,9 @@ typedef enum {
  */
 #define	OCR_POWER_UP		(1U << 31)
 #define	OCR_CCS			(1U << 30)
+#define	OCR_XPC			(1U << 28)
+#define	OCR_S18R		(1U << 24)
+#define	OCR_S18A		OCR_S18R
 #define	OCR_FUNCS(x)		(((x) & 7) >> 28)	/* SDIO only */
 #define	OCR_MEM_PRESENT		(1U << 27)		/* SDIO only */
 #define	OCR_VOLTAGE_MASK	(0xffffffU)		/* (bits 0-23 */
@@ -187,16 +191,14 @@ typedef enum {
 #define	OCR_28_29V		(1U << 16)
 #define	OCR_27_28V		(1U << 15)
 #define	OCR_26_27V		(1U << 14)
-#define	OCR_25_26V		(1U << 14)
-#define	OCR_24_25V		(1U << 13)
-#define	OCR_23_24V		(1U << 12)
-#define	OCR_22_23V		(1U << 11)
-#define	OCR_21_22V		(1U << 10)
-#define	OCR_20_21V		(1U << 9)
-#define	OCR_19_20V		(1U << 8)
+#define	OCR_25_26V		(1U << 13)
+#define	OCR_24_25V		(1U << 12)
+#define	OCR_23_24V		(1U << 11)
+#define	OCR_22_23V		(1U << 10)
+#define	OCR_21_22V		(1U << 9)
+#define	OCR_20_21V		(1U << 8)
 #define	OCR_18_19V		(1U << 7)
-#define	OCR_17_18V		(1U << 6)
-
+#define OCR_17_18V		(1U << 6)
 
 /*
  * Command structure.  Used internally by the framework, and by host

@@ -22,6 +22,7 @@
 /*
  *  Copyright (c) 1990, 2010, Oracle and/or its affiliates. All rights reserved.
  *  Copyright (c) 2011 Bayard G. Bell. All rights reserved.
+ *  Copyright 2017 Hayashi Naoyuki
  */
 
 /*
@@ -416,7 +417,21 @@ static ddi_dma_attr_t st_alloc_attr = {
 };
 uint64_t st_max_phys_addr = 0xFFFFFFFFull;
 int st_sgl_size = 0xF;
-
+#elif defined(__aarch64__)
+static ddi_dma_attr_t st_alloc_attr = {
+	DMA_ATTR_V0,	/* version number */
+	0x0,		/* lowest usable address */
+	0xFFFFFFFFull,	/* high DMA address range */
+	0xFFFFFFFFull,	/* DMA counter register */
+	1,		/* DMA address alignment */
+	1,		/* DMA burstsizes */
+	1,		/* min effective DMA size */
+	0xFFFFFFFFull,	/* max DMA xfer size */
+	0xFFFFFFFFull,	/* segment boundary */
+	1,		/* s/g list length */
+	512,		/* granularity of device */
+	0		/* DMA transfer flags */
+};
 #endif
 
 /*

@@ -74,7 +74,7 @@ SMOFF += all_func_returns,deref_check
 CSTD =       $(CSTD_GNU99)
 
 LDFLAGS += -R/usr/lib/smbsrv
-LDLIBS += -L$(ROOT)/usr/lib/smbsrv
+LDLIBS += -L$(ROOT)/usr/lib/smbsrv -L$(ADJUNCT_PROTO)/usr/lib/mps
 # prefer to keep libs ordered by dependence
 LDLIBS += -lmlsvc -lmlrpc -lsmbns -lsmb -lsmbfs -lgss
 LDLIBS += -lzfs -lbsm -lscf -lcmdutils -lsocket -lnsl -lumem

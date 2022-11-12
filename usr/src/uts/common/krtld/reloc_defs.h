@@ -27,8 +27,6 @@
 #ifndef	_RELOC_DEFS_DOT_H
 #define	_RELOC_DEFS_DOT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/machelf.h>
 
 #ifdef	__cplusplus
@@ -44,10 +42,10 @@ extern "C" {
  * Structure used to build the reloc_table[]
  */
 typedef struct {
-	Xword	re_mask;	/* mask to apply to reloc (sparc only) */
+	Xword	re_mask;	/* mask to apply to reloc */
 	Word	re_flags;	/* relocation attributes */
 	uchar_t	re_fsize;	/* field size (in bytes) */
-	uchar_t	re_bshift;	/* number of bits to shift (sparc only) */
+	uchar_t	re_bshift;	/* number of bits to shift */
 	uchar_t	re_sigbits;	/* number of significant bits */
 } Rel_entry;
 
@@ -84,6 +82,8 @@ typedef struct {
 #define	FLG_RE_TLSLE		0x01000000	/* TLS LE relocation */
 #define	FLG_RE_LOCLBND		0x02000000	/* relocation must bind */
 						/*    locally */
+#define	FLG_RE_PAGE		0x04000000	/* relocation is relative to */
+						/*    a page */
 
 /*
  * Relocation table and macros for testing relocation table flags.
@@ -104,6 +104,19 @@ typedef struct {
 
 #define	RELTAB_IS_GOT_BASED(X, _reltab) \
 	((_reltab[(X)].re_flags & FLG_RE_GOTREL) != 0)
+
+#define	RELTAB_IS_GOTPAGE_BASED(X, _reltab) \
+	((_reltab[(X)].re_flags & (FLG_RE_PAGE | FLG_RE_GOTADD)) == \
+        (FLG_RE_PAGE | FLG_RE_GOTADD))
+
+#define	RELTAB_IS_PAGEPC_BASED(X, _reltab) \
+	((_reltab[(X)].re_flags & (FLG_RE_PAGE | FLG_RE_PCREL)) ==	\
+	(FLG_RE_PAGE | FLG_RE_PCREL))
+
+/* XXXARM: should be PAGE|GOTPC?  */
+#define	RELTAB_IS_GOTPAGEPC_BASED(X, _reltab) \
+	((_reltab[(X)].re_flags & (FLG_RE_PAGE | FLG_RE_PCREL | FLG_RE_GOTADD)) == \
+	(FLG_RE_PAGE | FLG_RE_PCREL | FLG_RE_GOTADD))
 
 #define	RELTAB_IS_GOT_OPINS(X, _reltab) \
 	((_reltab[(X)].re_flags & FLG_RE_GOTOPINS) != 0)
@@ -154,6 +167,9 @@ typedef struct {
 
 #define	RELTAB_IS_SIZE(X, _reltab) \
 	((_reltab[(X)].re_flags & FLG_RE_SIZE) != 0)
+
+#define RELTAB_IS_PAGE_BASED(X, _reltab) \
+	((_reltab[(X)].re_flags & FLG_RE_PAGE) != 0)
 
 #ifdef	__cplusplus
 }
