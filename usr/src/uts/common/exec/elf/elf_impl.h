@@ -22,6 +22,9 @@
  * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2019 Joyent, Inc.
+ */
 
 #ifndef _ELF_ELF_IMPL_H
 #define	_ELF_ELF_IMPL_H
@@ -73,6 +76,17 @@ typedef struct {
 	char	name[8];
 } Note;
 
+typedef struct {
+	vnode_t		*ecc_vp;
+	proc_t		*ecc_p;
+	cred_t		*ecc_credp;
+	rlim64_t	ecc_rlimit;
+	core_content_t	ecc_content;
+	u_offset_t	ecc_doffset;
+	void		*ecc_buf;
+	size_t		ecc_bufsz;
+} elf_core_ctx_t;
+
 #ifdef	_ELF32_COMPAT
 /*
  * These are defined only for the 32-bit compatibility
@@ -81,6 +95,7 @@ typedef struct {
 #define	elfexec	elf32exec
 #define	elfnote	elf32note
 #define	elfcore	elf32core
+#define	elfreadhdr		elf32readhdr
 #define	mapexec_brand		mapexec32_brand
 #define	setup_note_header	setup_note_header32
 #define	write_elfnotes		write_elfnotes32

@@ -12,7 +12,7 @@
 #
 
 #
-# Copyright 2021 Tintri by DDN, Inc.  All rights reserved.
+# Copyright 2022 Tintri by DDN, Inc. All rights reserved.
 #
 
 # Run all the smbsrv-tests
@@ -29,12 +29,8 @@ function fail
 	exit ${2:-1}
 }
 
-while getopts b:c:o:t: c; do
+while getopts c:o:t: c; do
 	case $c in
-	'b')
-		export BASEFILE=$OPTARG
-		[[ -f $BASEFILE ]] || fail "Cannot read file: $BASEFILE"
-		;;
 	'c')
 		CFGFILE=$OPTARG
 		[[ -f $CFGFILE ]] || fail "Cannot read file: $CFGFILE"
@@ -51,5 +47,7 @@ shift $((OPTIND - 1))
 
 set -x
 
-# Just one test for now.  More to come.
 $SMBSRV_TESTS/tests/smbtorture/runst-smb2
+$SMBSRV_TESTS/tests/smbtorture/runst-rpc
+$SMBSRV_TESTS/tests/smb_sid/large_sids_lib
+$SMBSRV_TESTS/tests/smb_sid/large_sids_kern

@@ -22,6 +22,7 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Copyright 2019 Joyent, Inc.
  */
 
 #include <sys/types.h>
@@ -54,7 +55,7 @@ shbinexec(
 	struct uarg *args,
 	struct intpdata *idatap,
 	int level,
-	long *execsz,
+	size_t *execsz,
 	int setid,
 	caddr_t exec_file,
 	struct cred *cred,
@@ -158,7 +159,7 @@ shbinexec(
 	struct uarg *args,
 	struct intpdata *idatap,
 	int level,
-	long *execsz,
+	size_t *execsz,
 	int setid,
 	caddr_t exec_file,
 	struct cred *cred,

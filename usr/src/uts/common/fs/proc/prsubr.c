@@ -21,9 +21,10 @@
 
 /*
  * Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2017, Joyent, Inc.
+ * Copyright 2019 Joyent, Inc.
  * Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
  * Copyright 2022 MNX Cloud, Inc.
+ * Copyright 2022 Oxide Computer Company
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
@@ -1409,10 +1410,10 @@ prgetaction32(proc_t *p, user_t *up, uint_t sig, struct sigaction32 *sp)
 /*
  * Count the number of segments in this process's address space.
  */
-int
+uint_t
 prnsegs(struct as *as, int reserved)
 {
-	int n = 0;
+	uint_t n = 0;
 	struct seg *seg;
 
 	ASSERT(as != &kas && AS_WRITE_HELD(as));
@@ -1429,8 +1430,21 @@ prnsegs(struct as *as, int reserved)
 		for (saddr = seg->s_base; saddr < eaddr; saddr = naddr) {
 			(void) pr_getprot(seg, reserved, &tmp,
 			    &saddr, &naddr, eaddr);
-			if (saddr != naddr)
+			if (saddr != naddr) {
 				n++;
+				/*
+				 * prnsegs() was formerly designated to return
+				 * an 'int' despite having no ability or use
+				 * for negative results.  As part of changing
+				 * it to 'uint_t', keep the old effective limit
+				 * of INT_MAX in place.
+				 */
+				if (n == INT_MAX) {
+					pr_getprot_done(&tmp);
+					ASSERT(tmp == NULL);
+					return (n);
+				}
+			}
 		}
 
 		ASSERT(tmp == NULL);
@@ -1600,6 +1614,54 @@ retry:
 	}
 
 	return (fp);
+}
+
+
+/*
+ * Just as pr_getf() is a little unusual in how it goes about making the file_t
+ * safe for procfs consumers to access it, so too is pr_releasef() for safely
+ * releasing that "hold".  The "hold" is unlike normal file descriptor activity
+ * -- procfs is just an interloper here, wanting access to the vnode_t without
+ * risk of a racing close() disrupting the state.  Just as pr_getf() avoids some
+ * of the typical file_t behavior (such as auditing) when establishing its hold,
+ * so too should pr_releasef().  It should not go through the motions of
+ * closef() (since it is not a true close()) unless racing activity causes it to
+ * be the last actor holding the refcount above zero.
+ *
+ * Under normal circumstances, we expect to find file_t`f_count > 1 after
+ * the successful pr_getf() call.  We are, after all, accessing a resource
+ * already held by the process in question.  We would also expect to rarely race
+ * with a close() of the underlying fd, meaning that file_t`f_count > 1 would
+ * still holds at pr_releasef() time.  That would mean we only need to decrement
+ * f_count, leaving it to the process to later close the fd (thus triggering
+ * VOP_CLOSE(), etc).
+ *
+ * It is only when that process manages to close() the fd while we have it
+ * "held" in procfs that we must make a trip through the traditional closef()
+ * logic to ensure proper tear-down of the file_t.
+ */
+void
+pr_releasef(file_t *fp)
+{
+	mutex_enter(&fp->f_tlock);
+	if (fp->f_count > 1) {
+		/*
+		 * This is the most common case: The file is still held open by
+		 * the process, and we simply need to release our hold by
+		 * decrementing f_count
+		 */
+		fp->f_count--;
+		mutex_exit(&fp->f_tlock);
+	} else {
+		/*
+		 * A rare occasion: The process snuck a close() of this file
+		 * while we were doing our business in procfs.  Given that
+		 * f_count == 1, we are the only one with a reference to the
+		 * file_t and need to take a trip through closef() to free it.
+		 */
+		mutex_exit(&fp->f_tlock);
+		(void) closef(fp);
+	}
 }
 
 void

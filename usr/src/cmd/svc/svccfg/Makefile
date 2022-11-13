@@ -69,7 +69,8 @@ $(NATIVE_BUILD)SYSROOT=
 MAPFILES +=	$(MAPFILE.LEX) $(MAPFILE.NGB)
 MAPOPTS =	$(MAPFILES:%=-Wl,-M%)
 
-MYCPPFLAGS =	-I ../common -I$(ADJUNCT_PROTO)/usr/include/libxml2
+$(NOT_NATIVE)MYCPPFLAGS =	-I ../common -I$(ADJUNCT_PROTO)/usr/include/libxml2
+$(NATIVE_BUILD)MYCPPFLAGS =	-I ../common -I$(NATIVE_ADJUNCT)/include/libxml2
 CPPFLAGS +=	$(MYCPPFLAGS)
 LDFLAGS +=	$(MAPOPTS)
 
@@ -88,7 +89,7 @@ YFLAGS = -d
 CLOBBERFILES += svccfg_lex.c svccfg_grammar.c svccfg_grammar.h \
     $(MYPROG:%=%-native)
 
-SVCCFG_EXTRA_LIBS = -lxml2 -lscf -ll -luutil -lumem -lmd5 -lnvpair
+SVCCFG_EXTRA_LIBS = -lxml2 -lscf -ll -luutil -lumem -lmd -lnvpair
 $(NOT_NATIVE)SVCCFG_EXTRA_LIBS += -ltecla
 #
 # If no adjunct, then we'll already find /usr/lib via LDLIBS below.  But if
@@ -97,9 +98,9 @@ $(NOT_NATIVE)SVCCFG_EXTRA_LIBS += -ltecla
 # XXXARM: another case of the native builds being a mess
 #
 $(NATIVE_BUILD)NATIVE_LIBS += libxml2.so libl.so libumem.so \
-    libmd5.so libnvpair.so libc.so
+    libmd.so libnvpair.so libc.so
 $(NO_ADJUNCT_PROTO)NATIVE_LIBS += libxml2.so libl.so libumem.so \
-    libmd5.so libnvpair.so libc.so
+    libmd.so libnvpair.so libc.so
 
 LIBSCF		= $(SRC)/lib/libscf
 LIBTECLA	= $(SRC)/lib/libtecla		# just for the header
@@ -120,7 +121,7 @@ $(NATIVE_BUILD)LDFLAGS = $(BDIRECT)
 $(NATIVE_BUILD)LDLIBS = \
 	-L$(LIBUUTIL)/native -R $(LIBUUTIL)/native \
 	-L$(LIBSCF)/native -R $(LIBSCF)/native \
-	-L$(ADJUNCT_PROTO)/usr/lib -R$(ADJUNCT_PROTO)/usr/lib \
+	-L$(NATIVE_ADJUNCT)/lib -R$(NATIVE_ADJUNCT)/lib \
 	$(SVCCFG_EXTRA_LIBS)
 
 svccfg_help.po := XGETFLAGS =	-a

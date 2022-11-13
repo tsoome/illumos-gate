@@ -166,7 +166,6 @@
 static int
 read_safe(int fd, struct frame *fp, struct frame **savefp, uintptr_t *savepc)
 {
-
 	uintptr_t newfp;
 
 	if ((uintptr_t)fp & (sizeof (void *) - 1))
@@ -356,7 +355,6 @@ async_filenoprintf(int filenum, const char *format, ...)
 static int
 display_stack_info(uintptr_t pc, int signo, void *arg)
 {
-
 	char buffer[MAX_LINE];
 	char sigbuf[SIG2STR_MAX];
 
@@ -409,9 +407,8 @@ typedef struct backtrace {
 	int	bt_actcount;
 } backtrace_t;
 
-/* ARGSUSED */
 static int
-callback(uintptr_t pc, int signo, void *arg)
+callback(uintptr_t pc, int signo __unused, void *arg)
 {
 	backtrace_t *bt = (backtrace_t *)arg;
 

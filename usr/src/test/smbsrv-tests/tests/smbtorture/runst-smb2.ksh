@@ -51,7 +51,7 @@ shift $((OPTIND - 1))
 export PATH="$(dirname $SMBTOR):$PATH"
 
 mkdir -p $outdir
-cd $outdir
+cd $outdir || fail "Could not cd to $outdir"
 
 tstamp=$(date +'%Y%m%dT%H%M%S')
 logfile=$outdir/smbtor-smb2-${tstamp}.log

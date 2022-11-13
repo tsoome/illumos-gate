@@ -23,8 +23,6 @@
 # Use is subject to license terms.
 #
 
-include $(SRC)/Makefile.master
-
 SUBDIRS=	dfshares shareall unshareall sharemgr sharectl
 MSGSUBDIRS=	sharectl sharemgr
 

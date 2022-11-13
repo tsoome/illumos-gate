@@ -22,7 +22,13 @@ PROG =	mem_partial \
 	interface_version \
 	check_iommu \
 	auto_destruct \
-	drv_hold
+	legacy_destruct \
+	self_destruct \
+	drv_hold \
+	cpuid_ioctl \
+	default_capabs \
+	datarw_constraints \
+	pause_resume
 
 COMMON_OBJS =	common.o
 CLEAN_OBJS =	$(PROG:%=%.o)

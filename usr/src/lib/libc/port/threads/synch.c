@@ -3154,9 +3154,8 @@ heldlock_exit(void)
 }
 
 #pragma weak _cond_init = cond_init
-/* ARGSUSED2 */
 int
-cond_init(cond_t *cvp, int type, void *arg)
+cond_init(cond_t *cvp, int type, void *arg __unused)
 {
 	if (type != USYNC_THREAD && type != USYNC_PROCESS)
 		return (EINVAL);
