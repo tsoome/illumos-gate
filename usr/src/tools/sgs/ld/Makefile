@@ -31,6 +31,7 @@ LDLIBS =	-lumem -L../libconv -L$(ROOTONBLDLIBMACH64) -lld -lelf -lconv
 NATIVE_LIBS +=	libc.so libumem.so
 CPPFLAGS =	$(NATIVE_CPPFLAGS)
 CFLAGS =	$(NATIVE_CFLAGS)
+CFLAGS64 =	$(NATIVE_CFLAGS64)
 SGSMSGDIR =	$(SGSHOME)/messages/$(NATIVE_MACH)
 MAPFILES =	$(SRCDIR)/common/mapfile-intf
 RPATH =		'-R$$ORIGIN/../../lib/$(NATIVE_MACH)/64'

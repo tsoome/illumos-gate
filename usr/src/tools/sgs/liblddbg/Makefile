@@ -33,6 +33,7 @@ include		$(SRC)/Makefile.master.64
 
 CPPFLAGS =	$(NATIVE_CPPFLAGS) -I$(SRC)/lib/libc/inc
 CFLAGS =	$(NATIVE_CFLAGS)
+CFLAGS64 =	$(NATIVE_CFLAGS64)
 DYNFLAGS +=	-L../libconv
 SGSMSGTARG +=	$(SGSMSG32)
 SGSMSGDIR =	$(SGSHOME)/messages/$(NATIVE_MACH)
