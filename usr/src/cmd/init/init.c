@@ -92,6 +92,7 @@
 
 #include <sys/contract/process.h>
 #include <sys/ctfs.h>
+#include <sys/corectl.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/stropts.h>
@@ -480,6 +481,8 @@ static const char * const init_state_file = INIT_STATE_DIR "/init.state";
 static const char * const init_next_state_file =
 	INIT_STATE_DIR "/init-next.state";
 
+#define	INIT_CORE	"core.%f.%t.%p"
+
 static const int init_num_proc = 20;	/* Initial size of process table. */
 
 static char *UTMPX	 = UTMPX_FILE;		/* Snapshot record file */
@@ -663,6 +666,14 @@ main(int argc, char *argv[])
 	if (getpid() != init_pid) {
 		userinit(argc, argv);
 	}
+
+	/*
+	 * Now we know we're the true init, set our core file pattern such
+	 * that if we die we don't loop overwriting `/core` leaving it
+	 * corrupt.
+	 */
+	(void) core_set_process_path(INIT_CORE,
+		    strlen(INIT_CORE) + 1, getpid());
 
 	if (getzoneid() != GLOBAL_ZONEID) {
 		print_banner = TRUE;
