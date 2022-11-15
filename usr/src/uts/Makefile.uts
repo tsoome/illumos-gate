@@ -216,12 +216,6 @@ CFLAGS_uts_aarch64 += -_gcc=-fno-shrink-wrap
 CFLAGS_uts_i386 += -_gcc=-mindirect-branch=thunk-extern
 CFLAGS_uts_i386 += -_gcc=-mindirect-branch-register
 
-#
-# XXXARM: For some reason, the compiler is defaulting -fPIC
-# (probably for PIE?)
-#
-CFLAGS_uts_aarch64 += -_gcc=-fno-pic
-
 CSTD = $(CSTD_GNU99)
 
 CFLAGS_uts		=
