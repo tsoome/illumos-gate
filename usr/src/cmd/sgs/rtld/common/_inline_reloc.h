@@ -100,7 +100,7 @@ inline static ulong_t
 elf_reloc_relative(ulong_t rbgn, ulong_t rend, ulong_t rsize, ulong_t base,
     Rt_map *lmp, APlist **textrel, int add)
 {
-	uchar_t	rtype;
+	Word	rtype;
 
 	do {
 		if (_elf_reloc_relative(rbgn, base, lmp, textrel, add) == 0)

@@ -32,6 +32,7 @@
 #include	<stdio.h>
 #include	<sys/elf.h>
 #include	<sys/elf_aarch64.h>
+#include	<sys/debug.h>
 #include	<sys/mman.h>
 #include	<dlfcn.h>
 #include	<synch.h>
@@ -45,8 +46,8 @@
 #include	"_inline_gen.h"
 #include	"_inline_reloc.h"
 #include	"msg.h"
-#include <unistd.h>
-#include <fcntl.h>
+#include	<unistd.h>
+#include	<fcntl.h>
 
 extern void elf_rtbndr(Rt_map *, ulong_t, caddr_t) __attribute__ ((visibility("hidden")));
 
@@ -523,16 +524,19 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 					SRESULT_INIT(sr, name);
 					symdef = NULL;
 
-					if (rtype == R_AARCH64_COPY) {
-						/* XXXARM: Huh? */
-						__asm__ volatile("nop");
-					}
 					if (lookup_sym(&sl, &sr, &binfo,
 					    in_nfavl)) {
 						name = (char *)sr.sr_name;
 						_lmp = sr.sr_dmap;
 						symdef = sr.sr_sym;
 					}
+
+					/*
+					 * If a copy bound to itself, we're in
+					 * trouble.
+					 */
+					if (rtype == M_R_COPY)
+						ASSERT(lmp != _lmp);
 
 					/*
 					 * If the symbol is not found and the
@@ -661,9 +665,6 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 				*(ulong_t *)roffset = value;
 			}
 			break;
-		case R_AARCH64_RELATIVE:
-		default:
-			break;
 		case R_AARCH64_GLOB_DAT:
 		case R_AARCH64_ABS64:
 			value += reladd;
@@ -676,6 +677,15 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 
 			DBG_CALL(Dbg_reloc_apply_val(LIST(lmp), ELF_DBG_RTLD,
 			    (Xword)roffset, (Xword)value));
+
+			/*
+			 * XXXARM: This list should be exhaustive in dynamic
+			 * relocations, and warn if we see others
+			 */
+		case R_AARCH64_RELATIVE:
+		default:
+			break;
+
 		}
 
 		if ((ret == 0) &&

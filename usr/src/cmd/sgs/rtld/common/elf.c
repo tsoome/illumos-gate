@@ -2410,6 +2410,7 @@ elf_copy_reloc(char *name, Sym *rsym, Rt_map *rlmp, void *radd, Sym *dsym,
 		else
 			return (1);
 	}
+
 	if (!(FLAGS1(dlmp) & FL1_RT_COPYTOOK)) {
 		if (aplist_append(&COPY_S(rlmp), dlmp,
 		    AL_CNT_COPYREL) == NULL) {
@@ -2852,7 +2853,7 @@ elf_lazy_find_sym(Slookup *slp, Sresult *srp, uint_t *binfo, int *in_nfavl)
  * Warning message for bad r_offset.
  */
 void
-elf_reloc_bad(Rt_map *lmp, void *rel, uchar_t rtype, ulong_t roffset,
+elf_reloc_bad(Rt_map *lmp, void *rel, Word rtype, ulong_t roffset,
     ulong_t rsymndx)
 {
 	const char	*name = NULL;
@@ -2896,7 +2897,7 @@ elf_reloc_bad(Rt_map *lmp, void *rel, uchar_t rtype, ulong_t roffset,
  * Resolve a static TLS relocation.
  */
 long
-elf_static_tls(Rt_map *lmp, Sym *sym, void *rel, uchar_t rtype, char *name,
+elf_static_tls(Rt_map *lmp, Sym *sym, void *rel, Word rtype, char *name,
     ulong_t roffset, long value)
 {
 	Lm_list	*lml = LIST(lmp);

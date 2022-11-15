@@ -3155,7 +3155,7 @@ lookup_sym(Slookup *slp, Sresult *srp, uint_t *binfo, int *in_nfavl)
 {
 	Rt_map		*clmp = slp->sl_cmap;
 	Sym		*rsym = slp->sl_rsym;
-	uchar_t		rtype = slp->sl_rtype, vis;
+	Word		rtype = slp->sl_rtype, vis;
 	int		ret, mode;
 
 	if (slp->sl_hash == 0)

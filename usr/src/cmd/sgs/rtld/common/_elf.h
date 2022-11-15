@@ -67,11 +67,11 @@ extern	void	elf_plt_init(void *, caddr_t);
 extern	void	elf_plt2_init(uint_t *, Rt_map *);
 #endif
 extern	int	elf_reloc(Rt_map *, uint_t, int *, APlist **);
-extern	void	elf_reloc_bad(Rt_map *, void *, uchar_t, ulong_t,
+extern	void	elf_reloc_bad(Rt_map *, void *, Word, ulong_t,
 		    ulong_t);
 extern	int	elf_reloc_error(Rt_map *, const char *, void *, uint_t);
 extern	int	elf_rtld_load();
-extern	long	elf_static_tls(Rt_map *, Sym *, void *, uchar_t, char *,
+extern	long	elf_static_tls(Rt_map *, Sym *, void *, Word, char *,
 		    ulong_t, long);
 extern	Fct	*elf_verify(caddr_t, size_t, Fdesc *, const char *, Rej_desc *);
 extern	int	elf_verify_vers(const char *, Rt_map *, Rt_map *);

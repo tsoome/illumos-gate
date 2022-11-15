@@ -1066,7 +1066,7 @@ struct slookup {
 	ulong_t		sl_hash;	/* symbol hash value */
 	ulong_t		sl_rsymndx;	/* referencing reloc symndx */
 	Sym		*sl_rsym;	/* referencing symbol */
-	uchar_t		sl_rtype;	/* relocation type associate with */
+	Word		sl_rtype;	/* relocation type associate with */
 					/*    symbol */
 	uchar_t		sl_bind;	/* symbols binding (returned) */
 	uint_t		sl_flags;	/* lookup flags */

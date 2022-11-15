@@ -92,8 +92,7 @@ count_reloc(Cache *cache, Cache *_cache, Rt_map *lmp, int flags, Addr addr,
 	for (_cnt = 0; _cnt < cnt; _cnt++, reloc++,
 	    rel = (Rel *)((uintptr_t)rel + ent)) {
 		const char	*name;
-		/* LINTED */
-		uchar_t		type = (uchar_t)ELF_R_TYPE(rel->r_info, M_MACH);
+		Word		type = ELF_R_TYPE(rel->r_info, M_MACH);
 		uchar_t		bind;
 		ulong_t		offset = rel->r_offset + addr;
 		Rt_map		*_lmp;
@@ -445,8 +444,7 @@ update_reloc(Cache *ocache, Cache *icache, Cache *_icache, const char *name,
 	for (_cnt = 0; _cnt < cnt; _cnt++, reloc++,
 	    rel = (Rel *)((uintptr_t)rel + ent)) {
 		uchar_t		*iaddr, *oaddr;
-		/* LINTED */
-		uchar_t		type = (uchar_t)ELF_R_TYPE(rel->r_info, M_MACH);
+		Word		type = ELF_R_TYPE(rel->r_info, M_MACH);
 		Addr		off, bgn, end;
 
 		/*
