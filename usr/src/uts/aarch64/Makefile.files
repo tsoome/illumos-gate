@@ -162,7 +162,6 @@ KRTLD_OBJS +=			\
 	doreloc.o		\
 	hsfs.o			\
 	kobj_convrelstr.o	\
-	kobj_crt.o		\
 	kobj_isa.o		\
 	kobj_reloc.o		\
 	ufsops.o

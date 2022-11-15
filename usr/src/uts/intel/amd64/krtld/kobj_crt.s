@@ -32,9 +32,8 @@
 #include <sys/reboot.h>
 
 /*
- *  exitto is called from main() and does 1 things
- *	It then jumps directly to the just-loaded standalone.
- *	There is NO RETURN from exitto().
+ *  exitto is called from kobj_init() via dboot to jump to the real
+ *      unix entry point.  There is NO RETURN from exitto().
  */
 
 
@@ -57,4 +56,3 @@
 	INDIRECT_CALL_REG(r11)
 
 	SET_SIZE(exitto)
-
