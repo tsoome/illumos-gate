@@ -404,7 +404,7 @@ iterate_through_spacemap_logs(spa_t *spa, zdb_log_sm_cb_t cb, void *arg)
 		    .uic_cb = cb
 		};
 		VERIFY0(space_map_iterate(sm, space_map_length(sm),
-		iterate_through_spacemap_logs_cb, &uic));
+		    iterate_through_spacemap_logs_cb, &uic));
 		space_map_close(sm);
 	}
 	spa_config_exit(spa, SCL_CONFIG, FTAG);
@@ -414,7 +414,7 @@ static void
 verify_livelist_allocs(metaslab_verify_t *mv, uint64_t txg,
     uint64_t offset, uint64_t size)
 {
-	sublivelist_verify_block_t svb;
+	sublivelist_verify_block_t svb = {{{0}}};
 	DVA_SET_VDEV(&svb.svb_dva, mv->mv_vdid);
 	DVA_SET_OFFSET(&svb.svb_dva, offset);
 	DVA_SET_ASIZE(&svb.svb_dva, size);
@@ -427,7 +427,7 @@ verify_livelist_allocs(metaslab_verify_t *mv, uint64_t txg,
 	 *  of the spacemap entry as it may have been condensed
 	 */
 	sublivelist_verify_block_t *found =
-	zfs_btree_find(&mv->mv_livelist_allocs, &svb, &where);
+	    zfs_btree_find(&mv->mv_livelist_allocs, &svb, &where);
 	if (found == NULL) {
 		found = zfs_btree_next(&mv->mv_livelist_allocs, &where, &where);
 	}
