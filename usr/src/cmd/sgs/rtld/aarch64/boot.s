@@ -170,13 +170,12 @@
  *	#_______________________# <- sp (= fp - EB_MAX_SIZE64) = a0 (= &eb[0])
  */
 
-/* XXXARM: This relies on the offset between pc and .dynamic being positive, we
-/* arrange for this in the link-editor but surely would rather not. */
- 	bl	2f					// skip constant, set lr
- 1:	.long _DYNAMIC - 1b
- 2:	ldr	w1, [lr]				// w1 = lr
- 	adr	x10, 1b					// x10 <- offset of _DYNAMIC
- 	add	x1, x1, x10				// x1 <- lr + offset of _DYNAMIC
+	bl	2f					// skip constant, set lr to its address
+ 1:	.quad _DYNAMIC - 1b
+ 2:	ldr	x1, [lr]				// x1 = offset from 1b to _DYNAMIC at compile time
+	adr	x10, 1b					// x10 <- address of 1b at runtime
+	add	x1, x1, x10				// x1 <- runtime address of 1b +
+							//   offset from 1b to _DYNAMIC at compile time
 
 	ldr	x9, [x0, #(8 * 7)]			// x9 <- EB_LDSO_BASE off the stack
 
@@ -193,5 +192,5 @@
 	adrp	x2, :got:atexit_fini			// page of atexit_fini in the GOT
 	ldr	x2, [x2, #:got_lo12:atexit_fini]	// lo12 bits filled out, x2 atexit_fini
 
-	br	x0					// get going with our main entry (I think)
+	br	x0					// get going with our main entry
 	SET_SIZE(_rt_boot)

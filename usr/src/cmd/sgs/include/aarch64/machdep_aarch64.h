@@ -238,6 +238,8 @@ extern "C" {
 #define	M_ID_CAP	0x03
 #define	M_ID_CAPINFO	0x04
 #define	M_ID_CAPCHAIN	0x05
+#define	M_ID_DYNAMIC	0x06			/* if no .interp, then no */
+						/*    DT_DEBUG is required */
 
 
 #define	M_ID_UNWINDHDR	0x07
@@ -255,13 +257,6 @@ extern "C" {
 #define	M_ID_ARRAY	0x12
 #define	M_ID_TEXT	0x13
 #define	M_ID_DATA	0x20
-
-/*
- * XXXARM: This is arranged to be after any text and data,
- * see the comments in rtld/aarch64/boot.s as to why
- */
-#define	M_ID_DYNAMIC	0x21			/* if no .interp, then no */
-						/*    DT_DEBUG is required */
 
 /*	M_ID_USER	0x01			dual entry - listed above */
 #define	M_ID_GOT	0x03			/* SHF_ALLOC + SHF_WRITE */
