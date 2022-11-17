@@ -1172,6 +1172,7 @@ mmc_open(const char *name)
 	case 2:
 		if (!caps.tuning_sdr50)
 			break;
+		/* FALLTHROUGH */
 	case 3:
 	case 4:
 		sc->tuning_enable = true;
@@ -1251,4 +1252,3 @@ void init_mmc(void)
 {
 	prom_register(&mmc_prom_dev);
 }
-
