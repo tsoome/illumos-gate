@@ -57,7 +57,9 @@ extern char _RamdiskStart[];
 extern char _RamdiskEnd[];
 extern char filename[];
 static struct xboot_info xboot_info;
-static char zfs_bootfs[256];
+static char zfs_bootfs[256];	/* ZFS_MAXNAMELEN */
+static char zfs_boot_pool_guid[256 * 2];
+static char zfs_boot_vdev_guid[256 * 2];
 char v2args_buf[V2ARGS_BUF_SZ];
 char *v2args = v2args_buf;
 extern char *bootp_response;
