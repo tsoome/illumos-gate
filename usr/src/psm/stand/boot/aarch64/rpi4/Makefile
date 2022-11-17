@@ -36,7 +36,10 @@ $(NFS_SRT0) $(NFS_OBJS):  $(ASSYM_H)
 
 install: all $(ROOT_PSM_NFSBOOT)
 
-CFLAGS += -I. -_gcc=-Wno-error=unused-function -_gcc=-Wno-error=unused-variable -_gcc=-Wno-error=unused-but-set-variable
+CFLAGS += -I.
+CERRWARN += -_gcc=-Wno-unused-function
+CERRWARN += -_gcc=-Wno-unused-variable
+CERRWARN += -_gcc=-Wno-unused-but-set-variable
 
 include $(TOPDIR)/psm/Makefile.psm.64
 include $(BOOTSRCDIR)/Makefile.rules
@@ -44,5 +47,5 @@ include $(BOOTSRCDIR)/Makefile.rules
 include ../Makefile.targ
 
 $(ROOT_PSM_NFSBOOT): $(NFSBOOT_BIN) $(ROOT_PSM_DIR)
-	mkimage -A arm64 -O linux -C none  -T kernel -a 0x00080000 -e 0x00080000 -n 'OpenSolaris' -d $(NFSBOOT_BIN) $@
+	$(MKIMAGE) -A arm64 -O linux -C none  -T kernel -a 0x00080000 -e 0x00080000 -n 'illumos' -d $(NFSBOOT_BIN) $@
 

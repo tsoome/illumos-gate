@@ -29,8 +29,7 @@ include ../../../../Makefile.master
 # XXXARM: Requires dtc 
 #include Makefile.board.meson-gxbb
 include Makefile.board.virt
-# XXXARM: Requires 'mkimage'
-#include Makefile.board.rpi4
+include Makefile.board.rpi4
 
 all		:= 	TARGET= all
 install		:= 	TARGET= install
