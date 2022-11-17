@@ -37,7 +37,10 @@ $(NFS_SRT0) $(NFS_OBJS):  $(ASSYM_H)
 
 install: all $(ROOT_PSM_NFSBOOT) $(ROOT_PSM_DTB)
 
-CFLAGS += -I. -_gcc=-Wno-error=unused-function -_gcc=-Wno-error=unused-variable -_gcc=-Wno-error=unused-but-set-variable
+CFLAGS += -I.
+CERRWARN += -_gcc=-Wno-unused-function
+CERRWARN += -_gcc=-Wno-unused-variable
+CERRWARN += -_gcc=-Wno-unused-but-set-variable
 
 include $(TOPDIR)/psm/Makefile.psm.64
 include $(BOOTSRCDIR)/Makefile.rules
@@ -48,9 +51,7 @@ $(ROOT_PSM_NFSBOOT): $(NFSBOOT_BIN) $(ROOT_PSM_DIR)
 	$(MKIMAGE) -A arm64 -O linux -C none  -T kernel -a 0x11000000 -e 0x11000000 -n 'illumos' -d $(NFSBOOT_BIN) $@
 
 $(ROOT_PSM_DTB): $(DTB) $(ROOT_PSM_DIR)
-	$(INS.file)
+	$(INS.file) $(DTB)
 
-VPATH += dts
-
-%.dtb: %.dts
-	cpp -nostdinc -I dts $(CPPINCS) -undef -x assembler-with-cpp $< | $(DTC) -o $@ -O dtb
+%.dtb: dts/%.dts
+	$(ANSI_CPP) -nostdinc -I dts $(CPPINCS) -undef -x assembler-with-cpp $< | $(DTC) -o $@ -O dtb

@@ -1008,9 +1008,10 @@ aarch64_GNU_ROOT=	/usr
 GNU_ROOT=		$($(MACH)_GNU_ROOT)
 
 # XXXARM: Used building the booters etc, overriden
-GLD=$(GNU_ROOT)/bin/gld
-OBJCOPY=$(GNU_ROOT)/bin/gobjcopy
-MKIMAGE=/usr/bin/mkimage
+GLD=		$(GNU_ROOT)/bin/gld
+OBJCOPY=	$(GNU_ROOT)/bin/gobjcopy
+MKIMAGE=	/usr/bin/mkimage
+DTC=		/usr/bin/dtc
 
 $(__GNUC)i386_PRIMARY_CC=	gcc7,$(i386_GNUC_ROOT)/bin/gcc,gnu
 $(__SUNC)i386_PRIMARY_CC=	studio12,$(SPRO_VROOT)/bin/cc,sun

@@ -26,8 +26,7 @@
 
 include ../../../../Makefile.master
 
-# XXXARM: Requires dtc 
-#include Makefile.board.meson-gxbb
+include Makefile.board.meson-gxbb
 include Makefile.board.virt
 include Makefile.board.rpi4
 

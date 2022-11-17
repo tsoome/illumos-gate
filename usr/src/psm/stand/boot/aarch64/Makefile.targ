@@ -36,9 +36,6 @@ $(NFSBOOT_OUT): $(NFS_MAPFILE) $(NFS_SRT0) $(NFS_OBJS) $(LIBDEPS)
 $(ASSYM_H): $(GENASSYM_CF)
 	${GENASSYM} -- $(CC) $(CPPFLAGS) <  $(GENASSYM_CF) > $@
 
-%.dtb: %.dts
-	$(DTC) -o $@ -O dtb $<
-
 $(ROOT_PSM_DIR):
 	$(INS.dir)
 
