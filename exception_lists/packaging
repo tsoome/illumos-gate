@@ -817,7 +817,7 @@ opt/onbld		aarch64
 # XXXARM: Not delivered on aarch64
 usr/ucb			aarch64
 usr/ucblib		aarch64
-usr/lib/python3.5	aarch64
+usr/lib/python3.9	aarch64
 
 stand/			aarch64
 
