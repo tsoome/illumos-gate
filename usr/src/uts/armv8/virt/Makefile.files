@@ -23,7 +23,7 @@
 # Copyright 2017 Hayashi Naoyuki
 #
 
-PLATVIRTIO_OBJS += platvirtio_main.o platvirtio_dma.o
+PLATVIRTIO_OBJS += virtio_main.o virtio_dma.o virtio_mmio.o
 PLATUART_OBJS += asy_nsuart.o
 TODPL031_OBJS += todpl031.o
 

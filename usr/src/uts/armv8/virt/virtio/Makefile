@@ -52,6 +52,8 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 ALL_BUILDS	= $(ALL_BUILDSONLY64)
 DEF_BUILDS	= $(DEF_BUILDSONLY64)
 
+INC_PATH +=		-I$(UTSBASE)/common/io/virtio
+
 #
 # For now, disable these warnings; maintainers should endeavor
 # to investigate and remove these for maximum coverage.

@@ -38,6 +38,7 @@ extern "C" {
 
 extern ddi_device_acc_attr_t virtio_acc_attr;
 extern ddi_dma_attr_t virtio_dma_attr;
+extern ddi_dma_attr_t virtio_dma_attr_queue;
 
 typedef struct virtio_vq_desc virtio_vq_desc_t;
 typedef struct virtio_vq_driver virtio_vq_driver_t;
@@ -48,7 +49,25 @@ int virtio_dma_init(virtio_t *, virtio_dma_t *, size_t, const ddi_dma_attr_t *,
     int, int);
 void virtio_dma_fini(virtio_dma_t *);
 
+int virtio_inflight_compar(const void *, const void *);
 
+uint8_t virtio_get8(virtio_t *, uintptr_t);
+uint16_t virtio_get16(virtio_t *, uintptr_t);
+uint32_t virtio_get32(virtio_t *, uintptr_t);
+void virtio_put8(virtio_t *, uintptr_t, uint8_t);
+void virtio_put16(virtio_t *, uintptr_t, uint16_t);
+void virtio_put32(virtio_t *, uintptr_t, uint32_t);
+
+/* XXXARM: Defined in the backend-specific sources */
+virtio_t *virtio_init(dev_info_t *, uint64_t, boolean_t);
+void virtio_set_status(virtio_t *, uint8_t);
+void virtio_device_reset_locked(virtio_t *);
+virtio_queue_t *virtio_queue_alloc(virtio_t *, uint16_t, const char *,
+    ddi_intr_handler_t *, void *, boolean_t, uint_t);
+void virtio_queue_free(virtio_queue_t *);
+void virtio_queue_flush_locked(virtio_queue_t *);
+uint_t virtio_shared_isr(caddr_t, caddr_t);
+void virtio_interrupts_unwind(virtio_t *);
 
 typedef enum virtio_dma_level {
 	VIRTIO_DMALEVEL_HANDLE_ALLOC =	(1ULL << 0),
@@ -304,6 +323,27 @@ struct virtio_vq_device {
 #define	VIRTIO_LEGACY_CFG_OFFSET_MSIX	(VIRTIO_LEGACY_MSIX_QUEUE + 2)
 
 #define	VIRTIO_LEGACY_MSI_NO_VECTOR	0xFFFF
+
+/* Values used for the MMIO mode of operation */
+#define VIRTIO_MMIO_MAGIC_VALUE		0x000
+#define VIRTIO_MMIO_VERSION		0x004
+#define VIRTIO_MMIO_DEVICE_ID		0x008
+#define VIRTIO_MMIO_VENDOR_ID		0x00c
+#define VIRTIO_MMIO_HOST_FEATURES	0x010
+#define VIRTIO_MMIO_HOST_FEATURES_SEL	0x014
+#define VIRTIO_MMIO_GUEST_FEATURES	0x020
+#define VIRTIO_MMIO_GUEST_FEATURES_SEL	0x024
+#define VIRTIO_MMIO_GUEST_PAGE_SIZE	0x028
+#define VIRTIO_MMIO_QUEUE_SEL		0x030
+#define VIRTIO_MMIO_QUEUE_NUM_MAX	0x034
+#define VIRTIO_MMIO_QUEUE_NUM		0x038
+#define VIRTIO_MMIO_QUEUE_ALIGN		0x03c
+#define VIRTIO_MMIO_QUEUE_PFN		0x040
+#define VIRTIO_MMIO_QUEUE_NOTIFY	0x050
+#define VIRTIO_MMIO_INTERRUPT_STATUS	0x060
+#define VIRTIO_MMIO_INTERRUPT_ACK	0x064
+#define VIRTIO_MMIO_STATUS		0x070
+#define VIRTIO_MMIO_CONFIG		0x100
 
 /*
  * Bits in the Device Status byte (VIRTIO_LEGACY_DEVICE_STATUS):
