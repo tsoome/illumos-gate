@@ -31,9 +31,9 @@ UTSBASE	= ../../..
 #
 #	Define the module and object file sets.
 #
-MODULE		= platmmc
-OBJECTS		= $(PLATMMC_OBJS:%=$(OBJS_DIR)/%)
-ROOTMODULE	= $(ROOT_VIRT_DRV_DIR)/$(MODULE)
+MODULE		= virtio
+OBJECTS		= $(PLATVIRTIO_OBJS:%=$(OBJS_DIR)/%)
+ROOTMODULE	= $(ROOT_VIRT_MISC_DIR)/$(MODULE)
 
 #
 #	Include common rules.
@@ -58,9 +58,6 @@ DEF_BUILDS	= $(DEF_BUILDSONLY64)
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS += $(CCVERBOSE)
-
-#	Dependency
-LDFLAGS += -Ndrv/blkdev
 
 #
 #	Default build targets.

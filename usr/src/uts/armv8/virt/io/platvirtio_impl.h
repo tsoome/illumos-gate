@@ -98,6 +98,11 @@ struct virtio {
 	int				vio_interrupt_type;
 	int				vio_interrupt_cap;
 	uint_t				vio_interrupt_priority;
+
+	ddi_intr_handler_t		*vio_cfgchange_handler;
+	void				*vio_cfgchange_handlerarg;
+	boolean_t			vio_cfgchange_handler_added;
+	uint_t				vio_cfgchange_handler_index;
 };
 
 struct virtio_queue {

@@ -14,6 +14,11 @@
  */
 
 /*
+ * NOTE: This is an MMIO-based virtio(4D) for AArch64 QEMU.
+ * XXXARM: We really need to figure out the correct way to do this.
+ */
+
+/*
  * VIRTIO FRAMEWORK
  *
  * For design and usage documentation, see the comments in "platvirtio.h".
@@ -39,6 +44,36 @@
 #include "platvirtio.h"
 #include "platvirtio_impl.h"
 
+/*
+ * Linkage structures
+ */
+static struct modlmisc virtio_modlmisc = {
+	.misc_modops =			&mod_miscops,
+	.misc_linkinfo =		"VIRTIO common routines",
+};
+
+static struct modlinkage virtio_modlinkage = {
+	.ml_rev =			MODREV_1,
+	.ml_linkage =			{ &virtio_modlmisc, NULL }
+};
+
+int
+_init(void)
+{
+	return (mod_install(&virtio_modlinkage));
+}
+
+int
+_fini(void)
+{
+	return (mod_remove(&virtio_modlinkage));
+}
+
+int
+_info(struct modinfo *modinfop)
+{
+	return (mod_info(&virtio_modlinkage, modinfop));
+}
 
 static void virtio_set_status(virtio_t *, uint8_t);
 static int virtio_chain_append_impl(virtio_chain_t *, uint64_t, size_t,
@@ -262,6 +297,26 @@ virtio_init(dev_info_t *dip, uint64_t driver_features, boolean_t allow_indirect)
 	vio->vio_config_offset = VIRTIO_MMIO_CONFIG;
 
 	return (vio);
+}
+
+/*
+ * Some virtio devices can change their device configuration state at any
+ * time. This function may be called by the driver during the initialisation
+ * phase - before calling virtio_init_complete() - in order to register a
+ * handler function which will be called when the device configuration space
+ * is updated.
+ */
+void
+virtio_register_cfgchange_handler(virtio_t *vio, ddi_intr_handler_t *func,
+    void *funcarg)
+{
+	VERIFY(!(vio->vio_initlevel & VIRTIO_INITLEVEL_INT_ADDED));
+	VERIFY(!vio->vio_cfgchange_handler_added);
+
+	mutex_enter(&vio->vio_mutex);
+	vio->vio_cfgchange_handler = func;
+	vio->vio_cfgchange_handlerarg = funcarg;
+	mutex_exit(&vio->vio_mutex);
 }
 
 /*

@@ -1897,6 +1897,7 @@ vioif_check_features(vioif_t *vif)
 static int
 vioif_select_interrupt_types(void)
 {
+#ifndef __aarch64__		/* XXXARM: No smbios yet */
 	id_t id;
 	smbios_system_t sys;
 	smbios_info_t info;
@@ -1930,6 +1931,7 @@ vioif_select_interrupt_types(void)
 		 */
 		return (DDI_INTR_TYPE_FIXED);
 	}
+#endif
 
 	return (VIRTIO_ANY_INTR_TYPE);
 }

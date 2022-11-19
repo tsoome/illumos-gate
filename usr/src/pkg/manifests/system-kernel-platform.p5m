@@ -206,16 +206,13 @@ driver name=platahci perms="* 0644 root sys" alias=apm,xgene-ahci
 driver name=platmac perms="* 0666 root sys" \
     alias=amlogic,gxbb-rgmii-dwmac \
     alias=apm,xgene-enet \
-    alias=brcm,bcm2711-genet-v5 \
-    alias=virtio-net
+    alias=brcm,bcm2711-genet-v5
 
-# virtio-blk -- QEMU
 # brcm,bcm2711-emmc2 -- Raspberry Pi 4
 # amlogic,aml_sd_emmc -- Meson GXBB
 driver name=platmmc perms="* 0644 root sys" \
     alias=amlogic,aml_sd_emmc \
-    alias=brcm,bcm2711-emmc2 \
-    alias=virtio-blk
+    alias=brcm,bcm2711-emmc2
 
 # arm,pl011 -- QEMU
 # ns16550a -- Raspberry Pi 4

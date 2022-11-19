@@ -17,10 +17,9 @@ ROOT_PLAT_DRV_DIRS	= $(ROOT_VIRT_DRV_DIR)
 #
 # XXXARM: These should be common modules with specific names
 VIRT_KMODS	=	\
-	platmac		\
-	platmmc		\
 	platuart	\
-	todpl031
+	todpl031	\
+	virtio
 
 include $(UTSBASE)/armv8/virt/Makefile.files
 
