@@ -38,7 +38,7 @@
 #include <sys/sdcard/sda.h>
 #include <sys/callo.h>
 #include <sys/ddi_subrdefs.h>
-#include "sdmmc.h"
+#include "aml-sd-emmc.h"
 
 #define MMC_BUFFER_SIZE 0x10000
 #define MMC_REQUESTS_MAX 0x20

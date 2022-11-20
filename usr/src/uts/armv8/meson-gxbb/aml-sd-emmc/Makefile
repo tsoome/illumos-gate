@@ -31,8 +31,8 @@ UTSBASE	= ../../..
 #
 #	Define the module and object file sets.
 #
-MODULE		= platmmc
-OBJECTS		= $(PLATMMC_OBJS:%=$(OBJS_DIR)/%)
+MODULE		= aml-sd-emmc
+OBJECTS		= $(AML_SD_EMMC_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_MESON_GXBB_DRV_DIR)/$(MODULE)
 
 #

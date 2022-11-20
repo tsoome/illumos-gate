@@ -26,7 +26,7 @@
 PLATMAC_OBJS += dwmac.o
 MESONUART_OBJS += mesonuart.o
 TODMESON_OBJS += todmeson.o
-PLATMMC_OBJS += sdmmc.o
+AML_SD_EMMC_OBJS += aml-sd-emmc.o
 
 # XXXARM: I might be mis-using this.  These are what would be the platmod, if
 # we didn't need it so early for console I/O

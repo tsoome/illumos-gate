@@ -31,8 +31,8 @@ UTSBASE	= ../../..
 #
 #	Define the module and object file sets.
 #
-MODULE		= platmmc
-OBJECTS		= $(PLATMMC_OBJS:%=$(OBJS_DIR)/%)
+MODULE		= bcm2711-emmc2
+OBJECTS		= $(BRCM2711_EMMC2_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_RPI4_DRV_DIR)/$(MODULE)
 
 #

@@ -24,7 +24,7 @@
 #
 
 PLATMAC_OBJS += genet.o
-PLATMMC_OBJS += sdmmc.o
+BRCM2711_EMMC2_OBJS += bcm2711-emmc2.o
 
 # XXXARM: I might be mis-using this.  These are what would be the platmod, if
 # we didn't need it so early for console I/O
