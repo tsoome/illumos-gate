@@ -75,6 +75,10 @@ SIMPLEBUS_OBJS += simple-bus.o
 
 ROOTNEX_OBJS += rootnex.o
 
+PL011_OBJS += pl011.o
+
+NS16550A_OBJS += ns16550a.o
+
 ASSYM_DEPS +=			\
 	aarch64_subr.o		\
 	lock_prim.o		\

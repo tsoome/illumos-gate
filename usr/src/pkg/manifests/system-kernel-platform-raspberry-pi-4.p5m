@@ -25,6 +25,5 @@ dir  path=platform/RaspberryPi,4/kernel/drv
 dir  path=platform/RaspberryPi,4/kernel/drv/aarch64
 file path=platform/RaspberryPi,4/kernel/drv/aarch64/platmac
 file path=platform/RaspberryPi,4/kernel/drv/aarch64/platmmc
-file path=platform/RaspberryPi,4/kernel/drv/aarch64/platuart
 license lic_CDDL license=lic_CDDL
 # XXXARM: Hayashi's copyright

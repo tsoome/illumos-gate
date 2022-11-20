@@ -23,12 +23,15 @@ dir  path=platform/Amlogic,meson-gxbb/kernel/aarch64
 file path=platform/Amlogic,meson-gxbb/kernel/aarch64/unix mode=0755
 dir  path=platform/Amlogic,meson-gxbb/kernel/drv
 dir  path=platform/Amlogic,meson-gxbb/kernel/drv/aarch64
+file path=platform/Amlogic,meson-gxbb/kernel/drv/aarch64/mesonuart
 file path=platform/Amlogic,meson-gxbb/kernel/drv/aarch64/platmac
 file path=platform/Amlogic,meson-gxbb/kernel/drv/aarch64/platmmc
-file path=platform/Amlogic,meson-gxbb/kernel/drv/aarch64/platuart
+file path=platform/Amlogic,meson-gxbb/kernel/drv/mesonuart.conf
 dir  path=platform/Amlogic,meson-gxbb/kernel/tod
 dir  path=platform/Amlogic,meson-gxbb/kernel/tod/aarch64
 file path=platform/Amlogic,meson-gxbb/kernel/tod/aarch64/todmeson mode=0755
 file path=platform/Amlogic,meson-gxbb/meson-gxbb-odroidc2.dtb
+driver name=mesonuart perms="* 0666 root sys" perms="*,cu 0600 uucp uucp" \
+    alias=amlogic,meson-uart
 license lic_CDDL license=lic_CDDL
 # XXXARM: Hayashi's copyright

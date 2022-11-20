@@ -49,7 +49,7 @@ MESON_GXBB_OBJS	=
 MESON_GXBB_KMODS	=	\
 	platmac			\
 	platmmc			\
-	platuart		\
+	mesonuart		\
 	todmeson
 
 include $(UTSBASE)/armv8/meson-gxbb/Makefile.files

@@ -51,8 +51,12 @@ $(aarch64_ONLY)file path=platform/armv8/kernel/dacf/aarch64/consconfig_dacf \
     mode=0755
 $(aarch64_ONLY)dir path=platform/armv8/kernel/drv
 $(aarch64_ONLY)dir path=platform/armv8/kernel/drv/aarch64
+$(aarch64_ONLY)file path=platform/armv8/kernel/drv/aarch64/ns16550a
+$(aarch64_ONLY)file path=platform/armv8/kernel/drv/aarch64/pl011
 $(aarch64_ONLY)file path=platform/armv8/kernel/drv/aarch64/rootnex
 $(aarch64_ONLY)file path=platform/armv8/kernel/drv/aarch64/simple-bus
+$(aarch64_ONLY)file path=platform/armv8/kernel/drv/ns16550a.conf
+$(aarch64_ONLY)file path=platform/armv8/kernel/drv/pl011.conf
 $(i386_ONLY)dir path=platform/i86pc group=sys
 $(i386_ONLY)dir path=platform/i86pc/$(ARCH64) group=sys
 $(i386_ONLY)dir path=platform/i86pc/kernel group=sys
@@ -193,10 +197,19 @@ $(i386_ONLY)driver name=domcaps perms="* 0444 root sys"
 $(i386_ONLY)driver name=evtchn perms="* 0666 root sys"
 $(i386_ONLY)driver name=isa class=sysbus alias=pciclass,060100
 $(i386_ONLY)driver name=npe alias=pciex_root_complex
+driver name=ns16550a perms="* 0666 root sys" perms="*,cu 0600 uucp uucp" \
+    alias=ns16550a
 $(i386_ONLY)driver name=pci class=pci
 $(i386_ONLY)driver name=pit_beep alias=SUNW,pit_beep
 
-# virtio-net -- QEMU
+driver name=pl011 perms="* 0666 root sys" perms="*,cu 0600 uucp uucp" \
+    alias=arm,pl011
+
+# XXXARM: At present, all AArch64 implementation platforms use the same driver
+# names (weirdly) so we can only put driver actions in one place -- here.  If
+# you add to this confusion, please document which platform they _should_ be
+# with for when this is fixed.
+
 # brcm,bcm2711-genet-v5 -- Raspberry Pi 4
 # amlogic,gxbb-rgmii-dwmac -- Meson GXBB
 # apm,xgene-enet -- Unknown
@@ -210,24 +223,10 @@ driver name=platmac perms="* 0666 root sys" \
 driver name=platmmc perms="* 0644 root sys" \
     alias=amlogic,aml_sd_emmc \
     alias=brcm,bcm2711-emmc2
-
-# arm,pl011 -- QEMU
-# ns16550a -- Raspberry Pi 4
-# amlogic,meson-uart -- Meson GXBB
-driver name=platuart \
-    alias=amlogic,meson-uart \
-    alias=arm,pl011 \
-    alias=ns16550a perms="* 0666 root sys" perms="*,cu 0600 uucp uucp"
 driver name=ppm
 $(i386_ONLY)driver name=privcmd perms="* 0666 root sys"
 $(i386_ONLY)driver name=rootnex
-# rootnex, all platforms
 $(aarch64_ONLY)driver name=rootnex
-
-# XXXARM: At present, all AArch64 implementation platforms use the same driver
-# names (weirdly) so we can only put driver actions in one place -- here.  If
-# you add to this confusion, please document which platform they _should_ be
-# with for when this is fixed.
 
 # simple-bus, all platforms
 $(aarch64_ONLY)driver name=simple-bus alias=simple-bus

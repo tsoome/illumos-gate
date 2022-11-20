@@ -24,7 +24,7 @@
 #
 
 PLATMAC_OBJS += dwmac.o
-PLATUART_OBJS += asy_meson.o
+MESONUART_OBJS += mesonuart.o
 TODMESON_OBJS += todmeson.o
 PLATMMC_OBJS += sdmmc.o
 

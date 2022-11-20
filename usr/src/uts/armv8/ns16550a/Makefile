@@ -26,25 +26,26 @@
 #
 #	Path to the base of the uts directory tree (usually /usr/src/uts).
 #
-UTSBASE	= ../../..
+UTSBASE	= ../..
 
 #
 #	Define the module and object file sets.
 #
-MODULE		= platuart
-OBJECTS		= $(PLATUART_OBJS:%=$(OBJS_DIR)/%)
-ROOTMODULE	= $(ROOT_RPI4_DRV_DIR)/$(MODULE)
+MODULE		= ns16550a
+OBJECTS		= $(NS16550A_OBJS:%=$(OBJS_DIR)/%)
+ROOTMODULE	= $(ROOT_PSM_DRV_DIR)/$(MODULE)
+CONF_SRCDIR	= $(UTSBASE)/armv8/io/ns16550a/
 
 #
 #	Include common rules.
 #
-include $(UTSBASE)/armv8/rpi4/Makefile.rpi4
+include $(UTSBASE)/armv8/Makefile.armv8
 
 #
 #       Define targets
 #
-ALL_TARGET	= $(BINARY)
-INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
+ALL_TARGET	= $(BINARY) $(SRC_CONFFILE)
+INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
 #	Overrides
@@ -83,4 +84,4 @@ install:	$(INSTALL_DEPS)
 #
 #	Include common targets.
 #
-include $(UTSBASE)/armv8/rpi4/Makefile.targ
+include $(UTSBASE)/armv8/Makefile.targ

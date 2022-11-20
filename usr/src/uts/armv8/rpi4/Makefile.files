@@ -24,7 +24,6 @@
 #
 
 PLATMAC_OBJS += genet.o
-PLATUART_OBJS += asy_nsuart.o
 PLATMMC_OBJS += sdmmc.o
 
 # XXXARM: I might be mis-using this.  These are what would be the platmod, if

@@ -24,10 +24,11 @@
 
 /*
  * Copyright (c) 1992, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
-#ifndef _IO_ASY_NSUART_H
-#define _IO_ASY_NSUART_H
+#ifndef _IO_MESONUART_H
+#define _IO_MESONUART_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +38,7 @@ extern "C" {
 #include <sys/ksynch.h>
 #include <sys/dditypes.h>
 
-#define	ASY_MINOR_LEN	(40)
+#define	MESONUART_MINOR_LEN	(40)
 
 /*
  * Definitions for INS8250 / 16550  chips
@@ -112,7 +113,7 @@ extern "C" {
 #define	RTS		0x02	/* Request To Send */
 #define	OUT1		0x04	/* Aux output - not used */
 #define	OUT2		0x08	/* turns intr to 386 on/off */
-#define	ASY_LOOP	0x10	/* loopback for diagnostics */
+#define	MESONUART_LOOP	0x10	/* loopback for diagnostics */
 
 /* Modem Status Register */
 #define	DCTS		0x01	/* Delta Clear To Send */
@@ -161,27 +162,27 @@ extern "C" {
 #define	RINGMASK	(RINGSIZE-1)
 #define	RINGFRAC	12		/* fraction of ring to force flush */
 
-#define	RING_INIT(ap)  ((ap)->async_rput = (ap)->async_rget = 0)
-#define	RING_CNT(ap)   (((ap)->async_rput >= (ap)->async_rget) ? \
-	((ap)->async_rput - (ap)->async_rget):\
-	((0x10000 - (ap)->async_rget) + (ap)->async_rput))
+#define	RING_INIT(ap)  ((ap)->msasync_rput = (ap)->msasync_rget = 0)
+#define	RING_CNT(ap)   (((ap)->msasync_rput >= (ap)->msasync_rget) ? \
+	((ap)->msasync_rput - (ap)->msasync_rget):\
+	((0x10000 - (ap)->msasync_rget) + (ap)->msasync_rput))
 #define	RING_FRAC(ap)  ((int)RING_CNT(ap) >= (int)(RINGSIZE/RINGFRAC))
 #define	RING_POK(ap, n) ((int)RING_CNT(ap) < (int)(RINGSIZE-(n)))
 #define	RING_PUT(ap, c) \
-	((ap)->async_ring[(ap)->async_rput++ & RINGMASK] =  (uchar_t)(c))
-#define	RING_UNPUT(ap) ((ap)->async_rput--)
+	((ap)->msasync_ring[(ap)->msasync_rput++ & RINGMASK] =  (uchar_t)(c))
+#define	RING_UNPUT(ap) ((ap)->msasync_rput--)
 #define	RING_GOK(ap, n) ((int)RING_CNT(ap) >= (int)(n))
-#define	RING_GET(ap)   ((ap)->async_ring[(ap)->async_rget++ & RINGMASK])
-#define	RING_EAT(ap, n) ((ap)->async_rget += (n))
+#define	RING_GET(ap)   ((ap)->msasync_ring[(ap)->msasync_rget++ & RINGMASK])
+#define	RING_EAT(ap, n) ((ap)->msasync_rget += (n))
 #define	RING_MARK(ap, c, s) \
-	((ap)->async_ring[(ap)->async_rput++ & RINGMASK] = ((uchar_t)(c)|(s)))
+	((ap)->msasync_ring[(ap)->msasync_rput++ & RINGMASK] = ((uchar_t)(c)|(s)))
 #define	RING_UNMARK(ap) \
-	((ap)->async_ring[((ap)->async_rget) & RINGMASK] &= ~S_ERRORS)
+	((ap)->msasync_ring[((ap)->msasync_rget) & RINGMASK] &= ~S_ERRORS)
 #define	RING_ERR(ap, c) \
-	((ap)->async_ring[((ap)->async_rget) & RINGMASK] & (c))
+	((ap)->msasync_ring[((ap)->msasync_rget) & RINGMASK] & (c))
 
 /*
- * Asy tracing macros.  These are a bit similar to some macros in sys/vtrace.h .
+ * Mesonuart tracing macros.  These are a bit similar to some macros in sys/vtrace.h .
  *
  * XXX - Needs review:  would it be better to use the macros in sys/vtrace.h ?
  */
@@ -240,83 +241,94 @@ extern "C" {
  * Hardware channel common data. One structure per port.
  * Each of the fields in this structure is required to be protected by a
  * mutex lock at the highest priority at which it can be altered.
- * The asy_flags, and asy_next fields can be altered by interrupt
+ * The mesonuart_flags, and mesonuart_next fields can be altered by interrupt
  * handling code that must be protected by the mutex whose handle is
- * stored in asy_excl_hi.  All others can be protected by the asy_excl
+ * stored in mesonuart_excl_hi.  All others can be protected by the mesonuart_excl
  * mutex, which is lower priority and adaptive.
  */
 
-struct asycom {
-	uint_t		asy_clock;
-	int		asy_flags;	/* random flags  */
-					/* protected by asy_excl_hi lock */
-	uint_t		asy_hwtype;	/* HW type: ASY16550A, etc. */
-	uint_t		asy_flags2;	/* flags which don't change, no lock */
-	uint8_t		*asy_ioaddr;	/* i/o address of ASY port */
-	struct asyncline *asy_priv;	/* protocol private data -- asyncline */
-	dev_info_t	*asy_dip;	/* dev_info */
-	int		asy_unit;	/* which port */
-	ddi_iblock_cookie_t asy_iblock;
-	kmutex_t	asy_excl;	/* asy adaptive mutex */
-	kmutex_t	asy_excl_hi;	/* asy spinlock mutex */
-	kmutex_t	asy_soft_lock;	/* soft lock for guarding softpend. */
-	int		asysoftpend;	/* Flag indicating soft int pending. */
-	ddi_softintr_t	asy_softintr_id;
-	ddi_iblock_cookie_t asy_soft_iblock;
+struct mesonuart_hardware;
+struct mesonuartcom {
+	struct mesonuart_hardware *mesonuart_hw;
+	int		mesonuart_regshift;
+	uint_t		mesonuart_clock;
+	int		mesonuart_flags;	/* random flags  */
+					/* protected by mesonuart_excl_hi lock */
+	uint_t		mesonuart_hwtype;	/* HW type: MESONUART16550A, etc. */
+	uint_t		mesonuart_use_fifo;	/* HW FIFO use it or not ?? */
+	uint_t		mesonuart_fifo_buf;	/* With FIFO = 16, otherwise = 1 */
+	uint_t		mesonuart_flags2;	/* flags which don't change, no lock */
+	uint8_t		*mesonuart_ioaddr;	/* i/o address of MESONUART port */
+	struct msasyncline *mesonuart_priv;	/* protocol private data -- msasyncline */
+	dev_info_t	*mesonuart_dip;	/* dev_info */
+	int		mesonuart_unit;	/* which port */
+	ddi_iblock_cookie_t mesonuart_iblock;
+	kmutex_t	mesonuart_excl;	/* mesonuart adaptive mutex */
+	kmutex_t	mesonuart_excl_hi;	/* mesonuart spinlock mutex */
+	kmutex_t	mesonuart_soft_lock;	/* soft lock for guarding softpend. */
+	int		mesonuartsoftpend;	/* Flag indicating soft int pending. */
+	ddi_softintr_t	mesonuart_softintr_id;
+	ddi_iblock_cookie_t mesonuart_soft_iblock;
 
 	/*
-	 * The asy_soft_sr mutex should only be taken by the soft interrupt
+	 * The mesonuart_soft_sr mutex should only be taken by the soft interrupt
 	 * handler and the driver DDI_SUSPEND/DDI_RESUME code.  It
 	 * shouldn't be taken by any code that may get called indirectly
 	 * by the soft interrupt handler (e.g. as a result of a put or
 	 * putnext call).
 	 */
-	kmutex_t	asy_soft_sr;	/* soft int suspend/resume mutex */
-	uchar_t		asy_msr;	/* saved modem status */
-	uchar_t		asy_mcr;	/* soft carrier bits */
-	uchar_t		asy_lcr;	/* console lcr bits */
-	uchar_t		asy_bidx;	/* console baud rate index */
-	tcflag_t	asy_cflag;	/* console mode bits */
+	kmutex_t	mesonuart_soft_sr;	/* soft int suspend/resume mutex */
+	uchar_t		mesonuart_reg_icr;
+	uchar_t		mesonuart_reg_mcr;
+	uchar_t		mesonuart_reg_lcr;
+
+
+
+	uchar_t		mesonuart_msr;	/* saved modem status */
+	uchar_t		mesonuart_mcr;	/* soft carrier bits */
+	uchar_t		mesonuart_lcr;	/* console lcr bits */
+	uchar_t		mesonuart_bidx;	/* console baud rate index */
+	tcflag_t	mesonuart_cflag;	/* console mode bits */
 	struct cons_polledio	polledio;	/* polled I/O functions */
-	ddi_acc_handle_t	asy_iohandle;	/* Data access handle */
-	tcflag_t	asy_ocflag;	/* old console mode bits */
-	uchar_t		asy_com_port;	/* COM port number, or zero */
-	uchar_t		asy_fifor;	/* FIFOR register setting */
+	ddi_acc_handle_t	mesonuart_iohandle;	/* Data access handle */
+	tcflag_t	mesonuart_ocflag;	/* old console mode bits */
+	uchar_t		mesonuart_com_port;	/* COM port number, or zero */
+	uchar_t		mesonuart_fifor;	/* FIFOR register setting */
 #ifdef DEBUG
-	int		asy_msint_cnt;	/* number of times in async_msint */
+	int		mesonuart_msint_cnt;	/* number of times in msasync_msint */
 #endif
 };
 
 /*
- * Asychronous protocol private data structure for ASY.
+ * Mesonuartchronous protocol private data structure for MESONUART.
  * Each of the fields in the structure is required to be protected by
  * the lower priority lock except the fields that are set only at
  * base level but cleared (with out lock) at interrupt level.
  */
 
-struct asyncline {
-	int		async_flags;	/* random flags */
-	kcondvar_t	async_flags_cv; /* condition variable for flags */
-	kcondvar_t	async_ops_cv;	/* condition variable for async_ops */
-	dev_t		async_dev;	/* device major/minor numbers */
-	mblk_t		*async_xmitblk;	/* transmit: active msg block */
-	struct asycom	*async_common;	/* device common data */
-	tty_common_t 	async_ttycommon; /* tty driver common data */
-	bufcall_id_t	async_wbufcid;	/* id for pending write-side bufcall */
-	size_t		async_wbufcds;	/* Buffer size requested in bufcall */
-	timeout_id_t	async_polltid;	/* softint poll timeout id */
-	timeout_id_t    async_dtrtid;   /* delaying DTR turn on */
-	timeout_id_t    async_utbrktid; /* hold minimum untimed break time id */
+struct msasyncline {
+	int		msasync_flags;	/* random flags */
+	kcondvar_t	msasync_flags_cv; /* condition variable for flags */
+	kcondvar_t	msasync_ops_cv;	/* condition variable for msasync_ops */
+	dev_t		msasync_dev;	/* device major/minor numbers */
+	mblk_t		*msasync_xmitblk;	/* transmit: active msg block */
+	struct mesonuartcom	*msasync_common;	/* device common data */
+	tty_common_t 	msasync_ttycommon; /* tty driver common data */
+	bufcall_id_t	msasync_wbufcid;	/* id for pending write-side bufcall */
+	size_t		msasync_wbufcds;	/* Buffer size requested in bufcall */
+	timeout_id_t	msasync_polltid;	/* softint poll timeout id */
+	timeout_id_t    msasync_dtrtid;   /* delaying DTR turn on */
+	timeout_id_t    msasync_utbrktid; /* hold minimum untimed break time id */
 
 	/*
-	 * The following fields are protected by the asy_excl_hi lock.
-	 * Some, such as async_flowc, are set only at the base level and
+	 * The following fields are protected by the mesonuart_excl_hi lock.
+	 * Some, such as msasync_flowc, are set only at the base level and
 	 * cleared (without the lock) only by the interrupt level.
 	 */
-	uchar_t		*async_optr;	/* output pointer */
-	int		async_ocnt;	/* output count */
-	uint_t		async_rput;	/* producing pointer for input */
-	uint_t		async_rget;	/* consuming pointer for input */
+	uchar_t		*msasync_optr;	/* output pointer */
+	int		msasync_ocnt;	/* output count */
+	uint_t		msasync_rput;	/* producing pointer for input */
+	uint_t		msasync_rget;	/* consuming pointer for input */
 
 	/*
 	 * Each character stuffed into the ring has two bytes associated
@@ -324,10 +336,10 @@ struct asyncline {
 	 * and the second byte is the actual data.  The ring buffer
 	 * needs to be defined as ushort_t to accomodate this.
 	 */
-	ushort_t	async_ring[RINGSIZE];
+	ushort_t	msasync_ring[RINGSIZE];
 
-	short		async_break;	/* break count */
-	int		async_inflow_source; /* input flow control type */
+	short		msasync_break;	/* break count */
+	int		msasync_inflow_source; /* input flow control type */
 
 	union {
 		struct {
@@ -335,71 +347,72 @@ struct asyncline {
 			uchar_t _sw;	/* overrun (sw) */
 		} _a;
 		ushort_t uover_overrun;
-	} async_uover;
-#define	async_overrun		async_uover._a.uover_overrun
-#define	async_hw_overrun	async_uover._a._hw
-#define	async_sw_overrun	async_uover._a._sw
-	short		async_ext;	/* modem status change count */
-	short		async_work;	/* work to do flag */
-	timeout_id_t	async_timer;	/* close drain progress timer */
+	} msasync_uover;
+#define	msasync_overrun		msasync_uover._a.uover_overrun
+#define	msasync_hw_overrun	msasync_uover._a._hw
+#define	msasync_sw_overrun	msasync_uover._a._sw
+	short		msasync_ext;	/* modem status change count */
+	short		msasync_work;	/* work to do flag */
+	timeout_id_t	msasync_timer;	/* close drain progress timer */
 
-	mblk_t		*async_suspqf;	/* front of suspend queue */
-	mblk_t		*async_suspqb;	/* back of suspend queue */
-	int		async_ops;	/* active operations counter */
+	mblk_t		*msasync_suspqf;	/* front of suspend queue */
+	mblk_t		*msasync_suspqb;	/* back of suspend queue */
+	int		msasync_ops;	/* active operations counter */
 };
 
-/* definitions for async_flags field */
-#define	ASYNC_EXCL_OPEN	 0x10000000	/* exclusive open */
-#define	ASYNC_WOPEN	 0x00000001	/* waiting for open to complete */
-#define	ASYNC_ISOPEN	 0x00000002	/* open is complete */
-#define	ASYNC_OUT	 0x00000004	/* line being used for dialout */
-#define	ASYNC_CARR_ON	 0x00000008	/* carrier on last time we looked */
-#define	ASYNC_STOPPED	 0x00000010	/* output is stopped */
-#define	ASYNC_DELAY	 0x00000020	/* waiting for delay to finish */
-#define	ASYNC_BREAK	 0x00000040	/* waiting for break to finish */
-#define	ASYNC_BUSY	 0x00000080	/* waiting for transmission to finish */
-#define	ASYNC_DRAINING	 0x00000100	/* waiting for output to drain */
-#define	ASYNC_SERVICEIMM 0x00000200	/* queue soft interrupt as soon as */
-#define	ASYNC_HW_IN_FLOW 0x00000400	/* input flow control in effect */
-#define	ASYNC_HW_OUT_FLW 0x00000800	/* output flow control in effect */
-#define	ASYNC_PROGRESS	 0x00001000	/* made progress on output effort */
-#define	ASYNC_CLOSING	 0x00002000	/* processing close on stream */
-#define	ASYNC_OUT_SUSPEND 0x00004000    /* waiting for TIOCSBRK to finish */
-#define	ASYNC_HOLD_UTBRK 0x00008000	/* waiting for untimed break hold */
+/* definitions for msasync_flags field */
+#define	MSASYNC_EXCL_OPEN	 0x10000000	/* exclusive open */
+#define	MSASYNC_WOPEN	 0x00000001	/* waiting for open to complete */
+#define	MSASYNC_ISOPEN	 0x00000002	/* open is complete */
+#define	MSASYNC_OUT	 0x00000004	/* line being used for dialout */
+#define	MSASYNC_CARR_ON	 0x00000008	/* carrier on last time we looked */
+#define	MSASYNC_STOPPED	 0x00000010	/* output is stopped */
+#define	MSASYNC_DELAY	 0x00000020	/* waiting for delay to finish */
+#define	MSASYNC_BREAK	 0x00000040	/* waiting for break to finish */
+#define	MSASYNC_BUSY	 0x00000080	/* waiting for transmission to finish */
+#define	MSASYNC_DRAINING	 0x00000100	/* waiting for output to drain */
+#define	MSASYNC_SERVICEIMM 0x00000200	/* queue soft interrupt as soon as */
+#define	MSASYNC_HW_IN_FLOW 0x00000400	/* input flow control in effect */
+#define	MSASYNC_HW_OUT_FLW 0x00000800	/* output flow control in effect */
+#define	MSASYNC_PROGRESS	 0x00001000	/* made progress on output effort */
+#define	MSASYNC_CLOSING	 0x00002000	/* processing close on stream */
+#define	MSASYNC_OUT_SUSPEND 0x00004000    /* waiting for TIOCSBRK to finish */
+#define	MSASYNC_HOLD_UTBRK 0x00008000	/* waiting for untimed break hold */
 					/* the minimum time */
-#define	ASYNC_DTR_DELAY  0x00010000	/* delaying DTR turn on */
-#define	ASYNC_SW_IN_FLOW 0x00020000	/* sw input flow control in effect */
-#define	ASYNC_SW_OUT_FLW 0x00040000	/* sw output flow control in effect */
-#define	ASYNC_SW_IN_NEEDED 0x00080000	/* sw input flow control char is */
+#define	MSASYNC_DTR_DELAY  0x00010000	/* delaying DTR turn on */
+#define	MSASYNC_SW_IN_FLOW 0x00020000	/* sw input flow control in effect */
+#define	MSASYNC_SW_OUT_FLW 0x00040000	/* sw output flow control in effect */
+#define	MSASYNC_SW_IN_NEEDED 0x00080000	/* sw input flow control char is */
 					/* needed to be sent */
-#define	ASYNC_OUT_FLW_RESUME 0x00100000 /* output need to be resumed */
+#define	MSASYNC_OUT_FLW_RESUME 0x00100000 /* output need to be resumed */
 					/* because of transition of flow */
 					/* control from stop to start */
-#define	ASYNC_DDI_SUSPENDED  0x00200000	/* suspended by DDI */
-#define	ASYNC_RESUME_BUFCALL 0x00400000	/* call bufcall when resumed by DDI */
+#define	MSASYNC_DDI_SUSPENDED  0x00200000	/* suspended by DDI */
+#define	MSASYNC_RESUME_BUFCALL 0x00400000	/* call bufcall when resumed by DDI */
 
-/* asy_hwtype definitions */
-#define	ASY8250A	0x2		/* 8250A or 16450 */
-#define	ASY16550	0x3		/* broken FIFO which must not be used */
-#define	ASY16550A	0x4		/* usable FIFO */
-#define	ASY16650	0x5
-#define	ASY16750	0x6
+/* mesonuart_hwtype definitions */
+#define	MESONUART8250A	0x2		/* 8250A or 16450 */
+#define	MESONUART16550	0x3		/* broken FIFO which must not be used */
+#define	MESONUART16550A	0x4		/* usable FIFO */
+#define	MESONUART16650	0x5
+#define	MESONUART16750	0x6
+#define	MESONUARTMESON	0x7
 
-/* definitions for asy_flags field */
-#define	ASY_NEEDSOFT	0x00000001
-#define	ASY_DOINGSOFT	0x00000002
-#define	ASY_PPS		0x00000004
-#define	ASY_PPS_EDGE	0x00000008
-#define	ASY_DOINGSOFT_RETRY	0x00000010
-#define	ASY_RTS_DTR_OFF	0x00000020
-#define	ASY_IGNORE_CD	0x00000040
-#define	ASY_CONSOLE	0x00000080
-#define	ASY_DDI_SUSPENDED	0x00000100 /* suspended by DDI */
+/* definitions for mesonuart_flags field */
+#define	MESONUART_NEEDSOFT	0x00000001
+#define	MESONUART_DOINGSOFT	0x00000002
+#define	MESONUART_PPS		0x00000004
+#define	MESONUART_PPS_EDGE	0x00000008
+#define	MESONUART_DOINGSOFT_RETRY	0x00000010
+#define	MESONUART_RTS_DTR_OFF	0x00000020
+#define	MESONUART_IGNORE_CD	0x00000040
+#define	MESONUART_CONSOLE	0x00000080
+#define	MESONUART_DDI_SUSPENDED	0x00000100 /* suspended by DDI */
 
-/* definitions for asy_flags2 field */
-#define	ASY2_NO_LOOPBACK 0x00000001	/* Device doesn't support loopback */
+/* definitions for mesonuart_flags2 field */
+#define	MESONUART2_NO_LOOPBACK 0x00000001	/* Device doesn't support loopback */
 
-/* definitions for async_inflow_source field in struct asyncline */
+/* definitions for msasync_inflow_source field in struct msasyncline */
 #define	IN_FLOW_NULL	0x00000000
 #define	IN_FLOW_RINGBUFF	0x00000001
 #define	IN_FLOW_STREAMS	0x00000002
@@ -417,19 +430,19 @@ struct asyncline {
 #define	UNIT(x)		(getminor(x) & ~OUTLINE)
 
 /*
- * ASYSETSOFT macro to pend a soft interrupt if one isn't already pending.
+ * MESONUARTSETSOFT macro to pend a soft interrupt if one isn't already pending.
  */
 
-#define	ASYSETSOFT(asy)	{			\
-	if (mutex_tryenter(&asy->asy_soft_lock)) {	\
-		asy->asy_flags |= ASY_NEEDSOFT;		\
-		if (!asy->asysoftpend) {		\
-			asy->asysoftpend = 1;		\
-			mutex_exit(&asy->asy_soft_lock);	\
-			ddi_trigger_softintr(asy->asy_softintr_id);	\
+#define	MESONUARTSETSOFT(mesonuart)	{			\
+	if (mutex_tryenter(&mesonuart->mesonuart_soft_lock)) {	\
+		mesonuart->mesonuart_flags |= MESONUART_NEEDSOFT;		\
+		if (!mesonuart->mesonuartsoftpend) {		\
+			mesonuart->mesonuartsoftpend = 1;		\
+			mutex_exit(&mesonuart->mesonuart_soft_lock);	\
+			ddi_trigger_softintr(mesonuart->mesonuart_softintr_id);	\
 		}					\
 		else					\
-			mutex_exit(&asy->asy_soft_lock);	\
+			mutex_exit(&mesonuart->mesonuart_soft_lock);	\
 	}							\
 }
 
@@ -437,4 +450,4 @@ struct asyncline {
 }
 #endif
 
-#endif	/* _IO_ASY_NSUART_H */
+#endif				/* _IO_MESONUART_H */

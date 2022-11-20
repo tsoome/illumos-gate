@@ -21,12 +21,9 @@ file path=platform/QEMU,virt-4.1/inetboot.bin
 dir  path=platform/QEMU,virt-4.1/kernel
 dir  path=platform/QEMU,virt-4.1/kernel/aarch64
 file path=platform/QEMU,virt-4.1/kernel/aarch64/unix mode=0755
-dir  path=platform/QEMU,virt-4.1/kernel/drv
-dir  path=platform/QEMU,virt-4.1/kernel/drv/aarch64
-file path=platform/QEMU,virt-4.1/kernel/drv/aarch64/platuart
 dir  path=platform/QEMU,virt-4.1/kernel/misc
 dir  path=platform/QEMU,virt-4.1/kernel/misc/aarch64
-file path=platform/QEMU,virt-4.1/kernel/misc/aarch64/virtio
+file path=platform/QEMU,virt-4.1/kernel/misc/aarch64/virtio mode=0755
 dir  path=platform/QEMU,virt-4.1/kernel/tod
 dir  path=platform/QEMU,virt-4.1/kernel/tod/aarch64
 file path=platform/QEMU,virt-4.1/kernel/tod/aarch64/todpl031 mode=0755

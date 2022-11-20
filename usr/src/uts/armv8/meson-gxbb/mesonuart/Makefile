@@ -31,9 +31,10 @@ UTSBASE	= ../../..
 #
 #	Define the module and object file sets.
 #
-MODULE		= platuart
-OBJECTS		= $(PLATUART_OBJS:%=$(OBJS_DIR)/%)
+MODULE		= mesonuart
+OBJECTS		= $(MESONUART_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_MESON_GXBB_DRV_DIR)/$(MODULE)
+CONF_SRCDIR	= $(UTSBASE)/armv8/meson-gxbb/io/mesonuart
 
 #
 #	Include common rules.
@@ -43,8 +44,8 @@ include $(UTSBASE)/armv8/meson-gxbb/Makefile.meson-gxbb
 #
 #       Define targets
 #
-ALL_TARGET	= $(BINARY)
-INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
+ALL_TARGET	= $(BINARY) $(SRC_CONFFILE)
+INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 
 #
 #	Overrides
