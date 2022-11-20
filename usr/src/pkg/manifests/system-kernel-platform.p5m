@@ -196,9 +196,6 @@ $(i386_ONLY)driver name=npe alias=pciex_root_complex
 $(i386_ONLY)driver name=pci class=pci
 $(i386_ONLY)driver name=pit_beep alias=SUNW,pit_beep
 
-# Unknown
-driver name=platahci perms="* 0644 root sys" alias=apm,xgene-ahci
-
 # virtio-net -- QEMU
 # brcm,bcm2711-genet-v5 -- Raspberry Pi 4
 # amlogic,gxbb-rgmii-dwmac -- Meson GXBB
