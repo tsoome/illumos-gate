@@ -31,8 +31,8 @@ UTSBASE	= ../../..
 #
 #	Define the module and object file sets.
 #
-MODULE		= platmac
-OBJECTS		= $(PLATMAC_OBJS:%=$(OBJS_DIR)/%)
+MODULE		= dwmac
+OBJECTS		= $(DWMAC_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_MESON_GXBB_DRV_DIR)/$(MODULE)
 
 #

@@ -203,19 +203,6 @@ $(i386_ONLY)driver name=pci class=pci
 $(i386_ONLY)driver name=pit_beep alias=SUNW,pit_beep
 driver name=pl011 perms="* 0666 root sys" perms="*,cu 0600 uucp uucp" \
     alias=arm,pl011
-
-# XXXARM: At present, all AArch64 implementation platforms use the same driver
-# names (weirdly) so we can only put driver actions in one place -- here.  If
-# you add to this confusion, please document which platform they _should_ be
-# with for when this is fixed.
-
-# brcm,bcm2711-genet-v5 -- Raspberry Pi 4
-# amlogic,gxbb-rgmii-dwmac -- Meson GXBB
-# apm,xgene-enet -- Unknown
-driver name=platmac perms="* 0666 root sys" \
-    alias=amlogic,gxbb-rgmii-dwmac \
-    alias=apm,xgene-enet \
-    alias=brcm,bcm2711-genet-v5
 driver name=ppm
 $(i386_ONLY)driver name=privcmd perms="* 0666 root sys"
 $(i386_ONLY)driver name=rootnex

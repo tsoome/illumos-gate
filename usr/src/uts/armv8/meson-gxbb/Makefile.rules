@@ -23,6 +23,10 @@
 # Copyright 2017 Hayashi Naoyuki
 #
 
+$(OBJS_DIR)/%.o:		$(UTSBASE)/armv8/meson-gxbb/io/dwmac/%.c
+	$(COMPILE.c) -o $@ $<
+	$(CTFCONVERT_O)
+
 $(OBJS_DIR)/%.o:		$(UTSBASE)/armv8/meson-gxbb/io/aml-sd-emmc/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)

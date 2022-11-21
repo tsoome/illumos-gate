@@ -31,8 +31,8 @@ UTSBASE	= ../../..
 #
 #	Define the module and object file sets.
 #
-MODULE		= platmac
-OBJECTS		= $(PLATMAC_OBJS:%=$(OBJS_DIR)/%)
+MODULE		= genet
+OBJECTS		= $(GENET_OBJS:%=$(OBJS_DIR)/%)
 ROOTMODULE	= $(ROOT_RPI4_DRV_DIR)/$(MODULE)
 
 #

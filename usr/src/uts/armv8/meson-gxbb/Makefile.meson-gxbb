@@ -45,10 +45,9 @@ MESON_GXBB_OBJS	=
 #
 # Define modules
 #
-# XXXARM: These should be common modules with specific names
 MESON_GXBB_KMODS	=	\
-	platmac			\
 	aml-sd-emmc		\
+	dwmac			\
 	mesonuart		\
 	todmeson
 

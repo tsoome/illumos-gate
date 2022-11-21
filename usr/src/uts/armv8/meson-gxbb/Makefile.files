@@ -23,7 +23,7 @@
 # Copyright 2017 Hayashi Naoyuki
 #
 
-PLATMAC_OBJS += dwmac.o
+DWMAC_OBJS += dwmac.o
 MESONUART_OBJS += mesonuart.o
 TODMESON_OBJS += todmeson.o
 AML_SD_EMMC_OBJS += aml-sd-emmc.o

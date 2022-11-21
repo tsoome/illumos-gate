@@ -1282,7 +1282,7 @@ _init(void)
 {
 	int i;
 
-	mac_init_ops(&emac_devops, "platmac");
+	mac_init_ops(&emac_devops, "dwmac");
 
 	if ((i = mod_install(&emac_modlinkage)) != 0) {
 		mac_fini_ops(&emac_devops);

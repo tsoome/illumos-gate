@@ -1180,7 +1180,7 @@ _init(void)
 {
 	int i;
 
-	mac_init_ops(&genet_devops, "platmac");
+	mac_init_ops(&genet_devops, "genet");
 
 	if ((i = mod_install(&genet_modlinkage)) != 0) {
 		mac_fini_ops(&genet_devops);

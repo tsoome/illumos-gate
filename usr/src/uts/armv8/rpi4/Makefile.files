@@ -23,7 +23,7 @@
 # Copyright 2017 Hayashi Naoyuki
 #
 
-PLATMAC_OBJS += genet.o
+GENET_OBJS += genet.o
 BRCM2711_EMMC2_OBJS += bcm2711-emmc2.o
 
 # XXXARM: I might be mis-using this.  These are what would be the platmod, if
