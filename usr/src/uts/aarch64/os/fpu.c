@@ -19,8 +19,8 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2017 Hayashi Naoyuki
  * Copyright (c) 1992, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 /*	Copyright (c) 1990, 1991 UNIX System Laboratories, Inc. */
@@ -60,7 +60,7 @@
 #include <sys/cmn_err.h>
 #include <sys/fp.h>
 
-static struct ctxop *fp_ctxop_allocate(pcb_t *);
+static struct ctxop *fp_ctxop_allocate(fpu_ctx_t *);
 
 static void
 fpu_enable(void)
@@ -77,19 +77,35 @@ fpu_disable(void)
 }
 
 static void
-fpu_save(void *pcb)
+fpsave_ctxt(void *ctx)
 {
-	fp_save((struct pcb *)pcb);
+	fp_save((fpu_ctx_t *)ctx);
 	fpu_disable();
 }
 
 static void
-fpu_restore(void *pcb)
+fprestore_ctxt(void *ctx)
 {
 	fpu_enable();
-	fp_restore((struct pcb *)pcb);
+	fp_restore((fpu_ctx_t *)ctx);
 }
 
+void
+fp_free(fpu_ctx_t *fp)
+{
+	kpreempt_disable();
+
+	if (curthread->t_lwp && fp == &curthread->t_lwp->lwp_pcb.pcb_fpu) {
+		fpu_disable();
+	}
+	kpreempt_enable();
+}
+
+static void
+fpfree_ctxt(void *arg, int isexec __unused)
+{
+	fp_free((fpu_ctx_t *)arg);
+}
 
 static void
 fp_new_lwp(void *parent, void *child)
@@ -97,10 +113,14 @@ fp_new_lwp(void *parent, void *child)
 	kthread_id_t t = parent, ct = child;
 	pcb_t *pcb = &ttolwp(t)->lwp_pcb;
 	pcb_t *cpcb = &ttolwp(ct)->lwp_pcb;
-	struct fpu_ctx *fp = &pcb->pcb_fpu;
-	struct fpu_ctx *cfp = &cpcb->pcb_fpu;
+	fpu_ctx_t *fp = &pcb->pcb_fpu;
+	fpu_ctx_t *cfp = &cpcb->pcb_fpu;
 
-	ctxop_attach(ct, fp_ctxop_allocate(pcb));
+	if (t == curthread) {
+		fp_save(fp);
+	}
+	bcopy(fp, cfp, sizeof (*cfp));
+	ctxop_attach(ct, fp_ctxop_allocate(cfp));
 }
 
 int
@@ -110,7 +130,7 @@ fp_fenflt(void)
 	kpreempt_disable();
 	struct ctxop *ctx = curthread->t_ctx;
 	while (ctx != NULL) {
-		if (ctx->save_op == (void(*)(void *))fpu_save) {
+		if (ctx->save_op == (void(*)(void *))fpsave_ctxt) {
 			break;
 		}
 		ctx = ctx->next;
@@ -124,32 +144,34 @@ fp_fenflt(void)
 }
 
 static struct ctxop *
-fp_ctxop_allocate(pcb_t *pcb)
+fp_ctxop_allocate(fpu_ctx_t *fp)
 {
 	const struct ctxop_template tpl = {
 		.ct_rev		= CTXOP_TPL_REV,
-		.ct_save	= fpu_save,
-		.ct_restore	= fpu_restore,
+		.ct_save	= fpsave_ctxt,
+		.ct_restore	= fprestore_ctxt,
 		.ct_fork	= fp_new_lwp,
 		.ct_lwp_create	= fp_new_lwp,
-		.ct_free	= NULL,
+		.ct_free	= fpfree_ctxt
 	};
-	return (ctxop_allocate(&tpl, pcb));
+	return (ctxop_allocate(&tpl, fp));
 }
 
-void fp_init(void)
+
+void
+fp_init(void)
 {
-	struct ctxop *ctx;
+	pcb_t *pcb = &ttolwp(curthread)->lwp_pcb;
+	fpu_ctx_t *fp = &pcb->pcb_fpu;
+	struct ctxop *ctx = fp_ctxop_allocate(fp);
 
 	kpreempt_disable();
-	pcb_t *pcb = &ttolwp(curthread)->lwp_pcb;
-	bzero(&pcb->pcb_fpu.fpu_regs, sizeof(pcb->pcb_fpu.fpu_regs));
-	pcb->pcb_fpu.fpu_regs.kfpu_cr = FPCR_INIT;
-	pcb->pcb_fpu.fpu_regs.kfpu_sr = 0;
-	fpu_restore(pcb);
-
-	ctx = fp_ctxop_allocate(pcb);
 	ctxop_attach(curthread, ctx);
+
+	bzero(&fp->fpu_regs, sizeof(fp->fpu_regs));
+	fp->fpu_regs.kfpu_cr = FPCR_INIT;
+	fp->fpu_regs.kfpu_sr = 0;
+	fprestore_ctxt(fp);
 
 	kpreempt_enable();
 }

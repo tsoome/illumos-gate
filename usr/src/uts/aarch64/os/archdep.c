@@ -361,7 +361,7 @@ setfpregs(klwp_t *lwp, fpregset_t *fp)
 	fpu->fpu_regs.kfpu_sr = fp->fp_sr;
 	bcopy(fp->d_fpregs, fpu->fpu_regs.kfpu_regs, sizeof(fpu->fpu_regs.kfpu_regs));
 	if (ttolwp(curthread) == lwp) {
-		fp_restore(pcb);
+		fp_restore(fpu);
 	}
 	kpreempt_enable();
 }
@@ -377,7 +377,7 @@ getfpregs(klwp_t *lwp, fpregset_t *fp)
 
 	kpreempt_disable();
 	if (ttolwp(curthread) == lwp) {
-		fp_save(pcb);
+		fp_save(fpu);
 	}
 
 	fp->fp_cr = fpu->fpu_regs.kfpu_cr;

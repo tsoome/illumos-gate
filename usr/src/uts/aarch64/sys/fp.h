@@ -70,10 +70,9 @@ extern "C" {
 
 #define FPCR_INIT (FPCR_RM_RN)
 
-extern void fp_save(pcb_t *pcb);
-extern void fp_restore(pcb_t *pcb);
+extern void fp_save(fpu_ctx_t *ctx);
+extern void fp_restore(fpu_ctx_t *ctx);
 extern void fp_init(void);
-extern void fp_free(pcb_t *pcb, int isexec);
 extern int fp_fenflt(void);
 
 #endif	/* _KERNEL */
