@@ -243,7 +243,7 @@ $(not_aarch64)link path=lib/crypto/64 target=$(ARCH64)
 $(aarch64_ONLY)link path=lib/crypto/64 target=.
 file path=lib/crypto/kmf_mapper_cn.so.1
 file path=lib/crypto/kmf_nss.so.1
-$(not_aarch64)file path=lib/crypto/kmf_openssl.so.1
+file path=lib/crypto/kmf_openssl.so.1
 file path=lib/crypto/kmf_pkcs11.so.1
 file path=lib/ld.so.1
 link path=lib/libadm.so target=libadm.so.1

@@ -24,9 +24,7 @@
 
 include	../../Makefile.lib
 
-SUBDIRS		=	kmf_pkcs11 kmf_nss
-# XXXARM: Relies on private details that LibreSSL makes invisible
-$(NOT_AARCH64_BLD)SUBDIRS += kmf_openssl
+SUBDIRS		=	kmf_pkcs11 kmf_nss kmf_openssl
 
 HDRS=
 HDRDIR= include

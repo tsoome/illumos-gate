@@ -74,11 +74,10 @@ link path=usr/lib/krb5/libkadm5clnt.so target=./libkadm5clnt.so.1
 file path=usr/lib/krb5/libkadm5clnt.so.1
 link path=usr/lib/krb5/libss.so target=libss.so.1
 file path=usr/lib/krb5/libss.so.1
-$(not_aarch64)dir path=usr/lib/krb5/plugins
-$(not_aarch64)dir path=usr/lib/krb5/plugins/preauth
-$(not_aarch64)link path=usr/lib/krb5/plugins/preauth/pkinit.so \
-    target=pkinit.so.1
-$(not_aarch64)file path=usr/lib/krb5/plugins/preauth/pkinit.so.1
+dir  path=usr/lib/krb5/plugins
+dir  path=usr/lib/krb5/plugins/preauth
+link path=usr/lib/krb5/plugins/preauth/pkinit.so target=pkinit.so.1
+file path=usr/lib/krb5/plugins/preauth/pkinit.so.1
 link path=usr/lib/libkrb5.so target=./libkrb5.so.1
 file path=usr/lib/libkrb5.so.1
 dir  path=usr/lib/security
