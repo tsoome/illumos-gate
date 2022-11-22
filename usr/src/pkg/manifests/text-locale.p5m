@@ -45,8 +45,8 @@ file path=usr/bin/xgettext mode=0555
 dir  path=usr/lib
 file path=usr/lib/gmsgfmt mode=0555
 $(not_aarch64)dir path=usr/lib/iconv
-$(not_aarch64)dir path=usr/lib/iconv/$(ARCH64)
-$(not_aarch64)file path=usr/lib/iconv/$(ARCH64)/geniconvtbl.so mode=0555
+$(MULTILIB_ONLY)dir path=usr/lib/iconv/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/iconv/$(ARCH64)/geniconvtbl.so mode=0555
 $(not_aarch64)dir path=usr/lib/iconv/geniconvtbl
 $(not_aarch64)file path=usr/lib/iconv/geniconvtbl.so mode=0555
 $(not_aarch64)dir path=usr/lib/iconv/geniconvtbl/binarytables

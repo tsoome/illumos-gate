@@ -38,14 +38,14 @@ $(i386_ONLY)file path=usr/bin/$(ARCH32)/plimit mode=0555
 file path=usr/bin/$(ARCH32)/strings mode=0555
 $(not_aarch64)file path=usr/bin/$(ARCH32)/truss mode=0555
 dir  path=usr/bin/$(ARCH64)
-$(not_aarch64)file path=usr/bin/$(ARCH64)/elfwrap mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/gcore mode=0555
-$(not_aarch64)link path=usr/bin/$(ARCH64)/ld target=../../bin/ld
-$(not_aarch64)link path=usr/bin/$(ARCH64)/ldd target=../../bin/ldd
-$(not_aarch64)file path=usr/bin/$(ARCH64)/plimit mode=0555
-$(not_aarch64)link path=usr/bin/$(ARCH64)/pvs target=../../bin/pvs
-$(not_aarch64)file path=usr/bin/$(ARCH64)/strings mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/truss mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/elfwrap mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/gcore mode=0555
+$(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/ld target=../../bin/ld
+$(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/ldd target=../../bin/ldd
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/plimit mode=0555
+$(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/pvs target=../../bin/pvs
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/strings mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/truss mode=0555
 $(not_aarch64)link path=usr/bin/ctags target=../has/bin/ctags mediator=ctags \
     mediator-implementation=illumos
 file path=usr/bin/elfsign mode=0555
@@ -65,7 +65,7 @@ $(not_aarch64)file path=usr/bin/whocalls mode=0755
 dir  path=usr/ccs
 dir  path=usr/ccs/bin
 dir  path=usr/ccs/bin/$(ARCH64)
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/ld \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/ld \
     target=../../../bin/$(ARCH64)/ld
 link path=usr/ccs/bin/ld target=../../bin/ld
 link path=usr/ccs/bin/regcmp target=../../bin/regcmp
@@ -74,9 +74,9 @@ link path=usr/ccs/lib/link_audit target=../../lib/link_audit
 $(not_aarch64)file path=usr/has/bin/ctags mode=0555
 file path=usr/has/man/man1has/ctags.1has
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)file path=usr/lib/$(ARCH64)/lddstub mode=0555
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libldstab.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/lddstub mode=0555
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libldstab.so.1
 dir  path=usr/lib/abi
 $(not_aarch64)file path=usr/lib/abi/spec2map mode=0755
 $(not_aarch64)file path=usr/lib/abi/spec2trace mode=0755
@@ -99,12 +99,12 @@ $(not_aarch64)file path=usr/lib/lddstub mode=0555
 file path=usr/lib/libldstab.so.1
 dir  path=usr/lib/link_audit
 dir  path=usr/lib/link_audit/$(ARCH64)
-$(not_aarch64)file path=usr/lib/link_audit/$(ARCH64)/ldprof.so.1
-$(not_aarch64)file path=usr/lib/link_audit/$(ARCH64)/truss.so.1
-$(not_aarch64)file path=usr/lib/link_audit/$(ARCH64)/who.so.1
-$(not_aarch64)link path=usr/lib/link_audit/32 target=.
-$(not_aarch64)link path=usr/lib/link_audit/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=usr/lib/link_audit/64 target=.
+$(MULTILIB_ONLY)file path=usr/lib/link_audit/$(ARCH64)/ldprof.so.1
+$(MULTILIB_ONLY)file path=usr/lib/link_audit/$(ARCH64)/truss.so.1
+$(MULTILIB_ONLY)file path=usr/lib/link_audit/$(ARCH64)/who.so.1
+$(MULTILIB_ONLY)link path=usr/lib/link_audit/32 target=.
+$(MULTILIB_ONLY)link path=usr/lib/link_audit/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=usr/lib/link_audit/64 target=.
 $(not_aarch64)file path=usr/lib/link_audit/ldprof.so.1
 $(not_aarch64)file path=usr/lib/link_audit/truss.so.1
 $(not_aarch64)file path=usr/lib/link_audit/who.so.1

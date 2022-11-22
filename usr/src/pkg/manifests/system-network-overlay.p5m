@@ -29,7 +29,7 @@ dir  path=kernel/overlay
 dir  path=kernel/overlay/$(ARCH64)
 file path=kernel/overlay/$(ARCH64)/vxlan group=sys mode=0755
 dir  path=lib
-$(not_aarch64)file path=lib/$(ARCH64)/libvarpd.so.1 mode=0755 \
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libvarpd.so.1 mode=0755 \
     variant.opensolaris.zone=__NODEFAULT
 file path=lib/libvarpd.so.1 mode=0755 variant.opensolaris.zone=__NODEFAULT
 dir  path=lib/svc
@@ -37,16 +37,16 @@ dir  path=lib/svc/manifest group=sys
 dir  path=lib/svc/manifest/network group=sys
 file path=lib/svc/manifest/network/varpd.xml mode=0444
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
 dir  path=usr/lib/varpd
 dir  path=usr/lib/varpd/$(ARCH64)
-$(not_aarch64)link path=usr/lib/varpd/$(ARCH64)/libvarpd_direct.so \
+$(MULTILIB_ONLY)link path=usr/lib/varpd/$(ARCH64)/libvarpd_direct.so \
     target=libvarpd_direct.so.1
-$(not_aarch64)file path=usr/lib/varpd/$(ARCH64)/libvarpd_direct.so.1
-$(not_aarch64)link path=usr/lib/varpd/$(ARCH64)/libvarpd_files.so \
+$(MULTILIB_ONLY)file path=usr/lib/varpd/$(ARCH64)/libvarpd_direct.so.1
+$(MULTILIB_ONLY)link path=usr/lib/varpd/$(ARCH64)/libvarpd_files.so \
     target=libvarpd_files.so.1
-$(not_aarch64)file path=usr/lib/varpd/$(ARCH64)/libvarpd_files.so.1
-$(not_aarch64)link path=usr/lib/varpd/64 target=$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/varpd/$(ARCH64)/libvarpd_files.so.1
+$(MULTILIB_ONLY)link path=usr/lib/varpd/64 target=$(ARCH64)
 $(aarch64_ONLY)link path=usr/lib/varpd/64 target=.
 link path=usr/lib/varpd/libvarpd_direct.so target=libvarpd_direct.so.1
 file path=usr/lib/varpd/libvarpd_direct.so.1

@@ -45,11 +45,12 @@ dir  path=usr group=sys
 dir  path=usr/include
 file path=usr/include/smhbaapi.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libSMHBAAPI.so target=libSMHBAAPI.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libSMHBAAPI.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsun_sas.so target=libsun_sas.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsun_sas.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libSMHBAAPI.so \
+    target=libSMHBAAPI.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libSMHBAAPI.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsun_sas.so target=libsun_sas.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsun_sas.so.1
 link path=usr/lib/libSMHBAAPI.so target=libSMHBAAPI.so.1
 file path=usr/lib/libSMHBAAPI.so.1
 link path=usr/lib/libsun_sas.so target=libsun_sas.so.1

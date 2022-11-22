@@ -76,21 +76,21 @@ file path=usr/include/sys/stmf.h
 file path=usr/include/sys/stmf_defines.h
 file path=usr/include/sys/stmf_ioctl.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libstmf.so target=libstmf.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libstmf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libstmfproxy.so \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libstmf.so target=libstmf.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libstmf.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libstmfproxy.so \
     target=libstmfproxy.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libstmfproxy.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libstmfproxy.so.1
 link path=usr/lib/libstmf.so target=libstmf.so.1
 file path=usr/lib/libstmf.so.1
 link path=usr/lib/libstmfproxy.so target=libstmfproxy.so.1
 file path=usr/lib/libstmfproxy.so.1
 $(not_aarch64)dir path=usr/lib/mdb group=sys
 $(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf.so group=sys mode=0555
-$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf_sbd.so group=sys \
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf.so group=sys mode=0555
+$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf_sbd.so group=sys \
     mode=0555
 dir  path=usr/sbin
 file path=usr/sbin/sbdadm mode=0555

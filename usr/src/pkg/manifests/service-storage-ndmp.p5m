@@ -47,9 +47,9 @@ dir  path=usr group=sys
 dir  path=usr/include
 file path=usr/include/libndmp.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libndmp.so target=libndmp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libndmp.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libndmp.so target=libndmp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libndmp.so.1
 link path=usr/lib/libndmp.so target=libndmp.so.1
 file path=usr/lib/libndmp.so.1
 dir  path=usr/lib/ndmp

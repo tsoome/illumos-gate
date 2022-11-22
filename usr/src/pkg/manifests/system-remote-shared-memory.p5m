@@ -36,9 +36,9 @@ dir  path=usr/kernel/drv/$(ARCH64) group=sys
 file path=usr/kernel/drv/$(ARCH64)/rsm group=sys
 file path=usr/kernel/drv/rsm.conf group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librsm.so target=librsm.so.2
-$(not_aarch64)file path=usr/lib/$(ARCH64)/librsm.so.2
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librsm.so target=librsm.so.2
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/librsm.so.2
 link path=usr/lib/librsm.so target=librsm.so.2
 file path=usr/lib/librsm.so.2
 dir  path=usr/share/man

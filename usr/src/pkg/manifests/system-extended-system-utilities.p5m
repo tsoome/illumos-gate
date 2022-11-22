@@ -77,7 +77,7 @@ file path=usr/bin/$(ARCH64)/preap mode=0555
 file path=usr/bin/$(ARCH64)/prun mode=0555
 file path=usr/bin/$(ARCH64)/psecflags mode=0555
 file path=usr/bin/$(ARCH64)/psig mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/pstack mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/pstack mode=0555
 file path=usr/bin/$(ARCH64)/pstop mode=0555
 file path=usr/bin/$(ARCH64)/ptime mode=0555
 file path=usr/bin/$(ARCH64)/ptree mode=0555
@@ -157,12 +157,12 @@ file path=usr/bin/yes mode=0555
 hardlink path=usr/bin/zcat target=../../usr/bin/compress
 $(not_aarch64)link path=usr/dict target=./share/lib/dict
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)file path=usr/lib/$(ARCH64)/madv.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/mpss.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/madv.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/mpss.so.1
 dir  path=usr/lib/adb group=sys
-$(not_aarch64)dir path=usr/lib/adb/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/adb/$(ARCH64)/adbsub.o group=sys
+$(MULTILIB_ONLY)dir path=usr/lib/adb/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/adb/$(ARCH64)/adbsub.o group=sys
 $(not_aarch64)file path=usr/lib/adb/adbgen group=sys mode=0755
 $(not_aarch64)file path=usr/lib/adb/adbgen1 group=sys mode=0755
 $(not_aarch64)file path=usr/lib/adb/adbgen3 group=sys mode=0755

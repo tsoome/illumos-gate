@@ -36,7 +36,7 @@ dir  path=usr/bin
 $(i386_ONLY)dir path=usr/bin/$(ARCH32)
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/cputrack mode=0555
 dir  path=usr/bin/$(ARCH64)
-$(not_aarch64)file path=usr/bin/$(ARCH64)/cputrack mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/cputrack mode=0555
 $(not_aarch64)hardlink path=usr/bin/cputrack target=../lib/isaexec
 dir  path=usr/include
 file path=usr/include/libcpc.h
@@ -138,11 +138,11 @@ $(i386_ONLY)link path=usr/kernel/pcbe/amd64/pcbe.GenuineIntel.6.94 \
 $(i386_ONLY)link path=usr/kernel/pcbe/amd64/pcbe.GenuineIntel.6.95 \
     target=pcbe.GenuineIntel.6.15
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcpc.so target=./libcpc.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libcpc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpctx.so target=./libpctx.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libpctx.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcpc.so target=./libcpc.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libcpc.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpctx.so target=./libpctx.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libpctx.so.1
 $(not_aarch64)link path=usr/lib/libcpc.so target=./libcpc.so.1
 $(not_aarch64)file path=usr/lib/libcpc.so.1
 link path=usr/lib/libpctx.so target=./libpctx.so.1

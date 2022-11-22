@@ -33,8 +33,8 @@ dir  path=usr group=sys
 dir  path=usr/bin
 $(i386_ONLY)dir path=usr/bin/$(ARCH32)
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/latencytop mode=0555
-$(not_aarch64)dir path=usr/bin/$(ARCH64)
-$(not_aarch64)file path=usr/bin/$(ARCH64)/latencytop mode=0555
+$(MULTILIB_ONLY)dir path=usr/bin/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/latencytop mode=0555
 $(not_aarch64)hardlink path=usr/bin/latencytop target=../../usr/lib/isaexec
 dir  path=usr/share/man/man8
 file path=usr/share/man/man8/latencytop.8

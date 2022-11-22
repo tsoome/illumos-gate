@@ -37,10 +37,11 @@ dir  path=usr/include/sys/usb/clients/ccid
 file path=usr/include/sys/usb/clients/ccid/ccid.h
 file path=usr/include/sys/usb/clients/ccid/uccid.h
 dir  path=usr/lib/cfgadm variant.opensolaris.zone=global
-$(not_aarch64)dir path=usr/lib/cfgadm/$(ARCH64) variant.opensolaris.zone=global
-$(not_aarch64)link path=usr/lib/cfgadm/$(ARCH64)/ccid.so target=./ccid.so.1 \
+$(MULTILIB_ONLY)dir path=usr/lib/cfgadm/$(ARCH64) \
     variant.opensolaris.zone=global
-$(not_aarch64)file path=usr/lib/cfgadm/$(ARCH64)/ccid.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/ccid.so target=./ccid.so.1 \
+    variant.opensolaris.zone=global
+$(MULTILIB_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/ccid.so.1 \
     variant.opensolaris.zone=global
 link path=usr/lib/cfgadm/ccid.so target=./ccid.so.1 \
     variant.opensolaris.zone=global

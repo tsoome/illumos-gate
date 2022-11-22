@@ -51,27 +51,28 @@ dir  path=usr/lib
 dir  path=usr/lib/fs group=sys
 dir  path=usr/lib/fs/smb group=sys
 dir  path=usr/lib/fs/smb/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/fs/smb/$(ARCH64)/libshare_smb.so.1
+$(MULTILIB_ONLY)file path=usr/lib/fs/smb/$(ARCH64)/libshare_smb.so.1
 file path=usr/lib/fs/smb/libshare_smb.so.1
 $(not_aarch64)dir path=usr/lib/mdb group=sys
 $(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/smbsrv.so group=sys mode=0555
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/smbsrv.so group=sys \
+    mode=0555
 $(not_aarch64)dir path=usr/lib/mdb/proc group=sys
 $(not_aarch64)file path=usr/lib/mdb/proc/libmlsvc.so group=sys mode=0555
 dir  path=usr/lib/reparse
 link path=usr/lib/reparse/libreparse_smb.so target=libreparse_smb.so.1
 file path=usr/lib/reparse/libreparse_smb.so.1
 dir  path=usr/lib/security
-$(not_aarch64)dir path=usr/lib/security/$(ARCH64)
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so \
+$(MULTILIB_ONLY)dir path=usr/lib/security/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so \
     target=pam_smb_passwd.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so.1
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_smb_passwd.so.1
 link path=usr/lib/security/pam_smb_passwd.so target=pam_smb_passwd.so.1
 file path=usr/lib/security/pam_smb_passwd.so.1
 dir  path=usr/lib/smbsrv
 dir  path=usr/lib/smbsrv/$(ARCH64)
-$(not_aarch64)file path=usr/lib/smbsrv/$(ARCH64)/libsmb.so.1
+$(MULTILIB_ONLY)file path=usr/lib/smbsrv/$(ARCH64)/libsmb.so.1
 dir  path=usr/lib/smbsrv/dtrace
 file path=usr/lib/smbsrv/dtrace/nbl-conflict.d mode=0555
 file path=usr/lib/smbsrv/dtrace/smb-trace.d mode=0555

@@ -34,9 +34,9 @@ set name=variant.arch value=$(ARCH)
 dir  path=etc group=sys
 dir  path=usr group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsun_ima.so target=libsun_ima.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsun_ima.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsun_ima.so target=libsun_ima.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsun_ima.so.1
 link path=usr/lib/libsun_ima.so target=libsun_ima.so.1
 file path=usr/lib/libsun_ima.so.1
 legacy pkg=SUNWima \

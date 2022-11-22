@@ -35,9 +35,9 @@ set name=variant.arch value=$(ARCH)
 dir  path=etc group=sys
 file path=etc/mpapi.conf original_name=SUNWmpapi:etc/mpapi.conf preserve=true
 dir  path=lib
-$(not_aarch64)dir path=lib/$(ARCH64)
-$(not_aarch64)link path=lib/$(ARCH64)/libMPAPI.so target=libMPAPI.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libMPAPI.so.1
+$(MULTILIB_ONLY)dir path=lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libMPAPI.so target=libMPAPI.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libMPAPI.so.1
 link path=lib/libMPAPI.so target=libMPAPI.so.1
 file path=lib/libMPAPI.so.1
 dir  path=usr group=sys

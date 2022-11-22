@@ -10,12 +10,12 @@
 #
 
 # Copyright 2016, Richard Lowe.
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/values-Xa.o $(not_aarch64)    target=../../../lib/$(ARCH64)/values-Xa.o
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/values-Xc.o $(not_aarch64)    target=../../../lib/$(ARCH64)/values-Xc.o
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/values-Xs.o $(not_aarch64)    target=../../../lib/$(ARCH64)/values-Xs.o
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/values-Xt.o $(not_aarch64)    target=../../../lib/$(ARCH64)/values-Xt.o
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/values-xpg4.o $(not_aarch64)    target=../../../lib/$(ARCH64)/values-xpg4.o
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/values-xpg6.o $(not_aarch64)    target=../../../lib/$(ARCH64)/values-xpg6.o
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/values-Xa.o $(MULTILIB_ONLY)    target=../../../lib/$(ARCH64)/values-Xa.o
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/values-Xc.o $(MULTILIB_ONLY)    target=../../../lib/$(ARCH64)/values-Xc.o
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/values-Xs.o $(MULTILIB_ONLY)    target=../../../lib/$(ARCH64)/values-Xs.o
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/values-Xt.o $(MULTILIB_ONLY)    target=../../../lib/$(ARCH64)/values-Xt.o
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/values-xpg4.o $(MULTILIB_ONLY)    target=../../../lib/$(ARCH64)/values-xpg4.o
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/values-xpg6.o $(MULTILIB_ONLY)    target=../../../lib/$(ARCH64)/values-xpg6.o
 set name=pkg.fmri value=pkg:/system/library/c-runtime@$(PKGVERS)
 set name=pkg.summary value="C Runtime"
 set name=pkg.description value="C runtime objects"
@@ -27,17 +27,17 @@ link path=usr/ccs/lib/values-Xs.o target=../../lib/values-Xs.o
 link path=usr/ccs/lib/values-Xt.o target=../../lib/values-Xt.o
 link path=usr/ccs/lib/values-xpg4.o target=../../lib/values-xpg4.o
 link path=usr/ccs/lib/values-xpg6.o target=../../lib/values-xpg6.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/crt1.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/crti.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/crtn.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/crt1.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/crti.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/crtn.o
 $(i386_ONLY)link path=usr/lib/$(ARCH64)/gcrt1.o target=crt1.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libssp_ns.a
-$(not_aarch64)file path=usr/lib/$(ARCH64)/values-Xa.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/values-Xc.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/values-Xs.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/values-Xt.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/values-xpg4.o
-$(not_aarch64)file path=usr/lib/$(ARCH64)/values-xpg6.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libssp_ns.a
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/values-Xa.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/values-Xc.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/values-Xs.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/values-Xt.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/values-xpg4.o
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/values-xpg6.o
 file path=usr/lib/crt1.o
 file path=usr/lib/crti.o
 file path=usr/lib/crtn.o

@@ -90,157 +90,158 @@ $(i386_ONLY)dir path=etc/flash/precreation group=sys mode=0700
 $(i386_ONLY)file path=etc/flash/precreation/caplib group=sys mode=0500
 $(i386_ONLY)dir path=etc/flash/preexit group=sys mode=0700
 dir  path=lib
-$(not_aarch64)dir path=lib/$(ARCH64)
-$(not_aarch64)file path=lib/$(ARCH64)/c_synonyms.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/ld.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libadm.so target=libadm.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libadm.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libaio.so target=libaio.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libaio.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libavl.so target=libavl.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libavl.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libbsm.so target=libbsm.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libbsm.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libc.so target=libc.so.1 \
+$(MULTILIB_ONLY)dir path=lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/c_synonyms.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/ld.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libadm.so target=libadm.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libadm.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libaio.so target=libaio.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libaio.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libavl.so target=libavl.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libavl.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libbsm.so target=libbsm.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libbsm.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libc.so target=libc.so.1 \
     reboot-needed=true
-$(not_aarch64)file path=lib/$(ARCH64)/libc.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libc_db.so target=libc_db.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libc_db.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libcmdutils.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libcontract.so target=libcontract.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libcontract.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libcryptoutil.so target=libcryptoutil.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libcryptoutil.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libctf.so target=libctf.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libctf.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libcurses.so target=libcurses.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libcustr.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdevice.so target=libdevice.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdevice.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdevid.so target=libdevid.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdevid.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdevinfo.so target=libdevinfo.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdevinfo.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdhcpagent.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdhcputil.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdl.so target=libdl.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdl.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdladm.so target=libdladm.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdladm.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdlpi.so target=libdlpi.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdlpi.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libdoor.so target=libdoor.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdoor.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libdwarf.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libefi.so target=libefi.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libefi.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libelf.so target=libelf.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libelf.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libfakekernel.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libfdisk.so target=libfdisk.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libfdisk.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libgen.so target=libgen.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libgen.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libinetutil.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libintl.so target=libintl.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libintl.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libipadm.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libipmp.so target=libipmp.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libipmp.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libkmf.so target=libkmf.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libkmf.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libkmfberder.so target=libkmfberder.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libkmfberder.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libkstat.so target=libkstat.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libkstat.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libld.so.4
-$(not_aarch64)file path=lib/$(ARCH64)/liblddbg.so.4
-$(not_aarch64)link path=lib/$(ARCH64)/libmd.so target=libmd.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libmd.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libmd5.so target=libmd5.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libmd5.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libmp.so target=libmp.so.2
-$(not_aarch64)file path=lib/$(ARCH64)/libmp.so.2
-$(not_aarch64)link path=lib/$(ARCH64)/libnsl.so target=libnsl.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libnsl.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libnvpair.so target=libnvpair.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libnvpair.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libofmt.so target=libofmt.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libofmt.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libpam.so target=libpam.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libpam.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libposix4.so target=libposix4.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libposix4.so.1 target=librt.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libproc.so target=libproc.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libproc.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libpthread.so target=libpthread.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libpthread.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/librcm.so target=librcm.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/librcm.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libresolv.so target=libresolv.so.2
-$(not_aarch64)file path=lib/$(ARCH64)/libresolv.so.2
-$(not_aarch64)link path=lib/$(ARCH64)/librestart.so target=librestart.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/librestart.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/librpcsvc.so target=librpcsvc.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/librpcsvc.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/librt.so target=librt.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/librt.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/librtld.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/librtld_db.so target=librtld_db.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/librtld_db.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libscf.so target=libscf.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libscf.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libsec.so target=libsec.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libsec.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libsecdb.so target=libsecdb.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libsecdb.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libsendfile.so target=libsendfile.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libsendfile.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libsocket.so target=libsocket.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libsocket.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libsysevent.so target=libsysevent.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libsysevent.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libtermcap.so target=libtermcap.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libtermcap.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libtermlib.so target=libtermlib.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libtermlib.so.1 target=libcurses.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libthread.so target=libthread.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libthread.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libthread_db.so target=libc_db.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libthread_db.so.1 target=libc_db.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libtsnet.so target=libtsnet.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libtsnet.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libtsol.so target=libtsol.so.2
-$(not_aarch64)file path=lib/$(ARCH64)/libtsol.so.2
-$(not_aarch64)link path=lib/$(ARCH64)/libumem.so target=libumem.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libumem.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libuuid.so target=libuuid.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libuuid.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libuutil.so target=libuutil.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libuutil.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libw.so target=libw.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libw.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libxnet.so target=libxnet.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libxnet.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/nss_compat.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/nss_dns.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/nss_files.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/nss_nis.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/nss_user.so.1
-$(not_aarch64)link path=lib/32 target=.
-$(not_aarch64)link path=lib/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=lib/64 target=.
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libc.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libc_db.so target=libc_db.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libc_db.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libcmdutils.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libcontract.so target=libcontract.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libcontract.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libcryptoutil.so \
+    target=libcryptoutil.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libcryptoutil.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libctf.so target=libctf.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libctf.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libcurses.so target=libcurses.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libcurses.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libcustr.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdevice.so target=libdevice.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdevice.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdevid.so target=libdevid.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdevid.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdevinfo.so target=libdevinfo.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdevinfo.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdhcpagent.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdhcputil.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdl.so target=libdl.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdl.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdladm.so target=libdladm.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdladm.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdlpi.so target=libdlpi.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdlpi.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libdoor.so target=libdoor.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdoor.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libdwarf.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libefi.so target=libefi.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libefi.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libelf.so target=libelf.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libelf.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libfakekernel.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libfdisk.so target=libfdisk.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libfdisk.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libgen.so target=libgen.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libgen.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libinetutil.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libintl.so target=libintl.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libintl.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libipadm.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libipmp.so target=libipmp.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libipmp.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libkmf.so target=libkmf.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libkmf.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libkmfberder.so target=libkmfberder.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libkmfberder.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libkstat.so target=libkstat.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libkstat.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libld.so.4
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/liblddbg.so.4
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libmd.so target=libmd.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libmd.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libmd5.so target=libmd5.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libmd5.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libmp.so target=libmp.so.2
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libmp.so.2
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libnsl.so target=libnsl.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libnsl.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libnvpair.so target=libnvpair.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libnvpair.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libofmt.so target=libofmt.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libofmt.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libpam.so target=libpam.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libpam.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libposix4.so target=libposix4.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libposix4.so.1 target=librt.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libproc.so target=libproc.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libproc.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libpthread.so target=libpthread.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libpthread.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/librcm.so target=librcm.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/librcm.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libresolv.so target=libresolv.so.2
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libresolv.so.2
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/librestart.so target=librestart.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/librestart.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/librpcsvc.so target=librpcsvc.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/librpcsvc.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/librt.so target=librt.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/librt.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/librtld.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/librtld_db.so target=librtld_db.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/librtld_db.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libscf.so target=libscf.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libscf.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libsec.so target=libsec.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libsec.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libsecdb.so target=libsecdb.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libsecdb.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libsendfile.so target=libsendfile.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libsendfile.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libsocket.so target=libsocket.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libsocket.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libsysevent.so target=libsysevent.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libsysevent.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libtermcap.so target=libtermcap.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libtermcap.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libtermlib.so target=libtermlib.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libtermlib.so.1 target=libcurses.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libthread.so target=libthread.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libthread.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libthread_db.so target=libc_db.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libthread_db.so.1 target=libc_db.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libtsnet.so target=libtsnet.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libtsnet.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libtsol.so target=libtsol.so.2
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libtsol.so.2
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libumem.so target=libumem.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libumem.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libuuid.so target=libuuid.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libuuid.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libuutil.so target=libuutil.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libuutil.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libw.so target=libw.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libw.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libxnet.so target=libxnet.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libxnet.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/nss_compat.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/nss_dns.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/nss_files.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/nss_nis.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/nss_user.so.1
+$(MULTILIB_ONLY)link path=lib/32 target=.
+$(MULTILIB_ONLY)link path=lib/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=lib/64 target=.
 $(not_aarch64)file path=lib/c_synonyms.so.1
 dir  path=lib/crypto
 dir  path=lib/crypto/$(ARCH64)
-$(not_aarch64)file path=lib/crypto/$(ARCH64)/kmf_mapper_cn.so.1
-$(not_aarch64)file path=lib/crypto/$(ARCH64)/kmf_nss.so.1
-$(not_aarch64)file path=lib/crypto/$(ARCH64)/kmf_openssl.so.1
-$(not_aarch64)file path=lib/crypto/$(ARCH64)/kmf_pkcs11.so.1
-$(not_aarch64)link path=lib/crypto/32 target=.
-$(not_aarch64)link path=lib/crypto/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=lib/crypto/64 target=.
+$(MULTILIB_ONLY)file path=lib/crypto/$(ARCH64)/kmf_mapper_cn.so.1
+$(MULTILIB_ONLY)file path=lib/crypto/$(ARCH64)/kmf_nss.so.1
+$(MULTILIB_ONLY)file path=lib/crypto/$(ARCH64)/kmf_openssl.so.1
+$(MULTILIB_ONLY)file path=lib/crypto/$(ARCH64)/kmf_pkcs11.so.1
+$(MULTILIB_ONLY)link path=lib/crypto/32 target=.
+$(MULTILIB_ONLY)link path=lib/crypto/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=lib/crypto/64 target=.
 file path=lib/crypto/kmf_mapper_cn.so.1
 file path=lib/crypto/kmf_nss.so.1
 file path=lib/crypto/kmf_openssl.so.1
@@ -389,34 +390,34 @@ file path=lib/nss_nis.so.1
 file path=lib/nss_user.so.1
 dir  path=lib/secure
 dir  path=lib/secure/$(ARCH64)
-$(not_aarch64)link path=lib/secure/32 target=.
-$(not_aarch64)link path=lib/secure/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=lib/secure/64 target=.
+$(MULTILIB_ONLY)link path=lib/secure/32 target=.
+$(MULTILIB_ONLY)link path=lib/secure/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=lib/secure/64 target=.
 dir  path=usr group=sys
 $(not_aarch64)file path=usr/$(nlib/scsi/plugins/smp/framework/sas2.so
 dir  path=usr/bin
 dir  path=usr/ccs
 dir  path=usr/ccs/lib
 dir  path=usr/ccs/lib/$(ARCH64)
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libcurses.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libcurses.so \
     target=../../../../lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libform.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libform.so \
     target=../../../lib/$(ARCH64)/libform.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libgen.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libgen.so \
     target=../../../../lib/$(ARCH64)/libgen.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libl.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libl.so \
     target=../../../lib/$(ARCH64)/libl.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libmalloc.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libmalloc.so \
     target=../../../lib/$(ARCH64)/libmalloc.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libmenu.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libmenu.so \
     target=../../../lib/$(ARCH64)/libmenu.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libpanel.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libpanel.so \
     target=../../../lib/$(ARCH64)/libpanel.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libtermcap.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libtermcap.so \
     target=../../../../lib/$(ARCH64)/libtermcap.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/libtermlib.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/libtermlib.so \
     target=../../../../lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)link path=usr/ccs/lib/$(ARCH64)/liby.so \
+$(MULTILIB_ONLY)link path=usr/ccs/lib/$(ARCH64)/liby.so \
     target=../../../lib/$(ARCH64)/liby.so.1
 link path=usr/ccs/lib/libcurses.so target=../../../lib/libcurses.so.1
 link path=usr/ccs/lib/libform.so target=../../lib/libform.so.1
@@ -429,369 +430,373 @@ link path=usr/ccs/lib/libtermcap.so target=../../../lib/libtermcap.so.1
 link path=usr/ccs/lib/libtermlib.so target=../../../lib/libcurses.so.1
 link path=usr/ccs/lib/liby.so target=../../lib/liby.so.1
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)file path=usr/lib/$(ARCH64)/0@0.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/getloginx.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libadm.so \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/0@0.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/getloginx.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libadm.so \
     target=../../../lib/$(ARCH64)/libadm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libadm.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libadm.so.1 \
     target=../../../lib/$(ARCH64)/libadm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libads.so target=./libads.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libads.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libadutils.so target=./libadutils.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libadutils.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libaio.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libads.so target=./libads.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libads.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libadutils.so \
+    target=./libadutils.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libadutils.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libaio.so \
     target=../../../lib/$(ARCH64)/libaio.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libaio.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libaio.so.1 \
     target=../../../lib/$(ARCH64)/libaio.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libavl.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libavl.so \
     target=../../../lib/$(ARCH64)/libavl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libavl.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libavl.so.1 \
     target=../../../lib/$(ARCH64)/libavl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libbsdmalloc.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libbsdmalloc.so \
     target=libbsdmalloc.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libbsdmalloc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libbsm.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libbsdmalloc.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libbsm.so \
     target=../../../lib/$(ARCH64)/libbsm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libbsm.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libbsm.so.1 \
     target=../../../lib/$(ARCH64)/libbsm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libc.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libc.so \
     target=../../../lib/$(ARCH64)/libc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libc.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libc.so.1 \
     target=../../../lib/$(ARCH64)/libc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libc_db.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libc_db.so \
     target=../../../lib/$(ARCH64)/libc_db.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libc_db.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libc_db.so.1 \
     target=../../../lib/$(ARCH64)/libc_db.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcfgadm.so target=libcfgadm.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libcfgadm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcmdutils.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcfgadm.so target=libcfgadm.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libcfgadm.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcmdutils.so.1 \
     target=../../../lib/$(ARCH64)/libcmdutils.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcommputil.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcommputil.so \
     target=libcommputil.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libcommputil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcontract.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libcommputil.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcontract.so \
     target=../../../lib/$(ARCH64)/libcontract.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcontract.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcontract.so.1 \
     target=../../../lib/$(ARCH64)/libcontract.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libcrle.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcrypt.so target=./libcrypt.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libcrypt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcrypt_d.so target=./libcrypt.so
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcrypt_d.so.1 target=./libcrypt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcrypt_i.so target=./libcrypt.so
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcrypt_i.so.1 target=./libcrypt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libctf.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libcrle.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcrypt.so target=./libcrypt.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libcrypt.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcrypt_d.so target=./libcrypt.so
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcrypt_d.so.1 \
+    target=./libcrypt.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcrypt_i.so target=./libcrypt.so
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcrypt_i.so.1 \
+    target=./libcrypt.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libctf.so \
     target=../../../lib/$(ARCH64)/libctf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libctf.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libctf.so.1 \
     target=../../../lib/$(ARCH64)/libctf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcurses.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcurses.so \
     target=../../../lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libcurses.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libcurses.so.1 \
     target=../../../lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdevice.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdevice.so \
     target=../../../lib/$(ARCH64)/libdevice.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdevice.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdevice.so.1 \
     target=../../../lib/$(ARCH64)/libdevice.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdevid.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdevid.so \
     target=../../../lib/$(ARCH64)/libdevid.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdevid.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdevid.so.1 \
     target=../../../lib/$(ARCH64)/libdevid.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdevinfo.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdevinfo.so \
     target=../../../lib/$(ARCH64)/libdevinfo.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdevinfo.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdevinfo.so.1 \
     target=../../../lib/$(ARCH64)/libdevinfo.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdhcpagent.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdhcpagent.so.1 \
     target=../../../lib/$(ARCH64)/libdhcpagent.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdhcputil.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdhcputil.so.1 \
     target=../../../lib/$(ARCH64)/libdhcputil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdisasm.so target=libdisasm.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libdisasm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdl.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdisasm.so target=libdisasm.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libdisasm.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdl.so \
     target=../../../lib/$(ARCH64)/libdl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdl.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdl.so.1 \
     target=../../../lib/$(ARCH64)/libdl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdlpi.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdlpi.so \
     target=../../../lib/$(ARCH64)/libdlpi.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdlpi.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdlpi.so.1 \
     target=../../../lib/$(ARCH64)/libdlpi.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdoor.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdoor.so \
     target=../../../lib/$(ARCH64)/libdoor.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdoor.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdoor.so.1 \
     target=../../../lib/$(ARCH64)/libdoor.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdwarf.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdwarf.so.1 \
     target=../../../lib/$(ARCH64)/libdwarf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libefi.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libefi.so \
     target=../../../lib/$(ARCH64)/libefi.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libefi.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libefi.so.1 \
     target=../../../lib/$(ARCH64)/libefi.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libelf.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libelf.so \
     target=../../../lib/$(ARCH64)/libelf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libelf.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libelf.so.1 \
     target=../../../lib/$(ARCH64)/libelf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libexacct.so target=libexacct.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libexacct.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libfakekernel.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libexacct.so target=libexacct.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libexacct.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libfakekernel.so.1 \
     target=../../../lib/$(ARCH64)/libfakekernel.so.1
 $(i386_ONLY)link path=usr/lib/$(ARCH64)/libfdisk.so \
     target=../../../lib/$(ARCH64)/libfdisk.so.1
 $(i386_ONLY)link path=usr/lib/$(ARCH64)/libfdisk.so.1 \
     target=../../../lib/$(ARCH64)/libfdisk.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libform.so target=libform.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libform.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libfstyp.so target=./libfstyp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libfstyp.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libgen.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libform.so target=libform.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libform.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libfstyp.so target=./libfstyp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libfstyp.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libgen.so \
     target=../../../lib/$(ARCH64)/libgen.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libgen.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libgen.so.1 \
     target=../../../lib/$(ARCH64)/libgen.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libhotplug.so target=libhotplug.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libhotplug.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libidmap.so target=./libidmap.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libidmap.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libidspace.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libike.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libinetutil.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libhotplug.so target=libhotplug.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libhotplug.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libidmap.so target=./libidmap.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libidmap.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libidspace.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libike.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libinetutil.so.1 \
     target=../../../lib/$(ARCH64)/libinetutil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libintl.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libintl.so \
     target=../../../lib/$(ARCH64)/libintl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libintl.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libintl.so.1 \
     target=../../../lib/$(ARCH64)/libintl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libipmi.so target=./libipmi.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libipmi.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libipp.so target=libipp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libipp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libipsecutil.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libjedec.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libkstat.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libipmi.so target=./libipmi.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libipmi.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libipp.so target=libipp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libipp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libipsecutil.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libjedec.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libkstat.so \
     target=../../../lib/$(ARCH64)/libkstat.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libkstat.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libkstat.so.1 \
     target=../../../lib/$(ARCH64)/libkstat.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libkvm.so target=libkvm.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libkvm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libl.so target=libl.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libldap.so target=libldap.so.5
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libldap.so.5
-$(not_aarch64)link path=usr/lib/$(ARCH64)/liblddbg.so.4 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libkvm.so target=libkvm.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libkvm.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libl.so target=libl.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libl.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libldap.so target=libldap.so.5
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libldap.so.5
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/liblddbg.so.4 \
     target=../../../lib/$(ARCH64)/liblddbg.so.4
-$(not_aarch64)link path=usr/lib/$(ARCH64)/liblgrp.so target=liblgrp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/liblgrp.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/liblm.so target=liblm.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/liblm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmail.so target=libmail.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libmail.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmalloc.so target=libmalloc.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libmalloc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmapmalloc.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/liblgrp.so target=liblgrp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/liblgrp.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/liblm.so target=liblm.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/liblm.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmail.so target=libmail.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libmail.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmalloc.so target=libmalloc.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libmalloc.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmapmalloc.so \
     target=libmapmalloc.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libmapmalloc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmd.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libmapmalloc.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmd.so \
     target=../../../lib/$(ARCH64)/libmd.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmd.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmd.so.1 \
     target=../../../lib/$(ARCH64)/libmd.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmd5.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmd5.so \
     target=../../../lib/$(ARCH64)/libmd5.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmd5.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmd5.so.1 \
     target=../../../lib/$(ARCH64)/libmd5.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmenu.so target=libmenu.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libmenu.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmp.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmenu.so target=libmenu.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libmenu.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmp.so \
     target=../../../lib/$(ARCH64)/libmp.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmp.so.2 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmp.so.2 \
     target=../../../lib/$(ARCH64)/libmp.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmtmalloc.so target=libmtmalloc.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libmtmalloc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libnls.so target=libnls.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libnls.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libnsl.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmtmalloc.so \
+    target=libmtmalloc.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libmtmalloc.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libnls.so target=libnls.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libnls.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libnsl.so \
     target=../../../lib/$(ARCH64)/libnsl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libnsl.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libnsl.so.1 \
     target=../../../lib/$(ARCH64)/libnsl.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libnvpair.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libnvpair.so \
     target=../../../lib/$(ARCH64)/libnvpair.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libnvpair.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libnvpair.so.1 \
     target=../../../lib/$(ARCH64)/libnvpair.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpam.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpam.so \
     target=../../../lib/$(ARCH64)/libpam.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpam.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpam.so.1 \
     target=../../../lib/$(ARCH64)/libpam.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpanel.so target=libpanel.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libpanel.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libpcidb.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpkcs11.so target=libpkcs11.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libpkcs11.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libposix4.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpanel.so target=libpanel.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libpanel.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libpcidb.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpkcs11.so target=libpkcs11.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libpkcs11.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libposix4.so \
     target=../../../lib/$(ARCH64)/librt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libposix4.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libposix4.so.1 \
     target=../../../lib/$(ARCH64)/librt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libproc.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libproc.so \
     target=../../../lib/$(ARCH64)/libproc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libproc.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libproc.so.1 \
     target=../../../lib/$(ARCH64)/libproc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libproject.so target=libproject.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libproject.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpthread.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libproject.so target=libproject.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libproject.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpthread.so \
     target=../../../lib/$(ARCH64)/libpthread.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpthread.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpthread.so.1 \
     target=../../../lib/$(ARCH64)/libpthread.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libraidcfg.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librcm.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libraidcfg.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librcm.so \
     target=../../../lib/$(ARCH64)/librcm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librcm.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librcm.so.1 \
     target=../../../lib/$(ARCH64)/librcm.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/librename.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libreparse.so target=libreparse.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libreparse.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libresolv.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/librename.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libreparse.so target=libreparse.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libreparse.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libresolv.so \
     target=../../../lib/$(ARCH64)/libresolv.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libresolv.so.2 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libresolv.so.2 \
     target=../../../lib/$(ARCH64)/libresolv.so.2
 $(i386_ONLY)link path=usr/lib/$(ARCH64)/librestart.so \
     target=../../../lib/$(ARCH64)/librestart.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librestart.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librestart.so.1 \
     target=../../../lib/$(ARCH64)/librestart.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librpcsvc.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librpcsvc.so \
     target=../../../lib/$(ARCH64)/librpcsvc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librpcsvc.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librpcsvc.so.1 \
     target=../../../lib/$(ARCH64)/librpcsvc.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librt.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librt.so \
     target=../../../lib/$(ARCH64)/librt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librt.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librt.so.1 \
     target=../../../lib/$(ARCH64)/librt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librtld.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librtld.so.1 \
     target=../../../lib/$(ARCH64)/librtld.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librtld_db.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librtld_db.so \
     target=../../../lib/$(ARCH64)/librtld_db.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/librtld_db.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/librtld_db.so.1 \
     target=../../../lib/$(ARCH64)/librtld_db.so.1
 $(i386_ONLY)file path=usr/lib/$(ARCH64)/libsaveargs.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libscf.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libscf.so \
     target=../../../lib/$(ARCH64)/libscf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libscf.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libscf.so.1 \
     target=../../../lib/$(ARCH64)/libscf.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsched.so target=libsched.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsched.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsctp.so target=./libsctp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsctp.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsec.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsched.so target=libsched.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsched.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsctp.so target=./libsctp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsctp.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsec.so \
     target=../../../lib/$(ARCH64)/libsec.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsec.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsec.so.1 \
     target=../../../lib/$(ARCH64)/libsec.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsecdb.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsecdb.so \
     target=../../../lib/$(ARCH64)/libsecdb.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsecdb.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsecdb.so.1 \
     target=../../../lib/$(ARCH64)/libsecdb.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsendfile.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsendfile.so \
     target=../../../lib/$(ARCH64)/libsendfile.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsendfile.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsendfile.so.1 \
     target=../../../lib/$(ARCH64)/libsendfile.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsff.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsip.so target=./libsip.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsip.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsldap.so target=libsldap.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsldap.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsmbios.so target=libsmbios.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsmbios.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsocket.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsff.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsip.so target=./libsip.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsip.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsldap.so target=libsldap.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsldap.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsmbios.so target=libsmbios.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsmbios.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsocket.so \
     target=../../../lib/$(ARCH64)/libsocket.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsocket.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsocket.so.1 \
     target=../../../lib/$(ARCH64)/libsocket.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsoftcrypto.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsoftcrypto.so \
     target=./libsoftcrypto.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsoftcrypto.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsysevent.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsoftcrypto.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsysevent.so \
     target=../../../lib/$(ARCH64)/libsysevent.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libsysevent.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libsysevent.so.1 \
     target=../../../lib/$(ARCH64)/libsysevent.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtermcap.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtermcap.so \
     target=../../../lib/$(ARCH64)/libtermcap.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtermcap.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtermcap.so.1 \
     target=../../../lib/$(ARCH64)/libtermcap.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtermlib.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtermlib.so \
     target=../../../lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtermlib.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtermlib.so.1 \
     target=../../../lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libthread.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libthread.so \
     target=../../../lib/$(ARCH64)/libthread.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libthread.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libthread.so.1 \
     target=../../../lib/$(ARCH64)/libthread.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libthread_db.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libthread_db.so \
     target=../../../lib/$(ARCH64)/libc_db.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libthread_db.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libthread_db.so.1 \
     target=../../../lib/$(ARCH64)/libc_db.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtsnet.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtsnet.so \
     target=../../../lib/$(ARCH64)/libtsnet.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtsnet.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtsnet.so.1 \
     target=../../../lib/$(ARCH64)/libtsnet.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtsol.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtsol.so \
     target=../../../lib/$(ARCH64)/libtsol.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libtsol.so.2 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libtsol.so.2 \
     target=../../../lib/$(ARCH64)/libtsol.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libumem.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libumem.so \
     target=../../../lib/$(ARCH64)/libumem.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libumem.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libumem.so.1 \
     target=../../../lib/$(ARCH64)/libumem.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libuuid.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libuuid.so \
     target=../../../lib/$(ARCH64)/libuuid.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libuuid.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libuuid.so.1 \
     target=../../../lib/$(ARCH64)/libuuid.so.1
 $(i386_ONLY)link path=usr/lib/$(ARCH64)/libuutil.so \
     target=../../../lib/$(ARCH64)/libuutil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libuutil.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libuutil.so.1 \
     target=../../../lib/$(ARCH64)/libuutil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libvolmgt.so target=libvolmgt.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libvolmgt.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libw.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libvolmgt.so target=libvolmgt.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libvolmgt.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libw.so \
     target=../../../lib/$(ARCH64)/libw.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libw.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libw.so.1 \
     target=../../../lib/$(ARCH64)/libw.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libwrap.so target=libwrap.so.1.0
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libwrap.so.1 target=libwrap.so.1.0
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libwrap.so.1.0
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libxnet.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libwrap.so target=libwrap.so.1.0
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libwrap.so.1 target=libwrap.so.1.0
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libwrap.so.1.0
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libxnet.so \
     target=../../../lib/$(ARCH64)/libxnet.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libxnet.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libxnet.so.1 \
     target=../../../lib/$(ARCH64)/libxnet.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/liby.so target=liby.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/liby.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzoneinfo.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/liby.so target=liby.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/liby.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzoneinfo.so \
     target=./libzoneinfo.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libzoneinfo.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/nss_ad.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/nss_compat.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libzoneinfo.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/nss_ad.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/nss_compat.so.1 \
     target=../../../lib/$(ARCH64)/nss_compat.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/nss_dns.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/nss_dns.so.1 \
     target=../../../lib/$(ARCH64)/nss_dns.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/nss_files.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/nss_files.so.1 \
     target=../../../lib/$(ARCH64)/nss_files.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/nss_ldap.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/nss_nis.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/nss_ldap.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/nss_nis.so.1 \
     target=../../../lib/$(ARCH64)/nss_nis.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/nss_user.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/nss_user.so.1 \
     target=../../../lib/$(ARCH64)/nss_user.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/passwdutil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/straddr.so target=straddr.so.2
-$(not_aarch64)file path=usr/lib/$(ARCH64)/straddr.so.2
-$(not_aarch64)file path=usr/lib/$(ARCH64)/watchmalloc.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/passwdutil.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/straddr.so target=straddr.so.2
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/straddr.so.2
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/watchmalloc.so.1
 file path=usr/lib/0@0.so.1
-$(not_aarch64)link path=usr/lib/32 target=.
-$(not_aarch64)link path=usr/lib/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=usr/lib/64 target=.
+$(MULTILIB_ONLY)link path=usr/lib/32 target=.
+$(MULTILIB_ONLY)link path=usr/lib/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=usr/lib/64 target=.
 dir  path=usr/lib/cfgadm
-$(not_aarch64)dir path=usr/lib/cfgadm/$(ARCH64)
-$(not_aarch64)link path=usr/lib/cfgadm/$(ARCH64)/ib.so target=./ib.so.1
-$(not_aarch64)file path=usr/lib/cfgadm/$(ARCH64)/ib.so.1
-$(not_aarch64)link path=usr/lib/cfgadm/$(ARCH64)/pci.so target=./pci.so.1
-$(not_aarch64)file path=usr/lib/cfgadm/$(ARCH64)/pci.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/cfgadm/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/ib.so target=./ib.so.1
+$(MULTILIB_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/ib.so.1
+$(MULTILIB_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/pci.so target=./pci.so.1
+$(MULTILIB_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/pci.so.1
 $(i386_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/sata.so target=./sata.so.1
 $(i386_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/sata.so.1
-$(not_aarch64)link path=usr/lib/cfgadm/$(ARCH64)/scsi.so target=./scsi.so.1
-$(not_aarch64)file path=usr/lib/cfgadm/$(ARCH64)/scsi.so.1
-$(not_aarch64)link path=usr/lib/cfgadm/$(ARCH64)/shp.so target=./shp.so.1
-$(not_aarch64)file path=usr/lib/cfgadm/$(ARCH64)/shp.so.1
-$(not_aarch64)link path=usr/lib/cfgadm/$(ARCH64)/usb.so target=./usb.so.1
-$(not_aarch64)file path=usr/lib/cfgadm/$(ARCH64)/usb.so.1
+$(MULTILIB_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/scsi.so target=./scsi.so.1
+$(MULTILIB_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/scsi.so.1
+$(MULTILIB_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/shp.so target=./shp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/shp.so.1
+$(MULTILIB_ONLY)link path=usr/lib/cfgadm/$(ARCH64)/usb.so target=./usb.so.1
+$(MULTILIB_ONLY)file path=usr/lib/cfgadm/$(ARCH64)/usb.so.1
 link path=usr/lib/cfgadm/ib.so target=./ib.so.1
 file path=usr/lib/cfgadm/ib.so.1
 link path=usr/lib/cfgadm/pci.so target=./pci.so.1
@@ -806,7 +811,7 @@ link path=usr/lib/cfgadm/usb.so target=./usb.so.1
 file path=usr/lib/cfgadm/usb.so.1
 $(not_aarch64)file path=usr/lib/extendedFILE.so.1
 file path=usr/lib/getloginx.so.1
-$(not_aarch64)dir path=usr/lib/iconv/$(ARCH64)
+$(MULTILIB_ONLY)dir path=usr/lib/iconv/$(ARCH64)
 $(not_aarch64)file path=usr/lib/lib.b mode=0444
 link path=usr/lib/libadm.so target=../../lib/libadm.so.1
 link path=usr/lib/libadm.so.1 target=../../lib/libadm.so.1
@@ -1021,13 +1026,13 @@ link path=usr/lib/libzoneinfo.so target=./libzoneinfo.so.1
 file path=usr/lib/libzoneinfo.so.1
 dir  path=usr/lib/lwp
 dir  path=usr/lib/lwp/$(ARCH64)
-$(not_aarch64)link path=usr/lib/lwp/$(ARCH64)/libthread.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/lwp/$(ARCH64)/libthread.so.1 \
     target=../../$(ARCH64)/libthread.so.1
-$(not_aarch64)link path=usr/lib/lwp/$(ARCH64)/libthread_db.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/lwp/$(ARCH64)/libthread_db.so.1 \
     target=../../$(ARCH64)/libthread_db.so.1
-$(not_aarch64)link path=usr/lib/lwp/32 target=.
-$(not_aarch64)link path=usr/lib/lwp/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=usr/lib/lwp/64 target=.
+$(MULTILIB_ONLY)link path=usr/lib/lwp/32 target=.
+$(MULTILIB_ONLY)link path=usr/lib/lwp/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=usr/lib/lwp/64 target=.
 link path=usr/lib/lwp/libthread.so.1 target=../libthread.so.1
 link path=usr/lib/lwp/libthread_db.so.1 target=../libthread_db.so.1
 file path=usr/lib/nss_ad.so.1
@@ -1039,17 +1044,18 @@ link path=usr/lib/nss_nis.so.1 target=../../lib/nss_nis.so.1
 link path=usr/lib/nss_user.so.1 target=../../lib/nss_user.so.1
 file path=usr/lib/passwdutil.so.1
 $(not_aarch64)dir path=usr/lib/raidcfg
-$(not_aarch64)dir path=usr/lib/raidcfg/$(ARCH64)
-$(not_aarch64)file path=usr/lib/raidcfg/$(ARCH64)/mpt.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/raidcfg/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/raidcfg/$(ARCH64)/mpt.so.1
 $(not_aarch64)file path=usr/lib/raidcfg/mpt.so.1
 $(not_aarch64)dir path=usr/lib/scsi
 dir  path=usr/lib/scsi/$(ARCH64)
-$(not_aarch64)link path=usr/lib/scsi/$(ARCH64)/libscsi.so target=./libscsi.so.1
-$(not_aarch64)file path=usr/lib/scsi/$(ARCH64)/libscsi.so.1
-$(not_aarch64)link path=usr/lib/scsi/$(ARCH64)/libses.so target=./libses.so.1
-$(not_aarch64)file path=usr/lib/scsi/$(ARCH64)/libses.so.1
-$(not_aarch64)link path=usr/lib/scsi/$(ARCH64)/libsmp.so target=./libsmp.so.1
-$(not_aarch64)file path=usr/lib/scsi/$(ARCH64)/libsmp.so.1
+$(MULTILIB_ONLY)link path=usr/lib/scsi/$(ARCH64)/libscsi.so \
+    target=./libscsi.so.1
+$(MULTILIB_ONLY)file path=usr/lib/scsi/$(ARCH64)/libscsi.so.1
+$(MULTILIB_ONLY)link path=usr/lib/scsi/$(ARCH64)/libses.so target=./libses.so.1
+$(MULTILIB_ONLY)file path=usr/lib/scsi/$(ARCH64)/libses.so.1
+$(MULTILIB_ONLY)link path=usr/lib/scsi/$(ARCH64)/libsmp.so target=./libsmp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/scsi/$(ARCH64)/libsmp.so.1
 $(not_aarch64)link path=usr/lib/scsi/libscsi.so target=./libscsi.so.1
 $(not_aarch64)file path=usr/lib/scsi/libscsi.so.1
 $(not_aarch64)link path=usr/lib/scsi/libses.so target=./libses.so.1
@@ -1059,107 +1065,107 @@ $(not_aarch64)file path=usr/lib/scsi/libsmp.so.1
 $(not_aarch64)dir path=usr/lib/scsi/plugins
 $(not_aarch64)dir path=usr/lib/scsi/plugins/scsi
 $(not_aarch64)dir path=usr/lib/scsi/plugins/scsi/engines
-$(not_aarch64)dir path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)
-$(not_aarch64)file path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)/uscsi.so
+$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)/uscsi.so
 $(not_aarch64)file path=usr/lib/scsi/plugins/scsi/engines/uscsi.so
 $(not_aarch64)dir path=usr/lib/scsi/plugins/ses
 $(not_aarch64)dir path=usr/lib/scsi/plugins/ses/framework
-$(not_aarch64)dir path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/libses.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/ses2.so
+$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/libses.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/ses2.so
 $(not_aarch64)file path=usr/lib/scsi/plugins/ses/framework/libses.so
 $(not_aarch64)file path=usr/lib/scsi/plugins/ses/framework/ses2.so
 $(not_aarch64)dir path=usr/lib/scsi/plugins/smp
 $(not_aarch64)dir path=usr/lib/scsi/plugins/smp/engine
-$(not_aarch64)dir path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)
-$(not_aarch64)file path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)/usmp.so
+$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)/usmp.so
 $(not_aarch64)dir path=usr/lib/scsi/plugins/smp/framework
-$(not_aarch64)dir path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)
-$(not_aarch64)file path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)/sas2.so
+$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)/sas2.so
 dir  path=usr/lib/security
 dir  path=usr/lib/security/$(ARCH64)
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/crypt_bsdbf.so \
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/crypt_bsdbf.so \
     target=./crypt_bsdbf.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/crypt_bsdbf.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/crypt_bsdmd5.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/crypt_bsdbf.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/crypt_bsdmd5.so \
     target=./crypt_bsdmd5.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/crypt_bsdmd5.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/crypt_sha256.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/crypt_bsdmd5.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/crypt_sha256.so \
     target=./crypt_sha256.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/crypt_sha256.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/crypt_sha512.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/crypt_sha256.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/crypt_sha512.so \
     target=./crypt_sha512.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/crypt_sha512.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/crypt_sunmd5.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/crypt_sha512.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/crypt_sunmd5.so \
     target=./crypt_sunmd5.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/crypt_sunmd5.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_allow.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/crypt_sunmd5.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_allow.so \
     target=./pam_allow.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_allow.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_authtok_check.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_allow.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_authtok_check.so \
     target=./pam_authtok_check.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_authtok_check.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_authtok_get.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_authtok_check.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_authtok_get.so \
     target=./pam_authtok_get.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_authtok_get.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_authtok_store.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_authtok_get.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_authtok_store.so \
     target=./pam_authtok_store.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_authtok_store.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_deny.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_authtok_store.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_deny.so \
     target=./pam_deny.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_deny.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_dhkeys.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_deny.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_dhkeys.so \
     target=./pam_dhkeys.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_dhkeys.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_dial_auth.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_dhkeys.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_dial_auth.so \
     target=./pam_dial_auth.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_dial_auth.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_ldap.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_dial_auth.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_ldap.so \
     target=./pam_ldap.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_ldap.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_list.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_ldap.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_list.so \
     target=./pam_list.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_list.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_passwd_auth.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_list.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_passwd_auth.so \
     target=./pam_passwd_auth.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_passwd_auth.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_rhosts_auth.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_passwd_auth.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_rhosts_auth.so \
     target=./pam_rhosts_auth.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_rhosts_auth.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_roles.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_rhosts_auth.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_roles.so \
     target=./pam_roles.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_roles.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_sample.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_roles.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_sample.so \
     target=./pam_sample.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_sample.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_timestamp.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_sample.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_timestamp.so \
     target=./pam_timestamp.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_timestamp.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_tsol_account.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_timestamp.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_tsol_account.so \
     target=./pam_tsol_account.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_tsol_account.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_unix_account.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_tsol_account.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_unix_account.so \
     target=./pam_unix_account.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_unix_account.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_unix_auth.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_unix_account.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_unix_auth.so \
     target=./pam_unix_auth.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_unix_auth.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_unix_cred.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_unix_auth.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_unix_cred.so \
     target=./pam_unix_cred.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_unix_cred.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pam_unix_session.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_unix_cred.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_unix_session.so \
     target=./pam_unix_session.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pam_unix_session.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pkcs11_kernel.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pam_unix_session.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pkcs11_kernel.so \
     target=./pkcs11_kernel.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pkcs11_kernel.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pkcs11_softtoken.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pkcs11_kernel.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pkcs11_softtoken.so \
     target=./pkcs11_softtoken.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pkcs11_softtoken.so.1
-$(not_aarch64)link path=usr/lib/security/$(ARCH64)/pkcs11_tpm.so \
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pkcs11_softtoken.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pkcs11_tpm.so \
     target=./pkcs11_tpm.so.1
-$(not_aarch64)file path=usr/lib/security/$(ARCH64)/pkcs11_tpm.so.1
-$(not_aarch64)link path=usr/lib/security/64 target=$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/security/$(ARCH64)/pkcs11_tpm.so.1
+$(MULTILIB_ONLY)link path=usr/lib/security/64 target=$(ARCH64)
 $(aarch64_ONLY)link path=usr/lib/security/64 target=.
 link path=usr/lib/security/audit_binfile.so target=./audit_binfile.so.1
 file path=usr/lib/security/audit_binfile.so.1
@@ -1275,11 +1281,11 @@ dir  path=usr/share/man/man5
 dir  path=usr/xpg4
 dir  path=usr/xpg4/lib
 dir  path=usr/xpg4/lib/$(ARCH64)
-$(not_aarch64)link path=usr/xpg4/lib/$(ARCH64)/libcurses.so \
+$(MULTILIB_ONLY)link path=usr/xpg4/lib/$(ARCH64)/libcurses.so \
     target=libcurses.so.2
-$(not_aarch64)file path=usr/xpg4/lib/$(ARCH64)/libcurses.so.1
-$(not_aarch64)file path=usr/xpg4/lib/$(ARCH64)/libcurses.so.2
-$(not_aarch64)link path=usr/xpg4/lib/64 target=$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/xpg4/lib/$(ARCH64)/libcurses.so.1
+$(MULTILIB_ONLY)file path=usr/xpg4/lib/$(ARCH64)/libcurses.so.2
+$(MULTILIB_ONLY)link path=usr/xpg4/lib/64 target=$(ARCH64)
 $(aarch64_ONLY)link path=usr/xpg4/lib/64 target=.
 link path=usr/xpg4/lib/libcurses.so target=./libcurses.so.2
 file path=usr/xpg4/lib/libcurses.so.1

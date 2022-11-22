@@ -89,13 +89,13 @@ dir  path=lib/fm/$(ARCH64) variant.opensolaris.zone=__NODEFAULT
 #
 # libraries .so symlinks in lib
 #
-$(not_aarch64)link path=lib/fm/$(ARCH64)/libfmevent.so \
+$(MULTILIB_ONLY)link path=lib/fm/$(ARCH64)/libfmevent.so \
     target=./libfmevent.so.1 variant.opensolaris.zone=__NODEFAULT
 
 #
 # Some libraries need to be in lib for install
 #
-$(not_aarch64)file path=lib/fm/$(ARCH64)/libfmevent.so.1 \
+$(MULTILIB_ONLY)file path=lib/fm/$(ARCH64)/libfmevent.so.1 \
     variant.opensolaris.zone=__NODEFAULT
 link path=lib/fm/libfmevent.so target=libfmevent.so.1 \
     variant.opensolaris.zone=__NODEFAULT
@@ -159,53 +159,53 @@ dir  path=usr/lib/fm/$(ARCH64) variant.opensolaris.zone=__NODEFAULT
 #
 #	64-bit .so symlinks
 #
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libdiagcode.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libdiagcode.so \
     target=./libdiagcode.so.1 variant.opensolaris.zone=__NODEFAULT
 #
 #	64-bit .so.1
 #
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libdiagcode.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libdiagcode.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libdiskstatus.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libdiskstatus.so \
     target=./libdiskstatus.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libdiskstatus.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libdiskstatus.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmd_adm.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmd_adm.so \
     target=./libfmd_adm.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libfmd_adm.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libfmd_adm.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmd_agent.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmd_agent.so \
     target=./libfmd_agent.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libfmd_agent.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libfmd_agent.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmd_log.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmd_log.so \
     target=./libfmd_log.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libfmd_log.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libfmd_log.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmd_msg.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmd_msg.so \
     target=./libfmd_msg.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libfmd_msg.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libfmd_msg.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmd_snmp.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmd_snmp.so \
     target=./libfmd_snmp.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libfmd_snmp.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libfmd_snmp.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmevent.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmevent.so \
     target=../../../../lib/fm/$(ARCH64)/libfmevent.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmevent.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmevent.so.1 \
     target=../../../../lib/fm/$(ARCH64)/libfmevent.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libfmnotify.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libfmnotify.so \
     target=./libfmnotify.so.1 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libfmnotify.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libfmnotify.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libseslog.so \
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libseslog.so \
     target=./libseslog.so.1
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libseslog.so.1
-$(not_aarch64)link path=usr/lib/fm/$(ARCH64)/libtopo.so target=libtopo.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libseslog.so.1
+$(MULTILIB_ONLY)link path=usr/lib/fm/$(ARCH64)/libtopo.so target=libtopo.so.1 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/$(ARCH64)/libtopo.so.1 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/$(ARCH64)/libtopo.so.1 \
     variant.opensolaris.zone=__NODEFAULT
 dir  path=usr/lib/fm/dict variant.opensolaris.zone=__NODEFAULT
 #
@@ -322,32 +322,32 @@ file path=usr/lib/fm/fmd/plugins/zfs-diagnosis.so mode=0555
 file path=usr/lib/fm/fmd/plugins/zfs-retire.conf
 file path=usr/lib/fm/fmd/plugins/zfs-retire.so mode=0555
 dir  path=usr/lib/fm/fmd/schemes variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)dir path=usr/lib/fm/fmd/schemes/$(ARCH64) \
+$(MULTILIB_ONLY)dir path=usr/lib/fm/fmd/schemes/$(ARCH64) \
     variant.opensolaris.zone=__NODEFAULT
 #
 # fmri scheme support: all are common to both global and non-global zones
 #
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/cpu.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/cpu.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/dev.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/dev.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/fmd.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/fmd.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/hc.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/hc.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/legacy-hc.so \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/legacy-hc.so \
     mode=0555 variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/mem.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/mem.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/mod.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/mod.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/pkg.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/pkg.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/svc.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/svc.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/sw.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/sw.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
-$(not_aarch64)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/zfs.so mode=0555 \
+$(MULTILIB_ONLY)file path=usr/lib/fm/fmd/schemes/$(ARCH64)/zfs.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT
 file path=usr/lib/fm/fmd/schemes/cpu.so mode=0555 \
     variant.opensolaris.zone=__NODEFAULT

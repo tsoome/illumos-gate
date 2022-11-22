@@ -542,19 +542,19 @@ $(i386_ONLY)file path=usr/bin/$(ARCH32)/nohup mode=0555
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/prctl mode=0555
 $(i386_ONLY)file path=usr/bin/$(ARCH32)/prstat mode=0555
 $(not_aarch64)file path=usr/bin/$(ARCH32)/savecore mode=0555
-$(not_aarch64)dir path=usr/bin/$(ARCH64)
-$(not_aarch64)file path=usr/bin/$(ARCH64)/amt mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/crle mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/decrypt mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/digest mode=0555
-$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/encrypt target=decrypt
-$(not_aarch64)file path=usr/bin/$(ARCH64)/ls mode=0555
-$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/mac target=digest
-$(not_aarch64)file path=usr/bin/$(ARCH64)/moe mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/newtask group=sys mode=4555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/nohup mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/prctl mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/prstat mode=0555
+$(MULTILIB_ONLY)dir path=usr/bin/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/amt mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/crle mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/decrypt mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/digest mode=0555
+$(MULTILIB_ONLY)hardlink path=usr/bin/$(ARCH64)/encrypt target=decrypt
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/ls mode=0555
+$(MULTILIB_ONLY)hardlink path=usr/bin/$(ARCH64)/mac target=digest
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/moe mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/newtask group=sys mode=4555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/nohup mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/prctl mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/prstat mode=0555
 file path=usr/bin/$(ARCH64)/savecore mode=0555
 $(i386_ONLY)file path=usr/bin/addbadsec mode=0555
 file path=usr/bin/amt mode=0555
@@ -835,9 +835,9 @@ dir  path=usr/kvm
 file path=usr/kvm/README group=sys
 dir  path=usr/lib
 dir  path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/ld.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/ld.so.1 \
     target=../../../lib/$(ARCH64)/ld.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libshare.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libshare.so.1
 dir  path=usr/lib/audit
 file path=usr/lib/audit/audit_record_attr mode=0444
 dir  path=usr/lib/class
@@ -1164,7 +1164,7 @@ $(not_aarch64)file path=usr/lib/iconv/iconv_data mode=0444
 file path=usr/lib/idmapd mode=0555
 dir  path=usr/lib/inet
 dir  path=usr/lib/inet/$(ARCH64)
-$(not_aarch64)file path=usr/lib/inet/$(ARCH64)/in.iked mode=0555
+$(MULTILIB_ONLY)file path=usr/lib/inet/$(ARCH64)/in.iked mode=0555
 $(not_aarch64)file path=usr/lib/inet/certdb mode=0555
 $(not_aarch64)file path=usr/lib/inet/certlocal mode=0555
 $(not_aarch64)file path=usr/lib/inet/certrldb mode=0555
@@ -1227,9 +1227,9 @@ file path=usr/lib/saf/sac group=sys mode=0555
 file path=usr/lib/saf/ttymon group=sys mode=0555
 dir  path=usr/lib/secure
 dir  path=usr/lib/secure/$(ARCH64)
-$(not_aarch64)link path=usr/lib/secure/32 target=.
-$(not_aarch64)link path=usr/lib/secure/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=usr/lib/secure/64 target=.
+$(MULTILIB_ONLY)link path=usr/lib/secure/32 target=.
+$(MULTILIB_ONLY)link path=usr/lib/secure/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=usr/lib/secure/64 target=.
 dir  path=usr/lib/security
 dir  path=usr/lib/sysevent
 dir  path=usr/lib/sysevent/modules
@@ -1556,9 +1556,9 @@ dir  path=var/idmap owner=daemon group=daemon
 dir  path=var/inet group=sys
 dir  path=var/ld
 dir  path=var/ld/$(ARCH64)
-$(not_aarch64)link path=var/ld/32 target=.
-$(not_aarch64)link path=var/ld/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=var/ld/64 target=.
+$(MULTILIB_ONLY)link path=var/ld/32 target=.
+$(MULTILIB_ONLY)link path=var/ld/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=var/ld/64 target=.
 dir  path=var/log group=sys
 $(not_aarch64)file path=var/log/authlog group=sys mode=0600 preserve=true
 $(not_aarch64)file path=var/log/syslog group=sys preserve=true

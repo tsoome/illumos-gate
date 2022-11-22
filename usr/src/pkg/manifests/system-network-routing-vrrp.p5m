@@ -41,8 +41,8 @@ dir  path=lib/svc/method
 file path=lib/svc/method/svc-vrrp mode=0555
 dir  path=usr group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libvrrpadm.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libvrrpadm.so.1
 dir  path=usr/lib/inet
 file path=usr/lib/inet/vrrpd mode=0555
 file path=usr/lib/libvrrpadm.so.1

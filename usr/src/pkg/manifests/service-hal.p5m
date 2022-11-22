@@ -110,18 +110,18 @@ $(not_aarch64)file path=lib/svc/method/svc-network-discovery mode=0555 \
     variant.opensolaris.zone=global
 dir  path=usr group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libhal-storage.so \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libhal-storage.so \
     target=./libhal-storage.so.1.0.0
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libhal-storage.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libhal-storage.so.1 \
     target=./libhal-storage.so.1.0.0
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libhal-storage.so.1.0.0
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libhal.so target=./libhal.so.1.0.0
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libhal.so.1 target=./libhal.so.1.0.0
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libhal.so.1.0.0
-$(not_aarch64)dir path=usr/lib/$(ARCH64)/pkgconfig group=other
-$(not_aarch64)file path=usr/lib/$(ARCH64)/pkgconfig/hal-storage.pc
-$(not_aarch64)file path=usr/lib/$(ARCH64)/pkgconfig/hal.pc
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libhal-storage.so.1.0.0
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libhal.so target=./libhal.so.1.0.0
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libhal.so.1 target=./libhal.so.1.0.0
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libhal.so.1.0.0
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)/pkgconfig group=other
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/pkgconfig/hal-storage.pc
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/pkgconfig/hal.pc
 dir  path=usr/lib/hal
 $(not_aarch64)file path=usr/lib/hal/hal-functions mode=0555
 $(not_aarch64)file path=usr/lib/hal/hal-is-caller-privileged mode=0555

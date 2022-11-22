@@ -70,10 +70,10 @@ dir  path=usr/kernel/drv group=sys
 dir  path=usr/kernel/drv/$(ARCH64) group=sys
 file path=usr/kernel/drv/$(ARCH64)/zcons group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libbrand.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libzonecfg.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libzonestat.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libbrand.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libzonecfg.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libzonestat.so.1
 dir  path=usr/lib/brand
 dir  path=usr/lib/brand/ipkg group=bin
 $(not_aarch64)file path=usr/lib/brand/ipkg/config.xml mode=0444

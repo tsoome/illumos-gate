@@ -51,8 +51,8 @@ dir  path=usr group=sys
 dir  path=usr/lib
 $(not_aarch64)dir path=usr/lib/mdb group=sys
 $(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/emlxs.so group=sys mode=0555
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/emlxs.so group=sys mode=0555
 driver name=emlxs perms="* 0666 root sys" class=fibre-channel \
     alias=lpfs \
     alias=pci10df,f0a5 \

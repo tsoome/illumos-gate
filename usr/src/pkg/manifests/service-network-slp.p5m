@@ -45,9 +45,9 @@ dir  path=usr group=sys
 dir  path=usr/include
 file path=usr/include/slp.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libslp.so target=libslp.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libslp.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libslp.so target=libslp.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libslp.so.1
 dir  path=usr/lib/inet
 file path=usr/lib/inet/slpd mode=0555
 link path=usr/lib/libslp.so target=libslp.so.1

@@ -147,12 +147,12 @@ file path=usr/include/sys/fasttrap_isa.h
 file path=usr/include/sys/lockstat.h
 file path=usr/include/sys/sdt.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdtrace.so target=libdtrace.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libdtrace.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdtrace_jni.so \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdtrace.so target=libdtrace.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libdtrace.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdtrace_jni.so \
     target=libdtrace_jni.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libdtrace_jni.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libdtrace_jni.so.1
 dir  path=usr/lib/devfsadm group=sys
 dir  path=usr/lib/devfsadm/linkmod group=sys
 file path=usr/lib/devfsadm/linkmod/SUNW_dtrace_link.so group=sys
@@ -187,11 +187,12 @@ $(not_aarch64)link path=usr/lib/libdtrace_jni.so target=libdtrace_jni.so.1
 $(not_aarch64)file path=usr/lib/libdtrace_jni.so.1
 $(not_aarch64)dir path=usr/lib/mdb group=sys
 $(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/dtrace.so group=sys mode=0555
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/dtrace.so group=sys \
+    mode=0555
 $(not_aarch64)dir path=usr/lib/mdb/raw group=sys
-$(not_aarch64)dir path=usr/lib/mdb/raw/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/mdb/raw/$(ARCH64)/dof.so group=sys mode=0555
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/raw/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/mdb/raw/$(ARCH64)/dof.so group=sys mode=0555
 $(not_aarch64)file path=usr/lib/mdb/raw/dof.so group=sys mode=0555
 dir  path=usr/sbin
 dir  path=usr/sbin/$(ARCH32)

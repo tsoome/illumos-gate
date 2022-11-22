@@ -52,9 +52,9 @@ dir  path=usr/include/sys
 dir  path=usr/include/sys/iscsit
 file path=usr/include/sys/iscsit/iscsit_common.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libiscsit.so target=libiscsit.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libiscsit.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libiscsit.so target=libiscsit.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libiscsit.so.1
 link path=usr/lib/libiscsit.so target=libiscsit.so.1
 file path=usr/lib/libiscsit.so.1
 dir  path=usr/sbin

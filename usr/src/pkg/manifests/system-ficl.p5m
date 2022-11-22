@@ -32,8 +32,8 @@ dir  path=usr/bin/$(ARCH64) group=bin
 file path=usr/bin/$(ARCH64)/ficl-sys group=sys mode=0555
 hardlink path=usr/bin/ficl-sys target=../../usr/lib/isaexec
 dir  path=usr/lib group=bin
-$(not_aarch64)dir path=usr/lib/$(ARCH64) group=bin
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libficl-sys.so.4.1.0 group=sys \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64) group=bin
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libficl-sys.so.4.1.0 group=sys \
     mode=0755
 file path=usr/lib/libficl-sys.so.4.1.0 group=sys mode=0755
 license lic_CDDL license=lic_CDDL

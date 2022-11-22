@@ -24,12 +24,12 @@ set name=info.classification \
     value=org.opensolaris.category.2008:System/Libraries
 set name=variant.arch value=$(ARCH)
 dir  path=lib
-$(not_aarch64)dir path=lib/$(ARCH64)
-$(not_aarch64)link path=lib/$(ARCH64)/libm.so target=libm.so.2
-$(not_aarch64)file path=lib/$(ARCH64)/libm.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libm.so.2
-$(not_aarch64)link path=lib/$(ARCH64)/libmvec.so target=libmvec.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libmvec.so.1
+$(MULTILIB_ONLY)dir path=lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libm.so target=libm.so.2
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libm.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libm.so.2
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libmvec.so target=libmvec.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libmvec.so.1
 $(aarch64_ONLY)link path=lib/libm.so target=libm.so.0
 $(not_aarch64)link path=lib/libm.so target=libm.so.2
 $(aarch64_ONLY)file path=lib/libm.so.0
@@ -52,16 +52,16 @@ dir  path=usr/include/sys
 file path=usr/include/sys/ieeefp.h
 file path=usr/include/tgmath.h
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libm.so \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libm.so \
     target=../../../lib/$(ARCH64)/libm.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libm.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libm.so.1 \
     target=../../../lib/$(ARCH64)/libm.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libm.so.2 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libm.so.2 \
     target=../../../lib/$(ARCH64)/libm.so.2
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmvec.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmvec.so \
     target=../../../lib/$(ARCH64)/libmvec.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libmvec.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libmvec.so.1 \
     target=../../../lib/$(ARCH64)/libmvec.so.1
 $(aarch64_ONLY)link path=usr/lib/libm.so target=../../lib/libm.so.0
 $(not_aarch64)link path=usr/lib/libm.so target=../../lib/libm.so.2

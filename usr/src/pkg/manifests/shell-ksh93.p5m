@@ -83,12 +83,12 @@ hardlink path=usr/bin/uniq target=alias
 hardlink path=usr/bin/wait target=alias
 hardlink path=usr/bin/wc target=alias
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libast.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libcmd.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libdll.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libshell.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libsum.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libast.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libcmd.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libdll.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libshell.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libsum.so.1
 file path=usr/lib/libast.so.1
 file path=usr/lib/libcmd.so.1
 file path=usr/lib/libdll.so.1

@@ -49,9 +49,9 @@ dir  path=usr/kernel/drv/$(ARCH64) group=sys
 file path=usr/kernel/drv/$(ARCH64)/pool group=sys
 file path=usr/kernel/drv/pool.conf group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpool.so target=libpool.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libpool.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpool.so target=libpool.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libpool.so.1
 link path=usr/lib/libpool.so target=./libpool.so.1
 file path=usr/lib/libpool.so.1
 $(not_aarch64)dir path=usr/lib/rcm

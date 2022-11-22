@@ -56,13 +56,13 @@ $(not_aarch64)dir path=kernel/kmdb group=sys
 $(not_aarch64)dir path=kernel/kmdb/$(ARCH64) group=sys
 $(not_aarch64)file path=kernel/kmdb/$(ARCH64)/zfs group=sys mode=0555
 dir  path=lib
-$(not_aarch64)dir path=lib/$(ARCH64)
-$(not_aarch64)link path=lib/$(ARCH64)/libzfs.so target=libzfs.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libzfs.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libzfs_core.so target=libzfs_core.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libzfs_core.so.1
-$(not_aarch64)link path=lib/$(ARCH64)/libzutil.so target=libzutil.so.1
-$(not_aarch64)file path=lib/$(ARCH64)/libzutil.so.1
+$(MULTILIB_ONLY)dir path=lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libzfs.so target=libzfs.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libzfs.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libzfs_core.so target=libzfs_core.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libzfs_core.so.1
+$(MULTILIB_ONLY)link path=lib/$(ARCH64)/libzutil.so target=libzutil.so.1
+$(MULTILIB_ONLY)file path=lib/$(ARCH64)/libzutil.so.1
 link path=lib/libzfs.so target=libzfs.so.1
 file path=lib/libzfs.so.1
 link path=lib/libzfs_core.so target=libzfs_core.so.1
@@ -74,25 +74,25 @@ file path=sbin/zfs mode=0555
 file path=sbin/zpool mode=0555
 dir  path=usr group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzfs.so \
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzfs.so \
     target=../../../lib/$(ARCH64)/libzfs.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzfs.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzfs.so.1 \
     target=../../../lib/$(ARCH64)/libzfs.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzfs_core.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzfs_core.so \
     target=../../../lib/$(ARCH64)/libzfs_core.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzfs_core.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzfs_core.so.1 \
     target=../../../lib/$(ARCH64)/libzfs_core.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzfs_jni.so target=libzfs_jni.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libzfs_jni.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzfsbootenv.so \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzfs_jni.so target=libzfs_jni.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libzfs_jni.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzfsbootenv.so \
     target=libzfsbootenv.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libzfsbootenv.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzpool.so target=libzpool.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libzpool.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzutil.so \
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libzfsbootenv.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzpool.so target=libzpool.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libzpool.so.1
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzutil.so \
     target=../../../lib/$(ARCH64)/libzutil.so.1
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libzutil.so.1 \
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libzutil.so.1 \
     target=../../../lib/$(ARCH64)/libzutil.so.1
 dir  path=usr/lib/devfsadm group=sys
 dir  path=usr/lib/devfsadm/linkmod group=sys
@@ -118,11 +118,11 @@ link path=usr/lib/libzutil.so target=../../lib/libzutil.so.1
 link path=usr/lib/libzutil.so.1 target=../../lib/libzutil.so.1
 dir  path=usr/lib/mdb group=sys
 $(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(not_aarch64)file path=usr/lib/mdb/kvm/$(ARCH64)/zfs.so group=sys mode=0555
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/zfs.so group=sys mode=0555
 $(not_aarch64)dir path=usr/lib/mdb/proc group=sys
-$(not_aarch64)dir path=usr/lib/mdb/proc/$(ARCH64)
-$(not_aarch64)file path=usr/lib/mdb/proc/$(ARCH64)/libzpool.so group=sys \
+$(MULTILIB_ONLY)dir path=usr/lib/mdb/proc/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/mdb/proc/$(ARCH64)/libzpool.so group=sys \
     mode=0555
 $(not_aarch64)file path=usr/lib/mdb/proc/libzpool.so group=sys mode=0555
 dir  path=usr/lib/sysevent

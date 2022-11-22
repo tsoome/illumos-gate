@@ -24,8 +24,8 @@
 # Copyright 2015, OmniTI Computer Consulting, Inc. All rights reserved.
 # Copyright 2015 Igor Kozhukhov <ikozhukhov@gmail.com>
 # Copyright 2016 RackTop Systems.
-# Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
 # Copyright 2020 Peter Tribble
+# Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
 #
 
 include $(SRC)/Makefile.master
@@ -180,16 +180,24 @@ JAVA_11_ONLY=
 $(BLD_JAVA_11)JAVA_8_ONLY=$(POUND_SIGN)
 $(JAVA_8_ONLY)JAVA_11_ONLY=$(POUND_SIGN)
 
+i386_MULTILIB_ONLY=
+sparc_MULTILIB_ONLY=
+aarch64_MULTILIB_ONLY=$(POUND_SIGN)
+MULTILIB_ONLY=$($(PKGMACH)_MULTILIB_ONLY)
+$(MULTILIB_ONLY)NOT_MULTILIB=$(POUND_SIGN)
+
 # XXXARM: sparc_ONLY went away, now is coming back for convenience temporarily
 PKGMOG_DEFINES= \
 	i386_ONLY=$(POUND_SIGN) \
 	aarch64_ONLY=$(POUND_SIGN) \
 	sparc_ONLY=$(POUND_SIGN) \
+	$(PKGMACH)_ONLY= \
 	not_i386= \
 	not_sparc= \
 	not_aarch64= \
 	not_$(PKGMACH)=$(POUND_SIGN) \
-	$(PKGMACH)_ONLY= \
+	MULTILIB_ONLY=$(MULTILIB_ONLY) \
+	NOT_MULTILIB=$(NOT_MULTILIB) \
 	ARCH=$(PKGMACH) \
 	ARCH32=$($(PKGMACH)_ARCH32) \
 	ARCH64=$($(PKGMACH)_ARCH64) \

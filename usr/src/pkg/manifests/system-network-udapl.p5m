@@ -42,9 +42,9 @@ file path=etc/dat/dat.conf group=sys original_name=SUNWudapl:etc/dat/dat.conf \
     preserve=true
 dir  path=usr group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libdat.so target=libdat.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libdat.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libdat.so target=libdat.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libdat.so.1
 link path=usr/lib/libdat.so target=libdat.so.1
 file path=usr/lib/libdat.so.1
 dir  path=usr/sbin

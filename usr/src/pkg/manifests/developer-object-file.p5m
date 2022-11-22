@@ -33,15 +33,15 @@ set name=info.classification value=org.opensolaris.category.2008:System/Core
 set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/bin
-$(not_aarch64)dir path=usr/bin/$(ARCH64)
-$(not_aarch64)file path=usr/bin/$(ARCH64)/ar mode=0555
-$(not_aarch64)link path=usr/bin/$(ARCH64)/dump target=../../bin/dump
-$(not_aarch64)link path=usr/bin/$(ARCH64)/elfdump target=../../bin/elfdump
-$(not_aarch64)file path=usr/bin/$(ARCH64)/elfedit mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/mcs mode=0555
-$(not_aarch64)file path=usr/bin/$(ARCH64)/nm mode=0555
-$(not_aarch64)link path=usr/bin/$(ARCH64)/size target=../../bin/size
-$(not_aarch64)hardlink path=usr/bin/$(ARCH64)/strip \
+$(MULTILIB_ONLY)dir path=usr/bin/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/ar mode=0555
+$(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/dump target=../../bin/dump
+$(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/elfdump target=../../bin/elfdump
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/elfedit mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/mcs mode=0555
+$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/nm mode=0555
+$(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/size target=../../bin/size
+$(MULTILIB_ONLY)hardlink path=usr/bin/$(ARCH64)/strip \
     target=../../bin/$(ARCH64)/mcs
 file path=usr/bin/ar mode=0555
 file path=usr/bin/demangle mode=0555
@@ -67,20 +67,20 @@ file path=usr/bin/unifdef mode=0555
 $(not_aarch64)file path=usr/bin/yacc mode=0555
 dir  path=usr/ccs
 dir  path=usr/ccs/bin
-$(not_aarch64)dir path=usr/ccs/bin/$(ARCH64)
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/ar \
+$(MULTILIB_ONLY)dir path=usr/ccs/bin/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/ar \
     target=../../../bin/$(ARCH64)/ar
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/dump \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/dump \
     target=../../../bin/$(ARCH64)/dump
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/elfdump \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/elfdump \
     target=../../../bin/$(ARCH64)/elfdump
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/mcs \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/mcs \
     target=../../../bin/$(ARCH64)/mcs
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/nm \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/nm \
     target=../../../bin/$(ARCH64)/nm
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/size \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/size \
     target=../../../bin/$(ARCH64)/size
-$(not_aarch64)link path=usr/ccs/bin/$(ARCH64)/strip \
+$(MULTILIB_ONLY)link path=usr/ccs/bin/$(ARCH64)/strip \
     target=../../../bin/$(ARCH64)/strip
 link path=usr/ccs/bin/ar target=../../bin/ar
 link path=usr/ccs/bin/dis target=../../bin/dis
@@ -104,20 +104,20 @@ $(not_aarch64)link path=usr/ccs/bin/yacc target=../../bin/yacc
 $(not_aarch64)link path=usr/ccs/bin/yaccpar target=../../share/lib/ccs/yaccpar
 dir  path=usr/ccs/lib
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
 dir  path=usr/lib/elfedit
 dir  path=usr/lib/elfedit/$(ARCH64)
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/cap.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/dyn.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/ehdr.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/phdr.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/shdr.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/str.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/sym.so
-$(not_aarch64)file path=usr/lib/elfedit/$(ARCH64)/syminfo.so
-$(not_aarch64)link path=usr/lib/elfedit/32 target=.
-$(not_aarch64)link path=usr/lib/elfedit/64 target=$(ARCH64)
-$(aarch64_ONLY)link path=usr/lib/elfedit/64 target=.
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/cap.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/dyn.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/ehdr.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/phdr.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/shdr.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/str.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/sym.so
+$(MULTILIB_ONLY)file path=usr/lib/elfedit/$(ARCH64)/syminfo.so
+$(MULTILIB_ONLY)link path=usr/lib/elfedit/32 target=.
+$(MULTILIB_ONLY)link path=usr/lib/elfedit/64 target=$(ARCH64)
+$(NOT_MULTILIB)link path=usr/lib/elfedit/64 target=.
 file path=usr/lib/elfedit/cap.so
 file path=usr/lib/elfedit/dyn.so
 file path=usr/lib/elfedit/ehdr.so

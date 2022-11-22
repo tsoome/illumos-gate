@@ -39,9 +39,9 @@ file path=lib/svc/manifest/system/picl.xml group=sys mode=0444 \
     variant.opensolaris.zone=global
 dir  path=usr group=sys
 dir  path=usr/lib
-$(not_aarch64)dir path=usr/lib/$(ARCH64)
-$(not_aarch64)link path=usr/lib/$(ARCH64)/libpicl.so target=./libpicl.so.1
-$(not_aarch64)file path=usr/lib/$(ARCH64)/libpicl.so.1
+$(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
+$(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libpicl.so target=./libpicl.so.1
+$(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libpicl.so.1
 link path=usr/lib/libpicl.so target=./libpicl.so.1
 file path=usr/lib/libpicl.so.1
 link path=usr/lib/libpicld_pluginutil.so target=./libpicld_pluginutil.so.1

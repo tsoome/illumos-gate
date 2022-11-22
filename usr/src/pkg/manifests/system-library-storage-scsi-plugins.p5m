@@ -35,17 +35,17 @@ dir  path=usr/lib/scsi
 $(not_aarch64)dir path=usr/lib/scsi/plugins
 $(not_aarch64)dir path=usr/lib/scsi/plugins/ses
 $(not_aarch64)dir path=usr/lib/scsi/plugins/ses/vendor
-$(not_aarch64)dir path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.0.so
-$(not_aarch64)link \
+$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.0.so
+$(MULTILIB_ONLY)link \
     path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/LSILOGIC-SASX28-A.1.so \
     target=LSILOGIC-SASX28-A.0.so
-$(not_aarch64)link \
+$(MULTILIB_ONLY)link \
     path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4200.so \
     target=SUN-Storage-J4400.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4400.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4500.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4400.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN-Storage-J4500.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/vendor/$(ARCH64)/SUN.so
 $(not_aarch64)file path=usr/lib/scsi/plugins/ses/vendor/LSILOGIC-SASX28-A.0.so
 $(not_aarch64)link path=usr/lib/scsi/plugins/ses/vendor/LSILOGIC-SASX28-A.1.so \
     target=LSILOGIC-SASX28-A.0.so
