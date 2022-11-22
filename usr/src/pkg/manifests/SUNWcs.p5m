@@ -1348,7 +1348,7 @@ file path=usr/sbin/dminfo mode=0555
 hardlink path=usr/sbin/drvconfig target=./devfsadm
 file path=usr/sbin/dumpadm mode=0555
 link path=usr/sbin/edquota target=../lib/fs/ufs/edquota
-$(not_aarch64)file path=usr/sbin/eeprom group=sys mode=2555
+file path=usr/sbin/eeprom group=sys mode=2555
 link path=usr/sbin/fdisk target=../../sbin/fdisk
 file path=usr/sbin/ff mode=0555
 link path=usr/sbin/fiocompress target=../../sbin/fiocompress

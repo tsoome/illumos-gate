@@ -124,6 +124,7 @@ COMMON_SUBDIRS=	\
 	dumpadm		\
 	dumpcs		\
 	echo		\
+	eeprom		\
 	eject		\
 	emul64ioctl	\
 	enhance		\
@@ -438,7 +439,6 @@ COMMON_SUBDIRS=	\
 # csplit - not 64bit clean
 # eqn - not 64bit clean
 # ed - not 64bit clean
-# eeprom - not ported
 # file - wants bits of sys/core.h 64bit apps can't see
 # fwflash - needs libses
 # geniconvtbl - not 64bit clean
@@ -494,7 +494,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS=	\
 	csplit		\
 	eqn		\
 	ed		\
-	eeprom		\
 	file		\
 	fwflash		\
 	geniconvtbl	\
