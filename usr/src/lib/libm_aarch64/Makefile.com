@@ -113,6 +113,8 @@ CSTD= $(CSTD_GNU99)
 CPPFLAGS += -D__ISO_C_VISIBLE=1999
 CPPFLAGS += -D__BSD_VISIBLE=1
 
+.KEEP_STATE:
+
 all:	$(LIBS)
 
 include $(SRC)/lib/Makefile.targ
