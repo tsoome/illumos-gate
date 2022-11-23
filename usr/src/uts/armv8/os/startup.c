@@ -954,13 +954,6 @@ startup_end(void)
 
 	mach_init();
 
-	/*
-	 * We're done with bootops.  We don't unmap the bootstrap yet because
-	 * we're still using bootsvcs.
-	 */
-	PRM_POINT("NULLing out bootops");
-	bootops = (struct bootops *)NULL;
-
 	PRM_POINT("Enabling interrupts");
 #if 0
 	(*picinitf)();
