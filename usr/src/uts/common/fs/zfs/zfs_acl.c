@@ -2423,6 +2423,11 @@ zfs_zaccess(znode_t *zp, int mode, int flags, boolean_t skipaclchk, cred_t *cr)
 	needed_bits = 0;
 
 	working_mode = mode;
+
+	/*
+	 * XXX: Implied rights for owner (READ_ACL|READ_ATTR)
+	 * Might need to make this conditional (IFF trivial?)
+	 */
 	if ((working_mode & (ACE_READ_ACL|ACE_READ_ATTRIBUTES)) &&
 	    owner == crgetuid(cr))
 		working_mode &= ~(ACE_READ_ACL|ACE_READ_ATTRIBUTES);
@@ -2465,6 +2470,10 @@ zfs_zaccess(znode_t *zp, int mode, int flags, boolean_t skipaclchk, cred_t *cr)
 		error = 0;
 		ASSERT(working_mode != 0);
 
+		/*
+		 * XXX: Implied rights for owner (READ_ACL|READ_ATTR)
+		 * Might need to make this conditional (IFF trivial?)
+		 */
 		if ((working_mode & (ACE_READ_ACL|ACE_READ_ATTRIBUTES) &&
 		    owner == crgetuid(cr)))
 			working_mode &= ~(ACE_READ_ACL|ACE_READ_ATTRIBUTES);
@@ -2482,9 +2491,9 @@ zfs_zaccess(znode_t *zp, int mode, int flags, boolean_t skipaclchk, cred_t *cr)
 		    needed_bits & ~checkmode, needed_bits);
 
 		if (error == 0 && (working_mode & ACE_WRITE_OWNER))
-			error = secpolicy_vnode_chown(cr, owner);
+			error = secpolicy_vnode_chown3(cr, owner, B_FALSE);
 		if (error == 0 && (working_mode & ACE_WRITE_ACL))
-			error = secpolicy_vnode_setdac(cr, owner);
+			error = secpolicy_vnode_setdac3(cr, owner, B_FALSE);
 
 		if (error == 0 && (working_mode &
 		    (ACE_DELETE|ACE_DELETE_CHILD)))

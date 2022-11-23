@@ -3353,7 +3353,8 @@ top:
 			saved_mask = vap->va_mask;
 			vap->va_mask &= ~trim_mask;
 		}
-		err = secpolicy_vnode_setattr(cr, vp, vap, &oldva, flags,
+		err = secpolicy_vnode_setattr(cr, vp, vap, &oldva,
+		    (flags | ATTR_NOIMPLICIT),
 		    (int (*)(void *, int, cred_t *))zfs_zaccess_unix, zp);
 		if (err) {
 			ZFS_EXIT(zfsvfs);

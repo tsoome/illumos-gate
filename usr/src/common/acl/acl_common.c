@@ -1677,6 +1677,16 @@ acl_trivial_create(mode_t mode, boolean_t isdir, ace_t **acl, int *count)
 }
 
 /*
+ * Convenience macro for ACE rights implied for owner in a trivial ACL:
+ * write_owner/write_acl/write_attributes/write_xattr
+ */
+#define	ACE_OWNER_MASK	(\
+	ACE_WRITE_OWNER|\
+	ACE_WRITE_ACL|\
+	ACE_WRITE_ATTRIBUTES|\
+	ACE_WRITE_NAMED_ATTRS)
+
+/*
  * ace_trivial:
  * determine whether an ace_t acl is trivial
  *
@@ -1684,6 +1694,8 @@ acl_trivial_create(mode_t mode, boolean_t isdir, ace_t **acl, int *count)
  * owner, group, everyone entries.  ACL can't
  * have read_acl denied, and write_owner/write_acl/write_attributes
  * can only be owner@ entry.
+ *
+ * Returns zero if this is a "trivial" ACL, else 1.
  */
 int
 ace_trivial_common(void *acep, int aclcnt,
@@ -1736,13 +1748,21 @@ ace_trivial_common(void *acep, int aclcnt,
 
 		/*
 		 * only allow owner@ to have
-		 * write_acl/write_owner/write_attributes/write_xattr/
+		 * the Unix-style implied owner rights
 		 */
 		if (type == ACE_ACCESS_ALLOWED_ACE_TYPE &&
-		    (!(flags & ACE_OWNER) && (mask &
-		    (ACE_WRITE_OWNER|ACE_WRITE_ACL| ACE_WRITE_ATTRIBUTES|
-		    ACE_WRITE_NAMED_ATTRS))))
+		    (flags & ACE_OWNER) == 0 &&
+		    (mask & ACE_OWNER_MASK) != 0)
 			return (1);
+
+		/*
+		 * Require that owner@ has all implied rights
+		 */
+		if (type == ACE_ACCESS_ALLOWED_ACE_TYPE &&
+		    (flags & ACE_OWNER) != 0 &&
+		    (mask & ACE_OWNER_MASK) != ACE_OWNER_MASK)
+			return (1);
+
 
 	}
 	return (0);
