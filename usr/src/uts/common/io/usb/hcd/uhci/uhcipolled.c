@@ -30,7 +30,12 @@
 #include <sys/usb/hcd/uhci/uhcid.h>
 #include <sys/usb/hcd/uhci/uhcipolled.h>
 
-#ifndef __sparc
+/*
+ * XXXARM: This used to be !sparc, and I'm not sure whether we actually do
+ * need it on AArch64.  If fixing it, remember to fix the guards where it's
+ * called too.
+ */
+#ifdef __x86
 extern void invalidate_cache();
 #endif
 /*
@@ -70,8 +75,8 @@ static uhci_trans_wrapper_t
  */
 int
 uhci_hcdi_polled_input_init(usba_pipe_handle_data_t *ph,
-	uchar_t			**polled_buf,
-	usb_console_info_impl_t *console_input_info)
+    uchar_t			**polled_buf,
+    usb_console_info_impl_t *console_input_info)
 {
 	int		ret;
 	uhci_polled_t	*uhci_polledp;
@@ -225,7 +230,7 @@ uhci_hcdi_polled_read(usb_console_info_impl_t *info, uint_t *num_characters)
 #ifndef lint
 	_NOTE(NO_COMPETING_THREADS_NOW);
 #endif
-#ifndef __sparc
+#ifdef __x86
 	invalidate_cache();
 #endif
 
@@ -286,7 +291,7 @@ uhci_hcdi_polled_read(usb_console_info_impl_t *info, uint_t *num_characters)
  */
 int
 uhci_hcdi_polled_output_init(usba_pipe_handle_data_t *ph,
-	usb_console_info_impl_t *console_output_info)
+    usb_console_info_impl_t *console_output_info)
 {
 	int		ret;
 	uhci_polled_t	*uhci_polledp;
@@ -447,7 +452,7 @@ uhci_hcdi_polled_write(usb_console_info_impl_t *info, uchar_t *buf,
 
 	/* wait for xfer to finish */
 	while (GetTD_status(uhcip, td) & UHCI_TD_ACTIVE)
-#ifndef __sparc
+#ifdef __x86
 		invalidate_cache();
 #else
 		;
@@ -476,8 +481,8 @@ uhci_hcdi_polled_write(usb_console_info_impl_t *info, uchar_t *buf,
  */
 static int
 uhci_polled_init(usba_pipe_handle_data_t	*ph,
-	uhci_state_t		*uhcip,
-	usb_console_info_impl_t	*console_info)
+    uhci_state_t		*uhcip,
+    usb_console_info_impl_t	*console_info)
 {
 	uhci_polled_t	*uhci_polledp;
 
@@ -790,7 +795,7 @@ uhci_polled_restore_state(uhci_polled_t	*uhci_polledp)
  */
 static int
 uhci_polled_insert_td_on_qh(uhci_polled_t *uhci_polledp,
-	usba_pipe_handle_data_t *ph)
+    usba_pipe_handle_data_t *ph)
 {
 	uhci_td_t		*td;
 	uhci_state_t		*uhcip = uhci_polledp->uhci_polled_uhcip;

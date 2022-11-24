@@ -42,7 +42,12 @@
 #include <sys/usb/hcd/ehci/ehci_util.h>
 #include <sys/usb/hcd/ehci/ehci_polled.h>
 
-#ifndef __sparc
+/*
+ * XXXARM: This used to be !sparc, and I'm not sure whether we actually do
+ * need it on AArch64.  If fixing it, remember to fix the guards where it's
+ * called too.
+ */
+#ifdef __x86
 extern void invalidate_cache();
 #endif
 
@@ -621,7 +626,7 @@ ehci_hcdi_polled_write(usb_console_info_impl_t *info, uchar_t *buf,
 
 	while (!((Get_OpReg(ehci_status)) & (EHCI_INTR_USB
 	    |EHCI_INTR_FRAME_LIST_ROLLOVER | EHCI_INTR_USB_ERROR))) {
-#ifndef __sparc
+#ifdef __x86
 		invalidate_cache();
 #else
 		;
