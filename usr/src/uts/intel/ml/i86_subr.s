@@ -1284,7 +1284,7 @@ vpanic_common:
 	je	0f
 
 	/*
-	 * If panic_trigger() was successful, we are the first to initiate a
+	 * If panic_trigger() returned non-0, we are the first to initiate a
 	 * panic: we now switch to the reserved panic_stack before continuing.
 	 */
 	leaq	panic_stack(%rip), %rsp

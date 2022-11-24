@@ -20,8 +20,8 @@
  */
 
 /*
- * Copyright 2017 Hayashi Naoyuki
  * Copyright (c) 1992, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Hayashi Naoyuki
  */
 /*
  * Copyright (c) 2010, Intel Corporation.
@@ -115,9 +115,10 @@ console_exit(int busy, int spl)
 	splx(spl);
 }
 
-u_longlong_t randtick()
+u_longlong_t
+randtick(void)
 {
-	return read_cntpct();
+	return (read_cntpct());
 }
 
 void
@@ -131,7 +132,8 @@ tenmicrosec(void)
 			SMT_PAUSE();
 	} else {
 		uint64_t timer_freq = read_cntfrq();
-		uint64_t end_count = read_cntpct() + timer_freq / (MICROSEC / 10);
+		uint64_t end_count = read_cntpct() + timer_freq /
+		    (MICROSEC / 10);
 
 		while (read_cntpct() < end_count)
 			SMT_PAUSE();
@@ -143,8 +145,7 @@ tenmicrosec(void)
  * code wants to enter the debugger and possibly resume later.
  */
 void
-debug_enter(
-	char	*msg)		/* message to print, possibly NULL */
+debug_enter(char *msg)		/* message to print, possibly NULL */
 {
 	if (dtrace_debugger_init != NULL)
 		(*dtrace_debugger_init)();
@@ -252,20 +253,12 @@ gethrestime_sec(void)
 	return (now.tv_sec);
 }
 
-int dtrace_panic_trigger(int *tp)
+int
+dtrace_panic_trigger(int *tp)
 {
 	if (atomic_swap_uint((uint_t *)tp, 0xdefacedd) == 0)
-		return 1;
-	return 0;
-}
-
-void
-dtrace_vpanic(const char *fmt, va_list adx)
-{
-	(void) prom_printf("error: ");
-	(void) prom_vprintf(fmt, adx);
-	(void) prom_printf("\n");
-	prom_exit_to_mon();
+		return (1);
+	return (0);
 }
 
 /*
@@ -310,7 +303,6 @@ dtrace_vpanic(const char *fmt, va_list adx)
  * corresponding cpu_acct[] time and added to
  * cpu_acct[CMS_SYSTEM].
  */
-
 void
 get_cpu_mstate(cpu_t *cpu, hrtime_t *times)
 {
@@ -427,7 +419,9 @@ void
 panic_idle(void)
 {
 	splx(ipltospl(CLOCK_LEVEL));
-	for (;;);
+
+	for (;;)
+		;
 }
 
 /*
@@ -462,8 +456,7 @@ panic_stopcpus(cpu_t *cp, kthread_t *t, int spl)
 
 			/* Wait for CPU to enter panic idle loop. */
 			loop = 0;
-			while (!CPU_IN_SET(panic_idle_enter,
-					   i)) {
+			while (!CPU_IN_SET(panic_idle_enter, i)) {
 				cpuset_t mask;
 				CPUSET_ONLY(mask, i);
 				gic_send_ipi(mask, IRQ_IPI_HI);
@@ -471,7 +464,7 @@ panic_stopcpus(cpu_t *cp, kthread_t *t, int spl)
 				loop++;
 				if (loop >= PANIC_IDLE_MAXWAIT) {
 					prom_printf("cpu%d: panic_idle() may "
-						    "not be called.\n", i);
+					    "not be called.\n", i);
 					break;
 				}
 			}
@@ -495,20 +488,12 @@ panic_quiesce_hw(panic_data_t *pdp)
 {
 }
 
-int panic_trigger(int *tp)
+int
+panic_trigger(int *tp)
 {
 	if (atomic_swap_uint((uint_t *)tp, 0xdefacedd) == 0)
-		return 1;
-	return 0;
-}
-
-void
-vpanic(const char *fmt, va_list adx)
-{
-	(void) prom_printf("error: ");
-	(void) prom_vprintf(fmt, adx);
-	(void) prom_printf("\n");
-	prom_exit_to_mon();
+		return (1);
+	return (0);
 }
 
 /*
@@ -537,10 +522,11 @@ unset_idle_cpu(int cpun)
  * "Enter monitor."  Called via cross-call from stop_other_cpus().
  */
 static int
-mach_cpu_halt(xc_arg_t arg1 __unused, xc_arg_t arg2 __unused, xc_arg_t arg3 __unused)
+mach_cpu_halt(xc_arg_t arg1 __unused, xc_arg_t arg2 __unused,
+    xc_arg_t arg3 __unused)
 {
 	for (;;)
-		__asm__ volatile ("wfe":::"memory");
+		__asm__ volatile("wfe":::"memory");
 
 	return (0);
 }

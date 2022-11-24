@@ -26,7 +26,7 @@
  */
 
 #ifndef _SYS_PRIVREGS_H
-#define _SYS_PRIVREGS_H
+#define	_SYS_PRIVREGS_H
 
 #include <sys/controlregs.h>
 
@@ -39,41 +39,45 @@ extern "C" {
  * how the machine state is saved on the stack when a trap occurs.
  */
 
-#define REGOFF_X0	(0*8)
-#define REGOFF_X1	(1*8)
-#define REGOFF_X2	(2*8)
-#define REGOFF_X3	(3*8)
-#define REGOFF_X4	(4*8)
-#define REGOFF_X5	(5*8)
-#define REGOFF_X6	(6*8)
-#define REGOFF_X7	(7*8)
-#define REGOFF_X8	(8*8)
-#define REGOFF_X9	(9*8)
-#define REGOFF_X10	(10*8)
-#define REGOFF_X11	(11*8)
-#define REGOFF_X12	(12*8)
-#define REGOFF_X13	(13*8)
-#define REGOFF_X14	(14*8)
-#define REGOFF_X15	(15*8)
-#define REGOFF_X16	(16*8)
-#define REGOFF_X17	(17*8)
-#define REGOFF_X18	(18*8)
-#define REGOFF_X19	(19*8)
-#define REGOFF_X20	(20*8)
-#define REGOFF_X21	(21*8)
-#define REGOFF_X22	(22*8)
-#define REGOFF_X23	(23*8)
-#define REGOFF_X24	(24*8)
-#define REGOFF_X25	(25*8)
-#define REGOFF_X26	(26*8)
-#define REGOFF_X27	(27*8)
-#define REGOFF_X28	(28*8)
-#define REGOFF_X29	(29*8)
-#define REGOFF_X30	(30*8)
-#define REGOFF_SP	(31*8)
-#define REGOFF_PC	(32*8)
-#define REGOFF_SPSR	(33*8)
-#define REG_FRAME	(34*8)
+/*
+ * XXXARM: This should be in genassym.cf, but then this header needs the
+ * assym.h, and I'm not sure what to do about that right now.
+ */
+#define	REGOFF_X0	(0*8)
+#define	REGOFF_X1	(1*8)
+#define	REGOFF_X2	(2*8)
+#define	REGOFF_X3	(3*8)
+#define	REGOFF_X4	(4*8)
+#define	REGOFF_X5	(5*8)
+#define	REGOFF_X6	(6*8)
+#define	REGOFF_X7	(7*8)
+#define	REGOFF_X8	(8*8)
+#define	REGOFF_X9	(9*8)
+#define	REGOFF_X10	(10*8)
+#define	REGOFF_X11	(11*8)
+#define	REGOFF_X12	(12*8)
+#define	REGOFF_X13	(13*8)
+#define	REGOFF_X14	(14*8)
+#define	REGOFF_X15	(15*8)
+#define	REGOFF_X16	(16*8)
+#define	REGOFF_X17	(17*8)
+#define	REGOFF_X18	(18*8)
+#define	REGOFF_X19	(19*8)
+#define	REGOFF_X20	(20*8)
+#define	REGOFF_X21	(21*8)
+#define	REGOFF_X22	(22*8)
+#define	REGOFF_X23	(23*8)
+#define	REGOFF_X24	(24*8)
+#define	REGOFF_X25	(25*8)
+#define	REGOFF_X26	(26*8)
+#define	REGOFF_X27	(27*8)
+#define	REGOFF_X28	(28*8)
+#define	REGOFF_X29	(29*8)
+#define	REGOFF_X30	(30*8)
+#define	REGOFF_SP	(31*8)
+#define	REGOFF_PC	(32*8)
+#define	REGOFF_SPSR	(33*8)
+#define	REG_FRAME	(34*8)
 
 #ifndef _ASM
 
@@ -132,7 +136,7 @@ struct regs {
 
 #if defined(_MACHDEP)
 
-#define __SAVE_REGS				\
+#define	__SAVE_REGS				\
 	sub	sp, sp, #REG_FRAME;		\
 	stp	x0, x1, [sp, #REGOFF_X0];	\
 	stp	x2, x3, [sp, #REGOFF_X2];	\
@@ -178,7 +182,7 @@ struct regs {
 	ldp	x28, x29, [sp, #REGOFF_X28];	\
 	add	sp, sp, #REG_FRAME
 
-#define __SAVE_SVC_REGS				\
+#define	__SAVE_SVC_REGS				\
 	sub	sp, sp, #REG_FRAME;		\
 	stp	x0, x1, [sp, #REGOFF_X0];	\
 	stp	x2, x3, [sp, #REGOFF_X2];	\
@@ -191,7 +195,7 @@ struct regs {
 	mrs	x2, spsr_el1;			\
 	stp	x1, x2, [sp, #REGOFF_PC]
 
-#define __SAVE_EXC_REGS			\
+#define	__SAVE_EXC_REGS			\
 	stp	x8, x9, [sp, #REGOFF_X8];	\
 	stp	x10, x11, [sp, #REGOFF_X10];	\
 	stp	x12, x13, [sp, #REGOFF_X12];	\

@@ -52,6 +52,7 @@ CORE_OBJS +=			\
 	sendsig.o		\
 	strlen.o		\
 	sundep.o		\
+	vpanic.o		\
 	x_call.o
 
 #
@@ -89,8 +90,6 @@ CORE_OBJS +=		\
 	fdt_empty_tree.o \
 	fdt_rw.o	\
 	fdt_sw.o
-
-
 
 #
 #	file system modules
