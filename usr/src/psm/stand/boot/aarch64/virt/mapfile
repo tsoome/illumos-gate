@@ -44,7 +44,11 @@ SECTIONS
 	_BootScratch  = .;
 	. = . + 0x4000000;
 	_RamdiskStart = .;
-	. = . + 0x0c000000;
+	# XXXARM: This is a truly massive -- 400MB -- allowance
+	# for the boot_archive.  This is so that if you build
+	# the whole system with DWARF for debugging, we can still load it.
+	# It is otherwise incredibly regrettable.
+	. = . + 0x19000000;
 	_RamdiskEnd  = .;
 	_dtb_start   = .;
 	. = . + 0x20000;
