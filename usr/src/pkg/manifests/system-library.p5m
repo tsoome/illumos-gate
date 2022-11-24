@@ -1360,4 +1360,4 @@ depend type=conditional fmri=system/library/python/solaris$(PYTHON3_PKGVERS) \
 # libses.so needs to dlopen(3C) plugins from usr/lib/scsi/plugins/ses/vendor/,
 # a dependency which cannot be automatically derived
 #
-depend type=require fmri=system/library/storage/scsi-plugins
+$(not_aarch64)depend type=require fmri=system/library/storage/scsi-plugins

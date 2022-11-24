@@ -3218,6 +3218,6 @@ file path=opt/zfs-tests/tests/stress/races/remove_file_while_remap mode=0555
 license cr_Sun license=cr_Sun
 license lic_CDDL license=lic_CDDL
 depend type=require fmri=system/file-system/zfs/tests
-depend type=require fmri=system/test/fio
+$(not_aarch64)depend type=require fmri=system/test/fio
 depend type=require fmri=system/test/testrunner
 depend type=require fmri=system/xopen/xcu4

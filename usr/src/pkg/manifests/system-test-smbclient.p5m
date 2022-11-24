@@ -194,5 +194,5 @@ file path=opt/smbclient-tests/tests/smbutil/tp_smbutil_015 mode=0555
 file path=opt/smbclient-tests/tests/smbutil/tp_smbutil_016 mode=0555
 license cr_Sun license=cr_Sun
 license lic_CDDL license=lic_CDDL
-depend type=require fmri=shell/expect
+$(not_aarch64)depend type=require fmri=shell/expect
 depend type=require fmri=system/test/testrunner
