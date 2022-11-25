@@ -159,7 +159,7 @@ _nscd_get_clearance(sema_t *sema)
 int
 _nscd_release_clearance(sema_t *sema)
 {
-	int	which;
+	intptr_t	which;
 
 	(void) thr_getspecific(lookup_state_key, (void**)&which);
 	if (which == 0) /* from common pool */ {

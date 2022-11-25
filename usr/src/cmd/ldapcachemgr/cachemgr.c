@@ -188,8 +188,8 @@ get_clearance(int callnumber)
 int
 release_clearance(int callnumber)
 {
-	int	which;
-	sema_t	*table_sema = NULL;
+	intptr_t	which;
+	sema_t		*table_sema = NULL;
 
 	(void) thr_getspecific(lookup_state_key, (void**)&which);
 	if (which == 0) /* from common pool */ {
