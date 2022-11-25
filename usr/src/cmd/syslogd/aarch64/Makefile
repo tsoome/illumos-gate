@@ -29,4 +29,4 @@ include ../../Makefile.cmd.64
 
 all: $(PROG)
 
-install: all $(ROOTUSRSBINPROG)
+install: all $(ROOTUSRSBINPROG) $(ROOTETCCONFIG) $(ROOTLIBROTATE) logfiles

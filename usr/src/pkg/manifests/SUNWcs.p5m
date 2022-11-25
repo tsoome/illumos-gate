@@ -271,7 +271,7 @@ dir  path=etc/sysevent group=sys
 dir  path=etc/sysevent/config group=sys
 file path=etc/sysevent/config/README group=sys mode=0444
 file path=etc/sysevent/config/SUNW,EC_dr,ESC_dr_req,sysevent.conf group=sys
-$(not_aarch64)file path=etc/syslog.conf group=sys preserve=true
+file path=etc/syslog.conf group=sys preserve=true
 dir  path=etc/system.d group=sys
 $(not_aarch64)link path=etc/tar target=../usr/sbin/tar
 link path=etc/telinit target=../sbin/init
@@ -1194,7 +1194,7 @@ $(not_aarch64)link path=usr/lib/locale/POSIX target=./C
 file path=usr/lib/makekey mode=0555
 file path=usr/lib/more.help
 $(not_aarch64)dir path=usr/lib/netsvc group=sys
-$(not_aarch64)file path=usr/lib/newsyslog group=sys mode=0555
+file path=usr/lib/newsyslog group=sys mode=0555
 file path=usr/lib/passmgmt group=sys mode=0555
 dir  path=usr/lib/pci
 file path=usr/lib/pci/pcidr mode=0555
@@ -1560,8 +1560,8 @@ $(MULTILIB_ONLY)link path=var/ld/32 target=.
 $(MULTILIB_ONLY)link path=var/ld/64 target=$(ARCH64)
 $(NOT_MULTILIB)link path=var/ld/64 target=.
 dir  path=var/log group=sys
-$(not_aarch64)file path=var/log/authlog group=sys mode=0600 preserve=true
-$(not_aarch64)file path=var/log/syslog group=sys preserve=true
+file path=var/log/authlog group=sys mode=0600 preserve=true
+file path=var/log/syslog group=sys preserve=true
 dir  path=var/logadm
 dir  path=var/mail group=mail mode=1777
 dir  path=var/mail/:saved group=mail mode=0775
