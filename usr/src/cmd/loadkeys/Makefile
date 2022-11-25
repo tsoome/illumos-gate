@@ -26,15 +26,12 @@
 
 PROG= loadkeys dumpkeys
 sparc_SUBDIRS= type_4 type_6 type_101
-ppc_SUBDIRS= type_101
 i386_SUBDIRS= type_6 type_101
+aarch64_SUBDIRS= type_6 type_101 #XXXARM: Perhaps just type_6?
 SUBDIRS= $($(MACH)_SUBDIRS)
 SRCS=	$(PROG:%=%.c)
 
 ROOTHELPER= $(ROOTLIB)/set_keyboard_layout
-sparc_EXTRA_INSTALL_TARGETS=$(ROOTHELPER)
-i386_EXTRA_INSTALL_TARGETS=$(ROOTHELPER)
-EXTRA_INSTALL_TARGETS= $($(MACH)_EXTRA_INSTALL_TARGETS)
 
 include ../Makefile.cmd
 
@@ -54,13 +51,11 @@ CLOBBERFILES = $(PROG) loadkeys.c
 
 all:  $(PROG) $(SUBDIRS)
 
-install: $(PROG) $(ROOTPROG) $(SUBDIRS) $(EXTRA_INSTALL_TARGETS)
+install: $(PROG) $(ROOTPROG) $(SUBDIRS) $(ROOTHELPER)
 
 $(ROOTLIB)/%: %
 	$(INS.file)
 
-# explicit yacc work for the NSE
-#
 loadkeys.c: loadkeys.y
 	$(YACC.y) loadkeys.y
 	mv y.tab.c $@
