@@ -66,3 +66,9 @@ SGSMSGFLAGS +=	-h $(BLTDEFS) -d $(BLTDATA) -m $(BLTMESG) -n ar_msg
 SRCS=		$(COMOBJ:%.o=../common/%.c) $(BLTDATA:%.o=$(SGSCOMMON)/%.c)
 
 CLEANFILES +=	$(BLTFILES)
+
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG) := FILEMODE = 0555
+$(ROOTPROG64) := FILEMODE = 0555
+$(ROOTXPG4PROG) := FILEMODE = 0555
+$(ROOTXPG4PROG64) := FILEMODE = 0555

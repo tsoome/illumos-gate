@@ -28,9 +28,6 @@ include		../Makefile.com
 
 .KEEP_STATE:
 
-# XXXARM: This went missing, and I don't know how
-$(ROOTPROG) := FILEMODE = 0555
-
 all:		$(PROG)
 
 install:	all .WAIT $(ROOTPROG) $(ROOTLIBBLURB) $(ROOTCCSBINLINK)

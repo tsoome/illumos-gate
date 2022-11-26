@@ -31,8 +31,5 @@ include		../Makefile.com
 include		../Makefile.targ
 include		$(SRC)/Makefile.master.64
 
-# XXXARM: This went missing, and I don't know how
-$(ROOTPROG) := FILEMODE = 0555
-
 install:	$(ROOTPROG)
 

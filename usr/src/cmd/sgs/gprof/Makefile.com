@@ -53,6 +53,10 @@ ROOTLIBBLURB=	$(BLURBS:%=$(ROOTSHLIBCCS)/%)
 
 $(ROOTLIBBLURB) :=	FILEMODE=	444
 
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG) := FILEMODE = 0555
+
+
 %.o:		../common/%.c
 		$(COMPILE.c) $<
 .PARALLEL: $(OBJS)

@@ -36,3 +36,7 @@ INTERP=         -I'$$ORIGIN/ld.so.1'
 ASFLAGS=	-P -D_ASM
 LDFLAGS=	$(VERSREF) $(INTERP) $(CONVLIBDIR) -lconv -e stub \
 		$(LDFLAGS.cmd)
+
+# XXXARM: This went missing, and I don't know how
+$(ROOTLIB64)/$(PROG) := FILEMODE = 0555
+$(ROOTLIB)/$(PROG) := FILEMODE = 0555

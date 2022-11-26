@@ -56,3 +56,7 @@ SGSMSGFLAGS +=	-h $(BLTDEFS) -d $(BLTDATA) -m $(BLTMESG) -n moe_msg
 SRCS=		$(COMOBJ:%.o=../common/%.c) $(BLTDATA)
 
 CLEANFILES +=	$(BLTFILES)
+
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG) := FILEMODE = 0555
+$(ROOTPROG64) := FILEMODE = 0555

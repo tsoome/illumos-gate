@@ -48,6 +48,10 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 # not linted
 SMATCH=off
 
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG) := FILEMODE = 0555
+$(ROOTPROG64) := FILEMODE = 0555
+
 LDLIBS +=	$(CONVLIBDIR) -lconv $(ELFLIBDIR) -lelf
 
 %.o:		../common/%.c

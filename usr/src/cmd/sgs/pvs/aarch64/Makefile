@@ -30,8 +30,5 @@ include		../Makefile.com
 
 .KEEP_STATE:
 
-# XXXARM: This went missing, and I don't know how
-$(ROOTPROG) := FILEMODE = 0555
-
 include		../Makefile.targ
 include		$(SRC)/Makefile.master.64

@@ -36,8 +36,5 @@ CONVLIBDIR =	$(CONVLIBDIR64)
 ELFLIBDIR =	$(ELFLIBDIR64)
 LDDBGLIBDIR =	$(LDDBGLIBDIR64)
 
-# XXXARM: This went missing, and I don't know how
-$(ROOTPROG) := FILEMODE = 0555
-
 include		../Makefile.targ
 include		$(SRC)/Makefile.master.64

@@ -65,5 +65,9 @@ install:	all $(ROOTPROG64) $(ROOTCCSBINLINK64)
 clean:
 		$(RM) $(OBJS) $(CLEANFILES)
 
+
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG64) := FILEMODE = 0555
+
 include		../../../Makefile.targ
 include		$(SRC)/Makefile.master.64

@@ -31,9 +31,6 @@ DEFLIST=	-DAARCH64 -DELF
 
 .KEEP_STATE:
 
-# XXXARM: This went missing, and I don't know how
-$(ROOTPROG) := FILEMODE = 0555
-
 install:	all $(ROOTPROG) $(ROOTCCSBINLINK)
 
 include		../Makefile.targ

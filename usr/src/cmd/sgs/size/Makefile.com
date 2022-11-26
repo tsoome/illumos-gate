@@ -46,3 +46,6 @@ LDFLAGS +=	$(RPATH)
 LDLIBS +=	$(CONVLIBDIR64) -lconv $(ELFLIBDIR64) -lelf
 
 CLEANFILES +=	$(OBJS)
+
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG) := FILEMODE = 0555

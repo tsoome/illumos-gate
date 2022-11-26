@@ -22,16 +22,16 @@
 #
 # Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
 # Copyright (c) 2012 by Delphix. All rights reserved.
-# Copyright 2020 Joyent, Inc.
 # Copyright (c) 2013 Gary Mills
 # Copyright (c) 2015 Gary Mills
-# Copyright 2022 Garrett D'Amore
 # Copyright 2016 Toomas Soome <tsoome@me.com>
-# Copyright 2018 Nexenta Systems, Inc.
 # Copyright (c) 2016, Chris Fraire <cfraire@me.com>.
 # Copyright 2017 RackTop Systems.
 # Copyright 2018 Jason King
+# Copyright 2018 Nexenta Systems, Inc.
+# Copyright 2020 Joyent, Inc.
 # Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
+# Copyright 2022 Garrett D'Amore
 #
 
 include ../Makefile.master

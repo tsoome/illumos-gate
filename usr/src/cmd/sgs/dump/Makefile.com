@@ -47,3 +47,6 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 SMOFF += indenting
 
 LDLIBS +=	$(CONVLIBDIR64) -lconv $(ELFLIBDIR64) -lelf
+
+# XXXARM: This went missing, and I don't know how
+$(ROOTPROG) := FILEMODE = 0555
