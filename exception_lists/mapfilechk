@@ -20,8 +20,8 @@
 #
 
 #
-# Copyright 2016 Toomas Soome <tsoome@me.com>
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright 2016 Toomas Soome <tsoome@me.com>
 #
 
 # By default, mapfilechk operates on any file in the workspace
@@ -51,3 +51,6 @@ usr/src/tools/onbld/Checks/Mapfile
 usr/src/tools/scripts/
 usr/src/uts/Makefile.mapfile
 usr/src/uts/common/mapfiles/dtrace.mapfile.awk
+usr/src/psm/stand/boot/aarch64/meson-gxbb/mapfile
+usr/src/psm/stand/boot/aarch64/rpi4/mapfile
+usr/src/psm/stand/boot/aarch64/virt/mapfile
