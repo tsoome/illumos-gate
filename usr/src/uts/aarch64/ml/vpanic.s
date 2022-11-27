@@ -34,13 +34,12 @@
  * branches back into vpanic().
  */
 
-/* r0..r18, r29, r30 */
-#define NREGS 21
 /*
- * Must stay aligned, the RHS is P2ALIGN re-stated because we can't use
- * it in ASM.
+ * r0..r18, r29, r30
+ * Must be an even number to keep sp correctly aligned
  */
-#define STACK_RESERVATION ((NREGS * 8) & -16)
+#define NREGS (21 + 1)
+#define STACK_RESERVATION (NREGS * 8)
 
 	ENTRY_NP(vpanic)
 	/* Prologue also saves x29 and x30, sp (in fp) for us */
