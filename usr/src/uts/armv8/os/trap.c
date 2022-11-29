@@ -228,7 +228,7 @@ trap(uint32_t ec, uint32_t iss, caddr_t addr, struct regs *rp)
 			uint32_t fsc = (iss & 0x3F);
 			if ((0x9 <= fsc && fsc <= 0xc) && ((iss & (1u << 10)) == 0) &&
 			    (((ec == T_IABT_EL1 || ec == T_DABT_EL1)) || (addr < (caddr_t)kernelbase)) &&
-			    hat_page_falt(addr < (caddr_t)kernelbase ?  curproc->p_as->a_hat: kas.a_hat, addr) == 0) {
+			    hat_page_fault(addr < (caddr_t)kernelbase ?  curproc->p_as->a_hat: kas.a_hat, addr) == 0) {
 					return 1;
 			} else if (0xd <= fsc && fsc <= 0xF) {
 				// Access flag fault or Permission fault

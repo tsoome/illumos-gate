@@ -3066,7 +3066,7 @@ hat_dup_region(struct hat *hat, hat_region_cookie_t rcookie)
 
 
 int
-hat_page_falt(hat_t *hat, caddr_t vaddr)
+hat_page_fault(hat_t *hat, caddr_t vaddr)
 {
 	int rv = -1;
 	vaddr = (caddr_t)((uintptr_t)vaddr & ~(MMU_PAGESIZE - 1));
@@ -3114,4 +3114,3 @@ hat_page_falt(hat_t *hat, caddr_t vaddr)
 
 	return rv;
 }
-
