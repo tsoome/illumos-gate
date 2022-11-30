@@ -30,14 +30,6 @@
 #include "libzfs.h"
 
 __attribute__((weak))
-int
-zfs_parsedev(struct devdesc **dev __unused, const char *devspec __unused,
-    const char **path __unused)
-{
-	return (EINVAL);
-}
-
-__attribute__((weak))
 char *
 zfs_fmtdev(struct devdesc *vdev __unused)
 {

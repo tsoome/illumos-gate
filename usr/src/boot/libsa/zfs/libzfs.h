@@ -141,7 +141,6 @@ int nvlist_add_string_array(nvlist_t *, const char *, char * const *, uint32_t);
 int nvlist_add_nvlist(nvlist_t *, const char *, nvlist_t *);
 int nvlist_add_nvlist_array(nvlist_t *, const char *, nvlist_t **, uint32_t);
 
-int	zfs_parsedev(struct devdesc **, const char *, const char **);
 char	*zfs_bootfs(void *);
 char	*zfs_fmtdev(struct devdesc *);
 int	zfs_probe_dev(const char *, uint64_t *);

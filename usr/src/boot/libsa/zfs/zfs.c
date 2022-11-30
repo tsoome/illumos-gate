@@ -60,6 +60,9 @@ static int	zfs_readdir(struct open_file *, struct dirent *);
 static int	zfs_mount(const char *dev, const char *path, void **data);
 static int	zfs_unmount(const char *dev, void *data);
 
+static int	zfs_parsedev(struct devdesc **idev, const char *devspec,
+		    const char **path);
+
 struct devsw zfs_dev;
 
 struct fs_ops zfs_fsops = {
@@ -1637,7 +1640,7 @@ struct devsw zfs_dev = {
 	.dv_parsedev = zfs_parsedev,
 };
 
-int
+static int
 zfs_parsedev(struct devdesc **idev, const char *devspec, const char **path)
 {
 	static char	rootname[ZFS_MAXNAMELEN];
