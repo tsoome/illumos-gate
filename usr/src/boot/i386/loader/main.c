@@ -85,8 +85,6 @@ ptov(uintptr_t x)
 int
 main(void)
 {
-	int	i;
-
 	/* Pick up arguments */
 	kargs = (void *)__args;
 	opts = kargs->howto;
@@ -175,12 +173,7 @@ main(void)
 	archsw.arch_hypervisor = x86_hypervisor;
 	archsw.arch_zfs_probe = i386_zfs_probe;
 
-	/*
-	 * March through the device switch probing for things.
-	 */
-	for (i = 0; devsw[i] != NULL; i++)
-		if (devsw[i]->dv_init != NULL)
-			(devsw[i]->dv_init)();
+	devinit();
 
 	printf("BIOS %dkB/%dkB available memory\n", bios_basemem / 1024,
 	    bios_extmem / 1024);

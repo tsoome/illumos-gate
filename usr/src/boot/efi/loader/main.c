@@ -862,11 +862,9 @@ main(int argc, CHAR16 *argv[])
 	 * Scan the BLOCK IO MEDIA handles then
 	 * march through the device switch probing for things.
 	 */
-	if ((i = efipart_inithandles()) == 0) {
-		for (i = 0; devsw[i] != NULL; i++)
-			if (devsw[i]->dv_init != NULL)
-				(devsw[i]->dv_init)();
-	} else
+	if ((i = efipart_inithandles()) == 0)
+		devinit();
+	else
 		printf("efipart_inithandles failed %d, expect failures", i);
 
 	printf("Command line arguments:");
