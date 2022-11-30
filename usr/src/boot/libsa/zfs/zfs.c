@@ -357,7 +357,7 @@ zfs_mount(const char *dev, const char *path, void **data)
 	int rv;
 
 	errno = 0;
-	rv = zfs_parsedev((struct devdesc **)&zfsdev, dev + 3, NULL);
+	rv = zfs_parsedev((struct devdesc **)&zfsdev, dev, NULL);
 	if (rv != 0) {
 		return (rv);
 	}
@@ -1652,7 +1652,7 @@ zfs_parsedev(struct devdesc **idev, const char *devspec, const char **path)
 	int		rv;
 	struct zfs_devdesc *dev;
 
-	np = devspec;
+	np = devspec + 3;
 	if (*np != ':')
 		return (EINVAL);
 	np++;
