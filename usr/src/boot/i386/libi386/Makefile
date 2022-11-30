@@ -101,9 +101,6 @@ biosdisk.o := CFLAGS += -_gcc14=--param=min-pagesize=0
 gfx_fb.o := CPPFLAGS += $(DEFAULT_CONSOLE_COLOR) -I$(LZ4)
 pnglite.o := CPPFLAGS += -I$(ZLIB)
 
-SRCS +=	$(ZFSSRC)/devicename_stubs.c
-OBJS +=	devicename_stubs.o
-
 BOOT_COMCONSOLE_PORT= 0x3f8
 CPPFLAGS +=	-DCOMPORT=${BOOT_COMCONSOLE_PORT}
 
@@ -126,8 +123,6 @@ CPPFLAGS +=	-I../../libsa
 
 multiboot.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
-devicename.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
-devicename_stubs.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 
 CLEANFILES +=	machine x86
 
