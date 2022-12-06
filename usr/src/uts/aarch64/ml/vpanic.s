@@ -19,6 +19,8 @@
 #include <sys/privregs.h>
 #include <sys/panic.h>
 
+#include "assym.h"
+
 /*
  * The panic() and cmn_err() functions invoke vpanic() as a common entry point
  * into the panic code implemented in panicsys().  vpanic() is responsible

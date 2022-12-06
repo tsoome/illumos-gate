@@ -39,46 +39,6 @@ extern "C" {
  * how the machine state is saved on the stack when a trap occurs.
  */
 
-/*
- * XXXARM: This should be in genassym.cf, but then this header needs the
- * assym.h, and I'm not sure what to do about that right now.
- */
-#define	REGOFF_X0	(0*8)
-#define	REGOFF_X1	(1*8)
-#define	REGOFF_X2	(2*8)
-#define	REGOFF_X3	(3*8)
-#define	REGOFF_X4	(4*8)
-#define	REGOFF_X5	(5*8)
-#define	REGOFF_X6	(6*8)
-#define	REGOFF_X7	(7*8)
-#define	REGOFF_X8	(8*8)
-#define	REGOFF_X9	(9*8)
-#define	REGOFF_X10	(10*8)
-#define	REGOFF_X11	(11*8)
-#define	REGOFF_X12	(12*8)
-#define	REGOFF_X13	(13*8)
-#define	REGOFF_X14	(14*8)
-#define	REGOFF_X15	(15*8)
-#define	REGOFF_X16	(16*8)
-#define	REGOFF_X17	(17*8)
-#define	REGOFF_X18	(18*8)
-#define	REGOFF_X19	(19*8)
-#define	REGOFF_X20	(20*8)
-#define	REGOFF_X21	(21*8)
-#define	REGOFF_X22	(22*8)
-#define	REGOFF_X23	(23*8)
-#define	REGOFF_X24	(24*8)
-#define	REGOFF_X25	(25*8)
-#define	REGOFF_X26	(26*8)
-#define	REGOFF_X27	(27*8)
-#define	REGOFF_X28	(28*8)
-#define	REGOFF_X29	(29*8)
-#define	REGOFF_X30	(30*8)
-#define	REGOFF_SP	(31*8)
-#define	REGOFF_PC	(32*8)
-#define	REGOFF_SPSR	(33*8)
-#define	REG_FRAME	(34*8)
-
 #ifndef _ASM
 
 /*

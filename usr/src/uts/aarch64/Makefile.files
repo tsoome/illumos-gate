@@ -114,7 +114,7 @@ CORE_OBJS += decompress.o
 #CORE_OBJS += ucode_utils.o
 
 ASSYM_DEPS +=		\
-	lock_prim.o
+	float.o
 
 #
 #	Driver modules

@@ -2,6 +2,7 @@ include <sys/modctl.h>
 include <sys/pcb.h>
 include <sys/controlregs.h>
 include <sys/trap.h>
+include <sys/privregs.h>
 
 define	MODS_SIZE		sizeof(struct mod_stub_info)
 define	MODS_INSTFCN		offsetof(struct mod_stub_info, mods_func_adr)
@@ -18,5 +19,43 @@ define	FPU_CTX_FPU_SR		offsetof(fpu_ctx_t, fpu_regs.kfpu_sr)
 define CPACR_FPEN_MASK		CPACR_FPEN_MASK
 define CPACR_FPEN_EN		CPACR_FPEN_EN
 define CPACR_FPEN_DIS		CPACR_FPEN_DIS
+
+define	REG_FRAME	sizeof(struct regs)
+define	REGOFF_X0	offsetof(struct regs, r_x0)
+define	REGOFF_X1	offsetof(struct regs, r_x1)
+define	REGOFF_X2	offsetof(struct regs, r_x2)
+define	REGOFF_X3	offsetof(struct regs, r_x3)
+define	REGOFF_X4	offsetof(struct regs, r_x4)
+define	REGOFF_X5	offsetof(struct regs, r_x5)
+define	REGOFF_X6	offsetof(struct regs, r_x6)
+define	REGOFF_X7	offsetof(struct regs, r_x7)
+define	REGOFF_X8	offsetof(struct regs, r_x8)
+define	REGOFF_X9	offsetof(struct regs, r_x9)
+define	REGOFF_X10	offsetof(struct regs, r_x10)
+define	REGOFF_X11	offsetof(struct regs, r_x11)
+define	REGOFF_X12	offsetof(struct regs, r_x12)
+define	REGOFF_X13	offsetof(struct regs, r_x13)
+define	REGOFF_X14	offsetof(struct regs, r_x14)
+define	REGOFF_X15	offsetof(struct regs, r_x15)
+define	REGOFF_X16	offsetof(struct regs, r_x16)
+define	REGOFF_X17	offsetof(struct regs, r_x17)
+define	REGOFF_X18	offsetof(struct regs, r_x18)
+define	REGOFF_X19	offsetof(struct regs, r_x19)
+define	REGOFF_X20	offsetof(struct regs, r_x20)
+define	REGOFF_X21	offsetof(struct regs, r_x21)
+define	REGOFF_X22	offsetof(struct regs, r_x22)
+define	REGOFF_X23	offsetof(struct regs, r_x23)
+define	REGOFF_X24	offsetof(struct regs, r_x24)
+define	REGOFF_X25	offsetof(struct regs, r_x25)
+define	REGOFF_X26	offsetof(struct regs, r_x26)
+define	REGOFF_X27	offsetof(struct regs, r_x27)
+define	REGOFF_X28	offsetof(struct regs, r_x28)
+define	REGOFF_X29	offsetof(struct regs, r_x29)
+define	REGOFF_FP	offsetof(struct regs, r_x29)
+define	REGOFF_X30	offsetof(struct regs, r_x30)
+define	REGOFF_LR	offsetof(struct regs, r_x30)
+define	REGOFF_SP	offsetof(struct regs, r_sp)
+define	REGOFF_PC	offsetof(struct regs, r_pc)
+define	REGOFF_SPSR	offsetof(struct regs, r_spsr)
 
 define T_BRK			T_BRK

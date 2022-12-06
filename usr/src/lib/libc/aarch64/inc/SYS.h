@@ -26,7 +26,7 @@
  */
 
 #ifndef _LIBC_AARCH64_INC_SYS_H
-#define _LIBC_AARCH64_INC_SYS_H
+#define	_LIBC_AARCH64_INC_SYS_H
 
 /*
  * This file defines common code sequences for system calls.
@@ -35,6 +35,8 @@
 #include <sys/syscall.h>
 #include <sys/errno.h>
 #include <sys/controlregs.h>
+
+#include "assym.h"
 
 	.globl	__cerror
 
@@ -188,4 +190,4 @@
 	mov	x0, #0;		\
 	ret
 
-#endif	/* LIBC_AARCH64_INC_SYS_H */
+#endif	/* _LIBC_AARCH64_INC_SYS_H */

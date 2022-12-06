@@ -1189,14 +1189,17 @@ $(LIB_PIC): pics $$(PICS)
 	$(POST_PROCESS_A)
 
 ASSYMDEP_OBJS=			\
+	_lgrp_home_fast.o	\
 	_lwp_mutex_unlock.o	\
 	_stack_grow.o		\
 	asm_subr.o		\
 	getcontext.o		\
+	getcpuid.o		\
+	gethrtime.o		\
+	resumecontext.o		\
 	setjmp.o		\
 	tls_get_addr.o		\
-	vforkx.o		\
-	resumecontext.o
+	vforkx.o
 
 $(ASSYMDEP_OBJS:%=pics/%): assym.h
 

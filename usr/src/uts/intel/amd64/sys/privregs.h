@@ -56,8 +56,8 @@ extern "C" {
 
 struct regs {
 	/*
-	 * Extra frame for mdb to follow through high level interrupts and
-	 * system traps.  Set them to 0 to terminate stacktrace.
+	 * Extra frame for debuggers to follow through high level interrupts
+	 * and system traps.  Set them to 0 to terminate stacktrace.
 	 */
 	greg_t	r_savfp;	/* a copy of %rbp */
 	greg_t	r_savpc;	/* a copy of %rip */
