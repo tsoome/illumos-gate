@@ -260,3 +260,8 @@ define	REGOFF_LR	offsetof(struct regs, r_x30)
 define	REGOFF_SP	offsetof(struct regs, r_sp)
 define	REGOFF_PC	offsetof(struct regs, r_pc)
 define	REGOFF_SPSR	offsetof(struct regs, r_spsr)
+
+define	ESR_EC_SHIFT	ESR_EC_SHIFT
+define	ESR_ISS_MASK	ESR_ISS_MASK
+define	T_SVC		T_SVC
+define	T_AST		T_AST

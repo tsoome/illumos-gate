@@ -19,20 +19,21 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2017 Hayashi Naoyuki
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 
 #include <sys/asm_linkage.h>
 #include <sys/errno.h>
 #include <sys/privregs.h>
-#include <sys/trap.h>
+
 #include "assym.h"
 
 #define	SYSENT_SHIFT	5
 #if (1 << SYSENT_SHIFT) != SYSENT_SIZE
-#error invalid
+#error	"SYSENT_SHIFT does not correspond to size of sysent structure"
 #endif
 
 #define CPUP_THREADP(cp_reg, tp_reg)		\
@@ -101,8 +102,7 @@ from_lower_el_aarch64_sync:
 	clrex
 	__SAVE_REGS
 	mrs	x1, esr_el1
-	lsr	w0, w1, #26
-	and	w1, w1, #0x1ffffff
+	lsr	w0, w1, #ESR_EC_SHIFT	// w0 <- EC, no need to mask
 	cmp	w0, #T_SVC
 	b.eq	svc_handler
 
@@ -151,11 +151,9 @@ from_lower_el_aarch32_error:
 
 	ENTRY(from_current_el_sync_handler)
 	mrs	x1, esr_el1
-	lsr	w0, w1, #26
-	and	w1, w1, #0x1ffffff
+	lsr	w0, w1, #ESR_EC_SHIFT	// w0 <- EC, no need to mask.
 	mrs	x2, far_el1
 	mov	x3, sp
-	mov	x30, #0
 	mov	x29, sp
 	bl	trap
 	ALTENTRY(dtrace_invop_callsite)
@@ -171,11 +169,12 @@ from_lower_el_aarch32_error:
 	 */
 	ENTRY(svc_handler)
 	// w0: ESR_EL1.EC
-	// w1: ESR_EL1.ISS
-	mov	w20, w1			// w20 <- syscall number
+	// w1: ESR_EL1
+	and	w20, w1, #ESR_ISS_MASK	// w20 <- syscall number
 	cbnz	w20, 1f
 	mov	w20, w9
 
+	// XXXARM: #15/0x8000 needs to be symbolic
 1:	tbnz	w20, #15, _fasttrap	// if (w20 & 0x8000) goto _fasttrap
 	CPUP(x0)
 
@@ -312,6 +311,7 @@ _syscall_post_call:
 	SET_SIZE(_user_rtt)
 
 _fasttrap:
+	// XXXARM: #14 needs to be symbolic, and 0x7fff
 	tbnz	w20, #14, .L_dtrace_pid	// if (w20 & 0x4000) goto .L_dtrace_pid
 	and	w20, w20, #0x7fff
 	cmp	w20, #T_LASTFAST

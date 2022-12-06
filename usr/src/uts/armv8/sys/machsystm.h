@@ -57,6 +57,7 @@ struct panic_trap_info {
 	struct regs *trap_regs;
 	uint_t trap_type;
 	caddr_t trap_addr;
+	uint64_t trap_esr;
 };
 
 extern struct cpu	*cpu[];		/* pointer to all cpus */
@@ -71,9 +72,8 @@ extern size_t   kpm_size;
 extern uchar_t  kpm_size_shift;
 extern caddr_t  kpm_vbase;
 extern void get_system_configuration(void);
-extern page_t *page_get_physical(uintptr_t seed);
+extern page_t *page_get_physical(uintptr_t);
 extern void *mach_cpucontext_alloc(struct cpu *);
-extern int trap(uint32_t ec, uint32_t iss, caddr_t addr, struct regs *rp);
 extern void mmu_init(void);
 extern void boot_reserve(void);
 extern void kcpc_hw_init(cpu_t *cp);
