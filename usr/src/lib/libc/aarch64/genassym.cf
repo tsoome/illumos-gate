@@ -1,6 +1,9 @@
 include <sys/types.h>
 include <sys/time_impl.h>
+include <sys/trap.h>
+
 include <signal.h>
+
 include "thr_uberdata.h"
 
 define	TV_SEC			offsetof(timespec_t, tv_sec)
@@ -63,3 +66,7 @@ define	REG_X30			REG_X30
 define	REG_SP			REG_SP
 define	REG_PC			REG_PC
 define	REG_TP			REG_TP
+
+define T_GETLGRP	T_GETLGRP
+define T_GETHRTIME	T_GETHRTIME
+define T_GETHRVTIME	T_GETHRVTIME

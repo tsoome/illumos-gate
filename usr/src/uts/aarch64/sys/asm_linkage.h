@@ -30,7 +30,6 @@
 #define	_SYS_ASM_LINKAGE_H
 
 #include <sys/stack.h>
-#include <sys/trap.h>
 
 #ifdef	__cplusplus
 extern "C" {
