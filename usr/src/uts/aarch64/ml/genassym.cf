@@ -26,6 +26,8 @@ define	DAIF_SETCLEAR_SERROR	DAIF_SETCLEAR_SERROR
 define	DAIF_SETCLEAR_DEBUG	DAIF_SETCLEAR_DEBUG
 
 define	REG_FRAME	sizeof(struct regs)
+define	REGOFF_SAVFP	offsetof(struct regs, r_savfp)
+define	REGOFF_SAVPC	offsetof(struct regs, r_savpc)
 define	REGOFF_X0	offsetof(struct regs, r_x0)
 define	REGOFF_X1	offsetof(struct regs, r_x1)
 define	REGOFF_X2	offsetof(struct regs, r_x2)

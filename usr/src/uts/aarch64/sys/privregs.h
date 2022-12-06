@@ -48,6 +48,13 @@ extern "C" {
  */
 
 struct regs {
+	/*
+	 * Extra frame for debuggers to follow through high level interrupts
+	 * and system traps.  Set them to 0 to terminate stacktrace.
+	 */
+	greg_t	r_savfp;
+	greg_t	r_savpc;
+
 	greg_t	r_x0;
 	greg_t	r_x1;
 	greg_t	r_x2;
@@ -117,7 +124,8 @@ struct regs {
 	stp	x30, x16, [sp, #REGOFF_X30];	\
 	mrs	x17, elr_el1;			\
 	mrs	x18, spsr_el1;			\
-	stp	x17, x18, [sp, #REGOFF_PC]
+	stp	x17, x18, [sp, #REGOFF_PC];	\
+	stp	fp, x17, [sp, #REGOFF_SAVFP];
 
 #define	__RESTORE_REGS			\
 	ldp	x17, x18, [sp, #REGOFF_PC];	\
@@ -153,7 +161,8 @@ struct regs {
 	stp	x30, x0, [sp, #REGOFF_X30];	\
 	mrs	x1, elr_el1;			\
 	mrs	x2, spsr_el1;			\
-	stp	x1, x2, [sp, #REGOFF_PC]
+	stp	x1, x2, [sp, #REGOFF_PC];	\
+	stp	fp, x1, [sp, #REGOFF_SAVFP];
 
 #define	__SAVE_EXC_REGS			\
 	stp	x8, x9, [sp, #REGOFF_X8];	\
