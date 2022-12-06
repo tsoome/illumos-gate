@@ -62,5 +62,3 @@ define	REGOFF_LR	offsetof(struct regs, r_x30)
 define	REGOFF_SP	offsetof(struct regs, r_sp)
 define	REGOFF_PC	offsetof(struct regs, r_pc)
 define	REGOFF_SPSR	offsetof(struct regs, r_spsr)
-
-define T_BRK			T_BRK
