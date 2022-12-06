@@ -81,7 +81,7 @@ dump_trap(uint32_t ec, uint32_t iss, caddr_t addr, struct regs *rp)
 	static volatile int exclusion;
 
 	uint64_t daif = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 
 	prom_printf("%s(): ec=0x%08x iss=0x%08x addr=%p rp=%lx mpidr=%lx\n", __FUNCTION__, ec, iss, addr, rp, read_mpidr());
@@ -165,7 +165,10 @@ trap(uint32_t ec, uint32_t iss, caddr_t addr, struct regs *rp)
 	size_t sz;
 	int ta;
 
-	ASSERT((read_daif() & (1u << 7)));
+	/*
+	 * XXXARM: Why are these DTrace bits handled here?
+	 */
+	ASSERT((read_daif() & DAIF_IRQ) != 0);
 
 	if (DTRACE_CPUFLAG_ISSET(CPU_DTRACE_NOFAULT)) {
 		ASSERT(!USERMODE(rp->r_spsr));
@@ -196,7 +199,7 @@ trap(uint32_t ec, uint32_t iss, caddr_t addr, struct regs *rp)
 		}
 	}
 
-	clear_daif(0x2);
+	clear_daif(DAIF_SETCLEAR_IRQ);
 
 	ASSERT_STACK_ALIGNED();
 

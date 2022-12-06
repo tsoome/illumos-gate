@@ -58,7 +58,7 @@ prom_printf(const char *fmt, ...)
 {
 	va_list adx;
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 
 	va_start(adx, fmt);
@@ -75,7 +75,7 @@ prom_vprintf(const char *fmt, va_list adx)
 	va_list tadx;
 
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 
 	va_copy(tadx, adx);
@@ -215,7 +215,7 @@ number:
  */
 static void
 _printn(uint64_t n, int b, int width, int pad, void (*emit)(char, char **),
-	char **bp)
+    char **bp)
 {
 	char prbuf[40];
 	register char *cp;

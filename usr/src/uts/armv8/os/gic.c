@@ -29,7 +29,7 @@
 #include <sys/smp_impldefs.h>
 #include <sys/promif.h>
 
-#define IPL_TO_GICPRI(ipl)	((0xF & ~(ipl)) << 4)
+#define	IPL_TO_GICPRI(ipl)	((0xF & ~(ipl)) << 4)
 static volatile int exclusion;
 static volatile uint32_t ipriorityr_private[8];
 static volatile uint32_t ienable_private;
@@ -57,7 +57,8 @@ gic_disable_irq(int irq)
 	}
 }
 
-void gic_unmask_level_irq(int irq)
+void
+gic_unmask_level_irq(int irq)
 {
 	if (irq >= 16 && (intr_cfg[irq / 32] & (1u << (irq % 32))) == 0) {
 		ASSERT(irq != 225);
@@ -66,7 +67,8 @@ void gic_unmask_level_irq(int irq)
 	}
 }
 
-void gic_mask_level_irq(int irq)
+void
+gic_mask_level_irq(int irq)
 {
 	if (irq >= 16 && (intr_cfg[irq / 32] & (1u << (irq % 32))) == 0) {
 		ASSERT(irq != 225);
@@ -75,7 +77,8 @@ void gic_mask_level_irq(int irq)
 	}
 }
 
-void gic_config_irq(uint32_t irq, bool is_edge)
+void
+gic_config_irq(uint32_t irq, bool is_edge)
 {
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
 	uint32_t v = (is_edge? 0x2: 0);
@@ -97,7 +100,7 @@ setlvl(int irq)
 		cpuif->pmr = IPL_TO_GICPRI(new_ipl);
 	}
 
-	return new_ipl;
+	return (new_ipl);
 }
 
 void
@@ -114,7 +117,7 @@ gic_set_ipl(uint32_t irq, uint32_t ipl)
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
 
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 
 	uint32_t ipriorityr = dist->ipriorityr[irq / 4];
@@ -135,7 +138,7 @@ gic_add_target(uint32_t irq)
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
 
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 	uint32_t coreMask = 0xFF;
 
@@ -155,7 +158,7 @@ gic_addspl(int irq, int ipl, int min_ipl, int max_ipl)
 	if (irq < 32)
 		ienable_private |= (1u << irq);
 
-	return 0;
+	return (0);
 }
 
 static int
@@ -168,7 +171,7 @@ gic_delspl(int irq, int ipl, int min_ipl, int max_ipl)
 			ienable_private &= ~(1u << irq);
 	}
 
-	return 0;
+	return (0);
 }
 
 int (*addspl)(int, int, int, int) = gic_addspl;
@@ -186,7 +189,7 @@ gic_send_ipi(cpuset_t cpuset, uint32_t irq)
 		CPUSET_DEL(cpuset, cpu);
 	}
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
 	dsb(ish);
 	dist->sgir = (((target & 0xff) << 16) | irq);
@@ -199,31 +202,31 @@ find_gic(pnode_t nodeid, int depth)
 {
 	if (prom_is_compatible(nodeid, "arm,cortex-a15-gic") ||
 	    prom_is_compatible(nodeid, "arm,gic-400")) {
-		return nodeid;
+		return (nodeid);
 	}
 
 	pnode_t child = prom_childnode(nodeid);
 	while (child > 0) {
 		pnode_t node = find_gic(child, depth + 1);
 		if (node > 0)
-			return node;
+			return (node);
 		child = prom_nextnode(child);
 	}
-	return OBP_NONODE;
+	return (OBP_NONODE);
 }
 
 static uint_t
 gic_get_target(void)
 {
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	return __builtin_ctz(dist->itargetsr[0] & 0xFF);
+	return (__builtin_ctz(dist->itargetsr[0] & 0xFF));
 }
 
 void
 gic_init(void)
 {
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 
 	pnode_t node = find_gic(prom_rootnode(), 0);
@@ -274,10 +277,11 @@ gic_init(void)
 	gic_target[0] = 1u << gic_get_target();
 }
 
-void gic_slave_init(processorid_t id)
+void
+gic_slave_init(processorid_t id)
 {
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (__sync_lock_test_and_set(&exclusion, 1)) {}
 
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
@@ -310,8 +314,9 @@ void gic_slave_init(processorid_t id)
 	write_daif(old);
 }
 
-int gic_num_cpus(void)
+int
+gic_num_cpus(void)
 {
 	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	return ((dist->typer >> 5) & 0x7) + 1;
+	return (((dist->typer >> 5) & 0x7) + 1);
 }

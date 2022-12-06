@@ -87,7 +87,7 @@
 	mov	x2, #0
 	str	x2, [x1, #T_ONFAULT]
 	str	x2, [x1, #T_LOFAULT]
-	b	longjmp	
+	b	longjmp
 	SET_SIZE(on_fault)
 
 	ENTRY(no_fault)
@@ -170,8 +170,8 @@
 	 */
 	ENTRY(dtrace_interrupt_disable)
 	mrs	x0, daif
-	and	x0, x0,  #(1 << 7)
-	msr	daifset, #(1 << 1)
+	and	x0, x0,  #DAIF_IRQ
+	msr	daifset, #DAIF_SETCLEAR_IRQ
 	ret
 	SET_SIZE(dtrace_interrupt_disable)
 
@@ -180,9 +180,9 @@
 	 * dtrace_interrupt_enable(dtrace_icookie_t cookie)
 	 */
 	ENTRY(dtrace_interrupt_enable)
-	ands	x0, x0, #(1 << 7)
+	ands	x0, x0, #DAIF_IRQ
 	b.ne	0f
-	msr	daifclr, #(1 << 1)
+	msr	daifclr, #DAIF_SETCLEAR_IRQ
 0:	ret
 	SET_SIZE(dtrace_interrupt_enable)
 
@@ -202,15 +202,15 @@
 
 	ENTRY_NP(ftrace_interrupt_disable)
 	mrs	x0, daif
-	and	x0, x0,  #(1 << 7)
-	msr	daifset, #(1 << 1)
+	and	x0, x0,  #DAIF_IRQ
+	msr	daifset, #DAIF_SETCLEAR_IRQ
 	ret
 	SET_SIZE(ftrace_interrupt_disable)
 
 	ENTRY_NP(ftrace_interrupt_enable)
-	ands	x0, x0, #(1 << 7)
+	ands	x0, x0, #DAIF_IRQ
 	b.ne	0f
-	msr	daifclr, #(1 << 1)
+	msr	daifclr, #DAIF_SETCLEAR_IRQ
 0:	ret
 	SET_SIZE(ftrace_interrupt_enable)
 

@@ -196,7 +196,7 @@ from_lower_el_aarch32_error:
 	add	x9, x9, #1
 	str	x9, [x1, #LWP_RU_SYSC]
 
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 
 	// syscall_mstate(LMS_USER, LMS_SYSTEM);
 	mov	w0, #LMS_USER
@@ -238,7 +238,7 @@ _syscall_invoke:
 	mov	w1, #LMS_USER
 	bl	syscall_mstate
 
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	ldr	w9, [x21, #T_POST_SYS_AST]
 	cbnz	w9, _syscall_post
@@ -257,7 +257,7 @@ _syscall_invoke:
 	eret
 
 _user_rtt:
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	ldrb	w9, [x21, #T_ASTFLAG]
 	cbnz	w9, 3f
@@ -289,7 +289,7 @@ _syscall_ill:
 	b	_syscall_post_call
 
 _syscall_post:
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 
 	// syscall_mstate(LMS_USER, LMS_SYSTEM);
 	mov	w0, #LMS_USER
@@ -325,9 +325,9 @@ _fasttrap:
 	ldp	x0, x1, [sp, #REGOFF_X0]
 	ldp	x2, x3, [sp, #REGOFF_X2]
 
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 	blr	x9
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	ldp	x17, x18, [sp, #REGOFF_PC]
 	msr	elr_el1, x17
@@ -339,7 +339,7 @@ _fasttrap:
 	eret
 .L_dtrace_pid:
 	adr	x30, user_rtt
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 	mov	x0, sp
 	mov	w1, w20
 	b	dtrace_user_probe
@@ -376,7 +376,7 @@ _fasttrap:
 	cmp	x2, #PSR_M_EL0t
 	b.eq	user_rtt
 
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	CPUP(x21)
 	ldrb	w0, [x21, #CPU_KPRUNRUN]
@@ -405,9 +405,9 @@ _sys_rtt_preempt:
 	mov	w0, #1
 	strb	w0, [x20, #T_PREEMPT_LK]
 
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 	bl	kpreempt
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	strb	wzr, [x20, #T_PREEMPT_LK]
 	b	_sys_rtt_preempt_ret
@@ -469,10 +469,10 @@ _sys_rtt_preempt:
 2:
 
 	/* Dispatch interrupt handler. */
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 	mov	w0, w22
 	bl	av_dispatch_autovect
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	mov	x0, x19
 	mov	w1, w21
@@ -498,10 +498,10 @@ intr_thread:
 	mov	sp, x0
 
 	/* Dispatch interrupt handler. */
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 	mov	w0, w22
 	bl	av_dispatch_autovect
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	mov	x0, x19
 	mov	x1, x22
@@ -531,11 +531,11 @@ dosoftint:
 	mov	x23, sp				// x23 <- old sp
 	mov	sp, x0
 
-	msr	DAIFClr, #2
+	msr	DAIFClr, #DAIF_SETCLEAR_IRQ
 	THREADP(x0)
 	ldrb	w0, [x0, #T_PIL]
 	bl	av_dispatch_softvect
-	msr	DAIFSet, #2
+	msr	DAIFSet, #DAIF_SETCLEAR_IRQ
 
 	mov	x0, x19
 	mov	w1, w20
@@ -583,4 +583,3 @@ dosoftint:
 	.align MMU_PAGESHIFT
 t1stack:
 	.zero DEFAULTSTKSZ
-

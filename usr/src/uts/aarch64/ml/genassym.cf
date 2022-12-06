@@ -16,9 +16,14 @@ define	FPU_CTX_FPU_REGS	offsetof(fpu_ctx_t, fpu_regs.kfpu_regs[0])
 define	FPU_CTX_FPU_CR		offsetof(fpu_ctx_t, fpu_regs.kfpu_cr)
 define	FPU_CTX_FPU_SR		offsetof(fpu_ctx_t, fpu_regs.kfpu_sr)
 
-define CPACR_FPEN_MASK		CPACR_FPEN_MASK
-define CPACR_FPEN_EN		CPACR_FPEN_EN
-define CPACR_FPEN_DIS		CPACR_FPEN_DIS
+define	CPACR_FPEN_MASK		CPACR_FPEN_MASK
+define	CPACR_FPEN_EN		CPACR_FPEN_EN
+define	CPACR_FPEN_DIS		CPACR_FPEN_DIS
+
+define	DAIF_SETCLEAR_FIQ	DAIF_SETCLEAR_FIQ
+define	DAIF_SETCLEAR_IRQ	DAIF_SETCLEAR_IRQ
+define	DAIF_SETCLEAR_SERROR	DAIF_SETCLEAR_SERROR
+define	DAIF_SETCLEAR_DEBUG	DAIF_SETCLEAR_DEBUG
 
 define	REG_FRAME	sizeof(struct regs)
 define	REGOFF_X0	offsetof(struct regs, r_x0)

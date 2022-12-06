@@ -84,6 +84,7 @@
 #include <sys/sunndi.h>
 #include <sys/gic.h>
 #include <sys/psci.h>
+#include <sys/controlregs.h>
 
 extern void brand_init(void);
 extern void pcf_init(void);
@@ -194,9 +195,9 @@ static char *prm_dbg_str[] = {
 
 int prom_debug = 0;
 
-#define	PRM_DEBUG(q)	if (prom_debug) 	\
+#define	PRM_DEBUG(q)	if (prom_debug)		\
 	prom_printf(prm_dbg_str[sizeof (q) >> 3], "startup.c", __LINE__, #q, q);
-#define	PRM_POINT(q)	if (prom_debug) 	\
+#define	PRM_POINT(q)	if (prom_debug)		\
 	prom_printf("%s:%d: %s\n", "startup.c", __LINE__, q);
 
 #define	ROUND_UP_PAGE(x)	\
@@ -222,13 +223,13 @@ size_t valloc_sz = 0;
 uintptr_t valloc_base;
 
 #define	ADD_TO_ALLOCATIONS(ptr, size) {					\
-		size = ROUND_UP_PAGE(size);		 		\
+		size = ROUND_UP_PAGE(size);				\
 		if (num_allocations == NUM_ALLOCATIONS)			\
 			panic("too many ADD_TO_ALLOCATIONS()");		\
 		allocations[num_allocations].al_ptr = (void**)&ptr;	\
 		allocations[num_allocations].al_size = size;		\
 		valloc_sz += size;					\
-		++num_allocations;				 	\
+		++num_allocations;					\
 	}
 /*
  * Allocate all the initial memory needed by the page allocator.
@@ -898,11 +899,19 @@ load_tod_module(char *todmod)
 }
 
 extern void exception_vector(void);
+
+/*
+ * XXXARM: This enables more than just IRQs
+ * Not a great name
+ */
 static inline void
 enable_irq()
 {
-	__asm__ volatile ("msr DAIFClr, #0xF":::"memory");
+	__asm__ volatile("msr DAIFClr, %0"
+	    :: "I" (DAIF_SETCLEAR_ALL)
+	    : "memory");
 }
+
 static void
 startup_end(void)
 {
@@ -1375,10 +1384,14 @@ kvm_init(void)
 	rw_enter(&kas.a_lock, RW_WRITER);
 	as_avlinit(&kas);
 
-	caddr_t _text = (caddr_t)P2ALIGN((uintptr_t)s_text, (uintptr_t)MMU_PAGESIZE);
-	caddr_t _etext = (caddr_t)P2ROUNDUP((uintptr_t)e_text, (uintptr_t)MMU_PAGESIZE);
-	caddr_t _data = (caddr_t)P2ALIGN((uintptr_t)s_data, (uintptr_t)MMU_PAGESIZE);
-	caddr_t _edata = (caddr_t)P2ROUNDUP((uintptr_t)e_data, (uintptr_t)MMU_PAGESIZE);
+	caddr_t _text = (caddr_t)P2ALIGN((uintptr_t)s_text,
+	    (uintptr_t)MMU_PAGESIZE);
+	caddr_t _etext = (caddr_t)P2ROUNDUP((uintptr_t)e_text,
+	    (uintptr_t)MMU_PAGESIZE);
+	caddr_t _data = (caddr_t)P2ALIGN((uintptr_t)s_data,
+	    (uintptr_t)MMU_PAGESIZE);
+	caddr_t _edata = (caddr_t)P2ROUNDUP((uintptr_t)e_data,
+	    (uintptr_t)MMU_PAGESIZE);
 
 	(void) seg_attach(&kas, _text, _edata - _text, &ktextseg);
 	(void) segkmem_create(&ktextseg);
@@ -1504,7 +1517,7 @@ startup_vm(void)
 	rw_enter(&kas.a_lock, RW_WRITER);
 	PRM_POINT("Attaching segkp");
 	if (seg_attach(&kas, (caddr_t)segkp_base, mmu_ptob(segkpsize),
-		    segkp) < 0) {
+	    segkp) < 0) {
 		panic("startup: cannot attach segkp");
 		/*NOTREACHED*/
 	}
@@ -1577,8 +1590,10 @@ post_startup(void)
 static int
 pp_in_range(page_t *pp, uint64_t low_addr, uint64_t high_addr)
 {
-	return ((SEGKPM_BASE <= low_addr) && (low_addr < (SEGKPM_BASE + SEGKPM_SIZE)) &&
-	    (SEGKPM_BASE <= high_addr) && (high_addr < (SEGKPM_BASE + SEGKPM_SIZE)) &&
+	return ((SEGKPM_BASE <= low_addr) &&
+	    (low_addr < (SEGKPM_BASE + SEGKPM_SIZE)) &&
+	    (SEGKPM_BASE <= high_addr) &&
+	    (high_addr < (SEGKPM_BASE + SEGKPM_SIZE)) &&
 	    (pp->p_pagenum >= btop(low_addr - SEGKPM_BASE)) &&
 	    (pp->p_pagenum < btopr(high_addr - SEGKPM_BASE)));
 }
@@ -1617,7 +1632,8 @@ release_bootstrap(void)
 
 	PRM_POINT("Releasing boot pages");
 
-	for (struct memlist *scratch = boot_scratch; scratch != NULL; scratch = scratch->ml_next) {
+	for (struct memlist *scratch = boot_scratch; scratch != NULL;
+	    scratch = scratch->ml_next) {
 		uintptr_t pa = scratch->ml_address;
 		uintptr_t sz = scratch->ml_size;
 		uintptr_t pfn = mmu_btop(pa);
@@ -1628,7 +1644,8 @@ release_bootstrap(void)
 			ASSERT(pp);
 			ASSERT(PAGE_LOCKED(pp));
 			ASSERT(!PP_ISFREE(pp));
-			if (root_is_ramdisk && pp_in_range(pp, ramdisk_start, ramdisk_end)) {
+			if (root_is_ramdisk && pp_in_range(pp, ramdisk_start,
+			    ramdisk_end)) {
 				pp->p_next = rd_pages;
 				rd_pages = pp;
 				continue;

@@ -54,11 +54,16 @@
 #include <sys/gic.h>
 #include <sys/x_call.h>
 
-
+/*
+ * This is the equivalent of the x86 instruction BSRW.  We return the index
+ * counting from the right of the most significant set bit in a 16bit "word".
+ *
+ * It could use a better name (on x86 too, honestly).
+ */
 static inline uint_t
 bsrw_insn(uint16_t mask)
 {
-	return 31 - __builtin_clz(mask);
+	return (31 - __builtin_clz(mask));
 }
 
 /*
@@ -228,7 +233,7 @@ hilevel_intr_epilog(struct cpu *cpu, uint_t pil, uint_t oldpil, uint_t vecnum)
 	mcpu->mcpu_pri = oldpil;
 	setlvlx(oldpil, vecnum);
 
-	return (int)mask;
+	return ((int)mask);
 }
 
 /*
@@ -354,7 +359,7 @@ intr_thread_epilog(struct cpu *cpu, uint_t vec, uint_t oldpil)
 		mcpu->mcpu_pri = basespl;
 		setlvlx(basespl, vec);
 		(void) splhigh();
-		clear_daif(0x2);
+		clear_daif(DAIF_SETCLEAR_IRQ);
 
 		it->t_state = TS_FREE;
 		/*
@@ -450,7 +455,7 @@ intr_get_time(void)
 	uint_t pil;
 
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	cpu = CPU;
 	mcpu = &cpu->cpu_m;
 	t = cpu->cpu_thread;
@@ -520,7 +525,7 @@ top:
 	 * emulate the i386 port.
 	 */
 	atomic_and_32((uint32_t *)&mcpu->mcpu_softinfo.st_pending,
-		       ~(1 << pil));
+	    ~(1 << pil));
 
 	mcpu->mcpu_pri = pil;
 	setlvlx(pil, -1);
@@ -618,7 +623,7 @@ dosoftint_epilog(struct cpu *cpu, uint_t oldpil)
 		it->t_link = cpu->cpu_intr_thread;
 		cpu->cpu_intr_thread = it;
 		(void) splhigh();
-		clear_daif(0x2);
+		clear_daif(DAIF_SETCLEAR_IRQ);
 		swtch();
 		/*NOTREACHED*/
 		panic("dosoftint_epilog: swtch returned");
@@ -797,17 +802,17 @@ int
 getpil(void)
 {
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	int pil = CPU->cpu_m.mcpu_pri;
 	write_daif(old);
-	return pil;
+	return (pil);
 }
 
 static int
 do_splx(int newpri)
 {
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 
 	cpu_t *cpu = CPU;
 	int curpri = cpu->cpu_m.mcpu_pri;
@@ -818,7 +823,7 @@ do_splx(int newpri)
 	setlvlx(newpri, -1);
 
 	write_daif(old);
-	return curpri;
+	return (curpri);
 }
 
 void
@@ -831,7 +836,7 @@ int
 splr(int newpri)
 {
 	uint64_t old = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 
 	cpu_t *cpu = CPU;
 	int curpri = cpu->cpu_m.mcpu_pri;
@@ -844,41 +849,55 @@ splr(int newpri)
 	}
 
 	write_daif(old);
-	return curpri;
+	return (curpri);
 }
 
-int splhigh(void)
+int
+splhigh(void)
 {
-	return splr(DISP_LEVEL);
+	return (splr(DISP_LEVEL));
 }
-int splhi(void)
+
+int
+splhi(void)
 {
-	return splr(DISP_LEVEL);
+	return (splr(DISP_LEVEL));
 }
-int spl6(void)
+
+int
+spl6(void)
 {
-	return splr(DISP_LEVEL);
+	return (splr(DISP_LEVEL));
 }
-int spl0(void)
+
+int
+spl0(void)
 {
-	return do_splx(0);
+	return (do_splx(0));
 }
-int splzs(void)
+
+int
+splzs(void)
 {
-	return do_splx(12);
+	return (do_splx(12));
 }
-int spl7(void)
+
+int
+spl7(void)
 {
-	return splr(13);
+	return (splr(13));
 }
-int spl8(void)
+
+int
+spl8(void)
 {
-	return splr(15);
+	return (splr(15));
 }
+
 int
 interrupts_enabled(void)
 {
-	return ((read_daif() >> 6) & (1u << 1)) == 0;
+	return ((read_daif() & DAIF_IRQ) == 0);
 }
 
 int

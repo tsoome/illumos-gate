@@ -92,7 +92,7 @@ mp_startup_wait(cpuset_t *sp, processorid_t cpuid)
 
 	for (tempset = *sp; !CPU_IN_SET(tempset, cpuid);
 	    tempset = *(volatile cpuset_t *)sp) {
-		__asm__ volatile ("yield");
+		__asm__ volatile("yield");
 	}
 	CPUSET_ATOMIC_DEL(*(cpuset_t *)sp, cpuid);
 }
@@ -105,7 +105,7 @@ mp_startup_signal(cpuset_t *sp, processorid_t cpuid)
 	CPUSET_ATOMIC_ADD(*(cpuset_t *)sp, cpuid);
 	for (tempset = *sp; CPU_IN_SET(tempset, cpuid);
 	    tempset = *(volatile cpuset_t *)sp) {
-		__asm__ volatile ("yield");
+		__asm__ volatile("yield");
 	}
 }
 
@@ -123,7 +123,7 @@ init_cpu_info(struct cpu *cp)
 
 	uint64_t aa64pfr0 = read_id_aa64pfr0();
 	uint64_t aa64isar0 = read_id_aa64isar0();
-	snprintf(pi->pi_fputypes, sizeof(pi->pi_fputypes) - 1, "%s%s%s%s%s%s",
+	snprintf(pi->pi_fputypes, sizeof (pi->pi_fputypes) - 1, "%s%s%s%s%s%s",
 	    ((((aa64pfr0 >> 16) & 0xF) == 0)? "FP":""),
 	    ((((aa64pfr0 >> 20) & 0xF) == 0)? ".AdvSIMD":""),
 	    ((((aa64isar0 >> 16) & 0xF) == 1)? ".CRC32":""),
@@ -136,9 +136,13 @@ init_cpu_info(struct cpu *cp)
 	cp->cpu_curr_clock = plat_get_cpu_clock(cp->cpu_id);
 
 	cp->cpu_idstr = kmem_zalloc(CPU_IDSTRLEN, KM_SLEEP);
-	snprintf(cp->cpu_idstr, CPU_IDSTRLEN - 1, "ARM 64bit MIDR=%08x REVIDR=%08x", (uint32_t)read_midr(), (uint32_t)read_revidr());
+	snprintf(cp->cpu_idstr, CPU_IDSTRLEN - 1,
+	    "ARM 64bit MIDR=%08x REVIDR=%08x",
+	    (uint32_t)read_midr(),
+	    (uint32_t)read_revidr());
 
-	cp->cpu_brandstr = kmem_zalloc(strlen(plat_get_cpu_str()) + 1, KM_SLEEP);
+	cp->cpu_brandstr = kmem_zalloc(strlen(plat_get_cpu_str()) + 1,
+	    KM_SLEEP);
 	strcpy(cp->cpu_brandstr, plat_get_cpu_str());
 
 	cp->cpu_features = kmem_zalloc(120, KM_SLEEP);
@@ -168,11 +172,14 @@ init_cpu_info(struct cpu *cp)
 	}
 
 	cp->cpu_implementer = kmem_zalloc(16, KM_SLEEP);
-	sprintf(cp->cpu_implementer, "%02x", (uint32_t)((read_midr() >> 24) & 0xFF));
+	sprintf(cp->cpu_implementer, "%02x",
+	    (uint32_t)((read_midr() >> 24) & 0xFF));
 	cp->cpu_variant = kmem_zalloc(16, KM_SLEEP);
-	sprintf(cp->cpu_variant, "%x", (uint32_t)((read_midr() >> 20) & 0xF));
+	sprintf(cp->cpu_variant, "%x",
+	    (uint32_t)((read_midr() >> 20) & 0xF));
 	cp->cpu_partnum = kmem_zalloc(16, KM_SLEEP);
-	sprintf(cp->cpu_partnum, "%03x", (uint32_t)((read_midr() >> 4) & 0xFFF));
+	sprintf(cp->cpu_partnum, "%03x",
+	    (uint32_t)((read_midr() >> 4) & 0xFFF));
 	cp->cpu_revision = kmem_zalloc(16, KM_SLEEP);
 	sprintf(cp->cpu_revision, "%d", (uint32_t)(read_midr() & 0xF));
 	cp->cpu_chip = read_midr();
@@ -277,7 +284,8 @@ cpu_enable_intr(struct cpu *cp)
 }
 
 
-static uint64_t get_cpu_affinity(pnode_t node)
+static uint64_t
+get_cpu_affinity(pnode_t node)
 {
 	uint32_t reg[2] = {0};
 	uint64_t affinity = 0;
@@ -291,26 +299,27 @@ static uint64_t get_cpu_affinity(pnode_t node)
 		affinity |= ((uint64_t)ntohl(reg[0]) << 32);
 		affinity |= ((uint64_t)ntohl(reg[1]));
 	}
-	return affinity;
+	return (affinity);
 }
 
-static pnode_t get_cpu_node(int cpun, uint64_t ignore_affinity)
+static pnode_t
+get_cpu_node(int cpun, uint64_t ignore_affinity)
 {
 	pnode_t cpus = prom_finddevice("/cpus");
 	if (cpus <= 0)
-		return cpus;
+		return (cpus);
 
 	pnode_t node = prom_childnode(cpus);
 	int id = 1;
 	for (;;) {
 		if (node <= 0)
-			return node;
+			return (node);
 		if (cpun == 0) {
 			if (get_cpu_affinity(node) == ignore_affinity)
-				return node;
+				return (node);
 		} else if (get_cpu_affinity(node) != ignore_affinity) {
 			if (id == cpun)
-				return node;
+				return (node);
 			id++;
 		}
 		node = prom_nextnode(node);
@@ -324,35 +333,39 @@ wakeup_cpu(int who, uint64_t ignore_affinity)
 	if (node <= 0) {
 		cmn_err(CE_WARN,
 		    "cpu%d prom node not found", who);
-		return -1;
+		return (-1);
 	}
 
 	int len = prom_getproplen(node, "enable-method");
 	if (len <= 0) {
 		cmn_err(CE_WARN,
 		    "cpu%d enable-method error", who);
-		return -1;
+		return (-1);
 	}
 	char *methodname = __builtin_alloca(len);
 	prom_getprop(node, "enable-method", (caddr_t)methodname);
 	if (strcmp(methodname, "spin-table") == 0) {
 		uint32_t cpu_release_addr[2] = {0};
-		prom_getprop(node, "cpu-release-addr", (caddr_t)cpu_release_addr);
+		prom_getprop(node, "cpu-release-addr",
+		    (caddr_t)cpu_release_addr);
 		cpu_release_addr[0] = ntohl(cpu_release_addr[0]);
 		cpu_release_addr[1] = ntohl(cpu_release_addr[1]);
-		uint64_t rel_addr = ((uint64_t)cpu_release_addr[0] << 32) | cpu_release_addr[1];
+		uint64_t rel_addr = ((uint64_t)cpu_release_addr[0] << 32) |
+		    cpu_release_addr[1];
 
 		write_s1e1r((uint64_t)BOOT_VEC_BASE);
 		isb();
-		uint64_t pa = (read_par_el1() & MMU_PAGEMASK) & ((1ul << 48) - 1);
+		uint64_t pa = (read_par_el1() & MMU_PAGEMASK) &
+		    ((1ul << 48) - 1);
 		*(uint64_t *)(SEGKPM_BASE + rel_addr) = pa;
 		flush_data_cache(SEGKPM_BASE + rel_addr);
 		dsb(ish);
-		__asm__ volatile ("sev":::"memory");
+		__asm__ volatile("sev":::"memory");
 	} else if (strcmp(methodname, "psci") == 0) {
 		write_s1e1r((uint64_t)BOOT_VEC_BASE);
 		isb();
-		uint64_t pa = (read_par_el1() & MMU_PAGEMASK) & ((1ul << 48) - 1);
+		uint64_t pa = (read_par_el1() & MMU_PAGEMASK) &
+		    ((1ul << 48) - 1);
 		uint32_t reg[2] = {0};
 		uint64_t target_cpu = 0;
 		int address_cells = prom_get_address_cells(node);
@@ -369,10 +382,10 @@ wakeup_cpu(int who, uint64_t ignore_affinity)
 	} else {
 		cmn_err(CE_WARN,
 		    "cpu%d unknown enable-method %s", who, methodname);
-		return -1;
+		return (-1);
 	}
 
-	return 0;
+	return (0);
 }
 
 static void
@@ -431,7 +444,7 @@ mp_startup_boot(void)
 	/* The base spl should still be at LOCK LEVEL here */
 	ASSERT(cp->cpu_base_spl == ipltospl(LOCK_LEVEL));
 	set_base_spl();		/* Restore the spl to its proper value */
-	clear_daif(0x2);
+	clear_daif(DAIF_SETCLEAR_IRQ);
 
 	pghw_physid_create(cp);
 	/*
@@ -461,7 +474,8 @@ mp_startup_boot(void)
 
 	cmn_err(CE_CONT, "cpu%d: %s\n", cp->cpu_id, cp->cpu_idstr);
 	cmn_err(CE_CONT, "cpu%d: %s\n", cp->cpu_id, cp->cpu_brandstr);
-	cmn_err(CE_CONT, "cpu%d initialization complete - online\n", cp->cpu_id);
+	cmn_err(CE_CONT, "?cpu%d initialization complete - online\n",
+	    cp->cpu_id);
 
 	write_oslar_el1(0);
 	write_cntkctl(read_cntkctl() | 0x3);
@@ -483,7 +497,7 @@ mp_cpu_configure_common(int cpun, uint64_t ignore_affinity)
 
 	pnode_t node = get_cpu_node(cpun, ignore_affinity);
 	if (node <= 0) {
-		return NULL;
+		return (NULL);
 	}
 
 	uint64_t affinity = get_cpu_affinity(node);
@@ -502,7 +516,8 @@ mp_cpu_configure_common(int cpun, uint64_t ignore_affinity)
 
 	disp_cpu_init(cp);
 	cpu_vm_data_init(cp);
-	tp = thread_create(NULL, 0, NULL, NULL, 0, procp, TS_STOPPED, maxclsyspri);
+	tp = thread_create(NULL, 0, NULL, NULL, 0, procp, TS_STOPPED,
+	    maxclsyspri);
 
 	THREAD_ONPROC(tp, cp);
 	tp->t_preempt = 1;
@@ -571,14 +586,15 @@ mach_cpucontext_init(void)
 	cpu_data->sctlr = read_sctlr();
 
 	size_t data_line_size = CTR_TO_DATA_LINESIZE(read_ctr_el0());
-	for (uintptr_t addr = P2ALIGN((uintptr_t)cpu_data, data_line_size); addr < (uintptr_t)cpu_data + sizeof(struct cpu_startup_data); addr += data_line_size) {
+	for (uintptr_t addr = P2ALIGN((uintptr_t)cpu_data, data_line_size);
+	    addr < (uintptr_t)cpu_data + sizeof (struct cpu_startup_data);
+	    addr += data_line_size) {
 		flush_data_cache(addr);
 	}
 	dsb(ish);
 
-	return 0;
+	return (0);
 }
-
 
 static int
 mp_start_cpu_common(cpu_t *cp, uint64_t ignore_affinity)
@@ -599,7 +615,8 @@ mp_start_cpu_common(cpu_t *cp, uint64_t ignore_affinity)
 		return (error);
 	}
 
-	for (delays = 0, tempset = procset_slave; !CPU_IN_SET(tempset, cpuid); delays++) {
+	for (delays = 0, tempset = procset_slave; !CPU_IN_SET(tempset, cpuid);
+	    delays++) {
 		if (delays == 500) {
 			/*
 			 * After five seconds, things are probably looking

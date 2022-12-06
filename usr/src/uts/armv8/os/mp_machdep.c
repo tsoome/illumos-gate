@@ -58,10 +58,13 @@ return_instr(void)
 }
 
 uint_t cp_haltset_fanout = 0;
-int (*addintr)(void *, int, avfunc, char *, int, caddr_t, caddr_t, uint64_t *, dev_info_t *) = NULL;
+int (*addintr)(void *, int, avfunc, char *, int, caddr_t, caddr_t, uint64_t *,
+    dev_info_t *) = NULL;
 void (*remintr)(void *, int, avfunc, int) = NULL;
-void (*setsoftint)(int, struct av_softinfo *) = (void (*)(int, struct av_softinfo *))return_instr;
-void (*kdisetsoftint)(int, struct av_softinfo *)= (void (*)(int, struct av_softinfo *))return_instr;
+void (*setsoftint)(int, struct av_softinfo *) =
+	(void (*)(int, struct av_softinfo *))return_instr;
+void (*kdisetsoftint)(int, struct av_softinfo *) =
+	(void (*)(int, struct av_softinfo *))return_instr;
 int (*slvltovect)(int) = (int (*)(int))return_instr;
 
 static int
@@ -116,7 +119,8 @@ pg_plat_hw_instance_id(cpu_t *cpu, pghw_type_t hw)
 	case PGHW_CACHE:
 		return (read_mpidr() & 0xFF);
 	case PGHW_CHIP:
-		return (((read_mpidr() >> 16) | (read_mpidr() >> 8)) & 0xFFFFFF);
+		return (((read_mpidr() >> 16) |
+		    (read_mpidr() >> 8)) & 0xFFFFFF);
 	default:
 		return (-1);
 	}
@@ -286,15 +290,15 @@ cpu_halt(void)
 	 * that shares the pipeline.
 	 */
 	s = read_daif();
-	set_daif(0x2);
+	set_daif(DAIF_SETCLEAR_IRQ);
 	while (*p == 0 &&
 	    ((hset_update && bitset_in_set(&cp->cp_haltset, cpu_sid)) ||
 	    (!hset_update && (CPU->cpu_flags & CPU_OFFLINE)))) {
 
-		__asm__ volatile ("wfi");
+		__asm__ volatile("wfi");
 		write_daif(s);
 		s = read_daif();
-		set_daif(0x2);
+		set_daif(DAIF_SETCLEAR_IRQ);
 	}
 
 	/*
