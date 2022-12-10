@@ -549,6 +549,7 @@ typedef enum a64_dataproc_reg {
 typedef enum a64_dataproc_optype {
 	DPI_OPTYPE_NONE,	/* No additional operands */
 	DPI_OPTYPE_IMM,		/* #<imm> */
+	DPI_OPTYPE_IMMX,	/* 0x<imm> */
 	DPI_OPTYPE_IMM2,	/* #<immr>, #<imms> */
 	DPI_OPTYPE_SIMM,	/* #<imm>{, lsl #<shift>} */
 	DPI_OPTYPE_XREG,	/* <extend> {#<amount>} */
@@ -559,7 +560,7 @@ typedef enum a64_dataproc_optype {
 	DPI_OPTYPE_COND_IMM,	/* #<imm>, #<nzcv>, <cond> */
 	DPI_OPTYPE_COND_REG,	/* #<nzcv>, <cond> */
 	DPI_OPTYPE_COND_INV,	/* invert(<cond>) */
-	DPI_OPTYPE_LABEL,	/* <label> */
+	DPI_OPTYPE_LABEL,	/* 0x<imm> <label> */
 } a64_dataproc_optype_t;
 
 /*
@@ -643,7 +644,7 @@ static a64_dataproc_opcode_entry_t a64_dataproc_opcodes[] = {
 	{"movk",	DPI_REGS_d,	DPI_OPTYPE_SIMM,	0},
 	/* C3.4.6 PC-rel. addressing */
 	{"adr",		DPI_REGS_d,	DPI_OPTYPE_LABEL,	0},
-	{"adrp",	DPI_REGS_d,	DPI_OPTYPE_LABEL,	0},
+	{"adrp",	DPI_REGS_d,	DPI_OPTYPE_IMMX,	0},
 	/* C3.5.1 Add/subtract (extended register) */
 	{"add",		DPI_REGS_dnm,	DPI_OPTYPE_XREG,	DPI_SPREGS_dn|
 								DPI_WDREGS_m},
@@ -1346,7 +1347,7 @@ a64_dis_dataproc_movimm(uint32_t in, a64_dataproc_t *dpi)
  * so we reuse "sfbit" instead (bit 31).
  */
 static void
-a64_dis_dataproc_pcrel(uint32_t in, a64_dataproc_t *dpi)
+a64_dis_dataproc_pcrel(dis_handle_t *dhp, uint32_t in, a64_dataproc_t *dpi)
 {
 	uint32_t immhi;
 	uint8_t immlo;
@@ -1357,9 +1358,11 @@ a64_dis_dataproc_pcrel(uint32_t in, a64_dataproc_t *dpi)
 	if (dpi->sfbit) {
 		dpi->opcode = DPI_OP_ADRP;
 		dpi->dpimm_imm = (immlo + (immhi << 2)) << 12;
+		dpi->dpimm_imm += dhp->dh_addr & ~0xfff;
 	} else {
 		dpi->opcode = DPI_OP_ADR;
 		dpi->dpimm_imm = (immlo + (immhi << 2));
+		dpi->dpimm_imm += dhp->dh_addr;
 	}
 }
 
@@ -1765,7 +1768,7 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		a64_dis_dataproc_movimm(in, &dpi);
 
 	else if ((in & A64_DPI_PCREL_MASK) == A64_DPI_PCREL_TARG)
-		a64_dis_dataproc_pcrel(in, &dpi);
+		a64_dis_dataproc_pcrel(dhp, in, &dpi);
 
 	else if ((in & A64_DPI_ADSBXREG_MASK) == A64_DPI_ADSBXREG_TARG)
 		a64_dis_dataproc_addsubxreg(in, &dpi);
@@ -1903,6 +1906,10 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		/* #<imm> */
 		len = dis_snprintf(buf, buflen, ", #%d", dpi.dpimm_imm);
 		break;
+	case DPI_OPTYPE_IMMX:
+		/* 0x<imm> */
+		len = dis_snprintf(buf, buflen, ", 0x%x", dpi.dpimm_imm);
+		break;
 	case DPI_OPTYPE_IMM2:
 		/* #<immr>, #<imms> */
 		len = dis_snprintf(buf, buflen, ", #%d, #%d",
@@ -1989,19 +1996,17 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		    a64_cond_names[dpi.cond]);
 		break;
 	case DPI_OPTYPE_LABEL:
-		len = dis_snprintf(buf, buflen, " label=0x%x ", dpi.dpimm_imm);
+		len = dis_snprintf(buf, buflen, ", 0x%x ", dpi.dpimm_imm);
 		if (len >= buflen)
-			return (-1);
-		buflen -= len;
-		buf += len;
-		if (dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + dpi.dpimm_imm,
+			break;
+		if (dhp->dh_lookup(dhp->dh_data, dpi.dpimm_imm,
 		    NULL, 0, NULL, NULL) == 0) {
 			len += dis_snprintf(buf + len, buflen - len, "\t<");
 			if (len >= buflen)
-				return (-1);
-			dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + dpi.dpimm_imm,
-					buf + len, buflen - len, NULL, NULL);
-			strlcat(buf, ">", buflen);
+				break;
+			dhp->dh_lookup(dhp->dh_data, dpi.dpimm_imm,
+			    buf + len, buflen - len, NULL, NULL);
+			(void) strlcat(buf + len, ">", buflen - len);
 		}
 	default:
 		break;
