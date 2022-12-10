@@ -425,6 +425,12 @@ typedef struct a64_reg {
 	a64_reg_arr_t arr;		/* Vector arrangement */
 } a64_reg_t;
 
+typedef struct dis_handle_arm_64 {
+	uint64_t	dha_adrp_addr;
+	uint32_t	dha_adrp_imm;
+	a64_reg_t	dha_adrp_reg;
+} dis_handle_arm_64_t;
+
 static const char *
 a64_reg_name(a64_reg_t reg)
 {
@@ -579,6 +585,7 @@ typedef enum a64_dataproc_flags {
 	DPI_WREGS_n = 0x200,	/* <Wn> */
 	DPI_WREGS_m = 0x400,	/* <Wm> */
 	DPI_WREGS_a = 0x800,	/* <Wa> */
+	DPI_ADRP_F = 0x1000,
 } a64_dataproc_flags_t;
 #define	DPI_SPREGS_dn		(DPI_SPREGS_d|DPI_SPREGS_n)
 #define	DPI_WDREGS_dn		(DPI_WDREGS_d|DPI_WDREGS_n)
@@ -601,7 +608,8 @@ typedef struct a64_dataproc_opcode_entry {
  */
 static a64_dataproc_opcode_entry_t a64_dataproc_opcodes[] = {
 	/* C3.4.1 Add/subtract (immediate) */
-	{"add",		DPI_REGS_dn,	DPI_OPTYPE_IMMS,	DPI_SPREGS_dn},
+	{"add",		DPI_REGS_dn,	DPI_OPTYPE_IMMS,	DPI_SPREGS_dn|
+								DPI_ADRP_F},
 	{"mov",		DPI_REGS_dn,	DPI_OPTYPE_NONE,	DPI_SPREGS_dn},
 	{"adds",	DPI_REGS_dn,	DPI_OPTYPE_IMMS,	DPI_SPREGS_n},
 	{"cmn",		DPI_REGS_n,	DPI_OPTYPE_IMMS,	DPI_SPREGS_n},
@@ -1356,9 +1364,15 @@ a64_dis_dataproc_pcrel(dis_handle_t *dhp, uint32_t in, a64_dataproc_t *dpi)
 	immlo = (in & A64_DPI_IMMLO_MASK) >> A64_DPI_IMMLO_SHIFT;
 
 	if (dpi->sfbit) {
+		dis_handle_arm_64_t *dhx = dhp->dh_arch_private;
+
 		dpi->opcode = DPI_OP_ADRP;
 		dpi->dpimm_imm = (immlo + (immhi << 2)) << 12;
 		dpi->dpimm_imm += dhp->dh_addr & ~0xfff;
+
+		dhx->dha_adrp_addr = dhp->dh_addr;
+		dhx->dha_adrp_imm = dpi->dpimm_imm;
+		dhx->dha_adrp_reg = dpi->rd;
 	} else {
 		dpi->opcode = DPI_OP_ADR;
 		dpi->dpimm_imm = (immlo + (immhi << 2));
@@ -1729,6 +1743,24 @@ a64_dis_dataproc_logsreg(uint32_t in, a64_dataproc_t *dpi)
 	}
 }
 
+static void
+a64_dis_addlabel(dis_handle_t *dhp, uint64_t addr, char *buf, size_t buflen)
+{
+	size_t len = 0;
+
+	if (dhp->dh_lookup(dhp->dh_data, addr, NULL, 0, NULL, NULL) != 0) {
+		return;
+	}
+
+	len = dis_snprintf(buf, buflen, "\t<");
+	if (len >= buflen)
+		return;
+
+	dhp->dh_lookup(dhp->dh_data, addr, buf + len, buflen - len,
+	    NULL, NULL);
+	(void) strlcat(buf, ">", buflen);
+}
+
 static int
 a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 {
@@ -1927,6 +1959,21 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			len = dis_snprintf(buf, buflen, ", #0x%x, lsl #12", imm);
 			break;
 		}
+		if ((dop->flags & DPI_ADRP_F) != 0) {
+			dis_handle_arm_64_t *dhx = dhp->dh_arch_private;
+
+			if (dhx->dha_adrp_imm != 0 &&
+			    dpi.rd.id == dhx->dha_adrp_reg.id &&
+			    dpi.rd.id == dpi.rn.id &&
+			    dhp->dh_addr == dhx->dha_adrp_addr +
+			    sizeof (uint32_t)) {
+				a64_dis_addlabel(dhp,
+				    dpi.dpimm_imm + dhx->dha_adrp_imm,
+				    buf + len, buflen - len);
+			}
+			dhx->dha_adrp_imm = 0;
+		}
+
 		break;
 	case DPI_OPTYPE_IMM_MOV:
 		imm = dpi.dpimm_imm;
@@ -1999,15 +2046,7 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		len = dis_snprintf(buf, buflen, ", 0x%x ", dpi.dpimm_imm);
 		if (len >= buflen)
 			break;
-		if (dhp->dh_lookup(dhp->dh_data, dpi.dpimm_imm,
-		    NULL, 0, NULL, NULL) == 0) {
-			len += dis_snprintf(buf + len, buflen - len, "\t<");
-			if (len >= buflen)
-				break;
-			dhp->dh_lookup(dhp->dh_data, dpi.dpimm_imm,
-			    buf + len, buflen - len, NULL, NULL);
-			(void) strlcat(buf + len, ">", buflen - len);
-		}
+		a64_dis_addlabel(dhp, dpi.dpimm_imm, buf + len, buflen - len);
 	default:
 		break;
 	}
@@ -2894,14 +2933,7 @@ a64_dis_ldstr_reg_lit(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
 		len = dis_snprintf(buf, buflen, "%s %s, %x", lsin->opname, a64_reg_name(lsin->rt), dhp->dh_addr + imm);
 	buflen -= len;
 	buf += len;
-	if (dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + (int)imm, NULL, 0,
-	    NULL, NULL) == 0) {
-		if ((len = dis_snprintf(buf, buflen, " \t<")) >= buflen)
-			return (-1);
-		dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + (int)imm,
-				buf + len, buflen - len, NULL, NULL);
-		strlcat(buf, ">", buflen);
-	}
+	a64_dis_addlabel(dhp, dhp->dh_addr + (int)imm, buf, buflen);
 	return (len < buflen ? 0 : -1);
 }
 
@@ -3467,14 +3499,7 @@ a64_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 #endif
 	buflen -= len;
 	buf += len;
-	if (dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + (int)addr, NULL, 0,
-	    NULL, NULL) == 0) {
-		if ((len = dis_snprintf(buf, buflen, " \t<")) >= buflen)
-			return (-1);
-		dhp->dh_lookup(dhp->dh_data, dhp->dh_addr + (int)addr,
-				buf + len, buflen - len, NULL, NULL);
-		strlcat(buf, ">", buflen);
-	}
+	a64_dis_addlabel(dhp, dhp->dh_addr + (int)addr, buf, buflen);
 
 	return (len < buflen ? 0 : -1);
 }
@@ -5090,17 +5115,25 @@ dis_a64_supports_flags(int flags)
 	return (archflags == DIS_ARM_64);
 }
 
-/*ARGSUSED*/
 static int
 dis_a64_handle_attach(dis_handle_t *dhp)
 {
+	dis_handle_arm_64_t *dhx;
+
+	if ((dhx = dis_zalloc(sizeof (*dhx))) == NULL) {
+		(void) dis_seterrno(E_DIS_NOMEM);
+		return (-1);
+	}
+
+	dhp->dh_arch_private = dhx;
 	return (0);
 }
 
-/*ARGSUSED*/
 static void
 dis_a64_handle_detach(dis_handle_t *dhp)
 {
+	dis_free(dhp->dh_arch_private, sizeof (dis_handle_arm_64_t));
+	dhp->dh_arch_private = NULL;
 }
 
 static int
