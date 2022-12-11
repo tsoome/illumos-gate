@@ -12,6 +12,7 @@
 
 #
 # Copyright 2018 Joyent, Inc.
+# Copyright 2022 OmniOS Community Edition (OmniOSce) Association.
 #
 
 #
@@ -40,11 +41,14 @@
 # tst.smap.out.
 #
 
+: "${DIS:=/usr/bin/dis}"
+
 unalias -a
 dt_arg0=$(basename $0)
-dt_dis="/usr/bin/dis -qF libdis_test"
+dt_dis="$DIS -qF libdis_test"
 dt_diff="/usr/bin/cmp -s"
 dt_defas="gas"
+dt_defld="ld"
 dt_defarch=
 dt_nodefault=
 dt_tests=
@@ -69,14 +73,15 @@ usage()
 	typeset msg="$*"
 	[[ -z "$msg" ]] || echo "$msg" 2>&1
 	cat <<USAGE >&2
-Usage: $dt_arg0  [-n] [ -p platform=pathtoas ]... [ test ]...
+Usage: $dt_arg0  [-n] [ -p platform=pathtoas,pathtold ]... [ test ]...
 
 	Runs all dis for the current platform or only specified tests if listed.
 
 	-n			Don't run default platform tests
-	-p platform=pathtoas	Run tests for platform using assembler. Should
-				either be an absolute path or a command on the
-				path.
+	-p platform=pathtoas,pathtold
+				Run tests for platform using the provided
+				assembler and linker. Should either be an
+				absolute path or a command on the path.
 USAGE
 	exit 2
 }
@@ -99,7 +104,7 @@ determine_arch()
 	[[ "$arch" != "i386" ]] && fatal "dis tests are only supported on x86"
 	[[ -n "$dt_nodefault" ]] && return
 	dt_defarch="i386"
-	dt_platforms[$dt_defarch]=$dt_defas
+	dt_platforms[$dt_defarch]=([as]=$dt_defas [ld]=$dt_defld)
 }
 
 #
@@ -112,15 +117,18 @@ check_platforms()
 
 	for key in ${!dt_platforms[@]}; do
 		typeset bin
-		[[ -d $dt_root/$key ]] || fatal "encountered unknown platform: $key"
+		[[ -d $dt_root/$key ]] || \
+		    fatal "encountered unknown platform: $key"
 
 		#
 		# This may be a path or something else.
 		#
-		bin=${dt_platforms[$key]}
-		[[ -x $bin ]] && continue
-		which $bin >/dev/null 2>&1 && continue
-		fatal "failed to find command as absolute path or file: $bin"
+		for bin in ${dt_platforms[$key][@]}; do
+			[[ -x $bin ]] && continue
+			which $bin >/dev/null 2>&1 && continue
+			fatal "failed to find command as absolute path or" \
+			    "file: $bin"
+		done
 	done
 }
 
@@ -161,6 +169,7 @@ test_one()
 
 	outfile=$dir/dis.o
 	aserr=$dir/as.stderr
+	lderr=$dir/ld.stderr
 	disfile=$dir/libdis.out
 	diserr=$dir/dis.stderr
 
@@ -170,9 +179,23 @@ test_one()
 	printf "testing %s " $source
 	[[ -n $extra ]] && printf "%s " $extra
 	printf "... "
-	if ! $gas $gflags -o $outfile $source 2>$aserr >/dev/null; then
-		handle_failure $dir "(assembling)" $source $cmp
-		return
+	if egrep -s '%DIS_TEST_LINK' $source; then
+		if ! $gas $gflags -o $outfile.o $source 2>$aserr >/dev/null
+		then
+			handle_failure $dir "(assembling)" $source $cmp
+			return
+		fi
+
+		if ! $ld -o $outfile $outfile.o 2>$lderr >/dev/null; then
+			handle_failure $dir "(linking)" $source $cmp
+			return
+		fi
+	else
+		if ! $gas $gflags -o $outfile $source 2>$aserr >/dev/null
+		then
+			handle_failure $dir "(assembling)" $source $cmp
+			return
+		fi
 	fi
 
 	if ! $dt_dis $outfile >$disfile 2>$diserr; then
@@ -196,7 +219,7 @@ test_one()
 #
 run_single_file()
 {
-	typeset sfile base cmpfile prefix arch gas p flags
+	typeset sfile base cmpfile prefix arch gas ld p flags
 	typeset asflags32 asflags64
 	sfile=$1
 
@@ -206,7 +229,8 @@ run_single_file()
 	arch=${sfile%/*}
 	arch=${arch##*/}
 	[[ -f $cmpfile ]] || fatal "missing output file $cmpfile"
-	gas=${dt_platforms[$arch]}
+	gas=${dt_platforms[$arch][as]}
+	ld=${dt_platforms[$arch][ld]}
 	[[ -n $gas ]] || fatal "encountered test $sfile, but missing assembler"
 
 	case "$arch" in
@@ -291,12 +315,18 @@ while getopts ":np:" c $@; do
 		dt_nodefault="y"
 		;;
 	p)
-		OLDIFS=$IFS
+		OLDIFS="$IFS"
 		IFS="="
 		set -A split $OPTARG
-		IFS=$OLDIFS
 		[[ ${#split[@]} -eq 2 ]] || usage "malformed -p option: $OPTARG"
-		dt_platforms[${split[0]}]=${split[1]}
+		IFS=","
+		set -A paths ${split[1]}
+		[[ ${#paths[@]} -eq 2 ]] || usage "malformed -p option: $OPTARG"
+		IFS="$OLDIFS"
+		dt_platforms[${split[0]}]=(
+			[as]="${paths[0]}"
+			[ld]="${paths[1]}"
+		)
 		;;
 	:)
 		usage "option requires an argument -- $OPTARG"

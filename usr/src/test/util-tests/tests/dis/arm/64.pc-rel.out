@@ -1,0 +1,13 @@
+    libdis_test:      40 c1 00 50  adr x0, 0x40dd32 
+    libdis_test+0x4:  41 c1 00 50  adr x1, 0x40dd36 
+    libdis_test+0x8:  22 41 01 10  adr x2, 0x40ed34 
+    libdis_test+0xc:  03 00 00 b0  adrp x3, 0x40d000
+    libdis_test+0x10: 63 c8 34 91  add x3, x3, #0xd32
+    libdis_test+0x14: 04 00 00 b0  adrp x4, 0x40d000
+    libdis_test+0x18: 84 d8 34 91  add x4, x4, #0xd36
+    libdis_test+0x1c: 05 00 00 d0  adrp x5, 0x40e000
+    libdis_test+0x20: a5 d0 34 91  add x5, x5, #0xd34
+    libdis_test+0x24: 06 00 00 f0  adrp x6, 0x40f000
+    libdis_test+0x28: c6 e4 34 91  add x6, x6, #0xd39	<_etext>
+    libdis_test+0x2c: 87 00 00 f0  adrp x7, 0x41f000
+    libdis_test+0x30: e7 ac 46 f9  ldr x7, [x7, #3416]
