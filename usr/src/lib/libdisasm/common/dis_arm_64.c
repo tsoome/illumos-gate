@@ -1368,11 +1368,12 @@ a64_dis_dataproc_pcrel(dis_handle_t *dhp, uint32_t in, a64_dataproc_t *dpi)
 
 		dpi->opcode = DPI_OP_ADRP;
 		dpi->dpimm_imm = (immlo + (immhi << 2)) << 12;
-		dpi->dpimm_imm += dhp->dh_addr & ~0xfff;
-
-		dhx->dha_adrp_addr = dhp->dh_addr;
-		dhx->dha_adrp_imm = dpi->dpimm_imm;
-		dhx->dha_adrp_reg = dpi->rd;
+		if (dpi->dpimm_imm != 0) {
+			dpi->dpimm_imm += dhp->dh_addr & ~0xfff;
+			dhx->dha_adrp_addr = dhp->dh_addr;
+			dhx->dha_adrp_imm = dpi->dpimm_imm;
+			dhx->dha_adrp_reg = dpi->rd;
+		}
 	} else {
 		dpi->opcode = DPI_OP_ADR;
 		dpi->dpimm_imm = (immlo + (immhi << 2));
