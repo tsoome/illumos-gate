@@ -3482,7 +3482,7 @@ a64_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	 * Finally, print the address and label.
 	 */
 	addr = (in & op->imm_mask) >> op->imm_shift;
-	if (in & op->sign_mask) {
+	if (addr & op->sign_mask) {
 		addr |= op->neg_sign;
 		//neg = 1;
 	} else {
@@ -3491,7 +3491,8 @@ a64_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	}
 	/* All addresses are encoded as imm * 4 */
 	addr <<= 2;
-	if ((len = dis_snprintf(buf, buflen, " %x", dhp->dh_addr + (int)addr)) >= buflen)
+	len = dis_snprintf(buf, buflen, " %x", dhp->dh_addr + (int)addr);
+	if (len >= buflen)
 		return (-1);
 #if 0
 	if (neg) {
