@@ -1377,6 +1377,12 @@ a64_dis_dataproc_pcrel(dis_handle_t *dhp, uint32_t in, a64_dataproc_t *dpi)
 		dpi->opcode = DPI_OP_ADR;
 		dpi->dpimm_imm = (immlo + (immhi << 2));
 		dpi->dpimm_imm += dhp->dh_addr;
+		/*
+		 * Set the sfbit so that the register argument is interpreted
+		 * as having 64-bit width. For adr/adrp, sfbit is used to
+		 * indicate page (adrp) versus not (adr).
+		 */
+		dpi->sfbit = 1;
 	}
 }
 
