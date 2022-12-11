@@ -20,7 +20,9 @@
 	\op	w0,  w30, #0x00000001
 	\op	w0,  w30, #0x7fffffff
 	\op	x0,  x30, #0x00000001
+	\op	x0,  x30, #0x00000002
 	\op	x0,  x30, #0xffffffff
+	\op	x0,  x30, #0xfffffffffffffff8
 	.if \zreg
 	\op	wzr, wzr, #0x00000001
 	\op	wzr, wzr, #0x7fffffff

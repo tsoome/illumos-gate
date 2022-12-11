@@ -427,7 +427,7 @@ typedef struct a64_reg {
 
 typedef struct dis_handle_arm_64 {
 	uint64_t	dha_adrp_addr;
-	uint32_t	dha_adrp_imm;
+	uint64_t	dha_adrp_imm;
 	a64_reg_t	dha_adrp_reg;
 } dis_handle_arm_64_t;
 
@@ -932,7 +932,7 @@ typedef enum a64_dataproc_extend_type {
 } a64_dataproc_extend_type_t;
 
 typedef struct a64_dataproc_shifter_imm {
-	uint32_t dataprocsi_imm;			/* Immediate value */
+	uint64_t dataprocsi_imm;			/* Immediate value */
 	uint8_t dataprocsi_shift;			/* Shift amount */
 	uint8_t dataprocsi_inv;			/* Whether to NOT(imm) */
 } a64_dataproc_shifter_imm_t;
@@ -1021,7 +1021,7 @@ a64_dis_bfxpref(int sf, int uns, int imms, int immr)
  *
  * XXX: document this properly.
  */
-static int
+static uint64_t
 a64_dis_decodebitmasks(uint8_t sfbit, uint8_t nbit, uint8_t imms, uint8_t immr)
 {
 	int i, size, tmp;
@@ -1265,7 +1265,7 @@ a64_dis_dataproc_logimm(uint32_t in, a64_dataproc_t *dpi)
 	uint8_t opc, nbit, immr, imms;
 
 	opc = (in & A64_DPI_OPC_MASK) >> A64_DPI_OPC_SHIFT;
-	nbit = (in & A64_DPI_N22_MASK);
+	nbit = (in & A64_DPI_N22_MASK) >> A64_DPI_N22_SHIFT;
 	immr = (in & A64_DPI_IMMR_MASK) >> A64_DPI_IMMR_SHIFT;
 	imms = (in & A64_DPI_IMMS_MASK) >> A64_DPI_IMMS_SHIFT;
 
