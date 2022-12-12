@@ -2296,6 +2296,8 @@ static a64_ldstr_opcode_entry_t a64_ldstr_opcodes[] = {
 
 #define	LDSTR_OPCODE_MASK_EXCLUSIVE	0xc0e08000
 #define	LDSTR_OPCODE_MASK_REG_LIT	0xc4000000
+#define	LDSTR_OPCODE_MASK_REG_PAIR	0xc4400000
+#define	LDSTR_OPCODE_MASK_REG		0xc4c00000
 #define	LDSTR_OPCODE_TARG_INVALID	0xffffffff
 
 /* BEGIN CSTYLED */
@@ -2476,99 +2478,189 @@ a64_dis_ldstr_reg_lit(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
 	}
 	buflen -= len;
 	buf += len;
+
 	a64_dis_addlabel(dhp, dhp->dh_addr + (int)imm, buf, buflen);
+
 	return (len < buflen ? 0 : -1);
 }
 
 static int
-a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
+a64_dis_ldstr_reg_pair(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
+    a64_ldstr_insn_t *lsin)
 {
-	a64_ldstr_opcode_entry_t *op;
-	a64_ldstr_insn_t lsin;
-	a64_reg_t rm, rn, rt, rt2;
-	const char *opname;
-	uint32_t opmask, imm;
-	uint8_t class, opc, size, regtype, v;
-	uint8_t option, sbit;
-	int amount = -1;
+	uint8_t opc, v;
+	uint32_t imm;
 	size_t len;
 
-	bzero(&lsin, sizeof (a64_ldstr_insn_t));
-	bzero(&rm, sizeof (rm));
-	bzero(&rn, sizeof (rn));
-	bzero(&rt, sizeof (rt));
-	bzero(&rt2, sizeof (rt2));
+	imm = (in & LDSTR_IMM7_MASK) >> LDSTR_IMM7_SHIFT;
+	opc = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
+	v = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
 
-	class = (in & LDSTR_CLASS_MASK) >> LDSTR_CLASS_SHIFT;
-
-	/*
-	 * Not all classes use all registers but it's simpler to extract them
-	 * all regardless.
-	 */
-	lsin.rm.id = rm.id = (in & LDSTR_RM_MASK) >> LDSTR_RM_SHIFT;
-	lsin.rn.id = rn.id = (in & LDSTR_RN_MASK) >> LDSTR_RN_SHIFT;
-	lsin.rt.id = rt.id = (in & LDSTR_RT_MASK) >> LDSTR_RT_SHIFT;
-	lsin.rt2.id = rt2.id = (in & LDSTR_RT2_MASK) >> LDSTR_RT2_SHIFT;
-
-	lsin.rn.flags = rn.flags = A64_REGFLAGS_SP;
-	lsin.rn.width = rn.width = A64_REGWIDTH_64;
-
-	switch (class) {
-	case LDSTR_CLASS_EXCLUSIVE:
-		return (a64_dis_ldstr_excl(dhp, in, buf, buflen, &lsin));
-	case LDSTR_CLASS_REG_LITERAL:
-		return (a64_dis_ldstr_reg_lit(dhp, in, buf, buflen, &lsin));
-	case 5:
-		/* reg pair */
-		imm = (in & LDSTR_IMM7_MASK) >> LDSTR_IMM7_SHIFT;
-		opc = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
-		v = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
-		opmask = 0xc4400000;
-
-		for (op = a64_ldstr_opcodes; op->targ != 0xffffffff; op++) {
-			if ((in & opmask) == op->targ)
-				break;
-		}
-
-		if ((in & A64_LDSTR_NOALLOC_MASK) == A64_LDSTR_NOALLOC_TARG)
-			opname = op->name_noalloc;
-		else
-			opname = op->name_regpair;
-
-		if (opname == NULL)
-			return (-1);
-
-		switch (op->regflags) {
-		case A64_REGFLAGS_NONE:
-			if (opc)
-				rt.width = A64_REGWIDTH_64;
+	for (lsin->op = a64_ldstr_opcodes;
+	    lsin->op->targ != LDSTR_OPCODE_TARG_INVALID; lsin->op++) {
+		if ((in & LDSTR_OPCODE_MASK_REG_PAIR) == lsin->op->targ)
 			break;
-		case A64_REGFLAGS_SIMD:
-			switch (opc) {
-			case 0:
-				rt.width = A64_REGWIDTH_SIMD_32;
-				break;
-			case 1:
-				rt.width = A64_REGWIDTH_SIMD_64;
-				break;
-			case 2:
-				rt.width = A64_REGWIDTH_SIMD_128;
-				break;
-			default:
-				return (-1);
-			}
+	}
+
+	if ((in & A64_LDSTR_NOALLOC_MASK) == A64_LDSTR_NOALLOC_TARG)
+		lsin->opname = lsin->op->name_noalloc;
+	else
+		lsin->opname = lsin->op->name_regpair;
+
+	if (lsin->opname == NULL)
+		return (-1);
+
+	switch (lsin->op->regflags) {
+	case A64_REGFLAGS_NONE:
+		if (opc != 0)
+			lsin->rt.width = A64_REGWIDTH_64;
+		break;
+	case A64_REGFLAGS_SIMD:
+		switch (opc) {
+		case 0:
+			lsin->rt.width = A64_REGWIDTH_SIMD_32;
+			break;
+		case 1:
+			lsin->rt.width = A64_REGWIDTH_SIMD_64;
+			break;
+		case 2:
+			lsin->rt.width = A64_REGWIDTH_SIMD_128;
 			break;
 		default:
 			return (-1);
 		}
-		rt2.width = rt.width;
-		if (imm & LDSTR_IMM7_SIGN_MASK)
-			imm |= LDSTR_IMM7_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM7_POS_SIGN;
+		break;
+	default:
+		return (-1);
+	}
+	lsin->rt2.width = lsin->rt.width;
+	if ((imm & LDSTR_IMM7_SIGN_MASK) != 0)
+		imm |= LDSTR_IMM7_NEG_SIGN;
+	else
+		imm &= LDSTR_IMM7_POS_SIGN;
 
-		if (v) {
-			switch (rt.width) {
+	if (v != 0) {
+		switch (lsin->rt.width) {
+		case A64_REGWIDTH_SIMD_32:
+			imm <<= 2;
+			break;
+		case A64_REGWIDTH_SIMD_64:
+			imm <<= 3;
+			break;
+		case A64_REGWIDTH_SIMD_128:
+			imm <<= 4;
+			break;
+		default:
+			break;
+		}
+	} else if (opc == 1) {
+		imm <<= 2;
+	} else {
+		imm <<= (lsin->rt.width == A64_REGWIDTH_64) ? 3 : 2;
+	}
+
+	if ((in & A64_BIT_23_MASK) && (in & A64_BIT_24_MASK)) {
+		len = dis_snprintf(buf, buflen,
+		    "%s %s, %s, [%s, #%d]!",
+		    lsin->opname,
+		    a64_reg_name(lsin->rt), a64_reg_name(lsin->rt2),
+		    a64_reg_name(lsin->rn), imm);
+	} else if (in & A64_BIT_23_MASK) {
+		len = dis_snprintf(buf, buflen,
+		    "%s %s, %s, [%s], #%d",
+		    lsin->opname,
+		    a64_reg_name(lsin->rt), a64_reg_name(lsin->rt2),
+		    a64_reg_name(lsin->rn), imm);
+	} else if (imm) {
+		len = dis_snprintf(buf, buflen,
+		    "%s %s, %s, [%s, #%d]",
+		    lsin->opname,
+		    a64_reg_name(lsin->rt), a64_reg_name(lsin->rt2),
+		    a64_reg_name(lsin->rn), imm);
+	} else {
+		len = dis_snprintf(buf, buflen,
+		    "%s %s, %s, [%s]",
+		    lsin->opname,
+		    a64_reg_name(lsin->rt), a64_reg_name(lsin->rt2),
+		    a64_reg_name(lsin->rn));
+	}
+
+	return (len < buflen ? 0 : -1);
+}
+
+static int
+a64_dis_ldstr_reg(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
+    a64_ldstr_insn_t *lsin)
+{
+	uint8_t size, opc, v, regtype, option, sbit;
+	uint32_t imm;
+	size_t len;
+	int amount = -1;
+
+	size = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
+	opc = (in & LDSTR_OPC_MASK) >> LDSTR_OPC_SHIFT;
+	v = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
+
+	for (lsin->op = a64_ldstr_opcodes;
+	    lsin->op->targ != LDSTR_OPCODE_TARG_INVALID; lsin->op++) {
+		if ((in & LDSTR_OPCODE_MASK_REG) == lsin->op->targ)
+			break;
+	}
+
+	if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG) {
+		lsin->opname = lsin->op->name_unpriv;
+	} else if ((in & A64_LDSTR_UNSCALE_MASK) == A64_LDSTR_UNSCALE_TARG) {
+		lsin->opname = lsin->op->name_unscaled;
+	} else {
+		lsin->opname = lsin->op->name_reg;
+	}
+
+	switch (lsin->op->regflags) {
+	case A64_REGFLAGS_NONE:
+		if (opc == 2 || size == 3)
+			lsin->rt.width = A64_REGWIDTH_64;
+		break;
+	case A64_REGFLAGS_SIMD:
+		switch (size) {
+		case 0:
+			lsin->rt.width = opc < 2 ? A64_REGWIDTH_SIMD_8 :
+			    A64_REGWIDTH_SIMD_128;
+			break;
+		case 1:
+			lsin->rt.width = A64_REGWIDTH_SIMD_16;
+			break;
+		case 2:
+			lsin->rt.width = A64_REGWIDTH_SIMD_32;
+			break;
+		case 3:
+			lsin->rt.width = A64_REGWIDTH_SIMD_64;
+			break;
+		}
+		break;
+	default:
+		return (-1);
+	}
+
+	if (in & A64_BIT_24_MASK) {
+		imm = (in & LDSTR_IMM12_MASK) >> LDSTR_IMM12_SHIFT;
+		// 00 0 00	0
+		// 00 0 10	0
+		// 00 1 00	<< simd size 1,2,3,4,5
+		// 00 1 10	same
+		// 01 0 00	<< 1
+		// 01 0 10	<< 1
+		// 01 1 00	simd
+		// 10 0 00	<< 32/64 2,3
+		// 10 0 10	<< 2
+		// 10 1 00	simd
+		// 11 0 00	<< 32/64 2,3
+		// 11 0 10	<< 3
+		// 11 1 00	simd
+		if (v != 0) {
+			switch (lsin->rt.width) {
+			case A64_REGWIDTH_SIMD_16:
+				imm <<= 1;
+				break;
 			case A64_REGWIDTH_SIMD_32:
 				imm <<= 2;
 				break;
@@ -2581,421 +2673,317 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			default:
 				break;
 			}
-		} else if (opc == 1) {
-			imm <<= 2;
-		} else {
-			imm <<= (rt.width == A64_REGWIDTH_64) ? 3 : 2;
-		}
-
-		if ((in & A64_BIT_23_MASK) && (in & A64_BIT_24_MASK)) {
-			len = dis_snprintf(buf, buflen,
-			    "%s %s, %s, [%s, #%d]!",
-			    opname, a64_reg_name(rt), a64_reg_name(rt2),
-			    a64_reg_name(rn), imm);
-		} else if (in & A64_BIT_23_MASK) {
-			len = dis_snprintf(buf, buflen,
-			    "%s %s, %s, [%s], #%d",
-			    opname, a64_reg_name(rt), a64_reg_name(rt2),
-			    a64_reg_name(rn), imm);
-		} else if (imm) {
-			len = dis_snprintf(buf, buflen,
-			    "%s %s, %s, [%s, #%d]",
-			    opname, a64_reg_name(rt), a64_reg_name(rt2),
-			    a64_reg_name(rn), imm);
-		} else {
-			len = dis_snprintf(buf, buflen,
-			    "%s %s, %s, [%s]",
-			    opname, a64_reg_name(rt), a64_reg_name(rt2),
-			    a64_reg_name(rn));
-		}
-
-		return (len < buflen ? 0 : -1);
-	case 7:
-		/* Load/store register */
-		opmask = 0xc4c00000;
-		size = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
-		opc = (in & LDSTR_OPC_MASK) >> LDSTR_OPC_SHIFT;
-		v = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
-		for (op = a64_ldstr_opcodes; op->targ != 0xffffffff; op++) {
-			if ((in & opmask) == op->targ)
-				break;
-		}
-		if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG) {
-			opname = op->name_unpriv;
-		} else if ((in & A64_LDSTR_UNSCALE_MASK) ==
-		    A64_LDSTR_UNSCALE_TARG) {
-			opname = op->name_unscaled;
-		} else {
-			opname = op->name_reg;
-		}
-
-		switch (op->regflags) {
-			case A64_REGFLAGS_NONE:
-				if (opc == 2 || size == 3)
-					rt.width = A64_REGWIDTH_64;
-				break;
-			case A64_REGFLAGS_SIMD:
-				switch (size) {
-					case 0:
-						rt.width = (opc < 2) ?
-						    A64_REGWIDTH_SIMD_8 :
-						    A64_REGWIDTH_SIMD_128;
-						break;
-					case 1:
-						rt.width = A64_REGWIDTH_SIMD_16;
-						break;
-					case 2:
-						rt.width = A64_REGWIDTH_SIMD_32;
-						break;
-					case 3:
-						rt.width = A64_REGWIDTH_SIMD_64;
-						break;
-				}
-				break;
-			default:
-				return (-1);
-		}
-		if (in & A64_BIT_24_MASK) {
-			imm = (in & LDSTR_IMM12_MASK) >> LDSTR_IMM12_SHIFT;
-			// 00 0 00	0
-			// 00 0 10	0
-			// 00 1 00	<< simd size 1,2,3,4,5
-			// 00 1 10	same
-			// 01 0 00	<< 1
-			// 01 0 10	<< 1
-			// 01 1 00	simd
-			// 10 0 00	<< 32/64 2,3
-			// 10 0 10	<< 2
-			// 10 1 00	simd
-			// 11 0 00	<< 32/64 2,3
-			// 11 0 10	<< 3
-			// 11 1 00	simd
-			if (v) {
-				switch (rt.width) {
-					case A64_REGWIDTH_SIMD_16:
-						imm <<= 1;
-						break;
-					case A64_REGWIDTH_SIMD_32:
-						imm <<= 2;
-						break;
-					case A64_REGWIDTH_SIMD_64:
-						imm <<= 3;
-						break;
-					case A64_REGWIDTH_SIMD_128:
-						imm <<= 4;
-						break;
-					default:
-						break;
-				}
-			} else if (size == 1) {
-				imm <<= 1;
-			} else if (size == 2) {
-				if (opc) {
-					imm <<= 2;
-				} else {
-					imm <<= (rt.width == A64_REGWIDTH_64) ?
-					    3 : 2;
-				}
-			} else if (size == 3) {
-				imm <<= (rt.width == A64_REGWIDTH_64) ? 3 : 2;
+		} else if (size == 1) {
+			imm <<= 1;
+		} else if (size == 2) {
+			if (opc) {
+				imm <<= 2;
+			} else {
+				imm <<= (lsin->rt.width == A64_REGWIDTH_64) ?
+				    3 : 2;
 			}
+		} else if (size == 3) {
+			imm <<= (lsin->rt.width == A64_REGWIDTH_64) ? 3 : 2;
+		}
 
 #if 0
-			if (imm & LDSTR_IMM12_SIGN_MASK)
-				imm |= LDSTR_IMM12_NEG_SIGN;
-			else
-				imm &= LDSTR_IMM12_POS_SIGN;
+		if (imm & LDSTR_IMM12_SIGN_MASK)
+			imm |= LDSTR_IMM12_NEG_SIGN;
+		else
+			imm &= LDSTR_IMM12_POS_SIGN;
 #endif
-			/* XXX: prfm */
-			if (size == 3 && opc == 2) {
+		/* XXX: prfm */
+		if (size == 3 && opc == 2) {
 			if (imm) {
-				if (a64_prefetch_ops[rt.id]) {
+				if (a64_prefetch_ops[lsin->rt.id]) {
 					len = dis_snprintf(buf, buflen,
 					    "%s %s, [%s, #%d]",
-					    opname, a64_prefetch_ops[rt.id],
-					    a64_reg_name(rn), imm);
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn), imm);
 				} else {
 					len = dis_snprintf(buf, buflen,
 					    "%s #0x%02x, [%s, #%d]",
-					    opname, rt.id, a64_reg_name(rn),
-					    imm);
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn), imm);
 				}
 			} else {
-				if (a64_prefetch_ops[rt.id]) {
+				if (a64_prefetch_ops[lsin->rt.id]) {
 					len = dis_snprintf(buf, buflen,
 					    "%s %s, [%s]",
-					    opname, a64_prefetch_ops[rt.id],
-					    a64_reg_name(rn));
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn));
 				} else {
 					len = dis_snprintf(buf, buflen,
 					    "%s #0x%02x, [%s]",
-					    opname, rt.id, a64_reg_name(rn));
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn));
 				}
 			}
-			} else {
-				if (imm) {
-					len = dis_snprintf(buf, buflen,
-					    "%s %s, [%s, #%d]",
-					    opname, a64_reg_name(rt),
-					    a64_reg_name(rn), imm);
-				} else {
-					len = dis_snprintf(buf, buflen,
-					    "%s %s, [%s]",
-					    opname, a64_reg_name(rt),
-					    a64_reg_name(rn));
-				}
-			}
-			return (len < buflen ? 0 : -1);
 		} else {
-			imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
-			if (imm & LDSTR_IMM9_SIGN_MASK)
-				imm |= LDSTR_IMM9_NEG_SIGN;
-			else
-				imm &= LDSTR_IMM9_POS_SIGN;
-		}
-
-		if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG) {
 			if (imm) {
 				len = dis_snprintf(buf, buflen,
 				    "%s %s, [%s, #%d]",
-				    opname, a64_reg_name(rt), a64_reg_name(rn),
-				    imm);
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn), imm);
 			} else {
 				len = dis_snprintf(buf, buflen,
 				    "%s %s, [%s]",
-				    opname, a64_reg_name(rt), a64_reg_name(rn),
-				    imm);
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn));
 			}
-			return (len < buflen ? 0 : -1);
-		}
-
-		regtype = (in & LDSTR_CLASS_REG_TYPE_MASK) >>
-		    LDSTR_CLASS_REG_TYPE_SHIFT;
-		switch (regtype) {
-			case 0:
-				/* XXX: prfum */
-				if (size == 3 && opc == 2) {
-					if (imm) {
-						if (a64_prefetch_ops[rt.id]) {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s %s, [%s, #%d]",
-							    opname,
-							    a64_prefetch_ops[
-							    rt.id],
-							    a64_reg_name(rn),
-							    imm);
-						} else {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s #0x%02x, "
-							    "[%s, #%d]",
-							    opname, rt.id,
-							    a64_reg_name(rn),
-							    imm);
-						}
-					} else {
-						if (a64_prefetch_ops[rt.id]) {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s %s, [%s]",
-							    opname,
-							    a64_prefetch_ops[
-							    rt.id],
-							    a64_reg_name(rn),
-							    imm);
-						} else {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s #0x%02x, [%s]",
-							    opname, rt.id,
-							    a64_reg_name(rn),
-							    imm);
-						}
-					}
-				} else {
-					if (imm) {
-						len = dis_snprintf(buf, buflen,
-						    "%s %s, [%s, #%d]",
-						    opname, a64_reg_name(rt),
-						    a64_reg_name(rn), imm);
-					} else {
-						len = dis_snprintf(buf, buflen,
-						    "%s %s, [%s]",
-						    opname, a64_reg_name(rt),
-						    a64_reg_name(rn), imm);
-					}
-				}
-				break;
-			case 1:
-				/*
-				 *  C3.3.8 Load/store register (immediate
-				 *  post-indexed)
-				 */
-				len = dis_snprintf(buf, buflen,
-				    "%s %s, [%s], #%d",
-				    opname, a64_reg_name(rt), a64_reg_name(rn),
-				    imm);
-				break;
-			case 2:
-				/*
-				 * C3.3.10 Load/store register (register
-				 * offset)
-				 */
-				option = (in & LDSTR_OPTION_MASK) >>
-				    LDSTR_OPTION_SHIFT;
-				sbit = (in & LDSTR_S_MASK) >> LDSTR_S_SHIFT;
-				if (option == 3 || option == 7)
-					rm.width = 1;
-				else
-					rm.width = 0;
-				if (sbit) {
-					switch (rt.width) {
-						case A64_REGWIDTH_32:
-						case A64_REGWIDTH_64:
-							amount = size;
-							break;
-						case A64_REGWIDTH_SIMD_8:
-							amount = 0;
-							break;
-						case A64_REGWIDTH_SIMD_16:
-							amount = 1;
-							break;
-						case A64_REGWIDTH_SIMD_32:
-							amount = 2;
-							break;
-						case A64_REGWIDTH_SIMD_64:
-							amount = 3;
-							break;
-						case A64_REGWIDTH_SIMD_128:
-							amount = 4;
-							break;
-						default:
-							break;
-					}
-				}
-				if (option == DPI_E_UXTX)
-					option = DPI_E_LSL;
-				/* XXX: abstract prfm and reduce dups */
-				if (size == 3 && opc == 2) {
-					if (sbit)
-						amount = 3;
-					if (amount >= 0) {
-						if (a64_prefetch_ops[rt.id]) {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s %s, "
-							    "[%s, %s, %s #%d]",
-							    opname,
-							    a64_prefetch_ops[
-							    rt.id],
-							    a64_reg_name(rn),
-							    a64_reg_name(rm),
-							    a64_dataproc_extends
-							    [option],
-							    amount);
-						} else {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s #0x%02x, "
-							    "[%s, %s, %s #%d]",
-							    opname, rt.id,
-							    a64_reg_name(rn),
-							    a64_reg_name(rm),
-							    a64_dataproc_extends
-							    [option],
-							    amount);
-						}
-					} else if (option != DPI_E_LSL) {
-						if (a64_prefetch_ops[rt.id]) {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s %s, "
-							    "[%s, %s, %s]",
-							    opname,
-							    a64_prefetch_ops[
-							    rt.id],
-							    a64_reg_name(rn),
-							    a64_reg_name(rm),
-							    a64_dataproc_extends
-							    [option]);
-						} else {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s #0x%02x, "
-							    "[%s, %s, %s]",
-							    opname, rt.id,
-							    a64_reg_name(rn),
-							    a64_reg_name(rm),
-							    a64_dataproc_extends
-							    [option]);
-						}
-					} else {
-						if (a64_prefetch_ops[rt.id]) {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s %s, [%s, %s]",
-							    opname,
-							    a64_prefetch_ops[
-							    rt.id],
-							    a64_reg_name(rn),
-							    a64_reg_name(rm));
-						} else {
-							len = dis_snprintf(buf,
-							    buflen,
-							    "%s #0x%02x, "
-							    "[%s, %s]", opname,
-							    rt.id,
-							    a64_reg_name(rn),
-							    a64_reg_name(rm));
-						}
-					}
-				} else {
-					if (amount >= 0) {
-						len = dis_snprintf(buf, buflen,
-						    "%s %s, [%s, %s, %s #%d]",
-						    opname, a64_reg_name(rt),
-						    a64_reg_name(rn),
-						    a64_reg_name(rm),
-						    a64_dataproc_extends[
-						    option],
-						    amount);
-					} else if (option != DPI_E_LSL) {
-						len = dis_snprintf(buf, buflen,
-						    "%s %s, [%s, %s, %s]",
-						    opname, a64_reg_name(rt),
-						    a64_reg_name(rn),
-						    a64_reg_name(rm),
-						    a64_dataproc_extends[
-						    option]);
-					} else {
-						len = dis_snprintf(buf, buflen,
-						    "%s %s, [%s, %s]",
-						    opname, a64_reg_name(rt),
-						    a64_reg_name(rn),
-						    a64_reg_name(rm)); }
-				}
-				break;
-			case 3:
-				/*
-				 * C3.3.9 Load/store register (immediate
-				 * pre-indexed)
-				 */
-				len = dis_snprintf(buf, buflen,
-				    "%s %s, [%s, #%d]!", opname,
-				    a64_reg_name(rt), a64_reg_name(rn), imm);
-				break;
 		}
 		return (len < buflen ? 0 : -1);
+	}
+
+	imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
+	if (imm & LDSTR_IMM9_SIGN_MASK)
+		imm |= LDSTR_IMM9_NEG_SIGN;
+	else
+		imm &= LDSTR_IMM9_POS_SIGN;
+
+	if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG) {
+		if (imm) {
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, [%s, #%d]",
+			    lsin->opname, a64_reg_name(lsin->rt),
+			    a64_reg_name(lsin->rn), imm);
+		} else {
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, [%s]",
+			    lsin->opname, a64_reg_name(lsin->rt),
+			    a64_reg_name(lsin->rn), imm);
+		}
+		return (len < buflen ? 0 : -1);
+	}
+
+	regtype = (in & LDSTR_CLASS_REG_TYPE_MASK) >>
+	    LDSTR_CLASS_REG_TYPE_SHIFT;
+
+	switch (regtype) {
+	case 0:
+		/* XXX: prfum */
+		if (size == 3 && opc == 2) {
+			if (imm) {
+				if (a64_prefetch_ops[lsin->rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s, #%d]",
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn), imm);
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s, #%d]",
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn), imm);
+				}
+			} else {
+				if (a64_prefetch_ops[lsin->rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s]",
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn), imm);
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s]",
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn), imm);
+				}
+			}
+		} else {
+			if (imm) {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s, #%d]",
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn), imm);
+			} else {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s]",
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn), imm);
+			}
+		}
+		break;
+	case 1:
+		/*
+		 *  C3.3.8 Load/store register (immediate post-indexed)
+		 */
+		len = dis_snprintf(buf, buflen,
+		    "%s %s, [%s], #%d", lsin->opname,
+		    a64_reg_name(lsin->rt), a64_reg_name(lsin->rn), imm);
+		break;
+	case 2:
+		/*
+		 * C3.3.10 Load/store register (register offset)
+		 */
+		option = (in & LDSTR_OPTION_MASK) >> LDSTR_OPTION_SHIFT;
+		sbit = (in & LDSTR_S_MASK) >> LDSTR_S_SHIFT;
+
+		if (option == 3 || option == 7)
+			lsin->rm.width = 1;
+		else
+			lsin->rm.width = 0;
+
+		if (sbit) {
+			switch (lsin->rt.width) {
+			case A64_REGWIDTH_32:
+			case A64_REGWIDTH_64:
+				amount = size;
+				break;
+			case A64_REGWIDTH_SIMD_8:
+				amount = 0;
+				break;
+			case A64_REGWIDTH_SIMD_16:
+				amount = 1;
+				break;
+			case A64_REGWIDTH_SIMD_32:
+				amount = 2;
+				break;
+			case A64_REGWIDTH_SIMD_64:
+				amount = 3;
+				break;
+			case A64_REGWIDTH_SIMD_128:
+				amount = 4;
+				break;
+			default:
+				break;
+			}
+		}
+		if (option == DPI_E_UXTX)
+			option = DPI_E_LSL;
+
+		/* XXX: abstract prfm and reduce dups */
+		if (size == 3 && opc == 2) {
+			if (sbit)
+				amount = 3;
+			if (amount >= 0) {
+				if (a64_prefetch_ops[lsin->rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s, %s, %s #%d]",
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn),
+					    a64_reg_name(lsin->rm),
+					    a64_dataproc_extends[option],
+					    amount);
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s, %s, %s #%d]",
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn),
+					    a64_reg_name(lsin->rm),
+					    a64_dataproc_extends[option],
+					    amount);
+				}
+			} else if (option != DPI_E_LSL) {
+				if (a64_prefetch_ops[lsin->rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s, %s, %s]",
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn),
+					    a64_reg_name(lsin->rm),
+					    a64_dataproc_extends[option]);
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s, %s, %s]",
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn),
+					    a64_reg_name(lsin->rm),
+					    a64_dataproc_extends[option]);
+				}
+			} else {
+				if (a64_prefetch_ops[lsin->rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s, %s]",
+					    lsin->opname,
+					    a64_prefetch_ops[lsin->rt.id],
+					    a64_reg_name(lsin->rn),
+					    a64_reg_name(lsin->rm));
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s, %s]",
+					    lsin->opname, lsin->rt.id,
+					    a64_reg_name(lsin->rn),
+					    a64_reg_name(lsin->rm));
+				}
+			}
+		} else {
+			if (amount >= 0) {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s, %s, %s #%d]",
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn),
+				    a64_reg_name(lsin->rm),
+				    a64_dataproc_extends[option],
+				    amount);
+			} else if (option != DPI_E_LSL) {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s, %s, %s]",
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn),
+				    a64_reg_name(lsin->rm),
+				    a64_dataproc_extends[option]);
+			} else {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s, %s]",
+				    lsin->opname, a64_reg_name(lsin->rt),
+				    a64_reg_name(lsin->rn),
+				    a64_reg_name(lsin->rm));
+			}
+		}
+		break;
+	case 3:
+		/*
+		 * C3.3.9 Load/store register (immediate pre-indexed)
+		 */
+		len = dis_snprintf(buf, buflen,
+		    "%s %s, [%s, #%d]!", lsin->opname,
+		    a64_reg_name(lsin->rt), a64_reg_name(lsin->rn), imm);
+		break;
+	}
+
+	return (len < buflen ? 0 : -1);
+}
+
+static int
+a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
+{
+	a64_ldstr_insn_t lsin;
+	uint8_t class;
+	size_t len;
+
+	bzero(&lsin, sizeof (a64_ldstr_insn_t));
+
+	class = (in & LDSTR_CLASS_MASK) >> LDSTR_CLASS_SHIFT;
+
+	/*
+	 * Not all classes use all registers but it's simpler to extract them
+	 * all regardless.
+	 */
+	lsin.rm.id = (in & LDSTR_RM_MASK) >> LDSTR_RM_SHIFT;
+	lsin.rn.id = (in & LDSTR_RN_MASK) >> LDSTR_RN_SHIFT;
+	lsin.rt.id = (in & LDSTR_RT_MASK) >> LDSTR_RT_SHIFT;
+	lsin.rt2.id = (in & LDSTR_RT2_MASK) >> LDSTR_RT2_SHIFT;
+
+	lsin.rn.flags = A64_REGFLAGS_SP;
+	lsin.rn.width = A64_REGWIDTH_64;
+
+	switch (class) {
+	case LDSTR_CLASS_EXCLUSIVE:
+		return (a64_dis_ldstr_excl(dhp, in, buf, buflen, &lsin));
+	case LDSTR_CLASS_REG_LITERAL:
+		return (a64_dis_ldstr_reg_lit(dhp, in, buf, buflen, &lsin));
+	case LDSTR_CLASS_REG_PAIR:
+		return (a64_dis_ldstr_reg_pair(dhp, in, buf, buflen, &lsin));
+	case LDSTR_CLASS_REG:
+		return (a64_dis_ldstr_reg(dhp, in, buf, buflen, &lsin));
 	default:
 		len = dis_snprintf(buf, buflen, "class=%d\n", class);
 		break;
 	}
-
-	if (opname == NULL)
-		return (-1);
-
-	len = dis_snprintf(buf, buflen, "%s %s", opname, a64_reg_name(rt));
 
 	return (len < buflen ? 0 : -1);
 }
