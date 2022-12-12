@@ -470,18 +470,6 @@ a64_reg_name(a64_reg_t reg)
  * Handle printing of <Vn>.<Ta> or {<Vn>.<Ta> ...} sections based on the number
  * of registers and their arrangements.
  */
-#if 0
-static size_t
-a64_print_vreg(char *buf, size_t buflen, a64_reg_t v)
-{
-	size_t len;
-
-	len = dis_snprintf(buf, buflen, "%s.%s", a64_reg_name(v),
-	    a64_reg_arr_names[v.arr]);
-
-	return (len);
-}
-#endif
 static size_t
 a64_print_vregs(char *buf, size_t buflen, a64_reg_t v1, int nregs)
 {
@@ -493,7 +481,7 @@ a64_print_vregs(char *buf, size_t buflen, a64_reg_t v1, int nregs)
 	v3.id = ((v1.id + 2) % 32);
 	v4.id = ((v1.id + 3) % 32);
 
-	switch(nregs) {
+	switch (nregs) {
 	case 1:
 		len = dis_snprintf(buf, buflen, "{%s.%s}",
 		    a64_reg_name(v1), a64_reg_arr_names[v1.arr]);
@@ -504,28 +492,30 @@ a64_print_vregs(char *buf, size_t buflen, a64_reg_t v1, int nregs)
 		    a64_reg_name(v2), a64_reg_arr_names[v2.arr]);
 		break;
 	case 3:
-		if (v3.id > v1.id)
+		if (v3.id > v1.id) {
 			len = dis_snprintf(buf, buflen, "{%s.%s-%s.%s}",
 			    a64_reg_name(v1), a64_reg_arr_names[v1.arr],
 			    a64_reg_name(v3), a64_reg_arr_names[v3.arr]);
-		else
+		} else {
 			len = dis_snprintf(buf, buflen, "{%s.%s, %s.%s, %s.%s}",
 			    a64_reg_name(v1), a64_reg_arr_names[v1.arr],
 			    a64_reg_name(v2), a64_reg_arr_names[v2.arr],
 			    a64_reg_name(v3), a64_reg_arr_names[v3.arr]);
+		}
 		break;
 	case 4:
-		if (v4.id > v1.id)
+		if (v4.id > v1.id) {
 			len = dis_snprintf(buf, buflen, "{%s.%s-%s.%s}",
 			    a64_reg_name(v1), a64_reg_arr_names[v1.arr],
 			    a64_reg_name(v4), a64_reg_arr_names[v4.arr]);
-		else
+		} else {
 			len = dis_snprintf(buf, buflen,
 			    "{%s.%s, %s.%s, %s.%s, %s.%s}",
 			    a64_reg_name(v1), a64_reg_arr_names[v1.arr],
 			    a64_reg_name(v2), a64_reg_arr_names[v2.arr],
 			    a64_reg_name(v3), a64_reg_arr_names[v3.arr],
 			    a64_reg_name(v4), a64_reg_arr_names[v4.arr]);
+		}
 		break;
 	}
 
@@ -932,8 +922,8 @@ typedef enum a64_dataproc_extend_type {
 } a64_dataproc_extend_type_t;
 
 typedef struct a64_dataproc_shifter_imm {
-	uint64_t dataprocsi_imm;			/* Immediate value */
-	uint8_t dataprocsi_shift;			/* Shift amount */
+	uint64_t dataprocsi_imm;		/* Immediate value */
+	uint8_t dataprocsi_shift;		/* Shift amount */
 	uint8_t dataprocsi_inv;			/* Whether to NOT(imm) */
 } a64_dataproc_shifter_imm_t;
 
@@ -952,7 +942,7 @@ typedef struct a64_dataproc_shifter_xreg {
 /* {, <shift> #<amount>} */
 typedef struct a64_dataproc_shifter_sreg {
 	a64_dataproc_shift_type_t dataprocsr_type;	/* Shift type */
-	uint8_t dataprocsr_imm;			/* Shift value */
+	uint8_t dataprocsr_imm;				/* Shift value */
 } a64_dataproc_shifter_sreg_t;
 
 /* immediate */
@@ -966,14 +956,13 @@ typedef struct a64_dataproc_shifter_sreg {
 #define	xreg_type	dataproci_un.dataproci_si.dataprocss_type
 #define	xreg_imm	dataproci_un.dataproci_si.dataprocss_imm
 /* shifted register */
-#define sreg_type	dataproci_un.dataproci_ri.dataprocsr_type
-#define sreg_imm	dataproci_un.dataproci_ri.dataprocsr_imm
+#define	sreg_type	dataproci_un.dataproci_ri.dataprocsr_type
+#define	sreg_imm	dataproci_un.dataproci_ri.dataprocsr_imm
 
 /*
  * Taken from G.1.4 aarch64/instrs/integer/logical/movwpreferred
  */
-#if 0
-static int
+static int __unused
 a64_dis_movwpreferred(int sf, int nbit, int imms, int immr)
 {
 	int width;
@@ -994,7 +983,7 @@ a64_dis_movwpreferred(int sf, int nbit, int imms, int immr)
 
 	return (0);
 }
-#endif
+
 /*
  * Taken from G.1.4 aarch64/instrs/integer/bitfield/bfxpreferred
  */
@@ -1174,14 +1163,15 @@ a64_dis_dataproc_addsubimm(uint32_t in, a64_dataproc_t *dpi)
 	imm12 = (in & A64_DPI_IMM12_MASK) >> A64_DPI_IMM12_SHIFT;
 
 	if (dpi->opbit == 0 && dpi->sbit == 0 && imm12 == 0 && shift == 0 &&
-	    (dpi->rd.id == A64_REG_SP || dpi->rn.id == A64_REG_SP))
+	    (dpi->rd.id == A64_REG_SP || dpi->rn.id == A64_REG_SP)) {
 		dpi->opcode = DPI_OP_MOV_SP;
-	else if (dpi->sbit && dpi->rd.id == A64_REG_SP)
+	} else if (dpi->sbit && dpi->rd.id == A64_REG_SP) {
 		dpi->opcode = dpi->opbit ? DPI_OP_CMP_I : DPI_OP_CMN_I;
-	else if (dpi->sbit)
+	} else if (dpi->sbit) {
 		dpi->opcode = dpi->opbit ? DPI_OP_SUBS_I : DPI_OP_ADDS_I;
-	else
+	} else {
 		dpi->opcode = dpi->opbit ? DPI_OP_SUB_I : DPI_OP_ADD_I;
+	}
 
 	dpi->dpimm_imm = imm12;
 	dpi->dpimm_shift = shift;
@@ -1206,20 +1196,21 @@ a64_dis_dataproc_bitfield(uint32_t in, a64_dataproc_t *dpi)
 	switch (opc) {
 	case 0:
 		if ((dpi->sfbit == 0 && imms == 31) ||
-		    (dpi->sfbit == 1 && imms == 63))
+		    (dpi->sfbit == 1 && imms == 63)) {
 			dpi->opcode = DPI_OP_ASR_I;
-		else if (imms < immr)
+		} else if (imms < immr) {
 			dpi->opcode = DPI_OP_SBFIZ;
-		else if (a64_dis_bfxpref(dpi->sfbit, (opc & 2), imms, immr))
+		} else if (a64_dis_bfxpref(dpi->sfbit, (opc & 2), imms, immr)) {
 			dpi->opcode = DPI_OP_SBFX;
-		else if (immr == 0 && imms == 7)
+		} else if (immr == 0 && imms == 7) {
 			dpi->opcode = DPI_OP_SXTB;
-		else if (immr == 0 && imms == 15)
+		} else if (immr == 0 && imms == 15) {
 			dpi->opcode = DPI_OP_SXTH;
-		else if (immr == 0 && imms == 31)
+		} else if (immr == 0 && imms == 31) {
 			dpi->opcode = DPI_OP_SXTW;
-		else
+		} else {
 			dpi->opcode = DPI_OP_SBFM;
+		}
 		break;
 	case 1:
 		if (imms < immr)
@@ -1231,21 +1222,22 @@ a64_dis_dataproc_bitfield(uint32_t in, a64_dataproc_t *dpi)
 		break;
 	case 2:
 		if ((!dpi->sfbit && imms != 31 && (imms + 1) == immr) ||
-		     (dpi->sfbit && imms != 63 && (imms + 1) == immr))
+		    (dpi->sfbit && imms != 63 && (imms + 1) == immr)) {
 			dpi->opcode = DPI_OP_LSL_I;
-		else if ((!dpi->sfbit && imms == 31) ||
-			  (dpi->sfbit && imms == 63))
+		} else if ((!dpi->sfbit && imms == 31) ||
+		    (dpi->sfbit && imms == 63)) {
 			dpi->opcode = DPI_OP_LSR_I;
-		else if (imms < immr)
+		} else if (imms < immr) {
 			dpi->opcode = DPI_OP_UBFIZ;
-		else if (a64_dis_bfxpref(dpi->sfbit, (opc & 2), imms, immr))
+		} else if (a64_dis_bfxpref(dpi->sfbit, (opc & 2), imms, immr)) {
 			dpi->opcode = DPI_OP_UBFX;
-		else if (immr == 0 && imms == 7)
+		} else if (immr == 0 && imms == 7) {
 			dpi->opcode = DPI_OP_UXTB;
-		else if (immr == 0 && imms == 15)
+		} else if (immr == 0 && imms == 15) {
 			dpi->opcode = DPI_OP_UXTH;
-		else
+		} else {
 			dpi->opcode = DPI_OP_UBFM;
+		}
 		break;
 	}
 	/* Set shifter type and values based on operand */
@@ -1560,20 +1552,26 @@ a64_dis_dataproc_condsel(uint32_t in, a64_dataproc_t *dpi)
 		dpi->opcode = DPI_OP_CSEL;
 		break;
 	case 1:
-		if (dpi->rn.id == dpi->rm.id && dpi->rn.id != A64_REG_ZR && alias)
+		if (dpi->rn.id == dpi->rm.id && dpi->rn.id != A64_REG_ZR &&
+		    alias) {
 			dpi->opcode = DPI_OP_CINC;
-		else if (dpi->rn.id == dpi->rm.id && dpi->rn.id == A64_REG_ZR && alias)
+		} else if (dpi->rn.id == dpi->rm.id &&
+		    dpi->rn.id == A64_REG_ZR && alias) {
 			dpi->opcode = DPI_OP_CSET;
-		else
+		} else {
 			dpi->opcode = DPI_OP_CSINC;
+		}
 		break;
 	case 2:
-		if (dpi->rn.id == dpi->rm.id && dpi->rn.id != A64_REG_ZR && alias)
+		if (dpi->rn.id == dpi->rm.id && dpi->rn.id != A64_REG_ZR &&
+		    alias) {
 			dpi->opcode = DPI_OP_CINV;
-		else if (dpi->rn.id == dpi->rm.id && dpi->rn.id == A64_REG_ZR && alias)
+		} else if (dpi->rn.id == dpi->rm.id &&
+		    dpi->rn.id == A64_REG_ZR && alias) {
 			dpi->opcode = DPI_OP_CSETM;
-		else
+		} else {
 			dpi->opcode = DPI_OP_CSINV;
+		}
 		break;
 	case 3:
 		if (dpi->rn.id == dpi->rm.id && alias)
@@ -1804,16 +1802,14 @@ a64_dis_addlabel(dis_handle_t *dhp, uint64_t addr, char *buf, size_t buflen)
 {
 	size_t len = 0;
 
-	if (dhp->dh_lookup(dhp->dh_data, addr, NULL, 0, NULL, NULL) != 0) {
+	if (dhp->dh_lookup(dhp->dh_data, addr, NULL, 0, NULL, NULL) != 0)
 		return;
-	}
 
 	len = dis_snprintf(buf, buflen, "\t<");
 	if (len >= buflen)
 		return;
 
-	dhp->dh_lookup(dhp->dh_data, addr, buf + len, buflen - len,
-	    NULL, NULL);
+	dhp->dh_lookup(dhp->dh_data, addr, buf + len, buflen - len, NULL, NULL);
 	(void) strlcat(buf, ">", buflen);
 }
 
@@ -1906,45 +1902,49 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		if (dop->flags & DPI_SPREGS_d)
 			dpi.rd.flags |= A64_REGFLAGS_SP;
 		if (dop->flags & DPI_WREGS_d ||
-		   (dop->flags & DPI_WDREGS_d &&
-		    dpi.rd.flags & A64_REGFLAGS_32))
+		    (dop->flags & DPI_WDREGS_d &&
+		    dpi.rd.flags & A64_REGFLAGS_32)) {
 			dpi.rd.width = A64_REGWIDTH_32;
-		else
+		} else {
 			dpi.rd.width = (dpi.sfbit) ?
 			    A64_REGWIDTH_64 : A64_REGWIDTH_32;
+		}
 	}
 	if (dop->regs & DPI_REGS_n) {
 		if (dop->flags & DPI_SPREGS_n)
 			dpi.rn.flags |= A64_REGFLAGS_SP;
 		if (dop->flags & DPI_WREGS_n ||
-		   (dop->flags & DPI_WDREGS_n &&
-		    dpi.rn.flags & A64_REGFLAGS_32))
+		    (dop->flags & DPI_WDREGS_n &&
+		    dpi.rn.flags & A64_REGFLAGS_32)) {
 			dpi.rn.width = A64_REGWIDTH_32;
-		else
+		} else {
 			dpi.rn.width = (dpi.sfbit) ?
 			    A64_REGWIDTH_64 : A64_REGWIDTH_32;
+		}
 	}
 	if (dop->regs & DPI_REGS_m) {
 		if (dop->flags & DPI_SPREGS_m)
 			dpi.rm.flags |= A64_REGFLAGS_SP;
 		if (dop->flags & DPI_WREGS_m ||
-		   (dop->flags & DPI_WDREGS_m &&
-		    dpi.rm.flags & A64_REGFLAGS_32))
+		    (dop->flags & DPI_WDREGS_m &&
+		    dpi.rm.flags & A64_REGFLAGS_32)) {
 			dpi.rm.width = A64_REGWIDTH_32;
-		else
+		} else {
 			dpi.rm.width = (dpi.sfbit) ?
 			    A64_REGWIDTH_64 : A64_REGWIDTH_32;
+		}
 	}
 	if (dop->regs & DPI_REGS_a) {
 		if (dop->flags & DPI_SPREGS_a)
 			dpi.ra.flags |= A64_REGFLAGS_SP;
 		if (dop->flags & DPI_WREGS_a ||
-		   (dop->flags & DPI_WDREGS_a &&
-		    dpi.ra.flags & A64_REGFLAGS_32))
+		    (dop->flags & DPI_WDREGS_a &&
+		    dpi.ra.flags & A64_REGFLAGS_32)) {
 			dpi.ra.width = A64_REGWIDTH_32;
-		else
+		} else {
 			dpi.ra.width = (dpi.sfbit) ?
 			    A64_REGWIDTH_64 : A64_REGWIDTH_32;
+		}
 	}
 
 	/*
@@ -2037,43 +2037,50 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		imm <<= (dpi.dpimm_shift * 16);
 		if (dpi.imm_inv)
 			imm = ~imm;
-		if (dpi.sfbit)
-			len = dis_snprintf(buf, buflen, ", #0x%" PRIx64 "", imm);
-		else
+		if (dpi.sfbit) {
+			len = dis_snprintf(buf, buflen, ", #0x%" PRIx64 "",
+			    imm);
+		} else {
 			len = dis_snprintf(buf, buflen, ", #0x%" PRIx32,
 			    (uint32_t)imm);
+		}
 		break;
 	case DPI_OPTYPE_SIMM:
-		if (dpi.xreg_type)
+		if (dpi.xreg_type) {
 			len = dis_snprintf(buf, buflen, ", #0x%x, lsl #%d",
 			    dpi.xreg_imm,
 			    dpi.xreg_type * 16);
-		else
+		} else {
 			len = dis_snprintf(buf, buflen, ", #0x%x",
 			    dpi.xreg_imm);
+		}
 		break;
 	/* {, <shift> #<amount>} */
 	case DPI_OPTYPE_SREG:
 		if (!(dpi.sreg_imm == 0 &&
-		      dpi.sreg_type == DPI_S_LSL))
+		    dpi.sreg_type == DPI_S_LSL)) {
 			len = dis_snprintf(buf, buflen, ", %s #%d",
 			    a64_dataproc_shifts[dpi.sreg_type],
 			    dpi.sreg_imm);
+		}
 		break;
 	/* {, <extend> {#<amount>}} */
 	case DPI_OPTYPE_XREG:
 		/* Use the LSL form under certain circumstances. */
 		if (((!dpi.sfbit && dpi.xreg_type == DPI_E_UXTW) ||
-		      (dpi.sfbit && dpi.xreg_type == DPI_E_UXTX)) &&
-		     ((!dpi.sbit && (dpi.rn.id == A64_REG_SP || dpi.rd.id == A64_REG_SP)) ||
-		       (dpi.sbit && dpi.rn.id == A64_REG_SP)))
+		    (dpi.sfbit && dpi.xreg_type == DPI_E_UXTX)) &&
+		    ((!dpi.sbit && (dpi.rn.id == A64_REG_SP ||
+		    dpi.rd.id == A64_REG_SP)) ||
+		    (dpi.sbit && dpi.rn.id == A64_REG_SP))) {
 			dpi.xreg_type = DPI_E_LSL;
+		}
 
 		/* The default lsl #0 can be elided. */
 		if (dpi.xreg_imm == 0) {
-			if (dpi.xreg_type != DPI_E_LSL)
+			if (dpi.xreg_type != DPI_E_LSL) {
 				len = dis_snprintf(buf, buflen, ", %s",
 				    a64_dataproc_extends[dpi.xreg_type]);
+			}
 		} else
 			len = dis_snprintf(buf, buflen, ", %s #%d",
 			    a64_dataproc_extends[dpi.xreg_type],
@@ -2167,206 +2174,6 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 #define	LDSTR_IMM7_POS_SIGN	0x0000003f
 #define	LDSTR_IMM7_NEG_SIGN	0xffffffc0
 
-#if 0
-typedef struct a64_ldstr_reg_entry {
-	const char *name;
-	uint32_t targ;
-	a64_reg_width_t regwidth;
-} a64_ldstr_reg_entry_t;
-
-/*
- * Lookup table for:
- *
- * C3.3.8  Load/store register (immediate post-indexed)
- * C3.3.9  Load/store register (immediate pre-indexed)
- */
-static a64_ldstr_reg_entry_t a64_ldstr_reg_imm_opcodes[] = {
-	{"strb",	0x00000000,	A64_REGWIDTH_32},
-	{"ldrb",	0x00400000,	A64_REGWIDTH_32},
-	{"ldrsb",	0x00800000,	A64_REGWIDTH_64},
-	{"ldrsb",	0x00c00000,	A64_REGWIDTH_32},
-	{"str",		0x04000000,	A64_REGWIDTH_SIMD_8},
-	{"ldr",		0x04400000,	A64_REGWIDTH_SIMD_8},
-	{"str",		0x04800000,	A64_REGWIDTH_SIMD_128},
-	{"ldr",		0x04c00000,	A64_REGWIDTH_SIMD_128},
-	{"strh",	0x40000000,	A64_REGWIDTH_32},
-	{"ldrh",	0x40400000,	A64_REGWIDTH_32},
-	{"ldrsh",	0x40800000,	A64_REGWIDTH_64},
-	{"ldrsh",	0x40c00000,	A64_REGWIDTH_32},
-	{"str",		0x44000000,	A64_REGWIDTH_SIMD_16},
-	{"ldr",		0x44400000,	A64_REGWIDTH_SIMD_16},
-	{"str",		0x80000000,	A64_REGWIDTH_32},
-	{"ldr",		0x80400000,	A64_REGWIDTH_32},
-	{"ldrsw",	0x80800000,	A64_REGWIDTH_64},
-	{"str",		0x84000000,	A64_REGWIDTH_SIMD_32},
-	{"ldr",		0x84400000,	A64_REGWIDTH_SIMD_32},
-	{"str",		0xc0000000,	A64_REGWIDTH_64},
-	{"ldr",		0xc0400000,	A64_REGWIDTH_64},
-	{"str",		0xc4000000,	A64_REGWIDTH_SIMD_64},
-	{"ldr",		0xc4400000,	A64_REGWIDTH_SIMD_64},
-	{NULL,		0,		0}
-};
-
-/*
- * Lookup table for:
- *
- * C3.3.11 Load/store register (unprivileged)
- */
-static a64_ldstr_reg_entry_t a64_ldstr_reg_unpriv_opcodes[] = {
-	{"sttrb",	0x00000000,	A64_REGWIDTH_32},
-	{"ldtrb",	0x00400000,	A64_REGWIDTH_32},
-	{"ldtrsb",	0x00800000,	A64_REGWIDTH_64},
-	{"ldtrsb",	0x00c00000,	A64_REGWIDTH_32},
-	{"strrh",	0x40000000,	A64_REGWIDTH_32},
-	{"ldrrh",	0x40400000,	A64_REGWIDTH_32},
-	{"ldtrsh",	0x40800000,	A64_REGWIDTH_64},
-	{"ldtrsh",	0x40c00000,	A64_REGWIDTH_32},
-	{"sttr",	0x80000000,	A64_REGWIDTH_32},
-	{"ldtr",	0x80400000,	A64_REGWIDTH_32},
-	{"ldtrsw",	0x80800000,	A64_REGWIDTH_64},
-	{"sttr",	0xc0000000,	A64_REGWIDTH_64},
-	{"ldtr",	0xc0400000,	A64_REGWIDTH_64},
-	{NULL,		0,		0}
-};
-
-/*
- * C3.3.10 Load/store register (register offset)
- */
-static a64_ldstr_reg_entry_t a64_ldstr_reg_offset_opcodes[] = {
-	{"strb",	0x00000000,	A64_REGWIDTH_32},
-	{"ldrb",	0x00400000,	A64_REGWIDTH_32},
-	{"ldrsb",	0x00800000,	A64_REGWIDTH_64},
-	{"ldrsb",	0x00c00000,	A64_REGWIDTH_32},
-	{"str",		0x04000000,	A64_REGWIDTH_SIMD_8},
-	{"ldr",		0x04400000,	A64_REGWIDTH_SIMD_8},
-	{"str",		0x04800000,	A64_REGWIDTH_SIMD_128},
-	{"ldr",		0x04c00000,	A64_REGWIDTH_SIMD_128},
-	{"strh",	0x40000000,	A64_REGWIDTH_32},
-	{"ldrh",	0x40400000,	A64_REGWIDTH_32},
-	{"ldrsh",	0x40800000,	A64_REGWIDTH_64},
-	{"ldrsh",	0x40c00000,	A64_REGWIDTH_32},
-	{"str",		0x44000000,	A64_REGWIDTH_SIMD_16},
-	{"ldr",		0x44400000,	A64_REGWIDTH_SIMD_16},
-	{"str",		0x80000000,	A64_REGWIDTH_32},
-	{"ldr",		0x80400000,	A64_REGWIDTH_32},
-	{"ldrsw",	0x80800000,	A64_REGWIDTH_64},
-	{"str",		0x84000000,	A64_REGWIDTH_SIMD_32},
-	{"ldr",		0x84400000,	A64_REGWIDTH_SIMD_32},
-	{"str",		0xc0000000,	A64_REGWIDTH_64},
-	{"ldr",		0xc0400000,	A64_REGWIDTH_64},
-	{"prfm",	0xc0800000,	A64_REGWIDTH_64},
-	{"str",		0xc4000000,	A64_REGWIDTH_SIMD_64},
-	{"ldr",		0xc4400000,	A64_REGWIDTH_SIMD_64},
-	{NULL,		0,		0}
-};
-
-/*
- * C3.3.12 Load/store register (unscaled immediate)
- */
-static a64_ldstr_reg_entry_t a64_ldstr_reg_unscaled_opcodes[] = {
-	{"sturb",	0x00000000,	A64_REGWIDTH_32},
-	{"ldurb",	0x00400000,	A64_REGWIDTH_32},
-	{"ldursb",	0x00800000,	A64_REGWIDTH_64},
-	{"ldursb",	0x00c00000,	A64_REGWIDTH_32},
-	{"stur",	0x04000000,	A64_REGWIDTH_SIMD_8},
-	{"ldur",	0x04400000,	A64_REGWIDTH_SIMD_8},
-	{"stur",	0x04800000,	A64_REGWIDTH_SIMD_128},
-	{"ldur",	0x04c00000,	A64_REGWIDTH_SIMD_128},
-	{"sturh",	0x40000000,	A64_REGWIDTH_32},
-	{"ldurh",	0x40400000,	A64_REGWIDTH_32},
-	{"ldursh",	0x40800000,	A64_REGWIDTH_64},
-	{"ldursh",	0x40c00000,	A64_REGWIDTH_32},
-	{"stur",	0x44000000,	A64_REGWIDTH_SIMD_16},
-	{"ldur",	0x44400000,	A64_REGWIDTH_SIMD_16},
-	{"stur",	0x80000000,	A64_REGWIDTH_32},
-	{"ldur",	0x80400000,	A64_REGWIDTH_32},
-	{"ldursw",	0x80800000,	A64_REGWIDTH_64},
-	{"stur",	0x84000000,	A64_REGWIDTH_SIMD_32},
-	{"ldur",	0x84400000,	A64_REGWIDTH_SIMD_32},
-	{"stur",	0xc0000000,	A64_REGWIDTH_64},
-	{"ldur",	0xc0400000,	A64_REGWIDTH_64},
-	{"prfum",	0xc0800000,	A64_REGWIDTH_64},
-	{"stur",	0xc4000000,	A64_REGWIDTH_SIMD_64},
-	{"ldur",	0xc4400000,	A64_REGWIDTH_SIMD_64},
-	{NULL,		0,		0}
-};
-
-/*
- * C3.3.13 Load/store register (unsigned immediate)
- * XXX: same as C3.3.10 ? reuse ?
- */
-static a64_ldstr_reg_entry_t a64_ldstr_reg_unsigned_opcodes[] = {
-	{"strb",	0x00000000,	A64_REGWIDTH_32},
-	{"ldrb",	0x00400000,	A64_REGWIDTH_32},
-	{"ldrsb",	0x00800000,	A64_REGWIDTH_64},
-	{"ldrsb",	0x00c00000,	A64_REGWIDTH_32},
-	{"str",		0x04000000,	A64_REGWIDTH_SIMD_8},
-	{"ldr",		0x04400000,	A64_REGWIDTH_SIMD_8},
-	{"str",		0x04800000,	A64_REGWIDTH_SIMD_128},
-	{"ldr",		0x04c00000,	A64_REGWIDTH_SIMD_128},
-	{"strh",	0x40000000,	A64_REGWIDTH_32},
-	{"ldrh",	0x40400000,	A64_REGWIDTH_32},
-	{"ldrsh",	0x40800000,	A64_REGWIDTH_64},
-	{"ldrsh",	0x40c00000,	A64_REGWIDTH_32},
-	{"str",		0x44000000,	A64_REGWIDTH_SIMD_16},
-	{"ldr",		0x44400000,	A64_REGWIDTH_SIMD_16},
-	{"str",		0x80000000,	A64_REGWIDTH_32},
-	{"ldr",		0x80400000,	A64_REGWIDTH_32},
-	{"ldrsw",	0x80800000,	A64_REGWIDTH_64},
-	{"str",		0x84000000,	A64_REGWIDTH_SIMD_32},
-	{"ldr",		0x84400000,	A64_REGWIDTH_SIMD_32},
-	{"str",		0xc0000000,	A64_REGWIDTH_64},
-	{"ldr",		0xc0400000,	A64_REGWIDTH_64},
-	{"prfm",	0xc0800000,	A64_REGWIDTH_64},
-	{"str",		0xc4000000,	A64_REGWIDTH_SIMD_64},
-	{"ldr",		0xc4400000,	A64_REGWIDTH_SIMD_64},
-	{NULL,		0,		0}
-};
-
-/*
- * C3.3.7  Load/store no-allocate pair (offset)
- * C3.3.14 Load/store register pair (offset)
- * C3.3.15 Load/store register pair (post-indexed)
- * C3.3.16 Load/store register pair (pre-indexed)
- *
- * 31 30|29 27| 26|25 23| 22|21    15|14   10|9    5|4    0|
- * -----+-----+---+-----+---+--------+-------+------+------+
- *  opc |1 0 1| V |0 0 0| L |  imm7  |  Rt2  |  Rn  |  Rt  | C3.3.7
- *  opc |1 0 1| V |0 1 0| L |  imm7  |  Rt2  |  Rn  |  Rt  | C3.3.14
- *  opc |1 0 1| V |0 0 1| L |  imm7  |  Rt2  |  Rn  |  Rt  | C3.3.15
- *  opc |1 0 1| V |0 1 1| L |  imm7  |  Rt2  |  Rn  |  Rt  | C3.3.16
- */
-static a64_ldstr_reg_entry_t a64_ldstr_noalloc_opcodes[] = {
-	{"stnp",	0x00000000,	A64_REGWIDTH_32},
-	{"ldnp",	0x00400000,	A64_REGWIDTH_32},
-	{"stnp",	0x04000000,	A64_REGWIDTH_32},
-	{"ldnp",	0x04400000,	A64_REGWIDTH_32},
-	{"stnp",	0x44000000,	A64_REGWIDTH_64},
-	{"ldnp",	0x44400000,	A64_REGWIDTH_64},
-	{"stnp",	0x80000000,	A64_REGWIDTH_64},
-	{"ldnp",	0x80400000,	A64_REGWIDTH_64},
-	{"stnp",	0x84000000,	A64_REGWIDTH_SIMD_128},
-	{"ldnp",	0x84400000,	A64_REGWIDTH_SIMD_128},
-	{NULL,		0,		0}
-};
-
-static a64_ldstr_reg_entry_t a64_ldstr_regpair_opcodes[] = {
-	{"stp",		0x00000000,	A64_REGWIDTH_32},
-	{"ldp",		0x00400000,	A64_REGWIDTH_32},
-	{"stp",		0x04000000,	A64_REGWIDTH_32},
-	{"ldp",		0x04400000,	A64_REGWIDTH_32},
-	{"ldpsw",	0x40400000,	A64_REGWIDTH_64},
-	{"stp",		0x44000000,	A64_REGWIDTH_64},
-	{"ldp",		0x44400000,	A64_REGWIDTH_64},
-	{"stp",		0x80000000,	A64_REGWIDTH_64},
-	{"ldp",		0x80400000,	A64_REGWIDTH_64},
-	{"stp",		0x84000000,	A64_REGWIDTH_SIMD_128},
-	{"ldp",		0x84400000,	A64_REGWIDTH_SIMD_128},
-	{NULL,		0,		0}
-};
-
-#endif
-
 /* XXX: prfm not valid for 8/9, only 10/13 */
 typedef struct a64_ldstr_opcode_entry {
 	uint32_t targ;
@@ -2392,6 +2199,7 @@ typedef struct a64_ldstr_opcode_entry {
 	a64_reg_flags_t regflags;
 } a64_ldstr_opcode_entry_t;
 
+/* BEGIN CSTYLED */
 /*
  * 31  30|29   27| 26|25 24|23                                    5|4  0| Reg (lit)
  * ------+-------+---+-----+---------------------------------------+----+
@@ -2429,7 +2237,9 @@ typedef struct a64_ldstr_opcode_entry {
  *   size    o2  l o1 o0
  *  31-30    23 22 21 15	6	mask = 0xc0e08000
  */
+/* END CSTYLED */
 
+/* BEGIN CSTYLED */
 static a64_ldstr_opcode_entry_t a64_ldstr_opcodes[] = {
 	/* c4e08000	excl	noalloc	  reg	  unpriv    unscale   regpair */
 	{0x00000000,   "ldr",  "stxrb", "stnp",  "strb",  "sttrb",  "sturb",   "stp", 0},
@@ -2482,347 +2292,13 @@ static a64_ldstr_opcode_entry_t a64_ldstr_opcodes[] = {
 	{0xc4400000,    NULL,     NULL,   NULL,   "ldr",     NULL,   "ldur",    NULL, A64_REGFLAGS_SIMD},
 	{0xffffffff,    NULL,     NULL,   NULL,    NULL,     NULL,     NULL,    NULL, 0},
 };
+/* END CSTYLED */
 
 #define	LDSTR_OPCODE_MASK_EXCLUSIVE	0xc0e08000
 #define	LDSTR_OPCODE_MASK_REG_LIT	0xc4000000
 #define	LDSTR_OPCODE_TARG_INVALID	0xffffffff
 
-#if 0
-/* We know <29-27> == 101 as that's what got us here */
-static int
-a64_dis_ldstr_pair(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
-{
-	a64_reg_t rt, rn, rt2;
-	uint8_t imm, opc, v, l;
-	size_t len;
-
-	/* Re-use "size" as opc is different */
-	opc = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
-	v = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
-	l = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
-
-	imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
-	rn.id = (in & LDSTR_RN_MASK) >> LDSTR_RN_SHIFT;
-	rt.id = (in & LDSTR_RT_MASK) >> LDSTR_RT_SHIFT;
-	rt2.id = (in & LDSTR_RT2_MASK) >> LDSTR_RT2_SHIFT;
-		a64_ldstr_reg_entry_t *op, *op2;
-		uint32_t mask = 0xc4400000;
-		if ((in & A64_BIT23_MASK) == 0 && (in & A64_BIT24_MASK) == 0)
-			op2 = a64_ldstr_noalloc_opcodes;
-		else
-			op2 = a64_ldstr_regpair_opcodes;
-		for (op = op2; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rt.width = op->regwidth;
-		rt2.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		rn.flags = A64_REGFLAGS_SP;
-		if (op->name == NULL)
-			return (-1);
-#if 0
-		if (imm & LDSTR_IMM9_SIGN_MASK)
-			imm |= LDSTR_IMM9_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM9_POS_SIGN;
-#endif
-		len = dis_snprintf(buf, buflen, "%s %s, %s, [%s, #%d]", op->name, a64_reg_name(rt), a64_reg_name(rt2), a64_reg_name(rn), imm);
-	return (len < buflen ? 0 : -1);
-}
-
-/*
- * C3.3.8  Load/store register (immediate post-indexed)
- * C3.3.9  Load/store register (immediate pre-indexed)
- * C3.3.11 Load/store register (unprivileged)
- * C3.3.12 Load/store register (unscaled immediate)
- * C3.3.10 Load/store register (register offset)
- * C3.3.13 Load/store register (unsigned immediate)
- *
- * 31  30|29   27| 26|25 24|23 22| 21|20  16|15    13|12|11 10|9  5|4  0|
- * ------+-------+---+-----+-----+---+------+--------+--+-----+----+----+
- *  size | 1 1 1 | V | 0 0 | opc | 0 |       imm9       | 0 1 | Rn | Rt | C3.3.8
- *  size | 1 1 1 | V | 0 0 | opc | 0 |       imm9       | 1 1 | Rn | Rt | C3.3.9
- *  size | 1 1 1 | V | 0 0 | opc | 1 |  Rm  | option | S| 1 0 | Rn | Rt | C3.3.10
- *  size | 1 1 1 | V | 0 0 | opc | 0 |       imm9       | 1 0 | Rn | Rt | C3.3.11
- *  size | 1 1 1 | V | 0 0 | opc | 0 |       imm9       | 0 0 | Rn | Rt | C3.3.12
- *  size | 1 1 1 | V | 0 1 | opc |            imm12           | Rn | Rt | C3.3.13
- */
-
-/* Determine class based on XXX what? */
-#define	LDSTR_CLASS_REG_UIMM_MASK	0x3B000000
-#define	LDSTR_CLASS_REG_UIMM_TARG	0x39000000
-#define	LDSTR_CLASS_REG_IMM_POST_MASK	0x3b200c00
-#define	LDSTR_CLASS_REG_IMM_POST_TARG	0x38000400
-#define	LDSTR_CLASS_REG_IMM_PRE_MASK	0x3b200c00
-#define	LDSTR_CLASS_REG_IMM_PRE_TARG	0x38000c00
-#define	LDSTR_CLASS_REG_UNPRIV_MASK	0x3b200c00
-#define	LDSTR_CLASS_REG_UNPRIV_TARG	0x38000800
-#define	LDSTR_CLASS_REG_UNSCALED_MASK	0x3b200c00
-#define	LDSTR_CLASS_REG_UNSCALED_TARG	0x38000000
-#define	LDSTR_CLASS_REG_OFFSET_MASK	0x3b200c00
-#define	LDSTR_CLASS_REG_OFFSET_TARG	0x38200800
-
-static int
-a64_dis_ldstr_reg(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
-{
-	a64_reg_t rn, rt;
-	size_t len;
-	uint32_t imm;
-	uint8_t size, opc, v;
-
-	bzero(&rn, sizeof (rn));
-	bzero(&rt, sizeof (rt));
-
-	size = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
-	opc = (in & LDSTR_OPC_MASK) >> LDSTR_OPC_SHIFT;
-	v = (in & LDSTR_V_MASK) >> LDSTR_V_SHIFT;
-
-	rn.id = (in & LDSTR_RN_MASK) >> LDSTR_RN_SHIFT;
-	rt.id = (in & LDSTR_RT_MASK) >> LDSTR_RT_SHIFT;
-
-	if ((in & LDSTR_CLASS_REG_IMM_POST_MASK) == LDSTR_CLASS_REG_IMM_POST_TARG) {
-		a64_ldstr_reg_entry_t *op;
-		uint32_t mask = 0xc4c00000;
-		imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
-		for (op = a64_ldstr_reg_imm_opcodes; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rt.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		rn.flags = A64_REGFLAGS_SP;
-		if (op->name == NULL)
-			return (-1);
-
-		if (imm & LDSTR_IMM9_SIGN_MASK)
-			imm |= LDSTR_IMM9_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM9_POS_SIGN;
-
-		len = dis_snprintf(buf, buflen, "%s %s, [%s],#%d", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
-	} else if ((in & LDSTR_CLASS_REG_OFFSET_MASK) == LDSTR_CLASS_REG_OFFSET_TARG) {
-		a64_ldstr_reg_entry_t *op;
-		a64_reg_t rm;
-		uint8_t option, sbit;
-		int8_t amount = -1;
-		uint32_t mask = 0xc4c00000;
-		bzero(&rm, sizeof (rm));
-		for (op = a64_ldstr_reg_offset_opcodes; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rm.id = (in & LDSTR_RM_MASK) >> LDSTR_RM_SHIFT;
-		option = (in & LDSTR_OPTION_MASK) >> LDSTR_OPTION_SHIFT;
-		sbit = (in & LDSTR_S_MASK) >> LDSTR_S_SHIFT;
-		rt.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		if (option == 3 || option == 7)
-			rm.width = 1;
-		else
-			rm.width = 0;
-		rn.flags = A64_REGFLAGS_SP;
-		if (sbit) {
-			switch (rt.width) {
-			case A64_REGWIDTH_32:
-				amount = 2;
-				break;
-			case A64_REGWIDTH_64:
-				amount = 3;
-				break;
-			case A64_REGWIDTH_SIMD_8:
-				amount = 0;
-				break;
-			case A64_REGWIDTH_SIMD_16:
-				amount = 1;
-				break;
-			case A64_REGWIDTH_SIMD_32:
-				amount = 2;
-				break;
-			case A64_REGWIDTH_SIMD_64:
-				amount = 3;
-				break;
-			case A64_REGWIDTH_SIMD_128:
-				amount = 4;
-				break;
-			default:
-				break;
-			}
-		}
-		if (option == DPI_E_UXTX)
-			option = DPI_E_LSL;
-		if (amount >= 0)
-			len = dis_snprintf(buf, buflen, "%s %s, [%s, %s, %s #%d]", op->name, a64_reg_name(rt), a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option], amount);
-		else if (option != DPI_E_LSL)
-			len = dis_snprintf(buf, buflen, "%s %s, [%s, %s, %s]", op->name, a64_reg_name(rt), a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option]);
-		else
-			len = dis_snprintf(buf, buflen, "%s %s, [%s, %s]", op->name, a64_reg_name(rt), a64_reg_name(rn), a64_reg_name(rm));
-	} else if ((in & LDSTR_CLASS_REG_UNSCALED_MASK) == LDSTR_CLASS_REG_UNSCALED_TARG) {
-		a64_ldstr_reg_entry_t *op;
-		uint32_t mask = 0xc4c00000;
-		imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
-		for (op = a64_ldstr_reg_unscaled_opcodes; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rt.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		rn.flags = A64_REGFLAGS_SP;
-		if (op->name == NULL)
-			return (-1);
-
-		if (imm & LDSTR_IMM9_SIGN_MASK)
-			imm |= LDSTR_IMM9_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM9_POS_SIGN;
-
-		if (imm)
-		len = dis_snprintf(buf, buflen, "%s %s, [%s,#%d]", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
-		else
-		len = dis_snprintf(buf, buflen, "%s %s, [%s]", op->name, a64_reg_name(rt), a64_reg_name(rn));
-
-	} else if ((in & LDSTR_CLASS_REG_UNPRIV_MASK) == LDSTR_CLASS_REG_UNPRIV_TARG) {
-		a64_ldstr_reg_entry_t *op;
-		uint32_t mask = 0xc4c00000;
-		imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
-		for (op = a64_ldstr_reg_unpriv_opcodes; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rt.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		rn.flags = A64_REGFLAGS_SP;
-		if (op->name == NULL)
-			return (-1);
-
-		if (imm & LDSTR_IMM9_SIGN_MASK)
-			imm |= LDSTR_IMM9_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM9_POS_SIGN;
-
-		if (imm)
-		len = dis_snprintf(buf, buflen, "%s %s, [%s,#%d]", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
-		else
-		len = dis_snprintf(buf, buflen, "%s %s, [%s]", op->name, a64_reg_name(rt), a64_reg_name(rn));
-
-	} else if ((in & LDSTR_CLASS_REG_IMM_PRE_MASK) == LDSTR_CLASS_REG_IMM_PRE_TARG) {
-		a64_ldstr_reg_entry_t *op;
-		uint32_t mask = 0xc4c00000;
-		imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
-		for (op = a64_ldstr_reg_imm_opcodes; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rt.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		rn.flags = A64_REGFLAGS_SP;
-		if (op->name == NULL)
-			return (-1);
-
-		if (imm & LDSTR_IMM9_SIGN_MASK)
-			imm |= LDSTR_IMM9_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM9_POS_SIGN;
-
-		len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]!", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
-	}
-	else if ((in & LDSTR_CLASS_REG_UIMM_MASK) == LDSTR_CLASS_REG_UIMM_TARG) {
-		a64_ldstr_reg_entry_t *op;
-		uint32_t mask = 0xc4c00000;
-		imm = (in & LDSTR_IMM12_MASK) >> LDSTR_IMM12_SHIFT;
-		for (op = a64_ldstr_reg_unsigned_opcodes; op->name != NULL; op++) {
-			if ((in & mask) == op->targ)
-				break;
-		}
-		rt.width = op->regwidth;
-		rn.width = A64_REGWIDTH_64;
-		rn.flags = A64_REGFLAGS_SP;
-		if (op->name == NULL)
-			return (-1);
-
-		/* XXX: only for some.. */
-		imm <<= 1;
-#if 0
-		if (imm & LDSTR_IMM12_SIGN_MASK)
-			imm |= LDSTR_IMM12_NEG_SIGN;
-		else
-			imm &= LDSTR_IMM12_POS_SIGN;
-#endif
-		if (imm)
-		len = dis_snprintf(buf, buflen, "%s %s, [%s,#%d]", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
-		else
-		len = dis_snprintf(buf, buflen, "%s %s, [%s]", op->name, a64_reg_name(rt), a64_reg_name(rn));
-	}
-#if 0
-	/* C3.3.13 Load/store register (unsigned immediate) */
-else if ((in & LDSTR_CLASS_REG_UIMM_MASK) == LDSTR_CLASS_REG_UIMM_TARG) {
-		imm = (in & LDSTR_IMM12_MASK) >> LDSTR_IMM12_SHIFT;
-		switch (opc) {
-		case 0:
-			rn.flags |= A64_REGFLAGS_SP;
-			rt.flags |= A64_REGFLAGS_32;
-			if (imm)
-			len = dis_snprintf(buf, buflen, "strb %s, [%s, #%d]", a64_reg_name(rt), a64_reg_name(rn), imm);
-			else
-			len = dis_snprintf(buf, buflen, "strb %s, [%s]", a64_reg_name(rt), a64_reg_name(rn));
-			break;
-		case 1:
-			rn.flags |= A64_REGFLAGS_SP;
-			rt.flags |= A64_REGFLAGS_32;
-			if (imm)
-			len = dis_snprintf(buf, buflen, "ldrb %s, [%s, #%d]", a64_reg_name(rt), a64_reg_name(rn), imm);
-			else
-			len = dis_snprintf(buf, buflen, "ldrb %s, [%s]", a64_reg_name(rt), a64_reg_name(rn));
-			break;
-		case 2:
-			rn.flags |= A64_REGFLAGS_SP;
-			rt.flags = 0;
-			rt.width = 1;
-			if (imm)
-			len = dis_snprintf(buf, buflen, "ldrsb %s, [%s, #%d]", a64_reg_name(rt), a64_reg_name(rn), imm);
-			else
-			len = dis_snprintf(buf, buflen, "ldrsb %s, [%s]", a64_reg_name(rt), a64_reg_name(rn));
-			break;
-		case 3:
-			rn.flags |= A64_REGFLAGS_SP;
-			rt.flags |= A64_REGFLAGS_32;
-			if (imm)
-			len = dis_snprintf(buf, buflen, "ldrsb %s, [%s, #%d]", a64_reg_name(rt), a64_reg_name(rn), imm);
-			else
-			len = dis_snprintf(buf, buflen, "ldrsb %s, [%s]", a64_reg_name(rt), a64_reg_name(rn));
-			break;
-		}
-	}
-#endif
-	return (len < buflen ? 0 : -1);
-}
-	/*
-	 * C3.3.5 Load register (literal)
-	 *
-	 * 31 30|29 27|26|25 24|23    5|4  0|
-	 * -----+-----+--+-----+-------+----+
-	 *  opc |0 1 1| V| 0 0 | imm19 | Rt | C3.3.5
-	 *
-	 * C3.3.6 Load/store exclusive
-	 *
-	 * 31  30|29  24|23|22|21|20  16|15|14   10|9    5|4    0| Exclusive
-	 * ------+------+--+--+--+------+--+-------+------+------+
-	 *  size |001000|o2| L|o1|  Rs  |o0|  Rt2  |  Rn  |  Rt  | C3.3.6
-	 *
-	 * C3.3.7  Load/store no-allocate pair (offset)
-	 * C3.3.14 Load/store register pair (offset)
-	 * C3.3.15 Load/store register pair (post-indexed)
-	 * C3.3.16 Load/store register pair (pre-indexed)
-	 *
-	 * 31 30|29 27| 26|25 23| 22|21    15|14   10|9    5|4    0|
-	 * -----+-----+---+-----+---+--------+-------+------+------+
-	 *  opc |1 0 1| V |0 0 0| L |  imm7  |  Rt2  |  Rn  |  Rt  |
-	 *  opc |1 0 1| V |0 1 0| L |  imm7  |  Rt2  |  Rn  |  Rt  |
-	 *  opc |1 0 1| V |0 0 1| L |  imm7  |  Rt2  |  Rn  |  Rt  |
-	 *  opc |1 0 1| V |0 1 1| L |  imm7  |  Rt2  |  Rn  |  Rt  |
-	 *
-	 */
-#endif
+/* BEGIN CSTYLED */
 /*
  * 31  30|29   27| 26|25 24|23                                    5|4  0| Reg (lit)
  * ------+-------+---+-----+---------------------------------------+----+
@@ -2848,6 +2324,7 @@ else if ((in & LDSTR_CLASS_REG_UIMM_MASK) == LDSTR_CLASS_REG_UIMM_TARG) {
  *   opc | 1 0 1 | V | 0 0 1 | L |     imm7    |      Rt2     | Rn | Rt | C3.3.15
  *   opc | 1 0 1 | V | 0 1 1 | L |     imm7    |      Rt2     | Rn | Rt | C3.3.16
  */
+/* END CSTYLED */
 
 /* Used to identify instruction classes within a group */
 #define	A64_LDSTR_NOALLOC_MASK	0x01800000
@@ -2937,7 +2414,7 @@ a64_dis_ldstr_excl(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
  */
 static int
 a64_dis_ldstr_reg_lit(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
-	a64_ldstr_insn_t *lsin)
+    a64_ldstr_insn_t *lsin)
 {
 	uint32_t imm;
 	uint8_t opc;
@@ -2946,7 +2423,8 @@ a64_dis_ldstr_reg_lit(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
 	/* reg literal */
 	imm = (in & LDSTR_IMM19_MASK) >> LDSTR_IMM19_SHIFT;
 	opc = (in & LDSTR_SIZE_MASK) >> LDSTR_SIZE_SHIFT;
-	for (lsin->op = a64_ldstr_opcodes; lsin->op->targ != LDSTR_OPCODE_TARG_INVALID; lsin->op++) {
+	for (lsin->op = a64_ldstr_opcodes;
+	    lsin->op->targ != LDSTR_OPCODE_TARG_INVALID; lsin->op++) {
 		if ((in & LDSTR_OPCODE_MASK_REG_LIT) == lsin->op->targ)
 			break;
 	}
@@ -2984,12 +2462,18 @@ a64_dis_ldstr_reg_lit(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen,
 	imm <<= 2;
 	/* XXX: abstract away, prfm */
 	if (opc == 3) {
-		if (a64_prefetch_ops[lsin->rt.id])
-			len = dis_snprintf(buf, buflen, "%s %s, %x", lsin->opname, a64_prefetch_ops[lsin->rt.id], dhp->dh_addr + imm);
-		else
-			len = dis_snprintf(buf, buflen, "%s #0x%02x, %x", lsin->opname, lsin->rt.id, dhp->dh_addr + imm);
-	} else
-		len = dis_snprintf(buf, buflen, "%s %s, %x", lsin->opname, a64_reg_name(lsin->rt), dhp->dh_addr + imm);
+		if (a64_prefetch_ops[lsin->rt.id]) {
+			len = dis_snprintf(buf, buflen, "%s %s, %x",
+			    lsin->opname, a64_prefetch_ops[lsin->rt.id],
+			    dhp->dh_addr + imm);
+		} else {
+			len = dis_snprintf(buf, buflen, "%s #0x%02x, %x",
+			    lsin->opname, lsin->rt.id, dhp->dh_addr + imm);
+		}
+	} else {
+		len = dis_snprintf(buf, buflen, "%s %s, %x", lsin->opname,
+		    a64_reg_name(lsin->rt), dhp->dh_addr + imm);
+	}
 	buflen -= len;
 	buf += len;
 	a64_dis_addlabel(dhp, dhp->dh_addr + (int)imm, buf, buflen);
@@ -3032,10 +2516,8 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	switch (class) {
 	case LDSTR_CLASS_EXCLUSIVE:
 		return (a64_dis_ldstr_excl(dhp, in, buf, buflen, &lsin));
-		break;
 	case LDSTR_CLASS_REG_LITERAL:
 		return (a64_dis_ldstr_reg_lit(dhp, in, buf, buflen, &lsin));
-		break;
 	case 5:
 		/* reg pair */
 		imm = (in & LDSTR_IMM7_MASK) >> LDSTR_IMM7_SHIFT;
@@ -3078,44 +2560,56 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			break;
 		default:
 			return (-1);
-			break;
 		}
 		rt2.width = rt.width;
-                if (imm & LDSTR_IMM7_SIGN_MASK)
-                        imm |= LDSTR_IMM7_NEG_SIGN;
-                else
-                        imm &= LDSTR_IMM7_POS_SIGN;
+		if (imm & LDSTR_IMM7_SIGN_MASK)
+			imm |= LDSTR_IMM7_NEG_SIGN;
+		else
+			imm &= LDSTR_IMM7_POS_SIGN;
 
 		if (v) {
-		switch (rt.width) {
-		case A64_REGWIDTH_SIMD_32:
+			switch (rt.width) {
+			case A64_REGWIDTH_SIMD_32:
+				imm <<= 2;
+				break;
+			case A64_REGWIDTH_SIMD_64:
+				imm <<= 3;
+				break;
+			case A64_REGWIDTH_SIMD_128:
+				imm <<= 4;
+				break;
+			default:
+				break;
+			}
+		} else if (opc == 1) {
 			imm <<= 2;
-			break;
-		case A64_REGWIDTH_SIMD_64:
-			imm <<= 3;
-			break;
-		case A64_REGWIDTH_SIMD_128:
-			imm <<= 4;
-			break;
-		default:
-			break;
-		}
-		} else if (opc == 1)
-			imm <<= 2;
-		else
+		} else {
 			imm <<= (rt.width == A64_REGWIDTH_64) ? 3 : 2;
+		}
 
-		if ((in & A64_BIT_23_MASK) && (in & A64_BIT_24_MASK))
-		len = dis_snprintf(buf, buflen, "%s %s, %s, [%s, #%d]!", opname, a64_reg_name(rt), a64_reg_name(rt2), a64_reg_name(rn), imm);
-		else if (in & A64_BIT_23_MASK)
-		len = dis_snprintf(buf, buflen, "%s %s, %s, [%s], #%d", opname, a64_reg_name(rt), a64_reg_name(rt2), a64_reg_name(rn), imm);
-		else if (imm)
-		len = dis_snprintf(buf, buflen, "%s %s, %s, [%s, #%d]", opname, a64_reg_name(rt), a64_reg_name(rt2), a64_reg_name(rn), imm);
-		else
-		len = dis_snprintf(buf, buflen, "%s %s, %s, [%s]", opname, a64_reg_name(rt), a64_reg_name(rt2), a64_reg_name(rn));
+		if ((in & A64_BIT_23_MASK) && (in & A64_BIT_24_MASK)) {
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, %s, [%s, #%d]!",
+			    opname, a64_reg_name(rt), a64_reg_name(rt2),
+			    a64_reg_name(rn), imm);
+		} else if (in & A64_BIT_23_MASK) {
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, %s, [%s], #%d",
+			    opname, a64_reg_name(rt), a64_reg_name(rt2),
+			    a64_reg_name(rn), imm);
+		} else if (imm) {
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, %s, [%s, #%d]",
+			    opname, a64_reg_name(rt), a64_reg_name(rt2),
+			    a64_reg_name(rn), imm);
+		} else {
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, %s, [%s]",
+			    opname, a64_reg_name(rt), a64_reg_name(rt2),
+			    a64_reg_name(rn));
+		}
 
 		return (len < buflen ? 0 : -1);
-		break;
 	case 7:
 		/* Load/store register */
 		opmask = 0xc4c00000;
@@ -3126,12 +2620,14 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			if ((in & opmask) == op->targ)
 				break;
 		}
-		if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG)
+		if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG) {
 			opname = op->name_unpriv;
-		else if ((in & A64_LDSTR_UNSCALE_MASK) == A64_LDSTR_UNSCALE_TARG)
+		} else if ((in & A64_LDSTR_UNSCALE_MASK) ==
+		    A64_LDSTR_UNSCALE_TARG) {
 			opname = op->name_unscaled;
-		else
+		} else {
 			opname = op->name_reg;
+		}
 
 		switch (op->regflags) {
 			case A64_REGFLAGS_NONE:
@@ -3141,7 +2637,9 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			case A64_REGFLAGS_SIMD:
 				switch (size) {
 					case 0:
-						rt.width = (opc < 2) ? A64_REGWIDTH_SIMD_8 : A64_REGWIDTH_SIMD_128;
+						rt.width = (opc < 2) ?
+						    A64_REGWIDTH_SIMD_8 :
+						    A64_REGWIDTH_SIMD_128;
 						break;
 					case 1:
 						rt.width = A64_REGWIDTH_SIMD_16;
@@ -3156,7 +2654,6 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 				break;
 			default:
 				return (-1);
-				break;
 		}
 		if (in & A64_BIT_24_MASK) {
 			imm = (in & LDSTR_IMM12_MASK) >> LDSTR_IMM12_SHIFT;
@@ -3190,15 +2687,18 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 					default:
 						break;
 				}
-			} else if (size == 1)
+			} else if (size == 1) {
 				imm <<= 1;
-			else if (size == 2) {
-				if (opc)
+			} else if (size == 2) {
+				if (opc) {
 					imm <<= 2;
-				else
-					imm <<= (rt.width == A64_REGWIDTH_64) ? 3 : 2;
-			} else if (size == 3)
+				} else {
+					imm <<= (rt.width == A64_REGWIDTH_64) ?
+					    3 : 2;
+				}
+			} else if (size == 3) {
 				imm <<= (rt.width == A64_REGWIDTH_64) ? 3 : 2;
+			}
 
 #if 0
 			if (imm & LDSTR_IMM12_SIGN_MASK)
@@ -3209,24 +2709,43 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			/* XXX: prfm */
 			if (size == 3 && opc == 2) {
 			if (imm) {
-				if (a64_prefetch_ops[rt.id])
-				len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn), imm);
-				else
-				len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s, #%d]", opname, rt.id, a64_reg_name(rn), imm);
+				if (a64_prefetch_ops[rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s, #%d]",
+					    opname, a64_prefetch_ops[rt.id],
+					    a64_reg_name(rn), imm);
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s, #%d]",
+					    opname, rt.id, a64_reg_name(rn),
+					    imm);
+				}
 			} else {
-				if (a64_prefetch_ops[rt.id])
-				len = dis_snprintf(buf, buflen, "%s %s, [%s]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn));
-				else
-				len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s]", opname, rt.id, a64_reg_name(rn));
+				if (a64_prefetch_ops[rt.id]) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s]",
+					    opname, a64_prefetch_ops[rt.id],
+					    a64_reg_name(rn));
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s #0x%02x, [%s]",
+					    opname, rt.id, a64_reg_name(rn));
+				}
 			}
 			} else {
-			if (imm)
-				len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
-			else
-				len = dis_snprintf(buf, buflen, "%s %s, [%s]", opname, a64_reg_name(rt), a64_reg_name(rn));
+				if (imm) {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s, #%d]",
+					    opname, a64_reg_name(rt),
+					    a64_reg_name(rn), imm);
+				} else {
+					len = dis_snprintf(buf, buflen,
+					    "%s %s, [%s]",
+					    opname, a64_reg_name(rt),
+					    a64_reg_name(rn));
+				}
 			}
 			return (len < buflen ? 0 : -1);
-			break;
 		} else {
 			imm = (in & LDSTR_IMM9_MASK) >> LDSTR_IMM9_SHIFT;
 			if (imm & LDSTR_IMM9_SIGN_MASK)
@@ -3236,43 +2755,95 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		}
 
 		if ((in & A64_LDSTR_UNPRIV_MASK) == A64_LDSTR_UNPRIV_TARG) {
-			if (imm)
-				len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
-			else
-				len = dis_snprintf(buf, buflen, "%s %s, [%s]", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
+			if (imm) {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s, #%d]",
+				    opname, a64_reg_name(rt), a64_reg_name(rn),
+				    imm);
+			} else {
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s]",
+				    opname, a64_reg_name(rt), a64_reg_name(rn),
+				    imm);
+			}
 			return (len < buflen ? 0 : -1);
 		}
 
-		regtype = (in & LDSTR_CLASS_REG_TYPE_MASK) >> LDSTR_CLASS_REG_TYPE_SHIFT;
+		regtype = (in & LDSTR_CLASS_REG_TYPE_MASK) >>
+		    LDSTR_CLASS_REG_TYPE_SHIFT;
 		switch (regtype) {
 			case 0:
 				/* XXX: prfum */
 				if (size == 3 && opc == 2) {
 					if (imm) {
-						if (a64_prefetch_ops[rt.id])
-							len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn), imm);
-						else
-							len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s, #%d]", opname, rt.id, a64_reg_name(rn), imm);
+						if (a64_prefetch_ops[rt.id]) {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s %s, [%s, #%d]",
+							    opname,
+							    a64_prefetch_ops[
+							    rt.id],
+							    a64_reg_name(rn),
+							    imm);
+						} else {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s #0x%02x, "
+							    "[%s, #%d]",
+							    opname, rt.id,
+							    a64_reg_name(rn),
+							    imm);
+						}
 					} else {
-						if (a64_prefetch_ops[rt.id])
-							len = dis_snprintf(buf, buflen, "%s %s, [%s]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn), imm);
-						else
-							len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s]", opname, rt.id, a64_reg_name(rn), imm);
+						if (a64_prefetch_ops[rt.id]) {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s %s, [%s]",
+							    opname,
+							    a64_prefetch_ops[
+							    rt.id],
+							    a64_reg_name(rn),
+							    imm);
+						} else {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s #0x%02x, [%s]",
+							    opname, rt.id,
+							    a64_reg_name(rn),
+							    imm);
+						}
 					}
 				} else {
-					if (imm)
-						len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
-					else
-						len = dis_snprintf(buf, buflen, "%s %s, [%s]", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
+					if (imm) {
+						len = dis_snprintf(buf, buflen,
+						    "%s %s, [%s, #%d]",
+						    opname, a64_reg_name(rt),
+						    a64_reg_name(rn), imm);
+					} else {
+						len = dis_snprintf(buf, buflen,
+						    "%s %s, [%s]",
+						    opname, a64_reg_name(rt),
+						    a64_reg_name(rn), imm);
+					}
 				}
 				break;
 			case 1:
-				/*  C3.3.8 Load/store register (immediate post-indexed) */
-				len = dis_snprintf(buf, buflen, "%s %s, [%s], #%d", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
+				/*
+				 *  C3.3.8 Load/store register (immediate
+				 *  post-indexed)
+				 */
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s], #%d",
+				    opname, a64_reg_name(rt), a64_reg_name(rn),
+				    imm);
 				break;
 			case 2:
-				/* C3.3.10 Load/store register (register offset) */
-				option = (in & LDSTR_OPTION_MASK) >> LDSTR_OPTION_SHIFT;
+				/*
+				 * C3.3.10 Load/store register (register
+				 * offset)
+				 */
+				option = (in & LDSTR_OPTION_MASK) >>
+				    LDSTR_OPTION_SHIFT;
 				sbit = (in & LDSTR_S_MASK) >> LDSTR_S_SHIFT;
 				if (option == 3 || option == 7)
 					rm.width = 1;
@@ -3310,37 +2881,112 @@ a64_dis_ldstr(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 					if (sbit)
 						amount = 3;
 					if (amount >= 0) {
-						if (a64_prefetch_ops[rt.id])
-							len = dis_snprintf(buf, buflen, "%s %s, [%s, %s, %s #%d]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option], amount);
-						else
-							len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s, %s, %s #%d]", opname, rt.id, a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option], amount);
+						if (a64_prefetch_ops[rt.id]) {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s %s, "
+							    "[%s, %s, %s #%d]",
+							    opname,
+							    a64_prefetch_ops[
+							    rt.id],
+							    a64_reg_name(rn),
+							    a64_reg_name(rm),
+							    a64_dataproc_extends
+							    [option],
+							    amount);
+						} else {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s #0x%02x, "
+							    "[%s, %s, %s #%d]",
+							    opname, rt.id,
+							    a64_reg_name(rn),
+							    a64_reg_name(rm),
+							    a64_dataproc_extends
+							    [option],
+							    amount);
+						}
 					} else if (option != DPI_E_LSL) {
-						if (a64_prefetch_ops[rt.id])
-							len = dis_snprintf(buf, buflen, "%s %s, [%s, %s, %s]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option]);
-						else
-							len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s, %s, %s]", opname, rt.id, a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option]);
+						if (a64_prefetch_ops[rt.id]) {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s %s, "
+							    "[%s, %s, %s]",
+							    opname,
+							    a64_prefetch_ops[
+							    rt.id],
+							    a64_reg_name(rn),
+							    a64_reg_name(rm),
+							    a64_dataproc_extends
+							    [option]);
+						} else {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s #0x%02x, "
+							    "[%s, %s, %s]",
+							    opname, rt.id,
+							    a64_reg_name(rn),
+							    a64_reg_name(rm),
+							    a64_dataproc_extends
+							    [option]);
+						}
 					} else {
-						if (a64_prefetch_ops[rt.id])
-							len = dis_snprintf(buf, buflen, "%s %s, [%s, %s]", opname, a64_prefetch_ops[rt.id], a64_reg_name(rn), a64_reg_name(rm));
-						else
-							len = dis_snprintf(buf, buflen, "%s #0x%02x, [%s, %s]", opname, rt.id, a64_reg_name(rn), a64_reg_name(rm));
+						if (a64_prefetch_ops[rt.id]) {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s %s, [%s, %s]",
+							    opname,
+							    a64_prefetch_ops[
+							    rt.id],
+							    a64_reg_name(rn),
+							    a64_reg_name(rm));
+						} else {
+							len = dis_snprintf(buf,
+							    buflen,
+							    "%s #0x%02x, "
+							    "[%s, %s]", opname,
+							    rt.id,
+							    a64_reg_name(rn),
+							    a64_reg_name(rm));
+						}
 					}
 				} else {
-					if (amount >= 0)
-						len = dis_snprintf(buf, buflen, "%s %s, [%s, %s, %s #%d]", opname, a64_reg_name(rt), a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option], amount);
-					else if (option != DPI_E_LSL)
-						len = dis_snprintf(buf, buflen, "%s %s, [%s, %s, %s]", opname, a64_reg_name(rt), a64_reg_name(rn), a64_reg_name(rm), a64_dataproc_extends[option]);
-					else
-						len = dis_snprintf(buf, buflen, "%s %s, [%s, %s]", opname, a64_reg_name(rt), a64_reg_name(rn), a64_reg_name(rm));
+					if (amount >= 0) {
+						len = dis_snprintf(buf, buflen,
+						    "%s %s, [%s, %s, %s #%d]",
+						    opname, a64_reg_name(rt),
+						    a64_reg_name(rn),
+						    a64_reg_name(rm),
+						    a64_dataproc_extends[
+						    option],
+						    amount);
+					} else if (option != DPI_E_LSL) {
+						len = dis_snprintf(buf, buflen,
+						    "%s %s, [%s, %s, %s]",
+						    opname, a64_reg_name(rt),
+						    a64_reg_name(rn),
+						    a64_reg_name(rm),
+						    a64_dataproc_extends[
+						    option]);
+					} else {
+						len = dis_snprintf(buf, buflen,
+						    "%s %s, [%s, %s]",
+						    opname, a64_reg_name(rt),
+						    a64_reg_name(rn),
+						    a64_reg_name(rm)); }
 				}
 				break;
 			case 3:
-				/* C3.3.9 Load/store register (immediate pre-indexed) */
-				len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]!", opname, a64_reg_name(rt), a64_reg_name(rn), imm);
+				/*
+				 * C3.3.9 Load/store register (immediate
+				 * pre-indexed)
+				 */
+				len = dis_snprintf(buf, buflen,
+				    "%s %s, [%s, #%d]!", opname,
+				    a64_reg_name(rt), a64_reg_name(rn), imm);
 				break;
 		}
 		return (len < buflen ? 0 : -1);
-		break;
 	default:
 		len = dis_snprintf(buf, buflen, "class=%d\n", class);
 		break;
@@ -3454,7 +3100,7 @@ a64_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	a64_reg_t reg;
 	uint32_t addr, imm;
 	size_t len;
-	uint8_t b40, b5; //, neg;
+	uint8_t b40, b5; // , neg;
 
 	for (op = a64_branch_opcodes; op->name != NULL; op++) {
 		if ((in & op->mask) == op->val)
@@ -3536,10 +3182,10 @@ a64_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	addr = (in & op->imm_mask) >> op->imm_shift;
 	if (addr & op->sign_mask) {
 		addr |= op->neg_sign;
-		//neg = 1;
+		// neg = 1;
 	} else {
 		addr &= op->pos_sign;
-		//neg = 0;
+		// neg = 0;
 	}
 	/* All addresses are encoded as imm * 4 */
 	addr <<= 2;
@@ -3630,15 +3276,15 @@ a64_dis_exception(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
  * +---------------------+--+-----+-----+-------+-------+-----+------+
  */
 typedef enum a64_system_type {
-	A64_SYS_TYPE_DIRECT,		/* OP */
-	A64_SYS_TYPE_IMM1,		/* OP #<imm> (CRm:op2) */
-	A64_SYS_TYPE_IMM2,		/* OP {#<imm>} (CRm) */
-	A64_SYS_TYPE_IMMOPT,		/* OP <option>|#<imm> (CRm) */
-	A64_SYS_TYPE_PSTATE,		/* OP <pstate>, #imm */
-	A64_SYS_TYPE_SYS,		/* OP #<op1>, <Cn>, <Cm>, #<op2>{, <Xt>} */
-	A64_SYS_TYPE_SYSL,		/* OP <Xt>, #<op1>, <Cn>, <Cm>, #<op2> */
-	A64_SYS_TYPE_MSR,		/* OP <systemreg>, <Xt> */
-	A64_SYS_TYPE_MRS,		/* OP <Xt>, <systemreg> */
+	A64_SYS_TYPE_DIRECT,	/* OP */
+	A64_SYS_TYPE_IMM1,	/* OP #<imm> (CRm:op2) */
+	A64_SYS_TYPE_IMM2,	/* OP {#<imm>} (CRm) */
+	A64_SYS_TYPE_IMMOPT,	/* OP <option>|#<imm> (CRm) */
+	A64_SYS_TYPE_PSTATE,	/* OP <pstate>, #imm */
+	A64_SYS_TYPE_SYS,	/* OP #<op1>, <Cn>, <Cm>, #<op2>{, <Xt>} */
+	A64_SYS_TYPE_SYSL,	/* OP <Xt>, #<op1>, <Cn>, <Cm>, #<op2> */
+	A64_SYS_TYPE_MSR,	/* OP <systemreg>, <Xt> */
+	A64_SYS_TYPE_MRS,	/* OP <Xt>, <systemreg> */
 } a64_system_type_t;
 
 typedef struct a64_system_opcode_entry {
@@ -3664,6 +3310,7 @@ typedef struct a64_system_sysalias_entry {
 	a64_system_regopt_t regopt;
 } a64_system_sysalias_entry_t;
 
+/* BEGIN CSTYLED */
 static a64_system_sysalias_entry_t a64_system_sysaliases[] = {
 	{"s1e1r",		"at",	0x0,	0x7,	0x8,	0x0,	A64_SYS_REGOPT_ALWAYS},
 	{"s1e2r",		"at",	0x4,	0x7,	0x8,	0x0,	A64_SYS_REGOPT_ALWAYS},
@@ -3725,6 +3372,7 @@ static a64_system_sysalias_entry_t a64_system_sysaliases[] = {
 	{"vaale1",		"tlbi",	0x0,	0x8,	0x7,	0x7,	A64_SYS_REGOPT_DEFAULT},
 	{NULL,			NULL,	0,	0,	0,	0,	0}
 };
+/* END CSTYLED */
 
 static const char *a64_system_option_names[] = {
 	NULL,
@@ -3745,9 +3393,10 @@ static const char *a64_system_option_names[] = {
 	"sy"
 };
 
+/* BEGIN CSTYLED */
 static a64_system_opcode_entry_t a64_system_opcodes[] = {
 	{0x0038f01f,	0x0000401f,	"msr",		A64_SYS_TYPE_PSTATE},	/* MSR <pstatefield>, #<imm> (op1:op2, CRm) */
-	/* HINT aliases come first*/
+	/* HINT aliases come first */
 	{0x003fffff,	0x0003201f,	"nop",		A64_SYS_TYPE_DIRECT},	/* NOP */
 	{0x003fffff,	0x0003203f,	"yield",	A64_SYS_TYPE_DIRECT},	/* YIELD */
 	{0x003fffff,	0x0003205f,	"wfe",		A64_SYS_TYPE_DIRECT},	/* WFE */
@@ -3766,6 +3415,7 @@ static a64_system_opcode_entry_t a64_system_opcodes[] = {
 	{0x00300000,	0x00300000,	"mrs",		A64_SYS_TYPE_MRS},	/* MRS <Xt>, <systemreg> (o0:op1:CRn:CRm:op2 */
 	{0xffffffff,	0xffffffff,	NULL,		0}
 };
+/* END CSTYLED */
 
 typedef struct a64_system_sysreg_entry {
 	const char *regname;
@@ -4119,9 +3769,9 @@ a64_dis_system(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 
 	if (op->name == NULL) {
 		len = dis_snprintf(buf, buflen, "nope");
-		return 0;
+		return (0);
 	}
-		//return (-1);
+		// return (-1);
 
 	/* Extract sections used by most operation types. */
 	op0 = (in & A64_SYS_OP0_MASK) >> A64_SYS_OP0_SHIFT;
@@ -4147,8 +3797,8 @@ a64_dis_system(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			optname = "daifclr";
 		else
 			return (-1);
-		len = dis_snprintf(buf, buflen, "%s %s, #0x%x", op->name, optname,
-		    crm);
+		len = dis_snprintf(buf, buflen, "%s %s, #0x%x", op->name,
+		    optname, crm);
 		break;
 	case A64_SYS_TYPE_IMM1:
 		imm = (in & (A64_SYS_CRM_MASK|A64_SYS_OP2_MASK))
@@ -4157,43 +3807,53 @@ a64_dis_system(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		break;
 	case A64_SYS_TYPE_IMM2:
 		/* CRm == 15 is the default */
-		if (crm == 0xf)
+		if (crm == 0xf) {
 			len = dis_snprintf(buf, buflen, "%s", op->name);
-		else
-			len = dis_snprintf(buf, buflen, "%s #0x%x", op->name, crm);
+		} else {
+			len = dis_snprintf(buf, buflen, "%s #0x%x", op->name,
+			    crm);
+		}
 		break;
 	case A64_SYS_TYPE_IMMOPT:
 		optname = a64_system_option_names[crm];
-		if (optname)
-			len = dis_snprintf(buf, buflen, "%s %s", op->name, optname);
-		else
-			len = dis_snprintf(buf, buflen, "%s #0x%02x", op->name, crm);
+		if (optname) {
+			len = dis_snprintf(buf, buflen, "%s %s", op->name,
+			    optname);
+		} else {
+			len = dis_snprintf(buf, buflen, "%s #0x%02x", op->name,
+			    crm);
+		}
 		break;
 	case A64_SYS_TYPE_SYS:
 		/* Look for SYS aliases and print accordingly if found */
 		for (sa = a64_system_sysaliases; sa->opname != NULL; sa++) {
 			if (sa->op1 == op1 && sa->op2 == op2 &&
-			    sa->crm == crm && sa->crn == crn)
+			    sa->crm == crm && sa->crn == crn) {
 				break;
+			}
 		}
 		if (sa->opname) {
 			if (sa->regopt == A64_SYS_REGOPT_NEVER ||
 			    (sa->regopt == A64_SYS_REGOPT_DEFAULT &&
-			    rt.id == A64_REG_ZR))
+			    rt.id == A64_REG_ZR)) {
 				len = dis_snprintf(buf, buflen, "%s %s",
 				    sa->opalias, sa->opname);
-			else
+			} else {
 				len = dis_snprintf(buf, buflen, "%s %s, %s",
 				    sa->opalias, sa->opname, a64_reg_name(rt));
+			}
 			break;
 		}
 
-		if (rt.id != A64_REG_ZR)
-			len = dis_snprintf(buf, buflen, "%s #%d, C%d, C%d, #%d, %s",
+		if (rt.id != A64_REG_ZR) {
+			len = dis_snprintf(buf, buflen,
+			    "%s #%d, C%d, C%d, #%d, %s",
 			    op->name, op1, crn, crm, op2, a64_reg_name(rt));
-		else
-			len = dis_snprintf(buf, buflen, "%s #%d, C%d, C%d, #%d",
+		} else {
+			len = dis_snprintf(buf, buflen,
+			    "%s #%d, C%d, C%d, #%d",
 			    op->name, op1, crn, crm, op2);
+		}
 		break;
 	case A64_SYS_TYPE_MSR:
 		if (op0 == 2)
@@ -4207,12 +3867,14 @@ a64_dis_system(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		}
 		if (sr->regname == NULL) {
 			/* GNU binutils compatibility for impl-def registers */
-			len = dis_snprintf(buf, buflen, "%s s%u_%u_c%u_c%u_%u, %s",
+			len = dis_snprintf(buf, buflen,
+			    "%s s%u_%u_c%u_c%u_%u, %s",
 			    op->name, op0, op1, crn, crm, op2,
 			    a64_reg_name(rt));
 		} else {
-			len = dis_snprintf(buf, buflen, "%s %s, %s", op->name,
-			    sr->regname, a64_reg_name(rt));
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, %s",
+			    op->name, sr->regname, a64_reg_name(rt));
 		}
 		break;
 	case A64_SYS_TYPE_MRS:
@@ -4222,16 +3884,19 @@ a64_dis_system(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			sr = a64_system_sysregs_nondebug;
 		for (; sr->regname != NULL; sr++) {
 			if (sr->crn == crn && sr->op1 == op1 &&
-			    sr->crm == crm && sr->op2 == op2)
+			    sr->crm == crm && sr->op2 == op2) {
 				break;
+			}
 		}
 		if (sr->regname == NULL) {
 			/* GNU binutils compatibility for impl-def registers */
-			len = dis_snprintf(buf, buflen, "%s %s, s%u_%u_c%u_c%u_%u",
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, s%u_%u_c%u_c%u_%u",
 			    op->name, a64_reg_name(rt), op0, op1, crn, crm,
 			    op2);
 		} else {
-			len = dis_snprintf(buf, buflen, "%s %s, %s", op->name,
+			len = dis_snprintf(buf, buflen,
+			    "%s %s, %s", op->name,
 			    a64_reg_name(rt), sr->regname);
 		}
 		break;
@@ -4246,7 +3911,7 @@ a64_dis_system(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 
 /*
  * The A64 instruction set packs into a uint32_t with variable length encoding,
- * making our job somehat convoluted to decode.
+ * making our job somewhat convoluted to decode.
  *
  * Our first job is to decode the current Encoding Group based on bits 28:25.
  *
@@ -4517,8 +4182,9 @@ a64_dis_ldstr_simd(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	 * Print base register.
 	 */
 	if ((len = dis_snprintf(buf, buflen, ", [%s]", a64_reg_name(rn)))
-	    >= buflen)
+	    >= buflen) {
 		return (-1);
+	}
 	buflen -= len;
 	buf += len;
 
@@ -4569,47 +4235,47 @@ a64_dis_ldstr_simd(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	return (len < buflen ? 0 : -1);
 }
 
-#if 0
-.1|1|1|...5..|...3..|
- 0 Q 1  01110 op2  0 Rm 0 imm4 0 Rn Rd
- 0 Q 0  01110 op2  0 Rm 0 len op 00 Rn Rd
- 0 Q 0  01110 size 0 Rm 0 opcode 10 Rn Rd
- 0 Q U  01110 size 1 1000 opcode 10 Rn Rd
- 0 Q op 01110 00   0 imm5 0 imm4 1 Rn Rd
- 0 Q op 01111 00   0 00 a b c cmode o2 1 d e f g h Rd
- 0 1 op 11110 00   0 imm5 0 imm4 1 Rn Rd
- 0 1 U  11110 size 1 1000 opcode 10 Rn Rd
-
- 0 1 U  11111 0 immh immb opcode 1 Rn Rd
-
- 0 1 U  11110 size 1 Rm opcode 00 Rn Rd
- 0 1 U  11110 size 1 Rm opcode 1 Rn Rd
- 0 1 U  11110 size 1 0000 opcode 10 Rn Rd
-
- 0 1 U  11111 size L M Rm opcode H 0 Rn Rd
-
- 0 Q U  01111 0 immh immb opcode 1 Rn Rd
- 0 Q U  01110 size 1 Rm opcode 00 Rn Rd
- 0 Q U  01110 size 1 Rm opcode 1 Rn Rd
- 0 Q U  01110 size 1 0000 opcode 10 Rn Rd
- 0 Q U  01111 size L M Rm opcode H 0 Rn Rd
-
-crypto
-01001110 size 10100 opcode 10 Rn Rd
-01011110 size 0 Rm 0 opcode 00 Rn Rd
-01011110 size 10100 opcode 10 Rn Rd
-
-fp
-M 0 S 11110 type 1 Rm op 1000 Rn opcode2
-M 0 S 11110 type 1 Rm cond 01 Rn op nzcv
-M 0 S 11110 type 1 Rm cond 11 Rn Rd
-M 0 S 11110 type 1 opcode 10000 Rn Rd
-M 0 S 11110 type 1 Rm opcode 10 Rn Rd
-M 0 S 11111 type o1 Rm o0 Ra Rn Rd
-M 0 S 11110 type 1 imm8 100 imm5 Rd
-sf 0 S 11110 type 0 rmode opcode scale Rn Rd
-sf 0 S 11110 type 1 rmode opcode 000000 Rn Rd
-#endif
+/*
+ *	.1|1|1|...5..|...3..|
+ *	 0 Q 1  01110 op2  0 Rm 0 imm4 0 Rn Rd
+ *	 0 Q 0  01110 op2  0 Rm 0 len op 00 Rn Rd
+ *	 0 Q 0  01110 size 0 Rm 0 opcode 10 Rn Rd
+ *	 0 Q U  01110 size 1 1000 opcode 10 Rn Rd
+ *	 0 Q op 01110 00   0 imm5 0 imm4 1 Rn Rd
+ *	 0 Q op 01111 00   0 00 a b c cmode o2 1 d e f g h Rd
+ *	 0 1 op 11110 00   0 imm5 0 imm4 1 Rn Rd
+ *	 0 1 U  11110 size 1 1000 opcode 10 Rn Rd
+ *
+ *	 0 1 U  11111 0 immh immb opcode 1 Rn Rd
+ *
+ *	 0 1 U  11110 size 1 Rm opcode 00 Rn Rd
+ *	 0 1 U  11110 size 1 Rm opcode 1 Rn Rd
+ *	 0 1 U  11110 size 1 0000 opcode 10 Rn Rd
+ *
+ *	 0 1 U  11111 size L M Rm opcode H 0 Rn Rd
+ *
+ *	 0 Q U  01111 0 immh immb opcode 1 Rn Rd
+ *	 0 Q U  01110 size 1 Rm opcode 00 Rn Rd
+ *	 0 Q U  01110 size 1 Rm opcode 1 Rn Rd
+ *	 0 Q U  01110 size 1 0000 opcode 10 Rn Rd
+ *	 0 Q U  01111 size L M Rm opcode H 0 Rn Rd
+ *
+ *	crypto
+ *	01001110 size 10100 opcode 10 Rn Rd
+ *	01011110 size 0 Rm 0 opcode 00 Rn Rd
+ *	01011110 size 10100 opcode 10 Rn Rd
+ *
+ *	fp
+ *	M 0 S 11110 type 1 Rm op 1000 Rn opcode2
+ *	M 0 S 11110 type 1 Rm cond 01 Rn op nzcv
+ *	M 0 S 11110 type 1 Rm cond 11 Rn Rd
+ *	M 0 S 11110 type 1 opcode 10000 Rn Rd
+ *	M 0 S 11110 type 1 Rm opcode 10 Rn Rd
+ *	M 0 S 11111 type o1 Rm o0 Ra Rn Rd
+ *	M 0 S 11110 type 1 imm8 100 imm5 Rd
+ *	sf 0 S 11110 type 0 rmode opcode scale Rn Rd
+ *	sf 0 S 11110 type 1 rmode opcode 000000 Rn Rd
+ */
 
 #define	A64_SIMD_Q_MASK		A64_BIT_30_MASK
 #define	A64_SIMD_Q_SHIFT	A64_BIT_30_SHIFT
@@ -4829,9 +4495,10 @@ a64_dis_simd(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		rd.arr = rm.arr = q ? A64_REG_ARR_16B : A64_REG_ARR_8B;
 		rn.arr = A64_REG_ARR_16B;
 		/* <Vd>.<Ta> */
-		if ((len = dis_snprintf(buf, buflen, " %s.%s, ", a64_reg_name(rd),
-		    a64_reg_arr_names[rd.arr])) >= buflen)
+		if ((len = dis_snprintf(buf, buflen, " %s.%s, ",
+		    a64_reg_name(rd), a64_reg_arr_names[rd.arr])) >= buflen) {
 			return (-1);
+		}
 		buflen -= len;
 		buf += len;
 		/* {<Vn>.16B ... } */
@@ -4982,12 +4649,14 @@ a64_dis_simd(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			/* Special formats, handle and exit early. */
 			if (q) {
 				rd.arr = A64_REG_ARR_2D;
-				len = dis_snprintf(buf, buflen, " %s.%s, #0x%" PRIx64 "",
+				len = dis_snprintf(buf, buflen,
+				    " %s.%s, #0x%" PRIx64 "",
 				    a64_reg_name(rd), a64_reg_arr_names[rd.arr],
 				    imm);
 			} else {
 				rd.width = A64_REGWIDTH_SIMD_64;
-				len = dis_snprintf(buf, buflen, " %s, #0x%" PRIx64 "",
+				len = dis_snprintf(buf, buflen,
+				    " %s, #0x%" PRIx64 "",
 				    a64_reg_name(rd), imm);
 			}
 			break;
@@ -5216,7 +4885,6 @@ dis_a64_disassemble(dis_handle_t *dhp, uint64_t addr, char *buf, size_t buflen)
  * This is simple in a non Thumb world. If and when we do enter a world where
  * we support thumb instructions, then this becomes far less than simple.
  */
-/*ARGSUSED*/
 static uint64_t
 dis_a64_previnstr(dis_handle_t *dhp, uint64_t pc, int n)
 {
@@ -5231,7 +4899,6 @@ dis_a64_previnstr(dis_handle_t *dhp, uint64_t pc, int n)
  * However, it varies based on whether or not a given instruction is in thumb
  * mode.
  */
-/*ARGSUSED*/
 static int
 dis_a64_min_instrlen(dis_handle_t *dhp)
 {
@@ -5241,14 +4908,12 @@ dis_a64_min_instrlen(dis_handle_t *dhp)
 /*
  * Regardless of thumb, this value does not change.
  */
-/*ARGSUSED*/
 static int
 dis_a64_max_instrlen(dis_handle_t *dhp)
 {
 	return (4);
 }
 
-/* ARGSUSED */
 static int
 dis_a64_instrlen(dis_handle_t *dhp, uint64_t pc)
 {
