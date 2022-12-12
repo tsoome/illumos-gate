@@ -1321,7 +1321,7 @@ a64_dis_dataproc_logimm(uint32_t in, a64_dataproc_t *dpi)
 		 * here and just compare SP, which also matches the
 		 * decoding of TST below.
 		 */
-		dpi->opcode = (dpi->rd.id == A64_REG_SP)
+		dpi->opcode = (dpi->rn.id == A64_REG_SP)
 		    ? DPI_OP_MOV_BI : DPI_OP_ORR_I;
 		break;
 	case 2:
