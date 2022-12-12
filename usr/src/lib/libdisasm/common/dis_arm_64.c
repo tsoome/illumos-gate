@@ -1019,28 +1019,77 @@ a64_dis_bfxpref(int sf, int uns, int imms, int immr)
 /*
  * G.1.4 aarch64/instrs/integer/bitmasks DecodeBitMasks()
  *
- * XXX: document this properly.
+ * The immediate value is constructed from a sub-pattern, repeated as needed to
+ * produce the number of bits required for the register.
+ * The initial sub-pattern is a consecutive sequence of zeros followed by
+ * a number of consecutive ones (think a regex pattern of '0+1+').
+ *
+ * The sub-pattern size and the number of consecutive ones is determed by N and
+ * imms as shown in the following table. The value specified by the x places
+ * determines the number of consecutive ones. 0 means there is one 1 in the
+ * pattern, 3 means there are four, and so on.
+ *
+ *	N	imms		sub-pattern size
+ *	0	1 1 1 1 0 x	2 bits
+ *	0	1 1 1 0 x x	4 bits
+ *	0	1 1 0 x x x	8 bits
+ *	0	1 0 x x x x	16 bits
+ *	0	0 x x x x x	32 bits
+ *	1	x x x x x x	64 bits
+ *
+ * Once this initial sub-pattern has been determined, it will then be rotated
+ * right 'immr' times to produce the final sub-pattern.
+ * This final sub-pattern will be repeated as many times as necessary to
+ * produce the register value.
+ *
+ * A couple of examples
+ *
+ * 	0	0 0 1 1 1 1	immr=0
+ *
+ * is:
+ * 	a 32-bit sub-pattern
+ * 	has 16 consecutive ones at the end
+ * 	the sub-pattern is therefore 0000ffff
+ * 	when used for a 64-bit register, imm will be 0000ffff0000ffff
+ *
+ * 	0	1 1 0 0 1 0	immr=4
+ *
+ * is:
+ * 	an 8-bit sub-pattern
+ * 	has 3 consecutive ones at the end
+ * 	the initial sub-pattern is therefore 07
+ * 	the four rotations change this to 70
+ * 	when used for a 32-bit register, imm will be 70707070
  */
 static uint64_t
 a64_dis_decodebitmasks(uint8_t sfbit, uint8_t nbit, uint8_t imms, uint8_t immr)
 {
-	int i, size, tmp;
+	uint_t i, size;
+	int topbit;
 	uint8_t r, s;
 	uint64_t imm;
 
-	tmp = (nbit << 6) | (~imms & 0x3f);
-	for (i = 7; i != 0; i--) {
-		if (tmp & 1 << i) {
-			size = 1 << i;
-			break;
-		}
-	}
+	/*
+	 * Determine the size of the element by concatenating N and a
+	 * bit-flipped imms, and then looking for the highest set bit.
+	 */
+	topbit = fls((nbit << 6) | (~imms & 0x3f));
+	if (topbit == 0)
+		return (0);
+	size = 1 << (topbit - 1);
+
 	r = immr & (size - 1);
 	s = imms & (size - 1);
+
 	imm = (1ULL << (s + 1)) - 1;
+
+
+	/* Rotate right as specified by immr. */
 	for (i = 0; i < r; ++i)
 		imm = ((imm & 1) << (size - 1)) | (imm >> 1);
-	if (!sfbit)
+
+	/* Repeat the sub-pattern to fill the register. */
+	for (i = (sfbit ? 64 : 32) / size; i > 1; i--)
 		imm |= (imm << size);
 
 	return (imm);

@@ -23,6 +23,17 @@
 	\op	x0,  x30, #0x00000002
 	\op	x0,  x30, #0xffffffff
 	\op	x0,  x30, #0xfffffffffffffff8
+
+	/* Bitfield encoding tests */
+	/* 32-bit repeating pattern, (16 ones, no rotations) */
+	\op	x0,  x30, #0xffff0000ffff
+	/* Same, but into a 32-bit register */
+	\op	w0,  w30, #0xffff
+	/* 8-bit repeating pattern, (3 ones, two rotations) */
+	\op	x0,  x30, #0x7070707070707070
+	/* 4-bit repeating pattern (3 ones, two rotations) */
+	\op	x0,  x30, #0xcccccccccccccccc
+
 	.if \zreg
 	\op	wzr, wzr, #0x00000001
 	\op	wzr, wzr, #0x7fffffff
