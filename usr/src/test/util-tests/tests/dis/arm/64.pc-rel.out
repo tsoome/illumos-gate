@@ -1,6 +1,6 @@
-    libdis_test:      40 c1 00 50  adr x0, 0x40dd32 
-    libdis_test+0x4:  41 c1 00 50  adr x1, 0x40dd36 
-    libdis_test+0x8:  22 41 01 10  adr x2, 0x40ed34 
+    libdis_test:      40 c1 00 50  adr x0, 0x40dd32
+    libdis_test+0x4:  41 c1 00 50  adr x1, 0x40dd36
+    libdis_test+0x8:  22 41 01 10  adr x2, 0x40ed34
     libdis_test+0xc:  03 00 00 b0  adrp x3, 0x40d000
     libdis_test+0x10: 63 c8 34 91  add x3, x3, #0xd32
     libdis_test+0x14: 04 00 00 b0  adrp x4, 0x40d000

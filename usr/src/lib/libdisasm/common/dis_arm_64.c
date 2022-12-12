@@ -1992,15 +1992,15 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	switch (dop->optype) {
 	case DPI_OPTYPE_IMM:
 		/* #<imm> */
-		len = dis_snprintf(buf, buflen, ", #%d", dpi.dpimm_imm);
+		len = dis_snprintf(buf, buflen, ", #%" PRIu64, dpi.dpimm_imm);
 		break;
 	case DPI_OPTYPE_IMMX:
 		/* 0x<imm> */
-		len = dis_snprintf(buf, buflen, ", 0x%x", dpi.dpimm_imm);
+		len = dis_snprintf(buf, buflen, ", 0x%" PRIx64, dpi.dpimm_imm);
 		break;
 	case DPI_OPTYPE_IMM2:
 		/* #<immr>, #<imms> */
-		len = dis_snprintf(buf, buflen, ", #%d, #%d",
+		len = dis_snprintf(buf, buflen, ", #%" PRIu32 ", #%" PRIu32,
 		    dpi.imm2_imm1,
 		    dpi.imm2_imm2);
 		break;
@@ -2009,10 +2009,11 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		switch (dpi.dpimm_shift) {
 		/* XXX: use DPI_OPTYPE_SIMM and calculate */
 		case 0:
-			len = dis_snprintf(buf, buflen, ", #0x%x", imm);
+			len = dis_snprintf(buf, buflen, ", #0x%" PRIx64, imm);
 			break;
 		case 1:
-			len = dis_snprintf(buf, buflen, ", #0x%x, lsl #12", imm);
+			len = dis_snprintf(buf, buflen,
+			    ", #0x%" PRIx64 ", lsl #12", imm);
 			break;
 		}
 		if ((dop->flags & DPI_ADRP_F) != 0) {
@@ -2037,9 +2038,10 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		if (dpi.imm_inv)
 			imm = ~imm;
 		if (dpi.sfbit)
-			len = dis_snprintf(buf, buflen, ", #0x%llx", imm);
+			len = dis_snprintf(buf, buflen, ", #0x%" PRIx64 "", imm);
 		else
-			len = dis_snprintf(buf, buflen, ", #0x%x", (int)imm);
+			len = dis_snprintf(buf, buflen, ", #0x%" PRIx32,
+			    (uint32_t)imm);
 		break;
 	case DPI_OPTYPE_SIMM:
 		if (dpi.xreg_type)
@@ -2099,7 +2101,8 @@ a64_dis_dataproc(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		    a64_cond_names[dpi.cond]);
 		break;
 	case DPI_OPTYPE_LABEL:
-		len = dis_snprintf(buf, buflen, ", 0x%x ", dpi.dpimm_imm);
+		len = dis_snprintf(buf, buflen, ", 0x%" PRIx64,
+		    dpi.dpimm_imm);
 		if (len >= buflen)
 			break;
 		a64_dis_addlabel(dhp, dpi.dpimm_imm, buf + len, buflen - len);
@@ -2721,7 +2724,7 @@ a64_dis_ldstr_reg(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 		else
 			imm &= LDSTR_IMM9_POS_SIGN;
 
-		len = dis_snprintf(buf, buflen, "%s %s, [%s,#%d]!", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
+		len = dis_snprintf(buf, buflen, "%s %s, [%s, #%d]!", op->name, a64_reg_name(rt), a64_reg_name(rn), imm);
 	}
 	else if ((in & LDSTR_CLASS_REG_UIMM_MASK) == LDSTR_CLASS_REG_UIMM_TARG) {
 		a64_ldstr_reg_entry_t *op;
@@ -3540,7 +3543,7 @@ a64_dis_branch(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 	}
 	/* All addresses are encoded as imm * 4 */
 	addr <<= 2;
-	len = dis_snprintf(buf, buflen, " %x", dhp->dh_addr + (int)addr);
+	len = dis_snprintf(buf, buflen, " %" PRIx64, dhp->dh_addr + (int)addr);
 	if (len >= buflen)
 		return (-1);
 #if 0
@@ -4979,12 +4982,12 @@ a64_dis_simd(dis_handle_t *dhp, uint32_t in, char *buf, size_t buflen)
 			/* Special formats, handle and exit early. */
 			if (q) {
 				rd.arr = A64_REG_ARR_2D;
-				len = dis_snprintf(buf, buflen, " %s.%s, #0x%llx",
+				len = dis_snprintf(buf, buflen, " %s.%s, #0x%" PRIx64 "",
 				    a64_reg_name(rd), a64_reg_arr_names[rd.arr],
 				    imm);
 			} else {
 				rd.width = A64_REGWIDTH_SIMD_64;
-				len = dis_snprintf(buf, buflen, " %s, #0x%llx",
+				len = dis_snprintf(buf, buflen, " %s, #0x%" PRIx64 "",
 				    a64_reg_name(rd), imm);
 			}
 			break;
