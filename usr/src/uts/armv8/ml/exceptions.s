@@ -420,18 +420,23 @@ _sys_rtt_preempt:
 	CPUP(x19)				// x19 <- CPU
 	ldr	w20, [x19, #CPU_PRI]		// x20 <- old pri
 
-	ldr	x21, =gic_cpuif_base		// x21 <- gic_cpuif_base
+	ldr	x21, =gic_cpuif			// x21 <- gic_cpuif
 	ldr	x21, [x21]
-	ldr	w23, [x21, #GIC_CPUIF_IAR]	// x23 <- ack
-	and	w22, w23, #0x3FF		// x22 <- irq
-	cmp	w22, #0x3fc
+	ldr	w23, [x21, #GIC_CPUIF_IAR]	// x23 <- IAR, acknowledge receipt
+	and	w22, w23, #GICC_IAR_INTID_MASK	// x22 <- irq
+	// On receipt of a "special" interrupt, just return
+	// See ARM® Generic Interrupt Controller Architecture Specification
+	//    GIC architecture version 3.0 and version 4.0 §2.2.1 Special INTIDs
+	//
+	// XXXARM: This code needs changing to support LPIs in GICv3 and above
+	cmp	w22, #GIC_INTID_MIN_SPECIAL
 	b.ge	_sys_rtt
 
 	// irq mask (Clear Enable)
 	mov	w0, w22
 	bl	gic_mask_level_irq
 
-	// irq ack
+	// write the full GICC_IAR back to GICC_EOIR to acknowledge end of interrupt
 	str	w23, [x21, #GIC_CPUIF_EOIR]
 
 	// set pri
@@ -439,11 +444,12 @@ _sys_rtt_preempt:
 	bl	setlvl
 	cbnz	w0, 1f
 
-	// ipl == 0
+	// If ipl == 0
 	mov	w0, w22
 	bl	gic_unmask_level_irq
 	b	check_softint
 
+	// Else (ipl != 0)
 1:
 	mov	w21, w0				// x21 <- new pri
 	str	w21, [x19, #CPU_PRI]

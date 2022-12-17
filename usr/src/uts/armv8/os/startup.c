@@ -403,7 +403,8 @@ startup_init(void)
 	 */
 	get_system_configuration();
 
-	gic_init();
+	/* Set up the interrupt controller for the primary CPU */
+	gic_init_primary();
 
 	PRM_POINT("startup_init() done");
 }

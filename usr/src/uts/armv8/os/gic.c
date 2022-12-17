@@ -29,66 +29,146 @@
 #include <sys/smp_impldefs.h>
 #include <sys/promif.h>
 
-#define	IPL_TO_GICPRI(ipl)	((0xF & ~(ipl)) << 4)
-static volatile int exclusion;
+/*
+ * These are shadowed copies of GICD_IPRIORITYR<0-7>, and GICD_ISENABLER[0]
+ *
+ * That is the priority and enabled status of SGIs and PPIs, which are CPU
+ * local, and the registers for same are banked per-CPU in the distributor.
+ *
+ * XXXARM: It's possible these were intended to keep these in sync across all
+ * CPUs, but they don't outside of initial config.
+ */
 static volatile uint32_t ipriorityr_private[8];
 static volatile uint32_t ienable_private;
+
+/*
+ * This is used to record whether an IRQ is edge or level triggered.
+ * A set bit in this mask is an edge triggered interrupt, a 0 is level triggered.
+ *
+ * We use this in `gic_mask_level_irq` and `gic_unmask_level_irq` to decide
+ * whether to enable or disable that IRQ, these functions ignore
+ * edge-triggered interrupts.  This is set when `gic_config_irq` and never
+ * altered (which makes sense).
+ */
 static uint32_t intr_cfg[1024 / 32];
-uintptr_t gic_cpuif_base;
-uintptr_t gic_dist_base;
+
+/*
+ * Protect access to global GIC state.
+ * In the current implementation, the distributor.
+ */
+lock_t gic_lock;
+
+/* Base addresses of the cpu interface and distributor */
+volatile struct gic_cpuif *gic_cpuif;
+volatile struct gic_dist *gic_dist;
+
+/*
+ * Mapping from cpuid to GIC target identifier
+ * XXXARM: Another place we cap at 8 CPUs
+ */
 static uint8_t gic_target[8];
+
+/*
+ * CPUs for which we have initialized the GIC.  Used to limit IPIs to only
+ * those CPUs we can target.
+ */
 static cpuset_t gic_cpuset;
 
+/*
+ * Enable IRQ in the distributor, which will now be forwarded to a cpu.
+ *
+ * It is IMPLEMENTATION DEFINED whether SGIs can be enabled or disabled here,
+ * we never try.
+ */
 static void
 gic_enable_irq(int irq)
 {
-	if (irq >= 16) {
-		struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-		dist->isenabler[irq / 32] = (1u << (irq % 32));
+	if (irq >= GIC_INTID_MIN_PPI) {
+		gic_dist->isenabler[GICD_IRQ_TO_ISENABLER(irq)] =
+		    GICD_IRQ_TO_ISENABLER_FIELD(irq);
 	}
 }
 
+/*
+ * Disable IRQ in the distributor, which will now cease being forwarded to a
+ * cpu.
+ *
+ * It is IMPLEMENTATION DEFINED whether SGIs can be enabled or disabled here,
+ * we never try.
+ */
 static void
 gic_disable_irq(int irq)
 {
-	if (irq >= 16) {
-		struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-		dist->icenabler[irq / 32] = (1u << (irq % 32));
+	if (irq >= GIC_INTID_MIN_PPI) {
+		gic_dist->icenabler[GICD_IRQ_TO_ISENABLER(irq)] =
+		    GICD_IRQ_TO_ISENABLER_FIELD(irq);
 	}
 }
 
+/*
+ * If this is a level-triggered IRQ which is not an SGI, enable it
+ * See comments about SGIs in enable/disable_irq
+ */
 void
 gic_unmask_level_irq(int irq)
 {
-	if (irq >= 16 && (intr_cfg[irq / 32] & (1u << (irq % 32))) == 0) {
+	if ((irq >= GIC_INTID_MIN_PPI) &&
+	    ((intr_cfg[irq / 32] & (1u << (irq % 32))) == 0)) {
 		ASSERT(irq != 225);
-		struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-		dist->isenabler[irq / 32] = (1u << (irq % 32));
+		gic_enable_irq(irq);
 	}
 }
 
+/*
+ * If this is a level-triggered IRQ which is not an SGI, disable it
+ * See comments about SGIs in enable/disable_irq
+ */
 void
 gic_mask_level_irq(int irq)
 {
-	if (irq >= 16 && (intr_cfg[irq / 32] & (1u << (irq % 32))) == 0) {
+	if ((irq >= GIC_INTID_MIN_PPI) &&
+	    ((intr_cfg[irq / 32] & (1u << (irq % 32))) == 0)) {
 		ASSERT(irq != 225);
-		struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-		dist->icenabler[irq / 32] = (1u << (irq % 32));
+		gic_disable_irq(irq);
 	}
 }
 
+/*
+ * Configure whether IRQ is edge or level triggered.
+ * Additionally record this in in `intr_cfg`.
+ */
 void
 gic_config_irq(uint32_t irq, bool is_edge)
 {
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	uint32_t v = (is_edge? 0x2: 0);
-	dist->icfgr[irq / 16] = (dist->icfgr[irq / 16] & ~(0x3u << ((irq % 16) * 2))) | (v << ((irq % 16) * 2));
+	uint32_t v = (is_edge ? 0x2 : 0);
+
+	/*
+	 * §8.9.7 Software must disable an interrupt before the value of the
+	 * corresponding programmable Int_config field is changed. GIC
+	 * behavior is otherwise UNPREDICTABLE.
+	 */
+	ASSERT((gic_dist->isenabler[GICD_IRQ_TO_ISENABLER(irq)] &
+	    GICD_IRQ_TO_ISENABLER_FIELD(irq)) == 0);
+
+	/*
+	 * GICD_ICFGR<n> is a packed field with 2 bits per interrupt, the even
+	 * bit is reserved, the odd bit is 1 for edge-triggered 0 for
+	 * level.
+	 */
+	gic_dist->icfgr[GICD_IRQ_TO_ICFGR(irq)] =
+	    (gic_dist->icfgr[GICD_IRQ_TO_ICFGR(irq)] &
+	    ~GICD_IRQ_TO_ICFGR_FIELD(irq, 0x3)) |
+	    GICD_IRQ_TO_ICFGR_FIELD(irq, v);
+
 	if (is_edge)
 		intr_cfg[irq / 32] |= (1u << (irq % 32));
 	else
 		intr_cfg[irq / 32] &= ~(1u << (irq % 32));
 }
 
+/*
+ * Mask interrupts of priority lower than or equal to IRQ.
+ */
 int
 setlvl(int irq)
 {
@@ -96,78 +176,135 @@ setlvl(int irq)
 	new_ipl = autovect[irq].avh_hi_pri;
 
 	if (new_ipl != 0) {
-		struct gic_cpuif *cpuif = (struct gic_cpuif *)gic_cpuif_base;
-		cpuif->pmr = IPL_TO_GICPRI(new_ipl);
+		gic_cpuif->pmr = GIC_IPL_TO_PRI(new_ipl);
 	}
 
 	return (new_ipl);
 }
 
+/*
+ * Unmask level IRQ if it's level triggered and mask interrupts
+ * less than or equal to IPL.
+ *
+ * XXXARM: Is this really what setlvlx should do?
+ */
 void
 setlvlx(int ipl, int irq)
 {
-	gic_unmask_level_irq(irq);
-	struct gic_cpuif *cpuif = (struct gic_cpuif *)gic_cpuif_base;
-	cpuif->pmr = IPL_TO_GICPRI(ipl);
+	/*
+	 * Allow code to pass a -1 IRQ to just change GICC_PMR
+	 * see armv8/intr.c:do_splx(), among others.
+	 */
+	if (irq >= 0)
+		gic_unmask_level_irq(irq);
+	gic_cpuif->pmr = GIC_IPL_TO_PRI(ipl);
 }
 
+/*
+ * Set the priority of IRQ to IPL
+ * If IRQ is an SGI or PPI, shadow that priority into `ipriorityr_private`
+ */
 static void
 gic_set_ipl(uint32_t irq, uint32_t ipl)
 {
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-
 	uint64_t old = read_daif();
 	set_daif(DAIF_SETCLEAR_IRQ);
-	while (__sync_lock_test_and_set(&exclusion, 1)) {}
+	lock_set(&gic_lock);
 
-	uint32_t ipriorityr = dist->ipriorityr[irq / 4];
-	ipriorityr &= ~(0xFF << (8 * (irq % 4)));
-	ipriorityr |= (IPL_TO_GICPRI(ipl) << (8 * (irq % 4)));
-	dist->ipriorityr[irq / 4] = ipriorityr;
+	uint32_t ipriorityr = gic_dist->ipriorityr[GICD_IRQ_TO_IPRIORITYR(irq)];
+	ipriorityr &= ~(GICD_IRQ_TO_IPRIORITYR_FIELD(irq, 0xff));
+	ipriorityr |= GICD_IRQ_TO_IPRIORITYR_FIELD(irq, GIC_IPL_TO_PRI(ipl));
+	gic_dist->ipriorityr[GICD_IRQ_TO_IPRIORITYR(irq)] = ipriorityr;
 
-	if (irq < 32) {
-		ipriorityr_private[irq / 4] = ipriorityr;
+	if (irq <= GIC_INTID_PERCPU_MAX) {
+		ipriorityr_private[GICD_IRQ_TO_IPRIORITYR(irq)] = ipriorityr;
 	}
-	__sync_lock_release(&exclusion);
+
+	lock_clear(&gic_lock);
 	write_daif(old);
 }
 
+/*
+ * Configure non-local IRQs to be delivered through the distributor.
+ */
 static void
 gic_add_target(uint32_t irq)
 {
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-
 	uint64_t old = read_daif();
 	set_daif(DAIF_SETCLEAR_IRQ);
-	while (__sync_lock_test_and_set(&exclusion, 1)) {}
-	uint32_t coreMask = 0xFF;
+	lock_set(&gic_lock);
+	uint32_t coreMask = 0xFF; /* all 8 (XXXARM) cpus */
 
-	if (irq >= 32)
-		dist->itargetsr[irq / 4] = (dist->itargetsr[irq / 4] & ~(coreMask << (8 * (irq % 4)))) | (coreMask << (8 * (irq % 4)));
+	/*
+	 * Each GICD_ITARGETSR<n> contains 4 8-bit fields indicating that int
+	 * N is delivered to the cpus with 1 bits set in the value.
+	 *
+	 * XXXARM: Another place with an 8 cpu limit.
+	 *
+	 * We always program all interrupts to deliver to all possible CPUs,
+	 * trusting RAZ/WI for those which don't exist.
+	 */
+	if (irq > GIC_INTID_PERCPU_MAX) {
+		uint32_t tr = (gic_dist->itargetsr[GICD_IRQ_TO_ITARGETSR(irq)] &
+		    ~GICD_IRQ_TO_ITARGETSR_FIELD(irq, coreMask));
 
-	__sync_lock_release(&exclusion);
+		gic_dist->itargetsr[GICD_IRQ_TO_ITARGETSR(irq)] =
+		    tr | GICD_IRQ_TO_ITARGETSR_FIELD(irq, coreMask);
+	}
+
+	lock_clear(&gic_lock);
 	write_daif(old);
 }
 
+/*
+ * Configure such that IRQ cannot happen at or above IPL
+ *
+ * There are complications here -- which this code doesn't handle -- which are
+ * outlined in the pclusmp implementation, I have included that comment
+ * below.
+ *
+ * (from i86pc/io/mp_platform_misc.c:apic_addspl_common)
+ *  * Both add and delspl are complicated by the fact that different interrupts
+ * may share IRQs. This can happen in two ways.
+ * 1. The same H/W line is shared by more than 1 device
+ * 1a. with interrupts at different IPLs
+ * 1b. with interrupts at same IPL
+ * 2. We ran out of vectors at a given IPL and started sharing vectors.
+ * 1b and 2 should be handled gracefully, except for the fact some ISRs
+ * will get called often when no interrupt is pending for the device.
+ * For 1a, we handle it at the higher IPL.
+ */
 static int
 gic_addspl(int irq, int ipl, int min_ipl, int max_ipl)
 {
 	gic_set_ipl((uint32_t)irq, (uint32_t)ipl);
 	gic_add_target((uint32_t)irq);
 	gic_enable_irq((uint32_t)irq);
-	if (irq < 32)
+
+	if (irq <= GIC_INTID_PERCPU_MAX)
 		ienable_private |= (1u << irq);
 
 	return (0);
 }
 
+/*
+ * XXXARM: Comment taken verbatim from i86pc/io/mp_platform_misc.c:apic_delspl_common)
+ *
+ * Recompute mask bits for the given interrupt vector.
+ * If there is no interrupt servicing routine for this
+ * vector, this function should disable interrupt vector
+ * from happening at all IPLs. If there are still
+ * handlers using the given vector, this function should
+ * disable the given vector from happening below the lowest
+ * IPL of the remaining handlers.
+ */
 static int
 gic_delspl(int irq, int ipl, int min_ipl, int max_ipl)
 {
 	if (autovect[irq].avh_hi_pri == 0) {
 		gic_disable_irq((uint32_t)irq);
 		gic_set_ipl((uint32_t)irq, 0);
-		if (irq < 32)
+		if (irq <= GIC_INTID_PERCPU_MAX)
 			ienable_private &= ~(1u << irq);
 	}
 
@@ -177,6 +314,11 @@ gic_delspl(int irq, int ipl, int min_ipl, int max_ipl)
 int (*addspl)(int, int, int, int) = gic_addspl;
 int (*delspl)(int, int, int, int) = gic_delspl;
 
+/*
+ * Send an IRQ as an IPI to processors in `cpuset`.
+ *
+ * Processors not targetable by the GIC will be silently ignored.
+ */
 void
 gic_send_ipi(cpuset_t cpuset, uint32_t irq)
 {
@@ -190,9 +332,9 @@ gic_send_ipi(cpuset_t cpuset, uint32_t irq)
 	}
 	uint64_t old = read_daif();
 	set_daif(DAIF_SETCLEAR_IRQ);
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
 	dsb(ish);
-	dist->sgir = (((target & 0xff) << 16) | irq);
+
+	gic_dist->sgir = GICD_SGIR(0, target, 0, irq);
 
 	write_daif(old);
 }
@@ -215,108 +357,194 @@ find_gic(pnode_t nodeid, int depth)
 	return (OBP_NONODE);
 }
 
+/*
+ * Return the target representing the current cpu from the GIC point of view
+ * by reading the target field of a target specific interrupt.
+ *
+ * This sets the Nth bit for target N
+ *
+ * XXXARM: Only works without affinity routing.
+ */
 static uint_t
 gic_get_target(void)
 {
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	return (__builtin_ctz(dist->itargetsr[0] & 0xFF));
+	return (1 << (__builtin_ctz(gic_dist->itargetsr[0] & 0xff)));
 }
 
+/*
+ * Initialize the GIC on the boot CPU, including any global initialization.
+ */
 void
-gic_init(void)
+gic_init_primary(void)
 {
 	uint64_t old = read_daif();
 	set_daif(DAIF_SETCLEAR_IRQ);
-	while (__sync_lock_test_and_set(&exclusion, 1)) {}
+
+	LOCK_INIT_HELD(&gic_lock);
 
 	pnode_t node = find_gic(prom_rootnode(), 0);
+
 	if (node > 0) {
 		uint64_t base;
 		if (prom_get_reg_address(node, 0, &base) == 0) {
-			gic_dist_base = base + SEGKPM_BASE;
+			gic_dist = (struct gic_dist *)(uintptr_t)(base + SEGKPM_BASE);
 		}
 		if (prom_get_reg_address(node, 1, &base) == 0) {
-			gic_cpuif_base = base + SEGKPM_BASE;
+			gic_cpuif = (struct gic_cpuif *)(uintptr_t)(base + SEGKPM_BASE);
 		}
 	}
 
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	struct gic_cpuif *cpuif = (struct gic_cpuif *)gic_cpuif_base;
+	/*
+	 * §8.9.4 GICD_CTLR, Distributor Control Register
+	 *
+	 * GICD_CTRLR.DS resets as 0 if the field is R/W, but there are
+	 * implications it might be DS=1 RAO/WI on some hardware.
+	 *
+	 * We (try to) configure it to 0, and then assert it is 0, such that
+	 * the meaning of settings below contingent on DS are obvious.
+	 *
+	 * This is probably paranoia
+	 */
+	gic_dist->ctlr = (gic_dist->ctlr & ~GICD_CTLR_DS_MASK);
+	ASSERT(GICD_CTLR_DS(gic_dist->ctlr) == 0);
 
+	/*
+	 * Clear enabled/pending/active status of all interrupts, and put them
+	 * in group 0.
+	 */
 	for (int i = 0; i < 32; i++) {
-		dist->icenabler[i] = 0xffffffff;
-		dist->icpendr[i]   = 0xffffffff;
-		dist->icactiver[i] = 0xffffffff;
-		dist->igroupr[i] = 0;
+		gic_dist->icenabler[i] = 0xffffffff;
+		gic_dist->icpendr[i]   = 0xffffffff;
+		gic_dist->icactiver[i] = 0xffffffff;
+		gic_dist->igroupr[i] = 0;
 	}
+
+	/* Make all but the first 32 interrupts level triggered */
 	for (int i = 1; i < 64; i++) {
-		dist->icfgr[i] = 0;
+		gic_dist->icfgr[i] = 0;
 	}
 
+	/*
+	 * Initialize interrupt priorities.
+	 *
+	 * Set the CPU-specific interrupts to the lowest possible priority, and
+	 * keep a private copy of that priority.
+	 */
 	for (int i = 0; i < 8; i++) {
-		dist->ipriorityr[i] = 0xffffffff;
-		ipriorityr_private[i] = dist->ipriorityr[i];
+		gic_dist->ipriorityr[i] = 0xffffffff;
+		ipriorityr_private[i] = gic_dist->ipriorityr[i];
 	}
+
+	/*
+	 * Set the rest of the interrupts to the lowest possible priority, and
+	 * route them to all CPUs.
+	 */
 	for (int i = 8; i < 256; i++) {
-		dist->itargetsr[i] = 0xffffffff;
-		dist->ipriorityr[i] = 0xffffffff;
+		gic_dist->itargetsr[i] = 0xffffffff;
+		gic_dist->ipriorityr[i] = 0xffffffff;
 	}
 
-	cpuif->ctlr = 1;
+	/* Enable group 0 interrupts, disable everything else */
+	gic_cpuif->ctlr = GICC_CTLR_ENABLE_GROUP0;
 
-	cpuif->bpr = 3;
-	cpuif->pmr = 0xFF;
+	/*
+	 * Configure the priority fields with 5 bits of group priority and 3
+	 * bits of subpriority.
+	 */
+	gic_cpuif->bpr = 3;
 
-	dist->ctlr = 1;
+	/* Unmask all interrupt priorities */
+	gic_cpuif->pmr = 0xFF;
 
-	__sync_lock_release(&exclusion);
+	/*
+	 * Enable group 0 interrupts
+	 * disable secure group 1 interrupts
+	 * disable non-secure group 1 interrupts.
+	 * disable non-secure affinity routing
+	 * disable secure affinity routing
+	 * enable security (don't set DS)
+	 * disable 1 of N wakeup if possible.
+	 *
+	 * XXXARM: Read this back and see if we get values we don't expect?
+	 * XXXARM: Should we be waiting for .RWP to clear?
+	 */
+	gic_dist->ctlr = GICD_CTLR_ENABLE_GROUP0;
+
+	lock_clear(&gic_lock);
 	write_daif(old);
 
 	CPUSET_ONLY(gic_cpuset, 0);
 
-	gic_target[0] = 1u << gic_get_target();
+	gic_target[0] = gic_get_target();
 }
 
+/*
+ * Initialize the GIC for a new non-boot CPU.
+ *
+ * XXXARM: Can this be partially common with init_primary?
+ */
 void
-gic_slave_init(processorid_t id)
+gic_init_secondary(processorid_t id)
 {
 	uint64_t old = read_daif();
 	set_daif(DAIF_SETCLEAR_IRQ);
-	while (__sync_lock_test_and_set(&exclusion, 1)) {}
+	lock_set(&gic_lock);
 
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	struct gic_cpuif *cpuif = (struct gic_cpuif *)gic_cpuif_base;
+	/*
+	 * Clear enabled/pending/active status of the CPU-specific interrupts,
+	 * and put them in group 0.
+	 */
+	gic_dist->icenabler[0] = 0xffffffff;
+	gic_dist->icpendr[0]   = 0xffffffff;
+	gic_dist->icactiver[0] = 0xffffffff;
+	gic_dist->igroupr[0] = 0;
 
-	for (int i = 0; i < 1; i++) {
-		dist->icenabler[i] = 0xffffffff;
-		dist->icpendr[i]   = 0xffffffff;
-		dist->icactiver[i] = 0xffffffff;
-		dist->igroupr[i] = 0;
-	}
-	for (int i = 1; i < 2; i++) {	// SGI$B$O@_Dj$7$J$$(B
-		dist->icfgr[i] = 0;
-	}
+	/*
+	 * XXXARM: Original comment here: SGIは設定しない
+	 * Google translate: "Do not configure SGI"
+	 *
+	 * Make interrupts 32-63 default to level triggered.
+	 */
+	gic_dist->icfgr[1] = 0;
 
+	/*
+	 * Initialize interrupt priorities from their global state in
+	 * `ipriorityr_private`
+	 *
+	 * XXXARM: Only used when not affinity routing?
+	 */
 	for (int i = 0; i < 8; i++) {
-		dist->ipriorityr[i] = ipriorityr_private[i];
+		gic_dist->ipriorityr[i] = ipriorityr_private[i];
 	}
-	dist->isenabler[0] = ienable_private;
 
-	cpuif->ctlr = 1;
+	/*
+	 * Initialize interrupt enabling for interrupts 0-32 from their global
+	 * state in `ienable_private`.
+	 */
+	gic_dist->isenabler[0] = ienable_private;
 
-	cpuif->bpr = 3;
-	cpuif->pmr = 0xFF;
+	/* Enable group 0 interrupts, disable everything else */
+	gic_cpuif->ctlr = GICC_CTLR_ENABLE_GROUP0;
+
+	/*
+	 * Configure the priority fields with 5 bits of group priority and 3
+	 * bits of subpriority.
+	 */
+	gic_cpuif->bpr = 3;
+
+	/* Unmask all interrupt priorities */
+	gic_cpuif->pmr = 0xFF;
 
 	CPUSET_ADD(gic_cpuset, id);
-	gic_target[id] = 1u << gic_get_target();
+	gic_target[id] = gic_get_target();
 
-	__sync_lock_release(&exclusion);
+	lock_clear(&gic_lock);
 	write_daif(old);
 }
 
+/* The maximum number of CPUs supported by the GIC without affinity routing */
 int
 gic_num_cpus(void)
 {
-	struct gic_dist *dist = (struct gic_dist *)gic_dist_base;
-	return (((dist->typer >> 5) & 0x7) + 1);
+	return (GICD_TYPER_CPUNUMBER(gic_dist->typer) + 1);
 }

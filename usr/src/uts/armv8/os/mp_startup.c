@@ -399,7 +399,8 @@ mp_startup_boot(void)
 	/* Let the control CPU continue into tsc_sync_master() */
 	mp_startup_signal(&procset_slave, cp->cpu_id);
 
-	gic_slave_init(cp->cpu_id);
+	/* Set up the GIC for the new additional CPU */
+	gic_init_secondary(cp->cpu_id);
 	write_vbar((uintptr_t)exception_vector);
 	isb();
 
