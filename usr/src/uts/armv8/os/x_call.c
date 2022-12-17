@@ -19,9 +19,10 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2017 Hayashi Naoyuki
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2017 Hayashi Naoyuki
  */
 #include <sys/types.h>
 #include <sys/param.h>
@@ -84,11 +85,17 @@ xc_serv(caddr_t arg0, caddr_t arg1)
 
 	int xc_pend = cpup->cpu_m.xc_pend;
 	dsb(ish);
+
+	/*
+	 * XXXARM: If there are no pending calls, it's not clear how we got
+	 * here.
+	 */
 	if (xc_pend == 0) {
 		return (DDI_INTR_UNCLAIMED);
 	}
 
 	int op = cpup->cpu_m.xc_state;
+
 	xc_func_t func = xc_mbox.func;
 	xc_arg_t a0 = xc_mbox.arg0;
 	xc_arg_t a1 = xc_mbox.arg1;
@@ -123,6 +130,9 @@ xc_serv(caddr_t arg0, caddr_t arg1)
 	 * for (op == XC_SYNC_OP)
 	 * Wait for the initiator of the x-call to indicate
 	 * that all CPUs involved can proceed.
+	 *
+	 * XXXARM: It feels like there's much better things to do here, but
+	 * likely not in high-level interrupt context.
 	 */
 	while (cpup->cpu_m.xc_wait) {
 	}
@@ -153,9 +163,21 @@ xc_common(
 	struct cpu *cpup;
 	cpuset_t cpuset;
 
+	/*
+	 * Assert we haven't panicked and stopped the other CPUs.
+	 *
+	 * XXXARM: I'm deeply unhappy about using `panicstr` for this, but
+	 * seemingly that's the done thing.
+	 */
 	ASSERT(panicstr == NULL);
 
 	ASSERT(MUTEX_HELD(&xc_mbox_lock));
+
+	/*
+	 * XXXARM: I don't know what this guards against.  Us trying to to
+	 * cross call when we ourselves aren't ready to get it?  There must be
+	 * a story here at the very least.
+	 */
 	ASSERT(CPU->cpu_flags & CPU_READY);
 
 	CPUSET_ZERO(cpuset);
@@ -179,6 +201,7 @@ xc_common(
 			CPUSET_DEL(set, cix);
 		} else if (cix != lcx) {
 			CPU_STATS_ADDQ(CPU, sys, xcalls, 1);
+
 			ASSERT(cpup->cpu_m.xc_ack == 0);
 			ASSERT(cpup->cpu_m.xc_wait == 0);
 			ASSERT(cpup->cpu_m.xc_pend == 0);
@@ -190,7 +213,7 @@ xc_common(
 	}
 
 	/*
-	 * Send IPI to requested cpu sets.
+	 * Send IPI to requested remote cpus in selected set.
 	 */
 	cpuset = set;
 	CPUSET_DEL(cpuset, lcx);
@@ -199,13 +222,16 @@ xc_common(
 	}
 
 	/*
-	 * Run service locally
+	 * Run service locally if we're in the set
 	 */
 	if (CPU_IN_SET(set, lcx) && func != NULL)
 		CPU->cpu_m.xc_retval = (*func)(arg0, arg1, arg2);
 
 	/*
 	 * Wait here until all remote calls acknowledge.
+	 *
+	 * XXXARM: Should we check if the cpu is quiesced as well, rather than
+	 * forcing the ack in panic_idle?
 	 */
 	dsb(ish);
 	cpuset = set;
@@ -237,6 +263,7 @@ xc_common(
 		}
 		CPUSET_DEL(cpuset, cix);
 	}
+
 	/*
 	 * Wait here until all remote calls acknowledge.
 	 */
@@ -295,4 +322,3 @@ xc_call_nowait(
 	xc_common(func, arg0, arg1, arg2, set, XC_ASYNC_OP);
 	mutex_exit(&xc_mbox_lock);
 }
-

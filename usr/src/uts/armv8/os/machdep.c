@@ -63,7 +63,7 @@ hrtime_t hrtime_base;
 
 int64_t timedelta;
 int64_t hrestime_adj;
-// 2015/11/11 00:00 $B$K$7$F$*$/(B
+// 2015/11/11 00:00 にしておく
 volatile timestruc_t hrestime = { .tv_sec = 1447167600 };
 int gethrtime_hires = 0;
 char panicbuf[PANICBUFSIZE];
@@ -418,10 +418,50 @@ dump_plat_data(void *dump_cbuf)
 void
 panic_idle(void)
 {
-	splx(ipltospl(CLOCK_LEVEL));
+	/*
+	 * XXXARM: If we drop the SPL to CLOCK_LEVEL here we will take
+	 * interrupts on this cpu as it spins in panic idle, because
+	 * CLOCK_LEVEL is lower than both XC_HI_PIL and CBE_HIGH_PIL, we will
+	 * take a nested interrupt from the cyclic back end at a lower level
+	 * and trip an assertion.
+	 *
+	 * However, if we instead drop the SPL to the max of the running level
+	 * and CLOCK_LEVEL, that level will also be XC_HI_PIL and nothing will
+	 * happen, and all interrupts will remain masked, which is also bad.
+	 *
+	 * I _think_ we maybe dropping this so a keyboard can break into the
+	 * debugger, but in that case I am not sure what keeps the cyclic
+	 * backend away from us on other platforms.  This might represent a
+	 * bug in the AArch64 cyclic backend.
+	 *
+	 * At the moment we thus drop to CBE_HIGH_PIL, which blocks the lower
+	 * priority CBE interrupt coming in on top of us, but _allows_ another
+	 * XC_HI_PIL xcall (such as the one we make to _also_ stop the CPUs to
+	 * reboot).
+	 */
+	splx(ipltospl(CBE_HIGH_PIL));
 
+	(void) setjmp(&curthread->t_pcb);
+
+	/*
+	 * XXXARM: This is a hack because our xcalls are not great right now.
+	 * If we kick a cpu into a function which spins (like this), we never
+	 * get chance to ack the xcall, and the caller waits for us forever.
+	 *
+	 * To break free of this, for right now, we ack the xcall ourselves as
+	 * we know this will always happen to us.
+	 */
+	CPU->cpu_m.xc_ack = 1;
+	dsb(ish);
+
+	dumpsys_helper();
+
+	/*
+	 * XXXARM: We should have some symbolic way to say WFI, on intel it's
+	 * i86_halt which does 'sti; hlt'
+	 */
 	for (;;)
-		;
+		__asm__ __volatile__("wfi":::"memory");
 }
 
 /*
@@ -437,38 +477,13 @@ panic_stopcpus(cpu_t *cp, kthread_t *t, int spl)
 
 	(void) splzs();
 
-	/*
-	 * Send the highest level interrupt to all CPUs but me.
-	 * hilevel_intr_prolog() will call panic_idle().
-	 * We don't want to use xc_trycall() because it may not send interrupt.
-	 */
 	CPUSET_ALL_BUT(xcset, cp->cpu_id);
-	gic_send_ipi(xcset, IRQ_IPI_HI);
+	xc_call(0, 0, 0, CPUSET2BV(xcset), (xc_func_t)panic_idle);
 
 	for (i = 0; i < NCPU; i++) {
 		if (i != cp->cpu_id && cpu[i] != NULL &&
-		    (cpu[i]->cpu_flags & CPU_EXISTS)) {
-			int	loop;
-
-			if (!(cpu[i]->cpu_flags & CPU_ENABLE)) {
-				continue;
-			}
-
-			/* Wait for CPU to enter panic idle loop. */
-			loop = 0;
-			while (!CPU_IN_SET(panic_idle_enter, i)) {
-				cpuset_t mask;
-				CPUSET_ONLY(mask, i);
-				gic_send_ipi(mask, IRQ_IPI_HI);
-				drv_usecwait(10);
-				loop++;
-				if (loop >= PANIC_IDLE_MAXWAIT) {
-					prom_printf("cpu%d: panic_idle() may "
-					    "not be called.\n", i);
-					break;
-				}
-			}
-		}
+		    (cpu[i]->cpu_flags & CPU_EXISTS))
+			cpu[i]->cpu_flags |= CPU_QUIESCED;
 	}
 }
 
@@ -525,6 +540,16 @@ static int
 mach_cpu_halt(xc_arg_t arg1 __unused, xc_arg_t arg2 __unused,
     xc_arg_t arg3 __unused)
 {
+	/*
+	 * XXXARM: As in panic_idle is a hack because our xcalls are not great right now.
+	 * If we kick a cpu into a function which spins (like this), we never
+	 * get chance to ack the xcall, and the caller waits for us forever.
+	 *
+	 * To break free of this, for right now, we ack the xcall ourselves as
+	 * we know this will always happen to us.
+	 */
+	CPU->cpu_m.xc_ack = 1;
+
 	for (;;)
 		__asm__ volatile("wfe":::"memory");
 
