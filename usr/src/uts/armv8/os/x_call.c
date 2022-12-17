@@ -60,17 +60,13 @@ enum {
 	XC_WAIT,	/* capture/release. callee has seen wait */
 	XC_ASYNC_OP,
 };
+
 static int	xc_initialized = 0;
 extern cpuset_t	cpu_ready_set;
+
 static kmutex_t	xc_mbox_lock;
 static struct	xc_mbox xc_mbox;
 static uint_t xc_serv(caddr_t, caddr_t);
-
-static uint_t
-xc_poke(caddr_t arg0, caddr_t arg1)
-{
-	return (DDI_INTR_UNCLAIMED);
-}
 
 void
 xc_init()
