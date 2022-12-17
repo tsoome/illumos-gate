@@ -373,18 +373,31 @@ cpu_wakeup(cpu_t *cpu, int bound)
 void
 mach_init()
 {
-	slvltovect = mach_softlvl_to_vect;
-//	idle_cpu = cpu_halt;
-//	disp_enq_thread = cpu_wakeup;
-
 	cpuset_t cpumask;
+
+	slvltovect = mach_softlvl_to_vect;
+	/*
+	 * XXXARM: At present we have no smart idle or wakeup
+	 * we really could use them.
+	 */
+#if 0
+	idle_cpu = cpu_halt;
+	disp_enq_thread = cpu_wakeup;
+#endif
 	CPUSET_ZERO(cpumask);
-#if 1
+
+	/*
+	 * XXXARM: This is wrong in two ways:
+	 *
+	 * 1) it's taking the number of cpus the PIC can deliver interrupts
+	 *    to, not the number which exist.
+	 *
+	 * 2) this is the number we can deliver to without affinity
+	 *    distribution, which caps the system at 8 cores
+	 */
 	for (int cpu_id = 0; cpu_id < gic_num_cpus(); cpu_id++) {
 		CPUSET_ADD(cpumask, cpu_id);
 	}
-#else
-	CPUSET_ADD(cpumask, 0);
-#endif
+
 	mp_cpus = cpumask;
 }
