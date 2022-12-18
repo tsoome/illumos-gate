@@ -278,7 +278,7 @@ follow(char *path)
 
 	if (pt = strchr(path, '=')) {
 		*pt++ = '\0';
-		n = ((unsigned int)pt - (unsigned int)path - 1);
+		n = ((uintptr_t)pt - (uintptr_t)path - 1);
 		if (n >= PATH_MAX) {
 			progerr(gettext(ERR_PATHLONG));
 			errflg++;

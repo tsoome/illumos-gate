@@ -349,6 +349,7 @@ COMMON_SUBDIRS=	\
 	sulogin		\
 	sunpc		\
 	svc		\
+	svr4pkg		\
 	swap		\
 	sync		\
 	sysdef		\
@@ -466,7 +467,6 @@ COMMON_SUBDIRS=	\
 # sendmail - not 64bit clean (probably our build of it is hosed)
 # sh - not 64bit clean
 # srchtxt - not 64bit clean
-# svr4pkg - not 64bit clean
 # tar - not 64bit clean
 # tput - not 64bit clean
 # tip - not 64bit clean
@@ -526,7 +526,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	sendmail	\
 	sh		\
 	srchtxt		\
-	svr4pkg		\
 	tar		\
 	tput		\
 	tip		\
