@@ -47,7 +47,7 @@
 #define	NDMP_CAT_ALL	(NDMP_CAT_TAPE|NDMP_CAT_SCSI|NDMP_CAT_DATA|\
 			NDMP_CAT_MOVER)
 
-extern void ndmp_session_all_print(int, ndmp_session_info_t *, uint_t);
+extern void ndmp_session_all_print(int, ndmp_session_info_t *, size_t);
 extern void ndmp_session_print(int,  ndmp_session_info_t *);
 extern void ndmp_devinfo_print(ndmp_devinfo_t *, size_t);
 

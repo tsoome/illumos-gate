@@ -242,6 +242,7 @@ COMMON_SUBDIRS=	\
 	mt		\
 	mv		\
 	mvdir		\
+	ndmpadm		\
 	ndmpd		\
 	ndmpstat	\
 	netadm		\
@@ -452,7 +453,6 @@ COMMON_SUBDIRS=	\
 # luxadm - super confused about platforms, and probably needs libs
 # mknod - not 64bit clean
 # mdb - needs porting
-# ndmpadm - not 64bit clean
 # nohup - not ported (header bits gone awry)
 # oawk - not 64bit clean?
 # pg - not 64bit clean
@@ -508,7 +508,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	luxadm		\
 	mknod		\
 	mdb		\
-	ndmpadm		\
 	nohup		\
 	oawk		\
 	pcitool		\
