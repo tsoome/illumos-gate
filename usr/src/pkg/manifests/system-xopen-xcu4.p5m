@@ -50,7 +50,7 @@ $(not_aarch64)file path=usr/xpg4/bin/ctags mode=0555
 file path=usr/xpg4/bin/date mode=0555
 link path=usr/xpg4/bin/df target=../../sbin/df
 file path=usr/xpg4/bin/du mode=0555
-$(not_aarch64)file path=usr/xpg4/bin/ed mode=0555
+file path=usr/xpg4/bin/ed mode=0555
 $(not_aarch64)file path=usr/xpg4/bin/edit mode=0555
 link path=usr/xpg4/bin/egrep target=../../bin/grep
 file path=usr/xpg4/bin/env mode=0555

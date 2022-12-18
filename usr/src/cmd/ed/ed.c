@@ -1496,7 +1496,7 @@ append(int (*f)(void), LINE a)
 	dot = a;
 	while ((*f)() == 0) {
 		if (dol >= endcore) {
-			if ((int)sbrk(512 * sizeof (struct lin)) == -1) {
+			if ((intptr_t)sbrk(512 * sizeof (struct lin)) == -1) {
 				lastc = '\n';
 				(void) error(30);
 			}

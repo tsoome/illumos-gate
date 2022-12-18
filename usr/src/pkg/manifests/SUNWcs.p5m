@@ -610,7 +610,7 @@ file path=usr/bin/du mode=0555
 file path=usr/bin/dumpcs mode=0555
 file path=usr/bin/dumpkeys mode=0555
 file path=usr/bin/echo mode=0555
-$(not_aarch64)file path=usr/bin/ed mode=0555
+file path=usr/bin/ed mode=0555
 $(not_aarch64)hardlink path=usr/bin/edit target=../has/bin/edit
 hardlink path=usr/bin/egrep target=../../usr/bin/grep
 file path=usr/bin/eject mode=0555
@@ -709,7 +709,7 @@ file path=usr/bin/putdev mode=0555
 file path=usr/bin/putdgrp mode=0555
 link path=usr/bin/pwconv target=../sbin/pwconv
 file path=usr/bin/pwd mode=0555
-$(not_aarch64)hardlink path=usr/bin/red target=../../usr/bin/ed
+hardlink path=usr/bin/red target=../../usr/bin/ed
 file path=usr/bin/renice mode=0555
 file path=usr/bin/rm mode=0555
 link path=usr/bin/rmail target=./mail
