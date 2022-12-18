@@ -1194,6 +1194,8 @@ file path=opt/util-tests/tests/dis/arm/64.logical-shiftreg.out mode=0444
 file path=opt/util-tests/tests/dis/arm/64.logical-shiftreg.s mode=0444
 file path=opt/util-tests/tests/dis/arm/64.movwide-imm.out mode=0444
 file path=opt/util-tests/tests/dis/arm/64.movwide-imm.s mode=0444
+file path=opt/util-tests/tests/dis/arm/64.pc-rel.out mode=0444
+file path=opt/util-tests/tests/dis/arm/64.pc-rel.s mode=0444
 file path=opt/util-tests/tests/dis/arm/64.simd-across.out mode=0444
 file path=opt/util-tests/tests/dis/arm/64.simd-across.s mode=0444
 file path=opt/util-tests/tests/dis/arm/64.simd-copy.out mode=0444
