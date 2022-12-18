@@ -256,7 +256,7 @@ putch(int c)
 			 * sp position.
 			 */
 			(void) wscpy(tline, line);
-			*lastsp = (wchar_t)NULL;
+			*lastsp = (wchar_t)0;
 			(void) fputws(lastout, stdout);
 			(void) putwchar('\n');
 			/*
@@ -279,7 +279,7 @@ putch(int c)
 	if ((curc + 1) >= (line + LINE_MAX)) {
 		/* Reach buffer limit */
 		if (col > 0) {
-			*curc = (wchar_t)NULL;
+			*curc = (wchar_t)0;
 			(void) fputws(lastout, stdout);
 			lastsp = NULL;
 		}
@@ -343,7 +343,7 @@ static
 void
 newline_init()
 {
-	*curc = (wchar_t)NULL;
+	*curc = (wchar_t)0;
 	(void) fputws(lastout, stdout);
 	ncol = col = spcol = 0;
 	lastsp = NULL;

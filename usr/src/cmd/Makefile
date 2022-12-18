@@ -150,6 +150,7 @@ COMMON_SUBDIRS=	\
 	fmt		\
 	fmthard		\
 	fmtmsg		\
+	fold		\
 	fs.d		\
 	fstyp		\
 	fuser		\
@@ -446,7 +447,6 @@ COMMON_SUBDIRS=	\
 # file - wants bits of sys/core.h 64bit apps can't see
 # fwflash - needs libses
 # geniconvtbl - not 64bit clean
-# fold - not 64bit clean
 # mailx - not 64bit clean
 # format - not 64bit clean (but just printf stuff)
 # gss - not 64bit clean
@@ -497,7 +497,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	file		\
 	fwflash		\
 	geniconvtbl	\
-	fold		\
 	mailx		\
 	hal		\
 	format		\
