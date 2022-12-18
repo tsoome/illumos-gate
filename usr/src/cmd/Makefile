@@ -404,6 +404,8 @@ COMMON_SUBDIRS=	\
 	zic		\
 	zinject		\
 	zlogin		\
+	zoneadm		\
+	zoneadmd	\
 	zonecfg		\
 	zonename	\
 	zlook		\
@@ -473,7 +475,6 @@ COMMON_SUBDIRS=	\
 # tsol - not ported (or 64bit clean)
 # truss - not ported
 # vi - not 64bit clean / not ported
-# zoneadm/zoneadm - not 64bit clean, need zone bits
 # ypcmd - not 64bit clean
 # zonestat - not 64bit clean, needs to use the good readdir_r
 $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
@@ -536,8 +537,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	volcheck	\
 	volrmmount	\
 	vi		\
-	zoneadm		\
-	zoneadmd	\
 	ypcmd		\
 	zonestat	\
 

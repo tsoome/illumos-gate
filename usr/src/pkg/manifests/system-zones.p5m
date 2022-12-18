@@ -48,17 +48,16 @@ dir  path=lib variant.opensolaris.zone=global
 dir  path=lib/svc variant.opensolaris.zone=global
 dir  path=lib/svc/manifest group=sys variant.opensolaris.zone=global
 dir  path=lib/svc/manifest/system group=sys variant.opensolaris.zone=global
-$(not_aarch64)file path=lib/svc/manifest/system/resource-mgmt.xml group=sys \
-    mode=0444 variant.opensolaris.zone=global
-$(not_aarch64)file path=lib/svc/manifest/system/zones.xml group=sys mode=0444 \
+file path=lib/svc/manifest/system/resource-mgmt.xml group=sys mode=0444 \
+    variant.opensolaris.zone=global
+file path=lib/svc/manifest/system/zones.xml group=sys mode=0444 \
     variant.opensolaris.zone=global
 $(not_aarch64)file path=lib/svc/manifest/system/zonestat.xml group=sys \
     mode=0444 variant.opensolaris.zone=global
 dir  path=lib/svc/method variant.opensolaris.zone=global
-$(not_aarch64)file path=lib/svc/method/svc-resource-mgmt mode=0555 \
+file path=lib/svc/method/svc-resource-mgmt mode=0555 \
     variant.opensolaris.zone=global
-$(not_aarch64)file path=lib/svc/method/svc-zones mode=0555 \
-    variant.opensolaris.zone=global
+file path=lib/svc/method/svc-zones mode=0555 variant.opensolaris.zone=global
 $(not_aarch64)file path=lib/svc/method/svc-zonestat mode=0555 \
     variant.opensolaris.zone=global
 dir  path=usr group=sys
@@ -86,12 +85,12 @@ file path=usr/lib/libbrand.so.1
 file path=usr/lib/libzonecfg.so.1
 file path=usr/lib/libzonestat.so.1
 dir  path=usr/lib/zones
-$(not_aarch64)file path=usr/lib/zones/zoneadmd mode=0555
+file path=usr/lib/zones/zoneadmd mode=0555
 $(not_aarch64)file path=usr/lib/zones/zonestatd mode=0555 \
     variant.opensolaris.zone=global
 dir  path=usr/sbin
 file path=usr/sbin/zlogin mode=0555
-$(not_aarch64)file path=usr/sbin/zoneadm mode=0555
+file path=usr/sbin/zoneadm mode=0555
 file path=usr/sbin/zonecfg mode=0555
 dir  path=usr/share
 dir  path=usr/share/lib

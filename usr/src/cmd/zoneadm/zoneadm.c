@@ -106,7 +106,7 @@ typedef struct zone_entry {
 #define	CLUSTER_BRAND_NAME	"cluster"
 
 static zone_entry_t *zents;
-static size_t nzents;
+static uint_t nzents;
 
 #define	LOOPBACK_IF	"lo0"
 #define	SOCKET_AF(af)	(((af) == AF_UNSPEC) ? AF_INET : (af))
