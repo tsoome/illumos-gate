@@ -693,7 +693,7 @@ hardlink path=usr/bin/pfcsh target=../../usr/bin/pfexec
 file path=usr/bin/pfexec mode=0555
 hardlink path=usr/bin/pftcsh target=../../usr/bin/pfexec
 hardlink path=usr/bin/pfzsh target=../../usr/bin/pfexec
-$(not_aarch64)file path=usr/bin/pg mode=0555
+file path=usr/bin/pg mode=0555
 file path=usr/bin/pgrep mode=0555
 hardlink path=usr/bin/pkill target=../../usr/bin/pgrep
 file path=usr/bin/pktool mode=0555

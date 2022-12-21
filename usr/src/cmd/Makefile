@@ -273,6 +273,7 @@ COMMON_SUBDIRS=	\
 	pcieb		\
 	pfexec		\
 	pfexecd		\
+	pg		\
 	pginfo		\
 	pgstat		\
 	pgrep		\
@@ -458,7 +459,6 @@ COMMON_SUBDIRS=	\
 # mdb - needs porting
 # nohup - not ported (header bits gone awry)
 # oawk - not 64bit clean?
-# pg - not 64bit clean
 # prtdiag - not ported
 # refer - not 64bit clean
 # rcm_daemon - not 64bit clean
@@ -511,7 +511,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	pcitool		\
 	policykit	\
 	powertop	\
-	pg		\
 	prtdiag		\
 	refer		\
 	rcm_daemon	\

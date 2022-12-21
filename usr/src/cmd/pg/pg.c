@@ -1570,10 +1570,10 @@ newdol(FILE *f)
 			zero = ozero;
 			compact();
 		}
-		diff = (int)((int)zero - (int)ozero);
-		dot = (LINE *)((int)dot + diff);
-		dol = (LINE *)((int)dol + diff);
-		contig = (LINE *)((int)contig + diff);
+		diff = (uintptr_t)((uintptr_t)zero - (uintptr_t)ozero);
+		dot = (LINE *)((uintptr_t)dot + diff);
+		dol = (LINE *)((uintptr_t)dol + diff);
+		contig = (LINE *)((uintptr_t)contig + diff);
 	}
 	dol++;
 	if (!pipe_in)
