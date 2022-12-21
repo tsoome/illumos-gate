@@ -316,6 +316,7 @@ COMMON_SUBDIRS=	\
 	rpcbind		\
 	rpcgen		\
 	rpcinfo		\
+	rpcsvc		\
 	runat		\
 	sa		\
 	saf		\
@@ -462,7 +463,6 @@ COMMON_SUBDIRS=	\
 # prtdiag - not ported
 # refer - not 64bit clean
 # rcm_daemon - not 64bit clean
-# rpcsvc - not 64bit clean
 # scsi - needs libses libsmp
 # sendmail - not 64bit clean (probably our build of it is hosed)
 # sh - not 64bit clean
@@ -517,7 +517,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	rmformat	\
 	rmvolmgr	\
 	rmmount		\
-	rpcsvc		\
 	scsi		\
 	sendmail	\
 	sh		\

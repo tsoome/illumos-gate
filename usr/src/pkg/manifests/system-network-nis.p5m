@@ -58,8 +58,8 @@ file path=usr/lib/ldap/idsconfig mode=0555
 file path=usr/lib/ldap/ldap_cachemgr mode=0555
 link path=usr/lib/libnisdb.so target=./libnisdb.so.2
 file path=usr/lib/libnisdb.so.2
-$(not_aarch64)dir path=usr/lib/netsvc group=sys
-$(not_aarch64)dir path=usr/lib/netsvc/nis group=sys
+dir  path=usr/lib/netsvc group=sys
+dir  path=usr/lib/netsvc/nis group=sys
 $(not_aarch64)dir path=usr/lib/netsvc/yp
 $(not_aarch64)file path=usr/lib/netsvc/yp/ypbind mode=0555
 $(not_aarch64)file path=usr/lib/netsvc/yp/ypstart mode=0555

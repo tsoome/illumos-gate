@@ -34,9 +34,8 @@
  * contributors.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <rpc/rpc.h>
@@ -216,8 +215,7 @@ getutmpx_3(all, version, limit)
 			/*
 			 * need to free this; done after svc_sendreply.
 			 */
-			*q = (struct utmpidle *)
-				malloc(sizeof (struct utmpidle));
+			*q = malloc(sizeof (struct utmpidle));
 			(*q)->ui_idle = findidle(utent->ut_line,
 						sizeof (utent->ut_line), now);
 			if (strncmp(utent->ut_line, "console",
@@ -279,7 +277,7 @@ int size;
 {
 	char *tmp;
 
-	tmp = (char *)malloc(size+1);
+	tmp = malloc(size+1);
 	if (tmp == NULL) {
 		msgout("rpc.rusersd: malloc failed (2)");
 		return (NULL);
@@ -329,8 +327,8 @@ rusers_service(rqstp, transp)
 	case RUSERSPROC_NAMES:
 	case RUSERSPROC_ALLNAMES:
 		if (rqstp->rq_vers == RUSERSVERS_IDLE) {
-			utmpidlearr.uia_arr = (struct utmpidle **)
-				malloc(MAXUSERS*sizeof (struct utmpidle *));
+			utmpidlearr.uia_arr =
+			    calloc(MAXUSERS, sizeof (struct utmpidle *));
 			utmpidlearr.uia_cnt = getutmpx_3(rqstp->rq_proc ==
 				RUSERSPROC_ALLNAMES,
 				RUSERSVERS_IDLE, MAXUSERS);
@@ -355,8 +353,8 @@ rusers_service(rqstp, transp)
 			if (cnt > utmp_array_res.utmp_array_len) {
 				free(utmp_array_res.utmp_array_val);
 				utmp_array_res.utmp_array_len = 0;
-				utmp_array_res.utmp_array_val = (rusers_utmp *)
-					malloc(cnt * sizeof (rusers_utmp));
+				utmp_array_res.utmp_array_val =
+				    calloc(cnt, sizeof (rusers_utmp));
 				if (utmp_array_res.utmp_array_val == NULL) {
 				    msgout("rpc.rusersd: malloc failed (1)");
 				    break;

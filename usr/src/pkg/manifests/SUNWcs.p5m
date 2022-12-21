@@ -201,7 +201,7 @@ dir  path=etc/rcS.d group=sys
 file path=etc/rcS.d/README group=sys
 link path=etc/reboot target=../usr/sbin/halt
 $(not_aarch64)file path=etc/remote preserve=true
-$(not_aarch64)file path=etc/rpc group=sys preserve=true
+file path=etc/rpc group=sys preserve=true
 dir  path=etc/rpcsec group=sys
 dir  path=etc/saf
 file path=etc/saf/_sactab group=sys preserve=true
