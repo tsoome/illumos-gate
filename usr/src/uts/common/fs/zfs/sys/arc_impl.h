@@ -96,9 +96,14 @@ struct arc_callback {
 	boolean_t		acb_encrypted;
 	boolean_t		acb_compressed;
 	boolean_t		acb_noauth;
+	boolean_t		acb_wait;
+	int			acb_wait_error;
+	kmutex_t		acb_wait_lock;
+	kcondvar_t		acb_wait_cv;
 	zbookmark_phys_t	acb_zb;
 	zio_t			*acb_zio_dummy;
 	zio_t			*acb_zio_head;
+	arc_callback_t		*acb_prev;
 	arc_callback_t		*acb_next;
 };
 
@@ -494,15 +499,27 @@ struct arc_buf_hdr {
 };
 
 typedef struct arc_stats {
+	/* Number of requests that were satisfied without I/O. */
 	kstat_named_t arcstat_hits;
+	/* Number of requests for which I/O was already running. */
+	kstat_named_t arcstat_iohits;
+	/* Number of requests for which I/O has to be issued. */
 	kstat_named_t arcstat_misses;
+	/* Same three, but specifically for demand data. */
 	kstat_named_t arcstat_demand_data_hits;
+	kstat_named_t arcstat_demand_data_iohits;
 	kstat_named_t arcstat_demand_data_misses;
+	/* Same three, but specifically for demand metadata. */
 	kstat_named_t arcstat_demand_metadata_hits;
+	kstat_named_t arcstat_demand_metadata_iohits;
 	kstat_named_t arcstat_demand_metadata_misses;
+	/* Same three, but specifically for prefetch data. */
 	kstat_named_t arcstat_prefetch_data_hits;
+	kstat_named_t arcstat_prefetch_data_iohits;
 	kstat_named_t arcstat_prefetch_data_misses;
+	/* Same three, but specifically for prefetch metadata. */
 	kstat_named_t arcstat_prefetch_metadata_hits;
+	kstat_named_t arcstat_prefetch_metadata_iohits;
 	kstat_named_t arcstat_prefetch_metadata_misses;
 	kstat_named_t arcstat_mru_hits;
 	kstat_named_t arcstat_mru_ghost_hits;
@@ -828,8 +845,19 @@ typedef struct arc_stats {
 	kstat_named_t arcstat_meta_max;
 	kstat_named_t arcstat_meta_min;
 	kstat_named_t arcstat_async_upgrade_sync;
+	/* Number of predictive prefetch requests. */
+	kstat_named_t arcstat_predictive_prefetch;
+	/* Number of requests for which predictive prefetch has completed. */
 	kstat_named_t arcstat_demand_hit_predictive_prefetch;
+	/* Number of requests for which predictive prefetch was running. */
+	kstat_named_t arcstat_demand_iohit_predictive_prefetch;
+	/* Number of prescient prefetch requests. */
+	kstat_named_t arcstat_prescient_prefetch;
+	/* Number of requests for which prescient prefetch has completed. */
 	kstat_named_t arcstat_demand_hit_prescient_prefetch;
+	/* Number of requests for which prescient prefetch was running. */
+	kstat_named_t arcstat_demand_iohit_prescient_prefetch;
+	/* XXX */
 } arc_stats_t;
 
 #define	ARCSTAT(stat)	(arc_stats.stat.value.ui64)
