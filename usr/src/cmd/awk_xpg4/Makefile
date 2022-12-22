@@ -43,7 +43,6 @@ include ../Makefile.cmd
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
 CFLAGS += $(CCVERBOSE)
 CERRWARN += -_gcc=-Wno-unused-label
-CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 YFLAGS += -d
 LDLIBS += -lm

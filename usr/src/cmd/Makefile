@@ -59,6 +59,7 @@ COMMON_SUBDIRS=	\
 	auths		\
 	autopush	\
 	awk		\
+	awk_xpg4	\
 	banner		\
 	bart		\
 	basename	\
@@ -436,7 +437,6 @@ COMMON_SUBDIRS=	\
 # cdrw - needs dbus
 #
 # acct - not 64bit clean
-# awk_xpg4 - not 64bit clean
 # bc - not 64bit clean
 # backup - not 64bit clean
 # cpc - not ported (nor libcpc)
@@ -485,7 +485,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	acct		\
 	bnu		\
 	cdrw		\
-	awk_xpg4	\
 	bc		\
 	backup		\
 	cpc		\

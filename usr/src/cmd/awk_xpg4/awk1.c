@@ -1149,11 +1149,13 @@ lexungetc(wint_t c)
 void
 yyerror(char *s, ...)
 {
-	if (lexlast == FUNC || lexlast == GETLINE || lexlast == KEYWORD)
-		if (lexlast == KEYWORD)
+	if (lexlast == FUNC || lexlast == GETLINE || lexlast == KEYWORD) {
+		if (lexlast == KEYWORD) {
 			awkerr(gettext("inadmissible use of reserved keyword"));
-		else
+		} else {
 			awkerr(gettext("attempt to redefine builtin function"));
+		}
+	}
 	awkerr(s);
 }
 

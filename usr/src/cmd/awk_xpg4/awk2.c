@@ -848,7 +848,7 @@ xprintf(NODE *np, FILE *fp, wchar_t **cp)
 
 		default:
 			if (c == '\0') {
-				*ofmtp = (wchar_t)NULL;
+				*ofmtp = (wchar_t)0;
 				(void) fprintf(fp, "%s", fmtbuf);
 				continue;
 			} else {

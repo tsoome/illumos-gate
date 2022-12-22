@@ -1016,11 +1016,14 @@ exprreduce(NODE *np)
 	 * might be an array so we check.. If it is an array, then signal
 	 * an error as an array by itself cannot be used in this context.
 	 */
-	if (t == PARM)
-		if ((np = np->n_next)->n_type == ARRAY)
+	if (t == PARM) {
+		if ((np = np->n_next)->n_type == ARRAY) {
 			awkerr(badarray, np->n_name);
-		else
+		} else {
 			return (np);
+		}
+	}
+
 	/*
 	 * All the rest are non-leaf nodes.
 	 */
