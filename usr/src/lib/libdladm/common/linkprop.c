@@ -1901,7 +1901,7 @@ check_cpus(dladm_handle_t handle, prop_desc_t *pdp, datalink_id_t linkid,
 	uint32_t		ncpus;
 	uint32_t		*cpus = mrp.mrp_cpu;
 	val_desc_t		*vdp = *vdpp;
-	val_desc_t		*newvdp;
+	val_desc_t		*newvdp = NULL;
 	uint_t			val_cnt = *val_cntp;
 	dladm_status_t		status = DLADM_STATUS_OK;
 
@@ -2831,7 +2831,7 @@ dladm_str2cid(char *buf, mac_dhcpcid_t *cid)
 	    ptr[strspn(ptr, "0123456789")] == '.') {
 		char	*cp;
 		ulong_t	duidtype;
-		ulong_t	subtype;
+		ulong_t	subtype = 0;
 		ulong_t	timestamp;
 		uchar_t	*lladdr;
 		int	addrlen;
@@ -3883,7 +3883,6 @@ set_public_prop(dladm_handle_t handle, prop_desc_t *pdp,
 
 	status = i_dladm_macprop(handle, dip, B_TRUE);
 
-done:
 	free(dip);
 	return (status);
 }
@@ -4493,7 +4492,7 @@ check_stp_prop(dladm_handle_t handle, struct prop_desc *pd,
     val_desc_t **vdpp, datalink_media_t media)
 {
 	char		*cp;
-	boolean_t	iscost;
+	boolean_t	iscost = B_FALSE;
 	uint_t		val_cnt = *val_cntp;
 	val_desc_t	*vdp = *vdpp;
 
@@ -4772,7 +4771,7 @@ static dladm_status_t
 i_dladm_link_proplist_extract_one(dladm_handle_t handle,
     dladm_arg_list_t *proplist, const char *name, uint_t flags, void *arg)
 {
-	dladm_status_t		status;
+	dladm_status_t		status = DLADM_STATUS_OK;
 	dladm_arg_info_t	*aip = NULL;
 	int			i, j;
 
@@ -4785,7 +4784,10 @@ i_dladm_link_proplist_extract_one(dladm_handle_t handle,
 
 	/* Property not in list */
 	if (i == proplist->al_count)
-		return (DLADM_STATUS_OK);
+		return (status);
+
+	if (aip->ai_val[0] == NULL)
+		return (DLADM_STATUS_BADARG);
 
 	for (i = 0; i < DLADM_MAX_PROPS; i++) {
 		prop_desc_t	*pdp = &prop_table[i];
@@ -4797,9 +4799,6 @@ i_dladm_link_proplist_extract_one(dladm_handle_t handle,
 
 		if (strcasecmp(aip->ai_name, pdp->pd_name) != 0)
 			continue;
-
-		if (aip->ai_val == NULL)
-			return (DLADM_STATUS_BADARG);
 
 		/* Check property value */
 		if (pdp->pd_check != NULL) {

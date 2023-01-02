@@ -46,12 +46,14 @@ SUBDIRS =       \
 # XXXARM: Not ported
 $(NOT_AARCH64_BLD)SUBDIRS +=	stackalign
 
-
 PROGS = \
 	clock_gettime \
 	eventfd \
 	odirectory \
 	writev
+
+# XXXARM: Needs thread-local storage
+$(NOT_AARCH64_BLD)PROGS +=	ucontext
 
 CPPFLAGS += -D_REENTRANT
 PROGS32 = $(PROGS:%=%.32)
@@ -69,6 +71,9 @@ clock_gettime.32 :=	LDLIBS += -lproc
 clock_gettime.32 :=	CSTD = $(CSTD_GNU99)
 clock_gettime.64 :=	LDLIBS64 += -lproc
 clock_gettime.64 :=	CSTD = $(CSTD_GNU99)
+
+ucontext.32 :=		SMOFF += unreachable
+ucontext.64 :=		SMOFF += unreachable
 
 writev.32 :=		CPPFLAGS += -D_FILE_OFFSET_BITS=64
 writev.32 :=		CSTD = $(CSTD_GNU99)

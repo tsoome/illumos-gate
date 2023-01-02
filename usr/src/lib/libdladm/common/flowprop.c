@@ -484,7 +484,7 @@ static dladm_status_t
 i_dladm_flow_proplist_extract_one(dladm_arg_list_t *proplist,
     const char *name, void *arg)
 {
-	dladm_status_t		status;
+	dladm_status_t		status = DLADM_STATUS_OK;
 	dladm_arg_info_t	*aip = NULL;
 	int			i, j;
 
@@ -499,6 +499,9 @@ i_dladm_flow_proplist_extract_one(dladm_arg_list_t *proplist,
 	if (i == proplist->al_count)
 		return (DLADM_STATUS_OK);
 
+	if (aip->ai_val[0] == NULL)
+		return (DLADM_STATUS_BADARG);
+
 	for (i = 0; i < DLADM_MAX_FLOWPROPS; i++) {
 		fprop_desc_t	*pdp = &prop_table[i];
 		val_desc_t	*vdp;
@@ -509,9 +512,6 @@ i_dladm_flow_proplist_extract_one(dladm_arg_list_t *proplist,
 
 		if (strcasecmp(aip->ai_name, pdp->pd_name) != 0)
 			continue;
-
-		if (aip->ai_val == NULL)
-			return (DLADM_STATUS_BADARG);
 
 		/* Check property value */
 		if (pdp->pd_check != NULL) {
