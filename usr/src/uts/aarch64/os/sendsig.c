@@ -59,7 +59,7 @@
 #include <sys/consdev.h>
 #include <sys/psw.h>
 #include <sys/regset.h>
-
+#include <sys/frame.h>
 #include <sys/privregs.h>
 
 #include <sys/stack.h>
@@ -97,11 +97,98 @@
  * are correct on the error return from on_fault().)
  */
 
+/*
+ * An AArch64 signal frame looks like this on the stack, after the prologue of
+ * sigacthandler in libc has executed.
+ *
+ *	 .---------------------------.
+ *	 |	  register	     |
+ *	 |	    save	     |
+ *	 |	    area	     |
+ *	 +---------------------------+	   <- interrupted frame
+ *	 | saved return address	     | ----.
+ *	 +---------------------------+	   |
+ *   .-> | saved frame pointer	     | <-. |
+ *   |	 `--------------------------'	 | |	  Backtrace innermost last
+ *   |					 | |   .---------------------------.
+ *   |	 .---------------------------.	 | |   |	   ...		   |
+ *   |	 | optional siginfo_t	     |	 | `-- |	  caller	   |
+ *   |	 +---------------------------+	 |     +---------------------------+
+ *   |	 |       ucontext_t	     |	 | .-- |    interrupted_ func()	   |
+ *   |	 |           ...	     |	 | |   +---------------------------+
+ *   |	 |           REG_FP	     | --' |   |      invalid		   | --.
+ *   |	 |           ...	     |	   |   +---------------------------+   |
+ *   |	 +---------------------------+	   |   | libc.so.1`sigacthandler() |   |
+ *   |	 |          siginfo_t *      |	   |   +---------------------------+   |
+ *   |	 +---------------------------+	   |   .   user signal handler	   .   |
+ *   |	 |       signal number	     |	   |   .	 ...		   .   |
+ *   |	 +---------------------------+	   |   `...........................'   |
+ *   |	 |    saved return address   | ---'				       |
+ *   |	 +---------------------------+	 <- signal frame		       |
+ *   `-- |			     |	    pushed by sendsig()		       |
+ *   .-> |    saved frame pointer    |					       |
+ *   |	 `--------------------------'					       |
+ *   |									       |
+ *   |	 .---------------------------.					       |
+ *   |	 |	  register	     |	<- sigacthandler frame		       |
+ *   |	 |	    save	     |	   pushed by libc.so.1`sigacthandler   |
+ *   |	 |	    area	     |					       |
+ *   |	 +---------------------------+					       |
+ *   |	 | invalid return address -1 | ----------------------------------------'
+ *   |	 +---------------------------+
+ *   `-- |			     |
+ * .---> |    saved frame pointer    |
+ * | .-> |			     |
+ * | |	 `--------------------------'
+ * | |
+ * | |			      Registers
+ * | |			 .---------------.
+ * | |			 |	%lr	 |
+ * | |			 +---------------+
+ * | `------------------ |	%fp	 |
+ * |			 +---------------+
+ * `-------------------- |     %sp	 |
+ *			 `--------------'
+ *
+ *
+ * This is a little weird, and unlike our other platforms.  This is because a
+ * common AArch64 function prologue starts like this.
+ *
+ *    sigacthandler:	   fd 7b bd a9	stp x29, x30, [sp, #-48]!
+ *    sigacthandler+0x4:   fd 03 00 91	mov x29, sp
+ *
+ * This pre-increments sp to form the register save area, then stores the
+ * frame pointer and return address at the new sp.  This means that without
+ * knowledge of the size of sigacthandler's register save area we have no way
+ * to discover the sigframe using only the %fp and %sp in the sigacthandler
+ * frame.
+ *
+ * Instead, we point sigacthandler's saved frame pointer to a fake frame
+ * constructed entirely by the kernel which is immediately followed by our
+ * signal data.
+ *
+ * When walking the stack, if a frame with pc == -1 is seen the signal
+ * information can be read by dereferencing that frame's saved frame pointer,
+ * and the stack walk continued from the registers in the ucontext.
+ *
+ * A naive walker that doesn't care about the signal context can skip printing
+ * the frame with pc == -1 and continue following the frame pointers.
+ *
+ * An even more naive walker can just walk the stack normally, albeit with a
+ * confusing frame.
+ *
+ * The actual return of libc.so.1`sigacthandler() is via setcontext(2) of the
+ * saved ucontext and so does not encounter the fake frame.
+ */
+
+/*
+ * This ABSOLUTELY MUST be kept in sync with libproc's `Pstack_iter` and
+ * libc's `walkcontext`
+ */
 struct sigframe {
+	struct frame fr;
 	long	signo;
-	caddr_t retaddr;
 	siginfo_t *sip;
-	long	:64;
 };
 
 int
@@ -125,7 +212,6 @@ sendsig(int sig, k_siginfo_t *sip, void (*hdlr)())
 	rp = lwptoregs(lwp);
 	upc = rp->r_pc;
 
-	/* LINTED: logical expression always true: op "||" */
 	ASSERT((sizeof (struct sigframe) % STACK_ENTRY_ALIGN) == 0);
 
 	minstacksz = sizeof (struct sigframe) + SA(sizeof (*uc));
@@ -248,10 +334,8 @@ sendsig(int sig, k_siginfo_t *sip, void (*hdlr)())
 	{
 		struct sigframe frame;
 
-		/*
-		 * ensure we never return "normally"
-		 */
-		frame.retaddr = (caddr_t)(uintptr_t)-1L;
+		frame.fr.fr_savfp = rp->r_fp;
+		frame.fr.fr_savpc = rp->r_lr;
 		frame.signo = sig;
 		frame.sip = sip_addr;
 		copyout_noerr(&frame, sp, sizeof (frame));
@@ -264,10 +348,16 @@ sendsig(int sig, k_siginfo_t *sip, void (*hdlr)())
 	/*
 	 * Set up user registers for execution of signal handler.
 	 */
-	rp->r_x30 = 0;
+	rp->r_fp = (greg_t)sp;
 	rp->r_sp = (greg_t)sp;
 	rp->r_pc = (greg_t)hdlr;
 	rp->r_spsr = PSR_USERINIT;
+
+	/*
+	 * Mark the signal frame for consumers, and ensure we can't
+	 * 'ret'.
+	 */
+	rp->r_lr = -1;
 
 	rp->r_x0 = sig;
 	rp->r_x1 = (uintptr_t)sip_addr;
