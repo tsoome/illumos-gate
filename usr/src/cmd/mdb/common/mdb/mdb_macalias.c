@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * (k)adb Macro Aliases
  *
@@ -82,8 +80,12 @@ static const mdb_macalias_t mdb_macaliases[] = {
 	{ "systemdump",		"0>pc;0>npc;nopanicdebug/W 1;:c" },
 #elif defined(__i386)
 	{ "systemdump",		"0>eip;nopanicdebug/W 1;:c" },
-#else
+#elif defined(__amd64)
 	{ "systemdump",		"0>rip;nopanicdebug/W 1;:c" },
+#elif defined(__aarch64__)
+	{ "systemdump",		"0>pc;nopanicdebug/W 1;:c" },
+#else
+#error Unknown platform
 #endif
 	{ "thread",		"::print kthread_t" },
 	{ "threadlist",		"::threadlist -v" },

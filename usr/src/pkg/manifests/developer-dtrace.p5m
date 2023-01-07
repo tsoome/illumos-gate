@@ -185,15 +185,14 @@ link path=usr/lib/libdtrace.so target=libdtrace.so.1
 file path=usr/lib/libdtrace.so.1
 $(not_aarch64)link path=usr/lib/libdtrace_jni.so target=libdtrace_jni.so.1
 $(not_aarch64)file path=usr/lib/libdtrace_jni.so.1
-$(not_aarch64)dir path=usr/lib/mdb group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/dtrace.so group=sys \
-    mode=0555
-$(not_aarch64)dir path=usr/lib/mdb/raw group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/raw/$(ARCH64) group=sys
-$(MULTILIB_ONLY)file path=usr/lib/mdb/raw/$(ARCH64)/dof.so group=sys mode=0555
-$(not_aarch64)file path=usr/lib/mdb/raw/dof.so group=sys mode=0555
+dir  path=usr/lib/mdb group=sys
+dir  path=usr/lib/mdb/kvm group=sys
+dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+file path=usr/lib/mdb/kvm/$(ARCH64)/dtrace.so group=sys mode=0555
+dir  path=usr/lib/mdb/raw group=sys
+dir  path=usr/lib/mdb/raw/$(ARCH64) group=sys
+file path=usr/lib/mdb/raw/$(ARCH64)/dof.so group=sys mode=0555
+$(MULTILIB_ONLY)file path=usr/lib/mdb/raw/dof.so group=sys mode=0555
 dir  path=usr/sbin
 dir  path=usr/sbin/$(ARCH32)
 $(not_aarch64)file path=usr/sbin/$(ARCH32)/dtrace mode=0555

@@ -26,8 +26,6 @@
 #ifndef	_MDB_KVM_H
 #define	_MDB_KVM_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/machelf.h>
 #include <sys/dumphdr.h>
@@ -158,13 +156,17 @@ extern struct ctf_file *kt_name_to_ctf(mdb_tgt_t *, const char *);
 
 extern int kt_status(mdb_tgt_t *, mdb_tgt_status_t *);
 
-#ifdef __sparc
+#if defined(__sparc)
 extern void kt_sparcv9_init(mdb_tgt_t *);
 extern void kt_sparcv7_init(mdb_tgt_t *);
-#else	/* __sparc */
+#elif defined(__x86)
 extern void kt_ia32_init(mdb_tgt_t *);
 extern void kt_amd64_init(mdb_tgt_t *);
-#endif	/* __sparc */
+#elif defined(__aarch64__)
+extern void kt_aarch64_init(mdb_tgt_t *);
+#else
+#error Unknown platform
+#endif
 
 typedef int (*mdb_name_lookup_fcn_t)(const char *, GElf_Sym *);
 typedef int (*mdb_addr_lookup_fcn_t)(uintptr_t, int, char *, size_t,

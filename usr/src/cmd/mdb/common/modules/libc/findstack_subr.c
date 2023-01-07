@@ -33,7 +33,7 @@
 #include <stddef.h>
 #include "findstack.h"
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86) || defined(__aarch64__)
 struct rwindow {
 	uintptr_t rw_fp;
 	uintptr_t rw_rtn;
@@ -44,17 +44,17 @@ struct rwindow {
 #define	STACK_BIAS	0
 #endif
 
-#ifdef __amd64
+#if defined(__amd64)
 #define	STACKS_REGS_FP	"rbp"
 #define	STACKS_REGS_RC	"rip"
-#else
-#ifdef __i386
+#elif defined(__i386)
 #define	STACKS_REGS_FP	"ebp"
 #define	STACKS_REGS_RC	"eip"
-#else
+#elif defined(__sparc) || defined(__aarch64__)
 #define	STACKS_REGS_FP	"fp"
 #define	STACKS_REGS_RC	"pc"
-#endif
+#else
+#error Unknown platform
 #endif
 
 #define	STACKS_SOBJ_MX	(uintptr_t)"MX"

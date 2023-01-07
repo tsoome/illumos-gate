@@ -230,6 +230,7 @@ COMMON_SUBDIRS=	\
 	makekey		\
 	man		\
 	mandoc		\
+	mdb		\
 	mesg		\
 	mkdir		\
 	mkfifo		\
@@ -457,7 +458,6 @@ COMMON_SUBDIRS=	\
 # krb5 - not 64bit clean
 # luxadm - super confused about platforms, and probably needs libs
 # mknod - not 64bit clean
-# mdb - needs porting
 # nohup - not ported (header bits gone awry)
 # oawk - not 64bit clean?
 # prtdiag - not ported
@@ -505,7 +505,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	latencytop	\
 	luxadm		\
 	mknod		\
-	mdb		\
 	nohup		\
 	oawk		\
 	pcitool		\

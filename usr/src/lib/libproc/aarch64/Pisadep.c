@@ -108,11 +108,9 @@ Pissyscall_text(struct ps_prochandle *P, const void *buf, size_t buflen)
 	if (buflen < sizeof (uint32_t))
 		return (0);
 
-	const uint8_t *inst = buf;
-	uint32_t instr = ((inst[3] << 24) | (inst[2] << 16) |
-	    (inst[1] << 8) | inst[0]);
+	const uint32_t *instr = buf;
 
-	if ((instr & 0xFE00001F) == 0xD4000001)
+	if ((*instr & 0xFE00001F) == 0xD4000001)
 		return (1);
 
 	return (0);

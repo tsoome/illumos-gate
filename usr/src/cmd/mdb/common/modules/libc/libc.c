@@ -96,6 +96,53 @@ d_jmp_buf(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	mdb_printf("  %%ebp = 0x%lx\n", b[3]);
 	mdb_printf("  %%esp = 0x%lx\n", b[4]);
 	mdb_printf("  %%eip = 0x%lx %lA\n", b[5], b[5]);
+#elif defined(__aarch64__)
+	upad128_t *fp;
+
+	mdb_printf("  %%x19 = 0x%lx\t%%x20 = 0x%lx\n", b[0], b[1]);
+	mdb_printf("  %%x21 = 0x%lx\t%%x22 = 0x%lx\n", b[2], b[3]);
+	mdb_printf("  %%x23 = 0x%lx\t%%x24 = 0x%lx\n", b[4], b[5]);
+	mdb_printf("  %%x25 = 0x%lx\t%%x26 = 0x%lx\n", b[6], b[7]);
+	mdb_printf("  %%x27 = 0x%lx\t%%x28 = 0x%lx\n", b[8], b[9]);
+	mdb_printf("  %%fp = 0x%lx\n", b[10]);
+	mdb_printf("  %%pc = 0x%lx %lA\n", b[11], b[11]);
+
+	/* XXXARM: the FP registers being in the jmp_buf seems weird */
+	fp = (upad128_t *)&b[12];
+	mdb_printf("  %%q8  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[14];
+	mdb_printf("  %%q9  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[16];
+	mdb_printf("  %%q10  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[18];
+	mdb_printf("  %%q11  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[20];
+	mdb_printf("  %%q12  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[22];
+	mdb_printf("  %%q13  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[24];
+	mdb_printf("  %%q14  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	fp = (upad128_t *)&b[26];
+	mdb_printf("  %%q15  0x%08x%08x%08x%08x\n",
+	    fp->_l[3], fp->_l[2],
+	    fp->_l[1], fp->_l[0]);
+	mdb_printf("  %%sp = 0x%lx\n", b[28]);
+#else
+#error Unknown ISA
 #endif
 	return (DCMD_OK);
 }
@@ -189,8 +236,10 @@ d_sigjmp_buf(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 
 	return (DCMD_OK);
 
-#elif defined(__i386) || defined(__amd64)
+#elif defined(__x86) || defined(__aarch64__)
 	return (d_ucontext(addr, flags, argc, argv));
+#else
+#error Unknown platform
 #endif
 }
 

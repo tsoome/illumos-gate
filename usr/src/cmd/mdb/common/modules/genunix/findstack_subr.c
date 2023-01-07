@@ -45,7 +45,7 @@
 
 #define	CRAWL_FOUNDALL	(-1)
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86) || defined(__aarch64__)
 struct rwindow {
 	uintptr_t rw_fp;
 	uintptr_t rw_rtn;
@@ -96,7 +96,7 @@ crawl(uintptr_t frame, uintptr_t kbase, uintptr_t ktop, uintptr_t ubase,
 			return (CRAWL_FOUNDALL);
 		fs_dprintf(("<3> not at base\n"));
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86) || defined(__aarch64__)
 		if (ktop - fp == sizeof (struct rwindow)) {
 			fs_dprintf(("<4> found base\n"));
 			return (CRAWL_FOUNDALL);

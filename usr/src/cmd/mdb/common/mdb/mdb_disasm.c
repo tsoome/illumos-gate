@@ -312,8 +312,7 @@ libdisasm_ins2str(mdb_disasm_t *dp, mdb_tgt_t *t, mdb_tgt_as_t as,
 
 	if ((p = mdb_tgt_name(t)) != NULL && strcmp(p, "proc") == 0) {
 		/* check for ELF ET_REL type; turn on NOIMMSYM if so */
-
-		GElf_Ehdr 	leh;
+		GElf_Ehdr	leh;
 
 		if (mdb_tgt_getxdata(t, "ehdr", &leh, sizeof (leh)) != -1 &&
 		    leh.e_type == ET_REL)  {
@@ -406,7 +405,7 @@ static const mdb_dis_ops_t libdisasm_ops = {
  */
 static int
 libdisasm_create(mdb_disasm_t *dp, const char *name,
-		const char *desc, int flags)
+    const char *desc, int flags)
 {
 	if ((dp->dis_data = dis_handle_create(flags, NULL, libdisasm_lookup,
 	    libdisasm_read)) == NULL)
@@ -506,6 +505,26 @@ sparcv9plus_create(mdb_disasm_t *dp)
 }
 #endif
 
+#if defined(__aarch64__)
+static int
+a64_create(mdb_disasm_t *dp)
+{
+	return (libdisasm_create(dp,
+	    "a64",
+	    "ARM 64-bit disassembler",
+	    DIS_ARM_64));
+}
+
+static int
+a32_create(mdb_disasm_t *dp)
+{
+	return (libdisasm_create(dp,
+	    "a32",
+	    "ARM 32-bit disassembler",
+	    DIS_ARM_32));
+}
+#endif
+
 /*ARGSUSED*/
 static void
 defdis_destroy(mdb_disasm_t *dp)
@@ -570,6 +589,11 @@ mdb_dis_ctor_f *const mdb_dis_builtins[] = {
 	sparcv8_create,
 	sparcv9_create,
 	sparcv9plus_create,
+#elif defined(__aarch64__)
+	a32_create,
+	a64_create,
+#else
+#error Unknown ISA
 #endif
 	NULL
 };

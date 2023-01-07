@@ -26,88 +26,95 @@
 # Copyright 2022 Garrett D'Amore
 #
 
+include $(SRC)/Makefile.master
+
 #
 # MDB modules used for debugging user processes that every ISA's build
 # subdirectory will need to build.
 #
 
-COMMON_MODULES_PROC = \
-	dof \
-	libavl \
-	libc \
-	libfknsmb \
-	libfksmbfs \
-	libfksmbsrv \
-	libmlsvc \
-	libnvpair \
-	libproc \
-	libsysevent \
-	libtopo \
-	libumem \
-	libuutil \
-	libzpool \
-	list \
-	mdb_ds \
+COMMON_MODULES_PROC =	\
+	dof		\
+	libavl		\
+	libc		\
+	libfknsmb	\
+	libfksmbfs	\
+	libmlsvc	\
+	libnvpair	\
+	libproc		\
+	libsysevent	\
+	libtopo		\
+	libumem		\
+	libuutil	\
+	libzpool	\
+	list		\
+	mdb_ds		\
 	mdb_test
+
+# XXXARM: Needs cross dtrace
+$(NOT_AARCH64_BLD)COMMON_MODULES_PROC +=	\
+	libfksmbsrv
 
 #
 # MDB modules used for debugging user processes which are only 64-bit
 #
-COMMON_MODULES_PROC_64BIT = \
+# XXXARM: Needs python, and porting
+$(NOT_AARCH64_BLD)COMMON_MODULES_PROC_64BIT = \
 	libpython
 
 #
 # MDB modules used for debugging user processes which are only 32-bit
-#
-COMMON_MODULES_PROC_32BIT = \
-	svc.configd \
+# XXXARM: except on AArch64 they're 64bit, let's not let this get confusing
+COMMON_MODULES_PROC_32BIT =	\
+	svc.configd		\
 	svc.startd
 
 #
 # MDB modules used for debugging kernels.
 #
-COMMON_MODULES_KVM = \
-	arp \
-	cpc \
-	crypto	\
-	dtrace	\
-	emlxs \
-	fcip \
-	fcp \
-	fctl \
-	genunix \
-	hook \
-	neti \
-	idm \
-	ip \
-	ipc \
-	ipp \
-	krtld \
-	lofs \
-	logindmux \
-	mac \
-	mm \
-	mpt_sas \
-	mr_sas \
-	nsmb \
-	pmcs \
-	ptm \
-	qlc \
-	random \
-	s1394 \
-	scsi_vhci \
-	sctp \
-	sd \
-	smbfs \
-	smbsrv \
-	sockfs \
-	specfs \
-	sppp \
-	srpt \
-	stmf \
-	stmf_sbd \
-	ufs \
-	usba \
+COMMON_MODULES_KVM =	\
+	arp		\
+	cpc		\
+	crypto		\
+	dtrace		\
+	emlxs		\
+	fcip		\
+	fcp		\
+	fctl		\
+	genunix		\
+	hook		\
+	neti		\
+	idm		\
+	ip		\
+	ipc		\
+	ipp		\
+	krtld		\
+	lofs		\
+	logindmux	\
+	mac		\
+	mm		\
+	mpt_sas		\
+	mr_sas		\
+	nsmb		\
+	ptm		\
+	random		\
+	s1394		\
+	scsi_vhci	\
+	sctp		\
+	sd		\
+	smbfs		\
+	smbsrv		\
+	sockfs		\
+	specfs		\
+	sppp		\
+	srpt		\
+	stmf		\
+	stmf_sbd	\
+	ufs		\
+	usba		\
 	zfs
+
+# XXXARM Needs porting
+$(NOT_AARCH64_BLD)COMMON_MODULES_KVM += qlc
 
 include $(SRC)/Makefile.master

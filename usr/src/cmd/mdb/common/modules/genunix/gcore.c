@@ -1423,7 +1423,7 @@ gcore_wstat(int code, int data)
 	return (stat);
 }
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 static void
 gcore_usd_to_ssd(user_desc_t *usd, struct ssd *ssd, selector_t sel)
 {
@@ -1926,7 +1926,7 @@ Pexecname_gcore(struct ps_prochandle *P, char *buf, size_t buflen, void *data)
 	return (buf);
 }
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 /*ARGSUSED*/
 static int
 Pldt_gcore(struct ps_prochandle *P, struct ssd *pldt, int nldt, void *data)
@@ -1988,7 +1988,7 @@ static const ps_ops_t Pgcore_ops = {
 	.pop_uname	= Puname_gcore,
 	.pop_zonename	= Pzonename_gcore,
 	.pop_execname	= Pexecname_gcore,
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 	.pop_ldt	= Pldt_gcore
 #endif
 };

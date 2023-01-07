@@ -41,7 +41,7 @@
 #include <vm/seg_map.h>
 #include <vm/seg_vn.h>
 #include <vm/seg_hole.h>
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 #include <sys/balloon_impl.h>
 #endif
 
@@ -507,7 +507,7 @@ memstat(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	GElf_Sym sym;
 	vn_htable_t ht;
 	uintptr_t vn_size = 0;
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 	bln_stats_t bln_stats;
 	ssize_t bln_size;
 #endif
@@ -630,7 +630,7 @@ memstat(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	else
 		freemem = 0;
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 	/* Are we running under Xen?  If so, get balloon memory usage. */
 	if ((bln_size = mdb_readvar(&bln_stats, "bln_stats")) != -1) {
 		if (freemem > bln_stats.bln_hv_pages)
@@ -644,7 +644,7 @@ memstat(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	    (uint64_t)freemem * PAGESIZE / (1024 * 1024),
 	    MS_PCT_TOTAL(freemem));
 
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86)
 	if (bln_size != -1) {
 		mdb_printf("Balloon          %16lu  %16llu  %3lu%%\n",
 		    bln_stats.bln_hv_pages,

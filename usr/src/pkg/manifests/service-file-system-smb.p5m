@@ -53,13 +53,14 @@ dir  path=usr/lib/fs/smb group=sys
 dir  path=usr/lib/fs/smb/$(ARCH64) group=sys
 $(MULTILIB_ONLY)file path=usr/lib/fs/smb/$(ARCH64)/libshare_smb.so.1
 file path=usr/lib/fs/smb/libshare_smb.so.1
-$(not_aarch64)dir path=usr/lib/mdb group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/smbsrv.so group=sys \
+dir  path=usr/lib/mdb group=sys
+dir  path=usr/lib/mdb/kvm group=sys
+dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+file path=usr/lib/mdb/kvm/$(ARCH64)/smbsrv.so group=sys mode=0555
+dir  path=usr/lib/mdb/proc group=sys
+$(aarch64_ONLY)file path=usr/lib/mdb/proc/$(ARCH64)/libmlsvc.so group=sys \
     mode=0555
-$(not_aarch64)dir path=usr/lib/mdb/proc group=sys
-$(not_aarch64)file path=usr/lib/mdb/proc/libmlsvc.so group=sys mode=0555
+$(MULTILIB_ONLY)file path=usr/lib/mdb/proc/libmlsvc.so group=sys mode=0555
 dir  path=usr/lib/reparse
 link path=usr/lib/reparse/libreparse_smb.so target=libreparse_smb.so.1
 file path=usr/lib/reparse/libreparse_smb.so.1

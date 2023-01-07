@@ -112,4 +112,52 @@ typedef struct kdi_cpusave {
 }
 #endif
 
+/*
+ * A modified version of struct regs layout.
+ * XXXARM: Not actually yet modified.  I don't know what this should look like.
+ */
+
+#define	KDIREG_SAVFP	0
+#define	KDIREG_SAVPC	1
+#define	KDIREG_X0	2
+#define	KDIREG_X1	3
+#define	KDIREG_X2	4
+#define	KDIREG_X3	5
+#define	KDIREG_X4	6
+#define	KDIREG_X5	7
+#define	KDIREG_X6	8
+#define	KDIREG_X7	9
+#define	KDIREG_X8	10
+#define	KDIREG_X9	11
+#define	KDIREG_X10	12
+#define	KDIREG_X11	13
+#define	KDIREG_X12	14
+#define	KDIREG_X13	15
+#define	KDIREG_X14	16
+#define	KDIREG_X15	17
+#define	KDIREG_X16	18
+#define	KDIREG_X17	19
+#define	KDIREG_X18	20
+#define	KDIREG_X19	21
+#define	KDIREG_X20	22
+#define	KDIREG_X21	23
+#define	KDIREG_X22	24
+#define	KDIREG_X23	25
+#define	KDIREG_X24	26
+#define	KDIREG_X25	27
+#define	KDIREG_X26	28
+#define	KDIREG_X27	29
+#define	KDIREG_X28	30
+#define	KDIREG_X29	31
+#define	KDIREG_FP	KDIREG_X29
+#define	KDIREG_X30	32
+#define	KDIREG_LR	KDIREG_X30
+#define	KDIREG_SP	33
+#define	KDIREG_PC	34
+#define	KDIREG_PSR	35
+#define	KDIREG_TP	36
+
+#define	KDIREG_NGREG (KDIREG_TP + 1)
+
+
 #endif /* _SYS_KDI_REGS_H */

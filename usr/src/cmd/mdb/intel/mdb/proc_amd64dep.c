@@ -137,7 +137,7 @@ const mdb_tgt_regdesc_t pt_regdesc[] = {
 
 /*
  * We cannot rely on pr_instr, because if we hit a breakpoint or the user has
- * artifically modified memory, it will no longer be correct.
+ * artificially modified memory, it will no longer be correct.
  */
 static uint8_t
 pt_read_instr(mdb_tgt_t *t)

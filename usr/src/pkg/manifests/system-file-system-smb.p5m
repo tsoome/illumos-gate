@@ -70,11 +70,11 @@ file path=usr/lib/fs/smbfs/umount mode=0555
 file path=usr/lib/fs/smbfs/unshare mode=0555
 file path=usr/lib/libmlrpc.so.2
 file path=usr/lib/libsmbfs.so.1
-$(not_aarch64)dir path=usr/lib/mdb group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/nsmb.so mode=0555
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/smbfs.so mode=0555
+dir  path=usr/lib/mdb group=sys
+dir  path=usr/lib/mdb/kvm group=sys
+dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+file path=usr/lib/mdb/kvm/$(ARCH64)/nsmb.so mode=0555
+file path=usr/lib/mdb/kvm/$(ARCH64)/smbfs.so mode=0555
 dir  path=usr/lib/security
 $(MULTILIB_ONLY)dir path=usr/lib/security/$(ARCH64)
 $(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/pam_smbfs_login.so \

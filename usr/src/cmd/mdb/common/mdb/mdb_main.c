@@ -73,7 +73,9 @@
 
 #if defined(__sparc)
 #define	STACK_REGISTER	SP
-#else
+#elif defined(__x86)
+#define	STACK_REGISTER	REG_FP
+#elif defined(__aarch64__)
 #define	STACK_REGISTER	REG_FP
 #endif
 

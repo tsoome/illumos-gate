@@ -117,14 +117,13 @@ $(not_sparc)file path=usr/lib/libzpool.so.1
 link path=usr/lib/libzutil.so target=../../lib/libzutil.so.1
 link path=usr/lib/libzutil.so.1 target=../../lib/libzutil.so.1
 dir  path=usr/lib/mdb group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/zfs.so group=sys mode=0555
-$(not_aarch64)dir path=usr/lib/mdb/proc group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/proc/$(ARCH64)
-$(MULTILIB_ONLY)file path=usr/lib/mdb/proc/$(ARCH64)/libzpool.so group=sys \
-    mode=0555
-$(not_aarch64)file path=usr/lib/mdb/proc/libzpool.so group=sys mode=0555
+dir  path=usr/lib/mdb/kvm group=sys
+dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+file path=usr/lib/mdb/kvm/$(ARCH64)/zfs.so group=sys mode=0555
+dir  path=usr/lib/mdb/proc group=sys
+dir  path=usr/lib/mdb/proc/$(ARCH64)
+file path=usr/lib/mdb/proc/$(ARCH64)/libzpool.so group=sys mode=0555
+$(MULTILIB_ONLY)file path=usr/lib/mdb/proc/libzpool.so group=sys mode=0555
 dir  path=usr/lib/sysevent
 dir  path=usr/lib/sysevent/modules
 file path=usr/lib/sysevent/modules/zfs_mod.so group=sys

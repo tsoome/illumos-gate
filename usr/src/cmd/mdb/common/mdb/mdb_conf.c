@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/param.h>
 #include <sys/systeminfo.h>
 #include <sys/isa_defs.h>
@@ -64,6 +62,8 @@ mdb_conf_isa(void)
 	return ("amd64");
 #elif defined(__i386)
 	return ("i386");
+#elif defined(__aarch64__)
+	return ("aarch64");
 #else
 #error	"unknown ISA"
 #endif

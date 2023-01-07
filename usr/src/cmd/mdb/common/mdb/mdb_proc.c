@@ -22,10 +22,9 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-/*
- * Copyright 2018 Joyent, Inc.
+ *
  * Copyright (c) 2014 by Delphix. All rights reserved.
+ * Copyright 2018 Joyent, Inc.
  * Copyright 2020 Oxide Computer Company
  */
 
@@ -271,7 +270,7 @@ thr_check(mdb_tgt_t *t, const prmap_t *pmp, const char *name)
 	path[0] = '\0';
 	(void) strlcat(path, mdb.m_root, sizeof (path));
 	(void) strlcat(path, tdb_map[libn].tm_db_dir, sizeof (path));
-#if !defined(_ILP32)
+#if !defined(_ILP32) && defined(_MULTI_DATAMODEL)
 	(void) strlcat(path, "64/", sizeof (path));
 #endif /* !_ILP32 */
 	(void) strlcat(path, tdb_map[libn].tm_db_name, sizeof (path));
@@ -1020,7 +1019,8 @@ pt_framev(void *arglim, uintptr_t pc, uint_t argc, const long *argv,
     const mdb_tgt_gregset_t *gregs)
 {
 	argc = MIN(argc, (uint_t)(uintptr_t)arglim);
-#if defined(__i386) || defined(__amd64)
+
+#if defined(__x86) || defined(__aarch64__)
 	mdb_printf("%0?lr %a(", gregs->gregs[R_FP], pc);
 #else
 	mdb_printf("%0?lr %a(", gregs->gregs[R_SP], pc);
@@ -1349,7 +1349,8 @@ pt_findstack(uintptr_t tid, uint_t flags, int argc, const mdb_arg_t *argv)
 	}
 
 	pc = gregs.gregs[R_PC];
-#if defined(__i386) || defined(__amd64)
+
+#if defined(__x86) || defined(__aarch64__)
 	sp = gregs.gregs[R_FP];
 #else
 	sp = gregs.gregs[R_SP];

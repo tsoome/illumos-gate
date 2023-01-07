@@ -126,6 +126,9 @@ cmd_stack(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 #elif defined(__i386)
 		sp = ((uintptr_t *)f.f_pcb)[3];
 		pc = ((uintptr_t *)f.f_pcb)[5];
+#elif defined(__aarch64__)
+		sp = ((uintptr_t *)f.f_pcb)[10];
+		pc = ((uintptr_t *)f.f_pcb)[11];
 #else
 #error	Unknown ISA
 #endif

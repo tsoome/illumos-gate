@@ -43,12 +43,17 @@ include ../../common/Makefile.util
 #
 CPPFLAGS = -I../../common
 CFLAGS = $(NATIVE_CFLAGS) $(CCVERBOSE)
+CFLAGS64 = $(NATIVE_CFLAGS64) $(CCVERBOSE)
 CERRWARN += $(CNOWARN_UNINIT)
 LDFLAGS = $(NATIVE_LDFLAGS) $(ZLAZYLOAD) $(BDIRECT)
 LDLIBS = -lelf
 CC = $(NATIVECC)
+CC64 = $(NATIVECC64)
 LD = $(NATIVELD)
 NATIVE_LIBS += libelf.so libc.so
+
+# XXXARM: Native tool, no sysroot
+SYSROOT=
 
 install all: $(PROG)
 

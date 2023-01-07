@@ -970,7 +970,7 @@ stackinfo(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	/* scan the stack */
 	if (t.t_stk > t.t_stkbase) {
 		/* stack grows down */
-#if defined(__i386) || defined(__amd64)
+#if defined(__x86) || defined(__aarch64__)
 		/*
 		 * 6 longs are pushed on stack, see thread_load(). Skip
 		 * them, so if kthread has never run, percent is zero.

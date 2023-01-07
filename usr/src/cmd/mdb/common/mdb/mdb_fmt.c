@@ -729,7 +729,9 @@ mdb_fmt_print(mdb_tgt_t *t, mdb_tgt_as_t as,
 		double d;
 	} u;
 
-	if (fmt < 0 || fmt > (sizeof (fmttab) / sizeof (fmttab[0]))) {
+	/* XXXARM: We need a better way to gag these */
+	if ((signed char)fmt < 0 ||
+	    (fmt > (sizeof (fmttab) / sizeof (fmttab[0])))) {
 		warn("invalid format character -- '%c'\n", fmt);
 		return (addr);
 	}

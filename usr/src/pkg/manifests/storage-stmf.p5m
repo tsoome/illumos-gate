@@ -86,12 +86,11 @@ link path=usr/lib/libstmf.so target=libstmf.so.1
 file path=usr/lib/libstmf.so.1
 link path=usr/lib/libstmfproxy.so target=libstmfproxy.so.1
 file path=usr/lib/libstmfproxy.so.1
-$(not_aarch64)dir path=usr/lib/mdb group=sys
-$(not_aarch64)dir path=usr/lib/mdb/kvm group=sys
-$(MULTILIB_ONLY)dir path=usr/lib/mdb/kvm/$(ARCH64) group=sys
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf.so group=sys mode=0555
-$(MULTILIB_ONLY)file path=usr/lib/mdb/kvm/$(ARCH64)/stmf_sbd.so group=sys \
-    mode=0555
+dir  path=usr/lib/mdb group=sys
+dir  path=usr/lib/mdb/kvm group=sys
+dir  path=usr/lib/mdb/kvm/$(ARCH64) group=sys
+file path=usr/lib/mdb/kvm/$(ARCH64)/stmf.so group=sys mode=0555
+file path=usr/lib/mdb/kvm/$(ARCH64)/stmf_sbd.so group=sys mode=0555
 dir  path=usr/sbin
 file path=usr/sbin/sbdadm mode=0555
 file path=usr/sbin/stmfadm mode=0555

@@ -1522,6 +1522,8 @@ mdb_kvm_tgt_create(mdb_tgt_t *t, int argc, const char *argv[])
 	kt_amd64_init(t);
 #elif defined(__i386)
 	kt_ia32_init(t);
+#elif defined(__aarch64__)
+	kt_aarch64_init(t);
 #else
 #error	"unknown ISA"
 #endif

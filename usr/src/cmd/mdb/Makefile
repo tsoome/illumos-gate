@@ -31,30 +31,30 @@ include $(SRC)/Makefile.master
 .KEEP_STATE:
 
 i386_MACHDIR = intel
-
 i386_SUBDIRS = intel i86pc i86xpv
+
+aarch64_MACHDIR = aarch64
+aarch64_SUBDIRS = aarch64
 
 MACHDIR = $($(MACH)_MACHDIR)
 SUBDIRS = tools $($(MACH)_SUBDIRS) demo
 TARGET =
 
 all := TARGET = all
-clean.lint := TARGET = clean.lint
 clean := TARGET = clean
 clobber := TARGET = clobber
 dmods := TARGET = dmods
 install := TARGET = install
 install_h := TARGET = install_h
-lint := TARGET = lint
 
-all lint: $(SUBDIRS)
+all: $(SUBDIRS)
 
 dmods install: install_h $(SUBDIRS)
 
 install_h: FRC
 	@cd common/mdb; pwd; $(MAKE) install_h
 
-clean.lint clean: $(SUBDIRS)
+clean: $(SUBDIRS)
 
 clobber: $(SUBDIRS)
 

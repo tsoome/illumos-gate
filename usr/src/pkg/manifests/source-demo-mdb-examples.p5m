@@ -30,8 +30,7 @@ set name=pkg.description \
     value="Modular Debugger (MDB) demonstration modules and source code"
 set name=info.classification \
     value=org.opensolaris.category.2008:Development/System
-# XXXARM
-set name=variant.arch value=i386 value=sparc
+set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/demo
 dir  path=usr/demo/mdb
