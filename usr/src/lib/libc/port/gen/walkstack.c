@@ -61,38 +61,53 @@
  * | struct frame | v                     | struct frame | v
  * +--------------+ - <- %sp on resume    +--------------+ - <- %esp on resume
  *
- * amd64 (64-bit)
- * +--------------+ -
- * |  siginfo_t   | optional
- * +--------------+ -
- * |  ucontext_t  | ^
- * +--------------+ |
- * |  siginfo_t * |
- * +--------------+ mandatory
- * |  int (signo) |
- * +--------------+ |
- * | struct frame | v
- * +--------------+ - <- %rsp on resume
+ * amd64 (64-bit):                        aarch64:
+ * +--------------+ -			  +--------------+ -
+ * |  siginfo_t   | optional		  |  siginfo_t   | optional
+ * +--------------+ -			  +--------------+ -
+ * |  ucontext_t  | ^			  |  ucontext_t  | ^
+ * +--------------+ |			  +--------------+ |
+ * |  siginfo_t * |			  |  siginfo_t * |
+ * +--------------+ mandatory		  +--------------+ mandatory
+ * |  int (signo) |			  |  int (signo) |
+ * +--------------+ |			  +--------------+
+ * | struct frame | v			  | struct frame |
+ * +--------------+ - <- %rsp on resume	  +--------------+ - <- %fp on resume
+ *                                        |    saved     |
+ *                                        |  registers   |
+ *                                        +--------------+ |
+ *                                        | struct frame | v
+ *                                        +--------------+ - <- %sp on resume
  *
- * The bottom-most struct frame is actually constructed by the kernel by
- * copying the previous stack frame, allowing naive backtrace code to simply
- * skip over the interrupted frame.  The copied frame is never really used,
- * since it is presumed the signal handler wrapper function
- * will explicitly setcontext(2) to the interrupted context if the user
- * program's handler returns.  If we detect a signal handler frame, we simply
- * read the interrupted context structure from the stack, use its embedded
- * gregs to construct the register set for the interrupted frame, and then
- * continue our backtrace.  Detecting the frame itself is easy according to
- * the diagram ("oldcontext" represents any element in the uc_link chain):
+ * NB: "on resume" means after the prologue of sigacthandler in libc has
+ * executed.
+ *
+ * The bottom-most struct frame is actually partially constructed by the
+ * kernel on intel and SPARC, allowing naive backtrace code to simply skip
+ * over the interrupted frame.  On AArch64 this bottom most frame points to a
+ * semi-fictional stack frame that contains the siginfo, rather than the
+ * bottom frame doing so itself, because the size of the register save area
+ * cannot be depended upon over time.  Whichever frame is constructed is never
+ * really used, since it is presumed the libc or libthread signal handler
+ * wrapper function will explicitly setcontext(2) to the interrupted context
+ * if the user program's handler returns.  If we detect a signal handler
+ * frame, we simply read the interrupted context structure from the stack, use
+ * its embedded gregs to construct the register set for the interrupted frame,
+ * and then continue our backtrace.  Detecting the frame itself is easy
+ * according to the diagram ("oldcontext" represents any element in the
+ * uc_link chain):
  *
  * On SPARC v7 or v9:
  * %fp + sizeof (struct frame) == oldcontext
  *
- * On i386:
+ * On Intel ia32:
  * %ebp + sizeof (struct frame) + (3 words) == oldcontext
  *
  * On amd64:
  * %rbp + sizeof (struct frame) + (2 words) == oldcontext
+ *
+ * On aarch64:
+ * [%fp] + sizeof (struct frame) + (2 words) == oldcontext
  *
  * Since we want to provide the signal number that generated a signal stack
  * frame and on sparc this information isn't written to the stack by the kernel
@@ -134,29 +149,42 @@
 #if defined(__sparc)
 #define	FRAME_PTR_REGISTER REG_SP
 #define	PC_REGISTER REG_PC
-#define	CHECK_FOR_SIGFRAME(fp, oldctx) ((fp) + SA(sizeof (struct frame)) \
-	== (oldctx))
-
 #elif defined(__amd64)
 #define	FRAME_PTR_REGISTER	REG_RBP
 #define	PC_REGISTER		REG_RIP
-#define	CHECK_FOR_SIGFRAME(fp, oldctx) ((((fp) + sizeof (struct frame)) + \
-	2 * sizeof (long) == (oldctx)) && \
-	(((struct frame *)fp)->fr_savpc == (greg_t)-1))
-
 #elif defined(__i386)
 #define	FRAME_PTR_REGISTER EBP
 #define	PC_REGISTER EIP
-#define	CHECK_FOR_SIGFRAME(fp, oldctx) ((((fp) + sizeof (struct frame)) + \
-	3 * sizeof (int) == (oldctx)) && \
-	(((struct frame *)fp)->fr_savpc == (greg_t)-1))
 #elif defined(__aarch64__)
-/* XXXARM */
+#define	FRAME_PTR_REGISTER REG_FP
+#define	PC_REGISTER REG_PC
 #else
-#error no arch defined
+#error Unknown Platform
 #endif
 
 #define	MAX_LINE 2048 /* arbitrary large value */
+
+static boolean_t
+check_for_sigframe(struct frame *fp, uintptr_t oldctx)
+{
+	if (fp->fr_savpc != (greg_t)-1)
+		return (B_FALSE);
+
+#if defined(__sparc)
+	return ((uintptr_t)fp + SA(sizeof (struct frame)) == (oldctx));
+#elif defined(__amd64)
+	return (((uintptr_t)fp + sizeof (struct frame)) +
+	    2 * sizeof (long) == (oldctx));
+#elif defined(__i386)
+	return (((uintptr_t)fp + sizeof (struct frame)) +
+	    3 * sizeof (int) == (oldctx));
+#elif defined(__aarch64__)
+	return ((((uintptr_t)fp->fr_savfp) + sizeof (struct frame)) +
+	    2 * sizeof (long) == (oldctx));
+#else
+#error Unknown platform
+#endif
+}
 
 /*
  * use /proc/self/as to safely dereference pointers so we don't
@@ -193,10 +221,6 @@ int
 walkcontext(const ucontext_t *uptr, int (*operate_func)(uintptr_t, int, void *),
     void *usrarg)
 {
-/* XXXARM */
-#if defined(__aarch64__)
-	return -1;
-#else
 	ucontext_t *oldctx = uptr->uc_link;
 
 	int	fd;
@@ -270,14 +294,26 @@ walkcontext(const ucontext_t *uptr, int (*operate_func)(uintptr_t, int, void *),
 		 */
 
 		if (oldctx != NULL &&
-		    CHECK_FOR_SIGFRAME((uintptr_t)savefp, (uintptr_t)oldctx)) {
-
-#if defined(__i386) || defined(__amd64)
+		    check_for_sigframe(savefp, (uintptr_t)oldctx)) {
 			/*
-			 * i386 and amd64 store signo on stack;
-			 * simple to detect and use
+			 * i386, amd64 and AArch64 store signo on stack;
+			 * simple to detect and use.
 			 */
+#if defined(__x86)
 			sig = *((int *)(savefp + 1));
+#elif defined(__aarch64__)
+			/*
+			 * We have to read data from the  _next_ frame
+			 * and must do so without crashing if something is bogus
+			 */
+			struct frame *nfp;
+			uintptr_t npc;
+
+			if (read_safe(fd, savefp, &nfp, &npc) != 0) {
+				(void) close(fd);
+				return (-1);
+			}
+			sig = *((int *)(nfp + 1));
 #endif
 
 #if defined(__sparc)
@@ -291,11 +327,11 @@ walkcontext(const ucontext_t *uptr, int (*operate_func)(uintptr_t, int, void *),
 			 */
 			sig = signo; /* already read - see below */
 #endif
+
 			/*
 			 * this is the special signal frame, so cons up
 			 * the saved fp & pc to pass to user's function
 			 */
-
 			savefp = (struct frame *)
 			    ((uintptr_t)oldctx->
 			    uc_mcontext.gregs[FRAME_PTR_REGISTER] +
@@ -304,8 +340,8 @@ walkcontext(const ucontext_t *uptr, int (*operate_func)(uintptr_t, int, void *),
 
 			oldctx = oldctx->uc_link; /* handle nested signals */
 		}
-#if defined(__sparc)
 
+#if defined(__sparc)
 		/*
 		 * lookahead code to find right spot to read signo from...
 		 */
@@ -327,7 +363,6 @@ walkcontext(const ucontext_t *uptr, int (*operate_func)(uintptr_t, int, void *),
 
 	(void) close(fd);
 	return (0);
-#endif
 }
 
 /*
@@ -384,17 +419,12 @@ display_stack_info(uintptr_t pc, int signo, void *arg)
 int
 printstack(int dofd)
 {
-#if defined(__aarch64__)
-	/* XXXARM */
-	return -1;
-#else
 	ucontext_t u;
 
 	if (getcontext(&u) < 0)
 		return (-1);
 
 	return (walkcontext(&u, display_stack_info, (void*)(intptr_t)dofd));
-#endif
 }
 
 /*
@@ -427,10 +457,6 @@ callback(uintptr_t pc, int signo __unused, void *arg)
 int
 backtrace(void **buffer, int count)
 {
-#if defined(__aarch64__)
-	/* XXXARM */
-	return -1;
-#else
 	backtrace_t	bt;
 	ucontext_t	u;
 
@@ -444,7 +470,6 @@ backtrace(void **buffer, int count)
 	(void) walkcontext(&u, callback, &bt);
 
 	return (bt.bt_actcount);
-#endif
 }
 
 /*
