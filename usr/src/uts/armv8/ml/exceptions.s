@@ -77,12 +77,14 @@ from_current_el_sp0_error:
 from_current_el_sync:
 	clrex
 	__SAVE_REGS
+	__SAVE_FRAME
 	b	from_current_el_sync_handler
 
 	.balign	0x80
 from_current_el_irq:
 	clrex
 	__SAVE_REGS
+	__SAVE_FRAME
 	b	irq_handler
 
 	.balign	0x80
@@ -101,6 +103,7 @@ from_current_el_error:
 from_lower_el_aarch64_sync:
 	clrex
 	__SAVE_REGS
+	__TERMINATE_FRAME
 	mrs	x1, esr_el1
 	lsr	w0, w1, #ESR_EC_SHIFT	// w0 <- EC, no need to mask
 	cmp	w0, #T_SVC
@@ -116,6 +119,7 @@ from_lower_el_aarch64_sync:
 from_lower_el_aarch64_irq:
 	clrex
 	__SAVE_REGS
+	__TERMINATE_FRAME
 	b	irq_handler
 
 	.balign	0x80

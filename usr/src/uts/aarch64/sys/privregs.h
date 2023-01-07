@@ -127,6 +127,13 @@ struct regs {
 	stp	x17, x18, [sp, #REGOFF_PC];	\
 	stp	fp, x17, [sp, #REGOFF_SAVFP];
 
+#define	__SAVE_FRAME		\
+	mrs	x17, elr_el1;	\
+	stp	fp, x17, [sp, #REGOFF_SAVFP];
+
+#define	__TERMINATE_FRAME	\
+	stp	xzr, xzr, [sp, #REGOFF_SAVFP];
+
 #define	__RESTORE_REGS			\
 	ldp	x17, x18, [sp, #REGOFF_PC];	\
 	msr	elr_el1, x17;			\
