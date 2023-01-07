@@ -56,7 +56,9 @@ struct regs {
 	greg_t	r_savpc;
 
 	greg_t	r_x0;
+#define	r_r0	r_x0
 	greg_t	r_x1;
+#define	r_r1	r_x1
 	greg_t	r_x2;
 	greg_t	r_x3;
 	greg_t	r_x4;
