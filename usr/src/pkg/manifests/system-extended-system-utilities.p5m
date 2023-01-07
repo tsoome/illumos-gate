@@ -77,7 +77,7 @@ file path=usr/bin/$(ARCH64)/preap mode=0555
 file path=usr/bin/$(ARCH64)/prun mode=0555
 file path=usr/bin/$(ARCH64)/psecflags mode=0555
 file path=usr/bin/$(ARCH64)/psig mode=0555
-$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/pstack mode=0555
+file path=usr/bin/$(ARCH64)/pstack mode=0555
 file path=usr/bin/$(ARCH64)/pstop mode=0555
 file path=usr/bin/$(ARCH64)/ptime mode=0555
 file path=usr/bin/$(ARCH64)/ptree mode=0555
@@ -134,7 +134,7 @@ hardlink path=usr/bin/preap target=../../usr/lib/isaexec
 hardlink path=usr/bin/prun target=../../usr/lib/isaexec
 hardlink path=usr/bin/psecflags target=../../usr/lib/isaexec
 hardlink path=usr/bin/psig target=../../usr/lib/isaexec
-$(not_aarch64)hardlink path=usr/bin/pstack target=../../usr/lib/isaexec
+hardlink path=usr/bin/pstack target=../../usr/lib/isaexec
 hardlink path=usr/bin/pstop target=../../usr/lib/isaexec
 hardlink path=usr/bin/ptime target=../../usr/lib/isaexec
 hardlink path=usr/bin/ptree target=../../usr/lib/isaexec
@@ -196,7 +196,7 @@ link path=usr/proc/bin/pldd target=../../bin/pldd
 link path=usr/proc/bin/pmap target=../../bin/pmap
 link path=usr/proc/bin/prun target=../../bin/prun
 link path=usr/proc/bin/psig target=../../bin/psig
-$(not_aarch64)link path=usr/proc/bin/pstack target=../../bin/pstack
+link path=usr/proc/bin/pstack target=../../bin/pstack
 link path=usr/proc/bin/pstop target=../../bin/pstop
 link path=usr/proc/bin/ptime target=../../bin/ptime
 link path=usr/proc/bin/ptree target=../../bin/ptree

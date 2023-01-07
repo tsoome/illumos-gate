@@ -39,15 +39,12 @@ LEGACY_SUBDIRS =\
 	pmap	\
 	prun	\
 	psig	\
+	pstack	\
 	pstop	\
 	ptime	\
 	ptree	\
 	pwait	\
 	pwdx
-
-# XXXARM: Needs libc_db, porting
-$(NOT_AARCH64_BLD)LEGACY_SUBDIRS += 	pstack
-
 
 #
 # 'new' ptools are not symlinked into /usr/proc/bin
