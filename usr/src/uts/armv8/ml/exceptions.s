@@ -174,6 +174,9 @@ from_lower_el_aarch32_error:
 	ENTRY(svc_handler)
 	// w0: ESR_EL1.EC
 	// w1: ESR_EL1
+
+	mov	x29, sp
+
 	and	w20, w1, #ESR_ISS_MASK	// w20 <- syscall number
 	cbnz	w20, 1f
 	mov	w20, w9
@@ -336,6 +339,7 @@ _fasttrap:
 	ldp	x17, x18, [sp, #REGOFF_PC]
 	msr	elr_el1, x17
 	msr	spsr_el1, x18
+	ldr	x29, [sp, #REGOFF_X29]
 	ldp	x30, x16, [sp, #REGOFF_X30]
 	msr	sp_el0, x16
 	ldr	x20, [sp, #REGOFF_X20]
