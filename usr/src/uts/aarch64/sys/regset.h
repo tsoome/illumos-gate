@@ -98,18 +98,7 @@ extern "C" {
 typedef long	greg_t;
 typedef greg_t	gregset_t[_NGREG];
 
-#if defined(__SIZEOF_INT128__)
-typedef __uint128_t	fpreg_t;
-#else
-#if defined(__aarch64__)
-#error Compiler lacks 128 bit integer support
-#else
-typedef struct {
-	uint64_t _lo;
-	uint64_t _hi;
-} fpreg_t;
-#endif
-#endif
+typedef upad128_t fpreg_t;
 
 /*
  * Floating point definitions.
