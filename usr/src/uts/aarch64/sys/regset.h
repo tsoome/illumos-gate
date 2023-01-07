@@ -76,7 +76,9 @@ extern "C" {
 #define	REG_X27	27
 #define	REG_X28	28
 #define	REG_X29	29
+#define	REG_FP	REG_X29
 #define	REG_X30	30
+#define	REG_LR	REG_X30
 #define	REG_SP	31
 #define	REG_PC	32
 #define	REG_PSR	33

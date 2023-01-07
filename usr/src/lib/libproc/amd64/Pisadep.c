@@ -517,7 +517,7 @@ Pstack_iter(struct ps_prochandle *P, const prgregset_t regs,
 	ucontext_t uc;
 
 	/*
-	 * Type definition for a structure corresponding to an IA32
+	 * Type definition for a structure corresponding to an AMD64
 	 * signal frame.  Refer to the comments in Pstack.c for more info
 	 */
 	typedef struct {

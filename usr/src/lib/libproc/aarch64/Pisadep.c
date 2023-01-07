@@ -24,19 +24,19 @@
  * Use is subject to license terms.
  */
 
-#include <sys/stack.h>
-#include <sys/regset.h>
 #include <sys/frame.h>
+#include <sys/machelf.h>
+#include <sys/regset.h>
+#include <sys/stack.h>
 #include <sys/sysmacros.h>
 #include <sys/trap.h>
-#include <sys/machelf.h>
-
-#include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
-#include <errno.h>
-#include <string.h>
+
 #include <assert.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "Pcontrol.h"
 #include "Pstack.h"
@@ -109,7 +109,8 @@ Pissyscall_text(struct ps_prochandle *P, const void *buf, size_t buflen)
 		return (0);
 
 	const uint8_t *inst = buf;
-	uint32_t instr = ((inst[3] << 24) | (inst[2] << 16) | (inst[1] << 8) | inst[0]);
+	uint32_t instr = ((inst[3] << 24) | (inst[2] << 16) |
+	    (inst[1] << 8) | inst[0]);
 
 	if ((instr & 0xFE00001F) == 0xD4000001)
 		return (1);
@@ -117,11 +118,109 @@ Pissyscall_text(struct ps_prochandle *P, const void *buf, size_t buflen)
 	return (0);
 }
 
+static void
+ucontext_n_to_prgregs(const ucontext_t *src, prgregset_t dst)
+{
+	(void) memcpy(dst, src->uc_mcontext.gregs, sizeof (gregset_t));
+}
+
 int
 Pstack_iter(struct ps_prochandle *P, const prgregset_t regs,
-	proc_stack_f *func, void *arg)
+    proc_stack_f *func, void *arg)
 {
-	return -1;
+	struct frame frame;
+
+	uint_t prevfpsize = 0;
+	prgreg_t *prevfp = NULL;
+	prgreg_t fp;
+	prgreg_t pc;
+
+	prgregset_t gregs;
+	int nfp = 0;
+
+	int rv = 0;
+	int argc;
+
+	uclist_t ucl;
+	uintptr_t uc_addr;
+	ucontext_t uc;
+
+	/*
+	 * Type definition for a structure corresponding to an AArch64
+	 * signal frame.  Refer to the comments in Pstack.c for more info.
+	 *
+	 * This ABSOLUTELY MUST be kept in sync with the kernel's `sendsig`
+	 * and libc's `walkcontext`.
+	 */
+	typedef struct {
+		struct frame fr;
+		prgreg_t signo;
+		siginfo_t *sip;
+	} sigframe_t;
+
+	prgreg_t args[32] = {0};
+
+	init_uclist(&ucl, P);
+
+	(void) memcpy(gregs, regs, sizeof (gregs));
+
+	fp = gregs[R_FP];
+	pc = gregs[R_PC];
+
+	while (fp != 0 || pc != 0) {
+		if (stack_loop(fp, &prevfp, &nfp, &prevfpsize))
+			break;
+
+		if (fp != 0 &&
+		    Pread(P, &frame, sizeof (frame), (uintptr_t)fp) ==
+		    sizeof (frame)) {
+			if (frame.fr_savpc == -1) {
+				argc = 3;
+				args[2] = frame.fr_savfp + sizeof (sigframe_t);
+				if (Pread(P, &args, 2 * sizeof (prgreg_t),
+				    frame.fr_savfp + 2 * sizeof (prgreg_t)) !=
+				    2 * sizeof (prgreg_t)) {
+					argc = 0;
+				}
+			} else {
+#if 0				/* XXXARM: No saveargs yet */
+				argc = read_args(P, fp, pc, args,
+				    sizeof (args));
+#else
+				argc = 0;
+#endif
+			}
+		} else {
+			(void) memset(&frame, 0, sizeof (frame));
+			argc = 0;
+		}
+
+		gregs[R_FP] = fp;
+		gregs[R_PC] = pc;
+
+		if ((rv = func(arg, gregs, argc, args)) != 0)
+			break;
+
+		fp = frame.fr_savfp;
+		pc = frame.fr_savpc;
+
+		if (pc == -1 && find_uclink(&ucl, fp + sizeof (sigframe_t))) {
+			uc_addr = fp + sizeof (sigframe_t);
+
+			if (Pread(P, &uc, sizeof (uc), uc_addr)
+			    == sizeof (uc)) {
+				ucontext_n_to_prgregs(&uc, gregs);
+				fp = gregs[R_FP];
+				pc = gregs[R_PC];
+			}
+		}
+	}
+
+	if (prevfp)
+		free(prevfp);
+
+	free_uclist(&ucl);
+	return (rv);
 }
 
 uintptr_t

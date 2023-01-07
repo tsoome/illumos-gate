@@ -58,6 +58,7 @@ typedef	uint32_t instr_t;
 #define	NPRGREG		_NGREG
 #define	prgreg_t	greg_t
 #define	prgregset_t	gregset_t
+/* XXXARM: This seems like a bad idea ABI wise */
 #define	prfpregset	fpu
 #define	prfpregset_t	fpregset_t
 
@@ -75,6 +76,7 @@ typedef	uint32_t instr32_t;
 
 #define	R_PC	REG_PC
 #define	R_SP	REG_SP
+#define	R_FP	REG_FP
 
 #ifdef	__cplusplus
 }

@@ -124,29 +124,41 @@ stack_loop(prgreg_t fp, prgreg_t **prevfpp, int *nfpp, uint_t *pfpsizep)
  * | struct frame | v                     | struct frame | v
  * +--------------+ - <- %sp on resume    +--------------+ - <- %esp on resume
  *
- * amd64 (64-bit):
- * +--------------+ -
- * |  siginfo_t   | optional
- * +--------------+ -
- * |  ucontext_t  | ^
- * +--------------+ |
- * |  siginfo_t * |
- * +--------------+ mandatory
- * |  int (signo) |
- * +--------------+ |
- * | struct frame | v
- * +--------------+ - <- %rsp on resume
+ * amd64 (64-bit):                        aarch64:
+ * +--------------+ -			  +--------------+ -
+ * |  siginfo_t   | optional		  |  siginfo_t   | optional
+ * +--------------+ -			  +--------------+ -
+ * |  ucontext_t  | ^			  |  ucontext_t  | ^
+ * +--------------+ |			  +--------------+ |
+ * |  siginfo_t * |			  |  siginfo_t * |
+ * +--------------+ mandatory		  +--------------+ mandatory
+ * |  int (signo) |			  |  int (signo) |
+ * +--------------+ |			  +--------------+
+ * | struct frame | v			  | struct frame |
+ * +--------------+ - <- %rsp on resume	  +--------------+ - <- %fp on resume
+ *                                        |    saved     |
+ *                                        |  registers   |
+ *                                        +--------------+ |
+ *                                        | struct frame | v
+ *                                        +--------------+ - <- %sp on resume
  *
- * The bottom-most struct frame is actually constructed by the kernel by
- * copying the previous stack frame, allowing naive backtrace code to simply
- * skip over the interrupted frame.  The copied frame is never really used,
- * since it is presumed the libc or libthread signal handler wrapper function
- * will explicitly setcontext(2) to the interrupted context if the user
- * program's handler returns.  If we detect a signal handler frame, we simply
- * read the interrupted context structure from the stack, use its embedded
- * gregs to construct the register set for the interrupted frame, and then
- * continue our backtrace.  Detecting the frame itself is easy according to
- * the diagram ("oldcontext" represents any element in the uc_link chain):
+ * NB: "on resume" means after the prologue of sigacthandler in libc has
+ * executed.
+ *
+ * The bottom-most struct frame is actually partially constructed by the
+ * kernel on intel and SPARC, allowing naive backtrace code to simply skip
+ * over the interrupted frame.  On AArch64 this bottom most frame points to a
+ * semi-fictional stack frame that contains the siginfo, rather than the
+ * bottom frame doing so itself, because the size of the register save area
+ * cannot be depended upon over time.  Whichever frame is constructed is never
+ * really used, since it is presumed the libc or libthread signal handler
+ * wrapper function will explicitly setcontext(2) to the interrupted context
+ * if the user program's handler returns.  If we detect a signal handler
+ * frame, we simply read the interrupted context structure from the stack, use
+ * its embedded gregs to construct the register set for the interrupted frame,
+ * and then continue our backtrace.  Detecting the frame itself is easy
+ * according to the diagram ("oldcontext" represents any element in the
+ * uc_link chain):
  *
  * On SPARC v7 or v9:
  * %fp + sizeof (struct frame) == oldcontext
@@ -156,6 +168,9 @@ stack_loop(prgreg_t fp, prgreg_t **prevfpp, int *nfpp, uint_t *pfpsizep)
  *
  * On amd64:
  * %rbp + sizeof (struct frame) + (2 * regsize) == oldcontext
+ *
+ * On aarch64:
+ * [%fp] + sizeof (struct frame) + (2 * regsize) == oldcontext
  *
  * A final complication is that we want libproc to support backtraces from
  * arbitrary addresses without the caller passing in an LWP id.  To do this,
