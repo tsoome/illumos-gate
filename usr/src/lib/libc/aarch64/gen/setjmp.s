@@ -31,6 +31,9 @@
 	ANSI_PRAGMA_WEAK(setjmp,function)
 	ANSI_PRAGMA_WEAK(longjmp,function)
 
+	/*
+	 * XXXARM: We save the FP registers, which seems a bit unusual.
+	 */
 	ENTRY(setjmp)
 	stp	x19, x20, [x0, #(0 * 16)]
 	stp	x21, x22, [x0, #(1 * 16)]

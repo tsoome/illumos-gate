@@ -48,6 +48,7 @@
 #define	SYSTRAP_2RVALS(name)	__SYSCALL(name)
 #define	SYSTRAP_64RVAL(name)	__SYSCALL(name)
 
+	/* XXXARM: Make this magic number symbolic */
 #define	SYSFASTTRAP(name)		\
 	svc #(T_/**/name + 0x8000)
 
