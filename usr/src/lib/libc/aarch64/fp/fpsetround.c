@@ -32,10 +32,10 @@ fp_rnd
 fpsetround(fp_rnd newrnd)
 {
 	uint32_t fpcr = read_fpcr();
-	uint32_t old = ((fpcr & FPCR_RM_MASK) >> FPCR_RM_SHIFT);
-	old &= ~FPCR_RM_MASK;
-	old |= ((newrnd << FPCR_RM_SHIFT) & FPCR_RM_MASK);
+	uint32_t old = (fpcr & FPCR_RM_MASK) >> FPCR_RM_SHIFT;
+	fpcr &= ~FPCR_RM_MASK;
+	fpcr |= ((newrnd << FPCR_RM_SHIFT) & FPCR_RM_MASK);
 	write_fpcr(fpcr);
 
-	return (fp_rnd)old;
+	return ((fp_rnd)old);
 }
