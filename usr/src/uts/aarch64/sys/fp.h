@@ -24,51 +24,119 @@
  */
 
 #ifndef _SYS_FP_H
-#define _SYS_FP_H
+#define	_SYS_FP_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+
+/*
+ * All names/etc here are derived from:
+ *
+ * Arm® Architecture Registers for A-profile architecture
+ */
+
+/*
+ * FPCR, Floating-point Control Register pp. 754
+ */
+
+/* [26] Alternate half precision? (rather than IEEE) */
+#define	FPCR_AHP	(1 << 26)
+
+/* [25] Default NaN rather than propagation? */
+#define	FPCR_DN		(1 << 25)
+
+/* [24] Flush denormalized numbers to 0? */
+#define	FPCR_FZ		(1 << 24)
+
+/* [23:22] Rounding mode */
+#define	FPCR_RM_SHIFT	22
+#define	FPCR_RM_MASK	(0x3 << FPCR_RM_SHIFT)
+#define	FPCR_RM(fpcr)	((fpcr & FPCR_RM_MASK) >> FPCR_RM_SHIFT)
+
+#define	FPCR_RM_RN	0	/* Round to Nearest */
+#define	FPCR_RM_RP	1	/* Round towards Plus Infinity */
+#define	FPCR_RM_RM	2	/* Round towards Minus Infinity */
+#define	FPCR_RM_RZ	3	/* Round towards Zero */
+
+/* [21:20] Stride: only used for AArch32 code, where it shouldn't be used */
+
+/* [19] Flush denormalized half-precision floats to 0? */
+#define	FPCR_FZ16	(1 << 19)		\
+
+/* [18:16] Len: only used for AArch32 code, where it shouldn't be used  */
+
+/* [15] Input Denormal exception trap enable? */
+#define	FPCR_IDE	(1 << 15)
+
+/* [13] extended BFloat16 dot-product? */
+#define	FPCR_EBF	(1 << 14)
+
+/* [12] Inexact exception trap enable */
+#define	FPCR_IXE	(1 << 12)
+
+/* [11] Underflow exception trap enable */
+#define	FPCR_UFE	(1 << 11)
+
+/* [10] Overflow exception trap enable */
+#define	FPCR_OFE	(1 << 10)
+
+/* [9]  Division by Zero exception trap enable */
+#define	FPCR_DZE	(1 << 9)
+
+/* [8] Invalid Operation exception trap enable */
+#define	FPCR_IOE	(1 << 8)
+
+/* [2] Controls how vectors are read, 0 is normal */
+#define	FPCR_NEP	(1 << 2)
+
+/* [1] Alternate handling? */
+#define	FPCR_AFP	(1 << 1)
+
+/* [0] flush denormalized inputs to zero? */
+#define	FPCR_FIZ	(1 << 0)
+
+/*
+ * FPSR, Floating-point Status Register pp. 771
+ */
+
+/* [31] AArch32 negative? */
+#define	FPSR_N		(1 << 31)
+
+/* [30] AArch32 zero? */
+#define	FPSR_Z		(1 << 30)
+
+/* [29] AArch32 carry? */
+#define	FPSR_C		(1 << 29)
+
+/* [28] AArch32 overflow? */
+#define	FPSR_V		(1 << 28)
+
+/* [27] cumulative saturation since last cleared? */
+#define	FPSR_QC		(1 << 27)
+
+/* [7] input denormal cumulative exception since last cleared? */
+#define	FPSR_IDC	(1 << 7)
+
+/* [4] inexact cumulative exception since last cleared? */
+#define	FPSR_IXC	(1 << 4)
+
+/* [3] underflow cumulative exception since last cleared? */
+#define	FPSR_UFC	(1 << 3)
+
+/* [2] overflow cumulative exception since last cleared? */
+#define	FPSR_OFC	(1 << 2)
+
+/* [1] divide by zero cumulative exception since last cleared? */
+#define	FPSR_DZC	(1 << 1)
+
+/* [0] invalid operation cumulative exception since last cleared? */
+#define	FPSR_IOC	(1 << 0)
+
 #ifdef _KERNEL
-#define FPCR_AHP	(1u<<26)	// Alternative half-precision
-					// 0: IEEE half-precision format
-					// 1: Alternative half-precision format
 
-#define FPCR_DN		(1u<<25)	// Default NaN mode
-					// 0: disable
-					// 1: enable. Default NaN
-
-#define FPCR_FZ		(1u<<24)	// Flush-to-zero mode.
-					// 0: disable. fully compliant with the IEEE 754 standard
-					// 1: enable
-
-#define FPCR_RM_MASK	(3u<<22)
-#define FPCR_RM_RN	(0u<<22)	// Round to Nearest
-#define FPCR_RM_RP	(1u<<22)	// Round towards Plus Infinity
-#define FPCR_RM_RM	(2u<<22)	// Round towards Minus Infinity
-#define FPCR_RM_RZ	(3u<<22)	// Round towards Zero
-
-#define FPCR_IDE	(1u<<15)	// Input Denormal exception trap enable
-#define FPCR_IXE	(1u<<12)	// Inexact exception trap enable
-#define FPCR_UFE	(1u<<11)	// Underflow exception trap enable
-#define FPCR_OFE	(1u<<10)	// Overflow exception trap enable
-#define FPCR_DZE	(1u<<9)		// Division by Zero exception trap enable
-#define FPCR_IOE	(1u<<8)		// Invalid Operation exception trap enable
-
-#define FPSR_N		(1u<<31)
-#define FPSR_Z		(1u<<30)
-#define FPSR_C		(1u<<29)
-#define FPSR_V		(1u<<28)
-#define FPSR_QC		(1u<<27)
-#define FPSR_IDC	(1u<<7)		// Input Denormal exception cumulative
-#define FPSR_IXC	(1u<<4)		// Inexact exception cumulative
-#define FPSR_UFC	(1u<<3)		// Underflow exception cumulative
-#define FPSR_OFC	(1u<<2)		// Overflow exception cumulative
-#define FPSR_DZC	(1u<<1)		// Division by Zero exception cumulative
-#define FPSR_IOC	(1u<<0)		// Invalid Operation exception cumulative
-
-#define FPCR_INIT (FPCR_RM_RN)
+#define	FPCR_INIT	(FPCR_RM_RN << FPCR_RM_SHIFT)
 
 extern void fp_save(fpu_ctx_t *ctx);
 extern void fp_restore(fpu_ctx_t *ctx);
