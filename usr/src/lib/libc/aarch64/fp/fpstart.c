@@ -31,6 +31,6 @@
 void
 __fpstart()
 {
-	write_fpcr(FPCR_RM_RN);
+	write_fpcr(FPCR_RM_RN << FPCR_RM_SHIFT);
 	write_fpsr(0);
 }

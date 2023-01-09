@@ -27,9 +27,10 @@
 #include <base_conversion.h>
 #include "fp.h"
 
-enum fp_direction_type _QgetRD(void)
+enum fp_direction_type
+_QgetRD(void)
 {
-	return ((read_fpcr() & FPCR_RM_MASK) >> FPCR_RM_SHIFT);
+	return (FPCR_RM(read_fpcr()));
 }
 
 void

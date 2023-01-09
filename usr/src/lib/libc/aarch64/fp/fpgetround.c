@@ -31,6 +31,5 @@
 fp_rnd
 fpgetround()
 {
-	uint32_t fpcr = read_fpcr();
-	return (fp_rnd)((fpcr & FPCR_RM_MASK) >> FPCR_RM_SHIFT);
+	return ((fp_rnd)FPCR_RM(read_fpcr()));
 }
