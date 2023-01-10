@@ -20,18 +20,17 @@
  * CDDL HEADER END
  */
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 
 /*
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  *      acctprc
- *      reads std. input (acct.h format), 
+ *      reads std. input (acct.h format),
  *      writes std. output (tacct format)
  *      sorted by uid
  *      adds login names
@@ -56,12 +55,13 @@ struct  utab    {
         float   ut_cpu[2];      /* cpu time (mins) */
         float   ut_kcore[2];    /* kcore-mins */
         long    ut_pc;          /* # processes */
-} * ub; 
+} * ub;
 static int usize;
 void **root = NULL;
 
 void output(void);
 void enter(struct ptmp *);
+extern char *uidtonam(uid_t);
 
 int
 main(int argc, char **argv)
@@ -109,7 +109,7 @@ int node_compare(const void *node1, const void *node2)
 {
 	if (((const struct utab *)node1)->ut_uid > \
 		((const struct utab *)node2)->ut_uid)
-		return(1); 
+		return(1);
 	else if (((const struct utab *)node1)->ut_uid < \
 		((const struct utab *)node2)->ut_uid)
 		return(-1);
@@ -121,7 +121,7 @@ enter(struct ptmp *p)
 {
         double memk;
         struct utab **pt;
-         
+
 	if ((ub = (struct utab *)malloc(sizeof (struct utab))) == NULL) {
 		fprintf(stderr, "acctprc: malloc fail!\n");
 		exit(2);
@@ -131,11 +131,11 @@ enter(struct ptmp *p)
         CPYN(ub->ut_name, p->pt_name);
         ub->ut_cpu[0] = MINT(p->pt_cpu[0]);
         ub->ut_cpu[1] = MINT(p->pt_cpu[1]);
-        memk = KCORE(pb.pt_mem);  
+        memk = KCORE(pb.pt_mem);
         ub->ut_kcore[0] = memk * MINT(p->pt_cpu[0]);
         ub->ut_kcore[1] = memk * MINT(p->pt_cpu[1]);
         ub->ut_pc = 1;
-         
+
         if (*(pt = (struct utab **)tsearch((void *)ub, (void **)&root,  \
                 node_compare)) == NULL) {
                 fprintf(stderr, "Not enough space available to build tree\n");
@@ -143,10 +143,10 @@ enter(struct ptmp *p)
 	}
 
 	if (*pt != ub) {
-        	(*pt)->ut_cpu[0] += MINT(p->pt_cpu[0]);
-        	(*pt)->ut_cpu[1] += MINT(p->pt_cpu[1]);
-        	(*pt)->ut_kcore[0] += memk * MINT(p->pt_cpu[0]);
-        	(*pt)->ut_kcore[1] += memk * MINT(p->pt_cpu[1]);
+		(*pt)->ut_cpu[0] += MINT(p->pt_cpu[0]);
+		(*pt)->ut_cpu[1] += MINT(p->pt_cpu[1]);
+		(*pt)->ut_kcore[0] += memk * MINT(p->pt_cpu[0]);
+		(*pt)->ut_kcore[1] += memk * MINT(p->pt_cpu[1]);
 		(*pt)->ut_pc++;
 		free(ub);
         }
@@ -156,7 +156,7 @@ void print_node(const void *node, VISIT order, int level) {
 
 	if (order == postorder || order == leaf) {
 		tb.ta_uid = (*(struct utab **)node)->ut_uid;
-		CPYN(tb.ta_name, (char *)uidtonam((*(struct utab **)node)->ut_uid));
+		CPYN(tb.ta_name, uidtonam((*(struct utab **)node)->ut_uid));
 		tb.ta_cpu[0] = (*(struct utab **)node)->ut_cpu[0];
 		tb.ta_cpu[1] = (*(struct utab **)node)->ut_cpu[1];
                 tb.ta_kcore[0] = (*(struct utab **)node)->ut_kcore[0];
@@ -165,7 +165,7 @@ void print_node(const void *node, VISIT order, int level) {
                 fwrite(&tb, sizeof(tb), 1, stdout);
 	}
 }
- 
+
 void
 output(void)
 {

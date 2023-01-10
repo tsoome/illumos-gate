@@ -25,7 +25,7 @@
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 #include <time.h>
 #include <string.h>
@@ -209,7 +209,7 @@ main(int argc, char **argv)
 					fprintf(stderr, "%s: Unknown user %s\n", argv[0], optarg);
 					exit(1);
 				}
- 				if ((pw = getpwuid(uidval)) == NULL) {
+				if ((pw = getpwuid(uidval)) == NULL) {
 					fprintf(stderr, "%s: Unknown user %s\n", argv[0], optarg);
 					exit(1);
 				}
@@ -556,7 +556,7 @@ println(void)
 	    a->ac_tty != 0xffff? devtolin(a->ac_tty):"?");
 #else
 	fprintf(stdout, " %-*.*s", OUTPUT_LSZ, OUTPUT_LSZ,
-	    a->ac_tty != (dev_t)-1? devtolin(a->ac_tty):"?");
+	    a->ac_tty != (dev32_t)-1 ? devtolin(a->ac_tty) : "?");
 #endif
 	t = a->ac_btime;
 	cftime(time_buf, DATE_FMT1, &t);
