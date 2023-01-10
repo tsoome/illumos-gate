@@ -20,12 +20,23 @@
 #
 
 #
-# Copyright (c) 1990, 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# Copyright 2019 OmniOS Community Edition (OmniOSce) Association.
 #
 
-include		$(SRC)/cmd/sgs/Makefile.com
+include		../Makefile.com
 
-EXTRASUBDIRS =	mdbmod
+CONVLIBDIR =	$(CONVLIBDIR64)
+MTARG =		aarch64/
+CPPFLAGS +=	-D_ELF64
 
-include		$(SRC)/Makefile.master
-include		$(SRC)/cmd/sgs/Makefile.sub
+.KEEP_STATE:
+
+all:		$(BLTDEFS) .WAIT $(DYNLIB)
+
+install:	all .WAIT $(ROOTMDBLIBS)
+
+include		../Makefile.targ
+include		$(SRC)/Makefile.master.64
