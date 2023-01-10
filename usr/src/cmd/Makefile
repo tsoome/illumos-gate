@@ -415,6 +415,7 @@ COMMON_SUBDIRS=	\
 	zoneadmd	\
 	zonecfg		\
 	zonename	\
+	zonestat	\
 	zlook		\
 	zpool		\
 	zstreamdump	\
@@ -476,7 +477,6 @@ COMMON_SUBDIRS=	\
 # truss - not ported
 # vi - not 64bit clean / not ported
 # ypcmd - not 64bit clean
-# zonestat - not 64bit clean, needs to use the good readdir_r
 $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	abi		\
 	perl		\
@@ -531,7 +531,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	volrmmount	\
 	vi		\
 	ypcmd		\
-	zonestat	\
 
 aarch64_SUBDIRS=	\
 	ahciem
