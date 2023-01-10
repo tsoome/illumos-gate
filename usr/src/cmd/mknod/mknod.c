@@ -25,12 +25,10 @@
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*	Copyright (c) 1987, 1988 Microsoft Corporation	*/
 /*	  All Rights Reserved	*/
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.9	*/
 
 /*
  *	mknod - build special file
@@ -98,13 +96,13 @@ main(int argc, char **argv)
 			usage();
 		}
 		majno = (major_t)number(argv[3]);
-		if (majno == (major_t)-1 || majno > MAXMAJ) {
+		if (majno == (major_t)-1 || majno > (major_t)MAXMAJ32) {
 			(void) fprintf(stderr, "mknod: invalid major number "
 			    "'%s' - valid range is 0-%lu\n", argv[3], MAXMAJ);
 			return (2);
 		}
 		minno = (minor_t)number(argv[4]);
-		if (minno == (minor_t)-1 || minno > MAXMIN) {
+		if (minno == (minor_t)-1 || minno > (minor_t)MAXMIN32) {
 			(void) fprintf(stderr, "mknod: invalid minor number "
 			    "'%s' - valid range is 0-%lu\n", argv[4], MAXMIN);
 			return (2);
