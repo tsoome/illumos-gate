@@ -60,6 +60,7 @@ COMMON_SUBDIRS=	\
 	autopush	\
 	awk		\
 	awk_xpg4	\
+	backup		\
 	banner		\
 	bart		\
 	basename	\
@@ -444,7 +445,6 @@ COMMON_SUBDIRS=	\
 #
 # acct - not 64bit clean
 # bc - not 64bit clean
-# backup - not 64bit clean
 # cpc - not ported (nor libcpc)
 # csh - not 64bit clean
 # csplit - not 64bit clean
@@ -486,7 +486,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	bnu		\
 	cdrw		\
 	bc		\
-	backup		\
 	cpc		\
 	csh		\
 	csplit		\

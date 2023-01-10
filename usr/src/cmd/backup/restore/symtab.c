@@ -592,7 +592,7 @@ dumpsymtable(char *filename, int checkpt)
 		    ep = ep->e_links) {
 			bcopy((char *)ep, (char *)tep, sizeof (*tep));
 			/* LINTED: type pun ok */
-			tep->e_name = (char *)stroff;
+			tep->e_name = (char *)(uintptr_t)stroff;
 			stroff += allocsize(ep->e_namlen);
 			tep->e_parent = (struct entry *)ep->e_parent->e_index;
 			if (ep->e_links != NIL)

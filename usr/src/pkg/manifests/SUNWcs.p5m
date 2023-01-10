@@ -91,7 +91,7 @@ file path=etc/dgroup.tab group=sys mode=0444 preserve=true
 dir  path=etc/dhcp group=sys
 file path=etc/dhcp/inittab group=sys preserve=true
 file path=etc/dhcp/inittab6 group=sys preserve=true
-$(not_aarch64)file path=etc/dumpdates group=sys mode=0664 preserve=true
+file path=etc/dumpdates group=sys mode=0664 preserve=true
 link path=etc/ff target=../usr/sbin/ff
 link path=etc/fmthard target=../usr/sbin/fmthard
 $(not_aarch64)link path=etc/format target=../usr/sbin/format
@@ -937,8 +937,8 @@ file path=usr/lib/fs/ufs/quotaoff mode=0555
 hardlink path=usr/lib/fs/ufs/quotaon target=../../../../usr/lib/fs/ufs/quotaoff
 file path=usr/lib/fs/ufs/repquota mode=0555
 file path=usr/lib/fs/ufs/tunefs mode=0555
-$(not_aarch64)file path=usr/lib/fs/ufs/ufsdump mode=4555
-$(not_aarch64)file path=usr/lib/fs/ufs/ufsrestore mode=4555
+file path=usr/lib/fs/ufs/ufsdump mode=4555
+file path=usr/lib/fs/ufs/ufsrestore mode=4555
 file path=usr/lib/fs/ufs/volcopy mode=0555
 file path=usr/lib/getoptcvt mode=0555
 dir  path=usr/lib/help
@@ -1486,8 +1486,8 @@ link path=usr/sbin/tunefs target=../lib/fs/ufs/tunefs
 link path=usr/sbin/tzreload target=../../sbin/tzreload
 link path=usr/sbin/uadmin target=../../sbin/uadmin
 $(i386_ONLY)file path=usr/sbin/ucodeadm mode=0555
-$(not_aarch64)link path=usr/sbin/ufsdump target=../lib/fs/ufs/ufsdump
-$(not_aarch64)link path=usr/sbin/ufsrestore target=../lib/fs/ufs/ufsrestore
+link path=usr/sbin/ufsdump target=../lib/fs/ufs/ufsdump
+link path=usr/sbin/ufsrestore target=../lib/fs/ufs/ufsrestore
 link path=usr/sbin/umount target=../../sbin/umount
 file path=usr/sbin/umountall group=sys mode=0555
 file path=usr/sbin/unlink mode=0555
