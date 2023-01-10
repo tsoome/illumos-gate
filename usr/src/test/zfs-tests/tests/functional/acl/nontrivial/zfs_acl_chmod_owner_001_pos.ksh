@@ -27,6 +27,7 @@
 
 #
 # Copyright (c) 2012, 2016 by Delphix. All rights reserved.
+# Copyright 2023 RackTop Systems, Inc.
 #
 
 . $STF_SUITE/tests/functional/acl/acl_common.kshlib
@@ -43,7 +44,7 @@
 # 4. Verify that the owner/group are correct. Follow these rules:
 #	(1) If uid is granted the write_owner permission, then it can only do
 #	    chown to its own uid, or a group that they are a member of.
-#	(2) Owner will ignore permission of (1) even write_owner not granted.
+#	(2) chown/chgrp will fail when write_owner not granted.
 #	(3) Superuser will always permit whatever they do.
 #
 
@@ -197,7 +198,9 @@ function logname
 		ret="log_must"
 	elif [[ $user == $new ]] ; then
 		if [[ $user == $old || $acl_target == *:allow ]]; then
-			ret="log_must"
+			if [[ $acl_target != *@:write_owner:deny ]]; then
+				ret="log_must"
+			fi
 		fi
 	fi
 
