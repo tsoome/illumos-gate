@@ -585,7 +585,7 @@ file path=usr/bin/clear mode=0555
 file path=usr/bin/connstat mode=0555
 file path=usr/bin/coreadm mode=0555
 file path=usr/bin/cp mode=0555
-$(not_aarch64)file path=usr/bin/cpio mode=0555
+file path=usr/bin/cpio mode=0555
 file path=usr/bin/crle mode=0555
 file path=usr/bin/crontab mode=4555
 file path=usr/bin/crypt mode=0555

@@ -7661,7 +7661,7 @@ read_bar_file_hdr(void)
 	(void) sscanf(tmp_hdr->dbuf.chksum, "%8lo", &Gen.g_cksum);
 	(void) sscanf(tmp_hdr->dbuf.rdev, "%8lo", &Gen.g_rdev);
 
-#define	to_new_major(x)	(int)((unsigned)((x) & OMAXMAJ) << NBITSMINOR)
+#define	to_new_major(x)	(int)((unsigned long)((x) & OMAXMAJ) << NBITSMINOR)
 #define	to_new_minor(x)	(int)((x) & OMAXMIN)
 	Gen.g_rdev = to_new_major(Gen.g_rdev) | to_new_minor(Gen.g_rdev);
 	bar_linkflag = tmp_hdr->dbuf.linkflag;
@@ -8793,7 +8793,7 @@ read_xattr_hdr()
 	    sizeof (struct xattr_hdr));
 	(void) sscanf(xattrp->h_namesz, "%7d", &namelen);
 	if (link_len > 0) {
-		xattr_linkp = (struct xattr_buf *)((int)xattrp + (int)comp_len);
+		xattr_linkp = (struct xattr_buf *)(xattrp + comp_len);
 	} else {
 		xattr_linkp = NULL;
 	}
@@ -9193,7 +9193,7 @@ sl_insert(dev_t device, ino_t inode, int ftype)
 
 	if (s->bal == 0) {
 		s->bal = a;
-		head->llink = (sl_info_t *)((int)head->llink + 1);
+		head->llink = (sl_info_t *)((uintptr_t)head->llink + 1);
 		return (q);
 	} else if (s->bal == -a) {
 		s->bal = 0;
@@ -9357,7 +9357,7 @@ preview_attrs(char *s, char *attrparent)
 		return (1);
 	}
 
-	while (dp = readdir(dirp)) {
+	while ((dp = readdir(dirp)) != NULL) {
 		if (dp->d_name[0] == '.') {
 			if (dp->d_name[1] == '\0') {
 				Hiddendir = 1;
