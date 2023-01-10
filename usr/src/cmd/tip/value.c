@@ -9,8 +9,6 @@
  * specifies the terms and conditions for redistribution.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "tip.h"
 
 #define	MIDDLE	35
@@ -152,7 +150,7 @@ vtoken(char *s)
 		if (p = vlookup(s)) {
 			cp++;
 			if (p->v_type&NUMBER)
-				vassign(p, (char *)atoi(cp));
+				vassign(p, (char *)(intptr_t)atoi(cp));
 			else {
 				if (strcmp(s, "record") == 0)
 					if ((cp2 = expand(cp)) != NOSTR)
@@ -320,7 +318,7 @@ vstring(char *s, char *v)
 	if (p == 0)
 		return (1);
 	if (p->v_type&NUMBER)
-		vassign(p, (char *)atoi(v));
+		vassign(p, (char *)(intptr_t)atoi(v));
 	else {
 		if (strcmp(s, "record") == 0)
 			if ((v2 = expand(v)) != NOSTR)
