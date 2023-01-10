@@ -76,7 +76,7 @@ file path=etc/default/nss group=sys preserve=true
 file path=etc/default/passwd group=sys preserve=true
 file path=etc/default/su group=sys preserve=true
 file path=etc/default/syslogd group=sys preserve=true
-$(not_aarch64)file path=etc/default/tar group=sys preserve=true
+file path=etc/default/tar group=sys preserve=true
 file path=etc/default/useradd group=sys preserve=true
 file path=etc/default/utmpd group=sys preserve=true
 dir  path=etc/dev group=sys
@@ -273,7 +273,7 @@ file path=etc/sysevent/config/README group=sys mode=0444
 file path=etc/sysevent/config/SUNW,EC_dr,ESC_dr_req,sysevent.conf group=sys
 file path=etc/syslog.conf group=sys preserve=true
 dir  path=etc/system.d group=sys
-$(not_aarch64)link path=etc/tar target=../usr/sbin/tar
+link path=etc/tar target=../usr/sbin/tar
 link path=etc/telinit target=../sbin/init
 dir  path=etc/tm group=sys
 file path=etc/ttydefs group=sys preserve=true
@@ -735,7 +735,7 @@ file path=usr/bin/svcs mode=0555
 link path=usr/bin/sync target=../../sbin/sync
 file path=usr/bin/tabs mode=0555
 file path=usr/bin/tail mode=0555
-$(not_aarch64)link path=usr/bin/tar target=../sbin/tar
+link path=usr/bin/tar target=../sbin/tar
 file path=usr/bin/tic mode=0555
 file path=usr/bin/time mode=0555
 $(not_aarch64)file path=usr/bin/tip owner=uucp mode=4511
@@ -1478,7 +1478,7 @@ file path=usr/sbin/sysdef group=sys mode=2555
 file path=usr/sbin/syseventadm group=sys mode=0555
 file path=usr/sbin/syslogd group=sys mode=0555
 hardlink path=usr/sbin/tapes target=./devfsadm
-$(not_aarch64)file path=usr/sbin/tar mode=0555
+file path=usr/sbin/tar mode=0555
 file path=usr/sbin/traceroute mode=4555
 $(not_aarch64)file path=usr/sbin/trapstat mode=0555
 file path=usr/sbin/ttyadm group=sys mode=0755
