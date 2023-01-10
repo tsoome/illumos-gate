@@ -26,7 +26,7 @@
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 
 /*
@@ -38,8 +38,6 @@
  * software developed by the University of California, Berkeley, and its
  * contributors.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * mailx -- a modified version of a University of California at Berkeley
@@ -76,7 +74,7 @@ salloc(unsigned size)
 #if defined(u3b) || defined(sparc)
 	s += 3;		/* needs alignment on quad boundary */
 	s &= ~03;
-#elif defined(i386)
+#elif defined(i386) || defined(__aarch64__)
 	s++;
 	s &= ~01;
 #else
@@ -131,7 +129,7 @@ srealloc(void *optr, unsigned size)
 #if defined(u3b) || defined(sparc)
 		s += 3;		/* needs alignment on quad boundary */
 		s &= ~03;
-#elif defined(i386)
+#elif defined(i386) || defined(__aarch64__)
 		s++;
 		s &= ~01;
 #else
@@ -155,7 +153,7 @@ srealloc(void *optr, unsigned size)
  * Called to free all strings allocated
  * since last reset.
  */
-void 
+void
 sreset(void)
 {
 	register struct strings *sp;

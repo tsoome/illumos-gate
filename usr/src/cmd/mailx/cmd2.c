@@ -25,7 +25,7 @@
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * University Copyright- Copyright (c) 1982, 1986, 1988
@@ -280,7 +280,7 @@ savemsglist(char *file, int *msgvec, int flag)
 	lc = cc = 0;
 	bnry = 0;
 	if (flag & S_SAVING)
-		mflag = (int)value("alwaysignore")?(M_IGNORE|M_SAVING):M_SAVING;
+		mflag = value("alwaysignore") != NOSTR ? (M_IGNORE|M_SAVING) : M_SAVING;
 	else if (flag & S_NOIGNORE)
 		mflag = 0;
 	else

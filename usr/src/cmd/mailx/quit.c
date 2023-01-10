@@ -20,7 +20,7 @@
  * CDDL HEADER END
  */
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 /*
  * Copyright (c) 2016 by Delphix. All rights reserved.
  */
@@ -34,8 +34,6 @@
  * software developed by the University of California, Berkeley, and its
  * contributors.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include "rcv.h"
 #include <locale.h>
@@ -213,7 +211,7 @@ quit(
 	}
 	for (mp = &message[0]; mp < &message[msgCount]; mp++)
 		if (mp->m_flag & MBOX) {
-			if (msend(mp, obuf, (int)value("alwaysignore") ?
+			if (msend(mp, obuf, value("alwaysignore") != NOSTR ?
 			    M_IGNORE|M_SAVING : M_SAVING, fputs) < 0) {
 				perror(mbox);
 				if (!appending)

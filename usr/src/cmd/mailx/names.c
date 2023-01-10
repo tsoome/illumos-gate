@@ -27,7 +27,7 @@
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * University Copyright- Copyright (c) 1982, 1986, 1988
@@ -535,7 +535,7 @@ samebody(register char *user, register char *addr, int fuzzy)
 	char *allnet = value("allnet");
 	int nbangs = allnet ? (strcmp(allnet, "uucp") == 0) ? 2 : 1 : 0;
 
-	if (fuzzy && value("fuzzymatch")) {
+	if (fuzzy && value("fuzzymatch") != NOSTR) {
 		int i;
 
 		(void) strlcpy(ubuf, user, BUFSIZ);

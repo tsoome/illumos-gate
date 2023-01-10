@@ -24,7 +24,7 @@
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * University Copyright- Copyright (c) 1982, 1986, 1988
@@ -121,7 +121,7 @@ collect(struct header *hp)
 	newi = ibuf;
 	removefile(tempMail);
 
-	ignintr = (int)value("ignore");
+	ignintr = value("ignore") != NOSTR;
 	hadintr = 1;
 	inhead = 1;
 	savehp = hp;
@@ -181,11 +181,11 @@ collect(struct header *hp)
 	if (intty && !tflag) {
 		if (hp->h_to == NOSTR)
 			hdrs |= GTO;
-		if (hp->h_subject == NOSTR && value("asksub"))
+		if (hp->h_subject == NOSTR && value("asksub") != NOSTR)
 			hdrs |= GSUBJECT;
-		if (hp->h_cc == NOSTR && value("askcc"))
+		if (hp->h_cc == NOSTR && value("askcc") != NOSTR)
 			hdrs |= GCC;
-		if (hp->h_bcc == NOSTR && value("askbcc"))
+		if (hp->h_bcc == NOSTR && value("askbcc") != NOSTR)
 			hdrs |= GBCC;
 		if (hdrs)
 			t &= ~GNL;
@@ -326,7 +326,7 @@ collect(struct header *hp)
 			continue;
 		}
 		if ((linebuf[0] != escape) || (rflag != NOSTR) ||
-		    (!intty && !(int)value("escapeok"))) {
+		    (!intty && value("escapeok") == NOSTR)) {
 			if (write(fileno(obuf),linebuf,nread) != nread)
 				goto werr;
 			continue;
@@ -428,7 +428,7 @@ collect(struct header *hp)
 
 		case 'x':
 			xhalt();
-			break; 	/* not reached */
+			break;	/* not reached */
 
 		case 'h':
 			/*
@@ -438,7 +438,7 @@ collect(struct header *hp)
 				printf(gettext("~h: no can do!?\n"));
 				break;
 			}
-			grabh(hp, GMASK, (int)value("bsdcompat"));
+			grabh(hp, GMASK, value("bsdcompat") != NOSTR);
 			printf(gettext("(continue)\n"));
 			break;
 
@@ -741,7 +741,7 @@ err:
 	return(NULL);
 }
 
-static void 
+static void
 resetsigs(int resethup)
 {
 	(void) sigset(SIGINT, savesig);
@@ -1133,7 +1133,7 @@ tabputs(const char *line, FILE *obuf)
  * Print (continue) when continued after ^Z.
  */
 #ifdef SIGCONT
-static void 
+static void
 #ifdef	__cplusplus
 collcont(int)
 #else
@@ -1153,7 +1153,7 @@ collcont(int s)
  * signal routine.  We only come here if signals
  * were previously set anyway.
  */
-static void 
+static void
 collrub(int s)
 {
 	FILE *dbuf;
@@ -1203,7 +1203,7 @@ done:
 /*
  * Acknowledge an interrupt signal from the tty by typing an @
  */
-static void 
+static void
 #ifdef	__cplusplus
 intack(int)
 #else
@@ -1235,7 +1235,7 @@ getaline(char *line, int size, FILE *f, int *hasnulls)
 	return(i);
 }
 
-void 
+void
 #ifdef	__cplusplus
 savedead(int)
 #else
@@ -1288,7 +1288,7 @@ addone(char hf[], char news[])
 	return(linebuf);
 }
 
-static int 
+static int
 nptrs(char **hf)
 {
 	int i;
@@ -1353,7 +1353,7 @@ cpout(char *str, FILE *ofd)
 	fflush(ofd);
 }
 
-static void 
+static void
 xhalt(void)
 {
 	fclose(newo);
@@ -1369,7 +1369,7 @@ xhalt(void)
 /*
  * Strip the nulls from a buffer of length n
  */
-static int 
+static int
 stripnulls(char *linebuf, int nread)
 {
 	int i, j;
