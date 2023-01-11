@@ -282,8 +282,7 @@ main(void)
 	free(bdev);
 	i386_getdev((void **)&bdev, boot_devname, NULL);
 
-	env_setenv("currdev", EV_VOLATILE, boot_devname, gen_setcurrdev,
-	    env_nounset);
+	set_currdev(boot_devname);
 
 	/* Process configuration file */
 	setenv("screen-#rows", "24", 1);
