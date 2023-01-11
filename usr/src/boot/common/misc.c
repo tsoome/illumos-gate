@@ -211,17 +211,6 @@ hexdump(caddr_t region, size_t len)
 	pager_close();
 }
 
-void
-dev_cleanup(void)
-{
-	int		i;
-
-	/* Call cleanup routines */
-	for (i = 0; devsw[i] != NULL; ++i)
-		if (devsw[i]->dv_cleanup != NULL)
-			(devsw[i]->dv_cleanup)();
-}
-
 #ifndef BOOT2
 /*
  * outb ( port# c -- )
