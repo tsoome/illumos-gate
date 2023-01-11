@@ -140,7 +140,7 @@ main(void)
 
 	/* Set up currdev variable to have hooks in place. */
 	env_setenv("currdev", EV_VOLATILE | EV_NOHOOK, "",
-	    i386_setcurrdev, env_nounset);
+	    gen_setcurrdev, env_nounset);
 
 	/*
 	 * Initialise the block cache. Set the upper limit.
@@ -302,7 +302,7 @@ extract_currdev(void)
 	}
 
 	env_setenv("currdev", EV_VOLATILE, devformat(&new_currdev.dd),
-	    i386_setcurrdev, env_nounset);
+	    gen_setcurrdev, env_nounset);
 	env_setenv("loaddev", EV_VOLATILE, devformat(&new_currdev.dd),
 	    env_noset, env_nounset);
 }

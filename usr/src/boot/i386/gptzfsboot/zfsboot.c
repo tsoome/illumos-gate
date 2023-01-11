@@ -236,7 +236,7 @@ main(void)
 		    bootinfo.bi_bios_dev - 0x80);
 
 	/* Set up currdev variable to have hooks in place. */
-	env_setenv("currdev", EV_VOLATILE, "", i386_setcurrdev,
+	env_setenv("currdev", EV_VOLATILE, "", gen_setcurrdev,
 	    env_nounset);
 
 	devinit();
@@ -282,7 +282,7 @@ main(void)
 	free(bdev);
 	i386_getdev((void **)&bdev, boot_devname, NULL);
 
-	env_setenv("currdev", EV_VOLATILE, boot_devname, i386_setcurrdev,
+	env_setenv("currdev", EV_VOLATILE, boot_devname, gen_setcurrdev,
 	    env_nounset);
 
 	/* Process configuration file */

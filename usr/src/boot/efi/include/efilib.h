@@ -104,7 +104,6 @@ EFI_STATUS OpenProtocolByHandle(EFI_HANDLE, EFI_GUID *, void **);
 EFI_STATUS efi_get_protocol_handles(EFI_GUID *, uint_t *, EFI_HANDLE **);
 
 int efi_getdev(void **, const char *, const char **);
-int efi_setcurrdev(struct env_var *, int, const void *);
 
 int efi_register_handles(struct devsw *, EFI_HANDLE *, EFI_HANDLE *, int);
 EFI_HANDLE efi_find_handle(struct devsw *, int);

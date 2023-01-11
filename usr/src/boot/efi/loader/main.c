@@ -230,7 +230,7 @@ static void
 set_currdev(const char *devname)
 {
 
-	env_setenv("currdev", EV_VOLATILE, devname, efi_setcurrdev,
+	env_setenv("currdev", EV_VOLATILE, devname, gen_setcurrdev,
 	    env_nounset);
 	/*
 	 * Don't execute hook here; the loaddev hook makes it immutable
@@ -710,7 +710,7 @@ main(int argc, CHAR16 *argv[])
 	cons_probe();
 
 	/* Set up currdev variable to have hooks in place. */
-	env_setenv("currdev", EV_VOLATILE, "", efi_setcurrdev, env_nounset);
+	env_setenv("currdev", EV_VOLATILE, "", gen_setcurrdev, env_nounset);
 
 	efi_getsmap();
 
