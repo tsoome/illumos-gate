@@ -51,9 +51,12 @@ _msg:=		TARGET= _msg
 all clean clobber lint: $(SUBDIRS)
 
 install: $(SUBDIRS)
-	-$(RM) $(ROOTLIBINET)/in.iked
-	-$(LN) $(ISAEXEC) $(ROOTLIBINET)/in.iked
+# Closed bin, doesn't exist on AArch64
+$(NOT_AARCH64_BLD)install: $(ROOTLIBINET)/in.iked
 
+$(ROOTLIBINET)/in.iked:
+	$(RM) $(ROOTLIBINET)/in.iked
+	$(LN) $(ISAEXEC) $(ROOTLIBINET)/in.iked
 
 _msg: $(MSGSUBDIRS)
 

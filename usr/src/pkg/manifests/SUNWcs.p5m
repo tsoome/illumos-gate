@@ -551,10 +551,10 @@ $(MULTILIB_ONLY)hardlink path=usr/bin/$(ARCH64)/encrypt target=decrypt
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/ls mode=0555
 $(MULTILIB_ONLY)hardlink path=usr/bin/$(ARCH64)/mac target=digest
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/moe mode=0555
-$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/newtask group=sys mode=4555
+file path=usr/bin/$(ARCH64)/newtask group=sys mode=4555
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/nohup mode=0555
-$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/prctl mode=0555
-$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/prstat mode=0555
+file path=usr/bin/$(ARCH64)/prctl mode=0555
+file path=usr/bin/$(ARCH64)/prstat mode=0555
 file path=usr/bin/$(ARCH64)/savecore mode=0555
 $(i386_ONLY)file path=usr/bin/addbadsec mode=0555
 file path=usr/bin/amt mode=0555
@@ -1168,7 +1168,7 @@ $(MULTILIB_ONLY)file path=usr/lib/inet/$(ARCH64)/in.iked mode=0555
 $(not_aarch64)file path=usr/lib/inet/certdb mode=0555
 $(not_aarch64)file path=usr/lib/inet/certlocal mode=0555
 $(not_aarch64)file path=usr/lib/inet/certrldb mode=0555
-hardlink path=usr/lib/inet/in.iked target=../../../usr/lib/isaexec
+$(not_aarch64)hardlink path=usr/lib/inet/in.iked target=../../../usr/lib/isaexec
 file path=usr/lib/inet/inetd mode=0555
 file path=usr/lib/intrd mode=0555
 file path=usr/lib/isaexec mode=0555

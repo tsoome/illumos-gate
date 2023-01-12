@@ -42,7 +42,7 @@ $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/elfwrap mode=0555
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/gcore mode=0555
 $(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/ld target=../../bin/ld
 $(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/ldd target=../../bin/ldd
-$(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/plimit mode=0555
+file path=usr/bin/$(ARCH64)/plimit mode=0555
 $(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/pvs target=../../bin/pvs
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/strings mode=0555
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/truss mode=0555

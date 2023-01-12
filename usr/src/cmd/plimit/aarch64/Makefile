@@ -50,7 +50,7 @@ $(PROG): $(OBJS)
 	$(LINK.c) $(OBJS) -o $@ $(LDLIBS)
 	$(POST_PROCESS)
 
-install: all $(ROOTPROG)
+install: all $(ROOTPROG64)
 
 clean:
 	$(RM) $(OBJS)
