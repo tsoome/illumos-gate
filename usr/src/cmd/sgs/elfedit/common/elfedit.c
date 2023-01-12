@@ -174,7 +174,7 @@ static const char *isa_I_str = MSG_ORIG(MSG_ISA_X86_64);
 
 #ifdef __aarch64__
 static const char *isa_i_str = MSG_ORIG(MSG_ISA_AARCH64);
-static const char *isa_I_str = MSG_ORIG(MSG_ISA_AARCH64);
+static const char *isa_I_str = MSG_ORIG(MSG_STR_EMPTY);
 #endif
 
 
@@ -2709,7 +2709,8 @@ modpath_expand(const char *path, const char *origin_root, char *buf)
 			case 'i':	/* ISA of running elfedit */
 				cp_str = isa_i_str;
 				break;
-			case 'I':	/* "" for 32-bit, same as %i for 64 */
+			/* "" for 32-bit or non-multilib, same as %i for 64 */
+			case 'I':
 				cp_str = isa_I_str;
 				break;
 			case 'o':	/* Insert default path */
@@ -2804,8 +2805,9 @@ establish_modpath(const char *cmdline_path)
 	 * code, and so, the expansion is not recursive. The codes allowed
 	 * are:
 	 *	%i - ISA of running elfedit (sparc, sparcv9, etc)
-	 *	%I - 64-bit ISA: Same as %i for 64-bit versions of elfedit,
-	 *		but yields empty string for 32-bit ISAs.
+	 *	%I - 64-bit ISA: Same as %i for multilib 64-bit versions
+	 *		of elfedit, but yields empty string for 32-bit ISAs
+	 *		and non-multilib systems.
 	 *	%o - The original (default) path.
 	 *	%r - Root of tree holding elfedit program.
 	 *	%% - A single %
