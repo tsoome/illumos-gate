@@ -20,15 +20,13 @@
  * CDDL HEADER END
  */
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 
 /*
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <fatal.h>
 #include <signal.h>
@@ -178,7 +176,7 @@ main(int argc, char *argv[])
 			 * The entire old file is a prefix of the
 			 * new file. Generate the appropriate "append"
 			 * 'diff'-like output, which is of the form:
-			 * 		nan, n
+			 *		nan, n
 			 * where 'n' represents a line-number.
 			 */
 			addgen(&nline, &nbufsiz, pnewfile);
@@ -189,7 +187,7 @@ main(int argc, char *argv[])
 			 * The entire new file is a prefix of the
 			 * old file. Generate the appropriate "delete"
 			 * 'diff'-like output, which is of the form:
-			 * 		n, ndn
+			 *		n, ndn
 			 * where 'n' represents a line-number.
 			 */
 			delgen(&oline, &obufsiz, poldfile);
@@ -556,7 +554,7 @@ readline(char **bufferp, size_t *bufsizp, FILE *filep)
 		(*bufferp)[*bufsizp - 2] = ' ';
 		bufp = fgets(*bufferp + oldsize -1, oldsize + 1, filep);
 		if (bufp == NULL) {
-			if (filep->_flag & _IOEOF) {
+			if (feof(filep)) {
 				bufp = *bufferp;
 				break;
 			} else

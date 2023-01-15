@@ -65,6 +65,7 @@ COMMON_SUBDIRS=	\
 	banner		\
 	bart		\
 	basename	\
+	bdiff		\
 	beadm		\
 	boot		\
 	busstat		\
@@ -434,7 +435,6 @@ COMMON_SUBDIRS=	\
 # abi - not interesting
 # perl - not available for the cross
 # availdevs - needs libzfs (and libzfs_jni!?) (and not interesting)
-# bdiff - uses FILE internals not available to LP64
 # bnu - uses FILE internals not available to LP64
 # hal - needs dbus, etc
 # latencytop - needs glib
@@ -481,7 +481,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	abi		\
 	perl		\
 	availdevs	\
-	bdiff		\
 	bnu		\
 	cdrw		\
 	bc		\
@@ -587,6 +586,7 @@ MSGSUBDIRS=		\
 	banner		\
 	bart		\
 	basename	\
+	bdiff		\
 	beadm		\
 	bnu		\
 	busstat		\
