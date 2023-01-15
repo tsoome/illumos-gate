@@ -14,9 +14,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include "defs.h"
+#include <stdlib.h>
 
 	/* symbol types */
 #define VAR	1

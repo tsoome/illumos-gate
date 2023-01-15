@@ -40,9 +40,9 @@ SRCS=		$(ALL:%=%.c)
 $(NOT_AARCH64_BLD)KCMDPROGS= rcp rlogin rsh
 
 SUBDIRS=	chat dns-sd ftp nc netstat \
-		pppdump pppstats talk telnet tftp
+		pppdump pppstats rdist talk telnet tftp
 # XXXARM: Not 64bit clean
-$(NOT_AARCH64_BLD)SUBDIRS += pppd  rdist
+$(NOT_AARCH64_BLD)SUBDIRS += pppd
 SUBDIR1=	talk
 MSGSUBDIRS=	talk
 
