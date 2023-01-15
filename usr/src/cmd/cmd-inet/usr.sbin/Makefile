@@ -30,12 +30,9 @@ include $(SRC)/Makefile.master
 SYNCPROG=	syncinit syncloop syncstat
 
 PROG=		6to4relay arp if_mpadm \
-		in.comsat in.fingerd in.rarpd in.rexecd \
-		in.rwhod in.telnetd in.tftpd ipaddrsel \
+		in.comsat in.fingerd in.rarpd in.rexecd in.rlogind \
+		in.rshd in.rwhod in.telnetd in.tftpd ipaddrsel \
 		ndd ndp $(SYNCPROG)
-
-# XXXARM: Not 64bit clean
-$(NOT_AARCH64_BLD)PROG += in.rlogind in.rshd
 
 MANIFEST=	rarp.xml telnet.xml comsat.xml finger.xml \
 		login.xml shell.xml rexec.xml
@@ -45,8 +42,8 @@ ROOTFS_PROG=	hostconfig route soconfig
 SBINLINKS=	hostconfig route
 
 RPCSVCPROG=	hostconfig
-AUDITPROG=	in.rexecd in.rlogind in.rshd in.telnetd
-PAMPROG=	in.rexecd in.rlogind in.rshd in.telnetd
+AUDITPROG=	in.rexecd in.rshd in.telnetd
+PAMPROG=	in.rexecd in.rshd in.telnetd
 SOCKETPROG=	6to4relay arp hostconfig if_mpadm in.comsat \
 		in.fingerd in.rarpd in.rexecd in.rlogind in.rshd \
 		in.rwhod in.telnetd in.tftpd ipaddrsel ndp route
