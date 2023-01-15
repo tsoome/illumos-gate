@@ -27,9 +27,6 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -42,6 +39,7 @@
 #include <netinet/in.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/ttold.h>
 #include <utmpx.h>
 #include <signal.h>
