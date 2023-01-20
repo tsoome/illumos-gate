@@ -88,7 +88,7 @@ $(not_aarch64)file path=usr/share/man/man1b/whoami.1b
 $(not_aarch64)dir path=usr/ucb
 $(i386_ONLY)dir path=usr/ucb/$(ARCH32)
 $(MULTILIB_ONLY)dir path=usr/ucb/$(ARCH64)
-link path=usr/ucb/Mail target=../bin/mailx
+$(not_aarch64)link path=usr/ucb/Mail target=../bin/mailx
 $(not_aarch64)link path=usr/ucb/arch target=../bin/arch
 $(not_aarch64)file path=usr/ucb/basename mode=0755
 $(not_aarch64)file path=usr/ucb/biff mode=0755
@@ -118,7 +118,7 @@ $(not_aarch64)file path=usr/ucb/ln mode=0755
 $(not_aarch64)link path=usr/ucb/logger target=../bin/logger
 $(not_aarch64)file path=usr/ucb/ls mode=0755
 $(not_aarch64)link path=usr/ucb/mach target=../bin/mach
-link path=usr/ucb/mail target=../bin/mailx
+$(not_aarch64)link path=usr/ucb/mail target=../bin/mailx
 $(not_aarch64)file path=usr/ucb/mkstr mode=0555
 $(not_aarch64)link path=usr/ucb/more target=../bin/more
 $(not_aarch64)link path=usr/ucb/netstat target=../bin/netstat
