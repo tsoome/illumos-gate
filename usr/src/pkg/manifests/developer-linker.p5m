@@ -46,7 +46,7 @@ file path=usr/bin/$(ARCH64)/plimit mode=0555
 $(MULTILIB_ONLY)link path=usr/bin/$(ARCH64)/pvs target=../../bin/pvs
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/strings mode=0555
 $(MULTILIB_ONLY)file path=usr/bin/$(ARCH64)/truss mode=0555
-$(not_aarch64)link path=usr/bin/ctags target=../has/bin/ctags mediator=ctags \
+link path=usr/bin/ctags target=../has/bin/ctags mediator=ctags \
     mediator-implementation=illumos
 file path=usr/bin/elfsign mode=0555
 file path=usr/bin/elfwrap mode=0555
@@ -71,7 +71,7 @@ link path=usr/ccs/bin/ld target=../../bin/ld
 link path=usr/ccs/bin/regcmp target=../../bin/regcmp
 dir  path=usr/ccs/lib
 link path=usr/ccs/lib/link_audit target=../../lib/link_audit
-$(not_aarch64)file path=usr/has/bin/ctags mode=0555
+file path=usr/has/bin/ctags mode=0555
 file path=usr/has/man/man1has/ctags.1has
 dir  path=usr/lib
 $(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)

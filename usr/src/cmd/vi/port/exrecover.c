@@ -38,11 +38,16 @@
 #include "ex_temp.h"
 #include "ex_tty.h"
 #include "ex_tune.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <locale.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <crypt.h>
 
 #define DIRSIZ	MAXNAMLEN
 
@@ -83,6 +88,7 @@ void searchdir(unsigned char *);
 void scrapbad(void);
 void findtmp(unsigned char *);
 void listfiles(unsigned char *);
+static int yeah(unsigned char *);
 
 int
 main(int argc, char *argv[])
@@ -91,8 +97,6 @@ main(int argc, char *argv[])
 	unsigned char *cp;
 	int c, b, i;
 	int rflg = 0, errflg = 0;
-	int label;
-	line *tmpadr;
 	extern unsigned char *mypass();
 	struct passwd *pp = getpwuid(getuid());
 	unsigned char rmcmd[PATH_MAX+1];
@@ -103,12 +107,12 @@ main(int argc, char *argv[])
 #endif
 	(void)textdomain(TEXT_DOMAIN);
 	cp = string;
-	strcpy(mydir, USRPRESERVE);
+	strcpy((char *)mydir, USRPRESERVE);
 	if (pp == NULL) {
 		fprintf(stderr, gettext("Unable to get user's id\n"));
 		exit(-1);
 	}
-	strcat(mydir, pp->pw_name);
+	strcat((char *)mydir, pp->pw_name);
 
 	/*
 	 * Initialize as though the editor had just started.
@@ -124,7 +128,7 @@ main(int argc, char *argv[])
 			case 'r':
 				rflg++;
 				break;
-			
+
 			case 'x':
 				xflag++;
 				break;
@@ -135,10 +139,10 @@ main(int argc, char *argv[])
 		}
 	argc -= optind;
 	argv = &argv[optind];
-	
-	if (errflg) 
+
+	if (errflg)
 		exit(2);
-	
+
 	/*
 	 * If given only a -r argument, then list the saved files.
 	 * (NOTE: single -r argument is scheduled to be replaced by -L).
@@ -150,11 +154,12 @@ main(int argc, char *argv[])
 		listfiles((unsigned char *)TMPDIR);
 		exit(0);
 	}
-	
-	if (argc != 2)
-		error(gettext(" Wrong number of arguments to exrecover"), 0);
 
-	CP(file, argv[1]);
+	if (argc != 2)
+		error((unsigned char *)gettext(
+		    " Wrong number of arguments to exrecover"), 0);
+
+	CP((char *)file, argv[1]);
 
 	/*
 	 * Search for this file.
@@ -169,12 +174,12 @@ main(int argc, char *argv[])
 		gettext(" [Dated: %s, newest of %d saved]") :
 		gettext(" [Dated: %s]"), cp, vercnt);
 	fprintf(stderr, "\r\n");
-	
+
 	if(H.encrypted) {
 		if(xflag) {
-			kflag = run_setkey(perm, (unsigned char *)getenv("CrYpTkEy"));
+			kflag = run_setkey(perm, getenv("CrYpTkEy"));
 		} else
-			kflag = run_setkey(perm, mypass("Enter key:"));
+			kflag = run_setkey(perm, (char *)mypass("Enter key:"));
 		if(kflag == -1) {
 			kflag = 0;
 			xflag = 0;
@@ -197,8 +202,9 @@ main(int argc, char *argv[])
 	/*
 	 * Allocate space for the line pointers from the temp file.
 	 */
-	if ((int) sbrk((int) (H.Flines * sizeof (line))) == -1)
-		error(gettext(" Not enough core for lines"), 0);
+	if (sbrk((int) (H.Flines * sizeof (line))) == (void *)-1)
+		error((unsigned char *)gettext(
+		    " Not enough core for lines"), 0);
 #ifdef DEBUG
 	fprintf(stderr, "%d lines\n", H.Flines);
 #endif
@@ -264,19 +270,16 @@ main(int argc, char *argv[])
  * we should be writing output for "vi", so don't print
  * a newline which would mess up the screen.
  */
-/*VARARGS2*/
 void
-error(str, inf)
-	unsigned char *str;
-	int inf;
+error(unsigned char *str, ...)
 {
-
+	va_list ap;
 	struct termio termio;
-	if (inf)
-		fprintf(stderr, (char *)str, inf);
-	else
-		fprintf(stderr, (char *)str);
-	
+
+	va_start(ap, str);
+	vfprintf(stderr, (char *)str, ap);
+	va_end(ap);
+
 	ioctl(2, TCGETA, &termio);
 	if (termio.c_lflag & ICANON)
 		fprintf(stderr, "\n");
@@ -328,7 +331,7 @@ listfiles(unsigned char *dirname)
 	 */
 	fp = &svbuf[0];
 	ecount = 0;
-	while ((direntry = readdir64(dir)) != NULL) 
+	while ((direntry = readdir64(dir)) != NULL)
 	{
 		filname = (unsigned char *)direntry->d_name;
 		if (filname[0] != 'E')
@@ -342,7 +345,7 @@ listfiles(unsigned char *dirname)
 		 * If not, then don't bother with this file, it can't
 		 * be ours.
 		 */
-		f = open(filname, 0);
+		f = open((char *)filname, 0);
 		if (f < 0) {
 #ifdef DEBUG
 			fprintf(stderr, "open failed\n");
@@ -443,10 +446,11 @@ qucmp(struct svfile *p1, struct svfile *p2)
 {
 	int t;
 
-	if (t = strcmp(p1->sf_name, p2->sf_name))
-		return(t);
+	t = strcmp((char *)p1->sf_name, (char *)p2->sf_name);
+	if (t != 0)
+		return (t);
 	if (p1->sf_time > p2->sf_time)
-		return(-1);
+		return (-1);
 	return(p1->sf_time < p2->sf_time);
 }
 
@@ -487,7 +491,7 @@ findtmp(unsigned char *dir)
 		 * name for later unlinking.
 		 */
 		tfile = bestfd;
-		CP(nb, bestnb);
+		CP((char *)nb, (char *)bestnb);
 		(void)lseek(tfile, 0l, 0);
 
 		/*
@@ -520,11 +524,11 @@ searchdir(unsigned char *dirname)
 {
 	struct dirent64 *direntry;
 	DIR *dir;
-	unsigned char dbuf[BUFSIZE];
 	unsigned char *filname;
-	if ((dir = opendir((char *)dirname)) == NULL) 
+
+	if ((dir = opendir((char *)dirname)) == NULL)
 		return;
-	while ((direntry = readdir64(dir)) != NULL) 
+	while ((direntry = readdir64(dir)) != NULL)
 	{
 		filname = (unsigned char *)direntry->d_name;
 		if (filname[0] != 'E' || filname[1] != 'x')
@@ -535,7 +539,8 @@ searchdir(unsigned char *dirname)
 		 * later, and check that this is really a file
 		 * we are looking for.
 		 */
-		(void)strcat(strcat(strcpy(nb, dirname), "/"), filname);
+		(void) strcat(strcat(strcpy((char *)nb, (char *)dirname), "/"),
+		    (char *)filname);
 		if (yeah(nb)) {
 			/*
 			 * Well, it is the file we are looking for.
@@ -548,7 +553,7 @@ searchdir(unsigned char *dirname)
 				(void)close(bestfd);
 				bestfd = dup(tfile);
 				besttime = H.Time;
-				CP(bestnb, nb);
+				CP((char *)bestnb, (char *)nb);
 			}
 			/*
 			 * Count versions and tell user
@@ -565,19 +570,20 @@ searchdir(unsigned char *dirname)
  * if it's really an editor temporary and of this
  * user and the file specified.
  */
-int
+static int
 yeah(unsigned char *name)
 {
 
-	tfile = open(name, 2);
+	tfile = open((char *)name, O_RDWR);
 	if (tfile < 0)
 		return (0);
-	if (read(tfile, (char *) &H, sizeof H) != sizeof H) {
+	if (read(tfile, (char *)&H, sizeof (H)) != sizeof (H)) {
 nope:
 		(void)close(tfile);
 		return (0);
 	}
-	if (!eq(savedfile, file))
+	if (savedfile == NULL ||
+	     strcmp((char *)savedfile, (char *)file) != 0)
 		goto nope;
 	if (getuid() != H.Uid)
 		goto nope;
@@ -626,11 +632,12 @@ scrapbad(void)
 	 * if last line was split across blocks, then it is lost
 	 * if the last block is.
 	 */
+	cnt = 0;
 	while (bno > 0) {
 		(void)lseek(tfile, (long) BUFSIZE * bno, 0);
 		cnt = read(tfile, (char *) bk, BUFSIZE);
 	if(xtflag)
-		if (run_crypt(0L, bk, CRSIZE, tperm) == -1)
+		if (run_crypt(0L, (char *)bk, CRSIZE, tperm) == -1)
 		    rsyserror();
 #ifdef DEBUG
 	fprintf(stderr,"UNENCRYPTED: BLK %d\n",bno);
@@ -764,53 +771,53 @@ getaline(line tl)
 	bp = getblock(tl);
 	nl = nleft;
 	tl &= ~OFFMSK;
-	while (*lp++ = *bp++)
+	while ((*lp++ = *bp++) != '\0')
 		if (--nl == 0) {
 			bp = getblock(tl += INCRMT);
 			nl = nleft;
 		}
 }
 
-int	read();
-int	write();
-
 unsigned char *
-getblock(atl)
-	line atl;
+getblock(line atl)
 {
 	int bno, off;
-        unsigned char *p1, *p2;
-        int n;
-	
+
 	bno = (atl >> OFFBTS) & BLKMSK;
 #ifdef DEBUG
-	fprintf(stderr,"GETBLOCK: BLK %d\n",bno);
+	fprintf(stderr, "GETBLOCK: BLK %d\n", bno);
 #endif
 	off = (atl << SHFT) & LBTMSK;
 	if (bno >= NMBLKS)
 		error((unsigned char *)gettext(" Tmp file too large"));
 	nleft = BUFSIZE - off;
-	if (bno == iblock) 
+	if (bno == iblock)
 		return (ibuff + off);
 	iblock = bno;
-	blkio(bno, ibuff, read);
+	blkio(bno, ibuff, read, NULL);
 	if(xtflag)
-		if (run_crypt(0L, ibuff, CRSIZE, tperm) == -1)
+		if (run_crypt(0L, (char *)ibuff, CRSIZE, tperm) == -1)
 		    rsyserror();
 #ifdef DEBUG
-	fprintf(stderr,"UNENCRYPTED: BLK %d\n",bno);
+	fprintf(stderr, "UNENCRYPTED: BLK %d\n", bno);
 #endif
 	return (ibuff + off);
 }
 
 void
-blkio(short b, unsigned char *buf, int (*iofcn)())
+blkio(short b, unsigned char *buf, ssize_t (*riofcn)(int, void *, size_t),
+    ssize_t (*wiofcn)(int, const void *, size_t))
 {
 
 	int rc;
 	lseek(tfile, (long) (unsigned) b * BUFSIZE, 0);
-	if ((rc =(*iofcn)(tfile, buf, BUFSIZE)) != BUFSIZE) {
-		(void)fprintf(stderr,gettext("Failed on BLK: %d with %d/%d\n"),b,rc,BUFSIZE); 
+	if (riofcn != NULL)
+		rc = (*riofcn)(tfile, buf, BUFSIZE);
+	else
+		rc = (*wiofcn)(tfile, buf, BUFSIZE);
+	if (rc != BUFSIZE) {
+		(void)fprintf(stderr,
+		    gettext("Failed on BLK: %d with %d/%d\n"), b, rc, BUFSIZE);
 		perror("");
 		rsyserror();
 	}
@@ -823,26 +830,25 @@ rsyserror(void)
 
 	dirtcnt = 0;
 	write(2, " ", 1);
-	error(strerror(save_err));
+	error((unsigned char *)strerror(save_err));
 	exit(1);
 }
 
 static int intrupt;
 
-static void catch();
+static void catch(int);
 
 unsigned char *
-mypass(prompt)
-unsigned char	*prompt;
+mypass(unsigned char *prompt)
 {
 	struct termio ttyb;
 	unsigned short flags;
 	unsigned char *p;
 	int c;
 	static unsigned char pbuf[9];
-	void	(*sig)(); 
+	void	(*sig)();
 
-	setbuf(stdin, (char*)NULL);
+	setbuf(stdin, NULL);
 	sig = signal(SIGINT, catch);
 	intrupt = 0;
 	(void) ioctl(fileno(stdin), TCGETA, &ttyb);
@@ -865,7 +871,7 @@ unsigned char	*prompt;
 }
 
 static void
-catch()
+catch(int arg __unused)
 {
 	++intrupt;
 }

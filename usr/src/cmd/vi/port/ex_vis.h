@@ -42,7 +42,7 @@ extern "C" {
  * Ex version 3
  *
  * Open and visual mode definitions.
- * 
+ *
  * There are actually 4 major states in open/visual modes.  These
  * are visual, crt open (where the cursor can move about the screen and
  * the screen can scroll and be erased), one line open (on dumb glass-crt's
@@ -299,7 +299,6 @@ var	unsigned char	wcharfiller;	/* Right margin filler for wide char */
 /*
  * Function types
  */
-int	any();
 int	beep();
 void	fixundo(void);
 int	qcount();

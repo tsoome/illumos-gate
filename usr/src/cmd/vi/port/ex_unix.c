@@ -34,8 +34,17 @@
 #include "ex_temp.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
-extern int	getchar();
+extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
+extern int getchar(void);
+extern int putchar(int);
+
 /*
  * Unix escapes, filtering
  */
@@ -57,13 +66,16 @@ unix0(bool warn, int contcmd)
 	const char	*specialchars = (contcmd ? "%#!\n" : "%#!");
 
 	printub = 0;
-	CP(puxb, uxb);
+	CP((char *)puxb, (char *)uxb);
 	c = peekchar();
 	if (c == '\n' || c == EOF) {
 		(void) getchar();
 		error(value(vi_TERSE) ?
-gettext("Incomplete shell escape command") :
-gettext("Incomplete shell escape command - use 'shell' to get a shell"));
+		    (unsigned char *)gettext(
+		    "Incomplete shell escape command") :
+		    (unsigned char *)gettext(
+		    "Incomplete shell escape command - use 'shell' "
+		    "to get a shell"));
 	}
 	up = (unsigned char *)uxb;
 
@@ -71,12 +83,15 @@ gettext("Incomplete shell escape command - use 'shell' to get a shell"));
 		if (!isascii(c)) {
 			if (c == EOF)
 				break;
-			if ((len = _mbftowc(multic, &wc, getchar, &peekc)) > 0) {
-				if ((up + len) >= (unsigned char *)&uxb[UXBSIZE]) {
+			len = _mbftowc(multic, &wc, getchar, &peekc);
+			if (len > 0) {
+				if ((up + len) >=
+				    (unsigned char *)&uxb[UXBSIZE]) {
 					uxb[0] = 0;
-					error(gettext("Command too long"));
+					error((unsigned char *)gettext(
+					    "Command too long"));
 				}
-				strncpy(up, multic, len);
+				strncpy((char *)up, multic, len);
 				up += len;
 				goto loop_check;
 			}
@@ -86,7 +101,7 @@ gettext("Incomplete shell escape command - use 'shell' to get a shell"));
 		switch (c) {
 
 		case '\\':
-			if (any(peekchar(), specialchars)) {
+			if (any(peekchar(), (unsigned char *)specialchars)) {
 				c = getchar();
 				/*
 				 * If we encountered a backslash-escaped
@@ -103,7 +118,8 @@ gettext("Incomplete shell escape command - use 'shell' to get a shell"));
 			if (up >= (unsigned char *)&uxb[UXBSIZE]) {
 tunix:
 				uxb[0] = 0;
-				error(gettext("Command too long"));
+				error((unsigned char *)gettext(
+				    "Command too long"));
 			}
 			/*
 			 * If this is a tag command (-t or :tag),
@@ -122,8 +138,11 @@ tunix:
 				if (*fp == 0) {
 					uxb[0] = 0;
 					error(value(vi_TERSE) ?
-gettext("No previous command") :
-gettext("No previous command to substitute for !"));
+					    (unsigned char *)gettext(
+					    "No previous command") :
+					    (unsigned char *)gettext(
+					    "No previous command to "
+					    "substitute for !"));
 				}
 				printub++;
 				while (*fp) {
@@ -145,8 +164,11 @@ gettext("No previous command to substitute for !"));
 				if (*fp == 0) {
 					uxb[0] = 0;
 					error(value(vi_TERSE) ?
-gettext("No previous command") :
-gettext("No previous command to substitute for !"));
+					    (unsigned char *)gettext(
+					    "No previous command") :
+					    (unsigned char *)gettext(
+					    "No previous command to "
+					    "substitute for !"));
 				}
 				printub++;
 				while (*fp) {
@@ -163,7 +185,8 @@ gettext("No previous command to substitute for !"));
 				 */
 				if (up >= (unsigned char *)&uxb[UXBSIZE]) {
 					uxb[0] = 0;
-					error(gettext("Command too long"));
+					error((unsigned char *)gettext(
+					    "Command too long"));
 				}
 				*up++ = c;
 			}
@@ -174,8 +197,11 @@ gettext("No previous command to substitute for !"));
 			if (*fp == 0) {
 				uxb[0] = 0;
 				error(value(vi_TERSE) ?
-gettext("No alternate filename") :
-gettext("No alternate filename to substitute for #"));
+				    (unsigned char *)gettext(
+				    "No alternate filename") :
+				    (unsigned char *)gettext(
+				    "No alternate filename to "
+				    "substitute for #"));
 			}
 			goto uexp;
 
@@ -184,8 +210,9 @@ gettext("No alternate filename to substitute for #"));
 			if (*fp == 0) {
 				uxb[0] = 0;
 				error(value(vi_TERSE) ?
-gettext("No filename") :
-gettext("No filename to substitute for %%"));
+				    (unsigned char *)gettext("No filename") :
+				    (unsigned char *)gettext(
+				    "No filename to substitute for %%"));
 			}
 uexp:
 			printub++;
@@ -224,16 +251,19 @@ loop_check:
 	if (warn && hush == 0 && chng && xchng != chng && value(vi_WARN) && dol > zero) {
 		xchng = chng;
 		vnfl();
-		viprintf(mesg(value(vi_TERSE) ? gettext("[No write]") :
-gettext("[No write since last change]")));
+		viprintf(mesg(value(vi_TERSE) ?
+		    gettext("[No write]") :
+		    gettext("[No write since last change]")));
 		noonl();
 		flush();
 	} else
 		warn = 0;
 	if (printub) {
 		if (uxb[0] == 0)
-			error(value(vi_TERSE) ? gettext("No previous command") :
-gettext("No previous command to repeat"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("No previous command") :
+			    (unsigned char *)gettext(
+			    "No previous command to repeat"));
 		if (inopen) {
 			splitw++;
 			vclean();
@@ -242,7 +272,7 @@ gettext("No previous command to repeat"));
 		if (warn)
 			vnfl();
 		if (hush == 0)
-			lprintf("!%s", uxb);
+			lprintf((unsigned char *)"!%s", uxb);
 		if (inopen && Outchar != termchar) {
 			vclreol();
 			vgoto(WECHO, 0);
@@ -259,9 +289,7 @@ gettext("No previous command to repeat"));
  * must have been setup already.
  */
 ttymode
-unixex(opt, up, newstdin, mode)
-	unsigned char *opt, *up;
-	int newstdin, mode;
+unixex(unsigned char *opt, unsigned char *up, int newstdin, int mode)
 {
 	int pvec[2];
 	ttymode f;
@@ -277,7 +305,7 @@ unixex(opt, up, newstdin, mode)
 		/* Newstdin should be io so it will be closed */
 		if (inopen)
 			setty(f);
-		error(gettext("Can't make pipe for filter"));
+		error((unsigned char *)gettext("Can't make pipe for filter"));
 	}
 #ifndef VFORK
 	pid = fork();
@@ -292,7 +320,7 @@ unixex(opt, up, newstdin, mode)
 		setrupt();
 		if (inopen)
 			setty(f);
-		error(gettext("No more processes"));
+		error((unsigned char *)gettext("No more processes"));
 	}
 	if (pid == 0) {
 		if (mode & 2) {
@@ -319,8 +347,8 @@ unixex(opt, up, newstdin, mode)
 		if (ruptible)
 			signal(SIGINT, SIG_DFL);
 		execlp((char *)svalue(vi_SHELL), (char *)svalue(vi_SHELL),
-		    opt, up, (char *)0);
-		viprintf(gettext("Invalid SHELL value: %s\n"),
+		    opt, up, NULL);
+		viprintf((unsigned char *)gettext("Invalid SHELL value: %s\n"),
 		    svalue(vi_SHELL));
 		flush();
 		error(NOSTR);
@@ -340,9 +368,7 @@ unixex(opt, up, newstdin, mode)
  * C flags suppression of printing.
  */
 void
-unixwt(c, f)
-	bool c;
-	ttymode f;
+unixwt(bool c, ttymode f)
 {
 
 	waitfor();
@@ -354,7 +380,7 @@ unixwt(c, f)
 		setty(f);
 	setrupt();
 	if (!inopen && c && hush == 0) {
-		viprintf("!\n");
+		viprintf((unsigned char *)"!\n");
 		flush();
 		termreset();
 		gettmode();
@@ -381,13 +407,13 @@ vi_filter(int mode)
 		signal(SIGINT, SIG_IGN);
 		signal(SIGPIPE, SIG_IGN);
 		if (pipe(pvec) < 0)
-			error(gettext("Can't make pipe"));
+			error((unsigned char *)gettext("Can't make pipe"));
 		pid2 = fork();
 		io = pvec[0];
 		if (pid < 0) {
 			setrupt();
 			close(pvec[1]);
-			error(gettext("No more processes"));
+			error((unsigned char *)gettext("No more processes"));
 		}
 		if (pid2 == 0) {
 			extern unsigned char tfname[];
@@ -398,7 +424,7 @@ vi_filter(int mode)
 			/* To prevent seeking in this process and the
 				 parent, we must reopen tfile here */
 			close(tfile);
-			tfile = open(tfname, 2);
+			tfile = open((char *)tfname, O_RDWR);
 
 			putfile(1);
 			exit(errcnt);
@@ -407,7 +433,7 @@ vi_filter(int mode)
 		io = pvec[0];
 		setrupt();
 	}
-	f = unixex("-c", uxb, (mode & 2) ? pvec[0] : 0, mode);
+	f = unixex((unsigned char *)"-c", uxb, (mode & 2) ? pvec[0] : 0, mode);
 	if (mode == 3) {
 		(void) delete(0);
 		addr2 = addr1 - 1;
@@ -446,12 +472,14 @@ recover(void)
 	static int pvec[2];
 
 	if (pipe(pvec) < 0)
-		error(gettext(" Can't make pipe for recovery"));
+		error((unsigned char *)gettext(
+		    " Can't make pipe for recovery"));
 	pid = fork();
 	io = pvec[0];
 	if (pid < 0) {
 		close(pvec[1]);
-		error(gettext(" Can't fork to execute recovery"));
+		error((unsigned char *)gettext(
+		    " Can't fork to execute recovery"));
 	}
 	if (pid == 0) {
 		unsigned char cryptkey[19];
@@ -461,16 +489,17 @@ recover(void)
 		dup(pvec[1]);
 	        close(pvec[1]);
 		if(xflag) {
-			strcpy(cryptkey, "CrYpTkEy=XXXXXXXXX");
-			strcpy(cryptkey + 9, key);
+			strcpy((char *)cryptkey, "CrYpTkEy=XXXXXXXXX");
+			strcpy((char *)cryptkey + 9, (char *)key);
 			if(putenv((char *)cryptkey) != 0)
-				smerror(gettext(" Cannot copy key to environment"));
+				smerror((unsigned char *)gettext(
+				    " Cannot copy key to environment"), NULL);
 			execlp(EXRECOVER, "exrecover", "-x", svalue(vi_DIRECTORY), file, (char *) 0);
 		} else
 			execlp(EXRECOVER, "exrecover", svalue(vi_DIRECTORY), file, (char *) 0);
 		close(1);
 		dup(2);
-		error(gettext(" No recovery routine"));
+		error((unsigned char *)gettext(" No recovery routine"));
 	}
 	close(pvec[1]);
 }
@@ -494,10 +523,11 @@ waitfor(void)
 		 *	be changed using '%digit$', since vi's
 		 *	viprintf() does not support it.
 		 */
-		viprintf(gettext("%d: terminated with signal %d"), pid,
+		viprintf((unsigned char *)gettext(
+		    "%d: terminated with signal %d"), pid,
 		    status & 0177);
 		if (status & 0200)
-			viprintf(gettext(" -- core dumped"));
+			viprintf((unsigned char *)gettext(" -- core dumped"));
 		putchar('\n');
 	}
 }

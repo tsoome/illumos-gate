@@ -30,13 +30,17 @@
 
 /* Copyright (c) 1981 Regents of the University of California */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "ex.h"
 #include "ex_tty.h"
+#include <string.h>
+
+extern int setupterm(const char *, int, int *);
+extern void perror(const char *);
 
 static unsigned char allocspace[256];
 static unsigned char *freespace;
+
+static int cost(unsigned char *);
 
 /*
  * Terminal type initialization routines,
@@ -70,13 +74,16 @@ gettmode(void)
 void
 setterm(unsigned char *type)
 {
-	char *tparm(); 
+	char *tparm();
 	unsigned char *chrptr;
 	int unknown, i;
 	int l;
 	int errret;
 	extern unsigned char termtype[];
 	extern void setsize();
+#ifdef XPG4
+	extern void use_env(char bool);
+#endif
 
 	unknown = 0;
 	if (cur_term && exit_ca_mode)
@@ -94,13 +101,13 @@ setterm(unsigned char *type)
                                         */
         }
 	cur_term = 0;
-	strcpy(termtype, type);
+	strcpy((char *)termtype, (char *)type);
 
 #ifdef XPG4
 	use_env(1);		/* $LINES and $COLUMNS override terminfo */
 #endif /* XPG4 */
 
-	setupterm(type, 2, &errret);
+	setupterm((char *)type, 2, &errret);
 	if (errret != 1) {
 		unknown++;
 		cur_term = 0;
@@ -231,18 +238,23 @@ setterm(unsigned char *type)
 		hard_copy ? 11 : (value(vi_WINDOW) / 2);
 	if (columns <= 4)
 		columns = 1000;
-	chrptr=(unsigned char *)tparm(cursor_address, 2, 2);
+	chrptr=(unsigned char *)tparm(cursor_address, 2, 2,
+	    0, 0, 0, 0, 0, 0, 0);
 	if (chrptr==(unsigned char *)0 || chrptr[0] == 'O')	/* OOPS */
 		cursor_address = 0;
 	else
-		costCM = cost(tparm(cursor_address, 10, 8));
-	costSR = cost(scroll_reverse);
-	costAL = cost(insert_line);
-	costDP = cost(tparm(parm_down_cursor, 10));
-	costLP = cost(tparm(parm_left_cursor, 10));
-	costRP = cost(tparm(parm_right_cursor, 10));
-	costCE = cost(clr_eol);
-	costCD = cost(clr_eos);
+		costCM = cost((unsigned char *)tparm(cursor_address, 10, 8,
+		    0, 0, 0, 0, 0, 0, 0));
+	costSR = cost((unsigned char *)scroll_reverse);
+	costAL = cost((unsigned char *)insert_line);
+	costDP = cost((unsigned char *)tparm(parm_down_cursor, 10,
+	    0, 0, 0, 0, 0, 0, 0, 0));
+	costLP = cost((unsigned char *)tparm(parm_left_cursor, 10,
+	    0, 0, 0, 0, 0, 0, 0, 0));
+	costRP = cost((unsigned char *)tparm(parm_right_cursor, 10,
+	    0, 0, 0, 0, 0, 0, 0, 0));
+	costCE = cost((unsigned char *)clr_eol);
+	costCD = cost((unsigned char *)clr_eos);
 	if (i <= 0)
 		lines = 2;
 	/* proper strings to change tty type */
@@ -259,7 +271,7 @@ setterm(unsigned char *type)
 
 #ifndef sun
 /*
- * Map both map1 and map2 as below.  map2 surrounded by esc and 
+ * Map both map1 and map2 as below.  map2 surrounded by esc and
  * the 'i', 'R', or 'a' mode.  However, because we don't know
  * the mode here we put in the escape and when the map() routine
  * is called for immacs mapping the mode is appended to the
@@ -344,15 +356,14 @@ fkey(i)
 
 static int costnum;
 
-/* ARGSUSED */
 int
-countnum(char ch)
+countnum(char ch __unused)
 {
 	costnum++;
 	return (0);
 }
 
-int
+static int
 cost(unsigned char *str)
 {
 

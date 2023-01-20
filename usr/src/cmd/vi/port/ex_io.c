@@ -35,9 +35,21 @@
 #include "ex_temp.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <crypt.h>
+#include <libgen.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
+#ifdef getchar
+#undef getchar
+#endif
+#ifdef putchar
+#undef putchar
+#endif
 /*
  * File input/output, source, preserve and recover
  */
@@ -60,8 +72,13 @@ int	cntln;
 long	cntnull;		/* Count of nulls " */
 long	cntodd;			/* Count of non-ascii characters " */
 
-static void chkmdln();
-extern int	getchar();
+static void chkmdln(unsigned char *);
+static int samei(struct stat64 *, char *);
+static int iostats(void);
+static int edfile(void);
+extern int getchar(void);
+extern int putchar(int);
+extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
 
 /*
  * Parse file name for command encoded by comm.
@@ -77,9 +94,10 @@ filename(int comm)
 	d = getchar();
 	if (endcmd(d)) {
 		if (savedfile[0] == 0 && comm != 'f')
-			error(value(vi_TERSE) ? gettext("No file") :
-gettext("No current filename"));
-		CP(file, savedfile);
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("No file") :
+			    (unsigned char *)gettext("No current filename"));
+		CP((char *)file, (char *)savedfile);
 		wasalt = (isalt > 0) ? isalt-1 : 0;
 		isalt = 0;
 		oldadot = altdot;
@@ -95,7 +113,7 @@ gettext("No current filename"));
 			c = 'e';
 			edited = 0;
 		}
-		wasalt = strcmp(file, altfile) == 0;
+		wasalt = strcmp((char *)file, (char *)altfile) == 0;
 		oldadot = altdot;
 		switch (c) {
 
@@ -106,35 +124,38 @@ gettext("No current filename"));
 		case 'e':
 			if (savedfile[0]) {
 				altdot = lineDOT();
-				CP(altfile, savedfile);
+				CP((char *)altfile, (char *)savedfile);
 			}
-			CP(savedfile, file);
+			CP((char *)savedfile, (char *)file);
 			break;
 
 		default:
 			if (file[0]) {
 				if (c != 'E')
 					altdot = lineDOT();
-				CP(altfile, file);
+				CP((char *)altfile, (char *)file);
 			}
 			break;
 		}
 	}
-	if (hush && comm != 'f' || comm == 'E')
+	if ((hush && comm != 'f') || comm == 'E')
 		return;
 	if (file[0] != 0) {
-		lprintf("\"%s\"", file);
+		lprintf((unsigned char *)"\"%s\"", file);
 		if (comm == 'f') {
 			if (value(vi_READONLY))
-				viprintf(gettext(" [Read only]"));
+				viprintf((unsigned char *)gettext(
+				    " [Read only]"));
 			if (!edited)
-				viprintf(gettext(" [Not edited]"));
+				viprintf((unsigned char *)gettext(
+				    " [Not edited]"));
 			if (tchng)
-				viprintf(gettext(" [Modified]"));
+				viprintf((unsigned char *)gettext(
+				    " [Modified]"));
 		}
 		flush();
 	} else
-		viprintf(gettext("No file "));
+		viprintf((unsigned char *)gettext("No file "));
 	if (comm == 'f') {
 		if (!(i = lineDOL()))
 			i++;
@@ -144,8 +165,8 @@ gettext("No current filename"));
 		 *	be changed using '%digit$', since vi's
 		 *	viprintf() does not support it.
 		 */
-		viprintf(gettext(" line %d of %d --%ld%%--"), lineDOT(),
-		    lineDOL(), (long)(100 * lineDOT() / i));
+		viprintf((unsigned char *)gettext(" line %d of %d --%ld%%--"),
+		    lineDOT(), lineDOL(), (long)(100 * lineDOT() / i));
 	}
 }
 
@@ -167,10 +188,13 @@ getargs(void)
 	if (peekchar() == '+') {
 		for (cp = fpatbuf;;) {
 			if (!isascii(c = peekchar()) && (c != EOF)) {
-				if ((len = _mbftowc(multic, &wc, getchar, &peekc)) > 0) {
-					if ((cp + len) >= &fpatbuf[sizeof(fpatbuf)])
-						error(gettext("Pattern too long"));
-					strncpy(cp, multic, len);
+				if ((len = _mbftowc(multic, &wc, getchar,
+				    &peekc)) > 0) {
+					if ((cp + len) >=
+					    &fpatbuf[sizeof(fpatbuf)])
+						error((unsigned char *)gettext(
+						    "Pattern too long"));
+					strncpy((char *)cp, multic, len);
 					cp += len;
 					continue;
 				}
@@ -179,7 +203,8 @@ getargs(void)
 			c = getchar();
 			*cp++ = c;
 			if (cp >= &fpatbuf[sizeof(fpatbuf)])
-				error(gettext("Pattern too long"));
+				error((unsigned char *)gettext(
+				    "Pattern too long"));
 			if (c == '\\' && isspace(peekchar()))
 				c = getchar();
 			if (c == EOF || isspace(c)) {
@@ -192,15 +217,16 @@ getargs(void)
 	}
 	if (skipend())
 		return (0);
-	CP(genbuf, "echo "); cp = &genbuf[5];
+	CP((char *)genbuf, "echo "); cp = &genbuf[5];
 	for (;;) {
 		if (!isascii(c = peekchar())) {
 			if (endcmd(c) && c != '"')
 				break;
 			if ((len = _mbftowc(multic, &wc, getchar, &peekc)) > 0) {
 				if ((cp + len) > &genbuf[LBSIZE - 2])
-					error(gettext("Argument buffer overflow"));
-				strncpy(cp, multic, len);
+					error((unsigned char *)gettext(
+					    "Argument buffer overflow"));
+				strncpy((char *)cp, multic, len);
 				cp += len;
 				continue;
 			}
@@ -213,14 +239,15 @@ getargs(void)
 		switch (c) {
 
 		case '\\':
-			if (any(peekchar(), "#%|"))
+			if (any(peekchar(), (unsigned char *)"#%|"))
 				c = getchar();
 			/* FALLTHROUGH */
 
 		default:
 			if (cp > &genbuf[LBSIZE - 2])
 flong:
-				error(gettext("Argument buffer overflow"));
+				error((unsigned char *)gettext(
+				    "Argument buffer overflow"));
 			*cp++ = c;
 			break;
 
@@ -228,16 +255,22 @@ flong:
 			fp = (unsigned char *)altfile;
 			if (*fp == 0)
 				error(value(vi_TERSE) ?
-gettext("No alternate filename") :
-gettext("No alternate filename to substitute for #"));
+				    (unsigned char *)gettext(
+				    "No alternate filename") :
+				    (unsigned char *)gettext(
+				    "No alternate filename to substitute "
+				    "for #"));
 			goto filexp;
 
 		case '%':
 			fp = savedfile;
 			if (*fp == 0)
 				error(value(vi_TERSE) ?
-gettext("No current filename") :
-gettext("No current filename to substitute for %%"));
+				    (unsigned char *)gettext(
+				    "No current filename") :
+				    (unsigned char *)gettext(
+				    "No current filename to substitute "
+				    "for %%"));
 filexp:
 			while (*fp) {
 				if (cp > &genbuf[LBSIZE - 2])
@@ -284,12 +317,12 @@ glob(struct glob *gp)
 		return;
 	}
 	if (pipe(pvec) < 0)
-		error(gettext("Can't make pipe to glob"));
+		error((unsigned char *)gettext("Can't make pipe to glob"));
 	pid = fork();
 	io = pvec[0];
 	if (pid < 0) {
 		close(pvec[1]);
-		error(gettext("Can't fork to do glob"));
+		error((unsigned char *)gettext("Can't fork to do glob"));
 	}
 	if (pid == 0) {
 		int oerrno;
@@ -316,20 +349,22 @@ glob(struct glob *gp)
 				break;
 			*cp++ = c;
 			if (--nleft <= 0)
-				error(gettext("Arg list too long"));
+				error((unsigned char *)gettext(
+				    "Arg list too long"));
 		}
 		if (cp != *argv) {
 			--nleft;
 			*cp++ = 0;
 			gp->argc0++;
 			if (gp->argc0 >= NARGS)
-				error(gettext("Arg list too long"));
+				error((unsigned char *)gettext(
+				    "Arg list too long"));
 			argv++;
 		}
 	} while (c >= 0);
 	waitfor();
 	if (gp->argc0 == 0)
-		error(gettext("No match"));
+		error((unsigned char *)gettext("No match"));
 }
 
 /*
@@ -343,7 +378,7 @@ gscan(void)
 	int	len;
 
 	for (cp = genbuf; *cp; cp += len) {
-		if (any(*cp, "~{[*?$`'\"\\"))
+		if (any(*cp, (unsigned char *)"~{[*?$`'\"\\"))
 			return (1);
 		if ((len = mblen((char *)cp, MB_CUR_MAX)) <= 0)
 			len = 1;
@@ -361,18 +396,19 @@ getone(void)
 	unsigned char *str;
 
 	if (getargs() == 0)
-		error(gettext("Missing filename"));
+		error((unsigned char *)gettext("Missing filename"));
 	glob(&G);
 	if (G.argc0 > 1)
-		error(value(vi_TERSE) ? gettext("Ambiguous") :
-gettext("Too many file names"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Ambiguous") :
+		    (unsigned char *)gettext("Too many file names"));
 	if (G.argc0 < 1)
-		error(gettext("Missing filename"));
+		error((unsigned char *)gettext("Missing filename"));
 	str = G.argv[G.argc0 - 1];
-	if (strlen(str) > FNSIZE - 4)
-		error(gettext("Filename too long"));
-samef:
-	CP(file, str);
+	if (strlen((char *)str) > FNSIZE - 4)
+		error((unsigned char *)gettext("Filename too long"));
+
+	CP((char *)file, (char *)str);
 }
 
 /*
@@ -382,13 +418,11 @@ samef:
 void
 rop(int c)
 {
-	int i;
 	struct stat64 stbuf;
-	short magic;
 	static int ovro;	/* old value(vi_READONLY) */
 	static int denied;	/* 1 if READONLY was set due to file permissions */
 
-	io = open(file, 0);
+	io = open((char *)file, O_RDONLY);
 	if (io < 0) {
 		if (c == 'e' && errno == ENOENT) {
 			edited++;
@@ -398,7 +432,8 @@ rop(int c)
 			 * this is ugly, and it messes up the + option.
 			 */
 			if (!seenprompt) {
-				viprintf(gettext(" [New file]"));
+				viprintf((unsigned char *)gettext(
+				    " [New file]"));
 				noonl();
 				return;
 			}
@@ -415,19 +450,19 @@ rop(int c)
 	switch (FTYPE(stbuf) & S_IFMT) {
 
 	case S_IFBLK:
-		error(gettext(" Block special file"));
+		error((unsigned char *)gettext(" Block special file"));
 		/* FALLTHROUGH */
 
 	case S_IFCHR:
 		if (isatty(io))
-			error(gettext(" Teletype"));
+			error((unsigned char *)gettext(" Teletype"));
 		if (samei(&stbuf, "/dev/null"))
 			break;
-		error(gettext(" Character special file"));
+		error((unsigned char *)gettext(" Character special file"));
 		/* FALLTHROUGH */
 
 	case S_IFDIR:
-		error(gettext(" Directory"));
+		error((unsigned char *)gettext(" Directory"));
 
 	}
 	if (c != 'r') {
@@ -442,7 +477,7 @@ rop(int c)
 		}
 	}
 	if (hush == 0 && value(vi_READONLY)) {
-		viprintf(gettext(" [Read only]"));
+		viprintf((unsigned char *)gettext(" [Read only]"));
 		flush();
 	}
 	if (c == 'r')
@@ -481,7 +516,7 @@ rop2(void)
 			if (a==first+5 && last-first > 10)
 				a = last - 4;
 			getaline(*a);
-				chkmdln(linebuf);
+			chkmdln(linebuf);
 		}
 }
 
@@ -533,8 +568,8 @@ other:
 /*
  * Are these two really the same inode?
  */
-int
-samei(struct stat64 *sp, unsigned char *cp)
+static int
+samei(struct stat64 *sp, char *cp)
 {
 	struct stat64 stb;
 
@@ -550,10 +585,10 @@ samei(struct stat64 *sp, unsigned char *cp)
 
 /*
  * Write a file.
+ * if dofname call filename, else use savedfile.
  */
 void
-wop(dofname)
-bool dofname;	/* if 1 call filename, else use savedfile */
+wop(bool dofname)
 {
 	int c, exclam, nonexist;
 	line *saddr1, *saddr2;
@@ -569,22 +604,24 @@ bool dofname;	/* if 1 call filename, else use savedfile */
 		while (peekchar() == '>')
 			ignchar(), c++, (void)skipwh();
 		if (c != 0 && c != 2)
-			error(gettext("Write forms are 'w' and 'w>>'"));
+			error((unsigned char *)gettext(
+			    "Write forms are 'w' and 'w>>'"));
 		filename('w');
 	} else {
 		if (savedfile[0] == 0)
-			error(value(vi_TERSE) ? gettext("No file") :
-gettext("No current filename"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("No file") :
+			    (unsigned char *)gettext("No current filename"));
 		saddr1=addr1;
 		saddr2=addr2;
 		addr1=one;
 		addr2=dol;
-		CP(file, savedfile);
+		CP((char *)file, (char *)savedfile);
 		if (inopen) {
 			vclrech(0);
 			splitw++;
 		}
-		lprintf("\"%s\"", file);
+		lprintf((unsigned char *)"\"%s\"", file);
 	}
 	nonexist = stat64((char *)file, &stbuf);
 	switch (c) {
@@ -597,12 +634,12 @@ gettext("No current filename"));
 			if (nonexist)
 				break;
 			if (ISCHR(stbuf)) {
-				if (samei(&stbuf, (unsigned char *)"/dev/null"))
+				if (samei(&stbuf, "/dev/null"))
 					break;
-				if (samei(&stbuf, (unsigned char *)"/dev/tty"))
+				if (samei(&stbuf, "/dev/tty"))
 					break;
 			}
-			io = open(file, 1);
+			io = open((char *)file, O_WRONLY);
 			if (io < 0)
 				syserror(0);
 			if (!isatty(io))
@@ -615,31 +652,37 @@ gettext("No current filename"));
 
 		case EDF:
 			if (value(vi_READONLY))
-				error(gettext(" File is read only"));
+				error((unsigned char *)gettext(
+				    " File is read only"));
 			break;
 
 		case PARTBUF:
 			if (value(vi_READONLY))
-				error(gettext(" File is read only"));
-			error(gettext(" Use \"w!\" to write partial buffer"));
+				error((unsigned char *)gettext(
+				    " File is read only"));
+			error((unsigned char *)gettext(
+			    " Use \"w!\" to write partial buffer"));
 		}
 cre:
 /*
 		synctmp();
 */
-		io = creat(file, 0666);
+		io = creat((char *)file, 0666);
 		if (io < 0)
 			syserror(0);
 		writing = 1;
-		if (hush == 0)
+		if (hush == 0) {
 			if (nonexist)
-				viprintf(gettext(" [New file]"));
+				viprintf((unsigned char *)gettext(
+				    " [New file]"));
 			else if (value(vi_WRITEANY) && edfile() != EDF)
-				viprintf(gettext(" [Existing file]"));
+				viprintf((unsigned char *)gettext(
+				    " [Existing file]"));
+		}
 		break;
 
 	case 2:
-		io = open(file, 1);
+		io = open((char *)file, O_WRONLY);
 		if (io < 0) {
 			if (exclam || value(vi_WRITEANY))
 				goto cre;
@@ -665,7 +708,8 @@ cre:
 	}
 	(void)iostats();
 	if (c != 2 && addr1 == one && addr2 == dol) {
-		if (eq(file, savedfile))
+		if (savedfile != NULL &&
+		    strcmp((char *)file, (char *)savedfile) == 0)
 			edited = 1;
 		sync();
 	}
@@ -682,11 +726,12 @@ cre:
  * if this is a partial buffer, and distinguish
  * all cases.
  */
-int
+static int
 edfile(void)
 {
 
-	if (!edited || !eq(file, savedfile))
+	if (!edited || savedfile == NULL ||
+	    strcmp((char *)file, (char *)savedfile) != 0)
 		return (NOTEDF);
 	return (addr1 == one && addr2 == dol ? EDF : PARTBUF);
 }
@@ -711,27 +756,29 @@ getfile(void)
 			if (ninbuf < 0) {
 				if (lp != linebuf) {
 					lp++;
-					viprintf(
+					viprintf((unsigned char *)
 					    gettext(" [Incomplete last line]"));
 					break;
 				}
 				return (EOF);
 			}
 			if(crflag == -1) {
-				if(isencrypt(genbuf, ninbuf + 1))
+				if(isencrypt((char *)genbuf, ninbuf + 1))
 					crflag = 2;
 				else
 					crflag = -2;
 			}
-			if (crflag > 0 && run_crypt(cntch, genbuf, ninbuf+1, perm) == -1) {
-					smerror(gettext("Cannot decrypt block of text\n"));
+			if (crflag > 0 && run_crypt(cntch, (char *)genbuf,
+			    ninbuf+1, perm) == -1) {
+					smerror((unsigned char *)gettext(
+					    "Cannot decrypt block of text\n"));
 					break;
 			}
 			fp = genbuf;
 			cntch += ninbuf+1;
 		}
 		if (lp >= &linebuf[LBSIZE]) {
-			error(gettext(" Line too long"));
+			error((unsigned char *)gettext(" Line too long"));
 		}
 		c = *fp++;
 		if (c == 0) {
@@ -773,8 +820,9 @@ putfile(int isfilter)
 			if (--nib < 0) {
 				nib = fp - genbuf;
                 		if(kflag && !isfilter)
-                                        if (run_crypt(cntch, genbuf, nib, perm) == -1)
-					  wrerror();
+                                        if (run_crypt(cntch, (char *)genbuf,
+					    nib, perm) == -1)
+						wrerror();
 				if (write(io, genbuf, nib) != nib) {
 				    messagep = (char *)gettext(
 					"\r\nYour file has been preserved\r\n");
@@ -797,7 +845,7 @@ putfile(int isfilter)
 	} while (a1 <= addr2);
 	nib = fp - genbuf;
 	if(kflag && !isfilter)
-		if (run_crypt(cntch, genbuf, nib, perm) == -1)
+		if (run_crypt(cntch, (char *)genbuf, nib, perm) == -1)
 			wrerror();
 	if ((cntch == 0) && (nib == 1)) {
 		cntln = 0;
@@ -826,7 +874,8 @@ void
 wrerror(void)
 {
 
-	if (eq(file, savedfile) && edited)
+	if (savedfile != NULL &&
+	    strcmp((char *)file, (char *)savedfile) == 0 && edited)
 		change();
 	syserror(1);
 }
@@ -854,11 +903,11 @@ source(fil, okfail)
 	saveglobp = globp;
 	peekc = 0; globp = 0;
 	if (saveinp < 0)
-		error(gettext("Too many nested sources"));
+		error((unsigned char *)gettext("Too many nested sources"));
 	if (slevel <= 0)
 		ttyindes = saveinp;
 	close(0);
-	if (open(fil, 0) < 0) {
+	if (open((char *)fil, 0) < 0) {
 		oerrno = errno;
 		setrupt();
 		dup(saveinp);
@@ -913,7 +962,7 @@ clrstats(void)
 /*
  * Io is finished, close the unit and print statistics.
  */
-int
+static int
 iostats(void)
 {
 
@@ -921,11 +970,13 @@ iostats(void)
 	io = -1;
 	if (hush == 0) {
 		if (value(vi_TERSE))
-			viprintf(" %d/%D", cntln, cntch);
+			viprintf((unsigned char *)" %d/%D", cntln, cntch);
 		else if (cntln == 1 && cntch == 1) {
-			viprintf(gettext(" 1 line, 1 character"));
+			viprintf((unsigned char *)gettext(
+			    " 1 line, 1 character"));
 		} else if (cntln == 1 && cntch != 1) {
-			viprintf(gettext(" 1 line, %D characters"), cntch);
+			viprintf((unsigned char *)gettext(
+			    " 1 line, %D characters"), cntch);
 		} else if (cntln != 1 && cntch != 1) {
 			/*
 			 * TRANSLATION_NOTE
@@ -933,21 +984,24 @@ iostats(void)
 			 *	be changed using '%digit$', since vi's
 			 *	viprintf() does not support it.
 			 */
-			viprintf(gettext(" %d lines, %D characters"), cntln,
-			    cntch);
+			viprintf((unsigned char *)gettext(
+			    " %d lines, %D characters"), cntln, cntch);
 		} else {
 			/* ridiculous */
-			viprintf(gettext(" %d lines, 1 character"), cntln);
+			viprintf((unsigned char *)gettext(
+			    " %d lines, 1 character"), cntln);
 		}
 		if (cntnull || cntodd) {
-			viprintf(" (");
+			viprintf((unsigned char *)" (");
 			if (cntnull) {
-				viprintf(gettext("%D null"), cntnull);
+				viprintf((unsigned char *)
+				    gettext("%D null"), cntnull);
 				if (cntodd)
-					viprintf(", ");
+					viprintf((unsigned char *)", ");
 			}
 			if (cntodd)
-				viprintf(gettext("%D non-ASCII"), cntodd);
+				viprintf((unsigned char *)
+				    gettext("%D non-ASCII"), cntodd);
 			putchar(')');
 		}
 		noonl();
@@ -957,12 +1011,11 @@ iostats(void)
 }
 
 
-static void chkmdln(aline)
-unsigned char *aline;
+static void
+chkmdln(unsigned char *aline)
 {
 	unsigned char *beg, *end;
 	unsigned char cmdbuf[1024];
-	char *strchr(), *strrchr();
 	bool savetty;
 	int  savepeekc;
 	int  savechng;
@@ -976,6 +1029,7 @@ unsigned char *aline;
 	if ((len = beg - aline) < 2)
 		return;
 
+	p = aline;
 	if ((beg - aline) != 2) {
 		if ((p = beg - ((unsigned int)MB_CUR_MAX * 2) - 2) < aline)
 			p = aline;
@@ -983,7 +1037,7 @@ unsigned char *aline;
 			if ((len = mblen((char *)p, MB_CUR_MAX)) <= 0)
 				len = 1;
 		}
-		if (p !=  (beg - 2))
+		if (p != (beg - 2))
 			return;
 	}
 
@@ -991,8 +1045,8 @@ unsigned char *aline;
 	||    (beg[-2] == 'v' && beg[-1] == 'i')))
 	 	return;
 
-	strncpy(cmdbuf, beg+1, sizeof cmdbuf);
-	end = (unsigned char *)strrchr(cmdbuf, ':');
+	strncpy((char *)cmdbuf, (char *)beg+1, sizeof cmdbuf);
+	end = (unsigned char *)strrchr((char *)cmdbuf, ':');
 	if (end == NULL)
 		return;
 	*end = 0;

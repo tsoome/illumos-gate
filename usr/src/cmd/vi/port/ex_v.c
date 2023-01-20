@@ -34,6 +34,7 @@
 #include "ex_re.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <unistd.h>
 
 /*
  * Entry points to open and visual from command mode processor.
@@ -65,7 +66,7 @@
  *		insert mode, read input line processing at lowest level.
  *
  * ex_vops3.c	structured motion definitions of ( ) { } and [ ] operators,
- *		indent for lisp routines, () and {} balancing. 
+ *		indent for lisp routines, () and {} balancing.
  *
  * ex_vput.c	output routines, clearing, physical mapping of logical cursor
  *		positioning, cursor motions, handling of insert character
@@ -76,6 +77,8 @@
  * ex_vwind.c	window level control of display, forward and backward rolls,
  *		absolute motions, contextual displays, line depth determination
  */
+
+extern int getchar(void);
 
 void setsize();
 void winch();
@@ -119,17 +122,10 @@ void redraw()
 	}
 }
 
-/*ARGSUSED*/
-void 
-#ifdef __STDC__
-winch(int sig)
-#else
-winch(sig)
-int sig;
-#endif
+void
+winch(int sig __unused)
 {
 	struct winsize jwin;
-	int l;
 
 	if(ioctl(0, TIOCGWINSZ, &jwin) != -1) {
 #ifdef XPG4
@@ -140,13 +136,13 @@ int sig;
 			if (columns != jwin.ws_col || lines != jwin.ws_row)
 			    redraw();
 		}
-	} 
+	}
 	else
 		windowchg++;
 	(void)signal(SIGWINCH, winch);
 }
 
-void 
+void
 setsize()
 {
 	struct winsize jwin;
@@ -197,7 +193,6 @@ oop(void)
 {
 	unsigned char *ic;
 	ttymode f;	/* was register */
-	int resize;
 
 	windowchg = 0;
 	(void)signal(SIGWINCH, winch);
@@ -206,8 +201,10 @@ oop(void)
 		(void)vi_compile(getchar(), 1);
 		savere(&scanre);
 		if (execute(0, dot) == 0)
-			error(value(vi_TERSE) ? gettext("Fail") :
-gettext("Pattern not found on addressed line"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Fail") :
+			    (unsigned char *)gettext(
+			    "Pattern not found on addressed line"));
 		ic = (unsigned char *)loc1;
 		if (ic > linebuf && *ic == 0)
 			ic--;
@@ -266,7 +263,8 @@ ovbeg(void)
 {
 
 	if (inopen)
-		error(gettext("Recursive open/visual not allowed"));
+		error((unsigned char *)gettext(
+		    "Recursive open/visual not allowed"));
 	Vlines = lineDOL();
 	fixzero();
 	setdot();
@@ -307,36 +305,41 @@ vop(void)
 		if (initev) {
 toopen:
 			if (generic_type)
-				merror(gettext("I don't know what kind of terminal you are on - all I have is '%s'."), termtype);
+				merror((unsigned char *)gettext(
+				    "I don't know what kind of terminal you "
+				    "are on - all I have is '%s'."), termtype);
 			putNFL();
-			merror(gettext("[Using open mode]"));
+			merror((unsigned char *)gettext("[Using open mode]"));
 			putNFL();
 			oop();
 			return;
 		}
-		error(gettext("Visual needs addressable cursor or upline capability"));
+		error((unsigned char *)gettext(
+		    "Visual needs addressable cursor or upline capability"));
 	}
 	if (over_strike && !erase_overstrike) {
 		if (initev)
 			goto toopen;
-		error(gettext("Can't use visual on a terminal which overstrikes"));
+		error((unsigned char *)gettext(
+		    "Can't use visual on a terminal which overstrikes"));
 	}
 	if (!clear_screen) {
 		if (initev)
 			goto toopen;
-		error(gettext("Visual requires clear screen capability"));
+		error((unsigned char *)gettext(
+		    "Visual requires clear screen capability"));
 	}
 	if (!scroll_forward) {
 		if (initev)
 			goto toopen;
-		error(gettext("Visual requires scrolling"));
+		error((unsigned char *)gettext("Visual requires scrolling"));
 	}
 	windowchg = 0;
 	(void)signal(SIGWINCH, winch);
 	ovbeg();
 	bastate = VISUAL;
 	c = 0;
-	if (any(peekchar(), "+-^."))
+	if (any(peekchar(), (unsigned char *)"+-^."))
 		c = getchar();
 	pastwh();
 	vsetsiz(isdigit(peekchar()) ? getnum() : value(vi_WINDOW));
@@ -455,7 +458,8 @@ setwind(void)
 		if (ZERO < 0)
 			ZERO = 0;
 		if (ZERO > basWTOP)
-			error(gettext("Screen too large for internal buffer"));
+			error((unsigned char *)gettext(
+			    "Screen too large for internal buffer"));
 		WTOP = basWTOP; WBOT = lines - 2; WECHO = lines - 1;
 		break;
 	}
@@ -481,12 +485,12 @@ vok(wchar_t *atube, int undo)
 		    gettext("Don't know enough about your terminal to use %s"),
 		    Command);
 	if (WCOLS > TUBECOLS)
-		error(gettext("Terminal too wide"));
+		error((unsigned char *)gettext("Terminal too wide"));
 	if (WLINES >= TUBELINES || WCOLS * (WECHO - ZERO + 1) > TUBESIZE)
-		error(gettext("Screen too large"));
+		error((unsigned char *)gettext("Screen too large"));
 
 	vtube0 = atube;
-	if(beenhere) 
+	if(beenhere)
 		vclrbyte(atube, WCOLS * (WECHO - ZERO + 1));
 	for (i = 0; i < ZERO; i++)
 		vtube[i] = (wchar_t *) 0;
@@ -518,14 +522,8 @@ vok(wchar_t *atube, int undo)
 }
 
 #ifdef CBREAK
-/*ARGSUSED*/
-void 
-#ifdef __STDC__
-vintr(int sig)
-#else
-vintr(sig)
-int sig;
-#endif
+void
+vintr(int sig __unused)
 {
 
 	signal(SIGINT, vintr);

@@ -126,7 +126,7 @@ file path=etc/inet/services group=sys preserve=true
 link path=etc/inetd.conf target=./inet/inetd.conf
 link path=etc/init target=../sbin/init
 dir  path=etc/init.d group=sys
-$(not_aarch64)file path=etc/init.d/PRESERVE group=sys mode=0744 preserve=true
+file path=etc/init.d/PRESERVE group=sys mode=0744 preserve=true
 file path=etc/init.d/README group=sys preserve=true
 file path=etc/init.d/sysetup group=sys mode=0744 preserve=true
 file path=etc/inittab group=sys preserve=true
@@ -189,7 +189,7 @@ link path=etc/rc2 target=../sbin/rc2
 dir  path=etc/rc2.d group=sys
 file path=etc/rc2.d/README group=sys
 hardlink path=etc/rc2.d/S20sysetup target=../../etc/init.d/sysetup
-$(not_aarch64)hardlink path=etc/rc2.d/S89PRESERVE \
+hardlink path=etc/rc2.d/S89PRESERVE \
     target=../../etc/init.d/PRESERVE
 link path=etc/rc3 target=../sbin/rc3
 dir  path=etc/rc3.d group=sys
@@ -611,7 +611,7 @@ file path=usr/bin/dumpcs mode=0555
 file path=usr/bin/dumpkeys mode=0555
 file path=usr/bin/echo mode=0555
 file path=usr/bin/ed mode=0555
-$(not_aarch64)hardlink path=usr/bin/edit target=../has/bin/edit
+hardlink path=usr/bin/edit target=../has/bin/edit
 hardlink path=usr/bin/egrep target=../../usr/bin/grep
 file path=usr/bin/eject mode=0555
 hardlink path=usr/bin/encrypt target=../../usr/lib/isaexec
@@ -750,7 +750,7 @@ link path=usr/bin/uname target=../../sbin/uname
 hardlink path=usr/bin/uptime target=w
 file path=usr/bin/userattr mode=0555
 file path=usr/bin/uuidgen mode=0555
-$(not_aarch64)hardlink path=usr/bin/vedit target=../has/bin/edit
+hardlink path=usr/bin/vedit target=../has/bin/edit
 file path=usr/bin/vmstat mode=0555
 file path=usr/bin/vtfontcvt mode=0555
 file path=usr/bin/w mode=4555
@@ -767,14 +767,14 @@ dir  path=usr/demo
 dir  path=usr/games
 dir  path=usr/has
 dir  path=usr/has/bin
-$(not_aarch64)file path=usr/has/bin/edit mode=0555
-$(not_aarch64)hardlink path=usr/has/bin/ex target=edit
+file path=usr/has/bin/edit mode=0555
+hardlink path=usr/has/bin/ex target=edit
 $(not_aarch64)link path=usr/has/bin/jsh target=sh
 hardlink path=usr/has/bin/pfsh target=../../bin/pfexec
 $(not_aarch64)file path=usr/has/bin/sh mode=0555
-$(not_aarch64)hardlink path=usr/has/bin/vedit target=edit
-$(not_aarch64)hardlink path=usr/has/bin/vi target=edit
-$(not_aarch64)hardlink path=usr/has/bin/view target=edit
+hardlink path=usr/has/bin/vedit target=edit
+hardlink path=usr/has/bin/vi target=edit
+hardlink path=usr/has/bin/view target=edit
 dir  path=usr/has/lib
 $(not_aarch64)link path=usr/has/lib/rsh target=../bin/sh
 dir  path=usr/has/man
@@ -879,8 +879,8 @@ file path=usr/lib/devfsadm/linkmod/SUNW_usb_link.so group=sys
 $(i386_ONLY)file path=usr/lib/devfsadm/linkmod/SUNW_xen_link.so group=sys
 file path=usr/lib/diffh mode=0555
 link path=usr/lib/embedded_su target=../bin/su
-$(not_aarch64)file path=usr/lib/expreserve mode=0555
-$(not_aarch64)file path=usr/lib/exrecover mode=0555
+file path=usr/lib/expreserve mode=0555
+file path=usr/lib/exrecover mode=0555
 dir  path=usr/lib/fs group=sys
 dir  path=usr/lib/fs/autofs group=sys
 dir  path=usr/lib/fs/autofs/$(ARCH64) group=sys

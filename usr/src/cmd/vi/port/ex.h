@@ -66,6 +66,7 @@ extern "C" {
 #include <stdlib.h>
 #include <limits.h>
 #include <libintl.h>
+#include <stdarg.h>
 
 #define MULTI_BYTE_MAX MB_LEN_MAX
 #define FTYPE(A)	(A.st_mode)
@@ -285,7 +286,7 @@ extern	int	termiosflag;	/* flag for using termios */
 #define ckaw()		{if (chng && value(vi_AUTOWRITE) && !value(vi_READONLY)) \
 				wop(0);\
 			}
-#define	copy(a,b,c)	Copy((char *) (a), (char *) (b), (c))
+#define	copy(a,b,c)	Copy((unsigned char *)(a), (unsigned char *)(b), (c))
 #define	eq(a, b)	((a) && (b) && strcmp(a, b) == 0)
 #define	getexit(a)	copy(a, resetlab, sizeof (jmp_buf))
 #define	lastchar()	lastc
@@ -293,7 +294,8 @@ extern	int	termiosflag;	/* flag for using termios */
 #define	pastwh()	((void)skipwh())
 #define	pline(no)	(*Pline)(no)
 #define	reset()		longjmp(resetlab,1)
-#define	resexit(a)	copy(resetlab, a, sizeof (jmp_buf))
+#define	resexit(a)	\
+copy((unsigned char *)(uintptr_t)resetlab, (unsigned char *)(uintptr_t)a, sizeof (jmp_buf))
 #define	setexit()	setjmp(resetlab)
 #define	setlastchar(c)	lastc = c
 #define	ungetchar(c)	peekc = c
@@ -383,8 +385,8 @@ var	int	errcnt;		/* number of error/warning messages in */
 /*
  * Function type definitions
  */
-#define	NOSTR	(char *) 0
-#define	NOLINE	(line *) 0
+#define	NOSTR	NULL
+#define	NOLINE	NULL
 
 #define	setterm visetterm
 #define	draino vidraino
@@ -394,7 +396,7 @@ extern	int	(*Outchar)();
 extern	int	(*Pline)();
 extern	int	(*Putchar)();
 var	void	(*oldhup)();
-int	(*setlist())();
+int	(*setlist(bool))();
 int	(*setnorm())();
 int	(*setnorm())();
 int	(*setnumb())();
@@ -461,7 +463,7 @@ unsigned char *lastchr();
 unsigned char *nextchr();
 extern bool putoctal;
 
-void	error();
+void	error(unsigned char *, ...);
 void	error0(void);
 void error1(unsigned char *);
 void fixol(void);
@@ -514,7 +516,8 @@ void putmk1(line *, int);
 int nqcolumn(unsigned char *, unsigned char *);
 void syserror(int);
 void cleanup(bool);
-void blkio(short, unsigned char *, int (*)());
+void blkio(short, unsigned char *, ssize_t (*)(int, void *, size_t),
+    ssize_t (*)(int, const void *, size_t));
 void tflush(void);
 short partreg(unsigned char);
 void kshift(void);
@@ -586,9 +589,10 @@ void vreset(bool);
 void vroll(int);
 void vrollR(int);
 void vnline(unsigned char *);
-void noerror();
+void noerror(unsigned char *str, ...);
 void getaline(line);
-void viprintf();
+void viprintf(unsigned char *, ...);
+void vivprintf(unsigned char *, va_list);
 void gettmode(void);
 void setterm(unsigned char *);
 void draino(void);
@@ -605,6 +609,170 @@ unsigned char *lastchr();
 unsigned char *nextchr();
 
 void setdot1(void);
+int gTTY(int);
+void smerror(unsigned char *, ...);
+void localize(void);
+void setrupt(void);
+void filioerr(unsigned char *);
+void erewind(void);
+void fileinit(void);
+int makekey(int b[2]);
+void eol(void);
+void markDOT(void);
+int skipwh(void);
+int peekchar(void);
+int getnum(void);
+void nonzero(void);
+int peekcd(void);
+int getcd(void);
+void ignchar(void);
+int vi_compile(int, int);
+int execute(int, line *);
+int markreg(int);
+void donewline(void);
+void TSYNC(void);
+void tailspec(int);
+void tail(unsigned char *);
+void setnoaddr(void);
+void mapcmd(int, int);
+void pargs(void);
+void setdot(void);
+int exclam(void);
+void vmacchng(bool);
+void deletenone(void);
+int append(int (*)(), line *);
+void vi_move(void);
+void tail2of(unsigned char *);
+int quickly(void);
+int skipend(void);
+void setCNL(void);
+int cmdreg(void);
+void appendnone(void);
+void filename(int);
+void wop(bool);
+void init(void);
+void rop(int);
+void noonl(void);
+void global(bool);
+void setcount(void);
+int endcmd(int);
+int getargs(void);
+void makargs(void);
+void next(void);
+void oop(void);
+void poptag(bool);
+int preserve(void);
+int span(void);
+int nomore(void);
+int ateopr(void);
+void vnfl(void);
+int ixlatctl(int);
+void recover(void);
+void revocer(void);
+void change(void);
+void unix0(bool, int);
+void set(void);
+void setNAEOL(void);
+int substitute(int);
+void tagfind(bool);
+void vop(void);
+void setall(void);
+void zop(int);
+void cmdmac(unsigned char);
+void comment(void);
+int lineno(line *);
+void vclrech(bool);
+void putnl(void);
+void ignnEOF(void);
+void merror(unsigned char *, ...);
+void mverror(unsigned char *, va_list);
+void putNFL(void);
+void tlaste(void);
+void fixech(void);
+void dingdong(void);
+void setoutt(void);
+void lprintf(unsigned char *, ...);
+void lvprintf(unsigned char *, va_list);
+int getkey(void);
+void termreset(void);
+void ungetkey(int);
+int morelines(void);
+void putmark(line *);
+void reverse(line *, line *);
+void killed(void);
+void strcLIN(unsigned char *);
+void save12(void);
+int whitecnt(unsigned char *);
+int lindent(line *);
+int iswhite(int);
+int lineDOL(void);
+void netchHAD(int);
+void regbuf(unsigned char, unsigned char *, int);
+int getach(void);
+int junk(wchar_t);
+void noteinp(void);
+int lineDOT(void);
+void gotab(int);
+int backtab(int);
+int smunch(int, unsigned char *);
+void Copy(unsigned char *, unsigned char *, int);
+int gscan(void);
+void vreplace(int, int, int);
+int ctlof(int);
+int tabcol(int, int);
+void saveall(void);
+int any(int, unsigned char *);
+int lcolumn(unsigned char *);
+int notable(int);
+int putline(void);
+void synctmp(void);
+void sync(void);
+void vfixcurs(void);
+void vmain(void);
+int vdepth(void);
+int vreopen(int, int, int);
+int vglitchup(int, int);
+int noteit(bool);
+int peekkey(void);
+void vclrlin(int, line *);
+void vshowmode(unsigned char *);
+int vgetcnt(void);
+int getesc(void);
+void setLAST(void);
+void voOpen(int, int);
+void operate(int, int);
+void vcursat(unsigned char *);
+void vnoapp(void);
+void vappend(int, int, int);
+int readecho(unsigned char);
+void vundo(bool);
+void vUndo(void);
+void markit(line *);
+void vrep(int);
+int lmatchp(line *);
+int column(unsigned char *);
+void vupdown(int, unsigned char *);
+int wordch(unsigned char *);
+int lnext(void);
+void vopen(line *, int);
+void vprepins(void);
+void physdc(int, int);
+int vdcMID(void);
+void setDEL(void);
+void bleep(int, unsigned char *);
+void notpart(int);
+void vcursbef(unsigned char *);
+void takeout(unsigned char *);
+int peekbr(void);
+void addtext(unsigned char *);
+int fixindent(int);
+void lsmatch(unsigned char *);
+int eend(int (*)());
+int word(int (*)(), int);
+void vrollup(int);
+void setcount2(void);
+void fixdisplay(void);
+void vcursaft(unsigned char *);
 
 #ifdef __cplusplus
 }

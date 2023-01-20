@@ -29,14 +29,16 @@
 
 /* Copyright (c) 1981 Regents of the University of California */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "ex.h"
 #include "ex_argv.h"
 #include "ex_temp.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 #include <unistd.h>
+
+extern int getchar(void);
+extern int putchar(int);
 
 extern bool	pflag, nflag;		/* extern; also in ex_cmds.c */
 extern int	poffset;		/* extern; also in ex_cmds.c */
@@ -99,71 +101,57 @@ eol(void)
 {
 
 	if (!skipend())
-		error(value(vi_TERSE) ? gettext("Extra chars") :
-			gettext("Extra characters at end of command"));
+		error(value(vi_TERSE) ? (unsigned char *)gettext(
+		    "Extra chars") :
+		    (unsigned char *)gettext(
+		    "Extra characters at end of command"));
 	ignnEOF();
+}
+
+static void
+_error_do(unsigned char *str, va_list ap)
+{
+	error0();
+	mverror(str, ap);
+	if (writing) {
+		serror((unsigned char *)
+		    gettext(" [Warning - %s is incomplete]"), file);
+		writing = 0;
+	}
+}
+
+/*
+ * Print out the message in the error message file at str
+ */
+void
+error(unsigned char *str, ...)
+{
+	va_list ap;
+
+	tagflg = 0;
+	errcnt++;
+	va_start(ap, str);
+	_error_do(str, ap);
+	va_end(ap);
+	error1(str);
 }
 
 #ifdef XPG4
 /*
- * Print out the message in the error message file at str,
- * with i an integer argument to printf.
- */
-/*VARARGS2*/
-void
-error(str, i)
-	unsigned char *str;
-	int i;
-{
-	tagflg = 0;
-	errcnt++;
-	noerror(str, i);
-}
-
-/*
- * noerror(): like error(), but doesn't inc errcnt. 
+ * noerror(): like error(), but doesn't inc errcnt.
  * the reason why we created this routine, instead of fixing up errcnt
  * after error() is called, is because we will do a longjmp, and
  * not a return. it does other things closing file i/o, reset, etc;
  * so we follow those procedures.
  */
-/*VARARGS2*/
 void
-noerror(str, i)
-	unsigned char *str;
-	int i;
+noerror(unsigned char *str, ...)
 {
+	va_list ap;
 
-	error0();
-	merror(str, i);
-	if (writing) {
-		serror((unsigned char *)
-		    gettext(" [Warning - %s is incomplete]"), file);
-		writing = 0;
-	}
-	error1(str);
-}
-
-#else /* !XPG4 */
-/*
- * Print out the message in the error message file at str,
- * with i an integer argument to printf.
- */
-/*VARARGS2*/
-void
-error(str, i)
-	unsigned char *str;
-	int i;
-{
-	tagflg = 0;
-	errcnt++;
-	error0();
-	merror(str, i);
-	if (writing) {
-		serror((unsigned char *)
-		    gettext(" [Warning - %s is incomplete]"), file);
-		writing = 0;
-	}
+	va_start(ap, str);
+	_error_do(str, ap);
+	va_end(ap);
 	error1(str);
 }
 #endif /* XPG4 */
@@ -259,7 +247,7 @@ error1(unsigned char *str)
 		close(io);
 		io = -1;
 	}
-	
+
 	die = (getpid() != ppid);	/* Only children die */
 	inappend = inglobal = 0;
 	globp = vglobp = vmacp = 0;
@@ -289,7 +277,7 @@ error1(unsigned char *str)
 		 * read() the <CR>).
 		 */
 		inexrc = 0;
-		lprintf(gettext(
+		lprintf((unsigned char *)gettext(
 		    "Error detected in .exrc.[Hit return to continue] "),
 		    0);
 		putNFL();
@@ -313,7 +301,7 @@ fixol(void)
 		Outchar = vputchar;
 		vcontin(1);
 		/*
-		 * Outchar could be set to termchar() through vcontin(). 
+		 * Outchar could be set to termchar() through vcontin().
 		 * So reset it again.
 		 */
 		Outchar = vputchar;
@@ -365,10 +353,10 @@ next(void)
 			(unsigned char *)gettext("No more files") :
 			(unsigned char *)gettext("No more files to edit"));
 	morargc = argc;
-	isalt = (strcmp(altfile, args)==0) + 1;
+	isalt = (strcmp((char *)altfile, (char *)args)==0) + 1;
 	if (savedfile[0])
-		CP(altfile, savedfile);
-	(void) strlcpy(savedfile, args, sizeof (savedfile));
+		CP((char *)altfile, (char *)savedfile);
+	(void) strlcpy((char *)savedfile, (char *)args, sizeof (savedfile));
 	argc--;
 	args = argv ? *++argv : strend(args) + 1;
 #if i386 || i286
@@ -448,11 +436,11 @@ nomore(void)
 		return(0);
 	morargc = argc;
 	if (argc == 1) {
-		merror(value(vi_TERSE) ? gettext("1 more file") :
-		       gettext("1 more file to edit"), argc);
+		merror(value(vi_TERSE) ? (unsigned char *)gettext("1 more file") :
+		       (unsigned char *)gettext("1 more file to edit"), argc);
 	} else {
-		merror(value(vi_TERSE) ? gettext("%d more files") :
-			gettext("%d more files to edit"), argc);
+		merror(value(vi_TERSE) ? (unsigned char *)gettext("%d more files") :
+			(unsigned char *)gettext("%d more files to edit"), argc);
 	}
 	return(1);
 }
@@ -587,9 +575,9 @@ tailprim(unsigned char *comm, int i, bool notinvis)
 		 * Of the trailing lp funny business, only dl and dp
 		 * survive the move from ed to ex.
 		 */
-		if (tcommand[0] == 'd' && any(c, "lp"))
+		if (tcommand[0] == 'd' && any(c, (unsigned char *)"lp"))
 			goto ret;
-		if (tcommand[0] == 's' && any(c, "gcr"))
+		if (tcommand[0] == 's' && any(c, (unsigned char *)"gcr"))
 			goto ret;
 		while (cp < &tcommand[19] && isalpha(c = peekchar()) && isascii(c))
 			*cp++ = getchar();
@@ -641,7 +629,7 @@ vcontin(bool ask)
 			return;
 		}
 		if (ask) {
-			merror(gettext("[Hit return to continue] "));
+			merror((unsigned char *)gettext("[Hit return to continue] "), 0);
 			flush();
 		}
 #ifndef CBREAK

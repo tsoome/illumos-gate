@@ -32,16 +32,18 @@
 #include "ex_argv.h"
 #include "ex_temp.h"
 #include "ex_tty.h"
+#include <crypt.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #ifdef TRACE
 unsigned char	tttrace[BUFSIZ];
 #endif
 
 #define	EQ(a, b)	(strcmp(a, b) == 0)
 
-char	*strrchr();
 void	init_re(void);
 
 /*
@@ -139,10 +141,10 @@ main(int ac, char *av[])
 	unsigned char *cp;
 	int c;
 	unsigned char	*cmdnam;
-	bool recov = 0;
-	bool ivis = 0;
-	bool itag = 0;
-	bool fast = 0;
+	volatile bool recov = 0;
+	volatile bool ivis = 0;
+	volatile bool itag = 0;
+	volatile bool fast = 0;
 	extern int verbose;
 	int argcounter = 0;
 	extern int tags_flag;	/* Set if tag file is not sorted (-S flag) */
@@ -181,16 +183,16 @@ main(int ac, char *av[])
 
 	if (EQ((char *)cmdnam, "vi"))
 		ivis = 1;
-	else if (EQ(cmdnam, "view")) {
+	else if (EQ((char *)cmdnam, "view")) {
 		ivis = 1;
 		value(vi_READONLY) = 1;
-	} else if (EQ(cmdnam, "vedit")) {
+	} else if (EQ((char *)cmdnam, "vedit")) {
 		ivis = 1;
 		value(vi_NOVICE) = 1;
 		value(vi_REPORT) = 1;
 		value(vi_MAGIC) = 0;
 		value(vi_SHOWMODE) = 1;
-	} else if (EQ(cmdnam, "edit")) {
+	} else if (EQ((char *)cmdnam, "edit")) {
 		value(vi_NOVICE) = 1;
 		value(vi_REPORT) = 1;
 		value(vi_MAGIC) = 0;
@@ -329,7 +331,7 @@ main(int ac, char *av[])
 					toptseen++;
 				}
 				itag = tagflg = 1; /* -t option */
-				if (strlcpy(lasttag, optarg,
+				if (strlcpy((char *)lasttag, optarg,
 				    sizeof (lasttag)) >= sizeof (lasttag)) {
 					(void) fprintf(stderr, gettext("Tag"
 					    " file name too long\n"));
@@ -424,19 +426,21 @@ main(int ac, char *av[])
 	if (xflag) {
 		permflag = 1;
 		if ((kflag = run_setkey(perm,
-		    (key = (unsigned char *)getpass(
+		    (char *)(key = (unsigned char *)getpass(
 		    gettext("Enter key:"))))) == -1) {
 			kflag = 0;
 			xflag = 0;
-			smerror(gettext("Encryption facility not available\n"));
+			smerror((unsigned char *)
+			    gettext("Encryption facility not available\n"), NULL);
 		}
 		if (kflag == 0)
 			crflag = 0;
 		else {
-			strcpy(cryptkey, "CrYpTkEy=XXXXXXXXX");
-			strcpy(cryptkey + 9, key);
+			strcpy((char *)cryptkey, "CrYpTkEy=XXXXXXXXX");
+			strcpy((char *)cryptkey + 9, (char *)key);
 			if (putenv((char *)cryptkey) != 0)
-			smerror(gettext(" Cannot copy key to environment"));
+				smerror((unsigned char *)
+				    gettext(" Cannot copy key to environment"), NULL);
 		}
 
 	}
@@ -470,13 +474,14 @@ main(int ac, char *av[])
 			ppid = 0;
 			setrupt();
 			execlp(EXRECOVER, "exrecover", "-r", (char *)0);
-			filioerr(EXRECOVER);
+			filioerr((unsigned char *)EXRECOVER);
 			exit(++errcnt);
 		}
-		if (rcvname && *rcvname)
-			(void) strlcpy(savedfile, rcvname, sizeof (savedfile));
-		else {
-			(void) strlcpy(savedfile, *av++, sizeof (savedfile));
+		if (rcvname && *rcvname) {
+			(void) strlcpy((char *)savedfile, (char *)rcvname,
+			    sizeof (savedfile));
+		} else {
+			(void) strlcpy((char *)savedfile, *av++, sizeof (savedfile));
 			ac--;
 		}
 	}
@@ -499,13 +504,13 @@ main(int ac, char *av[])
 		value(vi_PROMPT) = intty;
 		if (((cp = (unsigned char *)getenv("SHELL")) != NULL) &&
 		    (*cp != '\0')) {
-			if (strlen(cp) < sizeof (shell)) {
-				(void) strlcpy(shell, cp, sizeof (shell));
+			if (strlen((char *)cp) < sizeof (shell)) {
+				(void) strlcpy((char *)shell, (char *)cp, sizeof (shell));
 			}
 		}
-		if (fast)
+		if (fast) {
 			setterm((unsigned char *)"dumb");
-		else {
+		} else {
 			gettmode();
 			cp = (unsigned char *)getenv("TERM");
 			if (cp == NULL || *cp == '\0')
@@ -540,16 +545,16 @@ main(int ac, char *av[])
 			globp = 0;
 			if ((cp = (unsigned char *) getenv("HOME")) !=
 			    0 && *cp) {
-				strncpy(scratch, cp, sizeof (scratch) - 1);
-				strncat(scratch, "/.exrc",
-				    sizeof (scratch) - 1 - strlen(scratch));
+				strncpy((char *)scratch, (char *)cp, sizeof (scratch) - 1);
+				strncat((char *)scratch, "/.exrc",
+				    sizeof (scratch) - 1 - strlen((char *)scratch));
 				if (ivis)
 					inexrc = 1;
 				if ((vret = validate_exrc(scratch)) == 0) {
 					source(scratch, 1);
 				} else {
 					if (vret == -1) {
-						error(gettext(
+						error((unsigned char *)gettext(
 						    "Not owner of .exrc "
 						    "or .exrc is group or "
 						    "world writable"));
@@ -572,16 +577,18 @@ main(int ac, char *av[])
 				inexrc = 1;
 			if ((cp = (unsigned char *) getenv("PWD")) != 0 &&
 			    *cp) {
-				strncpy(exrcpath, cp, sizeof (exrcpath) - 1);
-				strncat(exrcpath, "/.exrc",
-				    sizeof (exrcpath) - 1 - strlen(exrcpath));
-				if (strcmp(scratch, exrcpath) != 0) {
+				strncpy((char *)exrcpath, (char *)cp,
+				    sizeof (exrcpath) - 1);
+				strncat((char *)exrcpath, "/.exrc",
+				    sizeof (exrcpath) - 1 - strlen((char *)exrcpath));
+				if (strcmp((char *)scratch, (char *)exrcpath) != 0) {
 					if ((vret =
 					    validate_exrc(exrcpath)) == 0) {
 						source(exrcpath, 1);
 					} else {
 						if (vret == -1) {
-							error(gettext(
+							error((unsigned char *)
+							    gettext(
 							    "Not owner of "
 							    ".exrc or .exrc "
 							    "is group or world "
@@ -692,6 +699,7 @@ init(void)
 	int i;
 	void (*pstat)();
 	fileinit();
+
 	dot = zero = truedol = unddol = dol = fendcore;
 	one = zero+1;
 	undkind = UNDNONE;
@@ -709,8 +717,8 @@ init(void)
 		tpermflag = 1;
 		if (makekey(tperm) != 0) {
 			xtflag = 0;
-			smerror(gettext(
-			    "Warning--Cannot encrypt temporary buffer\n"));
+			smerror((unsigned char *)gettext(
+			    "Warning--Cannot encrypt temporary buffer\n"), NULL);
 		}
 		signal(SIGINT, pstat);
 	}

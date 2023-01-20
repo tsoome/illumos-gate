@@ -32,6 +32,10 @@
 #include "ex.h"
 #include "ex_temp.h"
 #include "ex_tty.h"
+#include <string.h>
+
+extern int getchar(void);
+extern int putchar(int);
 
 /*
  * Set command.
@@ -66,7 +70,7 @@ set(void)
 		} while (isalnum(peekchar()));
 		*cp = 0;
 		cp = optname;
-		if (eq("all", cp)) {
+		if (eq("all", (char *)cp)) {
 			if (inopen)
 				pofix();
 			prall();
@@ -79,12 +83,14 @@ set(void)
  		 * invisible marks (as well as the visible ones).
  		 */
  		if (eq("marks", cp)) {
-			viprintf("Marks   Address\n\r");
-			viprintf("					\n");
-			viprintf("\n");
+			viprintf((unsigned char *)"Marks   Address\n\r");
+			viprintf((unsigned char *)
+			    "					\n");
+			viprintf((unsigned char *)"\n");
 			for (k = 0; k <= 25; k++)
-				viprintf("Mark:%c\t%d\n", k+'a', names[k]);
- 		goto next;
+				viprintf((unsigned char *)"Mark:%c\t%d\n",
+				    k+'a', names[k]);
+			goto next;
  		}
 
 		/*
@@ -119,73 +125,79 @@ set(void)
  		if (eq("buffers",cp)) {
  			if (inopen)
 				pofix();
-			viprintf("\nLabels   Address	Contents\n");
- 			viprintf("======   =======	========");
+			viprintf((unsigned char *)
+			    "\nLabels   Address	Contents\n");
+ 			viprintf((unsigned char *)
+			    "======   =======	========");
 			for (tmpadr = zero; tmpadr <= dol; tmpadr++) {
  				label =0;
 				if (tmpadr == zero) {
-					viprintf("ZERO:\t");
+					viprintf((unsigned char *)"ZERO:\t");
  					label = 2;
  				}
  				if (tmpadr == one) {
 					if (label > 0)
-						viprintf("\nONE:\t");
+						viprintf((unsigned char *)"\nONE:\t");
 					else
-						viprintf("ONE:\t");
+						viprintf((unsigned char *)"ONE:\t");
  					label = 1;
  				}
  				if (tmpadr == dot) {
 					if (label > 0)
-						viprintf("\nDOT:\t");
+						viprintf((unsigned char *)"\nDOT:\t");
 					else
-						viprintf("DOT:\t");
+						viprintf((unsigned char *)"DOT:\t");
  					label = 1;
  				}
  				if (tmpadr == undap1) {
  					if (label > 0)
-						viprintf("\nUNDAP1:\t");
+						viprintf((unsigned char *)"\nUNDAP1:\t");
  					else
-						viprintf("UNDAP1:\t");
+						viprintf((unsigned char *)"UNDAP1:\t");
  					label = 1;
  				}
  				if (tmpadr == undap2) {
  					if (label > 0)
-						viprintf("\nUNDAP2:\t");
+						viprintf((unsigned char *)"\nUNDAP2:\t");
  					else
-						viprintf("UNDAP2:\t");
+						viprintf((unsigned char *)"UNDAP2:\t");
  					label = 1;
  				}
  				if (tmpadr == unddel) {
  					if (label > 0)
-						viprintf("\nUNDDEL:\t");
+						viprintf((unsigned char *)"\nUNDDEL:\t");
  					else
-						viprintf("UNDDEL:\t");
+						viprintf((unsigned char *)"UNDDEL:\t");
  					label = 1;
  				}
  				if (tmpadr == dol) {
  					if (label > 0)
-						viprintf("\nDOL:\t");
+						viprintf((unsigned char *)"\nDOL:\t");
  					else
-						viprintf("DOL:\t");
+						viprintf((unsigned char *)"DOL:\t");
  					label = 1;
  				}
- 				for (k=0; k<=25; k++) 
+ 				for (k=0; k<=25; k++)
  					if (names[k] == (*tmpadr &~ 01)) {
  						if (label > 0)
 							viprintf(
+							    (unsigned char *)
 "\nMark:%c\t%d\t", k+'a', names[k]);
  						else
 							viprintf(
+							    (unsigned char *)
 "Mark:%c\t%d\t", k+'a', names[k]);
  						label=1;
  					}
- 				if (label == 0) 
+ 				if (label == 0)
  					continue;
 
  				if (label == 2)
-					viprintf("%d\n", tmpadr);
+					viprintf((unsigned char *)"%d\n",
+					    tmpadr);
  				else  {
-					viprintf("%d\t", tmpadr);
+					viprintf((unsigned char *)"%d\t",
+					    tmpadr);
  					getaline(*tmpadr);
  					pline(lineno(tmpadr));
  					putchar('\n');
@@ -195,39 +207,47 @@ set(void)
  			for (tmpadr = dol+1; tmpadr <= unddol; tmpadr++) {
  				label =0;
  				if (tmpadr == dol+1) {
-					viprintf("DOL+1:\t");
+					viprintf((unsigned char *)"DOL+1:\t");
  					label = 1;
  				}
  				if (tmpadr == unddel) {
  					if (label > 0)
-						viprintf("\nUNDDEL:\t");
+						viprintf((unsigned char *)
+						    "\nUNDDEL:\t");
  					else
-						viprintf("UNDDEL:\t");
+						viprintf((unsigned char *)
+						    "UNDDEL:\t");
  					label = 1;
  				}
  				if (tmpadr == unddol) {
  					if (label > 0)
-						viprintf("\nUNDDOL:\t");
+						viprintf((unsigned char *)
+						    "\nUNDDOL:\t");
  					else
-						viprintf("UNDDOL:\t");
+						viprintf((unsigned char *)
+						    "UNDDOL:\t");
  					label = 1;
  				}
- 				for (k=0; k<=25; k++) 
+ 				for (k=0; k<=25; k++)
  					if (names[k] == (*tmpadr &~ 01)) {
  						if (label > 0)
 							viprintf(
+							    (unsigned char *)
 "\nMark:%c\t%d\t", k+'a', names[k]);
  						else
 							viprintf(
+							    (unsigned char *)
 "Mark:%c\t%d\t", k+'a', names[k]);
  						label=1;
  					}
  				if (label == 0)
  					continue;
  				if (label == 2)
-					viprintf("%d\n", tmpadr);
+					viprintf((unsigned char *)"%d\n",
+					    tmpadr);
  				else  {
-					viprintf("%d\t", tmpadr);
+					viprintf((unsigned char *)"%d\t",
+					    tmpadr);
  					getaline(*tmpadr);
  					pline(lineno(tmpadr));
  					putchar('\n');
@@ -235,13 +255,13 @@ set(void)
  			}
  			goto next;
  		}
-#endif 			
+#endif
 		if (cp[0] == 'n' && cp[1] == 'o' && cp[2] != 'v') {
 			cp += 2;
 			no++;
 		}
 		/* Implement w300, w1200, and w9600 specially */
-		if (eq(cp, "w300")) {
+		if (eq((char *)cp, "w300")) {
 			if (ospeed >= B1200) {
 dontset:
 				(void)getchar();	/* = */
@@ -249,17 +269,18 @@ dontset:
 				continue;
 			}
 			cp = (unsigned char *)"window";
-		} else if (eq(cp, "w1200")) {
+		} else if (eq((char *)cp, "w1200")) {
 			if (ospeed < B1200 || ospeed >= B2400)
 				goto dontset;
 			cp = (unsigned char *)"window";
-		} else if (eq(cp, "w9600")) {
+		} else if (eq((char *)cp, "w9600")) {
 			if (ospeed < B2400)
 				goto dontset;
 			cp = (unsigned char *)"window";
 		}
 		for (op = options; op < &options[vi_NOPTS]; op++)
-			if (eq(op->oname, cp) || op->oabbrev && eq(op->oabbrev, cp))
+			if (eq((char *)op->oname, (char *)cp) ||
+			    eq((char *)op->oabbrev, (char *)cp))
 				break;
 		if (op->oname == 0)
 			serror(value(vi_TERSE) ? (unsigned char *)
@@ -296,7 +317,10 @@ printone:
 		case NUMERIC:
 			if (!isdigit(peekchar()))
 				error(value(vi_TERSE) ?
-gettext("Digits required") : gettext("Digits required after ="));
+				    (unsigned char *)gettext(
+				    "Digits required") :
+				    (unsigned char *)gettext(
+				    "Digits required after ="));
 			op->ovalue = getnum();
 			if (value(vi_TABSTOP) <= 0)
 				value(vi_TABSTOP) = TABS;
@@ -313,10 +337,14 @@ gettext("Digits required") : gettext("Digits required after ="));
 			while (!setend()) {
 				if (cp >= &optname[ONMSZ])
 					error(value(vi_TERSE) ?
-gettext("String too long") : gettext("String too long in option assignment"));
+					    (unsigned char *)gettext(
+					    "String too long") :
+					    (unsigned char *)gettext(
+					    "String too long in option "
+					    "assignment"));
 				/* adb change:  allow whitepace in strings */
-				if( (*cp = getchar()) == '\\')
-					if( peekchar() != EOF)
+				if ((*cp = getchar()) == '\\')
+					if (peekchar() != EOF)
 						*cp = getchar();
 				cp++;
 			}
@@ -336,11 +364,13 @@ gettext("String too long") : gettext("String too long in option assignment"));
  * This loses because the first part of vop calls oop in this case.
  */
 				if (inopen)
-error(gettext("Can't change type of terminal from within open/visual"));
+					error((unsigned char *)gettext(
+					    "Can't change type of terminal "
+					    "from within open/visual"));
 				unterm();
 				setterm(optname);
 			} else {
-				CP(op->osvalue, optname);
+				CP((char *)op->osvalue, (char *)optname);
 				op->odefault = 1;
 			}
 			break;
@@ -358,25 +388,26 @@ unterm(void)
 	 *  All terminal mapped statements must be deleted.
 	 *  All user-defined mapped statements, cap=descr,
 	 *  are left unchanged.
-	 */ 
+	 */
 
 	int i;
 
 	for (i=0; i < MAXNOMACS; i++) {
 
 		/*
-		 * Unmap any terminal-defined arrow keys 
+		 * Unmap any terminal-defined arrow keys
 		 */
 
-		if (arrows[i].cap && arrows[i].descr && 
-		    strcmp(arrows[i].cap, arrows[i].descr)) 
+		if (arrows[i].cap && arrows[i].descr &&
+		    strcmp((char *)arrows[i].cap, (char *)arrows[i].descr))
 			addmac(arrows[i].cap, NOSTR, NOSTR, arrows);
 
 		/*
-		 * Unmap any terminal-defined function keys 
+		 * Unmap any terminal-defined function keys
 		 */
 
-		if (immacs[i].cap && immacs[i].descr && strcmp(immacs[i].cap, immacs[i].descr)) 
+		if (immacs[i].cap && immacs[i].descr &&
+		    strcmp((char *)immacs[i].cap, (char *)immacs[i].descr))
 			addmac(immacs[i].cap, NOSTR, NOSTR, immacs);
 
 	}
@@ -447,16 +478,16 @@ propt(struct option *op)
 	switch (op->otype) {
 
 	case ONOFF:
-		viprintf("%s%s", op->ovalue ? "" : "no", name);
+		viprintf((unsigned char *)"%s%s", op->ovalue ? "" : "no", name);
 		break;
 
 	case NUMERIC:
-		viprintf("%s=%d", name, op->ovalue);
+		viprintf((unsigned char *)"%s=%d", name, op->ovalue);
 		break;
 
 	case STRING:
 	case OTERM:
-		viprintf("%s=%s", name, op->osvalue);
+		viprintf((unsigned char *)"%s=%s", name, op->osvalue);
 		break;
 	}
 }

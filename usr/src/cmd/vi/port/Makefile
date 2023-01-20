@@ -34,7 +34,7 @@ LIBPROGS= expreserve exrecover
 XD4= exobjs.xpg4
 XD6= exobjs.xpg6
 
-EXOBJS=	bcopy.o ex.o ex_addr.o ex_cmds.o ex_cmds2.o \
+EXOBJS=	ex.o ex_addr.o ex_cmds.o ex_cmds2.o \
 	ex_cmdsub.o ex_data.o ex_extern.o ex_get.o \
 	ex_io.o ex_put.o ex_re.o ex_set.o ex_subr.o \
 	ex_temp.o ex_tty.o ex_unix.o ex_v.o ex_vadj.o \
@@ -52,14 +52,9 @@ TXTS = READ_ME makeoptions ex.news
 
 include ../../Makefile.cmd
 
-CERRWARN += -_gcc=-Wno-implicit-function-declaration
-CERRWARN += -_gcc=-Wno-clobbered
-CERRWARN += -_gcc=-Wno-parentheses
-CERRWARN += -_gcc=-Wno-unused-variable
-CERRWARN += -_gcc=-Wno-unused-label
-CERRWARN += -_gcc=-Wno-unused-value
-CERRWARN += $(CNOWARN_UNINIT)
-CERRWARN += -_gcc=-Wno-address
+ex_voper.o := CERRWARN += -_gcc=-Wno-clobbered
+$(XD4)/ex_voper.o := CERRWARN += -_gcc=-Wno-clobbered
+$(XD6)/ex_voper.o := CERRWARN += -_gcc=-Wno-clobbered
 
 # way too old
 SMATCH=off

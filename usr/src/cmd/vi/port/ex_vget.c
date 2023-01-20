@@ -32,6 +32,8 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
+#include <unistd.h>
 
 /*
  * Input routines for open/visual.
@@ -39,6 +41,10 @@
  * echo area here as well as notification on large changes
  * which appears in the echo area.
  */
+
+extern int putchar(int);
+static int getbr(void);
+static int fastpeekkey(void);
 
 /*
  * Return the key.
@@ -90,13 +96,12 @@ short	precbksl;
  * The hard work here is in mapping of \ escaped
  * characters on upper case only terminals.
  */
-int
+static int
 getbr(void)
 {
 	unsigned char ch;
 	int c, d;
 	unsigned char *colp;
-	int cnt;
 	static unsigned char Peek2key;
 	extern short slevel, ttyindes;
 
@@ -135,7 +140,7 @@ again:
 		else if (errno == EIO)
 		  kill(getpid(), SIGHUP);
 
-		error(gettext("Input read error"));
+		error((unsigned char *)gettext("Input read error"));
 	}
 	c = ch;
 	if (beehive_glitch && slevel==0 && c == ESCAPE) {
@@ -174,7 +179,7 @@ again:
 				d = toupper(c);
 			else {
 				colp = (unsigned char *)"({)}!|^~'~";
-				while (d = *colp++)
+				while ((d = *colp++) != 0)
 					if (d == c) {
 						d = *colp++;
 						break;
@@ -256,8 +261,7 @@ peekkey(void)
  * A return value of 1 means the user blewit or blewit away.
  */
 int
-readecho(c)
-	unsigned char c;
+readecho(unsigned char c)
 {
 	unsigned char *sc = cursor;
 	int (*OP)();
@@ -320,7 +324,7 @@ setLAST(void)
 	lasthad = Xhadcnt;
 	lastcnt = Xcnt;
 	*lastcp = 0;
-	CP(lastcmd, workcmd);
+	CP((char *)lastcmd, (char *)workcmd);
 }
 
 /*
@@ -369,11 +373,11 @@ addto(unsigned char *buf, unsigned char *str)
 
 	if ((unsigned char)buf[128] == 0200)
 		return;
-	if (strlen(buf) + strlen(str) + 1 >= VBSIZE) {
+	if (strlen((char *)buf) + strlen((char *)str) + 1 >= VBSIZE) {
 		buf[128] = 0200;
 		return;
 	}
-	(void)strcat(buf, str);
+	(void)strcat((char *)buf, (char *)str);
 	buf[128] = 0;
 }
 
@@ -381,9 +385,7 @@ addto(unsigned char *buf, unsigned char *str)
  * Verbalize command name and embed it in message.
  */
 char *
-verbalize(cnt, cmdstr, sgn)
-int cnt;
-char *cmdstr, *sgn;
+verbalize(int cnt, char *cmdstr, char *sgn)
 {
 	if (cmdstr[0] == '\0')
 		cmdstr = (char *)Command;
@@ -392,8 +394,8 @@ char *cmdstr, *sgn;
 		    case 'c':
 			if (cmdstr[1] == 'h') {
 				viprintf((cnt == 1) ?
-				    gettext("1 line changed") :
-				    gettext("%d lines changed"), cnt);
+				    (unsigned char *)gettext("1 line changed") :
+				    (unsigned char *)gettext("%d lines changed"), cnt);
 				break;
 			} else if (cmdstr[1] != 'o') {
 				goto Default;
@@ -402,53 +404,56 @@ char *cmdstr, *sgn;
 		    case 't':
 			if (cmdstr[1] != '\0')
 				goto Default;
-			viprintf((cnt == 1) ? gettext("1 line copied") :
-			       gettext("%d lines copied"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line copied") :
+			       (unsigned char *)gettext("%d lines copied"), cnt);
 			break;
 		    case 'd':
-			viprintf((cnt == 1) ? gettext("1 line deleted") :
-			       gettext("%d lines deleted"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line deleted") :
+			       (unsigned char *)gettext("%d lines deleted"), cnt);
 			break;
 		    case 'j':
-			viprintf((cnt == 1) ? gettext("1 line joined") :
-			       gettext("%d lines joined"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line joined") :
+			       (unsigned char *)gettext("%d lines joined"), cnt);
 			break;
 		    case 'm':
-			viprintf((cnt == 1) ? gettext("1 line moved") :
-			       gettext("%d lines moved"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line moved") :
+			       (unsigned char *)gettext("%d lines moved"), cnt);
 			break;
 		    case 'p':
-			viprintf((cnt == 1) ? gettext("1 line put") :
-			       gettext("%d lines put"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line put") :
+			    (unsigned char *)gettext("%d lines put"), cnt);
 			break;
 		    case 'y':
-			viprintf((cnt == 1) ? gettext("1 line yanked") :
-			       gettext("%d lines yanked"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line yanked") :
+			    (unsigned char *)gettext("%d lines yanked"), cnt);
 			break;
 		    case '>':
-			viprintf((cnt == 1) ? gettext("1 line >>ed") :
-			       gettext("%d lines >>ed"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line >>ed") :
+			    (unsigned char *)gettext("%d lines >>ed"), cnt);
 			break;
 		    case '=':
-			viprintf((cnt == 1) ? gettext("1 line =ed") :
-			       gettext("%d lines =ed"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line =ed") :
+			    (unsigned char *)gettext("%d lines =ed"), cnt);
 			break;
 		    case '<':
-			viprintf((cnt == 1) ? gettext("1 line <<ed") :
-			       gettext("%d lines <<ed"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line <<ed") :
+			    (unsigned char *)gettext("%d lines <<ed"), cnt);
 			break;
 		    default:
 Default:
-			viprintf((cnt == 1) ? gettext("1 line") :
-			       gettext("%d lines"), cnt);
+			viprintf((cnt == 1) ? (unsigned char *)gettext("1 line") :
+			    (unsigned char *)gettext("%d lines"), cnt);
 			break;
 		}
 	} else if (sgn[0] == 'm') {
-		viprintf((cnt == 1) ? gettext("1 more line") :
-			gettext("%d more lines"), cnt);
+		if (cnt == 1)
+			viprintf((unsigned char *)gettext("1 more line"));
+		else
+			viprintf((unsigned char *)gettext("%d more lines"),
+			    cnt);
 	} else {
-		viprintf((cnt == 1) ? gettext("1 fewer line") :
-			gettext("%d fewer lines"), cnt);
+		viprintf((cnt == 1) ? (unsigned char *)gettext("1 fewer line") :
+		    (unsigned char *)gettext("%d fewer lines"), cnt);
 	}
 	return (NULL);
 }
@@ -460,19 +465,18 @@ Default:
  * notification in visual.
  */
 int
-noteit(must)
-	bool must;
+noteit(bool must)
 {
 	int sdl = destline, sdc = destcol;
 
-	if (notecnt < 1 || !must && state == VISUAL)
+	if (notecnt < 1 || (!must && state == VISUAL))
 		return (0);
 	splitw++;
 	if (WBOT == WECHO)
 		vmoveitup(1, 1);
 	vigoto(WECHO, 0);
 
-	verbalize(notecnt, notenam, notesgn);
+	verbalize(notecnt, (char *)notenam, (char *)notesgn);
 	vclreol();
 	notecnt = 0;
 	if (state != VISUAL)
@@ -504,13 +508,12 @@ beep(void)
  * for keypads and labelled keys which do cursor
  * motions.  I.e. on an adm3a we might map ^K to ^P.
  * DM1520 for example has a lot of mappable characters.
+ *
+ * commch indicates if in append/insert/replace mode.
  */
 
 int
-map(c, maps, commch)
-	int c;
-	struct maps *maps;
-	unsigned char commch; /* indicate if in append/insert/replace mode */
+map(int c, struct maps *maps, unsigned char commch)
 {
 	int d;
 	unsigned char *p, *q;
@@ -550,7 +553,7 @@ map(c, maps, commch)
 		if (trace)
 			fprintf(trace,"\ntry '%s', ",maps[d].cap);
 #endif
-		if (p = maps[d].cap) {
+		if ((p = maps[d].cap) != NULL) {
 			for (q=b; *p; p++, q++) {
 #ifdef MDEBUG
 				if (trace)
@@ -587,7 +590,7 @@ map(c, maps, commch)
 						macpush(&b[1],maps == arrows);
 #ifdef MDEBUG
 						if (trace)
-							fprintf(trace, "return %d\n", c);	
+							fprintf(trace, "return %d\n", c);
 #endif
 						return(c);
 					}
@@ -612,29 +615,33 @@ map(c, maps, commch)
 			 * the <esc> (except when cursor is already
 			 * in the first column: i.e., outcol = 0).
 			 */
-			 if ((maps == immacs) 
-			 && strcmp(maps[d].descr, maps[d].cap)) {
+			 if ((maps == immacs)
+			     && strcmp((char *)maps[d].descr,
+			     (char *)maps[d].cap)) {
 				switch (commch) {
 				  case 'R':
-					if (!strcmp(maps[d].descr, "home"))
+					if (strcmp((char *)maps[d].descr,
+					    "home") != 0)
 						st = (unsigned char *)"R";
 					else
 						if (outcol == 0)
 							st = (unsigned char *)"R";
 						else
-							st = (unsigned char *)"lR"; 
+							st = (unsigned char *)"lR";
 					break;
 				  case 'i':
-					if (!strcmp(maps[d].descr, "home"))
+					if (strcmp((char *)maps[d].descr,
+					    "home") != 0)
 						st = (unsigned char *)"i";
 					else
 						if (outcol == 0)
 							st = (unsigned char *)"i";
 						else
-							st = (unsigned char *)"li"; 
+							st = (unsigned char *)"li";
 					break;
 				  case 'a':
-					if (!strcmp(maps[d].descr, "home"))
+					if (strcmp((char *)maps[d].descr,
+					    "home") != 0)
 						st = (unsigned char *)"i";
 					else
 						st = (unsigned char *)"a";
@@ -642,19 +649,24 @@ map(c, maps, commch)
 				  default:
 					st = (unsigned char *)"i";
 				}
-				if(strlen(vmacbuf)  + strlen(st) > BUFSIZE) 
+				if (strlen((char *)vmacbuf) +
+				    strlen((char *)st) > BUFSIZE)
 					error(value(vi_TERSE) ?
-gettext("Macro too long") : gettext("Macro too long  - maybe recursive?"));
+					    (unsigned char *)gettext(
+					    "Macro too long") :
+					    (unsigned char *)gettext(
+					    "Macro too long  - maybe "
+					    "recursive?"));
 				else
-					/* 
+					/*
 					 * Macros such as function keys are
 					 * performed by leaving the insert,
-					 * replace, or append mode, executing 
+					 * replace, or append mode, executing
 					 * the proper cursor movement commands
 					 * and returning to the mode we are
 					 * currently in (commch).
 					 */
-					strcat(vmacbuf, st);
+					strcat((char *)vmacbuf, (char *)st);
 			}
 			c = getkey();
 #ifdef MDEBUG
@@ -693,17 +705,19 @@ macpush(unsigned char *st, int canundo)
 	if (trace)
 		fprintf(trace, "macpush(%s), canundo=%d\n",st,canundo);
 #endif
-	if ((vmacp ? strlen(vmacp) : 0) + strlen(st) > BUFSIZE)
-		error(value(vi_TERSE) ? gettext("Macro too long") :
-gettext("Macro too long  - maybe recursive?"));
+	if ((vmacp ? strlen((char *)vmacp) : 0) + strlen((char *)st) > BUFSIZE)
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Macro too long") :
+		    (unsigned char *)gettext(
+		    "Macro too long  - maybe recursive?"));
 	if (vmacp) {
-		strcpy(tmpbuf, vmacp);
+		strcpy((char *)tmpbuf, (char *)vmacp);
 		if (!FIXUNDO)
 			canundo = 0;	/* can't undo inside a macro anyway */
 	}
-	strcpy(vmacbuf, st);
+	strcpy((char *)vmacbuf, (char *)st);
 	if (vmacp)
-		strcat(vmacbuf, tmpbuf);
+		strcat((char *)vmacbuf, (char *)tmpbuf);
 	vmacp = vmacbuf;
 	/* arrange to be able to undo the whole macro */
 	if (canundo) {
@@ -789,7 +803,7 @@ vgetcnt(void)
  * a machine generated sequence (such as a function pad from an escape
  * flavor terminal) but fail for a human hitting escape then waiting.
  */
-int
+static int
 fastpeekkey(void)
 {
 	void trapalarm();
@@ -820,7 +834,9 @@ fastpeekkey(void)
 	return(c);
 }
 
+#ifdef FTIOCSET
 static int ftfd;
+#endif
 struct requestbuf {
 	short time;
 	short signo;
@@ -834,10 +850,10 @@ struct requestbuf {
 void
 setalarm(void)
 {
+#ifdef FTIOCSET
 	unsigned char ftname[20];
 	struct requestbuf rb;
 
-#ifdef FTIOCSET
 	/*
 	 * Use nonstandard "fast timer" to get better than
 	 * one second resolution.  We must wait at least
@@ -875,8 +891,9 @@ setalarm(void)
 void
 cancelalarm(void)
 {
-	struct requestbuf rb;
 #ifdef FTIOCSET
+	struct requestbuf rb;
+
 	if (ftfd > 0) {
 		rb.time = 0;
 		rb.signo = SIGALRM;

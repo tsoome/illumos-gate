@@ -33,6 +33,7 @@
 #include "ex.h"
 #include "ex_re.h"
 
+int getchar(void);
 /*
  * Routines for address parsing and assignment and checking of address bounds
  * in command mode.  The routine address is called from ex_cmds.c
@@ -75,8 +76,8 @@ setdot1(void)
 	if (addr1 > addr2) {
 		notempty();
 		error(value(vi_TERSE) ?
-			gettext("Addr1 > addr2") :
-			gettext("First address exceeds second"));
+		    (unsigned char *)gettext("Addr1 > addr2") :
+		    (unsigned char *)gettext("First address exceeds second"));
 	}
 }
 
@@ -101,8 +102,8 @@ setcount(void)
 	cnt = getnum();
 	if (cnt <= 0)
 		error(value(vi_TERSE) ?
-			gettext("Bad count") :
-			gettext("Nonzero count required"));
+		    (unsigned char *)gettext("Bad count") :
+		    (unsigned char *)gettext("Nonzero count required"));
 	addr2 += cnt - 1;
 	if (addr2 > dol)
 		addr2 = dol;
@@ -139,8 +140,8 @@ setcount2(void)
 	cnt = getnum();
 	if (cnt <= 0)
 		error(value(vi_TERSE) ?
-			gettext("Bad count") :
-			gettext("Nonzero count required"));
+			(unsigned char *)gettext("Bad count") :
+			(unsigned char *)gettext("Nonzero count required"));
 	addr2 = addr1 + (cnt - 1);
 	if (addr2 > dol)
 		addr2 = dol;
@@ -197,8 +198,9 @@ setnoaddr(void)
 
 	if (addr2 != 0)
 		error(value(vi_TERSE) ?
-			gettext("No address allowed") :
-			gettext("No address allowed on this command"));
+		    (unsigned char *)gettext("No address allowed") :
+		    (unsigned char *)gettext(
+		    "No address allowed on this command"));
 }
 
 /*
@@ -210,8 +212,7 @@ setnoaddr(void)
  * than the number of lines in the file.
  */
 line *
-address(inputline)
-	unsigned char *inputline;
+address(unsigned char *inputline)
 {
 	line *addr;
 	int offset, c;
@@ -248,7 +249,8 @@ address(inputline)
 			/* FALLTHROUGH */
 		case '.':
 			if (addr || offset)
-				error(gettext("Badly formed address"));
+				error((unsigned char *)
+				    gettext("Badly formed address"));
 		}
 		offset += lastsign;
 		lastsign = 0;
@@ -286,7 +288,7 @@ address(inputline)
 					while (loc1 <= (char *)inputline) {
 						if (loc1 == loc2)
 							loc2++;
-						if (!execute(1))
+						if (!execute(1, NULL))
 							goto nope;
 					}
 					break;
@@ -298,7 +300,7 @@ doques:
 						last = (unsigned char *)loc1;
 						if (loc1 == loc2)
 							loc2++;
-						if (!execute(1))
+						if (!execute(1, NULL))
 							break;
 					} while (loc1 < (char *)inputline);
 					loc1 = (char *)last;
@@ -312,8 +314,9 @@ nope:
 					if (addr > dol) {
 						if (value(vi_WRAPSCAN) == 0)
 error(value(vi_TERSE) ?
-	gettext("No match to BOTTOM") :
-	gettext("Address search hit BOTTOM without matching pattern"));
+    (unsigned char *)gettext("No match to BOTTOM") :
+    (unsigned char *)gettext(
+    "Address search hit BOTTOM without matching pattern"));
 						addr = zero;
 					}
 				} else {
@@ -321,8 +324,9 @@ error(value(vi_TERSE) ?
 					if (addr < zero) {
 						if (value(vi_WRAPSCAN) == 0)
 error(value(vi_TERSE) ?
-	gettext("No match to TOP") :
-	gettext("Address search hit TOP without matching pattern"));
+    (unsigned char *)gettext("No match to TOP") :
+    (unsigned char *)gettext(
+    "Address search hit TOP without matching pattern"));
 						addr = dol;
 					}
 				}
@@ -335,8 +339,9 @@ error(value(vi_TERSE) ?
 				}
 				if (addr == dot)
 					error(value(vi_TERSE) ?
-						gettext("Fail") :
-						gettext("Pattern not found"));
+					    (unsigned char *)gettext("Fail") :
+					    (unsigned char *)gettext(
+					    "Pattern not found"));
 			}
 			continue;
 
@@ -351,12 +356,14 @@ error(value(vi_TERSE) ?
 		case '\'':
 			c = markreg(getchar());
 			if (c == 0)
-				error(gettext("Marks are ' and a-z"));
+				error((unsigned char *)
+				    gettext("Marks are ' and a-z"));
 			addr = getmark(c);
 			if (addr == 0)
 				error(value(vi_TERSE) ?
-				    gettext("Undefined mark") :
-				    gettext("Undefined mark referenced"));
+				    (unsigned char *)gettext("Undefined mark") :
+				    (unsigned char *)gettext(
+				    "Undefined mark referenced"));
 			break;
 
 		default:
@@ -376,13 +383,17 @@ error(value(vi_TERSE) ?
 			addr += lastsign;
 			if (addr < zero)
 				error(value(vi_TERSE) ?
-				    gettext("Negative address") :
-				    gettext("Negative address - "
-					"first buffer line is 1"));
+				    (unsigned char *)gettext(
+				    "Negative address") :
+				    (unsigned char *)gettext(
+				    "Negative address - "
+				    "first buffer line is 1"));
 			if (addr > dol)
 				error(value(vi_TERSE) ?
-				    gettext("Not that many lines") :
-				    gettext("Not that many lines in buffer"));
+				    (unsigned char *)gettext(
+				    "Not that many lines") :
+				    (unsigned char *)gettext(
+				    "Not that many lines in buffer"));
 			return (addr);
 		}
 	}

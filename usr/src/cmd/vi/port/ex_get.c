@@ -31,6 +31,11 @@
 
 #include "ex.h"
 #include "ex_tty.h"
+#include <string.h>
+#include <unistd.h>
+
+int getchar(void);
+int putchar(int);
 
 /*
  * Input routines for command mode.
@@ -67,13 +72,14 @@ again:
 	c = getach();
 	if (c == EOF)
 		return (c);
-	if (!inopen && slevel==0)
+	if (!inopen && slevel==0) {
 		if (!globp && c == CTRL('d'))
 			setlastchar('\n');
 		else if (junk(c)) {
 			checkjunk(c);
 			goto again;
 		}
+	}
 	return (c);
 }
 
@@ -114,7 +120,8 @@ getach(void)
 	}
 top:
 	if (input) {
-		if(c = *input++)
+		c = *input++;
+		if (c != 0)
 			return (lastc = c);
 		input = 0;
 	}
@@ -165,7 +172,7 @@ gettty(void)
 	if (intty && !inglobal) {
 		if (offset) {
 			holdcm = 1;
-			viprintf("  %4d  ", lineDOT() + 1);
+			viprintf((unsigned char *)"  %4d  ", lineDOT() + 1);
 			flush();
 			holdcm = 0;
 		}
@@ -223,7 +230,7 @@ gettty(void)
 		c = getchar();
 	while (c != EOF && c != '\n') {
 		if (cp > &genbuf[LBSIZE - 2])
-			error(gettext("Input line too long"));
+			error((unsigned char *)gettext("Input line too long"));
 		*cp++ = c;
 		c = getchar();
 	}
@@ -241,7 +248,7 @@ gettty(void)
 		for (; c > 0; c--)
 			*cp++ = ' ';
 	}
-	CP(cp, genbuf);
+	CP((char *)cp, (char *)genbuf);
 	if (linebuf[0] == '.' && linebuf[1] == 0)
 		return (EOF);
 	return (0);
@@ -273,7 +280,7 @@ smunch(int col, unsigned char *ocp)
 
 		default:
 			cp--;
-			CP(ocp, cp);
+			CP((char *)ocp, (char *)cp);
 			return (col);
 		}
 }

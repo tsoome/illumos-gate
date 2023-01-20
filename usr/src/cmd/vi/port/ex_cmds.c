@@ -34,6 +34,13 @@
 #include "ex_temp.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <crypt.h>
+#include <unistd.h>
+
+#ifdef putchar
+#undef putchar
+#endif
+extern int putchar(int);
 
 bool	pflag, nflag;
 int	poffset;
@@ -86,8 +93,8 @@ commands(noprompt, exitoneof)
 		 * print the line at the specified offset
 		 * before the next command.
 		 */
-		if ((pflag || lchng != chng && value(vi_AUTOPRINT) &&
-		    !inglobal && !inopen && endline) || poffset != 0) {
+		if ((pflag || (lchng != chng && value(vi_AUTOPRINT) &&
+		    !inglobal && !inopen && endline)) || poffset != 0) {
 			pflag = 0;
 			nochng();
 			if (dol != zero) {
@@ -95,9 +102,10 @@ commands(noprompt, exitoneof)
 				poffset = 0;
 				if (addr1 < one || addr1 > dol)
 					error(value(vi_TERSE) ?
-					    gettext("Offset out-of-bounds") :
-					    gettext("Offset after command "
-						"too large"));
+					    (unsigned char *)gettext(
+					    "Offset out-of-bounds") :
+					    (unsigned char *)gettext(
+					    "Offset after command too large"));
 				dot = addr1;
 				setdot1();
 
@@ -182,7 +190,7 @@ commands(noprompt, exitoneof)
 					return;
 				continue;
 			}
-			if (any(c, "o"))
+			if (any(c, (unsigned char *)"o"))
 notinvis:
 				tailprim(Command, 1, 1);
 		}
@@ -193,14 +201,14 @@ notinvis:
 			switch (peekchar()) {
 			case 'b':
 /* abbreviate */
-				tail("abbreviate");
+				tail((unsigned char *)"abbreviate");
 				setnoaddr();
 				mapcmd(0, 1);
 				anyabbrs = 1;
 				continue;
 			case 'r':
 /* args */
-				tail("args");
+				tail((unsigned char *)"args");
 				setnoaddr();
 				eol();
 				pargs();
@@ -210,7 +218,7 @@ notinvis:
 /* append */
 			if (inopen)
 				goto notinvis;
-			tail("append");
+			tail((unsigned char *)"append");
 			setdot();
 			aiflag = exclam();
 			donewline();
@@ -228,14 +236,14 @@ notinvis:
 
 /* copy */
 			case 'o':
-				tail("copy");
+				tail((unsigned char *)"copy");
 				vmacchng(0);
 				vi_move();
 				continue;
 
 /* crypt */
 			case 'r':
-				tail("crypt");
+				tail((unsigned char *)"crypt");
 				crflag = -1;
 			ent_crypt:
 				setnoaddr();
@@ -244,13 +252,14 @@ notinvis:
 					(void) crypt_close(perm);
 				permflag = 1;
 				if ((kflag = run_setkey(perm,
-				    (key = vgetpass(
+				    (char *)(key = vgetpass(
 					gettext("Enter key:"))))) == -1) {
 					xflag = 0;
 					kflag = 0;
 					crflag = 0;
-					smerror(gettext("Encryption facility "
-						    "not available\n"));
+					smerror((unsigned char *)
+					    gettext("Encryption facility "
+					    "not available\n"), NULL);
 				}
 				if (kflag == 0)
 					crflag = 0;
@@ -258,7 +267,7 @@ notinvis:
 
 /* cd */
 			case 'd':
-				tail("cd");
+				tail((unsigned char *)"cd");
 				goto changdir;
 
 /* chdir */
@@ -266,7 +275,7 @@ notinvis:
 				ignchar();
 				if (peekchar() == 'd') {
 					unsigned char *p;
-					tail2of("chdir");
+					tail2of((unsigned char *)"chdir");
 changdir:
 					if (savedfile[0] == '/' ||
 					    !value(vi_WARN))
@@ -277,12 +286,12 @@ changdir:
 						p = (unsigned char *)
 						    getenv("HOME");
 						if (p == NULL)
-							error(gettext(
-								"Home directory"
-								    /*CSTYLED*/
-								    " unknown"));
-					} else
+							error((unsigned char *)
+							    gettext(
+							    "Home directory unknown"));
+					} else {
 						getone(), p = file;
+					}
 					eol();
 					if (chdir((char *)p) < 0)
 						filioerr(p);
@@ -291,15 +300,14 @@ changdir:
 					continue;
 				}
 				if (inopen)
-					tailprim((unsigned char *)"change",
-					    2, 1);
-				tail2of("change");
+					tailprim((unsigned char *)"change", 2, 1);
+				tail2of((unsigned char *)"change");
 				break;
 
 			default:
 				if (inopen)
 					goto notinvis;
-				tail("change");
+				tail((unsigned char *)"change");
 				break;
 			}
 /* change */
@@ -338,7 +346,7 @@ changdir:
 			/*
 			 * Caution: dp and dl have special meaning already.
 			 */
-			tail("delete");
+			tail((unsigned char *)"delete");
 			c = cmdreg();
 #ifdef XPG4ONLY
 			setcount2();
@@ -358,7 +366,8 @@ changdir:
 		case 'e':
 			if (crflag == 2 || crflag == -2)
 				crflag = -1;
-			tail(peekchar() == 'x' ? "ex" : "edit");
+			tail(peekchar() == 'x' ?
+			    (unsigned char *)"ex" : (unsigned char *)"edit");
 editcmd:
 			if (!exclam() && chng)
 				c = 'E';
@@ -374,10 +383,12 @@ editcmd:
 					if (chng && dol > zero) {
 						xchng = 0;
 						error(value(vi_TERSE) ?
-						    gettext("No write") :
-						    gettext("No write since "
-							"last change (:%s! "
-							"overrides)"),
+						    (unsigned char *)gettext(
+						    "No write") :
+						    (unsigned char *)gettext(
+						    "No write since "
+						    "last change (:%s! "
+						    "overrides)"),
 						    Command);
 					}
 				}
@@ -397,7 +408,7 @@ doecmd:
 
 /* file */
 		case 'f':
-			tail("file");
+			tail((unsigned char *)"file");
 			setnoaddr();
 			filename(c);
 			noonl();
@@ -408,7 +419,7 @@ doecmd:
 
 /* global */
 		case 'g':
-			tail("global");
+			tail((unsigned char *)"global");
 			global(!exclam());
 			nochng();
 			continue;
@@ -417,7 +428,7 @@ doecmd:
 		case 'i':
 			if (inopen)
 				goto notinvis;
-			tail("insert");
+			tail((unsigned char *)"insert");
 			setdot();
 			nonzero();
 			aiflag = exclam();
@@ -435,7 +446,7 @@ doecmd:
 
 /* join */
 		case 'j':
-			tail("join");
+			tail((unsigned char *)"join");
 			c = exclam();
 			setcount();
 			nonzero();
@@ -470,8 +481,10 @@ casek:
 				    "letter"), Command);
 			donewline();
 			if (!islower(c))
-				error((vi_TERSE) ? gettext("Bad mark") :
-					gettext("Mark must specify a letter"));
+				error((vi_TERSE) ? (unsigned char *)gettext(
+				    "Bad mark") :
+				    (unsigned char *)gettext(
+				    "Mark must specify a letter"));
 			setdot();
 			nonzero();
 			names[c - 'a'] = *addr2 &~ 01;
@@ -480,7 +493,7 @@ casek:
 
 /* list */
 		case 'l':
-			tail("list");
+			tail((unsigned char *)"list");
 #ifdef XPG4ONLY
 			setcount2();
 			donewline();
@@ -496,37 +509,39 @@ casek:
 				ignchar();
 				if (peekchar() == 'p') {
 /* map */
-					tail2of("map");
+					tail2of((unsigned char *)"map");
 					setnoaddr();
 					mapcmd(0, 0);
 					continue;
 				}
 /* mark */
-				tail2of("mark");
+				tail2of((unsigned char *)"mark");
 				goto casek;
 			}
 /* move */
-			tail("move");
+			tail((unsigned char *)"move");
 			vmacchng(0);
 			vi_move();
 			continue;
 
 		case 'n':
 			if (peekchar() == 'u') {
-				tail("number");
+				tail((unsigned char *)"number");
 				goto numberit;
 			}
 /* next */
-			tail("next");
+			tail((unsigned char *)"next");
 			setnoaddr();
 			if (!exclam()) {
 				ckaw();
 				if (chng && dol > zero) {
 					xchng = 0;
 					error(value(vi_TERSE) ?
-					    gettext("No write") :
-					    gettext("No write since last "
-						"change (:%s! overrides)"),
+					    (unsigned char *)gettext(
+					    "No write") :
+					    (unsigned char *)gettext(
+					    "No write since last "
+					    "change (:%s! overrides)"),
 					    Command);
 				}
 			}
@@ -540,7 +555,7 @@ casek:
 
 /* open */
 		case 'o':
-			tail("open");
+			tail((unsigned char *)"open");
 			oop();
 			pflag = 0;
 			nochng();
@@ -552,7 +567,7 @@ casek:
 #ifdef TAG_STACK
 /* pop */
 			case 'o':
-				tail("pop");
+				tail((unsigned char *)"pop");
 				poptag(exclam());
 				if (!inopen)
 					lchng = chng - 1;
@@ -563,7 +578,7 @@ casek:
 
 /* put */
 			case 'u':
-				tail("put");
+				tail((unsigned char *)"put");
 				setdot();
 				c = cmdreg();
 				eol();
@@ -578,10 +593,10 @@ casek:
 				ignchar();
 				if (peekchar() == 'e') {
 /* preserve */
-					tail2of("preserve");
+					tail2of((unsigned char *)"preserve");
 					eol();
 					if (preserve() == 0)
-						error(gettext(
+						error((unsigned char *)gettext(
 						    "Preserve failed!"));
 					else {
 #ifdef XPG4
@@ -592,20 +607,20 @@ casek:
 						 * noerror() instead.
 						 * this is for assertion ex:222.
 						 */
-						noerror(
+						noerror((unsigned char *)
 						    gettext("File preserved."));
 
 #else /* XPG4 */
-						error(
+						error((unsigned char *)
 						    gettext("File preserved."));
 #endif /* XPG4 */
 					}
 				}
-				tail2of("print");
+				tail2of((unsigned char *)"print");
 				break;
 
 			default:
-				tail("print");
+				tail((unsigned char *)"print");
 				break;
 			}
 /* print */
@@ -630,7 +645,7 @@ print:
 
 /* quit */
 		case 'q':
-			tail("quit");
+			tail((unsigned char *)"quit");
 			setnoaddr();
 			c = quickly();
 			eol();
@@ -659,15 +674,15 @@ quit:
 
 /* rewind */
 				case 'w':
-					tail2of("rewind");
+					tail2of((unsigned char *)"rewind");
 					setnoaddr();
 					if (!exclam()) {
 						ckaw();
 						if (chng && dol > zero)
 							error((vi_TERSE) ?
 							    /*CSTYLED*/
-							    gettext("No write") :
-							    gettext("No write "
+							    (unsigned char *)gettext("No write") :
+							    (unsigned char *)gettext("No write "
 								"since last "
 								"change (:rewi"
 								/*CSTYLED*/
@@ -683,7 +698,7 @@ quit:
 
 /* recover */
 				case 'c':
-					tail2of("recover");
+					tail2of((unsigned char *)"recover");
 					setnoaddr();
 					c = 'e';
 					if (!exclam() && chng)
@@ -707,9 +722,9 @@ quit:
 					nochng();
 					continue;
 				}
-				tail2of("read");
+				tail2of((unsigned char *)"read");
 			} else
-				tail("read");
+				tail((unsigned char *)"read");
 /* read */
 			if (crflag == 2 || crflag == -2)
 			/* restore crflag for new input text */
@@ -741,14 +756,14 @@ quit:
 
 /* set */
 			case 'e':
-				tail("set");
+				tail((unsigned char *)"set");
 				setnoaddr();
 				set();
 				continue;
 
 /* shell */
 			case 'h':
-				tail("shell");
+				tail((unsigned char *)"shell");
 				setNAEOL();
 				vnfl();
 				putpad((unsigned char *)exit_ca_mode);
@@ -764,7 +779,7 @@ quit:
 				if (inopen)
 					goto notinvis;
 #endif
-				tail("source");
+				tail((unsigned char *)"source");
 				setnoaddr();
 				getone();
 				eol();
@@ -773,7 +788,7 @@ quit:
 #ifdef SIGTSTP
 /* stop, suspend */
 			case 't':
-				tail("stop");
+				tail((unsigned char *)"stop");
 				goto suspend;
 			case 'u':
 #ifdef XPG4
@@ -789,7 +804,7 @@ quit:
 				case 's':
 				case '!':
 #endif /* XPG4 */
-					tail("suspend");
+					tail((unsigned char *)"suspend");
 suspend:
 					c = exclam();
 					eol();
@@ -812,7 +827,7 @@ suspend:
 		case '~':
 			Command = (unsigned char *)"substitute";
 			if (c == 's')
-				tail(Command);
+				tail((unsigned char *)Command);
 			vmacchng(0);
 			if (!substitute(c))
 				pflag = 0;
@@ -822,7 +837,7 @@ suspend:
 		case 't':
 			if (peekchar() == 'a') {
 				tagflg = 1; /* :tag command */
-				tail("tag");
+				tail((unsigned char *)"tag");
 				tagfind(exclam());
 				tagflg = 0;
 				if (!inopen)
@@ -831,7 +846,7 @@ suspend:
 					nochng();
 				continue;
 			}
-			tail("t");
+			tail((unsigned char *)"t");
 			vmacchng(0);
 			vi_move();
 			continue;
@@ -842,22 +857,22 @@ suspend:
 				switch (peekchar()) {
 /* unmap */
 				case 'm':
-					tail2of("unmap");
+					tail2of((unsigned char *)"unmap");
 					setnoaddr();
 					mapcmd(1, 0);
 					continue;
 /* unabbreviate */
 				case 'a':
-					tail2of("unabbreviate");
+					tail2of((unsigned char *)"unabbreviate");
 					setnoaddr();
 					mapcmd(1, 1);
 					anyabbrs = 1;
 					continue;
 				}
 /* undo */
-				tail2of("undo");
+				tail2of((unsigned char *)"undo");
 			} else
-				tail("undo");
+				tail((unsigned char *)"undo");
 			setnoaddr();
 			markDOT();
 			c = exclam();
@@ -870,15 +885,15 @@ suspend:
 
 			case 'e':
 /* version */
-				tail("version");
+				tail((unsigned char *)"version");
 				setNAEOL();
-				viprintf("%s", Version);
+				viprintf((unsigned char *)"%s", Version);
 				noonl();
 				continue;
 
 /* visual */
 			case 'i':
-				tail("visual");
+				tail((unsigned char *)"visual");
 				if (inopen) {
 					c = 'e';
 					goto editcmd;
@@ -889,7 +904,7 @@ suspend:
 				continue;
 			}
 /* v */
-			tail("v");
+			tail((unsigned char *)"v");
 			global(0);
 			nochng();
 			continue;
@@ -897,7 +912,7 @@ suspend:
 /* write */
 		case 'w':
 			c = peekchar();
-			tail(c == 'q' ? "wq" : "write");
+			tail(c == 'q' ? (unsigned char *)"wq" : (unsigned char *)"write");
 wq:
 			if (skipwh() && peekchar() == '!') {
 				pofix();
@@ -928,7 +943,7 @@ wq:
 
 /* xit */
 		case 'x':
-			tail("xit");
+			tail((unsigned char *)"xit");
 			if (!chng)
 				goto quit;
 			c = 'q';
@@ -936,7 +951,7 @@ wq:
 
 /* yank */
 		case 'y':
-			tail("yank");
+			tail((unsigned char *)"yank");
 			c = cmdreg();
 #ifdef XPG4ONLY
 			setcount2();
@@ -964,12 +979,12 @@ wq:
 			c = getchar();
 			if (c == '\n' || c == '\r')
 				ungetchar(c);
-			if (any(c, "@*\n\r"))
+			if (any(c, (unsigned char *)"@*\n\r"))
 				c = lastmac;
 			if (isupper(c))
 				c = tolower(c);
 			if (!islower(c))
-				error(gettext("Bad register"));
+				error((unsigned char *)gettext("Bad register"));
 			donewline();
 			setdot();
 			cmdmac(c);
@@ -994,8 +1009,10 @@ caseline:
 				else {
 					if (dot == dol)
 						error((vi_TERSE) ?
-						    gettext("At EOF") :
-						    gettext("At end-of-file"));
+						    (unsigned char *)gettext(
+						    "At EOF") :
+						    (unsigned char *)gettext(
+						    "At end-of-file"));
 					addr1 = addr2 = dot + 1;
 				}
 			}
@@ -1032,7 +1049,7 @@ numberit:
 			setall();
 			if (inglobal == 2)
 				pofix();
-			viprintf("%d", lineno(addr2));
+			viprintf((unsigned char *)"%d", lineno(addr2));
 			noonl();
 			continue;
 
@@ -1052,7 +1069,8 @@ numberit:
 				if (!tagflg) {
 					unixwt(1, unixex("-c", uxb, 0, 0));
 				} else {
-					error(gettext("Invalid tags file:"
+					error((unsigned char *)gettext(
+					    "Invalid tags file:"
 					    " contains shell escape"));
 				}
 				vclrech(1);	/* vcontin(0); */
@@ -1113,12 +1131,15 @@ numberit:
 			int length;
 			char multic[MULTI_BYTE_MAX];
 			wchar_t wchar;
+			extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
+
 			length = _mbftowc(multic, &wchar, getchar, &peekc);
 			if (length < 0)
 				length = -length;
 			multic[length] = '\0';
-			error((vi_TERSE) ? gettext("What?") :
-				gettext("Unknown command character '%s'"),
+			error((vi_TERSE) ? (unsigned char *)gettext("What?") :
+			    (unsigned char *)gettext(
+			    "Unknown command character '%s'"),
 			    multic);
 		}
 	}

@@ -32,6 +32,8 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
+#include <unistd.h>
 
 /*
  * Routines to handle structure.
@@ -57,6 +59,13 @@ int	lindent();
 bool	wasend;
 
 int endsent(bool);
+static int lskipa1(unsigned char *);
+static int lskipbal(unsigned char *);
+static int endPS(void);
+static int ltosolid(void);
+static int lskipatom(void);
+static int isa(unsigned char *);
+static int ltosol1(unsigned char *);
 
 /*
  * Find over structure, repeated count times.
@@ -82,7 +91,7 @@ lfind(pastatom, cnt, f, limit)
 	 */
 	wasend = 0;
 	lf = f;
-	strcpy(save, linebuf);
+	strcpy((char *)save, (char *)linebuf);
 	if (limit == 0)
 		limit = dir < 0 ? one : dol;
 	llimit = limit;
@@ -147,11 +156,11 @@ lfind(pastatom, cnt, f, limit)
 				rc = -1;
 				goto ret;
 			}
-			(void) ltosol1("");
+			(void) ltosol1((unsigned char *)"");
 		}
 #else /* ! XPG4 */
 		} else
-			(void)lskipa1("");
+			(void)lskipa1((unsigned char *)"");
 #endif /* XPG4 */
 
 		/*
@@ -162,7 +171,7 @@ begin:
 			while (!endsent(pastatom))
 				if (!lnext())
 					goto ret;
-			if (!pastatom || wcursor == linebuf && endPS())
+			if (!pastatom || (wcursor == linebuf && endPS()))
 				if (--cnt <= 0)
 					break;
 			if (linebuf[0] == 0) {
@@ -187,7 +196,7 @@ begin:
 			 * If moved to it from other than beginning of next line,
 			 * then a sentence starts on next line.
 			 */
-			if (linebuf[0] == 0 && !pastatom && 
+			if (linebuf[0] == 0 && !pastatom &&
 			   (wdot != dot - 1 || cursor != linebuf)) {
 				(void) lnext();
 				goto ret;
@@ -198,8 +207,8 @@ begin:
 		 * If we are not at a section/paragraph division,
 		 * advance to next.
 		 */
-		if (wcursor == icurs && wdot == idot || wcursor != linebuf || !endPS())
-			(void)lskipa1("");
+		if ((wcursor == icurs && wdot == idot) || wcursor != linebuf || !endPS())
+			(void)lskipa1((unsigned char *)"");
 	}
 	else {
 		c = *wcursor;
@@ -207,7 +216,7 @@ begin:
 		 * Startup by skipping if at a ( going left or a ) going
 		 * right to keep from getting stuck immediately.
 		 */
-		if (dir < 0 && c == '(' || dir > 0 && c == ')') {
+		if ((dir < 0 && c == '(') || (dir > 0 && c == ')')) {
 			if (!lnext()) {
 				rc = -1;
 				goto ret;
@@ -223,8 +232,8 @@ begin:
 		 */
 		while (cnt > 0) {
 			c = *wcursor;
-			if (dir < 0 && c == ')' || dir > 0 && c == '(') {
-				if (!lskipbal("()"))
+			if ((dir < 0 && c == ')') || (dir > 0 && c == '(')) {
+				if (!lskipbal((unsigned char *)"()"))
 					goto ret;
 				/*
  				 * Unless this is the last time going
@@ -236,7 +245,8 @@ begin:
 				if (!lnext() || !ltosolid())
 					goto ret;
 				--cnt;
-			} else if (dir < 0 && c == '(' || dir > 0 && c == ')')
+			} else if ((dir < 0 && c == '(') ||
+			    (dir > 0 && c == ')'))
 				/* Found a higher level paren */
 				goto ret;
 			else {
@@ -275,7 +285,7 @@ endsent(bool pastatom)
 	 * or followed by 2 spaces.  Any number of intervening ) ] ' "
 	 * characters are allowed.
 	 */
-	if (!any(c = *cp, ".!?"))
+	if (!any(c = *cp, (unsigned char *)".!?"))
 		goto tryps;
 
 	do {
@@ -285,11 +295,11 @@ endsent(bool pastatom)
 		if ((d = *cp) == 0)
 			return (1);
 #ifdef XPG4
-	} while (any(d, ")]'\""));
+	} while (any(d, (unsigned char *)")]'\""));
 #else /* ! XPG4 */
-	} while (any(d, ")]'"));
+	} while (any(d, (unsigned char *)")]'"));
 #endif /* XPG4 */
-	if (*cp == 0 || *cp++ == ' ' && *cp == ' ')
+	if (*cp == 0 || (*cp++ == ' ' && *cp == ' '))
 		return (1);
 tryps:
 	if (cp[1] == 0)
@@ -301,7 +311,7 @@ tryps:
  * End of paragraphs/sections are respective
  * macros as well as blank lines and form feeds.
  */
-int
+static int
 endPS(void)
 {
 
@@ -312,7 +322,7 @@ endPS(void)
 		linebuf[0] == CTRL('L') ||
 #endif /* XPG4 */
 		isa(svalue(vi_PARAGRAPHS)) || isa(svalue(vi_SECTIONS)));
-	    
+
 }
 
 int
@@ -347,7 +357,7 @@ again:
 	dir = -1;
 	llimit = one;
 	lf = lindent;
-	if (!lskipbal("()"))
+	if (!lskipbal((unsigned char *)"()"))
 		i = 0;
 	else if (wcursor == linebuf)
 		i = 2;
@@ -376,7 +386,7 @@ lmatchp(line *addr)
 	int i;
 	unsigned char *parens, *cp;
 
-	for (cp = cursor; !any(*cp, "({[)}]");) {
+	for (cp = cursor; !any(*cp, (unsigned char *)"({[)}]");) {
 		if (*cp == 0)
 			return (0);
 		if ((i = mblen((char *)cp, MB_CUR_MAX)) <= 0)
@@ -385,7 +395,7 @@ lmatchp(line *addr)
 	}
 
 	lf = 0;
-	parens = any(*cp, "()") ? (unsigned char *)"()" : any(*cp, "[]") ? (unsigned char *)"[]" : (unsigned char *)"{}";
+	parens = any(*cp, (unsigned char *)"()") ? (unsigned char *)"()" : any(*cp, (unsigned char *)"[]") ? (unsigned char *)"[]" : (unsigned char *)"{}";
 	if (*cp == parens[1]) {
 		dir = -1;
 		llimit = one;
@@ -411,9 +421,9 @@ lsmatch(unsigned char *cp)
 	unsigned char *scurs = cursor;
 
 	wcursor = cp;
-	strcpy(sp, linebuf);
+	strcpy((char *)sp, (char *)linebuf);
 	*wcursor = 0;
-	strcpy(cursor, genbuf);
+	strcpy((char *)cursor, (char *)genbuf);
 	cursor = strend(linebuf);
 	cursor = lastchr(linebuf, cursor);
 	if (lmatchp(dot - vcline)) {
@@ -432,7 +442,7 @@ lsmatch(unsigned char *cp)
 	}
 	else {
 		strcLIN(sp);
-		strcpy(scurs, genbuf);
+		strcpy((char *)scurs, (char *)genbuf);
 		if (!lmatchp((line *) 0))
 			(void) beep();
 	}
@@ -442,14 +452,14 @@ lsmatch(unsigned char *cp)
 	cursor = scurs;
 }
 
-int
+static int
 ltosolid(void)
 {
 
-	return (ltosol1("()"));
+	return (ltosol1((unsigned char *)"()"));
 }
 
-int
+static int
 ltosol1(unsigned char *parens)
 {
 	unsigned char *cp;
@@ -480,7 +490,7 @@ ltosol1(unsigned char *parens)
 	return (1);
 }
 
-int
+static int
 lskipbal(unsigned char *parens)
 {
 	int level = dir;
@@ -500,14 +510,14 @@ lskipbal(unsigned char *parens)
 	return (1);
 }
 
-int
+static int
 lskipatom(void)
 {
 
-	return (lskipa1("()"));
+	return (lskipa1((unsigned char *)"()"));
 }
 
-int
+static int
 lskipa1(unsigned char *parens)
 {
 	int c;
@@ -588,7 +598,7 @@ lbrack(int c, int (*f)())
 		    /* POSIX 1003.2 Section 5.35.7.1: control-L		*/
 		    linebuf[0] == CTRL('L') ||
 #endif /* XPG4 */
-		    value(vi_LISP) && linebuf[0] == '(' ||
+		    (value(vi_LISP) && linebuf[0] == '(') ||
 		    isa(svalue(vi_SECTIONS))) {
 			if (c == ']' && f != vmove) {
 				addr--;
@@ -609,8 +619,7 @@ lbrack(int c, int (*f)())
 	vmoving = 0;
 	return (1);
 }
-
-int
+static int
 isa(unsigned char *cp)
 {
 

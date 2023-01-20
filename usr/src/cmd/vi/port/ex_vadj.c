@@ -33,7 +33,9 @@
 #include "ex_tune.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 
+extern int putchar(int);
 /*
  * Routines to deal with management of logical versus physical
  * display, opening and redisplaying lines on the screen, and
@@ -61,11 +63,12 @@ vopen(line *tp, int p)
 		tfixnl(), fprintf(trace, "vopen(%d, %d)\n", lineno(tp), p);
 #endif
 	if (state != VISUAL) {
-		if (vcnt)
+		if (vcnt) {
 			if (hold & HOLDROL)
 				vup1();
 			else
 				vclean();
+		}
 
 		/*
 		 * Forget all that we once knew.
@@ -292,16 +295,19 @@ vinslin(int p, int cnt, int l)
 		vgoto(p, 0);
 		if (parm_insert_line && (cnt>1 || *insert_line==0)) {
 			/* insert cnt lines.  Should do @'s too. */
-			vputp(tparm(parm_insert_line, cnt, p), WECHO+1-p);
+			vputp(tparm(parm_insert_line, cnt, p,
+			    0, 0, 0, 0, 0, 0, 0), WECHO+1-p);
 		}
 		else if (change_scroll_region && *insert_line==0) {
 			/* vt100 change scrolling region to fake insert_line */
 			vputp(save_cursor, 1);
-			vputp(tparm(change_scroll_region, p, lines-1), 1);
+			vputp(tparm(change_scroll_region, p, lines-1,
+			    0, 0, 0, 0, 0, 0, 0), 1);
 			vputp(restore_cursor, 1);	/* change_scroll_region homes stupid cursor */
 			for (i=cnt; i>0; i--)
 				vputp(scroll_reverse, 1);	/* should do @'s */
-			vputp(tparm(change_scroll_region, 0, lines-1), 1);
+			vputp(tparm(change_scroll_region, 0, lines-1,
+			    0, 0, 0, 0, 0, 0, 0), 1);
 			vputp(restore_cursor, 1);	/* Once again put it back */
 		}
 		else {
@@ -475,7 +481,7 @@ vscroll(int cnt)
 		fprintf(trace, "vscroll(%d)\n", cnt);
 #endif
 	if (cnt < 0 || cnt > TUBELINES)
-		error(gettext("Internal error: vscroll"));
+		error((unsigned char *)gettext("Internal error: vscroll"));
 	if (cnt == 0)
 		return;
 	copy(tlines, vtube, sizeof vtube);
@@ -560,15 +566,17 @@ vrepaint(unsigned char *curs)
 	/*
 	 * Deal with a totally useless display.
 	 */
-	if (vcnt == 0 || vcline < 0 || vcline > vcnt || holdupd && state != VISUAL) {
+	if (vcnt == 0 || vcline < 0 || vcline > vcnt ||
+	    (holdupd && state != VISUAL)) {
 		line *odol = dol;
 
 		vcnt = 0;
-		if (holdupd)
+		if (holdupd) {
 			if (state == VISUAL)
 				(void)peekkey();
 			else
 				vup1();
+		}
 		holdupd = 0;
 		if (odol == zero)
 			fixzero();
@@ -576,7 +584,8 @@ vrepaint(unsigned char *curs)
 		noteit(1);
 		if (noteit(1) == 0 && odol == zero) {
 			CATCH
-				error(gettext("No lines in buffer"));
+				error((unsigned char *)gettext(
+				    "No lines in buffer"));
 			ENDCATCH
 			linebuf[0] = 0;
 			splitw = 0;
@@ -595,7 +604,7 @@ vrepaint(unsigned char *curs)
 	 */
 	if (FLAGS(0) & VDIRT)
 		vsync(WTOP);
-	
+
 	/*
 	 * If the current line is after the last displayed line
 	 * or the bottom of the screen, then special effort is needed
@@ -656,7 +665,7 @@ vredraw(int p)
 	if (state == HARDOPEN || splitw)
 		return;
 	if (p < 0 /* || p > WECHO */)
-		error(gettext("Internal error: vredraw"));
+		error((unsigned char *)gettext("Internal error: vredraw"));
 
 	/*
 	 * Trim the ragged edges (lines which are off the screen but
@@ -664,7 +673,7 @@ vredraw(int p)
 	 * search for first logical line affected by the redraw.
 	 */
 	vscrap();
-	CP(temp, linebuf);
+	CP((char *)temp, (char *)linebuf);
 	l = 0;
 	tp = dot - vcline;
 	if (vcnt == 0)
@@ -741,7 +750,7 @@ vredraw(int p)
 	 * Now rest of lines (if any) get either a ~ if they
 	 * are past end of file, or an @ if the next line won't fit.
 	 */
-	for (; p <= WBOT && Peekkey != ATTN; p++)			
+	for (; p <= WBOT && Peekkey != ATTN; p++)
 		vclrlin(p, tp);
 	strcLIN(temp);
 	hold = oldhold;
@@ -781,16 +790,20 @@ vdellin(int p, int cnt, int l)
 	 */
 	vgoto(p, 0);
 	if (parm_delete_line && (cnt>1 || *delete_line==0)) {
-		vputp(tparm(parm_delete_line, cnt, p), WECHO-p);
+		vputp(tparm(parm_delete_line, cnt, p, 0, 0, 0, 0, 0, 0, 0),
+		    WECHO-p);
 	}
 	else if (change_scroll_region && *delete_line==0) {
 		/* vt100: fake delete_line by changing scrolling region */
 		vputp(save_cursor, 1);	/* Save since change_scroll_region homes stupid cursor */
-		vputp(tparm(change_scroll_region, p, lines-1), 1);
-		vputp(tparm(cursor_address, lines-1, 0), 1);/* Go to lower left corner */
+		vputp(tparm(change_scroll_region, p, lines-1,
+		    0, 0, 0, 0, 0, 0, 0), 1);
+		vputp(tparm(cursor_address, lines-1,
+		    0, 0, 0, 0, 0, 0, 0, 0), 1);/* Go to lower left corner */
 		for (i=0; i<cnt; i++)		/* .. and scroll cnt times */
 			(void) putch('\n');	/* should check NL too */
-		vputp(tparm(change_scroll_region, 0, lines-1), 1);/* restore scrolling region */
+		vputp(tparm(change_scroll_region, 0, lines-1,
+		    0, 0, 0, 0, 0, 0, 0), 1);/* restore scrolling region */
 		vputp(restore_cursor, 1);			/* put cursor back */
 	}
 	else {
@@ -873,7 +886,7 @@ vsync1(int p)
 	if (state == HARDOPEN || splitw)
 		return;
 	vscrap();
-	CP(temp, linebuf);
+	CP((char *)temp, (char *)linebuf);
 	if (vcnt == 0)
 		LINE(0) = WTOP;
 	l = 0;
@@ -888,7 +901,7 @@ vsync1(int p)
 		 * the current line, or if this line is piled under the
 		 * next line (vreplace does this and we undo it).
 		 */
-		if (l == 0 && state != VISUAL ||
+		if ((l == 0 && state != VISUAL) ||
 		    (l < vcnt && (vp->vliny <= p || vp[0].vliny == vp[1].vliny))) {
 			if (l == 0 || vp->vliny < p || (vp->vflags & VDIRT)) {
 				if (l == vcline)
@@ -924,7 +937,7 @@ vsync1(int p)
 }
 
 /*
- * Subtract (logically) cnt physical lines from the 
+ * Subtract (logically) cnt physical lines from the
  * displayed position of lines starting with line l.
  */
 void
@@ -1008,7 +1021,8 @@ vreplace(int l, int cnt, int newcnt)
 	 * over them, since otherwise we will push them
 	 * slowly off the screen, a clear lose.
 	 */
-	if (cnt == newcnt || vcnt - l == newcnt && insert_line && delete_line) {
+	if (cnt == newcnt ||
+	    (vcnt - l == newcnt && insert_line && delete_line)) {
 		if (cnt > 1 && l + cnt > vcnt)
 			savenote++;
 		vdirty(l, newcnt);
@@ -1102,7 +1116,7 @@ sethard(void)
 	vup1();
 	LINE(0) = WBOT;
 	if (Pline == numbline)
-		vgoto(WBOT, 0), viprintf("%6d  ", lineDOT());
+		vgoto(WBOT, 0), viprintf((unsigned char *)"%6d  ", lineDOT());
 }
 
 /*
@@ -1114,7 +1128,7 @@ void
 vdirty(int base, int i)
 {
 	int l;
-	
+
 	for (l = base; l < vcnt; l++) {
 		if (--i < 0)
 			return;

@@ -32,6 +32,7 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 #ifndef PRESUNEUC
 #include <wctype.h>
 /* Undef putchar/getchar if they're defined. */
@@ -44,6 +45,7 @@
 #endif /* PRESUNEUC */
 
 extern size_t strlcpy(char *, const char *, size_t);
+extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
 
 /*
  * Low level routines for operations sequences,
@@ -61,6 +63,7 @@ extern int redisplay;
 int vmaxrep(unsigned char, int);
 static void imultlinerep(int, line *, int, int);
 static void omultlinerep(int, line *, int);
+static int reccnt(unsigned char *, unsigned char *);
 #ifdef XPG6
 static void rmultlinerep(int, int);
 #endif
@@ -92,8 +95,10 @@ vdcMID(void)
 
 	squish();
 	setLAST();
-	if (FIXUNDO)
-		vundkind = VCHNG, CP(vutmp, linebuf);
+	if (FIXUNDO) {
+		vundkind = VCHNG;
+		CP((char *)vutmp, (char *)linebuf);
+	}
 	if (wcursor < cursor)
 		cp = wcursor, wcursor = cursor, cursor = cp;
 	vUD1 = vUA1 = vUA2 = cursor; vUD2 = wcursor;
@@ -176,7 +181,7 @@ unsigned char	*ogcursor;
 
 static int 	INSCDCNT; /* number of ^D's (backtabs) in insertion buffer */
 
-static int 	inscdcnt; /* 
+static int 	inscdcnt; /*
 			   * count of ^D's (backtabs) not seen yet when doing
 		 	   * repeat of insertion
 			   */
@@ -184,14 +189,14 @@ static int 	inscdcnt; /*
 void
 vappend(int ch, int cnt, int indent)
 {
-	int i;
+	int i = 0;
 	unsigned char *gcursor;
 	bool escape;
 	int repcnt, savedoomed;
 	short oldhold = hold;
 	int savecnt = cnt;
 	line *startsrcline;
-	int startsrccol, endsrccol;
+	int startsrccol, endsrccol = 0;
 	int gotNL = 0;
 	int imultlinecnt = 0;
 	int omultlinecnt = 0;
@@ -244,10 +249,9 @@ vappend(int ch, int cnt, int indent)
 	 * so the indent is generated there.
 	 */
 	if (value(vi_AUTOINDENT) && indent != 0) {
-		unsigned char x;
 		gcursor = genindent(indent);
 		*gcursor = 0;
-		vgotoCL(nqcolumn(lastchr(linebuf, cursor), genbuf)); 
+		vgotoCL(nqcolumn(lastchr(linebuf, cursor), genbuf));
 	} else {
 		gcursor = genbuf;
 		*gcursor = 0;
@@ -279,9 +283,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("A"));
+			vshowmode((unsigned char *)gettext("A"));
 		} else {
-			vshowmode(gettext("APPEND MODE"));
+			vshowmode((unsigned char *)gettext("APPEND MODE"));
 		}
 		break;
 	case 's':
@@ -293,9 +297,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("S"));
+			vshowmode((unsigned char *)gettext("S"));
 		} else {
-			vshowmode(gettext("SUBSTITUTE MODE"));
+			vshowmode((unsigned char *)gettext("SUBSTITUTE MODE"));
 		}
 		break;
 	case 'c':
@@ -307,9 +311,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("C"));
+			vshowmode((unsigned char *)gettext("C"));
 		} else {
-			vshowmode(gettext("CHANGE MODE"));
+			vshowmode((unsigned char *)gettext("CHANGE MODE"));
 		}
 		break;
 	case 'R':
@@ -321,9 +325,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("R"));
+			vshowmode((unsigned char *)gettext("R"));
 		} else {
-			vshowmode(gettext("REPLACE MODE"));
+			vshowmode((unsigned char *)gettext("REPLACE MODE"));
 		}
 		break;
 	case 'o':
@@ -335,9 +339,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("O"));
+			vshowmode((unsigned char *)gettext("O"));
 		} else {
-			vshowmode(gettext("OPEN MODE"));
+			vshowmode((unsigned char *)gettext("OPEN MODE"));
 		}
 		break;
 	case 'i':
@@ -349,9 +353,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("I"));
+			vshowmode((unsigned char *)gettext("I"));
 		} else {
-			vshowmode(gettext("INSERT MODE"));
+			vshowmode((unsigned char *)gettext("INSERT MODE"));
 		}
 		break;
 	default:
@@ -363,9 +367,9 @@ vappend(int ch, int cnt, int indent)
 		 *	Or, just leave it.
 		 */
 		if (value(vi_TERSE)) {
-			vshowmode(gettext("I"));
+			vshowmode((unsigned char *)gettext("I"));
 		} else {
-			vshowmode(gettext("INPUT MODE"));
+			vshowmode((unsigned char *)gettext("INPUT MODE"));
 		}
 	}
 	ixlatctl(1);
@@ -453,17 +457,17 @@ vappend(int ch, int cnt, int indent)
 			 * can work.
 			 */
 			if (HADUP)
-				addtext("^");
+				addtext((unsigned char *)"^");
 			else if (HADZERO)
-				addtext("0");
+				addtext((unsigned char *)"0");
 			if(!vglobp)
 				INSCDCNT = CDCNT;
 			while (CDCNT > 0) {
-				addtext("\004");
+				addtext((unsigned char *)"\004");
 				CDCNT--;
 			}
 			if (gobbled)
-				addtext(" ");
+				addtext((unsigned char *)" ");
 			addtext(ogcursor);
 		}
 		repcnt = 0;
@@ -502,20 +506,20 @@ vappend(int ch, int cnt, int indent)
 		 * Copy remaining old text (cursor) in original
 		 * line to after new text (gcursor + 1) in genbuf.
 		 */
-		CP(gcursor + 1, cursor);
+		CP((char *)gcursor + 1, (char *)cursor);
 		/*
 		 * For [count] r \n command, when replacing [count] chars
 		 * with '\n', this loop replaces [count] chars with "".
 		 */
 		do {
 			/* cp new text (genbuf) into linebuf (cursor) */
-			CP(cursor, genbuf);
+			CP((char *)cursor, (char *)genbuf);
 			if (cnt > 1) {
 				int oldhold = hold;
 
 				Outchar = vinschar;
 				hold |= HOLDQIK;
-				viprintf("%s", genbuf);
+				viprintf((unsigned char *)"%s", genbuf);
 				hold = oldhold;
 				Outchar = vputchar;
 			}
@@ -526,7 +530,7 @@ vappend(int ch, int cnt, int indent)
 		vUA2 = cursor;
 		/* add the remaining old text after the cursor */
 		if (escape != '\n')
-			CP(cursor, gcursor + 1);
+			CP((char *)cursor, (char *)gcursor + 1);
 
 		/*
 		 * If doomed characters remain, clobber them,
@@ -561,7 +565,7 @@ vappend(int ch, int cnt, int indent)
 		 * an ESCAPE).
 		 */
 		if (escape != '\n') {
-			vshowmode("");
+			vshowmode((unsigned char *)"");
 			break;
 		}
 
@@ -572,7 +576,7 @@ vappend(int ch, int cnt, int indent)
 		 * of any new autoindent plus the pushed ahead text.
 		 */
 		killU();
-		addtext(gobblebl ? " " : "\n");
+		addtext(gobblebl ? (unsigned char *)" " : (unsigned char *)"\n");
 		/* save vutmp (for undo state) into temp file */
 		vsave();
 		cnt = 1;
@@ -586,16 +590,17 @@ vappend(int ch, int cnt, int indent)
 			strcLIN(vpastwh(gcursor + 1));
 			gcursor = genindent(indent);
 			*gcursor = 0;
-			if (gcursor + strlen(linebuf) > &genbuf[LBSIZE - 2])
+			if (gcursor + strlen((char *)linebuf) >
+			    &genbuf[LBSIZE - 2])
 				gcursor = genbuf;
-			CP(gcursor, linebuf);
+			CP((char *)gcursor, (char *)linebuf);
 		} else {
 			/*
 			 * Put gcursor at start of genbuf to wipe
 			 * out previous line in preparation for
 			 * the next vgetline() loop.
 			 */
-			CP(genbuf, gcursor + 1);
+			CP((char *)genbuf, (char *)gcursor + 1);
 			gcursor = genbuf;
 		}
 
@@ -634,51 +639,51 @@ vappend(int ch, int cnt, int indent)
 			break;
 		case 'a':
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("A"));
+				vshowmode((unsigned char *)gettext("A"));
 			} else {
-				vshowmode(gettext("APPEND MODE"));
+				vshowmode((unsigned char *)gettext("APPEND MODE"));
 			}
 			break;
 		case 's':
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("S"));
+				vshowmode((unsigned char *)gettext("S"));
 			} else {
-				vshowmode(gettext("SUBSTITUTE MODE"));
+				vshowmode((unsigned char *)gettext("SUBSTITUTE MODE"));
 			}
 			break;
 		case 'c':
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("C"));
+				vshowmode((unsigned char *)gettext("C"));
 			} else {
-				vshowmode(gettext("CHANGE MODE"));
+				vshowmode((unsigned char *)gettext("CHANGE MODE"));
 			}
 			break;
 		case 'R':
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("R"));
+				vshowmode((unsigned char *)gettext("R"));
 			} else {
-				vshowmode(gettext("REPLACE MODE"));
+				vshowmode((unsigned char *)gettext("REPLACE MODE"));
 			}
 			break;
 		case 'i':
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("I"));
+				vshowmode((unsigned char *)gettext("I"));
 			} else {
-				vshowmode(gettext("INSERT MODE"));
+				vshowmode((unsigned char *)gettext("INSERT MODE"));
 			}
 			break;
 		case 'o':
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("O"));
+				vshowmode((unsigned char *)gettext("O"));
 			} else {
-				vshowmode(gettext("OPEN MODE"));
+				vshowmode((unsigned char *)gettext("OPEN MODE"));
 			}
 			break;
 		default:
 			if (value(vi_TERSE)) {
-				vshowmode(gettext("I"));
+				vshowmode((unsigned char *)gettext("I"));
 			} else {
-				vshowmode(gettext("INPUT MODE"));
+				vshowmode((unsigned char *)gettext("INPUT MODE"));
 			}
 		}
 		strcLIN(gcursor);
@@ -782,7 +787,7 @@ imultlinerep(int savecnt, line *startsrcline, int startsrccol, int endsrccol)
 	getaline(*startsrcline);
 	if (strlcpy((char *)(genbuf + endsrccol + 1),
 	    (char *)(linebuf + startsrccol), destsize) >= destsize) {
-		error(gettext("Line too long"));
+		error((unsigned char *)gettext("Line too long"));
 	}
 	vdoappend(genbuf);
 	vcline++;
@@ -956,7 +961,7 @@ vgetline(cnt, gcursor, aescaped, commch)
 	wchar_t wchar = 0;
 	unsigned char	*p;
 	int	len;
-	
+
 
 	/*
 	 * Clear the output state and counters
@@ -1009,7 +1014,7 @@ vgetline(cnt, gcursor, aescaped, commch)
 				if (!value(vi_REMAP))
 					break;
 				if (++maphopcnt > 256)
-					error(gettext("Infinite macro loop"));
+					error((unsigned char *)gettext("Infinite macro loop"));
 			}
 		if (!iglobp) {
 
@@ -1093,7 +1098,7 @@ vbackup:
 				*cp = 0;
 				c = cindent();
 				vgotoCL(nqcolumn(lastchr(linebuf, cursor), genbuf));
-					
+
 				if (doomed >= 0)
 					doomed += c - cindent();
 				gcursor = cp;
@@ -1160,7 +1165,7 @@ vbackup:
 			if((length = _mbftowc((char *)multic, &wchar, getkey, &Peekkey)) <= 0) {
 				(void) beep();
 				continue;
-			} 
+			}
 		} else {
 			length = 1;
 			multic[0] = '\\';
@@ -1175,7 +1180,7 @@ vbackup:
 				width = (wchar <= 0177 ? 1 : 4);
 			if (value(vi_WRAPMARGIN) &&
 				(outcol + width - 1 >= OCOLUMNS - value(vi_WRAPMARGIN) ||
-				 backsl && outcol==0) &&
+				 (backsl && outcol==0)) &&
 				commch != 'r') {
 				/*
 				 * At end of word and hit wrapmargin.
@@ -1189,7 +1194,7 @@ vbackup:
 				tgcursor = gcursor;
 #endif /* PRESUNEUC */
 				wdkind = 1;
-				strncpy(gcursor, multic, length);
+				strncpy((char *)gcursor, (char *)multic, length);
 				gcursor += length;
 				if (backsl) {
 #ifdef PRESUNEUC
@@ -1199,8 +1204,8 @@ vbackup:
 #endif /* PRESUNEUC */
 						(void) beep();
 						continue;
-					} 
-					strncpy(gcursor, multic, length);
+					}
+					strncpy((char *)gcursor, (char *)multic, length);
 					gcursor += length;
 				}
 				*gcursor = 0;
@@ -1212,7 +1217,7 @@ vbackup:
 #ifdef PRESUNEUC
 				/* find screen width of previous word */
 				width = 0;
-				for(wp = cp; *wp; ) 
+				for(wp = cp; *wp; )
 #else
 				/* count screen width of pending characters */
 				width = 0;
@@ -1228,8 +1233,8 @@ vbackup:
 						else
 							width += curwidth;
 						wp += bytelength;
-					}	
-						
+					}
+
 #ifdef PRESUNEUC
 				if (outcol+(backsl?OCOLUMNS:0) - width >= OCOLUMNS - value(vi_WRAPMARGIN)) {
 #else
@@ -1273,7 +1278,7 @@ vbackup:
 /* 7tabs */	if (wdbdg && (!iswascii(wc1) || !iswascii(wc2))) {
 /* 7tabs */		if ((*wdbdg)(wc1, wc2, 2) < 5) {
 /* 7tabs */			goto ws;
-/* 7tabs */		}	
+/* 7tabs */		}
 /* 7tabs */	}
 /* 7tabs */	wc2 = wc1;
 /* 7tabs */	wc1 = 0;
@@ -1337,7 +1342,7 @@ ws:
 					;
 				*gcursor = 0;
 				for (abno=0; abbrevs[abno].mapto; abno++) {
-					if (eq(cp, abbrevs[abno].cap)) {
+					if (eq((char *)cp, (char *)abbrevs[abno].cap)) {
 						if(abbrepcnt == 0) {
 							if(reccnt(abbrevs[abno].cap, abbrevs[abno].mapto))
 								abbrepcnt = 1;
@@ -1435,7 +1440,7 @@ ws:
 			*gcursor = 0;
 			cp = vpastwh(genbuf);
 			c = whitecnt(genbuf);
-			if (c == iwhite && c != 0)
+			if (c == iwhite && c != 0) {
 				if (cp == gcursor) {
 					iwhite = backtab(c);
 					CDCNT++;
@@ -1459,6 +1464,7 @@ ws:
 					(void) vputchar(' ');
 					goto vbackup;
 				}
+			}
 
 			if (vglobp && vglobp - iglobp >= 2) {
 				if ((p = vglobp - MB_CUR_MAX) < iglobp)
@@ -1488,8 +1494,8 @@ def:
 				flush();
 			}
 			if (gcursor + length - 1 > &genbuf[LBSIZE - 2])
-				error(gettext("Line too long"));
-			(void)strncpy(gcursor, multic, length);
+				error((unsigned char *)gettext("Line too long"));
+			(void)strncpy((char *)gcursor, (char *)multic, length);
 			gcursor += length;
 			vcsync();
 			if (value(vi_SHOWMATCH) && !iglobp)
@@ -1552,7 +1558,7 @@ vmaxrep(unsigned char ch, int cnt)
 	if (cnt > LBSIZE - 2)
 		cnt = LBSIZE - 2;
 	if (ch == 'R') {
-		len = strlen(cursor);
+		len = strlen((char *)cursor);
 		oldcnt = 0;
 		for(cp = cursor; *cp; ) {
 			oldcnt++;
@@ -1565,7 +1571,7 @@ vmaxrep(unsigned char ch, int cnt)
 		}
 		/*
 		 * if number of characters in replacement string
-		 * (repcnt) is less than number of characters following 
+		 * (repcnt) is less than number of characters following
 		 * cursor (oldcnt), find end of repcnt
 		 * characters after cursor
 		 */
@@ -1574,41 +1580,42 @@ vmaxrep(unsigned char ch, int cnt)
 				cp = nextchr(cp);
 			len = cp - cursor;
 		}
-		CP(cursor, cursor + len);
+		CP((char *)cursor, (char *)cursor + len);
 		vUD2 += len;
 	}
-	len = strlen(linebuf);
-	replen = strlen(genbuf);
+	len = strlen((char *)linebuf);
+	replen = strlen((char *)genbuf);
 	if (len + cnt * replen <= LBSIZE - 2)
 		return (cnt);
 	cnt = (LBSIZE - 2 - len) / replen;
 	if (cnt == 0) {
 		vsave();
-		error(gettext("Line too long"));
+		error((unsigned char *)gettext("Line too long"));
 	}
 	return (cnt);
 }
 
 /*
  * Determine how many occurrences of word 'CAP' are in 'MAPTO'.  To be
- * considered an occurrence there must be both a nonword-prefix, a 
- * complete match of 'CAP' within 'MAPTO', and a nonword-suffix. 
+ * considered an occurrence there must be both a nonword-prefix, a
+ * complete match of 'CAP' within 'MAPTO', and a nonword-suffix.
  * Note that the beginning and end of 'MAPTO' are considered to be
  * valid nonword delimiters.
  */
-int
+static int
 reccnt(unsigned char *cap, unsigned char *mapto)
 {
 	int i, cnt, final;
 
 	cnt = 0;
-	final = strlen(mapto) - strlen(cap);
+	final = strlen((char *)mapto) - strlen((char *)cap);
 
-	for (i=0; i <= final; i++) 
-	  if ((strncmp(cap, mapto+i, strlen(cap)) == 0)       /* match */
-	  && (i == 0     || !wordch(&mapto[i-1]))	      /* prefix ok */
-	  && (i == final || !wordch(&mapto[i+strlen(cap)])))  /* suffix ok */
-		cnt++;
+	for (i=0; i <= final; i++) {
+		if ((strncmp((char *)cap, (char *)mapto + i,
+		    strlen((char *)cap)) == 0)       /* match */
+		    && (i == 0 || !wordch(&mapto[i-1]))	      /* prefix ok */
+		    && (i == final || !wordch(&mapto[i+strlen((char *)cap)])))  /* suffix ok */
+			cnt++;
+	}
 	return (cnt);
 }
-

@@ -24,7 +24,14 @@
 
 
 /* Copyright (c) 1981 Regents of the University of California */
-#ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.6	*/
+
+#ifndef _EX_ARGV_H
+#define	_EX_ARGV_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * The current implementation of the argument list is poor,
  * using an argv even for internally done "next" commands.
@@ -50,3 +57,11 @@ struct	glob {
 	unsigned char	argspac[NCARGS + sizeof (int)];
 };
 var struct	glob frob;
+
+void glob(struct glob *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _EX_ARGV_H */

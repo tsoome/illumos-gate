@@ -33,6 +33,13 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
+#include <wchar.h>
+
+#ifdef putchar
+#undef putchar
+#endif
+extern int putchar(int);
 
 /*
  * Deal with the screen, clearing, cursor positioning, putting characters
@@ -103,11 +110,11 @@ vclreol(void)
 	destline += destcol / WCOLS;
 	destcol %= WCOLS;
 	if (destline < 0 || destline > WECHO)
-		error(gettext("Internal error: vclreol"));
+		error((unsigned char *)gettext("Internal error: vclreol"));
 	i = WCOLS - destcol;
 	tp = vtube[destline] + destcol;
 	if (clr_eol) {
-		if (insert_null_glitch && *tp || !ateopr()) {
+		if (insert_null_glitch && (*tp || !ateopr())) {
 			vcsync();
 			vputp(clr_eol, 1);
 		}
@@ -134,8 +141,7 @@ vclreol(void)
  * heldech, if work needs to be done, don't do anything.
  */
 void
-vclrech(didphys)
-	bool didphys;
+vclrech(bool didphys)
 {
 
 #ifdef ADEBUG
@@ -277,7 +283,7 @@ vsetcurs(unsigned char *nc)
 	if (linebuf[0])
 		col--;
 	vgotoCL(col);
-	cursor = nc; 
+	cursor = nc;
 }
 
 /*
@@ -400,7 +406,7 @@ vgoto(int y, int x)
 		x %= WCOLS;
 	}
 	if (y < 0) {
-		error("Internal error: vgoto");
+		error((unsigned char *)"Internal error: vgoto");
 	}
 	if (outcol >= WCOLS) {
 		if (auto_right_margin) {
@@ -416,7 +422,7 @@ vgoto(int y, int x)
 	 */
 	if (state == HARDOPEN || state == ONEOPEN) {
 		if (y != outline)
-			error(gettext("Line too long for open"));
+			error((unsigned char *)gettext("Line too long for open"));
 		if (x + 1 < outcol - x || (outcol > x && !cursor_left))
 			destcol = 0, fgoto();
 		tp = vtube[WBOT] + outcol;
@@ -598,14 +604,14 @@ vmaktop(int p, wchar_t *cp)
 			vtube[p] = cp;
 			return;
 		}
-	error(gettext("Line too long"));
+	error((unsigned char *)gettext("Line too long"));
 }
 
 /*
  * Insert character c at current cursor position.
  * Multi-character inserts occur only as a result
  * of expansion of tabs (i.e. inssize == 1 except
- * for tabs or multibyte characters) 
+ * for tabs or multibyte characters)
  * and code assumes this in several place
  * to make life simpler.
  */
@@ -651,7 +657,7 @@ vinschar(wchar_t c)
 		}
 		return (0);
 	}
-	
+
 	/*
 	 * Compute the number of positions in the line image of the
 	 * current line.  This is done from the physical image
@@ -713,7 +719,7 @@ vinschar(wchar_t c)
 		} while (inssiz);
 		return (0);
 	}
-	
+
 	/*
 	 * Have to really do some insertion, thus
 	 * stake out the bounds of the first following
@@ -924,9 +930,9 @@ vishft(void)
 			up = tp + j * WCOLS - shft;
 			i = shft;
 			do {
-				wchar_t wchar;
-				if (wchar = *up) {
-					if(wchar != FILLER)
+				wchar_t wchar = *up;
+				if (wchar != 0) {
+					if (wchar != FILLER)
 						(void) vputchar(wchar);
 					up++;
 				} else
@@ -977,7 +983,8 @@ viin(wchar_t c)
 	short oldhold = hold;
 
 	hold |= HOLDPUPD;
-	if (tabsize && (enter_insert_mode && exit_insert_mode) && inssiz - doomed > tabslack)
+	if (tabsize && (enter_insert_mode && exit_insert_mode) &&
+	    inssiz - doomed > tabslack) {
 		/*
 		 * There is a tab out there which will be affected
 		 * by the insertion since there aren't enough doomed
@@ -1016,8 +1023,9 @@ viin(wchar_t c)
 				enddm();
 			}
 		}
+	}
 
-	/* 
+	/*
 	 * Now put out the characters of the actual insertion.
 	 */
 	vigotoCL(inscol);
@@ -1045,7 +1053,6 @@ viin(wchar_t c)
 		 *
 		 * You asked for it, you get it.
 		 */
-		int width;
 		tp = vtube0 + inscol + doomed;
 		for (i = inscol + doomed; i < tabstart; i++) {
 			if(*tp != FILLER)
@@ -1114,7 +1121,7 @@ viin(wchar_t c)
 	tp = vtube0 + tabstart; up = tp + inssiz - doomed;
 	for (i = tabstart; i > inscol + doomed; i--)
 		*--up = *--tp;
-	for (i = inssiz; i > 0; i--) 
+	for (i = inssiz; i > 0; i--)
 		if((c & QUOTE) == 0) {
 			int width = wcwidth(c);
 			if (width < 0)
@@ -1234,7 +1241,7 @@ vputchar(wchar_t c)
 	if (destline > WBOT && (!splitw || destline > WECHO))
 		vrollup(destline);
 	if (destline < 0)
-		error(gettext("Line too long to fit on screen"));
+		error((unsigned char *)gettext("Line too long to fit on screen"));
 	if(destcol + length - 1 >= WCOLS) {
 		/* print out split multibyte character using '>' */
 		hold |= HOLDPUPD;
@@ -1366,12 +1373,15 @@ def:
 		 * that we have overstruct something.
 		 */
 		if (!insmode && d && d != ' ' && d != (c & TRIM)) {
-			if (erase_overstrike && (over_strike || transparent_underline && (c == '_' || d == '_'))) {
+			if (erase_overstrike && (over_strike ||
+			    (transparent_underline &&
+			    (c == '_' || d == '_')))) {
 				(void) vputc(' ');
 				outcol++, destcol++;
 				back1();
-			} else
+			} else {
 				rubble = 1;
+			}
 		}
 
 		/*
@@ -1408,7 +1418,7 @@ def:
 		 */
 		if (insmode)
 			vputp(insert_padding, DEPTH(vcline));
-		destcol += length; 
+		destcol += length;
 		outcol += length;
 
 		/*
@@ -1434,7 +1444,7 @@ void
 physdc(int stcol, int endcol)
 {
 	wchar_t *tp, *up;
-	wchar_t *tpe;
+	wchar_t *tpe = NULL;
 	int i;
 	int nc = endcol - stcol;
 
@@ -1504,7 +1514,7 @@ physdc(int stcol, int endcol)
 	if (insert_null_glitch) {
 		up = vtube0 + stcol;
 		tp = vtube0 + endcol;
-		while (i = *tp++) {
+		while ((i = *tp++) != 0) {
 			if ((i & (QUOTE|TRIM)) == QUOTE)
 				break;
 			*up++ = i;

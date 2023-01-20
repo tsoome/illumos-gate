@@ -31,17 +31,16 @@
 
 /* Copyright (c) 1981 Regents of the University of California */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <dirent.h>
 #include <pwd.h>
 #include <locale.h>
 #include <limits.h>
+#include <string.h>
 #include <unistd.h>
 
 #define	BUFSIZE	(LINE_MAX*2)	/* This should agree with what's in ex.h */
@@ -88,8 +87,10 @@ struct 	header {
 
 #define	eq(a, b) strcmp(a, b) == 0
 
-void notify(int, unsigned char *, int, int);
+void notify(int, unsigned char *, unsigned char *, int);
 void mkdigits(unsigned char *);
+static int mknext(unsigned char *, unsigned char *);
+static int copyout(unsigned char *);
 
 int
 main(argc)
@@ -109,7 +110,7 @@ main(argc)
 	 * If only one argument, then preserve the standard input.
 	 */
 	if (argc == 1) {
-		if (copyout((unsigned char *) 0))
+		if (copyout(NULL))
 			return (1);
 		return (0);
 	}
@@ -171,7 +172,7 @@ unsigned char	pattern[] =	"/Exaa`XXXXXXXXXX";
  * file (this is the slowest thing since we must stat
  * to find a unique name), and finally copy the file.
  */
-int
+static int
 copyout(unsigned char *name)
 {
 	int i;
@@ -202,7 +203,7 @@ copyout(unsigned char *name)
 		 * Need read/write access for arcane reasons
 		 * (see below).
 		 */
-		if (open(name, O_RDWR) < 0)
+		if (open((char *)name, O_RDWR) < 0)
 			return (-1);
 	}
 
@@ -261,8 +262,8 @@ format:
 	 * LOST, by putting this in the header.
 	 */
 	if (H.Savedfile[0] == 0) {
-		(void) strcpy(H.Savedfile, "LOST");
-		(void) write(0, (char *) &H, sizeof (H));
+		(void) strcpy((char *)H.Savedfile, "LOST");
+		(void) write(0, (char *)&H, sizeof (H));
 		H.Savedfile[0] = 0;
 		(void) lseek(0, 0l, 0);
 	}
@@ -271,10 +272,10 @@ format:
 	 * See if preservation directory for user exists.
 	 */
 
-	strcpy(savdir, mydir);
+	strcpy((char *)savdir, (char *)mydir);
 	pp = getpwuid(H.Uid);
 	if (pp)
-		strcat(savdir, pp->pw_name);
+		strcat((char *)savdir, pp->pw_name);
 	else {
 		fprintf(stderr, gettext("Unable to get uid for user.\n"));
 		return (-1);
@@ -302,8 +303,8 @@ format:
 			perror((char *)savfil);
 		return	(1);
 	}
-	strcpy(savfil, savdir);
-	strcat(savfil, pattern);
+	strcpy((char *)savfil, (char *)savdir);
+	strcat((char *)savfil, (char *)pattern);
 	/*
 	 * Make target owned by user.
 	 */
@@ -324,7 +325,7 @@ format:
 		if (i == 0) {
 			if (name)
 				(void) unlink((char *)name);
-			notify(H.Uid, H.Savedfile, (int) name, H.encrypted);
+			notify(H.Uid, H.Savedfile, name, H.encrypted);
 			return (0);
 		}
 		if (write(savfild, buf, i) != i) {
@@ -345,7 +346,8 @@ mkdigits(unsigned char *cp)
 	pid_t i;
 	int j;
 
-	for (i = getpid(), j = 10, cp += strlen(cp); j > 0; i /= 10, j--)
+	for (i = getpid(), j = 10, cp += strlen((char *)cp); j > 0;
+	    i /= 10, j--)
 		*--cp = i % 10 | '0';
 }
 
@@ -354,17 +356,16 @@ mkdigits(unsigned char *cp)
  * three alphabetic characters into a sequence of the form 'aab', 'aac', etc.
  * Mktemp gets weird names too quickly to be useful here.
  */
-int
+static int
 mknext(unsigned char *dir, unsigned char *cp)
 {
 	unsigned char *dcp;
-	struct stat stb;
 	unsigned char path[PATH_MAX+1];
 	int fd;
 
-	strcpy(path, dir);
-	strcat(path, cp);
-	dcp = path + strlen(path) - 1;
+	strcpy((char *)path, (char *)dir);
+	strcat((char *)path, (char *)cp);
+	dcp = path + strlen((char *)path) - 1;
 
 	while (isdigit(*dcp))
 		dcp--;
@@ -380,15 +381,17 @@ mknext(unsigned char *dir, unsigned char *cp)
 						return (-1);
 				}
 				dcp[-2]++;
-			} else
+			} else {
 				dcp[-1]++;
-		} else
+			}
+		} else {
 			dcp[0]++;
+		}
 
-	} while (((fd = open(path, O_CREAT|O_EXCL|O_WRONLY, 0600)) < 0) &&
-		errno == EEXIST);
+		fd = open((char *)path, O_CREAT|O_EXCL|O_WRONLY, 0600);
+	} while (fd < 0 && errno == EEXIST);
 	/* copy out patern */
-	strcpy(cp, path + strlen(dir));
+	strcpy((char *)cp, (char *)path + strlen((char *)dir));
 	return (fd);
 }
 
@@ -396,7 +399,7 @@ mknext(unsigned char *dir, unsigned char *cp)
  * Notify user uid that their file fname has been saved.
  */
 void
-notify(int uid, unsigned char *fname, int flag, int cryflag)
+notify(int uid, unsigned char *fname, unsigned char *flag, int cryflag)
 {
 
 #define MAXHOSTNAMELEN 256

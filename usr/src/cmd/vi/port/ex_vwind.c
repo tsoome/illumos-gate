@@ -33,6 +33,8 @@
 #include "ex_tty.h"
 #include "ex_vis.h"
 
+static int vfit(line *, int);
+
 /*
  * Routines to adjust the window, showing specified lines
  * in certain positions on the screen, and scrolling in both
@@ -343,7 +345,7 @@ vback(tp, cnt)
 /*
  * How much scrolling will it take to roll cnt lines starting at tp?
  */
-int
+static int
 vfit(line *tp, int cnt)
 {
 	int j;
@@ -406,7 +408,6 @@ vroll(int cnt)
 void
 vrollR(int cnt)
 {
-	bool fried = 0;
 	short oldhold = hold;
 
 #ifdef ADEBUG
@@ -449,7 +450,7 @@ int
 vcookit(int cnt)
 {
 
-	return (cnt > 1 && (ospeed < B1200 && !initev || cnt > lines * 2));
+	return (cnt > 1 && ((ospeed < B1200 && !initev) || cnt > lines * 2));
 }
 
 /*
@@ -494,7 +495,7 @@ vnline(unsigned char *curs)
 			if(wcursor - linebuf > j)
 				wcursor = owcursor;
 		}
-			
+
 	} else if (vmoving)
 		wcursor = vfindcol(vmovcol);
 	else

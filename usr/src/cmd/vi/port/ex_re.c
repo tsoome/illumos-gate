@@ -31,15 +31,17 @@
 
 #include "ex.h"
 #include "ex_re.h"
+#include <string.h>
+
 
 /* from libgen */
 char *_compile(const char *, char *, char *, int);
 
-/* 
+/*
  * The compiled-regular-expression storage areas (re, scanre, and subre)
  * have been changed into dynamically allocated memory areas, in both the
  * Solaris and XPG4 versions.
- * 
+ *
  * In the Solaris version, which uses the original libgen(3g) compile()
  * and step() calls, these areas are allocated once, and then data are
  * copied between them subsequently, as they were in the original
@@ -55,11 +57,17 @@ char *_compile(const char *, char *, char *, int);
  * handle these differences, but that effort was flawed.
  */
 
-extern int	getchar();
+extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
+extern int putchar(int);
+extern int getchar();
 #ifdef XPG4
 void regex_comp_free(void *);
 extern size_t regexc_size;	/* compile.c: size of regex_comp structure */
 #endif /* XPG4 */
+
+static int compsub(int);
+static int confirmed(line *);
+static int fixcase(int);
 
 /*
  * Global, substitute and regular expressions.
@@ -67,8 +75,7 @@ extern size_t regexc_size;	/* compile.c: size of regex_comp structure */
  * confirmed substitute.
  */
 void
-global(k)
-	bool k;
+global(bool k)
 {
 	unsigned char *gp;
 	int c;
@@ -80,7 +87,7 @@ global(k)
 	char	multi[MB_LEN_MAX + 1];
 	wchar_t	wc;
 	int	len;
-	
+
 
 	Cwas = Command;
 	/*
@@ -93,14 +100,18 @@ global(k)
 	 * everybody simulating a global command.
 	 */
 	if (inglobal==2)
-		error(value(vi_TERSE) ? gettext("Global within global") :
-gettext("Global within global not allowed"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Global within global") :
+		    (unsigned char *)gettext(
+		    "Global within global not allowed"));
 	markDOT();
 	setall();
 	nonzero();
 	if (skipend())
-		error(value(vi_TERSE) ? gettext("Global needs re") :
-gettext("Missing regular expression for global"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Global needs re") :
+		    (unsigned char *)gettext(
+		    "Missing regular expression for global"));
 	c = getchar();
 	(void)vi_compile(c, 1);
 	savere(&scanre);
@@ -116,8 +127,9 @@ gettext("Missing regular expression for global"));
 mb_copy:
 			if ((len = _mbftowc(multi, &wc, getchar, &peekc)) > 0) {
 				if ((gp + len) >= &globuf[GBSIZE - 2])
-					error(gettext("Global command too long"));
-				strncpy(gp, multi, len);
+					error((unsigned char *)gettext(
+					    "Global command too long"));
+				strncpy((char *)gp, multi, len);
 				gp += len;
 				continue;
 			}
@@ -156,7 +168,8 @@ mb_copy:
 		}
 		*gp++ = c;
 		if (gp >= &globuf[GBSIZE - 2])
-			error(gettext("Global command too long"));
+			error((unsigned char *)gettext(
+			    "Global command too long"));
 	}
 
 out:
@@ -275,7 +288,8 @@ substitute(int c)
 			hopcount = 0;
 			while (*loc2) {
 				if (++hopcount > sizeof linebuf)
-					error(gettext("substitution loop"));
+					error((unsigned char *)gettext(
+					    "substitution loop"));
 				if (dosubcon(1, addr) == 0)
 					break;
 			}
@@ -290,16 +304,18 @@ substitute(int c)
 		}
 	}
 	if (stotal == 0 && !inglobal && !cflag)
-		error(value(vi_TERSE) ? gettext("Fail") :
-gettext("Substitute pattern match failed"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Fail") :
+		    (unsigned char *)gettext(
+		    "Substitute pattern match failed"));
 	snote(stotal, slines);
 	return (stotal);
 }
 
-int
+static int
 compsub(int ch)
 {
-	int seof, c, uselastre; 
+	int seof, c, uselastre;
 	static int gsubf;
 	static unsigned char remem[RHSSIZE];
 	static int remflg = -1;
@@ -312,13 +328,15 @@ compsub(int ch)
 	case 's':
 		(void)skipwh();
 		seof = getchar();
-		if (endcmd(seof) || any(seof, "gcr")) {
+		if (endcmd(seof) || any(seof, (unsigned char *)"gcr")) {
 			ungetchar(seof);
 			goto redo;
 		}
 		if (isalpha(seof) || isdigit(seof))
-			error(value(vi_TERSE) ? gettext("Substitute needs re") :
-gettext("Missing regular expression for substitute"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Substitute needs re") :
+			    (unsigned char *)gettext(
+			    "Missing regular expression for substitute"));
 		seof = vi_compile(seof, 1);
 		uselastre = 1;
 		comprhs(seof);
@@ -331,11 +349,16 @@ gettext("Missing regular expression for substitute"));
 	case '&':
 	redo:
 		if (re == NULL || re->Expbuf[1] == 0)
-			error(value(vi_TERSE) ? gettext("No previous re") :
-gettext("No previous regular expression"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("No previous re") :
+			    (unsigned char *)gettext(
+			    "No previous regular expression"));
 		if (subre == NULL || subre->Expbuf[1] == 0)
-			error(value(vi_TERSE) ? gettext("No previous substitute re") :
-gettext("No previous substitute to repeat"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext(
+			    "No previous substitute re") :
+			    (unsigned char *)gettext(
+			    "No previous substitute to repeat"));
 		break;
 	}
 	for (;;) {
@@ -372,11 +395,12 @@ gettext("No previous substitute to repeat"));
 
 			if (rhsbuf[0] == '%' && rhsbuf[1] == 0)
 				if (remflg == -1)
-					error(gettext("No previously remembered string"));
+					error((unsigned char *)gettext(
+					    "No previously remembered string"));
 			        else
-					strcpy(rhsbuf, remem);
+					strcpy((char *)rhsbuf, (char *)remem);
 			else {
-				strcpy(remem, rhsbuf);
+				strcpy((char *)remem, (char *)rhsbuf);
 				remflg = 1;
 			}
 			return (gsubf);
@@ -395,7 +419,7 @@ comprhs(int seof)
 	wchar_t	wc;
 
 	rp = rhsbuf;
-	CP(orhsbuf, rp);
+	CP((char *)orhsbuf, (char *)rp);
 	for (;;) {
 		c = peekchar();
 		if (c == seof) {
@@ -407,7 +431,7 @@ comprhs(int seof)
 			if ((len = _mbftowc(multi, &wc, getchar, &peekc)) > 0) {
 				if ((rp + len) >= &rhsbuf[RHSSIZE - 1])
 					goto toobig;
-				strncpy(rp, multi, len);
+				strncpy((char *)rp, multi, len);
 				rp += len;
 				continue;
 			}
@@ -420,15 +444,17 @@ comprhs(int seof)
 			c = peekchar();
 			if (c == EOF) {
 				(void) getchar();
-				error(gettext("Replacement string ends with \\"));
+				error((unsigned char *)gettext(
+				    "Replacement string ends with \\"));
 			}
 
 			if (!isascii(c)) {
 				*rp++ = '\\';
-				if ((len = _mbftowc(multi, &wc, getchar, &peekc)) > 0) {
+				len = _mbftowc(multi, &wc, getchar, &peekc);
+				if (len  > 0) {
 					if ((rp + len) >= &rhsbuf[RHSSIZE - 1])
 						goto over_flow;
-					strncpy(rp, multi, len);
+					strncpy((char *)rp, multi, len);
 					rp += len;
 					continue;
 				}
@@ -444,8 +470,13 @@ comprhs(int seof)
 					if(rp >= &rhsbuf[RHSSIZE - 1]) {
 						*rp=0;
 						error(value(vi_TERSE) ?
-gettext("Replacement pattern too long") :
-gettext("Replacement pattern too long - limit 256 characters"));
+						    (unsigned char *)gettext(
+						    "Replacement pattern too "
+						    "long") :
+						    (unsigned char *)gettext(
+						    "Replacement pattern too "
+						    "long - limit 256 "
+						    "characters"));
 					}
 					*rp++ = '\\';
 				}
@@ -462,8 +493,11 @@ magic:
 over_flow:
 				*rp=0;
 				error(value(vi_TERSE) ?
-gettext("Replacement pattern too long") :
-gettext("Replacement pattern too long - limit 256 characters"));
+				    (unsigned char *)gettext(
+				    "Replacement pattern too long") :
+				    (unsigned char *)gettext(
+				    "Replacement pattern too long - "
+				    "limit 256 characters"));
 			}
 			*rp++ = '\\';
 			break;
@@ -486,8 +520,11 @@ gettext("Replacement pattern too long - limit 256 characters"));
 toobig:
 			*rp = 0;
 			error(value(vi_TERSE) ?
-gettext("Replacement pattern too long") :
-gettext("Replacement pattern too long - limit 256 characters"));
+			    (unsigned char *)gettext(
+			    "Replacement pattern too long") :
+			    (unsigned char *)gettext(
+			    "Replacement pattern too long - "
+			    "limit 256 characters"));
 		}
 		*rp++ = c;
 	}
@@ -520,7 +557,7 @@ dosubcon(bool f, line *a)
 	return (1);
 }
 
-int
+static int
 confirmed(line *a)
 {
 	int c, cnt, ch;
@@ -531,12 +568,12 @@ confirmed(line *a)
 	pline(lineno(a));
 	if (inopen)
 		putchar('\n' | QUOTE);
-	c = lcolumn(loc1);
+	c = lcolumn((unsigned char *)loc1);
 	ugo(c, ' ');
-	ugo(lcolumn(loc2) - c, '^');
+	ugo(lcolumn((unsigned char *)loc2) - c, '^');
 	flush();
 	cnt = 0;
-bkup:	
+bkup:
 	ch = c = getkey();
 again:
 	if (c == '\b') {
@@ -546,12 +583,12 @@ again:
 			putchar(' ');
 			putchar('\b' | QUOTE), flush();
 			cnt --;
-		} 
+		}
 		goto bkup;
 	}
 	if (c == '\r')
 		c = '\n';
-	if (inopen && MB_CUR_MAX == 1 || c < 0200) {
+	if ((inopen && MB_CUR_MAX == 1) || c < 0200) {
 		putchar(c);
 		flush();
 		cnt++;
@@ -595,7 +632,7 @@ dosub(void)
 	 * extended or not if C&QUOTE is set.  Thus, on a VAX, c will
 	 * be < 0, but on a 3B, c will be >= 128.
 	 */
-	while (c = *rp) {
+	while ((c = *rp) != 0) {
 		if ((len = mblen((char *)rp, MB_CUR_MAX)) <= 0)
 			len = 1;
 		/* ^V <return> from vi to split lines */
@@ -641,7 +678,7 @@ dosub(void)
 			}
 			if(re != NULL && c >= '1' && c < re->Nbra + '1') {
 				sp = place(sp, braslist[c - '1'] , braelist[c - '1']);
-				if (sp == 0)
+				if (sp == NULL)
 					goto ovflo;
 				continue;
 			}
@@ -650,7 +687,7 @@ dosub(void)
 		if (len > 1) {
 			if ((sp + len) >= &genbuf[LBSIZE])
 				goto ovflo;
-			strncpy(sp, rp, len);
+			strncpy((char *)sp, (char *)rp, len);
 		} else {
 			if (casecnt)
 				*sp = fixcase(c);
@@ -660,18 +697,20 @@ dosub(void)
 		sp += len; rp += len;
 		if (sp >= &genbuf[LBSIZE])
 ovflo:
-			error(value(vi_TERSE) ? gettext("Line overflow") :
-gettext("Line overflow in substitute"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Line overflow") :
+			    (unsigned char *)gettext(
+			    "Line overflow in substitute"));
 	}
 	lp = (unsigned char *)loc2;
 	loc2 = (char *)(linebuf + (sp - genbuf));
-	while (*sp++ = *lp++)
+	while ((*sp++ = *lp++) != '\0')
 		if (sp >= &genbuf[LBSIZE])
 			goto ovflo;
 	strcLIN(genbuf);
 }
 
-int
+static int
 fixcase(int c)
 {
 
@@ -742,9 +781,8 @@ int
 vi_compile(int eof, int oknl)
 {
 	int c;
-	unsigned char *gp, *p1;
+	unsigned char *gp;
 	unsigned char *rhsp;
-	unsigned char rebuf[LBSIZE];
 	char	multi[MB_LEN_MAX + 1];
 	int	len;
 	wchar_t	wc;
@@ -758,9 +796,13 @@ vi_compile(int eof, int oknl)
 
 	gp = genbuf;
 	if (isalpha(eof) || isdigit(eof))
-error(gettext("Regular expressions cannot be delimited by letters or digits"));
+		error((unsigned char *)gettext(
+		    "Regular expressions cannot be delimited by"
+		    "letters or digits"));
 	if(eof >= 0200 && MB_CUR_MAX > 1)
-error(gettext("Regular expressions cannot be delimited by multibyte characters"));
+		error((unsigned char *)gettext(
+		    "Regular expressions cannot be delimited by "
+		    "multibyte characters"));
 	c = getchar();
 	if (eof == '\\')
 		switch (c) {
@@ -768,29 +810,43 @@ error(gettext("Regular expressions cannot be delimited by multibyte characters")
 		case '/':
 		case '?':
 			if (scanre == NULL || scanre->Expbuf[1] == 0)
-error(value(vi_TERSE) ? gettext("No previous scan re") :
-gettext("No previous scanning regular expression"));
+				error(value(vi_TERSE) ?
+				    (unsigned char *)gettext(
+				    "No previous scan re") :
+				    (unsigned char *)gettext(
+				    "No previous scanning regular expression"));
 			resre(scanre);
 			return (c);
 
 		case '&':
 			if (subre == NULL || subre->Expbuf[1] == 0)
-error(value(vi_TERSE) ? gettext("No previous substitute re") :
-gettext("No previous substitute regular expression"));
+				error(value(vi_TERSE) ?
+				    (unsigned char *)gettext(
+				    "No previous substitute re") :
+				    (unsigned char *)gettext(
+				    "No previous substitute regular "
+				    "expression"));
 			resre(subre);
 			return (c);
 
 		default:
-error(value(vi_TERSE) ? gettext("Badly formed re") :
-gettext("Regular expression \\ must be followed by / or ?"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Badly formed re") :
+			    (unsigned char *)gettext("Regular expression \\ "
+			    "must be followed by / or ?"));
 		}
 	if (c == eof || c == '\n' || c == EOF) {
 		if (re == NULL || re->Expbuf[1] == 0)
-error(value(vi_TERSE) ? gettext("No previous re") :
-gettext("No previous regular expression"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("No previous re") :
+			    (unsigned char *)gettext(
+			    "No previous regular expression"));
 		if (c == '\n' && oknl == 0)
-error(value(vi_TERSE) ? gettext("Missing closing delimiter") :
-gettext("Missing closing delimiter for regular expression"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext(
+			    "Missing closing delimiter") :
+			    (unsigned char *)gettext("Missing closing "
+			    "delimiter for regular expression"));
 		if (c != eof)
 			ungetchar(c);
 		return (eof);
@@ -820,7 +876,7 @@ complex:
 			if ((len = _mbftowc(multi, &wc, getchar, &peekc)) >= 1) {
 				if ((gp + len) >= &genbuf[LBSIZE - 3])
 					goto complex;
-				strncpy(gp, multi, len);
+				strncpy((char *)gp, multi, len);
 				gp += len;
 				continue;
 			}
@@ -837,7 +893,7 @@ complex:
 					if ((gp + len) >= &genbuf[LBSIZE - 3])
 						goto complex;
 					*gp++ = '\\';
-					strncpy(gp, multi, len);
+					strncpy((char *)gp, multi, len);
 					gp += len;
 					continue;
 				}
@@ -883,7 +939,8 @@ magic:
 						if ((len = mbtowc((wchar_t *)0, (char *)rhsp, MB_CUR_MAX)) > 1) {
 							if ((gp + len) >= &genbuf[LBSIZE-2])
 								goto complex;
-							strncpy(gp, rhsp, len);
+							strncpy((char *)gp,
+							    (char *)rhsp, len);
 							rhsp += len; gp += len;
 							continue;
 						}
@@ -902,7 +959,7 @@ gettext("Replacement pattern contains \\d") :
 gettext("Replacement pattern contains \\d - cannot use in re"));
 						if ((len = mbtowc((wchar_t *)0, (char *)rhsp, MB_CUR_MAX)) <= 1) {
 							len = 1;
-							if(any(c, ".\\*[$"))
+							if (any(c, (unsigned char *)".\\*[$"))
 								*gp++ = '\\';
 						}
 					}
@@ -913,7 +970,8 @@ gettext("Replacement pattern contains \\d - cannot use in re"));
 						c = *rhsp++;
 						*gp++ = (value(vi_IGNORECASE) ? tolower(c) : c);
 					} else {
-						strncpy(gp, rhsp, len);
+						strncpy((char *)gp,
+						    (char *)rhsp, len);
 						gp += len; rhsp += len;
 					}
 				}
@@ -931,20 +989,21 @@ gettext("Replacement pattern contains \\d - cannot use in re"));
 					c = getchar();
 				}
 
-				do { 
+				do {
 					if (!isascii(c) && c != EOF) {
 						ungetchar(c);
 						if ((len = _mbftowc(multi, &wc, getchar, &peekc)) >= 1) {
 							if ((gp + len)>= &genbuf[LBSIZE-4])
 								goto complex;
-							strncpy(gp, multi, len);
+							strncpy((char *)gp,
+							    multi, len);
 							gp += len;
 							c = getchar();
 							continue;
 						}
 						(void) getchar();
 					}
-				
+
 					if (gp >= &genbuf[LBSIZE-4])
 						goto complex;
 					if(c == '\\' && peekchar() == ']') {
@@ -993,7 +1052,6 @@ cerror(value(vi_TERSE) ? (unsigned char *)gettext("Badly formed re") :
 			if(c != '~')
 				*gp++ = '\\';
 			/* FALLTHROUGH */
-defchar:
 		default:
 			*gp++ = (value(vi_IGNORECASE) ? tolower(c) : c);
 			continue;
@@ -1021,7 +1079,7 @@ out:
 
 	if (re == NULL || re == scanre || re == subre) {
 		if ((re = calloc(1, sizeof(struct regexp))) == NULL) {
-			error(gettext("out of memory"));
+			error((unsigned char *)gettext("out of memory"));
 			exit(errcnt);
 		}
 	} else {
@@ -1033,12 +1091,12 @@ out:
 	    + regexc_size);
 #else /* !XPG4 */
 	(void) _compile((const char *)genbuf, (char *)re->Expbuf,
-		(char *)(re->Expbuf + sizeof (re->Expbuf)), 1); 
+		(char *)(re->Expbuf + sizeof (re->Expbuf)), 1);
 #endif /* XPG4 */
 
 	if(regerrno)
 		switch(regerrno) {
-	
+
 		case 42:
 cerror((unsigned char *)gettext("\\( \\) Imbalance"));
 			/* FALLTHROUGH */
@@ -1069,7 +1127,7 @@ int
 execute(int gf, line *addr)
 {
 	unsigned char *p1, *p2;
-	char *start;
+	char *start = NULL;
 	int c, i;
 	int ret;
 	int	len;
@@ -1080,7 +1138,7 @@ execute(int gf, line *addr)
 		if(value(vi_IGNORECASE)) {
 			p1 = genbuf;
 			p2 = (unsigned char *)loc2;
-			while(c = *p2) {
+			while((c = *p2) != 0) {
 				if ((len = mblen((char *)p2, MB_CUR_MAX)) <= 0)
 					len = 1;
 				if (len == 1) {
@@ -1088,7 +1146,7 @@ execute(int gf, line *addr)
 					p2++;
 					continue;
 				}
-				strncpy(p1, p2, len);
+				strncpy((char *)p1, (char *)p2, len);
 				p1 += len; p2 += len;
 			}
 			*p1 = '\0';
@@ -1107,7 +1165,7 @@ execute(int gf, line *addr)
 		if(value(vi_IGNORECASE)) {
 			p1 = genbuf;
 			p2 = linebuf;
-			while(c = *p2) {
+			while ((c = *p2) != 0) {
 				if ((len = mblen((char *)p2, MB_CUR_MAX)) <= 0)
 					len = 1;
 				if (len == 1) {
@@ -1115,14 +1173,14 @@ execute(int gf, line *addr)
 					p2++;
 					continue;
 				}
-				strncpy(p1, p2, len);
+				strncpy((char *)p1, (char *)p2, len);
 				p1 += len; p2 += len;
 			}
 			*p1 = '\0';
 			p1 = genbuf;
 			start = (char *)linebuf;
 		}
-		locs = (char *)0;
+		locs = NULL;
 	}
 
 	ret = step((char *)p1, (char *)re->Expbuf);
@@ -1149,17 +1207,17 @@ void init_re (void)
 	re = scanre = subre = NULL;
 #else /* !XPG4 */
 	if ((re = calloc(1, sizeof(struct regexp))) == NULL) {
-		error(gettext("out of memory"));
+		error((unsigned char *)gettext("out of memory"));
 		exit(errcnt);
 	}
 
 	if ((scanre = calloc(1, sizeof(struct regexp))) == NULL) {
-		error(gettext("out of memory"));
+		error((unsigned char *)gettext("out of memory"));
 		exit(errcnt);
 	}
 
 	if ((subre = calloc(1, sizeof(struct regexp))) == NULL) {
-		error(gettext("out of memory"));
+		error((unsigned char *)gettext("out of memory"));
 		exit(errcnt);
 	}
 #endif /* XPG4 */
@@ -1193,7 +1251,7 @@ void savere(struct regexp ** a)
 #else /* !XPG4 */
 	memcpy(*a, re, sizeof(struct regexp));
 #endif /* XPG4 */
-} 
+}
 
 
 /*

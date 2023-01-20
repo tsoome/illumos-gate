@@ -32,6 +32,7 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 #ifndef PRESUNEUC
 #include <wctype.h>
 /* Undef putchar/getchar if they're defined. */
@@ -53,6 +54,7 @@
 
 #define	forbid(a)	{ if (a) goto fonfon; }
 
+extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
 extern int windowchg;
 extern int sigok;
 #ifdef XPG6
@@ -67,18 +69,18 @@ extern int P_cursor_offset;
 void
 vmain(void)
 {
-	int c, cnt, i;
+	volatile int c;
+	int cnt, i;
 	wchar_t esave[TUBECOLS];
-	extern wchar_t atube[];
 	unsigned char *oglobp;
 	short d;
 	line *addr;
 	int ind, nlput;
-	int shouldpo = 0;
-	int tag_reset_wrap = 0;
+	volatile int shouldpo = 0;
+	volatile int tag_reset_wrap = 0;
 	int onumber, olist, (*OPline)(), (*OPutchar)();
 
-	
+
 	vch_mac = VC_NOTINMAC;
 	ixlatctl(0);
 
@@ -95,7 +97,7 @@ vmain(void)
 		goto doinit;
 	}
 
-	vshowmode("");		/* As a precaution */
+	vshowmode((unsigned char *)"");		/* As a precaution */
 	/*
 	 * NB:
 	 *
@@ -122,7 +124,7 @@ vmain(void)
 		Xhadcnt = hadcnt = 0;
 		Xcnt = cnt = 1;
 		splitw = 0;
-		if (i = holdupd && !windowchg) {
+		if ((i = holdupd) != 0 && !windowchg) {
 			if (state == VISUAL) {
 				sigok = 1;
 				(void)peekkey();
@@ -189,7 +191,8 @@ looptop:
 				ungetkey(c);
 				(void)_mbftowc(multic, &wchar, getkey, &Peekkey);
 			}
-			forbid (c == '0' || !isalpha(c) && !isascii(c) && !isdigit(c));
+			forbid (c == '0' ||
+			    (!isalpha(c) && !isascii(c) && !isdigit(c)));
 			vreg = c;
 		}
 reread:
@@ -230,7 +233,8 @@ reread:
 				break;
 			}
 			if (++maphopcnt > 256)
-				error(gettext("Infinite macro loop"));
+				error((unsigned char *)gettext(
+				    "Infinite macro loop"));
 		} while (c != op);
 
 		/*
@@ -670,8 +674,8 @@ reread:
 							(wc = towupper(wc)));
 					tmp += len - 1;
 #endif /* PRESUNEUC */
-					if(*ccursor) 
-				/* 
+					if(*ccursor)
+				/*
 				 * If at end of line do not advance
 				 * to the next character, else use a
 				 * space to advance 1 column.
@@ -707,13 +711,13 @@ appnd:
 		case 'a':
 			if (*cursor) {
 				wchar_t wchar;
-				int length = mbtowc(&wchar, (char *)cursor, MULTI_BYTE_MAX); 
+				int length = mbtowc(&wchar, (char *)cursor, MULTI_BYTE_MAX);
 				if (state == HARDOPEN) {
 					if(length < 0) {
 						putoctal = 1;
 						putchar(*cursor);
 						putoctal = 0;
-					} else 
+					} else
 						putchar(wchar);
 				}
 				if(length < 0)
@@ -768,7 +772,7 @@ insrt:
 			if(FIXUNDO)
 				vundkind = VCHNG;
 			vmoving = 0;
-			CP(vutmp, linebuf);
+			CP((char *)vutmp, (char *)linebuf);
 
 			/*
 			 * If this is a repeated command, then suppress
@@ -854,7 +858,7 @@ insrt:
 			globp = (unsigned char *)"x";
 			vclrech(0);
 			goto gogo;
-			
+
 		/*
 		 * P		Put back text before cursor or before current
 		 *		line.  If text was whole lines goes back
@@ -902,7 +906,7 @@ insrt:
 			vmacchng(1);
 			setLAST();
 			i = 0;
-			if (vreg && partreg(vreg) || !vreg && pkill[0]) {
+			if ((vreg && partreg(vreg)) || (!vreg && pkill[0])) {
 				/*
 				 * Restoring multiple lines which were partial
 				 * lines; will leave cursor in middle
@@ -1046,7 +1050,7 @@ pfixup:
 			oglobp = globp;
 			globp = (unsigned char *)"&";
 			goto gogo;
-			
+
 		/*
 		 * ^G		Bring up a status line at the bottom of
 		 *		the screen, like a :file command.
@@ -1093,7 +1097,9 @@ gogo:
 			 * Use the visual undo buffer to store the global
 			 * string for command mode, since it is idle right now.
 			 */
-			oglobp = globp; strcpy(vutmp, genbuf+1); globp = vutmp;
+			oglobp = globp;
+			strcpy((char *)vutmp, (char *)genbuf+1);
+			globp = vutmp;
 doinit:
 			esave[0] = 0;
 			fixech();
@@ -1216,9 +1222,9 @@ fixup:
 			 * in open mode and . moved, then redraw.
 			 */
 			i = vcline + (dot - addr);
-			if(windowchg) 
+			if(windowchg)
 				windowinit();
-			if (i < 0 || i >= vcnt && i >= -vcnt || state != VISUAL && dot != addr) {
+			if (i < 0 || (i >= vcnt && i >= -vcnt) || (state != VISUAL && dot != addr)) {
 				if (state == CRTOPEN)
 					vup1();
 				if (vcnt > 0)
@@ -1246,7 +1252,7 @@ fixup:
 				i = vcline + lineDOL() - lineDOT() + 1;
 				if (i < vcnt)
 					vcnt = i;
-				
+
 				/*
 				 * Dirty and repaint.
 				 */
@@ -1382,8 +1388,8 @@ vsave(void)
 {
 	unsigned char temp[LBSIZE];
 
-	strncpy(temp, linebuf, sizeof (temp));
-	if (FIXUNDO && vundkind == VCHNG || vundkind == VCAPU) {
+	strncpy((char *)temp, (char *)linebuf, sizeof (temp));
+	if ((FIXUNDO && vundkind == VCHNG) || vundkind == VCAPU) {
 		/*
 		 * If the undo state is saved in the temporary buffer
 		 * vutmp, then we sync this into the temp file so that
@@ -1406,7 +1412,7 @@ vsave(void)
 	 * almost always be in a read buffer so this may well avoid disk i/o.
 	 */
 	getDOT();
-	if (strncmp(linebuf, temp, sizeof (temp)) == 0)
+	if (strncmp((char *)linebuf, (char *)temp, sizeof (temp)) == 0)
 		return;
 	strcLIN(temp);
 	putmark(dot);

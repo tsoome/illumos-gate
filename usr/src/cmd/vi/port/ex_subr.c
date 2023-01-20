@@ -29,8 +29,12 @@
 
 /* Copyright (c) 1981 Regents of the University of California */
 
+#include <crypt.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <sys/stropts.h>
 #include <sys/eucioctl.h>
+#include <wchar.h>
 #ifndef PRESUNEUC
 #include <locale.h>
 /* Undef putchar/getchar if they're defined. */
@@ -46,6 +50,7 @@
 #include "ex_re.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 
 #ifndef PRESUNEUC
 int (*wdwc)(wchar_t);
@@ -53,6 +58,9 @@ int (*wdbdg)(wchar_t, wchar_t, int);
 wchar_t *(*wddlm)(wchar_t, wchar_t, int);
 wchar_t (*mcfllr)(void);
 #endif /* PRESUNEUC */
+
+extern int getchar(void);
+extern int putchar(int);
 
 /*
  * Random routines, in alphabetical order.
@@ -63,7 +71,7 @@ any(int c, unsigned char *s)
 {
 	int x;
 
-	while (x = *s++)
+	while ((x = *s++) != 0)
 		if (x == c)
 			return (1);
 	return (0);
@@ -192,7 +200,7 @@ fixindent(int indent)
 		genbuf[0] = 0;
 		return (i);
 	}
-	CP(genindent(i), cp);
+	CP((char *)genindent(i), (char *)cp);
 	return (i);
 }
 
@@ -201,7 +209,7 @@ filioerr(unsigned char *cp)
 {
 	int oerrno = errno;
 
-	lprintf("\"%s\"", cp);
+	lprintf((unsigned char *)"\"%s\"", cp);
 	errno = oerrno;
 	syserror(1);
 }
@@ -300,9 +308,9 @@ killcnt(int cnt)
 		verbalize(cnt, Command, "");
 	} else {
 		if (cnt == 1) {
-			viprintf(gettext("1 line"), cnt);
+			viprintf((unsigned char *)gettext("1 line"));
 		} else {
-			viprintf(gettext("%d lines"), cnt);
+			viprintf((unsigned char *)gettext("%d lines"), cnt);
 		}
 	}
 	putNFL();
@@ -368,12 +376,10 @@ markreg(int c)
  * The feature described above was disabled for localizable messaging.
  */
 unsigned char *
-mesg(str)
-	unsigned char *str;
+mesg(unsigned char *str)
 {
-	unsigned char *cp;
 
-	str = (unsigned char *)strcpy(genbuf, str);
+	str = (unsigned char *)strcpy((char *)genbuf, (char *)str);
 	/* commented out for localizable messaging */
 /*	for (cp = str; *cp; cp++)
 		switch (*cp) {
@@ -394,13 +400,12 @@ mesg(str)
 	return (str);
 }
 
-/*VARARGS2*/
 void
-merror(unsigned char *seekpt, int i)
+mverror(unsigned char *seekpt, va_list ap)
 {
 	unsigned char *cp = linebuf;
 
-	if (seekpt == 0)
+	if (seekpt == NULL)
 		return;
 	merror1(seekpt);
 	if (*cp == '\n')
@@ -409,20 +414,26 @@ merror(unsigned char *seekpt, int i)
 		vclreol();
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)enter_standout_mode);
-#ifdef PRESUNEUC
-	viprintf(mesg(cp), i);
-#else
-	viprintf((char *)mesg(cp), i);
-#endif /* PRESUNEUC */
+	viprintf(mesg(cp), ap);
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)exit_bold);
+}
+
+void
+merror(unsigned char *seekpt, ...)
+{
+	va_list ap;
+
+	va_start(ap, seekpt);
+	mverror(seekpt, ap);
+	va_end(ap);
 }
 
 void
 merror1(unsigned char *seekpt)
 {
 
-	strcpy(linebuf, seekpt);
+	strcpy((char *)linebuf, (char *)seekpt);
 }
 
 #define MAXDATA (56*1024)
@@ -431,7 +442,7 @@ morelines(void)
 {
 	unsigned char *end;
 
-	if ((int) sbrk(1024 * sizeof (line)) == -1) {
+	if (sbrk(1024 * sizeof (line)) == (void *)-1) {
 		if (endcore >= (line *) MAXDATA)
 			return -1;
 		end = (unsigned char *) MAXDATA;
@@ -455,8 +466,10 @@ nonzero(void)
 
 	if (addr1 == zero) {
 		notempty();
-		error(value(vi_TERSE) ? gettext("Nonzero address required") :
-gettext("Nonzero address required on this command"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Nonzero address required") :
+		    (unsigned char *)gettext(
+		    "Nonzero address required on this command"));
 	}
 }
 
@@ -473,8 +486,9 @@ notempty(void)
 {
 
 	if (dol == zero)
-		error(value(vi_TERSE) ? gettext("No lines") :
-gettext("No lines in the buffer"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("No lines") :
+		    (unsigned char *)gettext("No lines in the buffer"));
 }
 
 
@@ -502,33 +516,27 @@ netchange(int i)
 	if (!notable(i))
 		return;
 	if (*cp == 'm')	/* for ease of messge localization */
-#ifdef PRESUNEUC
 		viprintf(mesg(value(vi_TERSE) ?
-#else
-		viprintf((char *)mesg(value(vi_TERSE) ?
-#endif /* PRESUNEUC */
-gettext("%d more lines") :
+		    (unsigned char *)gettext("%d more lines") :
 		/*
 		 * TRANSLATION_NOTE
 		 *	Reference order of arguments must not
 		 *	be changed using '%digit$', since vi's
 		 *	viprintf() does not support it.
 		 */
-gettext("%d more lines in file after %s")), i, Command);
+		    (unsigned char *)gettext(
+		    "%d more lines in file after %s")), i, Command);
 	else
-#ifdef PRESUNEUC
 		viprintf(mesg(value(vi_TERSE) ?
-#else
-		viprintf((char *)mesg(value(vi_TERSE) ?
-#endif /* PRESUNEUC */
-gettext("%d fewer lines") :
+		    (unsigned char *)gettext("%d fewer lines") :
 		/*
 		 * TRANSLATION_NOTE
 		 *	Reference order of arguments must not
 		 *	be changed using '%digit$', since vi's
 		 *	viprintf() does not support it.
 		 */
-gettext("%d fewer lines in file after %s")), i, Command);
+		    (unsigned char *)gettext(
+		    "%d fewer lines in file after %s")), i, Command);
 	putNFL();
 }
 
@@ -555,8 +563,7 @@ putmk1(line *addr, int n)
 }
 
 unsigned char *
-plural(i)
-	long i;
+plural(long i)
 {
 
 	return (i == 1 ? (unsigned char *)"" : (unsigned char *)"s");
@@ -568,7 +575,7 @@ short	vcntcol;
 int
 qcolumn(unsigned char *lim, unsigned char *gp)
 {
-	int x, length;
+	int x, length = 0;
 	int	col;
 	wchar_t wchar;
 	int (*OO)();
@@ -712,8 +719,11 @@ save(line *a1, line *a2)
 	more = (a2 - a1 + 1) - (unddol - dol);
 	while (more > (endcore - truedol))
 		if (morelines() < 0)
-			error(value(vi_TERSE) ? gettext("Out of memory") :
-gettext("Out of memory saving lines for undo - try using ed"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Out of memory") :
+			    (unsigned char *)gettext(
+			    "Out of memory saving lines for undo - "
+			    "try using ed"));
 	if (more)
 		(*(more > 0 ? copywR : copyw))(unddol + more + 1, unddol + 1,
 		    (truedol - unddol));
@@ -774,10 +784,10 @@ skipwh(void)
 	return (wh);
 }
 
-/*VARARGS2*/
 void
-smerror(unsigned char *seekpt, unsigned char *cp)
+smerror(unsigned char *seekpt, ...)
 {
+	va_list ap;
 
 	errcnt++;
 	merror1(seekpt);
@@ -785,14 +795,15 @@ smerror(unsigned char *seekpt, unsigned char *cp)
 		vclreol();
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)enter_standout_mode);
-	lprintf(mesg(linebuf), cp);
+	va_start(ap, seekpt);
+	lvprintf(mesg(linebuf), ap);
+	va_end(ap);
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)exit_bold);
 }
 
 unsigned char *
-strend(cp)
-	unsigned char *cp;
+strend(unsigned char *cp)
 {
 
 	while (*cp)
@@ -804,7 +815,7 @@ void
 strcLIN(unsigned char *dp)
 {
 
-	CP(linebuf, dp);
+	CP((char *)linebuf, (char *)dp);
 }
 
 /*
@@ -825,9 +836,9 @@ syserror(int danger)
 	if (danger)
 		edited = 0;	/* for temp file errors, for example */
 	if ((errstr = strerror(e)) != NULL)
-		error(errstr);
+		error((unsigned char *)errstr);
 	else
-		error(gettext("System error %d"), e);
+		error((unsigned char *)gettext("System error %d"), e);
 }
 
 /*
@@ -850,13 +861,11 @@ tabcol(int col, int ts)
 }
 
 unsigned char *
-vfindcol(i)
-	int i;
+vfindcol(int i)
 {
-	unsigned char *cp, *oldcp;
+	unsigned char *cp, *oldcp = NULL;
 	int (*OO)() = Outchar;
 	int length;
-	unsigned char x;
 	wchar_t wchar;
 
 	Outchar = qcount;
@@ -880,8 +889,7 @@ vfindcol(i)
 }
 
 unsigned char *
-vskipwh(cp)
-	unsigned char *cp;
+vskipwh(unsigned char *cp)
 {
 
 	while (iswhite(*cp) && cp[1])
@@ -891,8 +899,7 @@ vskipwh(cp)
 
 
 unsigned char *
-vpastwh(cp)
-	unsigned char *cp;
+vpastwh(unsigned char *cp)
 {
 
 	while (iswhite(*cp))
@@ -1014,10 +1021,8 @@ int sig;
  * suppressed in visual mode).
  */
 
-/*ARGSUSED*/
 void
-onintr(sig)
-int sig;
+onintr(int sig __unused)
 {
 #ifndef CBREAK
 	signal(SIGINT, onintr);
@@ -1035,7 +1040,7 @@ int sig;
 	} else
 		vraw();
 #endif
-	error(gettext("\nInterrupt") + (inopen!=0));
+	error((unsigned char *)gettext("\nInterrupt") + (inopen != 0));
 }
 
 /*

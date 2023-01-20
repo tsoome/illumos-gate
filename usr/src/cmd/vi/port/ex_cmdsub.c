@@ -35,12 +35,16 @@
 #include "ex_temp.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
-#ifdef	STDIO
-#include	<stdio.h>
+#ifdef STDIO
+#include <stdio.h>
 #undef getchar
 #undef putchar
 #endif
-
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 /*
  * Command mode subroutines implementing
@@ -52,7 +56,8 @@ bool	endline = 1;
 line	*tad1;
 static int jnoop(void);
 static void splitit(void);
-int putchar(), getchar();
+int putchar(int);
+int getchar(void);
 int tags_flag;
 
 /*
@@ -79,8 +84,10 @@ append(int (*f)(), line *a)
 					undap1 = addr1;
 					undap2 = addr2 + 1;
 				}
-				error(value(vi_TERSE) ? gettext("Out of memory") :
-gettext("Out of memory- too many lines in file"));
+				error(value(vi_TERSE) ?
+				    (unsigned char *)gettext("Out of memory") :
+				    (unsigned char *)gettext(
+				    "Out of memory- too many lines in file"));
 			}
 		}
 		nline++;
@@ -126,10 +133,10 @@ pargs(void)
 		if (ac != 0)
 			putchar(' ');
 		if (ac + argc == argc0 - 1)
-			viprintf("[");
-		lprintf("%s", as);
+			viprintf((unsigned char *)"[");
+		lprintf((unsigned char *)"%s", as);
 		if (ac + argc == argc0 - 1)
-			viprintf("]");
+			viprintf((unsigned char *)"]");
 		as = av ? *++av : strend(as) + 1;
 	}
 	noonl();
@@ -296,10 +303,12 @@ mberror:
 				}
 			}
 		}
-		while (*cp++ = *cp1++)
+		while ((*cp++ = *cp1++) != '\0')
 			if (cp > &genbuf[LBSIZE-2])
-				error(value(vi_TERSE) ? gettext("Line overflow") :
-gettext("Result line of join would be too long"));
+				error(value(vi_TERSE) ?
+				    (unsigned char *)gettext("Line overflow") :
+				    (unsigned char *)gettext(
+				    "Result line of join would be too long"));
 		cp--;
 	}
 	strcLIN(genbuf);
@@ -373,7 +382,8 @@ move1(int cflag, line *addrt)
 	ad2++;
 	if (adt < ad1) {
 		if (adt + 1 == ad1 && !cflag && !inglobal)
-			error(gettext("That move would do nothing!"));
+			error((unsigned char *)gettext(
+			    "That move would do nothing!"));
 		dot = adt + (ad2 - ad1);
 		if (++adt != ad1) {
 			reverse(adt, ad1);
@@ -386,7 +396,7 @@ move1(int cflag, line *addrt)
 		reverse(ad2, adt);
 		reverse(ad1, adt);
 	} else
-		error(gettext("Move to a moved line"));
+		error((unsigned char *)gettext("Move to a moved line"));
 	change();
 	if (!inglobal)
 		if(FIXUNDO) {
@@ -434,7 +444,8 @@ put(void)
 	int cnt;
 
 	if (!FIXUNDO)
-		error(gettext("Cannot put inside global/macro"));
+		error((unsigned char *)gettext(
+		    "Cannot put inside global/macro"));
 	cnt = unddol - dol;
 	if (cnt && inopen && pkill[0] && pkill[1]) {
 		pragged(1);
@@ -484,7 +495,7 @@ pragged(bool kill)
 	 * Note that gp points to 'c'.
 	 */
 
-	strcpy(genbuf, linebuf);
+	strcpy((char *)genbuf, (char *)linebuf);
 
 	/*
 	 * Get last line of undo area ("3") into linebuf.
@@ -501,9 +512,9 @@ pragged(bool kill)
 	 *	linebuf = "3cd"
 	 */
 
-	strcat(linebuf, gp);
+	strcat((char *)linebuf, (char *)gp);
 #ifdef XPG4
-	P_cursor_offset = strlen(linebuf) - strlen(gp) - 1;
+	P_cursor_offset = strlen((char *)linebuf) - strlen((char *)gp) - 1;
 #endif
 
 	/*
@@ -528,7 +539,7 @@ pragged(bool kill)
 	 *	genbuf = "ab1"
 	 */
 
-	strcpy(gp, linebuf);
+	strcpy((char *)gp, (char *)linebuf);
 
 	/*
 	 * Now copy genbuf back into linebuf.
@@ -599,10 +610,13 @@ shift(int c, int cnt)
 			cp = genindent(i);
 			break;
 		}
-		if (cp + strlen(dp = vpastwh(linebuf)) >= &genbuf[LBSIZE - 2])
-			error(value(vi_TERSE) ? gettext("Line too long") :
-gettext("Result line after shift would be too long"));
-		CP(cp, dp);
+		dp = vpastwh(linebuf);
+		if (cp + strlen((char *)dp) >= &genbuf[LBSIZE - 2])
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Line too long") :
+			    (unsigned char *)gettext(
+			    "Result line after shift would be too long"));
+		CP((char *)cp, (char *)dp);
 		strcLIN(genbuf);
 		putmark(addr);
 	}
@@ -614,8 +628,7 @@ gettext("Result line after shift would be too long"));
  * Most work here is in parsing the tags file itself.
  */
 void
-tagfind(quick)
-	bool quick;
+tagfind(bool quick)
 {
 	unsigned char cmdbuf[BUFSIZE];
 	unsigned char filebuf[FNSIZE];
@@ -650,10 +663,11 @@ tagfind(quick)
 		*lp++ = 0;
 		if (!endcmd(peekchar()))
 badtag:
-			error(value(vi_TERSE) ? gettext("Bad tag") :
-				gettext("Give one tag per line"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Bad tag") :
+			    (unsigned char *)gettext("Give one tag per line"));
 	} else if (lasttag[0] == 0)
-		error(gettext("No previous tag"));
+		error((unsigned char *)gettext("No previous tag"));
 	c = getchar();
 	if (!endcmd(c))
 		goto badtag;
@@ -668,7 +682,7 @@ badtag:
 	 * therefore, tagfbuf should be able to hold all tags.
 	 */
 
-	CP(tagfbuf, svalue(vi_TAGS));
+	CP((char *)tagfbuf, (char *)svalue(vi_TAGS));
 	fne = tagfbuf - 1;
 	while (fne) {
 		fn = ++fne;
@@ -704,7 +718,7 @@ badtag:
 			/* get the line itself */
 			if(fgets((char *)linebuf, sizeof linebuf, iof)==NULL)
 				goto goleft;
-			linebuf[strlen(linebuf)-1] = 0;	/* was '\n' */
+			linebuf[strlen((char *)linebuf)-1] = 0;	/* was '\n' */
 			while (*cp && *lp == *cp)
 				cp++, lp++;
 			/*
@@ -716,21 +730,20 @@ badtag:
 			 *  match is found even if the tag given is a proper
 			 *  prefix of the tag found.  i.e. "ab" matches "abcd"
 			 */
-			if ( *lp == 0 && (iswhite(*cp) || tl > 511 || tl > 0 && lp-lasttag >= tl) ) {
+			if (*lp == 0 &&
+			    (iswhite(*cp) || tl > 511 || (tl > 0 && lp-lasttag >= tl))) {
 				/*
 				 * Found a match.  Force selection to be
 				 *  the first possible.
 				 */
 				if ( mid == bot  &&  mid == top ) {
 					; /* found first possible match */
-				}
-				else {
+				} else {
 					/* postpone final decision. */
 					top = mid;
 					continue;
 				}
-			}
-			else {
+			} else {
 				if ((int)*lp > (int)*cp)
 					bot = mid + 1;
 				else
@@ -782,8 +795,9 @@ badtags:
 				savetag((char *)savedfile);
                         }
 #endif
-			strcpy(cmdbuf, cp);
-			if (strcmp(filebuf, savedfile) || !edited) {
+			strcpy((char *)cmdbuf, (char *)cp);
+			if (strcmp((char *)filebuf, (char *)savedfile) != 0 ||
+			    !edited) {
 				unsigned char cmdbuf2[sizeof filebuf + 10];
 
 				/* Different file.  Do autowrite & get it. */
@@ -794,12 +808,17 @@ badtags:
                                                 unsavetag();
 #endif
 						error(value(vi_TERSE) ?
-gettext("No write") : gettext("No write since last change (:tag! overrides)"));
+						    (unsigned char *)
+						    gettext("No write") :
+						    (unsigned char *)
+						    gettext("No write since "
+						    "last change (:tag! "
+						    "overrides)"));
 					}
 				}
 				oglobp = globp;
-				strcpy(cmdbuf2, "e! ");
-				strcat(cmdbuf2, filebuf);
+				strcpy((char *)cmdbuf2, "e! ");
+				strcat((char *)cmdbuf2, (char *)filebuf);
 				globp = cmdbuf2;
 				d = peekc; ungetchar(0);
 				commands(1, 1);
@@ -839,7 +858,7 @@ gettext("No write") : gettext("No write since last change (:tag! overrides)"));
 		 */
 		if (tags_flag == 0)
 			continue;
-		io = open(fn, 0);
+		io = open((char *)fn, O_RDONLY);
 		if (io < 0)
 			continue;
 		/* tfcount++; */
@@ -860,10 +879,10 @@ gettext("No write") : gettext("No write since last change (:tag! overrides)"));
 			 *  match is found even if the tag given is a proper
 			 *  prefix of the tag found.  i.e. "ab" matches "abcd"
 			 */
-			if ( *lp == 0 && (iswhite(*cp) || tl > 511 || tl > 0 && lp-lasttag >= tl) ) {
+			if (*lp == 0 &&
+			    (iswhite(*cp) || tl > 511 || (tl > 0 && lp-lasttag >= tl))) {
 				; /* Found it. */
-			}
-			else {
+			} else {
 				/* Not this tag.  Try the next */
 				continue;
 			}
@@ -910,8 +929,9 @@ badtags2:
 				savetag((char *)savedfile);
                         }
 #endif
-			strcpy(cmdbuf, cp);
-			if (strcmp(filebuf, savedfile) || !edited) {
+			strcpy((char *)cmdbuf, (char *)cp);
+			if (strcmp((char *)filebuf, (char *)savedfile) != 0 ||
+			    !edited) {
 				unsigned char cmdbuf2[sizeof filebuf + 10];
 
 				/* Different file.  Do autowrite & get it. */
@@ -922,12 +942,17 @@ badtags2:
                                                 unsavetag();
 #endif
 						error(value(vi_TERSE) ?
-gettext("No write") : gettext("No write since last change (:tag! overrides)"));
+						    (unsigned char *)gettext(
+						    "No write") :
+						    (unsigned char *)gettext(
+						    "No write since last "
+						    "change (:tag! "
+						    "overrides)"));
 					}
 				}
 				oglobp = globp;
-				strcpy(cmdbuf2, "e! ");
-				strcat(cmdbuf2, filebuf);
+				strcpy((char *)cmdbuf2, "e! ");
+				strcat((char *)cmdbuf2, (char *)filebuf);
 				globp = cmdbuf2;
 				d = peekc; ungetchar(0);
 				commands(1, 1);
@@ -967,7 +992,7 @@ gettext("No write") : gettext("No write since last change (:tag! overrides)"));
 #endif
 	}	/* end of "for each file in path" */
 	if (tfcount <= 0)
-		error(gettext("No tags file"));
+		error((unsigned char *)gettext("No tags file"));
 	else
 		serror(value(vi_TERSE) ?
 		    (unsigned char *)gettext("%s: No such tag") :
@@ -984,7 +1009,8 @@ yank(void)
 {
 
 	if (!FIXUNDO)
-		error(gettext("Can't yank inside global/macro"));
+		error((unsigned char *)gettext(
+		    "Can't yank inside global/macro"));
 	save12();
 	undkind = UNDNONE;
 	killcnt(addr2 - addr1 + 1);
@@ -1081,14 +1107,14 @@ zop2(int nlines, int op)
 
 	case EOF:
 		if (addr2 == dol)
-			error(gettext("\nAt EOF"));
+			error((unsigned char *)gettext("\nAt EOF"));
 		/* FALLTHROUGH */
 	case '+':
 		if (addr2 == dol)
-			error(gettext("At EOF"));
+			error((unsigned char *)gettext("At EOF"));
 		addr2 += nlines * zweight;
 		if (addr2 > dol)
-			error(gettext("Hit BOTTOM"));
+			error((unsigned char *)gettext("Hit BOTTOM"));
 		addr2++;
 		/* FALLTHROUGH */
 	default:
@@ -1118,7 +1144,7 @@ zop2(int nlines, int op)
 	case '-':
 		addr2 -= nlines * zweight;
 		if (addr2 < one)
-			error(gettext("Hit TOP"));
+			error((unsigned char *)gettext("Hit TOP"));
 		nlines--;
 		addr1 = addr2 - nlines;
 		dot = addr2;
@@ -1212,8 +1238,9 @@ undo(bool c)
 		vudump("before undo");
 #endif
 	if (inglobal && inopen <= 0)
-		error(value(vi_TERSE) ? gettext("Can't undo in global") :
-			gettext("Can't undo in global commands"));
+		error(value(vi_TERSE) ?
+		    (unsigned char *)gettext("Can't undo in global") :
+		    (unsigned char *)gettext("Can't undo in global commands"));
 
 	/*
 	 * Unless flag indicates a forced undo, make sure
@@ -1496,10 +1523,11 @@ somechange(void)
 		break;
 
 	case UNDNONE:
-		error(gettext("Nothing to undo"));
+		error((unsigned char *)gettext("Nothing to undo"));
 	}
-	error(value(vi_TERSE) ? gettext("Nothing changed") :
-		gettext("Last undoable command didn't change anything"));
+	error(value(vi_TERSE) ? (unsigned char *)gettext("Nothing changed") :
+	    (unsigned char *)gettext(
+	    "Last undoable command didn't change anything"));
 }
 
 /*
@@ -1526,16 +1554,16 @@ mapcmd(int un, int ab)
 		if (peekchar() != EOF)
 			ignchar();
 		if (un)
-			error(gettext("Missing lhs"));
+			error((unsigned char *)gettext("Missing lhs"));
 		if (inopen)
 			pofix();
 		for (i=0; i< MAXNOMACS && mp[i].mapto; i++)
 			if (mp[i].cap) {
-				lprintf("%s", mp[i].descr);
+				lprintf((unsigned char *)"%s", mp[i].descr);
 				putchar('\t');
-				lprintf("%s", mp[i].cap);
+				lprintf((unsigned char *)"%s", mp[i].cap);
 				putchar('\t');
-				lprintf("%s", mp[i].mapto);
+				lprintf((unsigned char *)"%s", mp[i].mapto);
 				putNFL();
 			}
 		return;
@@ -1546,7 +1574,7 @@ mapcmd(int un, int ab)
 		c = getchar();
 		if (c == CTRL('v')) {
 			c = getchar();
-		} else if (!un && any(c, " \t")) {
+		} else if (!un && any(c, (unsigned char *)" \t")) {
 			/* End of lhs */
 			break;
 		} else if (endcmd(c) && c!='"') {
@@ -1558,14 +1586,14 @@ mapcmd(int un, int ab)
 				    (unsigned char *)NOSTR, mp);
 				return;
 			} else
-				error(gettext("Missing rhs"));
+				error((unsigned char *)gettext("Missing rhs"));
 		}
 		*p++ = c;
 	}
 	*p = 0;
 
 	if (skipend())
-		error(gettext("Missing rhs"));
+		error((unsigned char *)gettext("Missing rhs"));
 	for (p=rhs; ; ) {
 		c = getchar();
 		if (c == CTRL('v')) {
@@ -1590,7 +1618,7 @@ mapcmd(int un, int ab)
 		fnkey = fkey(lhs[1] - '0');
 		funkey[0] = 'f'; funkey[1] = lhs[1]; funkey[2] = 0;
 		if (fnkey)
-			strcpy(lhs, fnkey);
+			strcpy((char *)lhs, (char *)fnkey);
 		dname = funkey;
 	} else {
 		dname = lhs;
@@ -1622,8 +1650,8 @@ addmac(unsigned char *src, unsigned char *dest, unsigned char *dname,
 		 * but this makes mapping involving escapes that
 		 * is reasonable mess up.
 		 */
-		if (src[1] == 0 && src[0] == dest[strlen(dest)-1])
-			error(gettext("No tail recursion"));
+		if (src[1] == 0 && src[0] == dest[strlen((char *)dest)-1])
+			error((unsigned char *)gettext("No tail recursion"));
 		/*
 		 * We don't let the user rob themself of ":", and making
 		 * multi char words is a bad idea so we don't allow it.
@@ -1631,26 +1659,30 @@ addmac(unsigned char *src, unsigned char *dest, unsigned char *dname,
 		 * linefeed, and escape, they can hurt themself. This is
 		 * so weird I don't bother to check for it.
 		 */
-		if (isalpha(src[0])  && isascii(src[0]) && src[1] || any(src[0],":"))
-			error(gettext("Too dangerous to map that"));
+		if ((isalpha(src[0]) && isascii(src[0]) && src[1]) ||
+		    any(src[0], (unsigned char *)":"))
+			error((unsigned char *)gettext(
+			    "Too dangerous to map that"));
 	}
 	else if (dest) {
 		/* check for tail recursion in input mode: fussier */
-		if (eq(src, dest+strlen(dest)-strlen(src)))
-			error(gettext("No tail recursion"));
+		if (eq((char *)src,
+		    (char *)dest+strlen((char *)dest)-strlen((char *)src)))
+			error((unsigned char *)gettext("No tail recursion"));
 	}
 	/*
 	 * If the src were null it would cause the dest to
 	 * be mapped always forever. This is not good.
 	 */
 	if (src == (unsigned char *)NOSTR || src[0] == 0)
-		error(gettext("Missing lhs"));
+		error((unsigned char *)gettext("Missing lhs"));
 
 	/* see if we already have a def for src */
 	zer = -1;
 	for (slot=0; slot < MAXNOMACS && mp[slot].mapto; slot++) {
 		if (mp[slot].cap) {
-			if (eq(src, mp[slot].cap) || eq(src, mp[slot].mapto))
+			if (eq((char *)src, (char *)mp[slot].cap) ||
+			    eq((char *)src, (char *)mp[slot].mapto))
 				break;	/* if so, reuse slot */
 		} else {
 			zer = slot;	/* remember an empty slot */
@@ -1658,7 +1690,7 @@ addmac(unsigned char *src, unsigned char *dest, unsigned char *dname,
 	}
 
 	if (slot >= MAXNOMACS)
-		error(gettext("Too many macros"));
+		error((unsigned char *)gettext("Too many macros"));
 
 	if (dest == (unsigned char *)NOSTR) {
 		/* unmap */
@@ -1666,8 +1698,10 @@ addmac(unsigned char *src, unsigned char *dest, unsigned char *dname,
 			mp[slot].cap = (unsigned char *)NOSTR;
 			mp[slot].descr = (unsigned char *)NOSTR;
 		} else {
-			error(value(vi_TERSE) ? gettext("Not mapped") :
-				gettext("That macro wasn't mapped"));
+			error(value(vi_TERSE) ?
+			    (unsigned char *)gettext("Not mapped") :
+			    (unsigned char *)gettext(
+			    "That macro wasn't mapped"));
 		}
 		return;
 	}
@@ -1680,18 +1714,19 @@ addmac(unsigned char *src, unsigned char *dest, unsigned char *dname,
 	if (msnext == 0)	/* first time */
 		msnext = mapspace;
 	/* Check is a bit conservative, we charge for dname even if reusing src */
-	if (msnext - mapspace + strlen(dest) + strlen(src) + strlen(dname) + 3 > MAXCHARMACS)
-		error(gettext("Too much macro text"));
-	CP(msnext, src);
+	if (msnext - mapspace + strlen((char *)dest) + strlen((char *)src) +
+	    strlen((char *)dname) + 3 > MAXCHARMACS)
+		error((unsigned char *)gettext("Too much macro text"));
+	CP((char *)msnext, (char *)src);
 	mp[slot].cap = msnext;
-	msnext += strlen(src) + 1;	/* plus 1 for null on the end */
-	CP(msnext, dest);
+	msnext += strlen((char *)src) + 1;	/* plus 1 for null on the end */
+	CP((char *)msnext, (char *)dest);
 	mp[slot].mapto = msnext;
-	msnext += strlen(dest) + 1;
+	msnext += strlen((char *)dest) + 1;
 	if (dname) {
-		CP(msnext, dname);
+		CP((char *)msnext, (char *)dname);
 		mp[slot].descr = msnext;
-		msnext += strlen(dname) + 1;
+		msnext += strlen((char *)dname) + 1;
 	} else {
 		/* default descr to string user enters */
 		mp[slot].descr = src;
@@ -1703,8 +1738,7 @@ addmac(unsigned char *src, unsigned char *dest, unsigned char *dname,
  * get the macro from.
  */
 void
-cmdmac(c)
-unsigned char c;
+cmdmac(unsigned char c)
 {
 	unsigned char macbuf[BUFSIZE];
 	line *ad, *a1, *a2;
@@ -1731,8 +1765,7 @@ unsigned char c;
 }
 
 unsigned char *
-vgetpass(prompt)
-char *prompt;
+vgetpass(char *prompt)
 {
 	unsigned char *p;
 	int c;
@@ -1741,7 +1774,7 @@ char *prompt;
 	/* In ex mode, let the system hassle with setting no echo */
 	if (!inopen)
 		return (unsigned char *)getpass(prompt);
-	viprintf("%s", prompt); flush();
+	viprintf((unsigned char *)"%s", prompt); flush();
 	for (p=pbuf; (c = getkey())!='\n' && c!=EOF && c!='\r';) {
 		if (p < &pbuf[8])
 			*p++ = c;
@@ -1768,14 +1801,14 @@ savetag(char *name)	/* saves location where we are */
 	if( !value(vi_TAGSTACK) )
 		return;
 	if(tag_depth >= TSTACKSIZE) {
-		error(gettext("Tagstack too deep."));
+		error((unsigned char *)gettext("Tagstack too deep."));
 	}
 	if( strlen( name ) + 1 + tag_end >= &tag_buf[1024]) {
-		error(gettext("Too many tags."));
+		error((unsigned char *)gettext("Too many tags."));
 	}
 	tagstack[tag_depth].tag_line = dot;
 	tagstack[tag_depth++].tag_file = tag_end;
-	while(*tag_end++ = *name++)
+	while((*tag_end++ = *name++) != '\0')
 		;
 }
 
@@ -1792,8 +1825,7 @@ unsavetag(void)
 }
 
 void
-poptag(quick)	/* puts us back where we came from */
-bool quick;
+poptag(bool quick)	/* puts us back where we came from */
 {
 	unsigned char cmdbuf[100];
 	unsigned char *oglobp;
@@ -1804,24 +1836,28 @@ bool quick;
 		d = tag_depth;
 		tag_depth = 0;
 		if (d == 0)
-			error(gettext("Tagstack not enabled."));
+			error((unsigned char *)gettext(
+			    "Tagstack not enabled."));
 		else
 			return;
 	}
 	if (!tag_depth)
-		error(gettext("Tagstack empty."));
+		error((unsigned char *)gettext("Tagstack empty."));
 
 	/* change to old file */
-	if (strcmp(tagstack[tag_depth-1].tag_file, savedfile) ) {
+	if (strcmp(tagstack[tag_depth-1].tag_file, (char *)savedfile) ) {
 		if (!quick) {
 			ckaw();
 			if (chng && dol > zero)
 				error(value(vi_TERSE) ?
-gettext("No write") : gettext("No write since last change (:pop! overrides)"));
+				    (unsigned char *)gettext("No write") :
+				    (unsigned char *)gettext(
+				    "No write since last change (:pop! "
+				    "overrides)"));
 		}
 		oglobp = globp;
-		strcpy(cmdbuf, "e! ");
-		strcat(cmdbuf, tagstack[tag_depth-1].tag_file);
+		strcpy((char *)cmdbuf, "e! ");
+		strcat((char *)cmdbuf, tagstack[tag_depth-1].tag_file);
 		globp = cmdbuf;
 		d = peekc; ungetchar(0);
 		commands(1, 1);

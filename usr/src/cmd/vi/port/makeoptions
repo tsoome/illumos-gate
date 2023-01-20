@@ -1,4 +1,3 @@
-#ident	"%Z%%M%	%I%	%E% SMI"
 #
 # CDDL HEADER START
 #
@@ -81,9 +80,6 @@ $s/.*	/vi_NOPTS		/
 !echo STEP16
 $i
 
-.
-0a
-#ident	"%Z%%M%	%I%	%E% SMI"
 .
 w! ex_vars.h
 q

@@ -33,7 +33,9 @@
 #include "ex_temp.h"
 #include "ex_vis.h"
 #include "ex_tty.h"
+#include <crypt.h>
 #include <unistd.h>
+#include <strings.h>
 
 /*
  * Editor temporary file routines.
@@ -49,14 +51,9 @@ int	havetmp;
 short	tfile = -1;
 static short	rfile = -1;
 
-extern int junk();
-
 void
 fileinit(void)
 {
-	unsigned char *p;
-	pid_t j;
-	int i;
 	struct stat64 stbuf;
 
 	if (tline == INCRMT * (HBLKS+2))
@@ -72,9 +69,9 @@ fileinit(void)
 	iblock = -1;
 	iblock2 = -1;
 	oblock = -1;
-	if (strlen(svalue(vi_DIRECTORY)) > (PATH_MAX -13))
-		error(gettext("User set directory too long"));
-	CP(tfname, svalue(vi_DIRECTORY));
+	if (strlen((char *)svalue(vi_DIRECTORY)) > (PATH_MAX -13))
+		error((unsigned char *)gettext("User set directory too long"));
+	CP((char *)tfname, (char *)svalue(vi_DIRECTORY));
 	if (stat64((char *)tfname, &stbuf)) {
 dumbness:
 		if (setexit() == 0)
@@ -88,10 +85,10 @@ dumbness:
 		errno = ENOTDIR;
 		goto dumbness;
 	}
-	CP(tempname, tfname);
+	CP((char *)tempname, (char *)tfname);
 	ichanged = 0;
 	ichang2 = 0;
-	(void) strcat(tfname, "/ExXXXXXX");
+	(void) strcat((char *)tfname, "/ExXXXXXX");
 	if ((tfile = mkstemp((char *)tfname)) < 0)
 		goto dumbness;
 #ifdef VMUNIX
@@ -163,7 +160,7 @@ getaline(line tl)
 	bp = getblock(tl, READ);
 	nl = nleft;
 	tl &= ~OFFMSK;
-	while (*lp++ = *bp++)
+	while ((*lp++ = *bp++) != '\0')
 		if (--nl == 0) {
 			bp = getblock(tl += INCRMT, READ);
 			nl = nleft;
@@ -185,7 +182,7 @@ putline(void)
 	bp = getblock(tl, WRITE);
 	nl = nleft;
 	tl &= ~OFFMSK;
-	while (*bp = *lp++) {
+	while ((*bp = *lp++) != '\0') {
 		tmpbp = *bp;
 		if (tmpbp == '\n') {
 			*bp = 0;
@@ -193,7 +190,7 @@ putline(void)
 			break;
 		} else if (junk(*bp++)) {
 			checkjunk(tmpbp);
-			*--bp;
+			--bp;
 		}
 		if (--nl == 0) {
 			bp = getblock(tl += INCRMT, WRITE);
@@ -204,9 +201,6 @@ putline(void)
 	tline += (((lp - linebuf) + BNDRY - 1) >> SHFT) & 077776;
 	return (tl);
 }
-
-int	read();
-int	write();
 
 unsigned char *
 getblock(line atl, int iof)
@@ -230,7 +224,7 @@ getblock(line atl, int iof)
 			dot--;
 		dol--;
 		unddol--;
-		error(gettext(" Tmp file too large"));
+		error((unsigned char *)gettext(" Tmp file too large"));
 	}
 	nleft = BUFSIZE - off;
 	if (bno == iblock) {
@@ -249,18 +243,19 @@ getblock(line atl, int iof)
 		if (hitin2 == 0) {
 			if (ichang2) {
 				if (xtflag) {
-					if (run_crypt(0L, ibuff2,
+					if (run_crypt(0L, (char *)ibuff2,
 					    CRSIZE, tperm) == -1) {
 						filioerr(tfname);
 					}
 				}
-				blkio(iblock2, ibuff2, write);
+				blkio(iblock2, ibuff2, NULL, write);
 			}
 			ichang2 = 0;
 			iblock2 = bno;
-			blkio(bno, ibuff2, read);
+			blkio(bno, ibuff2, read, NULL);
 			if (xtflag)
-				if (run_crypt(0L, ibuff2, CRSIZE, tperm) == -1)
+				if (run_crypt(0L, (char *)ibuff2, CRSIZE,
+				    tperm) == -1)
 					filioerr(tfname);
 			hitin2 = 1;
 			return (ibuff2 + off);
@@ -268,15 +263,16 @@ getblock(line atl, int iof)
 		hitin2 = 0;
 		if (ichanged) {
 			if (xtflag)
-				if (run_crypt(0L, ibuff, CRSIZE, tperm) == -1)
+				if (run_crypt(0L, (char *)ibuff, CRSIZE,
+				    tperm) == -1)
 					filioerr(tfname);
-			blkio(iblock, ibuff, write);
+			blkio(iblock, ibuff, NULL, write);
 		}
 		ichanged = 0;
 		iblock = bno;
-		blkio(bno, ibuff, read);
+		blkio(bno, ibuff, read, NULL);
 		if (xtflag)
-			if (run_crypt(0L, ibuff, CRSIZE, tperm) == -1)
+			if (run_crypt(0L, (char *)ibuff, CRSIZE, tperm) == -1)
 				filioerr(tfname);
 		return (ibuff + off);
 	}
@@ -291,11 +287,11 @@ getblock(line atl, int iof)
 			n = CRSIZE;
 			while (n--)
 				*p2++ = *p1++;
-			if (run_crypt(0L, crbuf, CRSIZE, tperm) == -1)
+			if (run_crypt(0L, (char *)crbuf, CRSIZE, tperm) == -1)
 				filioerr(tfname);
-			blkio(oblock, crbuf, write);
+			blkio(oblock, crbuf, NULL, write);
 		} else
-			blkio(oblock, obuff, write);
+			blkio(oblock, obuff, NULL, write);
 	}
 	oblock = bno;
 	return (obuff + off);
@@ -304,17 +300,18 @@ getblock(line atl, int iof)
 #ifdef	VMUNIX
 #define	INCORB	64
 unsigned char	incorb[INCORB+1][BUFSIZE];
-#define	pagrnd(a)	((unsigned char *)(((int)a)&~(BUFSIZE-1)))
+#define	pagrnd(a)	((unsigned char *)(((uintptr_t)a)&~(BUFSIZE-1)))
 int	stilinc;	/* up to here not written yet */
 #endif
 
 void
-blkio(short b, unsigned char *buf, int (*iofcn)())
+blkio(short b, unsigned char *buf, ssize_t (*riofcn)(int, void *, size_t),
+    ssize_t (*wiofcn)(int, const void *, size_t))
 {
 
 #ifdef VMUNIX
 	if (b < INCORB) {
-		if (iofcn == read) {
+		if (riofcn == read) {
 			bcopy(pagrnd(incorb[b+1]), buf, BUFSIZE);
 			return;
 		}
@@ -328,8 +325,13 @@ blkio(short b, unsigned char *buf, int (*iofcn)())
 		tflush();
 #endif
 	lseek(tfile, (long)(unsigned)b * BUFSIZE, 0);
-	if ((*iofcn)(tfile, buf, BUFSIZE) != BUFSIZE)
-		filioerr(tfname);
+	if (riofcn != NULL) {
+		if ((*riofcn)(tfile, buf, BUFSIZE) != BUFSIZE)
+			filioerr(tfname);
+	} else if (wiofcn != NULL) {
+		if ((*wiofcn)(tfile, buf, BUFSIZE) != BUFSIZE)
+			filioerr(tfname);
+	}
 }
 
 #ifdef VMUNIX
@@ -379,27 +381,29 @@ synctmp(void)
 	 * code in getblock above for iblock+iblock2 isn't needed.
 	 */
 	if (ichanged)
-		blkio(iblock, ibuff, write);
+		blkio(iblock, ibuff, NULL, write);
 	ichanged = 0;
 	if (ichang2)
-		blkio(iblock2, ibuff2, write);
+		blkio(iblock2, ibuff2, NULL, write);
 	ichang2 = 0;
-	if (oblock != -1)
-	if (xtflag) {
-		/*
-		 * Encrypt block before writing, so some devious
-		 * person can't look at temp file while editing.
-		 */
-		p1 = obuff;
-		p2 = crbuf;
-		n = CRSIZE;
-		while (n--)
-			*p2++ = *p1++;
-		if (run_crypt(0L, crbuf, CRSIZE, tperm) == -1)
-			filioerr(tfname);
-		blkio(oblock, crbuf, write);
-	} else
-		blkio(oblock, obuff, write);
+	if (oblock != -1) {
+		if (xtflag) {
+			/*
+			 * Encrypt block before writing, so some devious
+			 * person can't look at temp file while editing.
+			 */
+			p1 = obuff;
+			p2 = crbuf;
+			n = CRSIZE;
+			while (n--)
+				*p2++ = *p1++;
+			if (run_crypt(0L, (char *)crbuf, CRSIZE, tperm) == -1)
+				filioerr(tfname);
+			blkio(oblock, crbuf, NULL, write);
+		} else {
+			blkio(oblock, obuff, NULL, write);
+		}
+	}
 	time(&H.Time);
 	uid = getuid();
 	if (xtflag)
@@ -410,13 +414,14 @@ synctmp(void)
 	for (a = zero, bp = blocks; a <= dol;
 	    a += BUFSIZE / sizeof (*a), bp++) {
 		if (bp >= &H.Blocks[LBLKS-1])
-			error(gettext(
+			error((unsigned char *)gettext(
 			    "file too large to recover with -r option"));
 		if (*bp < 0) {
 			tline = (tline + OFFMSK) &~ OFFMSK;
 			*bp = ((tline >> OFFBTS) & BLKMSK);
 			if (*bp > NMBLKS)
-				error(gettext(" Tmp file too large"));
+				error((unsigned char *)gettext(
+				    " Tmp file too large"));
 			tline += INCRMT;
 			oblock = *bp + 1;
 			bp[1] = -1;
@@ -491,18 +496,26 @@ short	rnext;
 unsigned char	*rbufcp;
 
 void
-regio(short b, int (*iofcn)())
+regio(short b, ssize_t (*riofcn)(int, void *, size_t),
+    ssize_t (*wiofcn)(int, const void *, size_t))
 {
 
 	if (rfile == -1) {
-		CP(rfname, tempname);
-		(void) strcat(rfname, "/RxXXXXXX");
+		CP((char *)rfname, (char *)tempname);
+		(void) strcat((char *)rfname, "/RxXXXXXX");
 		if ((rfile = mkstemp((char *)rfname)) < 0)
 			filioerr(rfname);
 	}
 	lseek(rfile, (long)b * BUFSIZE, 0);
-	if ((*iofcn)(rfile, rbuf, BUFSIZE) != BUFSIZE)
-		filioerr(rfname);
+	if (riofcn != NULL) {
+		if ((*riofcn)(rfile, rbuf, BUFSIZE) != BUFSIZE)
+			filioerr(rfname);
+	} else if (wiofcn != NULL) {
+		if ((*wiofcn)(rfile, rbuf, BUFSIZE) != BUFSIZE)
+			filioerr(rfname);
+	} else {
+		filioerr((unsigned char *)"missing read or write operation");
+	}
 	rblock = b;
 }
 
@@ -521,12 +534,13 @@ REGblk(void)
 				j++, m >>= 1;
 			rused[i] |= (1 << j);
 #ifdef RDEBUG
-			viprintf("allocating block %d\n", i * 16 + j);
+			viprintf((unsigned char *)"allocating block %d\n",
+			    i * 16 + j);
 #endif
 			return (i * 16 + j);
 		}
 	}
-	error(gettext("Out of register space (ugh)"));
+	error((unsigned char *)gettext("Out of register space (ugh)"));
 	/*NOTREACHED*/
 	return (0);
 }
@@ -540,7 +554,16 @@ mapreg(int c)
 	return (isdigit(c) ? &strregs[('z'-'a'+1)+(c-'0')] : &strregs[c-'a']);
 }
 
-int	shread();
+static ssize_t
+shread(int f __unused, void *buf __unused, size_t s __unused)
+{
+	struct front { short a; short b; };
+
+	if (read(rfile, (char *)rbuf, sizeof (struct front)) ==
+	    sizeof (struct front))
+		return (sizeof (struct rbuf));
+	return (0);
+}
 
 void
 KILLreg(int c)
@@ -557,21 +580,9 @@ KILLreg(int c)
 		viprintf("freeing block %d\n", rblock);
 #endif
 		rused[rblock / 16] &= ~(1 << (rblock % 16));
-		regio(rblock, shread);
+		regio(rblock, shread, NULL);
 		rblock = rbuf->rb_next;
 	}
-}
-
-/*VARARGS*/
-int
-shread(void)
-{
-	struct front { short a; short b; };
-
-	if (read(rfile, (char *)rbuf, sizeof (struct front)) ==
-	    sizeof (struct front))
-		return (sizeof (struct rbuf));
-	return (0);
 }
 
 int	getREG();
@@ -596,12 +607,13 @@ putreg(unsigned char c)
 			vgoto(WECHO, 0);
 		}
 		vreg = -1;
-		error(gettext("Nothing in register %c"), c);
+		error((unsigned char *)gettext("Nothing in register %c"), c);
 	}
 	if (inopen && partreg(c)) {
 		if (!FIXUNDO) {
 			splitw++; vclean(); vgoto(WECHO, 0); vreg = -1;
-			error(gettext("Can't put partial line inside macro"));
+			error((unsigned char *)gettext(
+			    "Can't put partial line inside macro"));
 		}
 		squish();
 		addr1 = addr2 = dol;
@@ -643,7 +655,7 @@ getREG(void)
 		if (rnleft == 0) {
 			if (rnext == 0)
 				return (EOF);
-			regio(rnext, read);
+			regio(rnext, read, NULL);
 			rnext = rbuf->rb_next;
 			rbufcp = rbuf->rb_text;
 			rnleft = sizeof (rbuf->rb_text);
@@ -675,27 +687,27 @@ YANKreg(int c)
 	sp->rg_flags = inopen && cursor && wcursor;
 	rbuf = &YANKrbuf;
 	if (sp->rg_last) {
-		regio(sp->rg_last, read);
+		regio(sp->rg_last, read, NULL);
 		rnleft = sp->rg_nleft;
 		rbufcp = &rbuf->rb_text[sizeof (rbuf->rb_text) - rnleft];
 	} else {
 		rblock = 0;
 		rnleft = 0;
 	}
-	CP(savelb, linebuf);
+	CP((char *)savelb, (char *)linebuf);
 	for (addr = addr1; addr <= addr2; addr++) {
 		getaline(*addr);
 		if (sp->rg_flags) {
 			if (addr == addr2)
 				*wcursor = 0;
 			if (addr == addr1)
-				strcpy(linebuf, cursor);
+				strcpy((char *)linebuf, (char *)cursor);
 		}
 		YANKline();
 	}
 	rbflush();
 	killed();
-	CP(linebuf, savelb);
+	CP((char *)linebuf, (char *)savelb);
 	return (0);
 }
 
@@ -743,7 +755,7 @@ rbflush(void)
 
 	if (rblock == 0)
 		return;
-	regio(rblock, write);
+	regio(rblock, NULL, write);
 	if (sp->rg_first == 0)
 		sp->rg_first = rblock;
 	sp->rg_last = rblock;
@@ -762,7 +774,7 @@ regbuf(unsigned char c, unsigned char *buf, int buflen)
 	rnext = mapreg(c)->rg_first;
 	if (rnext == 0) {
 		*buf = 0;
-		error(gettext("Nothing in register %c"), c);
+		error((unsigned char *)gettext("Nothing in register %c"), c);
 	}
 	p = buf;
 	while (getREG() == 0) {
@@ -770,7 +782,10 @@ regbuf(unsigned char c, unsigned char *buf, int buflen)
 		while (*lp) {
 			if (p >= &buf[buflen])
 				error(value(vi_TERSE) ?
-gettext("Register too long") : gettext("Register too long to fit in memory"));
+				    (unsigned char *)gettext(
+				    "Register too long") :
+				    (unsigned char *)gettext(
+				    "Register too long to fit in memory"));
 			*p++ = *lp++;
 		}
 		*p++ = '\n';
@@ -790,18 +805,18 @@ shownam()
 {
 	int k;
 
-	viprintf("\nRegister   Contents\n");
-	viprintf("========   ========\n");
+	viprintf((unsigned char *)"\nRegister   Contents\n");
+	viprintf((unsigned char *)"========   ========\n");
 	for (k = 'a'; k <= 'z'; k++) {
 		rbuf = &putrbuf;
 		rnleft = 0;
 		rblock = 0;
 		rnext = mapreg(k)->rg_first;
-		viprintf(" %c:", k);
+		viprintf((unsigned char *)" %c:", k);
 		if (rnext == 0)
-			viprintf("\t\tNothing in register.\n");
+			viprintf((unsigned char *)"\t\tNothing in register.\n");
 		while (getREG() == 0) {
-			viprintf("\t\t%s\n", linebuf);
+			viprintf((unsigned char *)"\t\t%s\n", linebuf);
 		}
 	}
 	return (0);
@@ -815,18 +830,18 @@ shownbr()
 {
 	int k;
 
-	viprintf("\nRegister   Contents\n");
-	viprintf("========   ========\n");
+	viprintf((unsigned char *)"\nRegister   Contents\n");
+	viprintf((unsigned char *)"========   ========\n");
 	for (k = '1'; k <= '9'; k++) {
 		rbuf = &putrbuf;
 		rnleft = 0;
 		rblock = 0;
 		rnext = mapreg(k)->rg_first;
-		viprintf(" %c:", k);
+		viprintf((unsigned char *)" %c:", k);
 		if (rnext == 0)
-			viprintf("\t\tNothing in register.\n");
+			viprintf((unsigned char *)"\t\tNothing in register.\n");
 		while (getREG() == 0) {
-			viprintf("\t\t%s\n", linebuf);
+			viprintf((unsigned char *)"\t\t%s\n", linebuf);
 		}
 	}
 	return (0);

@@ -32,9 +32,12 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 
+extern int putchar(int);
 void fixundo(void);
 
+static int xdw(void);
 /*
  * This file defines the operation sequences which interface the
  * logical changes to the file buffer with the internal and external
@@ -71,7 +74,7 @@ vUndo(void)
 		(void) beep();
 		return;
 	}
-	CP(vutmp, linebuf);
+	CP((char *)vutmp, (char *)linebuf);
 	vUD1 = linebuf; vUD2 = strend(linebuf);
 	putmk1(dot, vUNDsav);
 	getDOT();
@@ -92,8 +95,7 @@ vUndo(void)
 }
 
 void
-vundo(show)
-bool show;	/* if true update the screen */
+vundo(bool show) /* if true update the screen */
 {
 	int cnt;
 	line *addr;
@@ -102,7 +104,6 @@ bool show;	/* if true update the screen */
 	bool savenote;
 	int (*OO)();
 	short oldhold = hold;
-	unsigned multic[MULTI_BYTE_MAX];
 	int length;
 	wchar_t wchar;
 
@@ -131,12 +132,13 @@ bool show;	/* if true update the screen */
 		 * with dol through unddol-1.  Hack screen image to
 		 * reflect this replacement.
 		 */
-		if (show)
+		if (show) {
 			if (undkind == UNDMOVE)
 				vdirty(0, lines);
 			else
 				vreplace(undap1 - addr, undap2 - undap1,
 				    undkind == UNDPUT ? 0 : unddol - dol);
+		}
 		savenote = notecnt;
 		undo(1);
 		if (show && (vundkind != VMCHNG || addr != dot))
@@ -164,8 +166,8 @@ bool show;	/* if true update the screen */
 	case VCHNG:
 	case VCAPU:
 		vundkind = VCHNG;
-		strcpy(temp, vutmp);
-		strcpy(vutmp, linebuf);
+		strcpy((char *)temp, (char *)vutmp);
+		strcpy((char *)vutmp, (char *)linebuf);
 		doomed = lcolumn(vUA2) - lcolumn(vUA1);
 		strcLIN(temp);
 		cp = vUA1; vUA1 = vUD1; vUD1 = cp;
@@ -226,15 +228,12 @@ bool show;	/* if true update the screen */
  * in open/visual mode as :s/foo/bar is not fromvis.
  */
 void
-vmacchng(fromvis)
-bool fromvis;
+vmacchng(bool fromvis)
 {
 	line *savedot, *savedol;
 	unsigned char *savecursor;
 	unsigned char savelb[LBSIZE];
 	int nlines, more;
-	line *a1, *a2;
-	unsigned char ch;	/* DEBUG */
 	int copyw(), copywR();
 
 	if (!inopen)
@@ -261,7 +260,7 @@ bool fromvis;
 		vudump("before vmacchng hairy case");
 #endif
 		savedot = dot; savedol = dol; savecursor = cursor;
-		CP(savelb, linebuf);
+		CP((char *)savelb, (char *)linebuf);
 		nlines = dol - zero;
 		while ((line *) endcore - truedol < nlines)
 			if (morelines() < 0)
@@ -294,7 +293,7 @@ bool fromvis;
 		truedol -= nlines;
 		copyw(zero+1, truedol+1, nlines);
 		dot = savedot; dol = savedol ; cursor = savecursor;
-		CP(linebuf, savelb);
+		CP((char *)linebuf, (char *)savelb);
 		vch_mac = VC_MANYCHANGE;
 
 		/* Arrange that no further undo saving happens within macro */
@@ -396,12 +395,12 @@ vmove(void)
 			*cp = c;
 		} else if (wcursor > cursor) {
 			int length;
-			char multic[MULTI_BYTE_MAX];
 			wchar_t wchar;
+
 			vfixcurs();
 			for (cp = cursor; *cp && cp < wcursor;) {
 				length = mbtowc(&wchar, (char *)cp, MULTI_BYTE_MAX);
-				if(length == 0)	
+				if(length == 0)
 					putchar(' ');
 				else if(length < 0) {
 					putoctal = 1;
@@ -463,7 +462,7 @@ vdelete(unsigned char c)
 	i = vdcMID();
 	cp = cursor;
 	setDEL();
-	CP(cp, wcursor);
+	CP((char *)cp, (char *)wcursor);
 	if (cp > linebuf && (cp[0] == 0 || c == '#'))
 		cp = lastchr(linebuf, cp);
 	if (state == HARDOPEN) {
@@ -523,14 +522,15 @@ vchange(unsigned char c)
 			 * Construct what will be left.
 			 */
 			*cursor = 0;
-			strcpy(genbuf, linebuf);
+			strcpy((char *)genbuf, (char *)linebuf);
 			getaline(*wdot);
-			if (strlen(genbuf) + strlen(wcursor) > LBSIZE - 2) {
+			if (strlen((char *)genbuf) +
+			    strlen((char *)wcursor) > LBSIZE - 2) {
 				getDOT();
 				(void) beep();
 				return (0);
 			}
-			strcat(genbuf, wcursor);
+			strcat((char *)genbuf, (char *)wcursor);
 			if (c == 'd' && *vpastwh(genbuf) == 0) {
 				/*
 				 * Although this is a delete
@@ -621,7 +621,7 @@ vchange(unsigned char c)
 		}
 
 		/*
-		 * Open the line (logically) on the screen, and 
+		 * Open the line (logically) on the screen, and
 		 * update the screen tail.  Unless we are really a delete
 		 * go off and gather up inserted characters.
 		 */
@@ -681,7 +681,7 @@ smallchange:
 	 * Put out the \\'s indicating changed text in hardcopy,
 	 * or mark the end of the change with $ if not hardcopy.
 	 */
-	if (state == HARDOPEN) 
+	if (state == HARDOPEN)
 		bleep(i, cp);
 	else {
 		vcursbef(wcursor);
@@ -695,7 +695,7 @@ smallchange:
 	 */
 	cursor = cp;
 	setDEL();
-	CP(cursor, wcursor);
+	CP((char *)cursor, (char *)wcursor);
 	/*
 	 * XPG6 assertion 273: Set vmcurs so that cursor column will be
 	 * set by undo.
@@ -875,7 +875,7 @@ vfilter(void)
  * that wdot is reasonable.  Its name comes from
  *	xchange dotand wdot
  */
-int
+static int
 xdw(void)
 {
 	unsigned char *cp;
@@ -985,25 +985,25 @@ vrep(int cnt)
 	 *	Or, just leave it.
 	 */
 	if(value(vi_TERSE))
-		vshowmode(gettext("r"));
+		vshowmode((unsigned char *)gettext("r"));
 	else
-		vshowmode(gettext("REPLACE 1 CHAR"));
+		vshowmode((unsigned char *)gettext("REPLACE 1 CHAR"));
 	if (!vglobp) {
 		/* get a key using getkey() */
 		c = getesc();
 		if (c == 0) {
-			vshowmode("");
+			vshowmode((unsigned char *)"");
 			vfixcurs();
 			return;
 		}
 		ungetkey(c);
 	}
-	CP(vutmp, linebuf);
+	CP((char *)vutmp, (char *)linebuf);
 	if (FIXUNDO)
 		vundkind = VCHNG;
 	wcursor = endcurs;
 	vUD1 = cursor; vUD2 = wcursor;
-	CP(cursor, wcursor);
+	CP((char *)cursor, (char *)wcursor);
 	/* before appending lines, set addr1 and undo information */
 	prepapp();
 	vappend('r', cnt, 0);

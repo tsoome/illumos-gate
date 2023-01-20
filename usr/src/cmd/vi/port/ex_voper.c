@@ -34,6 +34,7 @@
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
 #include <regexpr.h>
 #ifndef PRESUNEUC
 #include <wctype.h>
@@ -48,12 +49,20 @@
 
 #ifdef PRESUNEUC
 #define	blank()		isspace(wcursor[0])
+#else
+static int blank(void);
 #endif /* PRESUNEUC */
 #define	forbid(a)	if (a) goto errlab;
 
 unsigned char	vscandir[2] =	{ '/', 0 };
 
-static int get_addr();
+static int get_addr(void);
+static int find(wchar_t);
+static int margin(void);
+static int edge(void);
+
+extern int lbrack(int c, int (*f)());
+extern int _mbftowc(char *, wchar_t *, int (*)(void), int *);
 
 /*
  * Decode an operator/operand type command.
@@ -68,7 +77,7 @@ static int get_addr();
 void
 operate(int c, int cnt)
 {
-	wchar_t i;
+	wchar_t i = 0;
 	int (*moveop)(), (*deleteop)();
 	int (*opf)();
 	bool subop = 0;
@@ -112,7 +121,7 @@ operate(int c, int cnt)
 	 * c		Change operator.
 	 */
 	case 'c':
-		if (c == 'c' && workcmd[0] == 'C' || workcmd[0] == 'S')
+		if ((c == 'c' && workcmd[0] == 'C') || workcmd[0] == 'S')
 			subop++;
 		moveop = (int (*)())vchange;
 		deleteop = beep;
@@ -310,7 +319,7 @@ ein:
 	 * )		Forward an s-expression.
 	 */
 	case ')':
-		forbid(lfind(0, cnt, opf, (line *) 0) < 0);
+		forbid(lfind(0, cnt, opf, NULL) < 0);
 		markDOT();
 		break;
 
@@ -329,7 +338,7 @@ ein:
 	 *		set of {}'s.
 	 */
 	case '}':
-		forbid(lfind(1, cnt, opf, (line *) 0) < 0);
+		forbid(lfind(1, cnt, opf, NULL) < 0);
 		markDOT();
 		break;
 
@@ -343,7 +352,7 @@ ein:
 		odot = wdot = dot;
 		oglobp = globp;
 		CATCH
-			i = lmatchp((line *) 0);
+			i = lmatchp(NULL);
 		ONERR
 			globp = oglobp;
 			dot = wdot = odot;
@@ -462,7 +471,8 @@ ein:
 		if (!subop) {
 			int length;
 			wchar_t wchar;
-			length = _mbftowc(lastcp, &wchar, getesc, &Peekkey);
+			length = _mbftowc((char *)lastcp, &wchar, getesc,
+			    &Peekkey);
 			if (length <= 0 || wchar == 0) {
 				(void) beep();
 				return;
@@ -552,7 +562,7 @@ fixup:
 	 */
 	case 'l':
 	case ' ':
-		forbid(margin() || opf == vmove && edge());
+		forbid(margin() || (opf == vmove && edge()));
 		while (cnt > 0 && !margin()) {
 			if (dir == 1)
 				wcursor = nextchr(wcursor);
@@ -560,7 +570,7 @@ fixup:
 				wcursor = lastchr(linebuf, wcursor);
 			cnt--;
 		}
-		if (margin() && opf == vmove || wcursor < linebuf) {
+		if ((margin() && opf == vmove) || wcursor < linebuf) {
 			if (dir == 1)
 				wcursor = lastchr(linebuf, wcursor);
 			else
@@ -754,7 +764,7 @@ errlab:
 			else {
 				cnt = wcursor - linebuf;
 				/*CSTYLED*/
-				for (wcursor = linebuf; wcursor - linebuf < cnt; ) 
+				for (wcursor = linebuf; wcursor - linebuf < cnt; )
 					wcursor = nextchr(wcursor);
 				if (wcursor - linebuf > cnt)
 					wcursor = lastchr(linebuf, wcursor);
@@ -796,7 +806,9 @@ errlab:
 			return;
 		if (!vglobp)
 			vscandir[0] = genbuf[0];
-		oglobp = globp; CP(vutmp, genbuf); globp = vutmp;
+		oglobp = globp;
+		CP((char *)vutmp, (char *)genbuf);
+		globp = vutmp;
 		d = peekc;
 fromsemi:
 		ungetchar(0);
@@ -842,12 +854,12 @@ slerr:
 		c = 0;
 		if (*globp == 'z')
 			globp++, c = '\n';
-		if (any(*globp, "^+-."))
+		if (any(*globp, (unsigned char *)"^+-."))
 			c = *globp++;
 		i = 0;
 		while (isdigit(*globp))
 			i = i * 10 + *globp++ - '0';
-		if (any(*globp, "^+-."))
+		if (any(*globp, (unsigned char *)"^+-."))
 			c = *globp++;
 		if (*globp) {
 			/* random junk after the pattern */
@@ -873,7 +885,7 @@ slerr:
 				vmoving = 0;
 				if (loc1) {
 					vmoving++;
-					vmovcol = column(loc1);
+					vmovcol = column((unsigned char *)loc1);
 				}
 				getDOT();
 				if (state == CRTOPEN && addr != dot)
@@ -910,7 +922,7 @@ slerr:
 }
 
 static void
-lfixol()
+lfixol(void)
 {
 	unsigned char *savevglobp;
 	int savesplit;
@@ -924,7 +936,7 @@ lfixol()
 		vclreol();
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)enter_standout_mode);
-	lprintf(gettext("[Hit return to continue] "), 0);
+	lprintf((unsigned char *)gettext("[Hit return to continue] "), 0);
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)exit_bold);
 
@@ -962,7 +974,7 @@ warnf(char *str, char *cp)
 		vclreol();
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)enter_standout_mode);
-	lprintf(str, cp);
+	lprintf((unsigned char *)str, cp);
 	if (enter_standout_mode && exit_bold)
 		putpad((unsigned char *)exit_bold);
 	lfixol();
@@ -976,7 +988,7 @@ warnf(char *str, char *cp)
  *
  */
 static int
-get_addr()
+get_addr(void)
 {
 	short  c;
 	short  next;
@@ -1003,7 +1015,7 @@ get_addr()
 /*
  * Find single character c, in direction dir from cursor.
  */
-int
+static int
 find(wchar_t c)
 {
 
@@ -1035,9 +1047,9 @@ word(int (*op)(), int cnt)
 	wchar_t wchar;
 	int length;
 
+	which = wordch(wcursor);
 	if (dir == 1) {
 		iwc = wcursor;
-		which = wordch(wcursor);
 		while (wordof(which, wcursor)) {
 			length = mbtowc(&wchar, (char *)wcursor,
 			    MULTI_BYTE_MAX);
@@ -1076,7 +1088,6 @@ word(int (*op)(), int cnt)
 			if (!lnext())
 				return (0);
 		if (!margin()) {
-			which = wordch(wcursor);
 			while (!margin() && wordof(which, wcursor))
 				wcursor = lastchr(linebuf, wcursor);
 		}
@@ -1162,13 +1173,14 @@ wordch(unsigned char *wc)
 	length = mbtowc(&c, (char *)wc, MULTI_BYTE_MAX);
 	if (length <= 0)
 		return (0);
-	if (length > 1)
+	if (length > 1) {
 #ifndef PRESUNEUC
 		if (wdwc)
 			return (*wdwc)(c);
 		else
 #endif /* PRESUNEUC */
 		return (length);
+	}
 #ifndef PRESUNEUC
 	return (isalpha(*wc) || isdigit(*wc) || *wc == '_');
 #else
@@ -1179,7 +1191,7 @@ wordch(unsigned char *wc)
 /*
  * Edge tells when we hit the last character in the current line.
  */
-int
+static int
 edge(void)
 {
 
@@ -1194,7 +1206,7 @@ edge(void)
 /*
  * Margin tells us when we have fallen off the end of the line.
  */
-int
+static int
 margin(void)
 {
 
@@ -1207,7 +1219,7 @@ margin(void)
  * NEWLINE, FORMFEED, bertical tab, or SPACE character from EUC
  * primary and supplementary codesets.
  */
-int
+static int
 blank(void)
 {
 	wchar_t z;

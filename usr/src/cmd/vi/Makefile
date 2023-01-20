@@ -37,7 +37,6 @@ all:=		TARGET= all
 install:=	TARGET= install
 clean:=		TARGET= clean
 clobber:=	TARGET= clobber
-lint:=		TARGET= lint
 _msg:=          TARGET= catalog
 
 # this directory is made in ../../Targetdirs
@@ -62,7 +61,7 @@ $(ROOTLINK): $(ROOTETCINITF)
 	-$(RM) $@
 	-$(LN) -f $(ROOTETCINITF) $@
 
-clean lint: $(SUBDIRS)
+clean: $(SUBDIRS)
 
 clobber: $(SUBDIRS)	clobber_local
 

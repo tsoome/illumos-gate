@@ -29,11 +29,12 @@
 
 
 /* Copyright (c) 1981 Regents of the University of California */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include "ex.h"
 #include "ex_tty.h"
 #include "ex_vis.h"
+#include <string.h>
+#include <unistd.h>
 #ifndef PRESUNEUC
 #include <wctype.h>
 /* Undef putchar/getchar if they're defined. */
@@ -69,9 +70,10 @@ bool putoctal; /* flag to say if byte should be printed as octal */
 int termiosflag = -1; /* flag for using termios ioctl
 			      * structure */
 
-int (*
-setlist(t))()
-	bool t;
+static int plod(int);
+
+int
+(*setlist(bool t))()
 {
 	int (*P)();
 
@@ -120,7 +122,7 @@ listchar(wchar_t c)
 	default:
 		if((int)(c & QUOTE))
 			break;
-		if (c < ' ' && c != '\n' || c == DELETE)
+		if ((c < ' ' && c != '\n') || c == DELETE)
 			outchar('^'), c = ctlof(c);
 	}
 	(void) normchar(c);
@@ -154,7 +156,8 @@ normchar(wchar_t c)
 		default:
 			c &= (int)TRIM;
 		}
-	else if (c < ' ' && (c != '\b' || !over_strike) && c != '\n' && c != '\t' || c == DELETE)
+	else if ((c < ' ' && (c != '\b' || !over_strike) &&
+	    c != '\n' && c != '\t') || c == DELETE)
 		putchar('^'), c = ctlof(c);
 	else if (c >= 0200 && (putoctal || !iswprint(c))) {
 		outchar('\\');
@@ -162,7 +165,7 @@ normchar(wchar_t c)
 		outchar(((c >> 3) & 07) + '0');
 		outchar((c & 07) + '0');
 		return (0);
-	} else if (UPPERCASE)
+	} else if (UPPERCASE) {
 		if (isupper(c)) {
 			outchar('\\');
 			c = tolower(c);
@@ -175,6 +178,7 @@ normchar(wchar_t c)
 					break;
 				}
 		}
+	}
 	outchar(c);
 	return (0);
 }
@@ -188,7 +192,7 @@ numbline(int i)
 
 	if (shudclob)
 		slobber(' ');
-	viprintf("%6d  ", i);
+	viprintf((unsigned char *)"%6d  ", i);
 	(void) normline();
 	return (0);
 }
@@ -206,7 +210,7 @@ normline(void)
 		slobber(linebuf[0]);
 	/* pdp-11 doprnt is not reentrant so can't use "printf" here
 	   in case we are tracing */
-	for (cp = linebuf; *cp;) 
+	for (cp = linebuf; *cp;)
 		if((n = mbtowc(&wchar, (char *)cp, MULTI_BYTE_MAX)) < 0) {
 			putoctal = 1;
 			putchar(*cp++);
@@ -501,13 +505,15 @@ fgoto(void)
 				outcol = 0;
 		}
 	}
-	if (destline < outline && !(cursor_address && !holdcm || cursor_up || cursor_home))
+	if (destline < outline &&
+	    !((cursor_address && !holdcm) || cursor_up || cursor_home))
 		destline = outline;
 	if (cursor_address && !holdcm)
-		if (plod(costCM) > 0) 
+		if (plod(costCM) > 0)
 			plod(0);
 		else
-			tputs(tparm(cursor_address, destline, destcol), 0, putch);
+			tputs(tparm(cursor_address, destline, destcol,
+			    0, 0, 0, 0, 0, 0, 0), 0, putch);
 	else
 		plod(0);
 	outline = destline;
@@ -536,12 +542,7 @@ gotab(int col)
 static int plodcnt, plodflg;
 
 int
-#ifdef __STDC__
 plodput(char c)
-#else
-plodput(c)
-char c;
-#endif
 {
 
 	if (plodflg)
@@ -551,7 +552,7 @@ char c;
 	return (0);
 }
 
-int
+static int
 plod(int cnt)
 {
 	int i, j, k;
@@ -659,7 +660,7 @@ plod(int cnt)
 	 * If it will be cheaper, or if we can't back up, then send
 	 * a return preliminarily.
 	 */
-	if (j > i + 1 || outcol > destcol && !cursor_left) {
+	if (j > i + 1 || (outcol > destcol && !cursor_left)) {
 		/*
 		 * BUG: this doesn't take the (possibly long) length
 		 * of carriage_return into account.
@@ -679,7 +680,8 @@ dontcr:
 		j = destline - outline;
 		if (j > costDP && parm_down_cursor) {
 			/* Win big on Tek 4025 */
-			tputs(tparm(parm_down_cursor, j), j, plodput);
+			tputs(tparm(parm_down_cursor, j,
+			    0, 0, 0, 0, 0, 0, 0, 0), j, plodput);
 			outline += j;
 		}
 		else {
@@ -696,11 +698,14 @@ dontcr:
 	}
 	if (back_tab)
 		k = strlen(back_tab);	/* should probably be cost(back_tab) and moved out */
+	else
+		k = 0;
+
 	/* Move left, if necessary, to desired column */
 	while (outcol > destcol) {
 		if (plodcnt < 0)
 			goto out;
-		if (back_tab && !insmode && outcol - destcol > 4+k) {
+		if (back_tab && !insmode && outcol - destcol > 4 + k) {
 			tputs(back_tab, 0, plodput);
 			outcol--;
 			if (value(vi_HARDTABS))
@@ -709,7 +714,8 @@ dontcr:
 		}
 		j = outcol - destcol;
 		if (j > costLP && parm_left_cursor) {
-			tputs(tparm(parm_left_cursor, j), j, plodput);
+			tputs(tparm(parm_left_cursor, j,
+			    0, 0, 0, 0, 0, 0, 0, 0), j, plodput);
 			outcol -= j;
 		}
 		else {
@@ -722,7 +728,8 @@ dontcr:
 		j = outline - destline;
 		if (parm_up_cursor && j > 1) {
 			/* Win big on Tek 4025 */
-			tputs(tparm(parm_up_cursor, j), j, plodput);
+			tputs(tparm(parm_up_cursor, j, 0, 0, 0, 0, 0, 0, 0, 0),
+			    j, plodput);
 			outline -= j;
 		}
 		else {
@@ -776,7 +783,8 @@ dontcr:
 			 * with no hardware tabs, and I don't know
 			 * of any such terminal at the moment.
 			 */
-			tputs(tparm(parm_right_cursor, j), j, plodput);
+			tputs(tparm(parm_right_cursor, j,
+			    0, 0, 0, 0, 0, 0, 0, 0), j, plodput);
 			outcol += j;
 		}
 		else {
@@ -801,7 +809,8 @@ dontcr:
 			if ((scrlength = wcwidth(wchar)) < 0)
 				scrlength = 0;
 			/* assume multibyte terminals have cursor_right */
-			if (insmode && cursor_right || length > 1 || wchar == FILLER) {
+			if ((insmode && cursor_right) || length > 1 ||
+			    wchar == FILLER) {
 				int diff = destcol - outcol;
 				j = (wchar == FILLER ? 1 : scrlength > diff ? diff : scrlength);
 				while(j--) {
@@ -914,7 +923,7 @@ int
 putch(char c)
 {
 
-#ifdef OLD3BTTY		
+#ifdef OLD3BTTY
 	if(c == '\n')	/* Fake "\n\r" for '\n' til fix in 3B firmware */
 		(void) putch('\r'); /* vi does "stty -icanon" => -onlcr !! */
 #endif
@@ -952,26 +961,31 @@ setoutt(void)
 /*
  * Printf (temporarily) in list mode.
  */
-/*VARARGS2*/
 void
-lprintf(unsigned char *cp, unsigned char *dp, ...)
+lvprintf(unsigned char *cp, va_list ap)
 {
 	int (*P)();
 
 	P = setlist(1);
-#ifdef PRESUNEUC
-	viprintf(cp, dp);
-#else
-	viprintf((char *)cp, (char *)dp);
-#endif /* PRESUNEUC */
+	vivprintf(cp, ap);
 	Putchar = P;
+}
+
+void
+lprintf(unsigned char *cp, ...)
+{
+	va_list ap;
+
+	va_start(ap, cp);
+	lvprintf(cp, ap);
+	va_end(ap);
 }
 
 /*
  * Newline + flush.
  */
 void
-putNFL()
+putNFL(void)
 {
 
 	putnl();
@@ -1061,7 +1075,7 @@ tostart(void)
 			    (tn=ttyname(0)) == NULL)
 				ttynbuf[0] = 1;
 			else
-				strcpy(ttynbuf, tn);
+				strcpy((char *)ttynbuf, tn);
 		}
 		if (ttynbuf[0] != 1) {
 			struct stat64 sbuf;
