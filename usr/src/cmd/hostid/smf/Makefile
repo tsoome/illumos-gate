@@ -31,7 +31,7 @@ METHOD = 	svc-hostid
 ROOTMANIFESTDIR = $(ROOTSVCSYSTEM)
 ROOTMETHOD =    $(ROOTLIBSVCMETHOD)/$(METHOD)
 
-all clean clobber lint:
+all clean clobber:
 
 install:	all $(ROOTMANIFEST) $(ROOTMETHOD)
 

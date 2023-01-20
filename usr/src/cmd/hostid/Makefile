@@ -29,11 +29,12 @@ include ../Makefile.cmd
 
 # Currently, the only architecture-specific things are
 # the SMF pieces that set up the software-defined hostid on
-# non-sparc platforms.  These need to get installed on x86
+# non-sparc platforms.  These need to get installed on x86 and arm64
 # which is why we do this in a $MACH subdir.
 
 sparc_SUBDIRS = 
 i386_SUBDIRS = smf
+aarch64_SUBDIRS = smf
 
 SUBDIRS = $($(MACH)_SUBDIRS)
 
@@ -41,7 +42,6 @@ all     :=	TARGET = all
 install :=	TARGET = install
 clean   :=	TARGET = clean
 clobber :=	TARGET = clobber
-lint    :=	TARGET = lint
 
 
 .KEEP_STATE:
@@ -54,8 +54,6 @@ $(SUBDIRS):	FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 clean:
-
-lint:	lint_PROG
 
 FRC:
 
