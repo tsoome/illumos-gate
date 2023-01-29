@@ -606,8 +606,13 @@ sparcv9_CFLAGS=	$(sparcv9_XARCH) -dalign $(CCVERBOSE) $(V9ABIWARN) $(CCREGSYM) \
 		$(CCSTATICSYM)
 i386_CFLAGS=	$(i386_XARCH)
 amd64_CFLAGS=	$(amd64_XARCH) -m64
-aarch64_CFLAGS=	$(aarch64_XARCH) -_gcc=-mno-outline-atomics
 
+# XXXARM: Additional options here things that we specify outside the defaults
+# because we hope to switch the system so the defaults are valid:
+#
+# outline-atomics -- need a library implementation for the atomics
+# tls-dialect -- need an implementation of TLSDESC
+aarch64_CFLAGS=	$(aarch64_XARCH) -_gcc=-mno-outline-atomics -_gcc=-mtls-dialect=trad
 sparc_ASFLAGS=	$(sparc_AS_XARCH)
 sparcv9_ASFLAGS=$(sparcv9_AS_XARCH)
 i386_ASFLAGS=	$(i386_AS_XARCH)
@@ -923,7 +928,7 @@ LDLIBS64 +=     $(ADJUNCT_PROTO:%=-L%/usr/lib/$(MACH64) -L%/lib/$(MACH64))
 $(AARCH64_BLD)LDLIBS64 = $(LDLIBS32)
 
 sparc_LD_TARGET =	$(MACH)
-i386_LD_TARGET = 	x86
+i386_LD_TARGET =	x86
 aarch64_LD_TARGET =	$(MACH)
 LD_TARGET =	-z target=$($(MACH)_LD_TARGET)
 LD_TARGET64 =	-z target=$($(MACH)_LD_TARGET)

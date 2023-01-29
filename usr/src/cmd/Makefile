@@ -160,6 +160,7 @@ COMMON_SUBDIRS=	\
 	fs.d		\
 	fstyp		\
 	fuser		\
+	fwflash		\
 	gcore		\
 	gencat		\
 	geniconvtbl	\
@@ -332,6 +333,7 @@ COMMON_SUBDIRS=	\
 	savecore	\
 	sbdadm		\
 	script		\
+	scsi		\
 	sdiff		\
 	sdpadm		\
 	sed		\
@@ -454,7 +456,6 @@ COMMON_SUBDIRS=	\
 # csplit - not 64bit clean
 # eqn - not 64bit clean
 # file - wants bits of sys/core.h 64bit apps can't see
-# fwflash - needs libses
 # format - not 64bit clean (but just printf stuff)
 # gss - not 64bit clean
 # ipdadm - needs libipd
@@ -466,7 +467,6 @@ COMMON_SUBDIRS=	\
 # prtdiag - not ported
 # refer - not 64bit clean
 # rcm_daemon - not 64bit clean
-# scsi - needs libses libsmp
 # sendmail - not 64bit clean (probably our build of it is hosed)
 # sh - not 64bit clean
 # srchtxt - not 64bit clean
@@ -489,7 +489,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	csplit		\
 	eqn		\
 	file		\
-	fwflash		\
 	hal		\
 	format		\
 	gss		\
@@ -509,7 +508,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	rmformat	\
 	rmvolmgr	\
 	rmmount		\
-	scsi		\
 	sendmail	\
 	sh		\
 	srchtxt		\

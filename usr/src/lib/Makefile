@@ -84,7 +84,6 @@ SUBDIRS +=		\
 # smbclnt -- low value, needs cross dtrace
 #
 # libipd -- TLS
-# scsi -- TLS
 # libcpc -- not ported
 # brand -- not ported
 $(NOT_AARCH64_BLD)SUBDIRS += \
@@ -104,7 +103,6 @@ $(NOT_AARCH64_BLD)SUBDIRS += \
 	pylibbe		\
 	pysolaris	\
 	pyzfs		\
-	scsi		\
 	smbclnt		\
 	libm1
 
@@ -286,6 +284,7 @@ SUBDIRS +=				\
 	raidcfg_plugins	\
 	rpcsec_gss	\
 	sasl_plugins	\
+	scsi		\
 	smbsrv		\
 	smhba		\
 	sun_fc		\
@@ -612,7 +611,7 @@ cfgadm_plugins:	libdevice libdevinfo libhotplug librcm hbaapi libkstat libscf
 fm:		libexacct libipmi libzfs libdevinfo libdevid libcfgadm \
 		libcontract libsysevent ../cmd/sgs/libelf libdladm libsff \
 		libpcidb libdiskmgt
-$(NOT_AARCH64_BLD)fm: scsi
+fm: scsi
 $(SPARC_BLD)fm:	libpri
 gss_mechs/mech_dh: libgss
 gss_mechs/mech_dummy: libgss

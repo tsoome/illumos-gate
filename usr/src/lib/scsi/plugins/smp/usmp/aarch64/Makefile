@@ -20,10 +20,12 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
 #
 
-# XXXARM: not multilib
-$(NOT_AARCH64_BLD)DYNFLAGS += -R/usr/lib/scsi/$(MACH64)
-$(AARCH64_BLD)DYNFLAGS += -R/usr/lib/scsi/
+include ../Makefile.com
+include $(SRC)/Makefile.master.64
+
+install: all $(ROOTPROG64)
+
+include ../../Makefile.targ

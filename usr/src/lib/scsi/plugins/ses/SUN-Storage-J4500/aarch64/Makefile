@@ -24,6 +24,9 @@
 # Use is subject to license terms.
 #
 
-# XXXARM: not multilib
-$(NOT_AARCH64_BLD)DYNFLAGS += -R/usr/lib/scsi/$(MACH64)
-$(AARCH64_BLD)DYNFLAGS += -R/usr/lib/scsi/
+include ../Makefile.com
+include $(SRC)/Makefile.master.64
+
+install: all $(ROOTPROG64)
+
+include ../../Makefile.targ

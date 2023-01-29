@@ -1054,34 +1054,34 @@ $(MULTILIB_ONLY)link path=usr/lib/scsi/$(ARCH64)/libses.so target=./libses.so.1
 $(MULTILIB_ONLY)file path=usr/lib/scsi/$(ARCH64)/libses.so.1
 $(MULTILIB_ONLY)link path=usr/lib/scsi/$(ARCH64)/libsmp.so target=./libsmp.so.1
 $(MULTILIB_ONLY)file path=usr/lib/scsi/$(ARCH64)/libsmp.so.1
-$(not_aarch64)link path=usr/lib/scsi/libscsi.so target=./libscsi.so.1
-$(not_aarch64)file path=usr/lib/scsi/libscsi.so.1
-$(not_aarch64)link path=usr/lib/scsi/libses.so target=./libses.so.1
-$(not_aarch64)file path=usr/lib/scsi/libses.so.1
-$(not_aarch64)link path=usr/lib/scsi/libsmp.so target=./libsmp.so.1
-$(not_aarch64)file path=usr/lib/scsi/libsmp.so.1
-$(not_aarch64)dir path=usr/lib/scsi/plugins
-$(not_aarch64)dir path=usr/lib/scsi/plugins/scsi
-$(not_aarch64)dir path=usr/lib/scsi/plugins/scsi/engines
-$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)
-$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)/uscsi.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/scsi/engines/uscsi.so
-$(not_aarch64)dir path=usr/lib/scsi/plugins/ses
-$(not_aarch64)dir path=usr/lib/scsi/plugins/ses/framework
-$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)
-$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/libses.so
-$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/ses2.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/framework/libses.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/ses/framework/ses2.so
-$(not_aarch64)dir path=usr/lib/scsi/plugins/smp
-$(not_aarch64)dir path=usr/lib/scsi/plugins/smp/engine
-$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)
-$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)/usmp.so
+link path=usr/lib/scsi/libscsi.so target=./libscsi.so.1
+file path=usr/lib/scsi/libscsi.so.1
+link path=usr/lib/scsi/libses.so target=./libses.so.1
+file path=usr/lib/scsi/libses.so.1
+link path=usr/lib/scsi/libsmp.so target=./libsmp.so.1
+file path=usr/lib/scsi/libsmp.so.1
+dir  path=usr/lib/scsi/plugins
+dir  path=usr/lib/scsi/plugins/scsi
+dir  path=usr/lib/scsi/plugins/scsi/engines
+dir  path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)
+file path=usr/lib/scsi/plugins/scsi/engines/$(ARCH64)/uscsi.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/scsi/engines/uscsi.so
+dir  path=usr/lib/scsi/plugins/ses
+dir  path=usr/lib/scsi/plugins/ses/framework
+dir  path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)
+file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/libses.so
+file path=usr/lib/scsi/plugins/ses/framework/$(ARCH64)/ses2.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/framework/libses.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/ses/framework/ses2.so
+dir  path=usr/lib/scsi/plugins/smp
+dir  path=usr/lib/scsi/plugins/smp/engine
+dir  path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)
+file path=usr/lib/scsi/plugins/smp/engine/$(ARCH64)/usmp.so
 $(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/smp/engine/usmp.so
-$(not_aarch64)dir path=usr/lib/scsi/plugins/smp/framework
-$(MULTILIB_ONLY)dir path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)
-$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)/sas2.so
-$(not_aarch64)file path=usr/lib/scsi/plugins/smp/framework/sas2.so
+dir  path=usr/lib/scsi/plugins/smp/framework
+dir  path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)
+file path=usr/lib/scsi/plugins/smp/framework/$(ARCH64)/sas2.so
+$(MULTILIB_ONLY)file path=usr/lib/scsi/plugins/smp/framework/sas2.so
 dir  path=usr/lib/security
 dir  path=usr/lib/security/$(ARCH64)
 $(MULTILIB_ONLY)link path=usr/lib/security/$(ARCH64)/crypt_bsdbf.so \
