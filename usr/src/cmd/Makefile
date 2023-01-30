@@ -195,6 +195,7 @@ COMMON_SUBDIRS=	\
 	intrstat	\
 	ipcrm		\
 	ipcs		\
+	ipdadm		\
 	ipf		\
 	isainfo		\
 	isalist		\
@@ -458,7 +459,6 @@ COMMON_SUBDIRS=	\
 # file - wants bits of sys/core.h 64bit apps can't see
 # format - not 64bit clean (but just printf stuff)
 # gss - not 64bit clean
-# ipdadm - needs libipd
 # isns - not 64bit clean
 # krb5 - not 64bit clean
 # luxadm - super confused about platforms, and probably needs libs
@@ -492,7 +492,6 @@ $(NOT_AARCH64_BLD)COMMON_SUBDIRS +=	\
 	hal		\
 	format		\
 	gss		\
-	ipdadm		\
 	isns		\
 	krb5		\
 	latencytop	\

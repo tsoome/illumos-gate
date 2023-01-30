@@ -83,7 +83,6 @@ SUBDIRS +=		\
 # policykit -- heavy dependencies, little benefit
 # smbclnt -- low value, needs cross dtrace
 #
-# libipd -- TLS
 # libcpc -- not ported
 # brand -- not ported
 $(NOT_AARCH64_BLD)SUBDIRS += \
@@ -95,7 +94,6 @@ $(NOT_AARCH64_BLD)SUBDIRS += \
 	libadt_jni	\
 	libcpc		\
 	libdtrace_jni	\
-	libipd		\
 	libmvec		\
 	libresolv	\
 	libzfs_jni	\
@@ -180,6 +178,7 @@ SUBDIRS +=				\
 	libinstzones	\
 	libintl		\
 	libipadm	\
+	libipd		\
 	libipmi		\
 	libipmp		\
 	libipp		\

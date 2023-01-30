@@ -31,10 +31,10 @@ dir  path=usr/lib
 $(MULTILIB_ONLY)dir path=usr/lib/$(ARCH64)
 $(MULTILIB_ONLY)link path=usr/lib/$(ARCH64)/libipd.so target=libipd.so.1
 $(MULTILIB_ONLY)file path=usr/lib/$(ARCH64)/libipd.so.1
-$(not_aarch64)link path=usr/lib/libipd.so target=libipd.so.1
-$(not_aarch64)file path=usr/lib/libipd.so.1
+link path=usr/lib/libipd.so target=libipd.so.1
+file path=usr/lib/libipd.so.1
 dir  path=usr/sbin
-$(not_aarch64)file path=usr/sbin/ipdadm mode=0555
+file path=usr/sbin/ipdadm mode=0555
 dir  path=usr/share/man/man8
 file path=usr/share/man/man8/ipdadm.8
 driver name=ipd perms="* 0600 root sys"
