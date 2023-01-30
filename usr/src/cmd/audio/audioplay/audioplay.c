@@ -684,7 +684,7 @@ main(int argc, char **argv)
 				}
 				/* Move remainder to the front of the buffer */
 				if (rem != 0) {
-					(void *)memcpy(inbuf, inbuf + cnt, rem);
+					(void) memcpy(inbuf, inbuf + cnt, rem);
 				}
 
 			}

@@ -208,8 +208,7 @@ main(int argc, char *argv[])
 		    gettext("For more information, please see"), cmdName);
 		return (1);
 	} else if (ret == -1) {
-		(void) fprintf(stderr, "%s %s\n",
-		    cmdName, strerror(errno));
+		(void) fprintf(stderr, "%s %s\n", cmdName, strerror(errno));
 		return (1);
 	}
 

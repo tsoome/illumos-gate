@@ -2239,8 +2239,7 @@ searchDevice(PSMHBA_SCSIENTRY entryP,
 		if (foundPort == B_FALSE) {
 			newPort = (portList *)calloc(1, sizeof (portList));
 			if (newPort == NULL) {
-				(void) fprintf(stderr,
-				    "%s\n", strerror(errno));
+				(void) fprintf(stderr, "%s\n", strerror(errno));
 				return (++ret);
 			}
 			(void) strlcpy(newPort->portName, portName,
@@ -2266,8 +2265,7 @@ searchDevice(PSMHBA_SCSIENTRY entryP,
 			newPort->tgtPortWWN = (tgtPortWWNList *)calloc(1,
 			    sizeof (tgtPortWWNList));
 			if (newPort->tgtPortWWN == NULL) {
-				(void) fprintf(stderr,
-				    "%s\n", strerror(errno));
+				(void) fprintf(stderr, "%s\n", strerror(errno));
 				return (++ret);
 			}
 			(void) memcpy((void *)&(newPort->tgtPortWWN->portWWN),
@@ -2293,8 +2291,7 @@ searchDevice(PSMHBA_SCSIENTRY entryP,
 			newTgtWWN = (tgtPortWWNList *)calloc(1,
 			    sizeof (tgtPortWWNList));
 			if (newTgtWWN == NULL) {
-				(void) fprintf(stderr,
-				    "%s\n", strerror(errno));
+				(void) fprintf(stderr, "%s\n", strerror(errno));
 				return (++ret);
 			}
 			/* insert at head */
