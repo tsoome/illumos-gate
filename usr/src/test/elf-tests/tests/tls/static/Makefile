@@ -14,14 +14,17 @@
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 
-PROG =	amd64-ld-test
+PROG =				\
+	global-dynamic		\
+	initial-exec		\
+	initial-exec-with-so	\
+	local-dynamic		\
+	local-exec
 
-DATAFILES =		\
-	Makefile.test	\
-	ld-with-addend.s	\
+DATAFILES =	bin.c lib.c
 
 ROOTOPTPKG = $(ROOT)/opt/elf-tests
-TESTDIR = $(ROOTOPTPKG)/tests/tls/amd64/ld
+TESTDIR = $(ROOTOPTPKG)/tests/tls/static
 
 CMDS = $(PROG:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555

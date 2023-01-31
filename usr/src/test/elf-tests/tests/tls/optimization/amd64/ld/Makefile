@@ -14,14 +14,14 @@
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 
-PROG =	i386-ld-test
+PROG =	amd64-ld-test
 
 DATAFILES =		\
 	Makefile.test	\
-	half-ldm.s	\
+	ld-with-addend.s	\
 
 ROOTOPTPKG = $(ROOT)/opt/elf-tests
-TESTDIR = $(ROOTOPTPKG)/tests/tls/i386/ld
+TESTDIR = $(ROOTOPTPKG)/tests/tls/optimization/amd64/ld
 
 CMDS = $(PROG:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555

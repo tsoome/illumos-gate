@@ -373,7 +373,11 @@ slow_tls_get_addr(TLS_index *tls_index)
 			base = NULL;
 		} else if (tlsp->tm_flags & TM_FLG_STATICTLS) {
 			/* static TLS is already allocated/initialized */
+#if _TLS_VARIANT == 1
+			base = ((caddr_t)self + sizeof (ulwp_t));
+#else
 			base = (caddr_t)self - tlsp->tm_stattlsoffset;
+#endif
 			tlsent->tls_data = base;
 			tlsent->tls_size = 0;	/* don't lfree() this space */
 		} else {
@@ -403,8 +407,24 @@ slow_tls_get_addr(TLS_index *tls_index)
 		} while (--arraycnt != 0);
 	}
 
-	if (base == NULL)	/* kludge to get x86/x64 to boot */
+	/*
+	 * This covers for the case where we call an LD_AUDIT library prior to
+	 * it being relocated, and that library has TLS references.
+	 *
+	 * Because it's not fully relocated and initialized yet, we don't have
+	 * our metadata and instead point base at the beginning of the static
+	 * TLS overflow by hand.
+	 *
+	 * XXXARM: I'm not certain of this explanation.
+	 *
+	 * XXXARM: I don't think we can achieve this on Variant 1 TLS because
+	 * our TLS block is the other way around, and we would have to know
+	 * the size of the static TLS -- the thing we don't know -- to find
+	 * the overflow space.
+	 */
+	if (base == NULL) {	/* kludge to get x86/x64 to boot */
 		base = (caddr_t)self - 512;
+	}
 
 	sigon(self);
 	return (base + tls_index->ti_tlsoffset);

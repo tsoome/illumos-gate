@@ -109,6 +109,7 @@ typedef struct _rt_elf_private {
 	ulong_t		e_relent;	/* size of base reloc entry */
 	ulong_t		e_movesz;	/* size of movetabs */
 	ulong_t		e_moveent;	/* size of base movetab entry */
+	Boolean		e_hasstattls;	/* Static TLS exists  */
 	ulong_t		e_tlsstatoff;	/* TLS offset into static block */
 	void		*e_movetab;	/* movetable address */
 	Phdr		*e_pttls;	/* PT_TLS */
@@ -145,6 +146,7 @@ typedef struct _rt_elf_private {
 #define	SUNWSYMSZ(X)		(((Rt_elfp *)(X)->rt_priv)->e_sunwsymsz)
 #define	PTTLS(X)		(((Rt_elfp *)(X)->rt_priv)->e_pttls)
 #define	PTUNWIND(X)		(((Rt_elfp *)(X)->rt_priv)->e_ptunwind)
+#define	HASSTATTLS(X)		(((Rt_elfp *)(X)->rt_priv)->e_hasstattls)
 #define	TLSSTATOFF(X)		(((Rt_elfp *)(X)->rt_priv)->e_tlsstatoff)
 #define	PLTRELSZ(X)		(((Rt_elfp *)(X)->rt_priv)->e_pltrelsize)
 #define	RELSZ(X)		(((Rt_elfp *)(X)->rt_priv)->e_relsz)

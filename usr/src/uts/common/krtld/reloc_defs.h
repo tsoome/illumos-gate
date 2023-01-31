@@ -84,6 +84,8 @@ typedef struct {
 						/*    locally */
 #define	FLG_RE_PAGE		0x04000000	/* relocation is relative to */
 						/*    a page */
+#define	FLG_RE_GOTABS		0x08000000	/* relocation is absolute in */
+						/*    GOT */
 
 /*
  * Relocation table and macros for testing relocation table flags.
@@ -107,16 +109,17 @@ typedef struct {
 
 #define	RELTAB_IS_GOTPAGE_BASED(X, _reltab) \
 	((_reltab[(X)].re_flags & (FLG_RE_PAGE | FLG_RE_GOTADD)) == \
-        (FLG_RE_PAGE | FLG_RE_GOTADD))
+	(FLG_RE_PAGE | FLG_RE_GOTADD))
 
 #define	RELTAB_IS_PAGEPC_BASED(X, _reltab) \
 	((_reltab[(X)].re_flags & (FLG_RE_PAGE | FLG_RE_PCREL)) ==	\
 	(FLG_RE_PAGE | FLG_RE_PCREL))
 
 /* XXXARM: should be PAGE|GOTPC?  */
-#define	RELTAB_IS_GOTPAGEPC_BASED(X, _reltab) \
-	((_reltab[(X)].re_flags & (FLG_RE_PAGE | FLG_RE_PCREL | FLG_RE_GOTADD)) == \
-	(FLG_RE_PAGE | FLG_RE_PCREL | FLG_RE_GOTADD))
+#define	RELTAB_IS_GOTPAGEPC_BASED(X, _reltab)				\
+	((_reltab[(X)].re_flags & (FLG_RE_PAGE |			\
+	FLG_RE_PCREL | FLG_RE_GOTADD)) == (FLG_RE_PAGE | FLG_RE_PCREL |	\
+	FLG_RE_GOTADD))
 
 #define	RELTAB_IS_GOT_OPINS(X, _reltab) \
 	((_reltab[(X)].re_flags & FLG_RE_GOTOPINS) != 0)
@@ -168,8 +171,11 @@ typedef struct {
 #define	RELTAB_IS_SIZE(X, _reltab) \
 	((_reltab[(X)].re_flags & FLG_RE_SIZE) != 0)
 
-#define RELTAB_IS_PAGE_BASED(X, _reltab) \
+#define	RELTAB_IS_PAGE_BASED(X, _reltab)			\
 	((_reltab[(X)].re_flags & FLG_RE_PAGE) != 0)
+
+#define	RELTAB_IS_GOT_ABS(X, _reltab) \
+	((_reltab[(X)].re_flags & FLG_RE_GOTABS) != 0)
 
 #ifdef	__cplusplus
 }

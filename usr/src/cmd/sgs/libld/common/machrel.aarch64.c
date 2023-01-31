@@ -49,7 +49,8 @@
  */
 static Gotndx *
 ld_find_got_ndx(Alist *alp, Gotref gref, Ofl_desc *ofl, Rel_desc *rdesc)
-{	Aliste	idx;
+{
+	Aliste	idx;
 	Gotndx	*gnp;
 
 	assert(rdesc != 0);
@@ -90,8 +91,14 @@ ld_calc_got_offset(Rel_desc * rdesc, Ofl_desc * ofl)
 	gotndx = (Xword)gnp->gn_gotndx;
 
 	/*
-	 * XXXARM: This is where GOT space for TLSDESCs would go
+	 * If this is the the offset part of a GD relocation, we need to
+	 * modify the _next_ got entry to the one recorded.  We reserved it in
+	 * `ld_assign_got_ndx`
 	 */
+	if ((rdesc->rel_flags & FLG_REL_DTLS) &&
+	    (rdesc->rel_rtype == R_AARCH64_TLS_DTPREL)) {
+		gotndx++;
+	}
 
 	return ((Xword)(osp->os_shdr->sh_addr + (gotndx * M_GOT_ENTSIZE)));
 }
@@ -135,10 +142,12 @@ ld_mach_update_odynamic(Ofl_desc *ofl, Dyn **dyn)
 {
 	if (((ofl->ofl_flags & FLG_OF_RELOBJ) == 0) && ofl->ofl_pltcnt) {
 		(*dyn)->d_tag = DT_PLTGOT;
-		if (ofl->ofl_osplt)
-			(*dyn)->d_un.d_ptr = ofl->ofl_osgotplt->os_shdr->sh_addr;
-		else
+		if (ofl->ofl_osplt) {
+			(*dyn)->d_un.d_ptr =
+			    ofl->ofl_osgotplt->os_shdr->sh_addr;
+		} else {
 			(*dyn)->d_un.d_ptr = 0;
+		}
 		(*dyn)++;
 	}
 }
@@ -158,7 +167,7 @@ ld_calc_plt_addr(Sym_desc *sdp, Ofl_desc *ofl)
  * or support.
  */
 static uchar_t plt0_entry[M_PLT_RESERVSZ] = {
-	/* stp x16, x30, [sp,#-16]! */ 			0xf0, 0x7b, 0xbf, 0xa9,
+	/* stp x16, x30, [sp,#-16]! */			0xf0, 0x7b, 0xbf, 0xa9,
 	/* adrp x16, Page(&(.plt.got[2])) */		0x10, 0x00, 0x00, 0x90,
 	/* ldr x17, [x16, Offset(&(.plt.got[2]))] */	0x11, 0x02, 0x40, 0xf9,
 	/* add x16, x16, Offset(&(.plt.got[2])) */	0x10, 0x02, 0x00, 0x91,
@@ -182,13 +191,12 @@ syn_rdesc_sym_name(Rel_desc *rdesc)
 }
 
 /*
- * Given an address, return the AArch64 page it's on (this is separate to any
- * actual page size, I think.)
+ * Given an address, return the 4K page it's on.
  *
  * XXXARM: I thought we had a machine independent macro for this, but I can't
  * find it.
  */
-#define AARCH64_PAGE(x)	((x) & ~0xfff)
+#define	AARCH64_PAGE(x)	((x) & ~0xfff)
 
 static uintptr_t
 plt_entry(Ofl_desc *ofl, Sym_desc *sdp)
@@ -197,7 +205,7 @@ plt_entry(Ofl_desc *ofl, Sym_desc *sdp)
 	Sword		plt_off;
 	Word		got_off;
 	Addr		got = ofl->ofl_osgotplt->os_shdr->sh_addr;
-	Addr 		plt = ofl->ofl_osplt->os_shdr->sh_addr;
+	Addr		plt = ofl->ofl_osplt->os_shdr->sh_addr;
 	int		bswap = (ofl->ofl_flags1 & FLG_OF1_ENCDIFF) != 0;
 
 	got_off = (sdp->sd_aux->sa_PLTndx - 1 + 3) * M_GOT_ENTSIZE;
@@ -238,8 +246,8 @@ plt_entry(Ofl_desc *ofl, Sym_desc *sdp)
 	}
 
 	/* The offset into .got.plt */
-	static Rel_desc rdesc_r_ldst64_abs_lo12_nc = { NULL, NULL, NULL, 0, 0, 0,
-		R_AARCH64_LDST64_ABS_LO12_NC };
+	static Rel_desc rdesc_r_ldst64_abs_lo12_nc = { NULL, NULL, NULL,
+		0, 0, 0, R_AARCH64_LDST64_ABS_LO12_NC };
 	val1 = got + got_off;
 
 	if (do_reloc_ld(&rdesc_r_ldst64_abs_lo12_nc, &pltent[4], &val1,
@@ -458,12 +466,15 @@ ld_perform_outreloc(Rel_desc *orsp, Ofl_desc *ofl, Boolean *remain_seen)
 	return (1);
 }
 
+/* XXXARM: None on ARM just yet */
+#if 0
 static Fixupret
 tls_fixups(Ofl_desc *ofl, Rel_desc *arsp)
 {
 	assert(0 && "Not implemented");
 	return (0);
 }
+#endif
 
 static uintptr_t
 ld_do_activerelocs(Ofl_desc *ofl)
@@ -496,21 +507,35 @@ ld_do_activerelocs(Ofl_desc *ofl)
 		 */
 		if ((arsp->rel_isdesc->is_flags & FLG_IS_DISCARD) &&
 		    ((arsp->rel_flags & (FLG_REL_GOT | FLG_REL_BSS |
-			FLG_REL_PLT | FLG_REL_NOINFO)) == 0)) {
+		    FLG_REL_PLT | FLG_REL_NOINFO)) == 0)) {
 			DBG_CALL(Dbg_reloc_discard(ofl->ofl_lml, M_MACH, arsp));
 			continue;
 		}
 
 		/*
-		 * XXXARM: We should figure out the GOT model for TLS, once we
-		 * have it.
+		 * We determine what the 'got reference' model (if required)
+		 * is at this point.  This needs to be done before tls_fixups()
+		 * since it may 'transition' our instructions.
+		 *
+		 * The got table entries have already been assigned,
+		 * and we bind to those initial entries.
 		 */
-		gref = GOT_REF_GENERIC;
+		if (arsp->rel_flags & FLG_REL_DTLS)
+			gref = GOT_REF_TLSGD;
+		else if (arsp->rel_flags & FLG_REL_MTLS)
+			gref = GOT_REF_TLSLD;
+		else if (arsp->rel_flags & FLG_REL_STLS)
+			gref = GOT_REF_TLSIE;
+		else
+			gref = GOT_REF_GENERIC;
 
 		/*
 		 * Perform any required TLS fixups.
+		 * XXXARM: No optimizations yet
 		 */
+#if 0
 		if (arsp->rel_flags & FLG_REL_TLSFIX) {
+
 			Fixupret	ret;
 
 			if ((ret = tls_fixups(ofl, arsp)) == FIX_ERROR)
@@ -518,6 +543,7 @@ ld_do_activerelocs(Ofl_desc *ofl)
 			if (ret == FIX_DONE)
 				continue;
 		}
+#endif
 
 		/*
 		 * If this is a relocation against a move table, or
@@ -567,6 +593,11 @@ ld_do_activerelocs(Ofl_desc *ofl)
 					value += sdp->sd_isc->is_osdesc->
 					    os_shdr->sh_addr;
 			}
+
+			/*
+			 * If this is a TLS reference, value is the offset
+			 * into the TLS block.
+			 */
 			if (sdp->sd_isc->is_shdr->sh_flags & SHF_TLS)
 				value -= ofl->ofl_tlsphdr->p_vaddr;
 
@@ -645,7 +676,15 @@ ld_do_activerelocs(Ofl_desc *ofl)
 			gnp = ld_find_got_ndx(sdp->sd_GOTndxs, gref, ofl, arsp);
 			assert(gnp);
 
-			gotndx = gnp->gn_gotndx;
+			/*
+			 * If this is the DTPREL portion of a GD relocation,
+			 * we need to write into the next word in the GOT.  It
+			 * was reserved in `ld_assign_got_ndx`
+			 */
+			if (arsp->rel_rtype == R_AARCH64_TLS_DTPREL)
+				gotndx = gnp->gn_gotndx + 1;
+			else
+				gotndx = gnp->gn_gotndx;
 
 			R1addr = (Xword)(gotndx * M_GOT_ENTSIZE);
 
@@ -728,37 +767,26 @@ ld_do_activerelocs(Ofl_desc *ofl)
 		    (osp == sdp->sd_isc->is_osdesc))) {
 			value -= refaddr;
 
-		} else if (IS_TLS_INS(arsp->rel_rtype) &&
-		    IS_GOT_RELATIVE(arsp->rel_rtype) &&
-		    ((flags & FLG_OF_RELOBJ) == 0)) {
-			Gotndx	*gnp;
-			assert(0 && "GOT TLS Not ported");
-			gnp = ld_find_got_ndx(sdp->sd_GOTndxs, gref, ofl, arsp);
-			assert(gnp);
-			value = (Xword)gnp->gn_gotndx * M_GOT_ENTSIZE;
-
 		} else if (IS_GOT_RELATIVE(arsp->rel_rtype) &&
 		    ((flags & FLG_OF_RELOBJ) == 0)) {
-			Gotndx *gnp;
-
+			Gotndx	*gnp;
 			gnp = ld_find_got_ndx(sdp->sd_GOTndxs, gref, ofl, arsp);
 			assert(gnp);
 			value = (Xword)gnp->gn_gotndx * M_GOT_ENTSIZE;
 
-			/*
-			 * See the handling for R_386_TLS_IE which is
-			 * similar.
-			 *
-			 * XXXARM: oof.
-			 */
-			if ((arsp->rel_rtype == R_AARCH64_LD64_GOT_LO12_NC) ||
-			    (arsp->rel_rtype == R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC)) {
+			/* Value in the GOT should be absolute */
+			if (IS_GOT_ABS(arsp->rel_rtype)) {
 				value += ofl->ofl_osgot->os_shdr->sh_addr;
 			}
-
 		} else if ((arsp->rel_flags & FLG_REL_STLS) &&
 		    ((flags & FLG_OF_RELOBJ) == 0)) {
-			assert(0 && "SLTS Not ported");
+			/*
+			 * This is the LE TLS reference model.  The static
+			 * offset is hard-coded, we just have to amend it to
+			 * avoid the ABI-specified TCB, which is two pointers
+			 * in size.
+			 */
+			value += sizeof (uintptr_t) * 2;
 		}
 
 		if (arsp->rel_isdesc->is_file)
@@ -777,7 +805,8 @@ ld_do_activerelocs(Ofl_desc *ofl)
 			Conv_inv_buf_t inv_buf;
 
 			ld_eprintf(ofl, ERR_FATAL, MSG_INTL(MSG_REL_EMPTYSEC),
-			    conv_reloc_aarch64_type(arsp->rel_rtype, 0, &inv_buf),
+			    conv_reloc_aarch64_type(arsp->rel_rtype, 0,
+			    &inv_buf),
 			    ifl_name, ld_reloc_sym_name(arsp),
 			    EC_WORD(arsp->rel_isdesc->is_scnndx),
 			    arsp->rel_isdesc->is_name);
@@ -808,7 +837,8 @@ ld_do_activerelocs(Ofl_desc *ofl)
 				class = ERR_WARNING;
 
 			ld_eprintf(ofl, class, MSG_INTL(MSG_REL_INVALOFFSET),
-			    conv_reloc_aarch64_type(arsp->rel_rtype, 0, &inv_buf),
+			    conv_reloc_aarch64_type(arsp->rel_rtype, 0,
+			    &inv_buf),
 			    ifl_name, EC_WORD(arsp->rel_isdesc->is_scnndx),
 			    arsp->rel_isdesc->is_name, ld_reloc_sym_name(arsp),
 			    EC_ADDR((uintptr_t)addr -
@@ -1058,8 +1088,95 @@ ld_reloc_local(Rel_desc *rsp, Ofl_desc *ofl)
 static uintptr_t
 ld_reloc_TLS(Boolean local, Rel_desc *rsp, Ofl_desc *ofl)
 {
-	assert(0 && "Not implemented");
-	return (0);
+	Word		rtype = rsp->rel_rtype;
+	Sym_desc	*sdp = rsp->rel_sym;
+	ofl_flag_t	flags = ofl->ofl_flags;
+	Gotndx		*gnp;
+
+	/*
+	 * If we're building an executable - use either the IE or LE access
+	 * model.  If we're building a shared object process the IE model.
+	 */
+	if ((flags & FLG_OF_EXEC) || (IS_TLS_IE(rtype))) {
+		/*
+		 * Set the DF_STATIC_TLS flag.
+		 */
+		ofl->ofl_dtflags |= DF_STATIC_TLS;
+
+		if (!local || ((flags & FLG_OF_EXEC) == 0)) {
+			/*
+			 * Assign a GOT entry for static TLS references.
+			 */
+			if ((gnp = ld_find_got_ndx(sdp->sd_GOTndxs,
+			    GOT_REF_TLSIE, ofl, rsp)) == NULL) {
+				if (ld_assign_got_TLS(local, rsp, ofl, sdp,
+				    gnp, GOT_REF_TLSIE, FLG_REL_STLS,
+				    rtype, R_AARCH64_TLS_TPREL, 0) == S_ERROR)
+					return (S_ERROR);
+			}
+
+			/*
+			 * IE access model.
+			 */
+			if (IS_TLS_IE(rtype))
+				return (ld_add_actrel(FLG_REL_STLS, rsp, ofl));
+
+			return (ld_add_actrel((FLG_REL_TLSFIX | FLG_REL_STLS),
+			    rsp, ofl));
+		}
+
+		/*
+		 * LE access model.
+		 */
+		if (IS_TLS_LE(rtype)) {
+			return (ld_add_actrel(FLG_REL_STLS, rsp, ofl));
+		}
+
+		/* IE access model. */
+		if (IS_TLS_IE(rtype)) {
+			/*
+			 * If this is the first relocation of an IE,
+			 * add a GOT entry.
+			 */
+			if (rtype == R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21) {
+				if ((gnp = ld_find_got_ndx(sdp->sd_GOTndxs,
+				    GOT_REF_TLSIE, ofl, rsp)) == NULL) {
+					if (ld_assign_got_TLS(local, rsp, ofl,
+					    sdp, gnp, GOT_REF_TLSIE,
+					    FLG_REL_STLS, rtype,
+					    R_AARCH64_TLS_TPREL, 0) == S_ERROR)
+						return (S_ERROR);
+				}
+			}
+
+			return (ld_add_actrel(FLG_REL_TLSFIX | FLG_REL_STLS,
+			    rsp, ofl));
+		}
+	}
+
+	/*
+	 * Building a shared object.
+	 *
+	 * Assign a GOT entry for a dynamic TLS reference.
+	 */
+	if (IS_TLS_LD(rtype) && ((gnp = ld_find_got_ndx(sdp->sd_GOTndxs,
+	    GOT_REF_TLSLD, ofl, rsp)) == NULL)) {
+		if (ld_assign_got_TLS(local, rsp, ofl, sdp, gnp, GOT_REF_TLSLD,
+		    FLG_REL_MTLS, rtype, R_AARCH64_TLS_DTPMOD, 0) == S_ERROR)
+			return (S_ERROR);
+	} else if (IS_TLS_GD(rtype) &&
+	    ((gnp = ld_find_got_ndx(sdp->sd_GOTndxs, GOT_REF_TLSGD,
+	    ofl, rsp)) == NULL)) {
+		if (ld_assign_got_TLS(local, rsp, ofl, sdp, gnp, GOT_REF_TLSGD,
+		    FLG_REL_DTLS, rtype, R_AARCH64_TLS_DTPMOD,
+		    R_AARCH64_TLS_DTPREL) == S_ERROR)
+			return (S_ERROR);
+	}
+
+	if (IS_TLS_LD(rtype))
+		return (ld_add_actrel(FLG_REL_MTLS, rsp, ofl));
+
+	return (ld_add_actrel(FLG_REL_DTLS, rsp, ofl));
 }
 
 static uintptr_t
@@ -1075,7 +1192,6 @@ ld_assign_got_ndx(Alist **alpp, Gotndx *pgnp, Gotref gref, Ofl_desc *ofl,
 		return (1);
 
 	if ((gref == GOT_REF_TLSGD) || (gref == GOT_REF_TLSLD)) {
-		assert(0 && "TLS GOT entries not implemented");
 		gotents = 2;
 	} else {
 		gotents = 1;
@@ -1088,7 +1204,7 @@ ld_assign_got_ndx(Alist **alpp, Gotndx *pgnp, Gotref gref, Ofl_desc *ofl,
 	ofl->ofl_gotcnt += gotents;
 
 	if (gref == GOT_REF_TLSLD) {
-		assert(0 && "TLS GOT entries not implemented");
+		assert(0 && "TLS LD GOT entries not implemented");
 		if (ofl->ofl_tlsldgotndx == NULL) {
 			if ((gnp = libld_malloc(sizeof (Gotndx))) == NULL)
 				return (S_ERROR);
@@ -1183,8 +1299,8 @@ ld_fillin_gotplt(Ofl_desc *ofl)
 		if (!OFL_DO_RELOC(ofl))
 			return (1);
 
-		static Rel_desc rdesc_prel_pg_hi21 = { NULL, NULL, NULL, 0, 0, 0,
-			R_AARCH64_ADR_PREL_PG_HI21 };
+		static Rel_desc rdesc_prel_pg_hi21 = { NULL, NULL, NULL,
+			0, 0, 0, R_AARCH64_ADR_PREL_PG_HI21 };
 		Xword		val1;
 
 		val1 = AARCH64_PAGE(got + 16) - AARCH64_PAGE(plt + 4);
@@ -1196,8 +1312,8 @@ ld_fillin_gotplt(Ofl_desc *ofl)
 			return (S_ERROR);
 		}
 
-		static Rel_desc rdesc_ldst64_abs_lo12_nc = { NULL, NULL, NULL, 0, 0, 0,
-			R_AARCH64_LDST64_ABS_LO12_NC};
+		static Rel_desc rdesc_ldst64_abs_lo12_nc = { NULL, NULL, NULL,
+			0, 0, 0, R_AARCH64_LDST64_ABS_LO12_NC};
 		val1 = got + 16;
 		if (do_reloc_ld(&rdesc_ldst64_abs_lo12_nc, &pltent[8], &val1,
 		    syn_rdesc_sym_name, MSG_ORIG(MSG_SPECFIL_PLTENT), bswap,
@@ -1206,8 +1322,8 @@ ld_fillin_gotplt(Ofl_desc *ofl)
 			return (S_ERROR);
 		}
 
-		static Rel_desc rdesc_add_abs_lo12_nc = { NULL, NULL, NULL, 0, 0, 0,
-			R_AARCH64_ADD_ABS_LO12_NC};
+		static Rel_desc rdesc_add_abs_lo12_nc = { NULL, NULL, NULL,
+			0, 0, 0, R_AARCH64_ADD_ABS_LO12_NC};
 		val1 = got + 16;
 		if (do_reloc_ld(&rdesc_add_abs_lo12_nc, &pltent[12], &val1,
 		    syn_rdesc_sym_name, MSG_ORIG(MSG_SPECFIL_PLTENT), bswap,

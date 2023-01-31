@@ -43,8 +43,9 @@
  *	return (slow_tls_get_addr(tls_index));
  * }
  *
- * ___tls_get_addr() is identical to __tls_get_addr() except that it
- * assumes its argument is passed in %eax rather than on the stack.
+ * ___tls_get_addr() is identical to __tls_get_addr() and exists for
+ * compatibility reasons (on i386 it actually differs, and it was exported
+ * from libc on amd64 in error)
  */
 
 #include "SYS.h"

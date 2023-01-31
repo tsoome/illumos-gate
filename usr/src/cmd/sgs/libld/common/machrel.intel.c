@@ -1005,7 +1005,9 @@ ld_do_activerelocs(Ofl_desc *ofl)
 			gnp = ld_find_got_ndx(sdp->sd_GOTndxs, gref, ofl, NULL);
 			assert(gnp);
 			value = (Xword)gnp->gn_gotndx * M_GOT_ENTSIZE;
-			if (arsp->rel_rtype == R_386_TLS_IE) {
+
+			/* Value in the GOT should be absolute */
+			if (IS_GOT_ABS(arsp->rel_rtype)) {
 				value += ofl->ofl_osgot->os_shdr->sh_addr;
 			}
 

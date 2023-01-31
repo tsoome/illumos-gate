@@ -73,3 +73,6 @@ define T_GETLGRP	T_GETLGRP
 define T_GETHRTIME	T_GETHRTIME
 define T_GETHRVTIME	T_GETHRVTIME
 
+define	TI_MODUELID	offsetof(TLS_index, ti_moduleid)
+define	TI_TLSOFFSET	offsetof(TLS_index, ti_tlsoffset)
+define	SIZEOF_TLS_T	sizeof(tls_t)

@@ -376,7 +376,7 @@ const Rel_entry	reloc_table[R_AARCH64_NUM] = {
 	[R_AARCH64_GOT_LD_PREL19] = {0, FLG_RE_NOTSUP, 0, 0, 0},     /* 309 */
 	[R_AARCH64_LD64_GOTOFF_LO15] = {0, FLG_RE_NOTSUP, 0, 0, 0},  /* 310 */
 	[R_AARCH64_ADR_GOT_PAGE] = {0, FLG_RE_GOTADD|FLG_RE_PAGE|FLG_RE_PCREL, 4, 0, 0},	   /* 311 */
-	[R_AARCH64_LD64_GOT_LO12_NC] = {0, FLG_RE_GOTADD, 4, 0, 0},	   /* 312 */
+	[R_AARCH64_LD64_GOT_LO12_NC] = {0, FLG_RE_GOTADD|FLG_RE_GOTABS, 4, 0, 0},	   /* 312 */
 	[R_AARCH64_LD64_GOTPAGE_LO15] = {0, FLG_RE_GOTADD|FLG_RE_PAGE, 4, 0, 0},	   /* 313 */
 	[R_AARCH64_PLT32] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 314 */
 	[315] = {0, FLG_RE_NOTSUP, 0, 0, 0},
@@ -577,8 +577,8 @@ const Rel_entry	reloc_table[R_AARCH64_NUM] = {
 	[510] = {0, FLG_RE_NOTSUP, 0, 0, 0},
 	[511] = {0, FLG_RE_NOTSUP, 0, 0, 0},
 	[R_AARCH64_TLSGD_ADR_PREL21] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 512 */
-	[R_AARCH64_TLSGD_ADR_PAGE21] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 513 */
-	[R_AARCH64_TLSGD_ADD_LO12_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 514 */
+	[R_AARCH64_TLSGD_ADR_PAGE21] = {0, FLG_RE_GOTADD | FLG_RE_PAGE | FLG_RE_PCREL | FLG_RE_TLSGD, 4, 0, 0}, /* 513 */
+	[R_AARCH64_TLSGD_ADD_LO12_NC] = {0, FLG_RE_GOTADD | FLG_RE_GOTABS | FLG_RE_TLSGD, 4, 0, 0}, /* 514 */
 	[R_AARCH64_TLSGD_MOVW_G1] = {0, FLG_RE_NOTSUP, 0, 0, 0},     /* 515 */
 	[R_AARCH64_TLSGD_MOVW_G0_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0},  /* 516 */
 	[R_AARCH64_TLSLD_ADR_PREL21] = {0, FLG_RE_NOTSUP, 0, 0, 0},  /* 517 */
@@ -605,17 +605,17 @@ const Rel_entry	reloc_table[R_AARCH64_NUM] = {
 	[R_AARCH64_TLSLD_LDST64_DTPREL_LO12_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 538 */
 	[R_AARCH64_TLSIE_MOVW_GOTTPREL_G1] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 539 */
 	[R_AARCH64_TLSIE_MOVW_GOTTPREL_G0_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 540 */
-	[R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 541 */
-	[R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 542 */
+	[R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21] = {0, FLG_RE_GOTADD|FLG_RE_TLSIE|FLG_RE_PAGE|FLG_RE_PCREL, 4, 0, 0}, /* 541 */
+	[R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC] = {0, FLG_RE_GOTADD|FLG_RE_GOTABS|FLG_RE_TLSIE, 4, 0, 0}, /* 542 */
 	[R_AARCH64_TLSIE_LD_GOTTPREL_PREL19] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 543 */
 	[R_AARCH64_TLSLE_MOVW_TPREL_G2] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 544 */
 	[R_AARCH64_TLSLE_MOVW_TPREL_G1] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 545 */
 	[R_AARCH64_TLSLE_MOVW_TPREL_G1_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 546 */
 	[R_AARCH64_TLSLE_MOVW_TPREL_G0] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 547 */
 	[R_AARCH64_TLSLE_MOVW_TPREL_G0_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 548 */
-	[R_AARCH64_TLSLE_ADD_TPREL_HI12] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 549 */
-	[R_AARCH64_TLSLE_ADD_TPREL_LO12] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 550 */
-	[R_AARCH64_TLSLE_ADD_TPREL_LO12_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 551 */
+	[R_AARCH64_TLSLE_ADD_TPREL_HI12] = {0, FLG_RE_TLSLE, 4, 0, 0}, /* 549 */
+	[R_AARCH64_TLSLE_ADD_TPREL_LO12] = {0, FLG_RE_NOTSUP, 4, 0, 0}, /* 550 */
+	[R_AARCH64_TLSLE_ADD_TPREL_LO12_NC] = {0, FLG_RE_TLSLE, 4, 0, 0}, /* 551 */
 	[R_AARCH64_TLSLE_LDST8_TPREL_LO12] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 552 */
 	[R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 553 */
 	[R_AARCH64_TLSLE_LDST16_TPREL_LO12] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 554 */
@@ -1092,15 +1092,16 @@ const Rel_entry	reloc_table[R_AARCH64_NUM] = {
 	[R_AARCH64_GLOB_DAT] = {0, FLG_RE_NOTREL, 8, 0, 0}, /* 1025 */
 	[R_AARCH64_JUMP_SLOT] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* SPECIAL */ /* 1026 */
 	[R_AARCH64_RELATIVE] = {0, FLG_RE_NOTREL, 8, 0, 0},  /* 1027 */
-	[R_AARCH64_TLS_DTPREL] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 1028 */
-	[R_AARCH64_TLS_DTPMOD] = {0, FLG_RE_NOTSUP, 0, 0, 0}, /* 1029 */
-	[R_AARCH64_TLS_TPREL] = {0, FLG_RE_NOTSUP, 0, 0, 0},  /* 1030 */
+	[R_AARCH64_TLS_DTPREL] = {0, FLG_RE_NOTREL, 8, 0, 0}, /* 1028 */
+	[R_AARCH64_TLS_DTPMOD] = {0, FLG_RE_NOTREL, 8, 0, 0}, /* 1029 */
+	[R_AARCH64_TLS_TPREL] = {0, FLG_RE_NOTREL, 8, 0, 0},  /* 1030 */
 	[R_AARCH64_TLSDESC] = {0, FLG_RE_NOTSUP, 0, 0, 0},    /* 1031 */
 	[R_AARCH64_IRELATIVE] = {0, FLG_RE_NOTSUP, 0, 0, 0},  /* 1032 */
 };
 
 static inline int64_t
-signextend64(uint64_t x, unsigned int bits) {
+signextend64(uint64_t x, unsigned int bits)
+{
 	return ((int64_t)(x << (64 - bits))) >> (64 - bits);
 }
 
@@ -1119,12 +1120,12 @@ signextend64(uint64_t x, unsigned int bits) {
  *
  * CALCULATION uses the following notation:
  *
- * 	A 	The addend used to compute the value of the relocatable field
+ *	A	The addend used to compute the value of the relocatable field
  *
- * 	S	The symbol whos index resides in the relocation entry
+ *	S	The symbol whos index resides in the relocation entry
  *
- * 	P 	The place (section offset or address) of the storage unit being
- * 		relocated (computed using r_offset).
+ *	P	The place (section offset or address) of the storage unit being
+ *		relocated (computed using r_offset).
  */
 #if defined(_KERNEL)
 #define	lml	0		/* Needed by arglist of REL_ERR_* macros */
@@ -1180,6 +1181,7 @@ do_reloc_rtld(Word rtype, uchar_t *off, Xword *value, const char *sym,
 	case R_AARCH64_TLSDESC_ADR_PAGE21:
 	case R_AARCH64_ADR_GOT_PAGE:
 	case R_AARCH64_ADR_PREL_PG_HI21:
+	case R_AARCH64_TLSGD_ADR_PAGE21:
 		if (signextend64(*value, 33) != *value) {
 			REL_ERR_NOFIT(lml, file, sym, rtype, *value);
 		}
@@ -1279,8 +1281,8 @@ do_reloc_rtld(Word rtype, uchar_t *off, Xword *value, const char *sym,
 		base = 0;
 		break;
 
-	case R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC:
 	case R_AARCH64_LDST8_ABS_LO12_NC:
+	case R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC:
 		uvalue = *value;
 		uvalue = uvalue & 0xfff;
 		uvalue = base | ((uvalue & 0xfff) << 10);
@@ -1345,7 +1347,8 @@ do_reloc_rtld(Word rtype, uchar_t *off, Xword *value, const char *sym,
 		base = 0;
 		break;
 
-	case R_AARCH64_JUMP26:	/* XXXARM: Apparently there may be errata here */
+	/* XXXARM: Apparently there may be errata here */
+	case R_AARCH64_JUMP26:
 	case R_AARCH64_CALL26:
 		if (signextend64(*value, 28) != *value) {
 			REL_ERR_NOFIT(lml, file, sym, rtype, *value);
@@ -1363,7 +1366,8 @@ do_reloc_rtld(Word rtype, uchar_t *off, Xword *value, const char *sym,
 	case R_AARCH64_ABS16:
 	case R_AARCH64_PREL16:
 		if ((signextend64(*value, 16) != *value) ||
-		    ((*value >> 16) != 0) && ((*value >> 16) != 0xffffffffffff)) {
+		    ((*value >> 16) != 0) &&
+		    ((*value >> 16) != 0xffffffffffff)) {
 			REL_ERR_NOFIT(lml, file, sym, rtype, *value);
 		}
 		uvalue = *value;
@@ -1380,6 +1384,31 @@ do_reloc_rtld(Word rtype, uchar_t *off, Xword *value, const char *sym,
 			REL_ERR_NOFIT(lml, file, sym, rtype, *value);
 		}
 		uvalue = *value;
+		break;
+
+	case R_AARCH64_TLSLE_ADD_TPREL_HI12:
+		if ((signextend64(*value, 24) != *value) ||
+		    ((*value >> 24) != 0)) {
+			REL_ERR_NOFIT(lml, file, sym, rtype, *value);
+		}
+
+		uvalue = *value;
+		uvalue = (uvalue >> 12);
+		uvalue = base | ((uvalue & 0xfff) << 10);
+		base = 0;
+		break;
+
+	case R_AARCH64_TLSLE_ADD_TPREL_LO12:
+		if ((signextend64(*value, 12) != *value) ||
+		    ((*value >> 12) != 0)) {
+			REL_ERR_NOFIT(lml, file, sym, rtype, *value);
+		}
+		/* FALLTHROUGH */
+	case R_AARCH64_TLSLE_ADD_TPREL_LO12_NC:
+	case R_AARCH64_TLSGD_ADD_LO12_NC:
+		uvalue = *value;
+		uvalue = base | ((uvalue & 0xfff) << 10);
+		base = 0;
 		break;
 
 	case R_AARCH64_ABS64:

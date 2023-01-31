@@ -82,7 +82,7 @@ static const uchar_t dyn_plt_template[] = {
 /* 0x08 */  0x4c, 0x8d, 0x1d, 0x00,	/* leaq  trace_fields(%rip), %r11 */
 		0x00, 0x00, 0x00,
 /* 0x0f */  0x4c, 0x89, 0x5d, 0xf8,	/* movq  %r11, -0x8(%rbp) */
-/* 0x13 */  0x49, 0xbb, 0x00, 0x00, 	/* movq  $elf_plt_trace, %r11 */
+/* 0x13 */  0x49, 0xbb, 0x00, 0x00,	/* movq	 $elf_plt_trace, %r11 */
 		0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00,
 /* 0x1d */  0x41, 0xff, 0xe3		/* jmp   *%r11 */
@@ -831,8 +831,9 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 				 * TLS relocation value is the TLS modid.
 				 */
 				value = TLSMODID(lmp);
-			} else
+			} else {
 				value = basebgn;
+			}
 
 			name = NULL;
 		}
@@ -938,7 +939,7 @@ elf_plt_init(void *got, caddr_t l)
 Pltbindtype
 /* ARGSUSED1 */
 elf_plt_write(uintptr_t addr, uintptr_t vaddr, void *rptr, uintptr_t symval,
-	Xword pltndx)
+    Xword pltndx)
 {
 	Rela		*rel = (Rela*)rptr;
 	uintptr_t	pltaddr;

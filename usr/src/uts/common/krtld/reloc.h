@@ -119,6 +119,7 @@ extern	const Rel_entry	reloc_table[];
 #define	IS_GOTPAGEPC_BASED(X)	RELTAB_IS_GOTPAGEPC_BASED(X, reloc_table)
 #define	IS_GOT_OPINS(X)		RELTAB_IS_GOT_OPINS(X, reloc_table)
 #define	IS_GOT_REQUIRED(X)	RELTAB_IS_GOT_REQUIRED(X, reloc_table)
+#define	IS_GOT_ABS(X)		RELTAB_IS_GOT_ABS(X, reloc_table)
 #define	IS_PC_RELATIVE(X)	RELTAB_IS_PC_RELATIVE(X, reloc_table)
 #define	IS_ADD_RELATIVE(X)	RELTAB_IS_ADD_RELATIVE(X, reloc_table)
 #define	IS_REGISTER(X)		RELTAB_IS_REGISTER(X, reloc_table)

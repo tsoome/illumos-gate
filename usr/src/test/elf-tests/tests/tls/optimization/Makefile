@@ -14,9 +14,6 @@
 # Copyright 2018 Joyent, Inc.
 #
 
-SUBDIRS =		\
-	dynamic		\
-	optimization	\
-	static
+SUBDIRS = amd64 i386
 
 include $(SRC)/test/Makefile.com

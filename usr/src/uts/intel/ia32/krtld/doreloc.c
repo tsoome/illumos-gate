@@ -84,7 +84,8 @@ const Rel_entry	reloc_table[R_386_NUM] = {
 	[R_386_TLS_LDM_PLT]	= {0, FLG_RE_PLTREL | FLG_RE_PCREL |
 	    FLG_RE_TLSLD, 4, 0, 0},
 	[R_386_TLS_TPOFF]	= {0, FLG_RE_NOTREL, 4, 0, 0},
-	[R_386_TLS_IE]		= {0, FLG_RE_GOTADD | FLG_RE_TLSIE, 4, 0, 0},
+	[R_386_TLS_IE]		= {0, FLG_RE_GOTADD | FLG_RE_GOTABS |
+		FLG_RE_TLSIE, 4, 0, 0},
 	[R_386_TLS_GOTIE]	= {0, FLG_RE_GOTADD | FLG_RE_TLSIE, 4, 0, 0},
 	[R_386_TLS_LE]		= {0, FLG_RE_TLSLE, 4, 0, 0},
 	[R_386_TLS_GD]		= {0, FLG_RE_GOTADD | FLG_RE_TLSGD, 4, 0, 0},

@@ -465,6 +465,18 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 				value = basebgn;
 				name = NULL;
 
+				/*
+				 * Special case TLS relocations.
+				 */
+				if (rtype == R_AARCH64_TLS_DTPMOD) {
+					value = TLSMODID(lmp);
+				} else if (rtype == R_AARCH64_TLS_TPREL) {
+					if ((value = elf_static_tls(lmp, symref,
+					    rel, rtype, 0, roffset, 0)) == 0) {
+						ret = 0;
+						break;
+					}
+				}
 			} else {
 				/*
 				 * If the symbol index is equal to the previous
@@ -629,9 +641,27 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 				 */
 				if (IS_PC_RELATIVE(rtype))
 					value -= roffset;
+
+				/*
+				 * Special case TLS relocations
+				 */
+				if (rtype == R_AARCH64_TLS_DTPMOD) {
+					value = TLSMODID(_lmp);
+				} else if (rtype == R_AARCH64_TLS_TPREL) {
+					if ((value = elf_static_tls(_lmp,
+					    symdef, rel, rtype, name, roffset,
+					    value)) == 0) {
+						ret = 0;
+						break;
+					}
+				}
 			}
 		} else {
-			value = basebgn;
+			if (rtype == R_AARCH64_TLS_DTPMOD) {
+				value = TLSMODID(_lmp);
+			} else {
+				value = basebgn;
+			}
 			name = NULL;
 		}
 

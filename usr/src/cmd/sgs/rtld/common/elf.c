@@ -2923,7 +2923,7 @@ elf_static_tls(Rt_map *lmp, Sym *sym, void *rel, Word rtype, char *name,
 	 * any can be obtained.  Enforce that any object using static TLS is
 	 * non-deletable.
 	 */
-	if (TLSSTATOFF(lmp) == 0) {
+	if (HASSTATTLS(lmp) == 0) {
 		FLAGS1(lmp) |= FL1_RT_TLSSTAT;
 		MODE(lmp) |= RTLD_NODELETE;
 
@@ -2953,7 +2953,11 @@ elf_static_tls(Rt_map *lmp, Sym *sym, void *rel, Word rtype, char *name,
 		}
 	}
 
+#if _TLS_VARIANT == 1
+	return ((sizeof (uintptr_t) * 2) + value);
+#else
 	return (-(TLSSTATOFF(lmp) - value));
+#endif
 }
 
 /*

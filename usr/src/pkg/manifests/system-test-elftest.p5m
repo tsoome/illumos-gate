@@ -122,27 +122,48 @@ file path=opt/elf-tests/tests/string-merge/simple mode=0555
 file path=opt/elf-tests/tests/string-merge/str1.s mode=0444
 file path=opt/elf-tests/tests/string-merge/str2.s mode=0444
 dir  path=opt/elf-tests/tests/tls
-dir  path=opt/elf-tests/tests/tls/amd64
-dir  path=opt/elf-tests/tests/tls/amd64/ie
-file path=opt/elf-tests/tests/tls/amd64/ie/Makefile.test mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/amd64-ie-test mode=0555
-file path=opt/elf-tests/tests/tls/amd64/ie/style1-func-with-r12.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style1-func-with-r13.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style1-func.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style1-main.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style2-with-badness.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style2-with-r12.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style2-with-r13.s mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ie/style2.s mode=0444
-dir  path=opt/elf-tests/tests/tls/amd64/ld
-file path=opt/elf-tests/tests/tls/amd64/ld/Makefile.test mode=0444
-file path=opt/elf-tests/tests/tls/amd64/ld/amd64-ld-test mode=0555
-file path=opt/elf-tests/tests/tls/amd64/ld/ld-with-addend.s mode=0444
-dir  path=opt/elf-tests/tests/tls/i386
-dir  path=opt/elf-tests/tests/tls/i386/ld
-file path=opt/elf-tests/tests/tls/i386/ld/Makefile.test mode=0444
-file path=opt/elf-tests/tests/tls/i386/ld/half-ldm.s mode=0444
-file path=opt/elf-tests/tests/tls/i386/ld/i386-ld-test mode=0555
+dir  path=opt/elf-tests/tests/tls/dynamic
+file path=opt/elf-tests/tests/tls/dynamic/global-dynamic mode=0555
+file path=opt/elf-tests/tests/tls/dynamic/lib.c mode=0444
+$(MULTILIB_ONLY)file path=opt/elf-tests/tests/tls/dynamic/loader.32 mode=0555
+file path=opt/elf-tests/tests/tls/dynamic/loader.64 mode=0555
+file path=opt/elf-tests/tests/tls/dynamic/local-dynamic mode=0555
+dir  path=opt/elf-tests/tests/tls/optimization
+dir  path=opt/elf-tests/tests/tls/optimization/amd64
+dir  path=opt/elf-tests/tests/tls/optimization/amd64/ie
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/Makefile.test mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/amd64-ie-test mode=0555
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style1-func-with-r12.s \
+    mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style1-func-with-r13.s \
+    mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style1-func.s mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style1-main.s mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style2-with-badness.s \
+    mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style2-with-r12.s \
+    mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style2-with-r13.s \
+    mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ie/style2.s mode=0444
+dir  path=opt/elf-tests/tests/tls/optimization/amd64/ld
+file path=opt/elf-tests/tests/tls/optimization/amd64/ld/Makefile.test mode=0444
+file path=opt/elf-tests/tests/tls/optimization/amd64/ld/amd64-ld-test mode=0555
+file path=opt/elf-tests/tests/tls/optimization/amd64/ld/ld-with-addend.s \
+    mode=0444
+dir  path=opt/elf-tests/tests/tls/optimization/i386
+dir  path=opt/elf-tests/tests/tls/optimization/i386/ld
+file path=opt/elf-tests/tests/tls/optimization/i386/ld/Makefile.test mode=0444
+file path=opt/elf-tests/tests/tls/optimization/i386/ld/half-ldm.s mode=0444
+file path=opt/elf-tests/tests/tls/optimization/i386/ld/i386-ld-test mode=0555
+dir  path=opt/elf-tests/tests/tls/static
+file path=opt/elf-tests/tests/tls/static/bin.c mode=0444
+file path=opt/elf-tests/tests/tls/static/global-dynamic mode=0555
+file path=opt/elf-tests/tests/tls/static/initial-exec mode=0555
+file path=opt/elf-tests/tests/tls/static/initial-exec-with-so mode=0555
+file path=opt/elf-tests/tests/tls/static/lib.c mode=0444
+file path=opt/elf-tests/tests/tls/static/local-dynamic mode=0555
+file path=opt/elf-tests/tests/tls/static/local-exec mode=0555
 license lic_CDDL license=lic_CDDL
 license usr/src/test/elf-tests/THIRDPARTYLICENSE \
     license=usr/src/test/elf-tests/THIRDPARTYLICENSE

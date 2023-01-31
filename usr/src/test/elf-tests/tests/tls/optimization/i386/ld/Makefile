@@ -14,21 +14,14 @@
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 
-PROG =	amd64-ie-test
+PROG =	i386-ld-test
 
-DATAFILES =			\
-	Makefile.test		\
-	style1-func-with-r12.s	\
-	style1-func-with-r13.s	\
-	style1-func.s		\
-	style1-main.s		\
-	style2-with-badness.s	\
-	style2-with-r12.s	\
-	style2-with-r13.s	\
-	style2.s
+DATAFILES =		\
+	Makefile.test	\
+	half-ldm.s	\
 
 ROOTOPTPKG = $(ROOT)/opt/elf-tests
-TESTDIR = $(ROOTOPTPKG)/tests/tls/amd64/ie
+TESTDIR = $(ROOTOPTPKG)/tests/tls/optimization/i386/ld
 
 CMDS = $(PROG:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555

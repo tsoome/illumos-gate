@@ -56,15 +56,20 @@ tests = ['exclude-kmod', 'exclude-exec', 'exclude-so', 'include-reloc', 'unknown
 [/opt/elf-tests/tests/string-merge/]
 tests = ['simple']
 
-[/opt/elf-tests/tests/tls/amd64/ie]
+[/opt/elf-tests/tests/tls/optimization/amd64/ie]
 arch = i86pc
 tests = ['amd64-ie-test']
 
-[/opt/elf-tests/tests/tls/i386/ld]
+[/opt/elf-tests/tests/tls/optimization/i386/ld]
 arch = i86pc
 tests = ['i386-ld-test']
 
-[/opt/elf-tests/tests/tls/amd64/ld]
+[/opt/elf-tests/tests/tls/optimization/amd64/ld]
 arch = i86pc
 tests = ['amd64-ld-test']
 
+[/opt/elf-tests/tests/tls/static/]
+tests = ['global-dynamic', 'initial-exec', 'initial-exec-with-so', 'local-dynamic', 'local-exec']
+
+[/opt/elf-tests/tests/tls/dynamic/]
+tests = ['global-dynamic', 'local-dynamic']
