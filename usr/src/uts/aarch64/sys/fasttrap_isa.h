@@ -37,7 +37,10 @@ extern "C" {
 /* svc #(T_DTRACE_RET) */
 #define	FASTTRAP_RET_INSTR		0xd4180021
 
-#define	FASTTRAP_SUNWDTRACE_SIZE	128
+/* two instructions + sizeof(tcb_t) , though not used right now */
+#define	FASTTRAP_SUNWDTRACE_SIZE	(sizeof (uint32_t) * 2) +	\
+	sizeof (uintptr_t) * 2
+
 typedef uint32_t	fasttrap_instr_t;
 
 typedef struct fasttrap_machtp {

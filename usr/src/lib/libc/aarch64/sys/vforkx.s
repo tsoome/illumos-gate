@@ -62,6 +62,7 @@
 	mov	x5, x9		/* save the vfork() error number */
 
 	mrs	x10, tpidr_el0
+	sub	x10, x10, #UL_TCB
 
 	ldr	x0, =SIG_SETMASK
 	ldr	w1, [x10, #(UL_SIGMASK + 0 * 4)]
@@ -82,6 +83,7 @@
 	 */
 	mov	x5, x0		/* save the vfork() return value */
 	mrs	x10, tpidr_el0
+	sub	x10, x10, #UL_TCB
 	cbnz	x1, child
 
 	/* parent process */
@@ -115,4 +117,3 @@ update_ul_vfork:
 	ret
 	SET_SIZE(vfork)
 	SET_SIZE(vforkx)
-

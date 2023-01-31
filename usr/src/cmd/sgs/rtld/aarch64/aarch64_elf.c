@@ -49,7 +49,7 @@
 #include	<unistd.h>
 #include	<fcntl.h>
 
-extern void elf_rtbndr(Rt_map *, ulong_t, caddr_t) __attribute__ ((visibility("hidden")));
+extern void elf_rtbndr(Rt_map *, ulong_t, caddr_t);
 
 int
 elf_mach_flags_check(Rej_desc *rej, Ehdr *ehdr)
@@ -85,7 +85,7 @@ static const uchar_t dyn_plt_template[] = {
 	0x00, 0x00, 0x00, 0x00,
 };
 
-int	dyn_plt_ent_size = sizeof(dyn_plt_template) +
+int	dyn_plt_ent_size = sizeof (dyn_plt_template) +
 sizeof (uintptr_t) + sizeof (uintptr_t) + sizeof (ulong_t) +
 sizeof (ulong_t) + sizeof (Sym);
 
@@ -660,13 +660,12 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 		case R_AARCH64_JUMP_SLOT:
 			if (!(FLAGS(lmp) & FLG_RT_FIXED)) {
 				DBG_CALL(Dbg_reloc_apply_val(LIST(lmp),
-					    ELF_DBG_RTLD, (Xword)roffset,
-					    (Xword)value));
+				    ELF_DBG_RTLD, (Xword)roffset,
+				    (Xword)value));
 				*(ulong_t *)roffset = value;
 			}
 			break;
-		case R_AARCH64_GLOB_DAT:
-		case R_AARCH64_ABS64:
+		default:
 			value += reladd;
 			/*
 			 * Write the relocation out.
@@ -677,14 +676,6 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 
 			DBG_CALL(Dbg_reloc_apply_val(LIST(lmp), ELF_DBG_RTLD,
 			    (Xword)roffset, (Xword)value));
-
-			/*
-			 * XXXARM: This list should be exhaustive in dynamic
-			 * relocations, and warn if we see others
-			 */
-		case R_AARCH64_RELATIVE:
-		default:
-			break;
 
 		}
 
@@ -719,7 +710,7 @@ elf_plt_init(void *got, caddr_t l)
  */
 Pltbindtype
 elf_plt_write(uintptr_t addr, uintptr_t vaddr, void *rptr, uintptr_t symval,
-	Xword pltndx)
+    Xword pltndx)
 {
 	Rela		*rel = (Rela*)rptr;
 	uintptr_t	pltaddr;

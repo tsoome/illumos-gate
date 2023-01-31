@@ -755,6 +755,13 @@ d_ulwp(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	    ulwp.ul_tmem.tm_size,
 	    prt_addr((void *)(addr + OFFSET(ul_tmem) + sizeof (size_t)), 0));
 
+#if _TLS_VARIANT == 1
+	HD("&tcb");
+	mdb_printf(OFFSTR "%s %s\n",
+	    OFFSET(ul_tcb),
+	    prt_addr((void *)(addr + OFFSET(ul_tcb)), 1));
+#endif
+
 	return (DCMD_OK);
 }
 

@@ -530,6 +530,25 @@ typedef struct {
 typedef void (*tmem_func_t)(void *, int);
 
 /*
+ * For platforms that use variant 1 TLS (see Drepper's ELF Handling for
+ * Thread-Local Storage §3 (https://www.akkadia.org/drepper/tls.pdf)).
+ *
+ * The thread pointer points to an ABI-defined Thread Control Block of
+ * specified size, rather than to an arbitrary sized control block (in our
+ * terms, the ulwp_t).
+ *
+ * NB: the size and shape of this structure is part of the thread-local
+ * storage ABI, and is known by the compiler, etc.  It cannot change.
+ */
+#if _TLS_VARIANT == 1
+typedef struct tcb {
+	/* XXXARM: unused and poisoned */
+	void	*tcb_dtv;	/* Dynamic Thread Vector */
+	void	*tcb_ulwp;	/* Back pointer to containing ulwp_t */
+} tcb_t;
+#endif
+
+/*
  * Maximum number of read locks allowed for one thread on one rwlock.
  * This could be as large as INT_MAX, but the SUSV3 test suite would
  * take an inordinately long time to complete.  This is big enough.
@@ -569,9 +588,6 @@ typedef struct ulwp {
 	uint8_t		ul_dinstr[40];	/* scratch space for dtrace */
 #elif defined(__amd64)
 	uint8_t		ul_dinstr[56];	/* scratch space for dtrace */
-#elif defined(__aarch64__)
-	uint32_t	ul_dinstr;	/* scratch space for dtrace */
-	uint32_t	ul_dftret;	/* dtrace: return probe fasttrap */
 #endif
 	struct uberdata *ul_uberdata;	/* uber (super-global) data */
 	tls_t		ul_tls;		/* dynamic thread-local storage base */
@@ -686,8 +702,11 @@ typedef struct ulwp {
 	queue_root_t	ul_queue_root;	/* root of a sleep queue */
 	id_t		ul_rtclassid;	/* real-time class id */
 	uint_t		ul_pilocks;	/* count of PI locks held */
-		/* the following members *must* be last in the structure */
-		/* they are discarded when ulwp is replaced on thr_exit() */
+		/*
+		 * the following members *must* be last in the structure they
+		 * are discarded when ulwp is replaced on thr_exit() on
+		 * platforms using variant 2 TLS.
+		 */
 	sigset_t	ul_sigmask;	/* thread's current signal mask */
 	sigset_t	ul_tmpmask;	/* signal mask for sigsuspend/pollsys */
 	siginfo_t	ul_siginfo;	/* deferred siginfo */
@@ -701,6 +720,40 @@ typedef struct ulwp {
 	tumem_t		ul_tmem;	/* used only by umem */
 	uint_t		ul_ptinherit;	/* pthreads sched inherit value */
 	char		ul_ntoabuf[18];	/* thread-specific inet_ntoa buffer */
+
+	/*
+	 * To support dtrace in early process startup (before libc_init),
+	 * dtrace_data contains enough of a ulwp_t shaped object to support
+	 * itself and __curthread, and points the thread pointer into this
+	 * space as a substitute of a real ulwp_t.
+	 *
+	 * On TLS variant 1 platforms this causes problems, as our thread
+	 * pointer _must_ point at an ABI defined TCB.  Put our DTrace
+	 * per-thread scratch immediately prior to this pointer, such that it
+	 * can be discovered but without interfering with the ABI.  Our
+	 * scratch space is thus at a defined offset _prior_ to the thread
+	 * pointer on these platforms, like the ulwp itself.
+	 *
+	 * We can't offset back to the ulwp for this purpose, as this bakes
+	 * the size of the entire ulwp_t into PT_SUNWDTRACE and the ABI,
+	 * rather than just the DTrace scratch space.
+	 *
+	 * This also implies that these members must always be _immediately_
+	 * prior to the embedded tcb_t.
+	 */
+#if defined(__aarch64__)
+	uint32_t	ul_dinstr;	/* scratch space for dtrace */
+	uint32_t	ul_dftret;	/* dtrace: return probe fasttrap */
+#endif
+
+	/*
+	 * NB: This member _must_ be last in ulwp_t on platforms using variant
+	 * 1 tls to maintain the ABI-specified invariant that the static TLS
+	 * block immediately follows it.
+	 */
+#if _TLS_VARIANT == 1
+	tcb_t		ul_tcb;
+#endif
 } ulwp_t;
 
 #define	ul_cursig	ul_cp.s.cursig		/* deferred signal number */
@@ -708,10 +761,19 @@ typedef struct ulwp {
 #define	ul_curplease	ul_cp.curplease		/* for testing both at once */
 
 /*
- * This is the size of a replacement ulwp, retained only for the benefit
- * of thr_join().  The trailing members are unneeded for this purpose.
+ * This is the size of a replacement ulwp, retained only for the benefit of
+ * thr_join().  The trailing members are unneeded for this purpose on
+ * platforms using variant 2 TLS.  On platforms using variant 1 we must retain
+ * the ability to find the ulwp_t via the ABI TCB, which must still exist, and
+ * much be last in the ulwp_t, as such, nothing changes.
  */
-#define	REPLACEMENT_SIZE	((size_t)&((ulwp_t *)NULL)->ul_sigmask)
+#if _TLS_VARIANT == 2
+#define	REPLACEMENT_SIZE	offsetof(ulwp_t, ul_sigmask)
+#elif _TLS_VARIANT == 1
+#define	REPLACEMENT_SIZE	sizeof (ulwp_t)
+#else
+#error Unknown TLS variant
+#endif
 
 /*
  * Definitions for static initialization of signal sets,

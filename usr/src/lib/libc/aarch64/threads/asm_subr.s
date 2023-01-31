@@ -47,7 +47,12 @@
 	RET		/* if we return, it is very bad */
 	SET_SIZE(_lwp_terminate)
 
+	/*
+	 * On AArch64 the thread register points to a tcb_t, but we still
+	 * take the ulwp_t as our param, and pull the correct tcb out of it
+	 */
 	ENTRY(set_curthread)
+	add	x0, x0, #UL_TCB
 	msr	tpidr_el0, x0
 	ret
 	SET_SIZE(set_curthread)

@@ -126,6 +126,14 @@ dtrace_safe_phdr(Phdr *phdrp, struct uarg *args, uintptr_t base)
 
 	args->thrptr = phdrp->p_vaddr + base;
 
+	/*
+	 * On platforms that use variant 1 TLS our data precedes an ABI TCB
+	 * two pointers in size to which the thread pointer must point.
+	 */
+#if _TLS_VARIANT == 1
+	args->thrptr += (PT_SUNWDTRACE_SIZE - (sizeof (uintptr_t) * 2));
+#endif
+
 	return (0);
 }
 

@@ -76,14 +76,14 @@
  * _POINTER_ALIGNMENT / _FLOAT_ALIGNMENT:
  *	The ABI defines alignment requirements of each of the primitive
  *	object types.  Some, if not all, may be hardware requirements as
- * 	well.  The values are expressed in "byte-alignment" units.
+ *	well.  The values are expressed in "byte-alignment" units.
  *
  * _MAX_ALIGNMENT:
  *	The most stringent alignment requirement as specified by the ABI.
  *	Equal to the maximum of all the above _XXX_ALIGNMENT values.
  *
  * _MAX_ALIGNMENT_TYPE:
- * 	The name of the C type that has the value descried in _MAX_ALIGNMENT.
+ *	The name of the C type that has the value described in _MAX_ALIGNMENT.
  *
  * _ALIGNMENT_REQUIRED:
  *	True or false (1 or 0) whether or not the hardware requires the ABI
@@ -218,6 +218,12 @@
  * _SOFT_HOSTID
  *	This indicates that the implementation obtains the hostid
  *	from the file /etc/hostid, rather than from hardware.
+ *
+ * _TLS_VARIANT
+ *      Indicates the thread-local storage variant used by the platform.
+ *      Value either 1 or 2.
+ *
+ *      See Drepper "ELF Handling For Thread-Local Storage".
  */
 
 #ifdef	__cplusplus
@@ -288,6 +294,7 @@ extern "C" {
 #define	_SOFT_HOSTID
 #define	_DONT_USE_1275_GENERIC_NAMES
 #define	_HAVE_CPUID_INSN
+#define	_TLS_VARIANT 2
 
 /*
  * The feature test macro __i386 is generic for all processors implementing
@@ -349,6 +356,7 @@ extern "C" {
 #define	_SOFT_HOSTID
 #define	_DONT_USE_1275_GENERIC_NAMES
 #define	_HAVE_CPUID_INSN
+#define	_TLS_VARIANT 2
 
 /*
  * The following set of definitions characterize the Solaris on SPARC systems.
@@ -421,6 +429,7 @@ extern "C" {
 #define	_NO_FDISK_PRESENT
 #define	_HAVE_TEM_FIRMWARE
 #define	_OBP
+#define	_TLS_VARIANT 2
 
 /*
  * The following set of definitions characterize the implementation of
@@ -529,6 +538,7 @@ extern "C" {
 #if !defined(_LP64)
 #define	_LP64
 #endif
+
 #define	_SUNOS_VTOC_16
 #define	_DMA_USES_PHYSADDR
 #define	_FIRMWARE_NEEDS_FDISK
@@ -536,6 +546,7 @@ extern "C" {
 #define	_RTC_CONFIG
 #define	_SOFT_HOSTID
 #define	_DONT_USE_1275_GENERIC_NAMES
+#define	_TLS_VARIANT 1
 
 /*
  * #error is strictly ansi-C, but works as well as anything for K&R systems.

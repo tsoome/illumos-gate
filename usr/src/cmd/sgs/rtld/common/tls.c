@@ -231,8 +231,13 @@ tls_assign(Lm_list *lml, Rt_map *lmp, Phdr *phdr)
 	 */
 	if (((rtld_flags2 & RT_FL2_PLMSETUP) == 0) ||
 	    (FLAGS1(lmp) & FL1_RT_TLSSTAT)) {
+#if _TLS_VARIANT == 1
+		TLSSTATOFF(lmp) = tls_static_size;
+		tls_static_size += memsz;
+#else
 		tls_static_size += memsz;
 		TLSSTATOFF(lmp) = tls_static_size;
+#endif
 	}
 
 	/*

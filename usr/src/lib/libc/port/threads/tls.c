@@ -24,6 +24,98 @@
  * Use is subject to license terms.
  */
 
+
+/*
+ * Threading and Thread-Local Storage
+ *
+ * This comment is not as detailed as you are hoping for about threading and
+ * the process model.  I am sorry.
+ *
+ * On the x86 and SPARC platforms the thread register (%gs, %fs, %g7) points
+ * to the ulwp_t for the executing thread. On the AArch64 platform the thread
+ * register (tpidr_el0) points to an ABI defined TCB which we store at the end
+ * of the ulwp_t.  The API in libc remains the same between platforms,
+ * `curthread` is the ulwp_t of the executing thread.
+ *
+ * The reason for this discrepancy between platforms is transparent
+ * Thread-Local Storage (TLS).  Symbols in dynamic objects which refer to a
+ * value maintained per-thread by the runtime and accessed transparently to
+ * the consumer.  You might expect this to be described in tls.c, but it is
+ * actually more relevant to the allocation and use of threads in general than
+ * its actual implementation.
+ *
+ * This is described in Drepper "ELF Handling For Thread-Local Storage", and
+ * summarized here.
+ *
+ * There are two variants of TLS.  Variant 1 and Variant 2.  Variant 2 is in
+ * effect a legacy variant, which imposes no constraints on the ABI so it may
+ * be dropped in, compatibly, on pre-existing platforms.  This is the variant
+ * used by x86 and SPARC.
+ *
+ * Variant 1 is the "modern" variant, originally developed for the Itanium
+ * platform and since picked up by effectively all green-field development.
+ * It has specific definitions which do constrain the overall thread ABI.
+ *
+ * In Variant 2 TLS the thread register points to arbitrary place in memory
+ * (in our case, the ulwp_t), the static TLS block for the thread immediately
+ * precedes the thread pointer, and counts backwards through memory for each
+ * local variable, and each module providing static TLS (TLS known at
+ * execution time, rather than dynamically loaded)
+ *
+ * .------------------------------------------------.
+ * | mod8 | mod7 | ... | mod2 | mod1 | ulwp_t | ... |
+ * `------------------------------------------------'
+ *                        |            ^
+ *                        |            `- curthread() and %tp
+ *       .-----------------------------------------.
+ *       | ... | mod2 var3 | mod2 var2 | mod2 var1 |
+ *       `-----------------------------------------'
+ *
+ * The ABI only knows that the static block precedes the thread pointer and is
+ * "backwards".  All metadata about TLS, and threading, is private to the
+ * implementation.
+ *
+ * In Variant 1 TLS the thread register points to an ABI defined TCB (which is
+ * why we avoid that term for anything else), containing two pointers.  One to
+ * the Dynamic Thread Vector (DTV) which describes the local and nature of all
+ * TLS either static or dynamic, and one to implementation defined data.
+ *
+ * Immediately following the TCB is the static TLS block, in ascending order.
+ *
+ * As an implementation choice, we place the TCB at the end of the ulwp_t.
+ * This means we can find a given thread with subtraction and without a load,
+ * in the ideal case.
+ *
+ *    .------------------------------------------------------.
+ *   |                                                       |
+ *   v                                                       |
+ * .-----------------------.                                 |
+ * |        ulwp_t         |                                 |
+ * +-----------------------+--------------------------.      |
+ * | ulwp   | ... | ul_tcb | mod1 | mod2 | ... | mod8 |      |
+ * `-------------------------------------------------'       |
+ *  ^              ^    |    ^       ^                       |
+ *  ` curthread()  |    |    |       |          .-------------------.
+ *                 |    `----|-------|---------| tcb_dtv | tcb_ulwp |
+ *                 `- %tp    |       |         `-------------------'
+ *                           |       |             |
+ *        .------------------|-------|------------'
+ *        |        .--------'        |              .-------------------.
+ *        |       |      .----------'   .---------->| dynamic module 10 |
+ *        v       |     |              |            `------------------'
+ *      .----------------------------------------.
+ *      | gen | mod1 | mod2 | .. | mod10 | mod11 |
+ *      `---------------------------------------'
+ *                 Dynamic Thread Vector    |	     .------------------.
+ *                                          `------>| dynamic module 11 |
+ *						    `------------------'
+ *
+ * XXXARM: In the current illumos implementation of variant 1, the DTV pointer
+ * in the TCB is poisoned with the value 0xbad715bad715 (bad tls), because of
+ * our inability (as yet) to find a compiler making direct reference to it The
+ * diagram above is therefore idealised.
+ */
+
 #include "lint.h"
 #include "thr_uberdata.h"
 
@@ -91,7 +183,9 @@ __tls_static_mods(TLS_modinfo **tlslist, unsigned long statictlssize)
 	TLS_modinfo *tlsp;
 	TLS_modinfo *modinfo;
 	caddr_t data;
+#if _TLS_VARIANT == 2
 	caddr_t data_end;
+#endif
 	int max_modid;
 
 	primary_link_map = 1;		/* inform libc_init */
@@ -117,8 +211,12 @@ __tls_static_mods(TLS_modinfo **tlslist, unsigned long statictlssize)
 	 */
 	ASSERT((statictlssize & (ALIGN - 1)) == 0);
 	tlsm->static_tls.tls_data = data = lmalloc(statictlssize);
-	data_end = data + statictlssize;
 	tlsm->static_tls.tls_size = statictlssize;
+
+#if _TLS_VARIANT == 2
+	data_end = data + statictlssize;
+#endif
+
 	/*
 	 * Initialize the static TLS template.
 	 * We make no assumptions about the order in memory of the TLS
@@ -129,17 +227,41 @@ __tls_static_mods(TLS_modinfo **tlslist, unsigned long statictlssize)
 	 */
 	for (max_modid = 0, tlspp = tlslist; (tlsp = *tlspp) != NULL; tlspp++) {
 		ASSERT(tlsp->tm_flags & TM_FLG_STATICTLS);
+#if _TLS_VARIANT == 2
 		ASSERT(tlsp->tm_stattlsoffset > 0);
+#endif
 		ASSERT(tlsp->tm_stattlsoffset <= statictlssize);
 		ASSERT((tlsp->tm_stattlsoffset & (ALIGN - 1)) == 0);
 		ASSERT(tlsp->tm_filesz <= tlsp->tm_memsz);
+#if _TLS_VARIANT == 1
+		/*
+		 * XXXARM: I'd like to assert here, but I'm not sure there's a
+		 * similar invariant.  We're asserting that the offset is
+		 * always greater than the static block size for this module,
+		 * I think because of the extra reservation, but that's not
+		 * true on variant 1 because we're counting _upward_ not
+		 * _downward_.
+		 *
+		 * I think
+		 */
+#else
 		ASSERT(tlsp->tm_memsz <= tlsp->tm_stattlsoffset);
-		if (tlsp->tm_filesz)
+#endif
+
+		if (tlsp->tm_filesz) {
+#if _TLS_VARIANT == 1
+			(void) memcpy(data + tlsp->tm_stattlsoffset,
+			    tlsp->tm_tlsblock, tlsp->tm_filesz);
+#else
 			(void) memcpy(data_end-tlsp->tm_stattlsoffset,
 			    tlsp->tm_tlsblock, tlsp->tm_filesz);
+#endif
+		}
+
 		if (max_modid < tlsp->tm_modid)
 			max_modid = tlsp->tm_modid;
 	}
+
 	/*
 	 * Record the static TLS_modinfo information.
 	 */
@@ -325,9 +447,19 @@ tls_setup()
 	if (tlsm->static_tls.tls_size == 0)	/* no static TLS */
 		return;
 
-	/* static TLS initialization */
+	/*
+	 * static TLS initialization.
+	 *
+	 * for Variant 1 the block is after the ulwp_t
+	 * for Variant 2 it is before.
+	 */
+#if _TLS_VARIANT == 1
+	(void) memcpy((caddr_t)self + sizeof (*self),
+	    tlsm->static_tls.tls_data, tlsm->static_tls.tls_size);
+#else
 	(void) memcpy((caddr_t)self - tlsm->static_tls.tls_size,
 	    tlsm->static_tls.tls_data, tlsm->static_tls.tls_size);
+#endif
 
 	/* call TLS constructors for the static TLS just initialized */
 	lmutex_lock(&tlsm->tls_lock);
@@ -340,6 +472,7 @@ tls_setup()
 		 * retain their positions in the new array.
 		 */
 		tlsp = (TLS_modinfo *)tlsm->tls_modinfo.tls_data + moduleid;
+
 		/*
 		 * Call constructors for this module if there are any
 		 * to be called and if it is part of the static TLS.

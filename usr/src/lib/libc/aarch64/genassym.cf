@@ -22,6 +22,8 @@ define	UL_SIGMASK		offsetof(ulwp_t, ul_sigmask)
 define	UL_VFORK		offsetof(ulwp_t, ul_vfork)
 define	UL_SCHEDCTL		offsetof(ulwp_t, ul_schedctl)
 define	UL_SCHEDCTL_CALLED	offsetof(ulwp_t, ul_schedctl_called)
+# Used mainly in the negative to find the ulwp from its tcb
+define	UL_TCB			offsetof(ulwp_t, ul_tcb)
 define	TI_MODULEID		offsetof(TLS_index, ti_moduleid)
 define	MASKSET0		MASKSET0
 define	MASKSET1		MASKSET1
@@ -70,3 +72,4 @@ define	REG_TP			REG_TP
 define T_GETLGRP	T_GETLGRP
 define T_GETHRTIME	T_GETHRTIME
 define T_GETHRVTIME	T_GETHRVTIME
+

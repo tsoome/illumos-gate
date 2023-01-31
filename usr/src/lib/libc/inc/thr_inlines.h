@@ -34,6 +34,7 @@
 #define	_THR_INLINES_H
 
 #include <sys/ccompile.h>
+#include <sys/sysmacros.h>
 
 #if !defined(__lint) && defined(__GNUC__)
 
@@ -50,6 +51,7 @@
 #define	SPARC_REG_SPEC	"#scratch"
 #endif
 
+/* Return the ulwp_t of the current thread via the thread register */
 extern __GNU_INLINE ulwp_t *
 _curthread(void)
 {
@@ -63,25 +65,56 @@ _curthread(void)
 	register ulwp_t *__value __asm__("g7");
 #elif defined(__aarch64__)
 	ulwp_t *__value;
-	__asm__ __volatile__("mrs %0, tpidr_el0" : "=r"(__value) :: "memory");
+	/*
+	 * XXXARM: this "i" input constraint seems like it should be "J" but
+	 * that fails mysteriously.
+	 */
+	__asm__ __volatile__(
+	    "mrs %[value], tpidr_el0\n\t"
+	    "sub %[value], %[value], %[ul_tcb]\n\t"
+	    : [value] "=r"(__value)
+	    : [ul_tcb] "i" (offsetof(ulwp_t, ul_tcb))
+	    : "cc", "memory");
 #else
 #error	"port me"
 #endif
 	return (__value);
 }
 
+/*
+ * Return the ulwp_t of the current thread via ul_self, see comments about the
+ * replacement of ulwp's and dead_and_buried().
+ *
+ * In short, we load ul_self because this is a situation (during replacement)
+ * where the ulwp and its ul_self may _differ_ (at least on x86 platforms).
+ *
+ * This is also important during early process startup where the thread
+ * register actually points to a crafted ulwp look-a-like to allow DTrace to
+ * operate before libc_init, where the current thread might be NULL.
+ */
 extern __GNU_INLINE ulwp_t *
 __curthread(void)
 {
-	ulwp_t *__value;
+	ulwp_t *__value = NULL;
 #if defined(__aarch64__)
-	/* XXXARM: does this really need to be different? */
+	/*
+	 * XXXARM: these "i" input constraints seems like they should be "I" and
+	 * "J" respectively, but that fails mysteriously.
+	 *
+	 * XXXARM: If we're certain that tcb_ulwp is always as valid as ul_self,
+	 * we can just return it without the extra load.
+	 */
 	__asm__ __volatile__(
-	    "mrs %0, tpidr_el0\n"
-	    "cbz %0, 1f\n"
-	    "ldr %0, [%0, %1]\n"
-	    "1:\n"
-	    : "=r"(__value) : "i"(__builtin_offsetof(ulwp_t, ul_self)));
+	    "mrs %[value], tpidr_el0\n\t" /* value <- thread pointer */
+	    "cbz %[value], 1f\n\t"	/* If tp is 0, return */
+	    "ldr %[value], [%[value], %[tcb_ulwp]]\n\t" /* value <- ulwp */
+	    "cbz %[value], 1f\n\t"	/* if ulwp is 0 we're dtrace_data */
+	    "ldr %[value], [%[value], %[ul_self]]\n\t" /* value <- ul_self */
+	    "1:\n\t"
+	    : [value] "=r"(__value)
+	    : [ul_self] "i" (offsetof(ulwp_t, ul_self)),
+	      [tcb_ulwp] "i" (offsetof(tcb_t, tcb_ulwp))
+	    : "cc", "memory");
 #else
 	__asm__ __volatile__(
 #if defined(__amd64)

@@ -23,10 +23,10 @@
  * Copyright (c) 1999, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2016 by Delphix. All rights reserved.
  * Copyright (c) 2017 by The MathWorks, Inc. All rights reserved.
- */
-/*
  * Copyright 2018 Joyent, Inc.
  */
+
+/* For information regarding parts condition on _TLS_VARIANT, see ./tls.c */
 
 #include "lint.h"
 #include "thr_uberdata.h"
@@ -411,6 +411,21 @@ find_stack(size_t stksize, size_t guardsize)
 			ulwp->ul_stksiz = stksize;
 			if (guardsize)	/* protect the extra red zone */
 				(void) mprotect(stk, guardsize, PROT_NONE);
+
+
+#if _TLS_VARIANT == 1
+			ulwp->ul_tcb.tcb_ulwp = ulwp;
+
+			/*
+			 * XXXARM: We don't use the DTV field of the ABI TCB
+			 * at present, because we can't find a consumer.
+			 *
+			 * We poison it with 0xbad715bad715 (think "bad
+			 * tls") to make that stand out in debugging.
+			 */
+			ulwp->ul_tcb.tcb_dtv =
+			    (void *)(uintptr_t)0xbad715bad715;
+#endif
 		}
 	}
 	return (ulwp);
@@ -425,7 +440,7 @@ ulwp_alloc(void)
 {
 	ulwp_t *self = curthread;
 	uberdata_t *udp = self->ul_uberdata;
-	size_t tls_size;
+	size_t tls_size = 0;
 	ulwp_t *prev;
 	ulwp_t *ulwp;
 	ulwp_t **ulwpp;
@@ -449,10 +464,22 @@ ulwp_alloc(void)
 	lmutex_unlock(&udp->link_lock);
 
 	tls_size = roundup64(udp->tls_metadata.static_tls.tls_size);
+
 	data = lmalloc(sizeof (*ulwp) + tls_size);
+
 	if (data != NULL) {
-		/* LINTED pointer cast may result in improper alignment */
+		/*
+		 * On variant 1 platforms the data is after the tcb
+		 * (at the end of the ulwp_t).
+		 * On variant 2 platforms it's before the ulwp_t
+		 */
+#if _TLS_VARIANT == 1
+		ulwp = (ulwp_t *)data;
+#elif _TLS_VARIANT == 1
 		ulwp = (ulwp_t *)(data + tls_size);
+#else
+#error Unknown TLS variant
+#endif
 	}
 	return (ulwp);
 }
@@ -595,6 +622,10 @@ _thrp_create(void *stk, size_t stksize, void *(*func)(void *), void *arg,
 		ulwp->ul_stk = stk;
 		ulwp->ul_stktop = (uintptr_t)stk + stksize;
 		ulwp->ul_stksiz = stksize;
+		ulwp->ul_tcb.tcb_ulwp = ulwp;
+
+		/* XXXARM: Poison the DTV pointer.  See find_stack for more. */
+		ulwp->ul_tcb.tcb_dtv =  (void *)(uintptr_t)0xbad715bad715;
 	}
 	/* ulwp is not in the hash table; make sure hash_out() doesn't fail */
 	ulwp->ul_ix = -1;
@@ -832,6 +863,9 @@ _thrp_exit()
 		int ix = self->ul_ix;		/* the hash index */
 		(void) memcpy(replace, self, REPLACEMENT_SIZE);
 		replace->ul_self = replace;
+#if _TLS_VARIANT == 1
+		replace->ul_tcb.tcb_ulwp = replace;
+#endif
 		replace->ul_next = NULL;	/* clone not on stack list */
 		replace->ul_mapsiz = 0;		/* allows clone to be freed */
 		replace->ul_replace = 1;	/* requires clone to be freed */
@@ -858,6 +892,9 @@ _thrp_exit()
 		 * this lwp has completed its lwp_exit() system call (see
 		 * dead_and_buried()), but from here on out, we must make
 		 * no references to %gs:<offset> other than %gs:0.
+		 *
+		 * This is also true of amd64, except with reference to %fs
+		 * rather than %gs.
 		 */
 	}
 	/*
@@ -1313,13 +1350,32 @@ libc_init(void)
 	(void) __getcontext(&uc);
 	ASSERT(uc.uc_link == NULL);
 
+	/*
+	 * Allocate control structures for the primary thread.  We can't do
+	 * this via ulwp_alloc because we're not fully initialized yet.
+	 */
 	tls_size = roundup64(udp->tls_metadata.static_tls.tls_size);
 	ASSERT(primary_link_map || tls_size == 0);
+
 	data = lmalloc(sizeof (ulwp_t) + tls_size);
 	if (data == NULL)
 		thr_panic("cannot allocate thread structure for main thread");
-	/* LINTED pointer cast may result in improper alignment */
+
+#if _TLS_VARIANT == 2
 	self = (ulwp_t *)(data + tls_size);
+#elif _TLS_VARIANT == 1
+	self = (ulwp_t *)data;
+
+	self->ul_tcb.tcb_ulwp = self;
+
+	/*
+	 * XXXARM: The DTV pointer is defined by the ABI, but we don't use it
+	 * really yet.  Poison it.  See find_stack() for more.
+	 */
+	self->ul_tcb.tcb_dtv =  (void *)(uintptr_t)0xbad715bad715;
+#else
+#error Unknown TLS variant
+#endif
 	init_hash_table[0].hash_bucket = self;
 
 	self->ul_sigmask = uc.uc_sigmask;
@@ -1430,6 +1486,7 @@ libc_init(void)
 	(void) ___lwp_private(_LWP_SETPRIVATE, _LWP_GSBASE, self);
 #endif	/* __i386 || __amd64 */
 	set_curthread(self);		/* redundant on i386 */
+
 	/*
 	 * Now curthread is established and it is safe to call any
 	 * function in libc except one that uses thread-local storage.

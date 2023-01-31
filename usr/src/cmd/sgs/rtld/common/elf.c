@@ -2952,6 +2952,7 @@ elf_static_tls(Rt_map *lmp, Sym *sym, void *rel, Word rtype, char *name,
 			value = sym->st_value;
 		}
 	}
+
 	return (-(TLSSTATOFF(lmp) - value));
 }
 

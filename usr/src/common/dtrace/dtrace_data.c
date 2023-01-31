@@ -108,15 +108,10 @@ uint8_t	dtrace_data[64] = {
 
 #elif defined(__aarch64__)
 
-#pragma align 64(dtrace_data)
+#include <sys/fasttrap.h>
 
-/* XXXARM */
-uint32_t dtrace_data[32] = {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
+#pragma align 64(dtrace_data)
+uint8_t dtrace_data[FASTTRAP_SUNWDTRACE_SIZE] = { 0 };
 
 #else
 

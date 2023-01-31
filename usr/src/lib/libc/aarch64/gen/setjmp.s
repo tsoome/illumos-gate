@@ -47,6 +47,7 @@
 	stp	q14, q15, [x0, #(6 * 16 + 3 * 32)]
 	mov	x1, sp
 	mrs	x3, tpidr_el0
+	sub	x3, x3, #UL_TCB
 	ldr	x2, [x3, #(UL_SIGLINK)]
 	stp	x1, x2,   [x0, #(6 * 16 + 4 * 32)]
 	mov	x0, #0
@@ -69,6 +70,7 @@
 	mov	sp, x2
 	cbnz	x3, 1f
 	mrs	x4, tpidr_el0
+	sub	x4, x4, #UL_TCB
 	str	xzr, [x4, #(UL_SIGLINK)]
 1:	mov	x0, x1
 	ret

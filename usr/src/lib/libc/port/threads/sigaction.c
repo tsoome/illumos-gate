@@ -579,8 +579,9 @@ setcontext(const ucontext_t *ucp)
 		uc.uc_mcontext.gregs[REG_FSBASE] = (greg_t)self;
 #elif defined(__i386)
 		uc.uc_mcontext.gregs[GS] = (greg_t)LWPGS_SEL;
-#elif defined(__aarch64__)
-		uc.uc_mcontext.gregs[REG_TP] = (greg_t)self;
+#elif defined(__aarch64__)			\
+		/* Variant 1 TLS, thread pointer points to the TCB */
+		uc.uc_mcontext.gregs[REG_TP] = (greg_t)&self->ul_tcb;
 #else
 #error Unknown ISA
 #endif

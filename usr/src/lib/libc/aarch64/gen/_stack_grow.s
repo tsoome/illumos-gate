@@ -28,6 +28,7 @@
 
 	ENTRY(_stack_grow)
 	mrs	x3, tpidr_el0
+	sub	x3, x3, #UL_TCB
 	ldr	x1, [x3, #(UL_USTACK + SS_SP)]
 	ldr	x2, [x3, #(UL_USTACK + SS_SIZE)]
 	sub	x3, x0, x1

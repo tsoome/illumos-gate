@@ -48,7 +48,7 @@ setup_top_frame(void *stk, size_t stksize, ulwp_t *ulwp)
 
 int
 setup_context(ucontext_t *ucp, void *(*func)(ulwp_t *),
-	ulwp_t *ulwp, caddr_t stk, size_t stksize)
+    ulwp_t *ulwp, caddr_t stk, size_t stksize)
 {
 	uint64_t *stack;
 
@@ -62,13 +62,17 @@ setup_context(ucontext_t *ucp, void *(*func)(ulwp_t *),
 	if ((stack = setup_top_frame(stk, stksize, ulwp)) == NULL)
 		return (ENOMEM);
 
-	/* fill in registers of interest */
+	/*
+	 * Fill in registers of interest.
+	 * Call `func(ulwp)` on `stack` returning to `_lwp_start`.
+	 * with the thread-pointer `ulwp->ul_tcb`.
+	 */
 	ucp->uc_flags |= UC_CPU;
 	ucp->uc_mcontext.gregs[REG_PC] = (greg_t)func;
-	ucp->uc_mcontext.gregs[REG_SP] = (greg_t)stack;
-	ucp->uc_mcontext.gregs[REG_X30] = (greg_t)_lwp_start;
 	ucp->uc_mcontext.gregs[REG_X0] = (greg_t)ulwp;
-	ucp->uc_mcontext.gregs[REG_TP] = (greg_t)ulwp;
+	ucp->uc_mcontext.gregs[REG_SP] = (greg_t)stack;
+	ucp->uc_mcontext.gregs[REG_LR] = (greg_t)_lwp_start;
+	ucp->uc_mcontext.gregs[REG_TP] = (greg_t)&ulwp->ul_tcb;
 
 	return (0);
 }
@@ -102,8 +106,8 @@ _fpinherit(ulwp_t *ulwp)
 	register uint64_t fpcr;
 	register uint64_t fpsr;
 
-	__asm__ volatile ("mrs %0, fpcr":"=r"(fpcr)::"memory");
-	__asm__ volatile ("mrs %0, fpsr":"=r"(fpsr)::"memory");
+	__asm__ volatile("mrs %0, fpcr":"=r"(fpcr)::"memory");
+	__asm__ volatile("mrs %0, fpsr":"=r"(fpsr)::"memory");
 
 	ulwp->ul_fpuenv.fctrl = fpcr;
 	ulwp->ul_fpuenv.fstat = fpsr;
@@ -174,7 +178,7 @@ setgregs(ulwp_t *ulwp, gregset_t rs)
 
 /*
  * regs
- * 	x19 - x30, sp
+ *	x19 - x30, sp
  */
 int
 __csigsetjmp(sigjmp_buf env, int savemask, greg_t *regs)

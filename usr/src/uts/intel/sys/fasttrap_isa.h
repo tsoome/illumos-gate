@@ -35,7 +35,7 @@ extern "C" {
 #define	FASTTRAP_MAX_INSTR_SIZE		15
 
 #define	FASTTRAP_INSTR			0xcc
-
+/* self pointer + 56 bytes, the larger of the two x86 scratch areas. */
 #define	FASTTRAP_SUNWDTRACE_SIZE	64
 
 typedef	uint8_t		fasttrap_instr_t;
