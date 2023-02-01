@@ -45,51 +45,11 @@
 #include	"_rtld.h"
 #include	"_audit.h"
 
-void
-_setup_reloc(uintptr_t ld_base, Dyn *ld_dyn)
-{
-	Rela *rela = NULL;
-	Rela *relaend = NULL;
-	uintptr_t relasz = 0;
-	uintptr_t syment = 0;
-	uintptr_t symtab = 0;
-
-	for (; ld_dyn->d_tag != DT_NULL; ld_dyn++) {
-		switch (ld_dyn->d_tag) {
-		case DT_RELA:
-			rela = (Rela *)(ld_dyn->d_un.d_ptr + ld_base);
-			break;
-		case DT_RELASZ:
-			relasz = ld_dyn->d_un.d_val;
-			break;
-		case DT_SYMTAB:
-			symtab = (ld_dyn->d_un.d_ptr + ld_base);
-			break;
-		case DT_SYMENT:
-			syment = ld_dyn->d_un.d_val;
-			break;
-		}
-	}
-
-	relaend = (Rela *)((uintptr_t)rela + relasz);
-	while (rela < relaend) {
-		if (ELF_R_TYPE(rela->r_info, M_MACH) == R_AARCH64_RELATIVE) {
-			ulong_t *where = (ulong_t *)(rela->r_offset + ld_base);
-			*where = ld_base + rela->r_addend;
-		}
-		if (ELF_R_TYPE(rela->r_info, M_MACH) == R_AARCH64_GLOB_DAT) {
-			ulong_t *where = (ulong_t *)(rela->r_offset + ld_base);
-			Sym *sym = (Sym *)(symtab + syment * ELF_R_SYM(rela->r_info));
-			*where = ld_base + rela->r_addend + sym->st_value;
-		}
-		rela++;
-	}
-}
-
 unsigned long
 _setup(Boot *ebp, Dyn *ld_dyn)
 {
-	ulong_t		reladdr, ld_base = 0;
+	ulong_t		reladdr, relacount, ld_base = 0;
+	ulong_t		relaent = 0, pltrelsz = 0;
 	ulong_t		strtab, soname, interp_base = 0;
 	char		*_rt_name, **_envp, **_argv;
 	int		_syspagsz = 0, fd = -1;
@@ -98,7 +58,7 @@ _setup(Boot *ebp, Dyn *ld_dyn)
 	Phdr		*phdr = NULL;
 	Rt_map		*lmp;
 	auxv_t		*auxv, *_auxv;
-	char		*_platform = NULL, *_execname = NULL;
+	char		*_platform = NULL, *_execname = NULL, *_emulator = NULL;
 	int		auxflags = -1;
 	uid_t		uid = (uid_t)-1, euid = (uid_t)-1;
 	gid_t		gid = (gid_t)-1, egid = (gid_t)-1;
@@ -199,6 +159,18 @@ _setup(Boot *ebp, Dyn *ld_dyn)
 	dyn_ptr = ld_dyn;
 	for (ld_dyn = dyn_ptr; ld_dyn->d_tag != DT_NULL; ld_dyn++) {
 		switch (ld_dyn->d_tag) {
+		case DT_RELA:
+			reladdr = ld_dyn->d_un.d_ptr + ld_base;
+			break;
+		case DT_RELACOUNT:
+			relacount = ld_dyn->d_un.d_val;
+			break;
+		case DT_RELAENT:
+			relaent = ld_dyn->d_un.d_val;
+			break;
+		case DT_PLTRELSZ:
+			pltrelsz = ld_dyn->d_un.d_val;
+			break;
 		case DT_STRTAB:
 			strtab = ld_dyn->d_un.d_ptr + ld_base;
 			break;
@@ -208,6 +180,42 @@ _setup(Boot *ebp, Dyn *ld_dyn)
 		}
 	}
 	_rt_name = (char *)strtab + soname;
+
+	/*
+	 * As all global symbol references within ld.so.1 are protected
+	 * (symbolic), only RELATIVE and JMPSLOT relocations should be left
+	 * to process at runtime.  Process all relocations now.
+	 */
+	/*
+	 * If we don't have a RELAENT, just assume the size.
+	 */
+	if (relaent == 0)
+		relaent = sizeof (Rela);
+
+	/*
+	 * As all global symbol references within ld.so.1 are protected
+	 * (symbolic), only RELATIVE and JMPSLOT relocations should be left
+	 * to process at runtime.  Process all relocations now.
+	 */
+	relacount += (pltrelsz / relaent);
+	for (; relacount; relacount--) {
+		ulong_t	roffset;
+
+		roffset = ((Rela *)reladdr)->r_offset + ld_base;
+		*((ulong_t *)roffset) += ld_base +
+		    ((Rela *)reladdr)->r_addend;
+		reladdr += relaent;
+	}
+
+	/*
+	 * If an emulation library is being used, use that as the linker's
+	 * effective executable name. The real executable is not linked by this
+	 * linker.
+	 */
+	if (_emulator != NULL) {
+		_execname = _emulator;
+		rtld_flags2 |= RT_FL2_BRANDED;
+	}
 
 	/*
 	 * Continue with generic startup processing.

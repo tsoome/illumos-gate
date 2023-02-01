@@ -84,7 +84,7 @@
 #define	AT_BASE	7
 
 	ENTRY(_rt_boot)
-	mov	x28, sp  			// x28 <- boot structure from kernel
+	mov	x28, sp				// x28 <- boot structure from kernel
 	stp	xzr, xzr, [sp, #(-8 * 2)]!	// two zeros at sp-16 and sp-8 to terminate the stack
 	mov	x29, sp				// x29 <- our sp now
 	sub	sp, sp, #EB_MAX_SIZE64          // reserve #EB_MAX_SIZE64 bytes of stack
@@ -177,14 +177,7 @@
 	add	x1, x1, x10				// x1 <- runtime address of 1b +
 							//   offset from 1b to _DYNAMIC at compile time
 
-	ldr	x9, [x0, #(8 * 7)]			// x9 <- EB_LDSO_BASE off the stack
-
-	stp	x0, x1, [sp, #-16]!			// save x0 and x1 onto the stack, for call moving sp
-	mov	x0, x9					// x0 <- meant to be our load addr
-	bl	_setup_reloc				// _setup_reloc(x0, x1), meant to be our load addr and dynamic addr
-	ldp	x0, x1, [sp], #16			// restore x0 and x1 from the stack (leave sp alone though)
-
-	bl	_setup					// _setup(x0, x1)
+	bl	_setup					// _setup(Boot*, Dyn*)
 
 	add	sp, sp, #EB_MAX_SIZE64			// put the EB block back to the stack
 	add	sp, sp, #(8 * 2)			// put 2 extra entries (x0 and x1?)
