@@ -34,12 +34,10 @@ SUBDIRS =		\
 	fac_prov_mptsas	\
 	ipmi		\
 	nic		\
+	ses		\
 	smbios		\
 	usb		\
 	xfp
-
-# XXXARM: needs libses
-$(NOT_AARCH64_BLD)SUBDIRS += ses
 
 ses:	disk
 
