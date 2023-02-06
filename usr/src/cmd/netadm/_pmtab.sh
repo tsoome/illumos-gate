@@ -30,7 +30,7 @@
 case "$MACH" in
   "u3b2"|"sparc"|"ppc"|"i386"|"aarch64" )
 	echo "# VERSION=1
-ttya:u:root:reserved:reserved:reserved:/dev/term/a:I::/usr/bin/login::9600:ldterm,ttcompat:ttya login\: ::tvi925:y:# 
+ttya:u:root:reserved:reserved:reserved:/dev/term/a:I::/usr/bin/login::9600:ldterm,ttcompat:ttya login\: ::tvi925:y:#
 ttyb:u:root:reserved:reserved:reserved:/dev/term/b:I::/usr/bin/login::9600:ldterm,ttcompat:ttyb login\: ::tvi925:y:# " > _pmtab
 	;;
   * )
