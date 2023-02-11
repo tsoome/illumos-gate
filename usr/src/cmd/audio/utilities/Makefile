@@ -33,9 +33,6 @@ INCLUDES += -I../include
 
 CPPFLAGS += $(INCLUDES)
 
-# XXXARM: Disable exceptions because that requires a dynamic libgcc_s, at least,
-# and also we don't use exceptions
-CCFLAGS += -_gcc=-fno-exceptions
 CCFLAGS += $(CCVERBOSE)
 
 CERRWARN += $(CNOWARN_UNINIT)

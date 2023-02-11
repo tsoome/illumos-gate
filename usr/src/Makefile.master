@@ -967,13 +967,6 @@ $(__GNUC64)CCNEEDED64	= -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 $(__GNUC64)NATIVECCNEEDED64 = -R$(GCCLIBDIR) -L$(GCCLIBDIR) -lstdc++ -lgcc_s
 $(__GNUC64)CCEXTNEEDED	= $(CCNEEDED64)
 
-# XXXARM: At least during bringup, we lack a dynamic libgcc for bootstrap
-# reasons, link the static one for now
-$(AARCH64_BLD)$(__GNUC)CCNEEDED	= -L$(GCCLIBDIR) -lstdc++ -lgcc
-$(AARCH64_BLD)$(__GNUC)CCEXTNEEDED	= $(CCNEEDED)
-$(AARCH64_BLD)$(__GNUC64)CCNEEDED64	= -L$(GCCLIBDIR) -lstdc++ -lgcc
-$(AARCH64_BLD)$(__GNUC64)CCEXTNEEDED	= $(CCNEEDED64)
-
 # Libraries we expect to use natively on the build machine
 NATIVE_LIBS=
 
