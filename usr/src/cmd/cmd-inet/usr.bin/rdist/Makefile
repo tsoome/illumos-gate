@@ -47,6 +47,7 @@ CPPFLAGS += -I. -I$(CMDINETCOMMONDIR) \
 		-I$(SRC)/lib/gss_mechs/mech_krb5/include \
 		-I$(SRC)/lib/gss_mechs/mech_krb5/include/krb5
 
+CERRWARN +=	-_gcc12=-Wno-dangling-pointer
 CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 CERRWARN +=	-_gcc=-Wno-unused-variable
 CERRWARN +=	-_gcc=-Wno-unused-function
