@@ -829,7 +829,8 @@ apply_rela_entries(Dwarf_Debug dbg,
                 symtab_section_entrysize,
                 is_rela,
                 error);
-            if (res != DW_DLV_OK) {
+            if (res != DW_DLV_OK &&
+		*error != DW_DLE_RELOC_SECTION_RELOC_TARGET_SIZE_UNKNOWN) {
                 return_res = res;
             }
         }
