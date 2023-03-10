@@ -460,7 +460,8 @@ apply_rela_entries(
             relocatablesec->dss_data,
             relocatablesec->dss_size,
             error);
-        if (res != DW_DLV_OK) {
+        if (res != DW_DLV_OK &&
+	    *error != DW_DLE_RELOC_SECTION_RELOC_TARGET_SIZE_UNKNOWN) {
             /* We try to keep going, not stop. */
             return_res = res;
         }
