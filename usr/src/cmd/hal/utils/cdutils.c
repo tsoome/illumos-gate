@@ -127,6 +127,8 @@ uscsi(int fd, struct uscsi_cmd *scmd)
 		HAL_DEBUG (("total retries: %d\n", total_retries));
 	}
 
+	/* do not leak address from local stack */
+	scmd->uscsi_rqbuf = NULL;
 	return (ret);
 }
 
