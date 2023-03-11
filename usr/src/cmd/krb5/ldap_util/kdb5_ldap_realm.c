@@ -2495,6 +2495,7 @@ kdb5_ldap_destroy(argc, argv)
 #endif
     /* Solaris Kerberos: to remove stash file */
     char *stash_file = NULL;
+    char stashbuf[MAXPATHLEN+1];
     struct stat stb;
 
     optind = 1;
@@ -2625,7 +2626,6 @@ kdb5_ldap_destroy(argc, argv)
      * This behavior exists in the Solaris version of kdb5_util destroy.
      */
     if (global_params.stash_file == NULL) {
-	char stashbuf[MAXPATHLEN+1];
 	int realm_len = strlen(global_params.realm);
 
 	(void) strlcpy(stashbuf, DEFAULT_KEYFILE_STUB, sizeof (stashbuf));
