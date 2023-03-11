@@ -51,7 +51,7 @@ uscsi_cmd_init(struct uscsi_cmd *scmd, char *cdb, int cdblen)
 int
 uscsi(int fd, struct uscsi_cmd *scmd)
 {
-	char		rqbuf[RQLEN];
+	static char	rqbuf[RQLEN];
 	int		ret;
 	int		i, retries, total_retries;
 	int		max_retries = 20;
