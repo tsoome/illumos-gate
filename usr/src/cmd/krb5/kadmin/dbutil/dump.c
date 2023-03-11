@@ -380,8 +380,6 @@ static krb5_error_code master_key_convert(context, db_entry)
 		    db_entry->n_key_data);
     for (i=0; i < db_entry->n_key_data; i++) {
 	key_data = &db_entry->key_data[i];
-	if (key_data->key_data_length == 0)
-	    continue;
 	retval = krb5_dbekd_decrypt_key_data(context, &master_key,
 					     key_data, &v5plainkey,
 					     &keysalt);
