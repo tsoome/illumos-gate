@@ -1517,6 +1517,7 @@ mapcmd(int un, int ab)
 	int c;		/* char --> int */
 	unsigned char *dname;
 	struct maps *mp;	/* the map structure we are working on */
+	unsigned char funkey[3];
 
 	mp = ab ? abbrevs : exclam() ? immacs : arrows;
 	if (skipend()) {
@@ -1585,7 +1586,6 @@ mapcmd(int un, int ab)
 	if (lhs[0] == '#') {
 		unsigned char *fnkey;
 		unsigned char *fkey();
-		unsigned char funkey[3];
 
 		fnkey = fkey(lhs[1] - '0');
 		funkey[0] = 'f'; funkey[1] = lhs[1]; funkey[2] = 0;
