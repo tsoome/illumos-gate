@@ -818,13 +818,16 @@ rename_outfile(void)
 #endif
 
 #if AUDIT_RENAME
+		free(f_outfile);
+		f_outfile = a_calloc(strlen(f_newfile) + 1, 1);
+		(void) strcpy(f_newfile, f_outfile);
+
 		if (rename(f_outtemp, f_newfile) == -1) {
 			(void) fprintf(stderr,
 			    "%s rename of %s to %s failed.\n",
 			    ar, f_outtemp, f_newfile);
 			return (-1);
 		}
-		f_outfile = f_newfile;
 #else
 		if (rename(f_outtemp, f_outfile) == -1) {
 			(void) fprintf(stderr,

@@ -125,6 +125,7 @@ process_options(int argc, char **argv)
 	error_str = gettext("general error");
 
 	zonename = NULL;
+	f_outfile = NULL;
 	/*
 	 * Big switch to process the flags.
 	 * Start_over: is for handling the '-' for standard input. Getopt()
@@ -142,7 +143,7 @@ start_over:
 		case 'D':		/* delete the files when done */
 			/* force 'A' 'C' 'O' to be active */
 			f_all = f_complete = TRUE;
-			f_outfile = optarg;
+			f_outfile = strdup(optarg);
 			f_delete = TRUE;
 			break;
 		case 'M':		/* only files from a certain machine */
@@ -164,7 +165,7 @@ start_over:
 			f_verbose = TRUE;
 			break;
 		case 'O':		/* write to outfile */
-			f_outfile = optarg;
+			f_outfile = strdup(optarg);
 			break;
 		case 'a':		/* after 'date' */
 		case 'b':		/* before 'date' */
@@ -323,11 +324,11 @@ proc_object(char *optarg)
 		return (-1);
 	}
 	flags |= M_OBJECT;
-	if ((obj_arg = strdup(optarg)) == (char *)0)
+	if ((obj_arg = strdup(optarg)) == NULL)
 		return (-1);
-	if ((obj_str = strtok(optarg, "=")) == (char *)0 ||
-	    (oep = obj_lkup(obj_str)) == (obj_ent_t *)0 ||
-	    (obj_val = strtok((char *)0, "=")) == (char *)0) {
+	if ((obj_str = strtok(optarg, "=")) == NULL ||
+	    (oep = obj_lkup(obj_str)) == NULL ||
+	    (obj_val = strtok(NULL, "=")) == NULL) {
 		(void) sprintf(errbuf, gettext("invalid object arg (%s)"),
 		    obj_arg);
 		error_str = errbuf;
@@ -338,7 +339,7 @@ proc_object(char *optarg)
 
 	switch (obj_flag) {
 	case OBJ_PATH:
-		if ((error_str = re_comp2(obj_val)) != (char *)NULL) {
+		if ((error_str = re_comp2(obj_val)) != NULL) {
 			return (-1);
 		}
 		return (0);
