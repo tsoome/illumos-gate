@@ -393,7 +393,7 @@ typedef struct dr_board {
 	dr_devset_t	b_dev_released;		/* released mask */
 	dr_devset_t	b_dev_unreferenced;	/* unreferenced mask */
 	char		b_path[MAXNAMELEN];
-	dr_dev_unit_t	*b_dev[DR_MAXNUM_NT];
+	dr_dev_unit_t	*b_dev[DR_MAXNUM_NT + 1];
 } dr_board_t;
 
 /*
