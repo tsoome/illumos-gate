@@ -713,9 +713,6 @@ netstat_icmp_cb(uintptr_t kaddr, const void *walk_data, void *cb_data)
 		return (WALK_ERR);
 	}
 
-	connp->conn_icmp = &icmp;
-	icmp.icmp_connp = connp;
-
 	if ((af == AF_INET && connp->conn_ipversion != IPV4_VERSION) ||
 	    (af == AF_INET6 && connp->conn_ipversion != IPV6_VERSION)) {
 		return (WALK_NEXT);
