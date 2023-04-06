@@ -1583,8 +1583,8 @@ smb_node_setattr(smb_request_t *sr, smb_node_t *node,
 
 	/*
 	 * When operating on an open file, some settable attributes
-	 * become "sticky" in the open file object until close.
-	 * (see above re. timestamps)
+	 * become "sticky" in the open file object until close, or until
+	 * a set-time with value -2 (see above re. timestamps)
 	 */
 	times_mask = attr->sa_mask & SMB_AT_TIMES;
 	if (of != NULL && times_mask != 0) {
@@ -1594,20 +1594,69 @@ smb_node_setattr(smb_request_t *sr, smb_node_t *node,
 		mutex_enter(&of->f_mutex);
 		pa = &of->f_pending_attr;
 
+		bzero(&tmp_attr, sizeof (smb_attr_t));
+		tmp_attr.sa_mask = times_mask;
+		rc = smb_fsop_getattr(NULL, zone_kcred(), node, &tmp_attr);
+		if (rc != 0)
+			return (rc);
+
 		pa->sa_mask |= times_mask;
 
-		if (times_mask & SMB_AT_ATIME)
-			pa->sa_vattr.va_atime =
-			    attr->sa_vattr.va_atime;
-		if (times_mask & SMB_AT_MTIME)
-			pa->sa_vattr.va_mtime =
-			    attr->sa_vattr.va_mtime;
-		if (times_mask & SMB_AT_CTIME)
-			pa->sa_vattr.va_ctime =
-			    attr->sa_vattr.va_ctime;
-		if (times_mask & SMB_AT_CRTIME)
-			pa->sa_crtime =
-			    attr->sa_crtime;
+		/*
+		 * with time == -1, we set timestamp to file current time.
+		 * with time == -2, we clear the sa_mask from f_pending_attr.
+		 */
+		if (times_mask & SMB_AT_ATIME) {
+			if (attr->sa_vattr.va_atime.tv_sec == -1) {
+				if (attr->sa_vattr.va_atime.tv_nsec == -1)
+					attr->sa_vattr.va_atime =
+					    tmp_attr.sa_vattr.va_atime;
+				else if (attr->sa_vattr.va_atime.tv_nsec == -2)
+					pa->sa_mask &= ~SMB_AT_ATIME;
+			}
+			if (pa->sa_mask & SMB_AT_ATIME)
+				pa->sa_vattr.va_atime =
+				    attr->sa_vattr.va_atime;
+		}
+
+		if (times_mask & SMB_AT_MTIME) {
+			if (attr->sa_vattr.va_mtime.tv_sec == -1) {
+				if (attr->sa_vattr.va_mtime.tv_nsec == -1)
+					attr->sa_vattr.va_mtime =
+					    tmp_attr.sa_vattr.va_mtime;
+				else if (attr->sa_vattr.va_mtime.tv_nsec == -2)
+					pa->sa_mask &= ~SMB_AT_MTIME;
+			}
+			if (pa->sa_mask & SMB_AT_MTIME)
+				pa->sa_vattr.va_mtime =
+				    attr->sa_vattr.va_mtime;
+		}
+
+		if (times_mask & SMB_AT_CTIME) {
+			if (attr->sa_vattr.va_ctime.tv_sec == -1) {
+				if (attr->sa_vattr.va_ctime.tv_nsec == -1)
+					attr->sa_vattr.va_ctime =
+					    tmp_attr.sa_vattr.va_ctime;
+				else if (attr->sa_vattr.va_ctime.tv_nsec == -2)
+					pa->sa_mask &= ~SMB_AT_CTIME;
+			}
+			if (pa->sa_mask & SMB_AT_CTIME)
+				pa->sa_vattr.va_ctime =
+				    attr->sa_vattr.va_ctime;
+		}
+
+		if (times_mask & SMB_AT_CRTIME) {
+			/* -1 and -2 have no effect on CRTIME */
+			if (attr->sa_crtime.tv_sec == -1) {
+				if (attr->sa_crtime.tv_nsec == -1)
+					attr->sa_crtime =
+					    tmp_attr.sa_crtime;
+				else if (attr->sa_crtime.tv_nsec == -2)
+					pa->sa_mask &= ~SMB_AT_CRTIME;
+			}
+			if (pa->sa_mask & SMB_AT_CRTIME)
+				pa->sa_crtime = attr->sa_crtime;
+		}
 
 		mutex_exit(&of->f_mutex);
 
@@ -1637,6 +1686,30 @@ smb_node_setattr(smb_request_t *sr, smb_node_t *node,
 		mutex_exit(&node->n_mutex);
 	}
 
+	/*
+	 * Clear mask for timestamps with -2, so we wont disturb
+	 * smb_fsop_setattr().
+	 */
+	if (times_mask & SMB_AT_ATIME) {
+		if (attr->sa_vattr.va_atime.tv_sec == -1 &&
+		    attr->sa_vattr.va_atime.tv_nsec == -2)
+			attr->sa_mask &= ~SMB_AT_ATIME;
+	}
+	if (times_mask & SMB_AT_MTIME) {
+		if (attr->sa_vattr.va_mtime.tv_sec == -1 &&
+		    attr->sa_vattr.va_mtime.tv_nsec == -2)
+			attr->sa_mask &= ~SMB_AT_MTIME;
+	}
+	if (times_mask & SMB_AT_CTIME) {
+		if (attr->sa_vattr.va_ctime.tv_sec == -1 &&
+		    attr->sa_vattr.va_ctime.tv_nsec == -2)
+			attr->sa_mask &= ~SMB_AT_CTIME;
+	}
+	if (times_mask & SMB_AT_CRTIME) {
+		if (attr->sa_crtime.tv_sec == -1 &&
+		    attr->sa_crtime.tv_nsec == -2)
+			attr->sa_mask &= ~SMB_AT_CRTIME;
+	}
 	rc = smb_fsop_setattr(sr, cr, node, attr);
 
 	/*

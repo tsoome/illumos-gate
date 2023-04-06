@@ -1128,9 +1128,23 @@ smb_time_nt_to_unix(uint64_t nt_time, timestruc_t *unix_time)
 
 	ASSERT(unix_time);
 
-	if ((nt_time == 0) || (nt_time == -1)) {
+	if (nt_time == 0) {
 		unix_time->tv_sec = 0;
 		unix_time->tv_nsec = 0;
+		return;
+	}
+
+	/* -1 will trigger sticky behavior */
+	if ((int64_t)nt_time == -1) {
+		unix_time->tv_sec = -1;
+		unix_time->tv_nsec = -1;
+		return;
+	}
+
+	/* -1 will reset sticky behavior */
+	if ((int64_t)nt_time == -2) {
+		unix_time->tv_sec = -1;
+		unix_time->tv_nsec = -2;
 		return;
 	}
 

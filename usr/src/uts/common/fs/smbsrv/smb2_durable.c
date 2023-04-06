@@ -1240,7 +1240,8 @@ smb2_dh_update_locks(smb_request_t *sr, smb_ofile_t *of)
 }
 
 /*
- * Save "sticky" times
+ * Save "sticky" times. When time is -2 (unset), we remove entry
+ * from dh_nvlist.
  */
 void
 smb2_dh_update_times(smb_request_t *sr, smb_ofile_t *of, smb_attr_t *attr)
@@ -1254,16 +1255,31 @@ smb2_dh_update_times(smb_request_t *sr, smb_ofile_t *of, smb_attr_t *attr)
 	}
 
 	if (attr->sa_mask & SMB_AT_ATIME) {
-		t = ts2hrt(&attr->sa_vattr.va_atime);
-		(void) nvlist_add_hrtime(of->dh_nvlist, "atime", t);
+		if (attr->sa_vattr.va_atime.tv_sec == -1 &&
+		    attr->sa_vattr.va_atime.tv_nsec == -2) {
+			(void) nvlist_remove_all(of->dh_nvlist, "atime");
+		} else {
+			t = ts2hrt(&attr->sa_vattr.va_atime);
+			(void) nvlist_add_hrtime(of->dh_nvlist, "atime", t);
+		}
 	}
 	if (attr->sa_mask & SMB_AT_MTIME) {
-		t = ts2hrt(&attr->sa_vattr.va_mtime);
-		(void) nvlist_add_hrtime(of->dh_nvlist, "mtime", t);
+		if (attr->sa_vattr.va_mtime.tv_sec == -1 &&
+		    attr->sa_vattr.va_mtime.tv_nsec == -2) {
+			(void) nvlist_remove_all(of->dh_nvlist, "mtime");
+		} else {
+			t = ts2hrt(&attr->sa_vattr.va_mtime);
+			(void) nvlist_add_hrtime(of->dh_nvlist, "mtime", t);
+		}
 	}
 	if (attr->sa_mask & SMB_AT_CTIME) {
-		t = ts2hrt(&attr->sa_vattr.va_ctime);
-		(void) nvlist_add_hrtime(of->dh_nvlist, "ctime", t);
+		if (attr->sa_vattr.va_ctime.tv_sec == -1 &&
+		    attr->sa_vattr.va_ctime.tv_nsec == -2) {
+			(void) nvlist_remove_all(of->dh_nvlist, "ctime");
+		} else {
+			t = ts2hrt(&attr->sa_vattr.va_ctime);
+			(void) nvlist_add_hrtime(of->dh_nvlist, "ctime", t);
+		}
 	}
 	mutex_exit(&of->dh_nvlock);
 

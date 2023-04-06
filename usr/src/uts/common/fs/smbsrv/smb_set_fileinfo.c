@@ -412,9 +412,23 @@ smb_set_information(smb_request_t *sr, smb_setinfo_t *sinfo)
 		attr.sa_mask |= SMB_AT_DOSATTR;
 	}
 
-	if (mtime != 0 && mtime != UINT_MAX) {
-		attr.sa_vattr.va_mtime.tv_sec =
-		    smb_time_local_to_gmt(sr, mtime);
+	if (mtime != 0) {
+		if ((int32_t)mtime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)mtime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_vattr.va_mtime.tv_sec = -1;
+			attr.sa_vattr.va_mtime.tv_nsec = -1;
+		} else if ((int32_t)mtime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_vattr.va_mtime.tv_sec = -1;
+			attr.sa_vattr.va_mtime.tv_nsec = -2;
+		} else {
+			attr.sa_vattr.va_mtime.tv_sec =
+			    smb_time_local_to_gmt(sr, mtime);
+		}
+
 		attr.sa_mask |= SMB_AT_MTIME;
 	}
 
@@ -440,20 +454,63 @@ smb_set_information2(smb_request_t *sr, smb_setinfo_t *sinfo)
 		return (NT_STATUS_INFO_LENGTH_MISMATCH);
 
 	bzero(&attr, sizeof (smb_attr_t));
-	if (mtime != 0 && mtime != UINT_MAX) {
-		attr.sa_vattr.va_mtime.tv_sec =
-		    smb_time_local_to_gmt(sr, mtime);
+	if (mtime != 0) {
+		if ((int32_t)mtime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)mtime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_vattr.va_mtime.tv_sec = -1;
+			attr.sa_vattr.va_mtime.tv_nsec = -1;
+		} else if ((int32_t)mtime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_vattr.va_mtime.tv_sec = -1;
+			attr.sa_vattr.va_mtime.tv_nsec = -2;
+		} else {
+			attr.sa_vattr.va_mtime.tv_sec =
+			    smb_time_local_to_gmt(sr, mtime);
+		}
+
 		attr.sa_mask |= SMB_AT_MTIME;
 	}
 
-	if (crtime != 0 && crtime != UINT_MAX) {
-		attr.sa_crtime.tv_sec = smb_time_local_to_gmt(sr, crtime);
+	if (crtime != 0) {
+		if ((int32_t)crtime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)crtime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_crtime.tv_sec = -1;
+			attr.sa_crtime.tv_nsec = -1;
+		} else if ((int32_t)crtime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_crtime.tv_sec = -1;
+			attr.sa_crtime.tv_nsec = -2;
+		} else {
+			attr.sa_crtime.tv_sec =
+			    smb_time_local_to_gmt(sr, crtime);
+		}
+
 		attr.sa_mask |= SMB_AT_CRTIME;
 	}
 
-	if (atime != 0 && atime != UINT_MAX) {
-		attr.sa_vattr.va_atime.tv_sec =
-		    smb_time_local_to_gmt(sr, atime);
+	if (atime != 0) {
+		if ((int32_t)atime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)atime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_vattr.va_atime.tv_sec = -1;
+			attr.sa_vattr.va_atime.tv_nsec = -1;
+		} else if ((int32_t)atime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_vattr.va_atime.tv_sec = -1;
+			attr.sa_vattr.va_atime.tv_nsec = -2;
+		} else {
+			attr.sa_vattr.va_atime.tv_sec =
+			    smb_time_local_to_gmt(sr, atime);
+		}
+
 		attr.sa_mask |= SMB_AT_ATIME;
 	}
 
@@ -484,20 +541,63 @@ smb_set_standard_info(smb_request_t *sr, smb_setinfo_t *sinfo)
 		return (NT_STATUS_INFO_LENGTH_MISMATCH);
 
 	bzero(&attr, sizeof (smb_attr_t));
-	if (mtime != 0 && mtime != (uint32_t)-1) {
-		attr.sa_vattr.va_mtime.tv_sec =
-		    smb_time_local_to_gmt(sr, mtime);
+	if (mtime != 0) {
+		if ((int32_t)mtime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)mtime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_vattr.va_mtime.tv_sec = -1;
+			attr.sa_vattr.va_mtime.tv_nsec = -1;
+		} else if ((int32_t)mtime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_vattr.va_mtime.tv_sec = -1;
+			attr.sa_vattr.va_mtime.tv_nsec = -2;
+		} else {
+			attr.sa_vattr.va_mtime.tv_sec =
+			    smb_time_local_to_gmt(sr, mtime);
+		}
+
 		attr.sa_mask |= SMB_AT_MTIME;
 	}
 
-	if (crtime != 0 && crtime != (uint32_t)-1) {
-		attr.sa_crtime.tv_sec = smb_time_local_to_gmt(sr, crtime);
+	if (crtime != 0) {
+		if ((int32_t)crtime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)crtime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_crtime.tv_sec = -1;
+			attr.sa_crtime.tv_nsec = -1;
+		} else if ((int32_t)crtime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_crtime.tv_sec = -1;
+			attr.sa_crtime.tv_nsec = -2;
+		} else {
+			attr.sa_crtime.tv_sec =
+			    smb_time_local_to_gmt(sr, crtime);
+		}
+
 		attr.sa_mask |= SMB_AT_CRTIME;
 	}
 
-	if (atime != 0 && atime != (uint32_t)-1) {
-		attr.sa_vattr.va_atime.tv_sec =
-		    smb_time_local_to_gmt(sr, atime);
+	if (atime != 0) {
+		if ((int32_t)atime < -2)
+			return (NT_STATUS_INVALID_PARAMETER);
+
+		if ((int32_t)atime == -1) {
+			/* -1 will trigger sticky behavior */
+			attr.sa_vattr.va_atime.tv_sec = -1;
+			attr.sa_vattr.va_atime.tv_nsec = -1;
+		} else if ((int32_t)atime == -2) {
+			/* -2 will reset sticky behavior */
+			attr.sa_vattr.va_atime.tv_sec = -1;
+			attr.sa_vattr.va_atime.tv_nsec = -2;
+		} else {
+			attr.sa_vattr.va_atime.tv_sec =
+			    smb_time_local_to_gmt(sr, atime);
+		}
+
 		attr.sa_mask |= SMB_AT_ATIME;
 	}
 
