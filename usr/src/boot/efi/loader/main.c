@@ -288,8 +288,7 @@ static bool
 probe_zfs_currdev(uint64_t guid)
 {
 	struct zfs_devdesc currdev;
-	char *bootonce;
-	bool rv;
+	bool bootable;
 
 	currdev.dd.d_dev = &zfs_dev;
 	currdev.dd.d_unit = 0;
@@ -297,24 +296,19 @@ probe_zfs_currdev(uint64_t guid)
 	currdev.root_guid = 0;
 	set_currdev_devdesc((struct devdesc *)&currdev);
 
-	rv = sanity_check_currdev();
-	if (rv) {
-		bootonce = malloc(VDEV_PAD_SIZE);
-		if (bootonce != NULL) {
-			if (zfs_get_bootonce(&currdev, OS_BOOTONCE, bootonce,
-			    VDEV_PAD_SIZE) == 0) {
-				printf("zfs bootonce: %s\n", bootonce);
-				set_currdev(bootonce);
-				setenv("zfs-bootonce", bootonce, 1);
-			}
-			free(bootonce);
-			(void) zfs_attach_nvstore(&currdev);
-		} else {
-			printf("Failed to process bootonce data: %s\n",
-			    strerror(errno));
+	bootable = sanity_check_currdev();
+	if (bootable) {
+		char buf[VDEV_PAD_SIZE];
+
+		if (zfs_get_bootonce(&currdev, OS_BOOTONCE, buf, sizeof (buf)) == 0) {
+			printf("zfs bootonce: %s\n", buf);
+			set_currdev(buf);
+			setenv("zfs-bootonce", buf, 1);
 		}
+		(void) zfs_attach_nvstore(&currdev);
 	}
-	return (rv);
+
+	return (bootable);
 }
 
 static bool
