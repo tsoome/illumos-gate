@@ -27,6 +27,8 @@
 #ifndef	_LIBI386_H
 #define	_LIBI386_H
 
+#include <stdbool.h>
+
 /*
  * i386 fully-qualified device descriptor.
  */
@@ -143,7 +145,7 @@ int	bi_load32(char *args, int *howtop, int *bootdevp, vm_offset_t *bip,
 	    vm_offset_t *modulep, vm_offset_t *kernend);
 int	bi_load64(char *args, vm_offset_t addr, vm_offset_t *modulep,
 	    vm_offset_t *kernend, int add_smap);
-int	bi_checkcpu(void);
+bool	bi_checkcpu(void);
 void	bi_isadir(void);
 
 int	mb_kernel_cmdline(struct preloaded_file *, struct devdesc *, char **);
