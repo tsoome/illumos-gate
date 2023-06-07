@@ -266,8 +266,9 @@ static ipadm_prop_desc_t ipadm_icmp_prop_table[] = {
  * A dummy private property structure, used while handling private
  * protocol properties (properties not yet supported by libipadm).
  */
+static char priv_propname[MAXPROPNAMELEN];
 static ipadm_prop_desc_t ipadm_privprop =
-	{ NULL, NULL, IPADMPROP_CLASS_MODULE, MOD_PROTO_NONE, 0,
+	{ priv_propname, NULL, IPADMPROP_CLASS_MODULE, MOD_PROTO_NONE, 0,
 	    i_ipadm_set_prop, i_ipadm_get_prop, i_ipadm_get_prop };
 
 /*
@@ -1183,7 +1184,6 @@ i_ipadm_getprop_common(ipadm_handle_t iph, const char *ifname,
 {
 	ipadm_status_t		status = IPADM_SUCCESS;
 	ipadm_prop_desc_t	*pdp;
-	char			priv_propname[MAXPROPNAMELEN];
 	boolean_t		is_if = (ifname != NULL);
 	int			err = 0;
 
@@ -1212,7 +1212,6 @@ i_ipadm_getprop_common(ipadm_handle_t iph, const char *ifname,
 		/* private protocol properties, pass it to kernel directly */
 		pdp = &ipadm_privprop;
 		(void) strlcpy(priv_propname, pname, sizeof (priv_propname));
-		pdp->ipd_name = priv_propname;
 	}
 
 	switch (valtype) {
@@ -1385,7 +1384,6 @@ i_ipadm_setprop_common(ipadm_handle_t iph, const char *ifname,
 	boolean_t		reset = (pflags & IPADM_OPT_DEFAULT);
 	ipadm_prop_desc_t	*pdp;
 	boolean_t		is_if = (ifname != NULL);
-	char			priv_propname[MAXPROPNAMELEN];
 	int			err = 0;
 
 	/* Check that property value is within the allowed size */
@@ -1420,7 +1418,6 @@ i_ipadm_setprop_common(ipadm_handle_t iph, const char *ifname,
 		/* private protocol property, pass it to kernel directly */
 		pdp = &ipadm_privprop;
 		(void) strlcpy(priv_propname, pname, sizeof (priv_propname));
-		pdp->ipd_name = priv_propname;
 	}
 
 	status = pdp->ipd_set(iph, ifname, pdp, buf, proto, pflags);
