@@ -198,7 +198,7 @@ typedef struct fcoe_client {
 
 #define	FCOE_V2B_2(x_v, x_b)					\
 	{							\
-		((uint8_t *)(x_b))[1] = 0xFF & (x_v);		\
+		((uint8_t *)(x_b))[1] = (uint8_t)(0xFF & (x_v)); \
 		((uint8_t *)(x_b))[0] = 0xFF & ((x_v) >> 8);	\
 	}
 
