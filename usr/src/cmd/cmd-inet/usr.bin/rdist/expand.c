@@ -17,6 +17,7 @@
 
 #include "defs.h"
 #include <string.h>
+#include <strings.h>
 
 #define	GAVSIZ	NCARGS / 6
 #define	LC '{'
@@ -37,8 +38,7 @@ int	nleft;
 int	expany;		/* any expansions done? */
 char	*entp;
 char	**sortbase;
-
-char	*index();
+char	*argvbuf[GAVSIZ];
 
 static int argcmp(const void *arg1, const void *arg2);
 static void addpath(char c);
@@ -68,7 +68,6 @@ expand(struct namelist *list, int wh)
 	struct namelist *nl, *prev;
 	int n;
 	char pathbuf[LINESIZE];
-	char *argvbuf[GAVSIZ];
 
 	if (debug) {
 		printf("expand(%x, %d)\nlist = ", list, wh);
