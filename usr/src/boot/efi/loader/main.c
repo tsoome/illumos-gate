@@ -43,6 +43,7 @@
 #include <efilib.h>
 #include <efigpt.h>
 #include <efichar.h>
+#include <Protocol/SerialIo.h>
 
 #include <uuid.h>
 
@@ -62,7 +63,6 @@ EFI_GUID imgid = LOADED_IMAGE_PROTOCOL;
 EFI_GUID smbios = SMBIOS_TABLE_GUID;
 EFI_GUID smbios3 = SMBIOS3_TABLE_GUID;
 EFI_GUID inputid = SIMPLE_TEXT_INPUT_PROTOCOL;
-EFI_GUID serialio = SERIAL_IO_PROTOCOL;
 
 extern void acpi_detect(void);
 extern void efi_getsmap(void);
@@ -639,7 +639,8 @@ uefi_serial_console(void)
 	if (uid == 0)
 		return ("ttya");
 
-	status = efi_get_protocol_handles(&serialio, &nhandles, &handles);
+	status = efi_get_protocol_handles(&gEfiSerialIoProtocolGuid,
+	    &nhandles, &handles);
 	if (EFI_ERROR(status)) {
 		return (NULL);
 	}

@@ -96,6 +96,9 @@ EFI_STATUS errno_to_efi_status(int errno);
 void efi_time_init(void);
 void efi_time_fini(void);
 
+void efi_serial_ini(void);
+void efi_isa_ini(void);
+
 EFI_STATUS efi_main(EFI_HANDLE Ximage, EFI_SYSTEM_TABLE* Xsystab);
 
 EFI_STATUS main(int argc, CHAR16 *argv[]);

@@ -53,7 +53,7 @@ typedef int8_t     INT8;
 
 #undef VOID
 #define VOID    void
-
+#define	CONST	const
 
 typedef int32_t    INTN;
 typedef uint32_t   UINTN;

@@ -98,7 +98,7 @@ typedef int8_t     INT8;
 
 #undef VOID
 #define VOID    void
-
+#define	CONST	const
 
 typedef int64_t    INTN;
 typedef uint64_t   UINTN;

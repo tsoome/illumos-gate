@@ -65,6 +65,7 @@ typedef VOID            *EFI_EVENT;
     #define OPTIONAL
 #endif
 
+#define	PACKED
 
 //
 // A GUID
@@ -77,6 +78,7 @@ typedef struct {
     UINT8   Data4[8];
 } EFI_GUID;
 
+#define	GUID	EFI_GUID
 
 //
 // Time

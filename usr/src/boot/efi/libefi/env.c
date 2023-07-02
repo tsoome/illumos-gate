@@ -36,6 +36,10 @@
 #include <Guid/ZeroGuid.h>
 #include <Protocol/EdidActive.h>
 #include <Protocol/EdidDiscovered.h>
+#include <Protocol/IsaAcpi.h>
+#include <Protocol/IsaIo.h>
+#include <Protocol/SerialIo.h>
+#include <Protocol/SuperIo.h>
 #include <uuid.h>
 #include <stdbool.h>
 #include <sys/param.h>
@@ -122,6 +126,7 @@ static struct efi_uuid_mapping {
 	{ .efi_guid_name = "loaded image device path",
 	    .efi_guid = EFI_LOADED_IMAGE_DEVICE_PATH_PROTOCOL_GUID },
 	{ .efi_guid_name = "ISA io", .efi_guid = EFI_ISA_IO_PROTOCOL_GUID },
+	{ .efi_guid_name = "Super io", .efi_guid = EFI_SIO_PROTOCOL_GUID },
 	{ .efi_guid_name = "IDE controller init",
 	    .efi_guid = EFI_IDE_CONTROLLER_INIT_PROTOCOL_GUID },
 	{ .efi_guid_name = "ISA ACPI", .efi_guid = EFI_ISA_ACPI_PROTOCOL_GUID },
