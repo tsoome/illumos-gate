@@ -718,8 +718,8 @@ rfs4_srvrfini(void)
 }
 
 void
-rfs4_do_server_start(int server_upordown,
-    int srv_delegation, int cluster_booted)
+rfs4_do_server_start(int server_upordown, int srv_delegation,
+    nfs4_minor_t nfs4_minor_max, int cluster_booted)
 {
 	nfs4_srv_t *nsrv4 = nfs4_get_srv();
 
@@ -753,6 +753,8 @@ rfs4_do_server_start(int server_upordown,
 			    rfs4_dss_newpaths);
 		}
 	}
+
+	nsrv4->nfs4_minor_max = nfs4_minor_max;
 
 	/* Check if delegation is to be enabled */
 	if (srv_delegation != FALSE)

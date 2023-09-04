@@ -442,10 +442,6 @@ nfs_svc(struct nfs_svc_args *arg, model_t model)
 	struct netbuf addrmask;
 	SVC_CALLOUT_TABLE *sctp = NULL;
 
-#ifdef lint
-	model = model;		/* STRUCT macros don't always refer to it */
-#endif
-
 	ng = nfs_srv_getzg();
 	STRUCT_SET_HANDLE(uap, model, arg);
 
@@ -484,19 +480,22 @@ nfs_svc(struct nfs_svc_args *arg, model_t model)
 		return (error);
 	}
 
-	ng->nfs_versmin = STRUCT_FGET(uap, versmin);
-	ng->nfs_versmax = STRUCT_FGET(uap, versmax);
+	ng->nfs_versmin = STRUCT_FGET(uap, nfs_versmin);
+	ng->nfs_versmax = STRUCT_FGET(uap, nfs_versmax);
 
 	/* Double check the vers min/max ranges */
 	if ((ng->nfs_versmin > ng->nfs_versmax) ||
-	    (ng->nfs_versmin < NFS_VERSMIN) ||
-	    (ng->nfs_versmax > NFS_VERSMAX)) {
-		ng->nfs_versmin = NFS_VERSMIN_DEFAULT;
-		ng->nfs_versmax = NFS_VERSMAX_DEFAULT;
+	    (ng->nfs_versmin < NFS_SRV_VERS_MIN) ||
+	    (ng->nfs_versmax > NFS_SRV_VERS_MAX)) {
+		cmn_err(CE_NOTE, "%s: bad min (%u) or max (%u) version number",
+		    "NFS", ng->nfs_versmin, ng->nfs_versmax);
+		ng->nfs_versmin = NFS_SRV_VERSMIN_DEFAULT;
+		ng->nfs_versmax = NFS_SRV_VERSMAX_DEFAULT;
 	}
 
-	error = nfs_srv_set_sc_versions(fp, &sctp, ng->nfs_versmin,
-	    ng->nfs_versmax);
+	error = nfs_srv_set_sc_versions(fp, &sctp,
+	    NFS_PROT_VERSION(ng->nfs_versmin),
+	    NFS_PROT_VERSION(ng->nfs_versmax));
 	if (error != 0) {
 		releasef(STRUCT_FGET(uap, fd));
 		kmem_free(addrmask.buf, addrmask.maxlen);
@@ -504,7 +503,7 @@ nfs_svc(struct nfs_svc_args *arg, model_t model)
 	}
 
 	/* Initialize nfsv4 server */
-	if (ng->nfs_versmax == (rpcvers_t)NFS_V4)
+	if (NFS_PROT_VERSION(ng->nfs_versmax) == NFS_V4)
 		rfs4_server_start(ng, STRUCT_FGET(uap, delegation));
 
 	/* Create a transport handle. */
@@ -526,6 +525,10 @@ nfs_svc(struct nfs_svc_args *arg, model_t model)
 static void
 rfs4_server_start(nfs_globals_t *ng, int nfs4_srv_delegation)
 {
+	nfs4_minor_t nfs4_minor_max;
+
+	nfs4_minor_max = NFS_PROT_V4_MINORVERSION(ng->nfs_versmax);
+
 	/*
 	 * Determine if the server has previously been "started" and
 	 * if not, do the per instance initialization
@@ -546,7 +549,7 @@ rfs4_server_start(nfs_globals_t *ng, int nfs4_srv_delegation)
 			    SVCPSET_SHUTDOWN_PROC, (void *)&nfs_srv_stop_all);
 
 			rfs4_do_server_start(ng->nfs_server_upordown,
-			    nfs4_srv_delegation,
+			    nfs4_srv_delegation, nfs4_minor_max,
 			    cluster_bootflags & CLUSTER_BOOTED);
 
 			ng->nfs_server_upordown = NFS_SERVER_RUNNING;
@@ -571,10 +574,10 @@ rdma_start(struct rdma_svc_args *rsa)
 
 	/* Double check the vers min/max ranges */
 	if ((rsa->nfs_versmin > rsa->nfs_versmax) ||
-	    (rsa->nfs_versmin < NFS_VERSMIN) ||
-	    (rsa->nfs_versmax > NFS_VERSMAX)) {
-		rsa->nfs_versmin = NFS_VERSMIN_DEFAULT;
-		rsa->nfs_versmax = NFS_VERSMAX_DEFAULT;
+	    (rsa->nfs_versmin < NFS_SRV_VERS_MIN) ||
+	    (rsa->nfs_versmax > NFS_SRV_VERS_MAX)) {
+		rsa->nfs_versmin = NFS_SRV_VERSMIN_DEFAULT;
+		rsa->nfs_versmax = NFS_SRV_VERSMAX_DEFAULT;
 	}
 
 	ng = nfs_srv_getzg();
@@ -582,17 +585,15 @@ rdma_start(struct rdma_svc_args *rsa)
 	ng->nfs_versmax = rsa->nfs_versmax;
 
 	/* Set the versions in the callout table */
-	__nfs_sc_rdma[0].sc_versmin = rsa->nfs_versmin;
-	__nfs_sc_rdma[0].sc_versmax = rsa->nfs_versmax;
+	__nfs_sc_rdma[0].sc_versmin = NFS_PROT_VERSION(rsa->nfs_versmin);
+	__nfs_sc_rdma[0].sc_versmax = NFS_PROT_VERSION(rsa->nfs_versmax);
 	/* For the NFS_ACL program, check the max version */
-	__nfs_sc_rdma[1].sc_versmin = rsa->nfs_versmin;
-	if (rsa->nfs_versmax > NFS_ACL_VERSMAX)
-		__nfs_sc_rdma[1].sc_versmax = NFS_ACL_VERSMAX;
-	else
-		__nfs_sc_rdma[1].sc_versmax = rsa->nfs_versmax;
+	__nfs_sc_rdma[1].sc_versmin = NFS_PROT_VERSION(rsa->nfs_versmin);
+	__nfs_sc_rdma[1].sc_versmax =
+	    MIN(NFS_PROT_VERSION(rsa->nfs_versmax), NFS_ACL_VERSMAX);
 
 	/* Initialize nfsv4 server */
-	if (rsa->nfs_versmax == (rpcvers_t)NFS_V4)
+	if (NFS_PROT_VERSION(rsa->nfs_versmax) == NFS_V4)
 		rfs4_server_start(ng, rsa->delegation);
 
 	started_rdma_xprts.rtg_count = 0;
@@ -2642,8 +2643,8 @@ nfs_server_zone_init(zoneid_t zoneid)
 
 	ng = kmem_zalloc(sizeof (*ng), KM_SLEEP);
 
-	ng->nfs_versmin = NFS_VERSMIN_DEFAULT;
-	ng->nfs_versmax = NFS_VERSMAX_DEFAULT;
+	ng->nfs_versmin = NFS_SRV_VERSMIN_DEFAULT;
+	ng->nfs_versmax = NFS_SRV_VERSMAX_DEFAULT;
 
 	/* Init the stuff to control start/stop */
 	ng->nfs_server_upordown = NFS_SERVER_STOPPED;

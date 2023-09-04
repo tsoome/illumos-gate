@@ -74,8 +74,10 @@ typedef struct nfs4_fhandle {
 	char fh_buf[NFS4_FHSIZE];
 } nfs4_fhandle_t;
 
-#define	NFS4_MINORVERSION 0
-#define	CB4_MINORVERSION 0
+typedef uint8_t nfs4_minor_t;
+
+#define	NFS4_MINORVERSION	0
+#define	CB4_MINORVERSION	0
 
 #define	FIRST_NFS4_OP   OP_ACCESS
 #define	LAST_NFS40_OP   OP_RELEASE_LOCKOWNER
@@ -803,6 +805,8 @@ typedef struct nfs4_srv {
 	/* Used to manage access to nfs4_deleg_policy */
 	krwlock_t	deleg_policy_lock;
 	srv_deleg_policy_t nfs4_deleg_policy;
+	/* Allowed minors, nfs4 minors start from 0, which is always allowed */
+	nfs4_minor_t	nfs4_minor_max;
 	/* Set first time we see one */
 	int		seen_first_compound;
 	/*
@@ -1524,7 +1528,7 @@ nfsstat4 do_rfs4_op_secinfo(struct compound_state *, char *, SECINFO4res *);
  * The NFS Version 4 service procedures.
  */
 
-extern void	rfs4_do_server_start(int, int, int);
+extern void	rfs4_do_server_start(int, int, nfs4_minor_t, int);
 extern void	rfs4_compound(COMPOUND4args *, COMPOUND4res *,
 			compound_state_t *, struct svc_req *, int *);
 extern void rfs4_init_compound_state(struct compound_state *);
