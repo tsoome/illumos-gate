@@ -160,7 +160,7 @@ rfs4_attr_init(void)
 	cs.vp = rootvp;
 	cs.fh.nfs_fh4_val = NULL;
 	cs.cr = kcred;
-	cs.minorversion = 2;
+	cs.minorversion = NFS4_MAX_MINOR_VERSION;
 
 	/*
 	 * Get all the supported attributes

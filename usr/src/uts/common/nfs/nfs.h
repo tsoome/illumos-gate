@@ -68,10 +68,26 @@ extern "C" {
 #define	NFS_PORT	2049
 
 /*
+ * Service versions with minor numbers.
+ */
+#define	NFS_VERS_2	0x0200
+#define	NFS_VERS_3	0x0300
+#define	NFS_VERS_4	0x0400
+#define	NFS_VERS_4_1	0x0410
+#define	NFS_VERS_4_2	0x0420
+#define	NFS_VERS_MIN	NFS_VERS_2
+#define	NFS_VERS_MAX	NFS_VERS_4_2
+
+/*
  * Used to determine registration and service handling of versions
  */
 #define	NFS_VERSMIN_DEFAULT	((rpcvers_t)2)
 #define	NFS_VERSMAX_DEFAULT	((rpcvers_t)4)
+#define	NFS_VERS_MIN_DEFAULT	(NFS_VERS_2)
+#define	NFS_VERS_MAX_DEFAULT	(NFS_VERS_4)
+
+#define	NFS_VERS_GETMAJOR(x)	((x) >> 8)
+#define	NFS_VERS_GETMINOR(x)	(((x) & 0xFF) >> 4)
 
 /*
  * Used to track the state of the server so that initialization

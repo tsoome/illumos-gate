@@ -57,8 +57,8 @@ struct nfs_svc_args {
 	int		fd;		/* Connection endpoint */
 	char		*netid;		/* Identify transport */
 	struct netbuf	addrmask;	/* Address mask for host */
-	int		versmin;	/* Min protocol version to offer */
-	int		versmax;	/* Max protocol version to offer */
+	uint32_t	versmin;	/* Min protocol version to offer */
+	uint32_t	versmax;	/* Max protocol version to offer */
 	int		delegation;	/* NFSv4 delegation on/off? */
 };
 
@@ -67,8 +67,8 @@ struct nfs_svc_args32 {
 	int32_t		fd;		/* Connection endpoint */
 	caddr32_t	netid;		/* Identify transport */
 	struct netbuf32	addrmask;	/* Address mask for host */
-	int32_t		versmin;	/* Min protocol version to offer */
-	int32_t		versmax;	/* Max protocol version to offer */
+	uint32_t	versmin;	/* Min protocol version to offer */
+	uint32_t	versmax;	/* Max protocol version to offer */
 	int32_t		delegation;	/* NFSv4 delegation on/off? */
 };
 #endif
@@ -178,8 +178,8 @@ struct nfsl_flush_args32 {
 struct rdma_svc_args {
 	uint32_t	poolid;		/* Thread Pool ID */
 	char		*netid;		/* Network Identifier */
-	int		nfs_versmin;	/* Min NFS version to offer */
-	int		nfs_versmax;	/* Max NFS version to offer */
+	uint32_t	nfs_versmin;	/* Min NFS version to offer */
+	uint32_t	nfs_versmax;	/* Max NFS version to offer */
 	int		delegation;	/* NFSv4 delegation on/off? */
 };
 
@@ -187,8 +187,8 @@ struct rdma_svc_args {
 struct rdma_svc_args32 {
 	uint32_t	poolid;		/* Thread Pool ID */
 	caddr32_t	netid;		/* Network Identifier */
-	int32_t		nfs_versmin;	/* Min NFS version to offer */
-	int32_t		nfs_versmax;	/* Max NFS version to offer */
+	uint32_t	nfs_versmin;	/* Min NFS version to offer */
+	uint32_t	nfs_versmax;	/* Max NFS version to offer */
 	int32_t		delegation;	/* NFSv4 delegation on/off? */
 };
 #endif

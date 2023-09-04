@@ -41,8 +41,6 @@
 #include <nfs/nfs_dispatch.h>
 #include <nfs/nfs4_drc.h>
 
-#define	NFS4_MAX_MINOR_VERSION	2
-
 /*
  * The default size of the duplicate request cache
  */
@@ -552,6 +550,21 @@ rfs4_send_minor_mismatch(SVCXPRT *xprt, COMPOUND4args *argsp)
 	return (err);
 }
 
+/*
+ * Test minor version against allowed minor versions mask.
+ */
+static boolean_t
+rfs4_minorversion_enabled(uint32_t minor)
+{
+	nfs4_srv_t *nsrv4 = nfs4_get_srv();
+
+	if (minor <= NFS4_MAX_MINOR_VERSION &&
+	    minor >= nsrv4->nfs4_minor_min &&
+	    minor <= nsrv4->nfs4_minor_max)
+		return (B_TRUE);
+	return (B_FALSE);
+}
+
 bool_t
 rfs4_minorvers_mismatch(struct svc_req *req, SVCXPRT *xprt, void *args)
 {
@@ -562,7 +575,7 @@ rfs4_minorvers_mismatch(struct svc_req *req, SVCXPRT *xprt, void *args)
 
 	argsp = (COMPOUND4args *)args;
 
-	if (argsp->minorversion <= NFS4_MAX_MINOR_VERSION)
+	if (rfs4_minorversion_enabled(argsp->minorversion))
 		return (FALSE);
 
 	(void) rfs4_send_minor_mismatch(xprt, argsp);
@@ -621,13 +634,11 @@ rfs4_resource_err(struct svc_req *req, COMPOUND4args *argsp)
 	kmem_free(rbp->array, rbp->array_len * sizeof (nfs_resop4));
 }
 
-/* ARGSUSED */
 int
-rfs4_dispatch(struct rpcdisp *disp, struct svc_req *req,
+rfs4_dispatch(struct rpcdisp *disp __unused, struct svc_req *req,
     SVCXPRT *xprt, char *ap)
 {
 	COMPOUND4args	*cmp;
-	int error = 0;
 
 	/*
 	 * Handle the NULL Proc here
@@ -639,18 +650,11 @@ rfs4_dispatch(struct rpcdisp *disp, struct svc_req *req,
 	cmp = (COMPOUND4args *)ap;
 	ASSERT(cmp != NULL);
 
-	switch (cmp->minorversion) {
-	case 1:
-	case 2:
-		error = rfs4x_dispatch(req, xprt, ap);
-		break;
+	if (!rfs4_minorversion_enabled(cmp->minorversion))
+		return (rfs4_send_minor_mismatch(xprt, cmp));
 
-	case 0:
-		error = rfs40_dispatch(req, xprt, ap);
-		break;
+	if (cmp->minorversion == 0)
+		return (rfs40_dispatch(req, xprt, ap));
 
-	default:
-		error = rfs4_send_minor_mismatch(xprt, cmp);
-	}
-	return (error);
+	return (rfs4x_dispatch(req, xprt, ap));
 }

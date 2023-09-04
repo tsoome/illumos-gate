@@ -664,6 +664,10 @@ rfs4_srv_zone_init(nfs_globals_t *ng)
 	mutex_init(&nsrv4->servinst_lock, NULL, MUTEX_DEFAULT, NULL);
 	rw_init(&nsrv4->deleg_policy_lock, NULL, RW_DEFAULT, NULL);
 
+	/* Default minors we accept. */
+	nsrv4->nfs4_minor_min = NFS_VERS_GETMINOR(NFS_VERS_4);
+	nsrv4->nfs4_minor_max = NFS_VERS_GETMINOR(NFS_VERS_MAX_DEFAULT);
+
 	ng->nfs4_srv = nsrv4;
 }
 
@@ -719,7 +723,8 @@ rfs4_srvrfini(void)
 
 void
 rfs4_do_server_start(int server_upordown,
-    int srv_delegation, int cluster_booted)
+    int srv_delegation, uint32_t nfs4_minor_min, uint32_t nfs4_minor_max,
+    int cluster_booted)
 {
 	nfs4_srv_t *nsrv4 = nfs4_get_srv();
 
@@ -753,6 +758,9 @@ rfs4_do_server_start(int server_upordown,
 			    rfs4_dss_newpaths);
 		}
 	}
+
+	nsrv4->nfs4_minor_min = nfs4_minor_min;
+	nsrv4->nfs4_minor_max = nfs4_minor_max;
 
 	/* Check if delegation is to be enabled */
 	if (srv_delegation != FALSE)
