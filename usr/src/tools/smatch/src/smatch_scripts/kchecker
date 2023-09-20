@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function usage {
     echo "Usage:  $0 [--sparse][--valgrind][--debug] path/to/file.c"
     exit 1
@@ -24,7 +26,7 @@ while true ; do
 	shift
     elif echo "$1" | grep -q -- "--outfile=" ; then
 	outfile=$(echo "$1" | cut -d '=' -f 2)
-	if [ "outfile" != "" ] ; then
+	if [ "$outfile" != "" ] ; then
 	    POST="$POST > $outfile"
 	fi
 	shift
@@ -76,5 +78,8 @@ fi
 if [[ ! -z $CROSS_COMPILE ]] ; then
 	KERNEL_CROSS_COMPILE="CROSS_COMPILE=$CROSS_COMPILE"
 fi
+if [[ ! -z $O ]] ; then
+	KERNEL_O="O=$O"
+fi
 
-make $KERNEL_CROSS_COMPILE $KERNEL_ARCH C=2 $ENDIAN CHECK="$PRE $CMD $POST" $oname
+make ${KERNEL_CROSS_COMPILE:+"$KERNEL_CROSS_COMPILE"} ${KERNEL_ARCH:+"$KERNEL_ARCH"} ${KERNEL_O:+"$KERNEL_O"} C=2 ${ENDIAN:+"$ENDIAN"} CHECK="$PRE $CMD $POST" $oname

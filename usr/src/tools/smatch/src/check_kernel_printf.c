@@ -484,6 +484,17 @@ static void resource_string(const char *fmt, struct symbol *type, struct symbol 
 		sm_warning("'%%p%c' cannot be followed by '%c'", fmt[0], fmt[1]);
 }
 
+static void range_string(const char *fmt, struct symbol *type, struct symbol *basetype, int vaidx)
+{
+	assert(fmt[0] == 'r' && fmt[1] == 'a');
+	if (!is_struct_tag(basetype, "range")) {
+		sm_error("'%%p%c' expects argument of type struct range *, "
+			"but argument %d has type '%s'", fmt[0], vaidx, type_to_str(type));
+	}
+	if (isalnum(fmt[2]))
+		sm_warning("'%%p%c%c' cannot be followed by '%c'", fmt[0], fmt[1], fmt[2]);
+}
+
 static void mac_address_string(const char *fmt, struct symbol *type, struct symbol *basetype, int vaidx)
 {
 	assert(tolower(fmt[0]) == 'm');
@@ -659,6 +670,19 @@ static void device_node_string(const char *fmt, struct symbol *type, struct symb
 		       vaidx, type_to_str(type));
 }
 
+static void fourcc_string(const char *fmt, struct symbol *type, struct symbol *basetype, int vaidx)
+{
+	if (fmt[1] != 'c') {
+		sm_error("%%p4 can only be followed by 'c'");
+		return;
+	}
+	if (fmt[2] == 'h' || fmt[2] == 'r' || fmt[2] == 'l' ||
+	    fmt[2] == 'b' || fmt[2] == 'c')
+		return;
+
+	sm_error("'%%p4c' must be followed by one of [hrlbc]");
+}
+
 static void
 pointer(const char *fmt, struct expression *arg, int vaidx)
 {
@@ -721,8 +745,13 @@ pointer(const char *fmt, struct expression *arg, int vaidx)
 		break;
 
 	case 'R':
-	case 'r':
 		resource_string(fmt, type, basetype, vaidx);
+		break;
+	case 'r':
+		if (fmt[1] == 'a')
+			range_string(fmt, type, basetype, vaidx);
+		else
+			resource_string(fmt, type, basetype, vaidx);
 		break;
 	case 'M':
 	case 'm':
@@ -791,6 +820,9 @@ pointer(const char *fmt, struct expression *arg, int vaidx)
 	case 'x':
 		/* 'x' is for an unhashed pointer */
 		break;
+	case '4':
+		fourcc_string(fmt, type, basetype, vaidx);
+		break;
 	default:
 		sm_error("unrecognized %%p extension '%c', treated as normal %%p", *fmt);
 	}
@@ -823,7 +855,7 @@ hexbyte(const char *fmt, int fmt_len, struct expression *arg, int vaidx, struct 
 		sm_warning("could not determine type of argument %d", vaidx);
 		return;
 	}
-	if (type == &char_ctype || type == &schar_ctype)
+	if (type_signed(type) && (type == &char_ctype || type == &schar_ctype))
 		sm_warning("argument %d to %.*s specifier has type '%s'",
 		       vaidx, fmt_len, fmt, type_to_str(type));
 }
@@ -998,9 +1030,34 @@ check_cast_from_pointer(const char *fmt, int len, struct expression *arg, int va
 }
 
 static void
+check_precision_intended(struct printf_spec *spec,  struct expression *prev_arg, struct expression *arg)
+{
+	char *name;
+
+	if (!option_spammy)
+		return;
+
+	if (spec->type != FORMAT_TYPE_WIDTH)
+		return;
+	if (is_nul_terminated(arg))
+		return;
+
+	name = expr_to_str(prev_arg);
+	if (name && (strcasestr(name, "width") || strcasestr(name, "level")))
+		goto free;
+
+	sm_msg("warn: was precision intended? '%s'", name);
+free:
+	free_string(name);
+}
+
+static void
 do_check_printf_call(const char *caller, const char *name, struct expression *callexpr, struct expression *fmtexpr, int vaidx)
 {
 	struct printf_spec spec = {0};
+	struct printf_spec prev_spec = {0};
+	struct expression *arg;
+	struct expression *prev_arg = NULL;
 	const char *fmt, *orig_fmt;
 	int caller_in_fmt;
 
@@ -1049,12 +1106,14 @@ do_check_printf_call(const char *caller, const char *name, struct expression *ca
 	while (*fmt) {
 		const char *old_fmt = fmt;
 		int read = format_decode(fmt, &spec);
-		struct expression *arg;
 
 		fmt += read;
 		if (spec.type == FORMAT_TYPE_NONE ||
-		    spec.type == FORMAT_TYPE_PERCENT_CHAR)
+		    spec.type == FORMAT_TYPE_PERCENT_CHAR) {
+			prev_spec = spec;
+			prev_arg = NULL;
 			continue;
+		}
 
 		/*
 		 * vaidx is currently the correct 0-based index for
@@ -1099,6 +1158,8 @@ do_check_printf_call(const char *caller, const char *name, struct expression *ca
 			break;
 
 		case FORMAT_TYPE_STR:
+			check_precision_intended(&prev_spec, prev_arg, arg);
+
 			/*
 			 * If the format string already contains the
 			 * function name, it probably doesn't make
@@ -1149,14 +1210,12 @@ do_check_printf_call(const char *caller, const char *name, struct expression *ca
 		case FORMAT_TYPE_SIZE_T:
 			break;
 		}
-
-
+		prev_spec = spec;
+		prev_arg = arg;
 	}
 
 	if (get_argument_from_call_expr(callexpr->args, vaidx))
 		sm_warning("excess argument passed to '%s'", name);
-
-
 }
 
 static void
@@ -1288,7 +1347,7 @@ void check_kernel_printf(int id)
 	printf_hook(brcmu_dbg_hex_dump, 3, 4);            /* drivers/net/wireless/brcm80211/include/brcmu_utils.h */
 	printf_hook(__iwl_crit, 2, 3);                    /* drivers/net/wireless/iwlwifi/iwl-debug.h */
 	printf_hook(__iwl_dbg, 5, 6);                     /* drivers/net/wireless/iwlwifi/iwl-debug.h */
-	printf_hook(__iwl_err, 4, 5);                     /* drivers/net/wireless/iwlwifi/iwl-debug.h */
+	printf_hook(__iwl_err, 3, 4);                     /* drivers/net/wireless/iwlwifi/iwl-debug.h */
 	printf_hook(__iwl_info, 2, 3);                    /* drivers/net/wireless/iwlwifi/iwl-debug.h */
 	printf_hook(__iwl_warn, 2, 3);                    /* drivers/net/wireless/iwlwifi/iwl-debug.h */
 	printf_hook(rsi_dbg, 2, 3);                       /* drivers/net/wireless/rsi/rsi_main.h */

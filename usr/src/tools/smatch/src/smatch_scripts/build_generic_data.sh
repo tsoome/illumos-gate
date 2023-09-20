@@ -3,7 +3,7 @@
 # This is a generic script to parse --info output.  For the kernel, don't use
 # this script, use build_kernel_data.sh instead.
 
-NR_CPU=$(cat /proc/cpuinfo | grep ^processor | wc -l)
+NR_CPU=$(nproc)
 SCRIPT_DIR=$(dirname $0)
 DATA_DIR=smatch_data
 PROJECT=smatch_generic
@@ -58,8 +58,11 @@ fi
 if [[ ! -z $CROSS_COMPILE ]] ; then
 	KERNEL_CROSS_COMPILE="CROSS_COMPILE=$CROSS_COMPILE"
 fi
+if [[ ! -z $O ]] ; then
+	KERNEL_O="O=$O"
+fi
 
-make $KERNEL_ARCH $KERNEL_CROSS_COMPILE -j${NR_CPU} CHECK="$BIN_DIR/smatch --call-tree --info --spammy --file-output" $TARGET
+make $KERNEL_ARCH $KERNEL_CROSS_COMPILE $KERNEL_O -j${NR_CPU} CC=$BIN_DIR/cgcc CHECK="$BIN_DIR/smatch --call-tree --info --spammy --full-path --file-output" $TARGET
 
 find -name \*.c.smatch -exec cat \{\} \; -exec rm \{\} \; > smatch_warns.txt
 
@@ -71,4 +74,3 @@ mkdir -p $DATA_DIR
 mv $PROJECT.* $DATA_DIR
 
 $SCRIPT_DIR/../smatch_data/db/create_db.sh -p=$PROJECT smatch_warns.txt
-

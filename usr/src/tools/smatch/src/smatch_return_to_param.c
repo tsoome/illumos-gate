@@ -105,12 +105,8 @@ char *map_long_to_short_name_sym(const char *name, struct symbol *sym, struct sy
 	FOR_EACH_SM(__get_cur_stree(), sm) {
 		if (sm->owner == my_id) {
 			ret = map_my_state_long_to_short(sm, name, sym, new_sym, use_stack);
-			if (ret) {
-				if (local_debug)
-					sm_msg("%s: my_state: name = '%s' sm = '%s'",
-					       __func__, name, show_sm(sm));
+			if (ret)
 				return ret;
-			}
 			continue;
 		}
 	} END_FOR_EACH_SM(sm);
@@ -120,11 +116,16 @@ char *map_long_to_short_name_sym(const char *name, struct symbol *sym, struct sy
 
 char *map_call_to_param_name_sym(struct expression *expr, struct symbol **sym)
 {
+	struct expression *fake;
 	char *name;
 	struct symbol *start_sym;
 	struct smatch_state *state;
 
 	*sym = NULL;
+
+	fake = expr_get_fake_parent_expr(expr);
+	if (fake && fake->type == EXPR_ASSIGNMENT && fake->op == '=')
+		expr = fake->left;
 
 	name = expr_to_str_sym(expr, &start_sym);
 	if (!name)
@@ -185,7 +186,7 @@ free:
 	free_string(right_name);
 }
 
-void __add_return_to_param_mapping(struct expression *expr, const char *return_string)
+static void return_str_to_param_mapping(struct expression *expr, const char *return_string)
 {
 	struct expression *call;
 	char *left_name = NULL;
@@ -228,6 +229,7 @@ void register_return_to_param(int id)
 {
 	my_id = id;
 	set_dynamic_states(my_id);
+	add_return_string_hook(return_str_to_param_mapping);
 	add_modification_hook(my_id, &undef);
 }
 

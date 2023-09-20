@@ -32,7 +32,6 @@
  *
  */
 
-#include "scope.h"
 #include "smatch.h"
 #include "smatch_slist.h"
 #include "smatch_extra.h"
@@ -83,13 +82,65 @@ static int parent_is_set(const char *name, struct symbol *sym, struct smatch_sta
 	return ret;
 }
 
+static bool name_is_sym_name(const char *name, struct symbol *sym)
+{
+	if (!name || !sym || !sym->ident)
+		return false;
+
+	return strcmp(name, sym->ident->name) == 0;
+}
+
 static void extra_mod_hook(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
 {
-	if (parent_is_set(name, sym, state))
-		return;
-	if (get_param_num_from_sym(sym) < 0)
-		return;
-	set_state(my_id, name, sym, state);
+	struct symbol *param_sym;
+	struct symbol *type;
+	char *param_name;
+
+	/*
+	 * The problem in this function is that when we have a
+	 * simple assignment like "p = q", it can balloon out into
+	 * hundreds of fake assingments:
+	 * p->foo = q->foo
+	 * p->foo.one = q->foo.one
+	 *
+	 * Also when I wrote this we didn't create a fake assignments
+	 * for the p = q, in the caller but now we do.
+	 *
+	 * So we want to only track useful assignments.  And actually
+	 * that should be done in smatch_extra.c.  It should ignore unknown
+	 * values and stuff which is already in the database.  But you run
+	 * into a recursion problem.
+	 *
+	 */
+
+
+	param_name = get_param_var_sym_var_sym(name, sym, NULL, &param_sym);
+	if (!param_name || !param_sym)
+		goto free;
+	if (get_state(my_id, param_name, param_sym))
+		goto reset;
+
+	if (expr && expr->smatch_flags & Fake)
+		goto free;
+
+	type = get_type(expr);
+	if (type && (type->type == SYM_STRUCT || type->type == SYM_UNION))
+		goto free;
+
+	if (name_is_sym_name(name, sym))
+		goto free;
+
+	if (get_param_num_from_sym(param_sym) < 0)
+		goto free;
+	if (parent_is_set(param_name, param_sym, state))
+		goto free;
+
+	if (__in_buf_clear)
+		goto free;
+reset:
+	set_state(my_id, param_name, param_sym, state);
+free:
+	free_string(param_name);
 }
 
 /*
@@ -119,7 +170,7 @@ static void match_array_assignment(struct expression *expr)
 	name = expr_to_var_sym(array, &sym);
 	if (!name || !sym)
 		goto free;
-	if (get_param_num_from_sym(sym) < 0)
+	if (map_to_param(name, sym) < 0)
 		goto free;
 	get_absolute_rl(expr->right, &rl);
 	rl = cast_rl(get_type(expr->left), rl);
@@ -152,20 +203,28 @@ static char *get_two_dots(const char *name)
  * This relies on the fact that these states are stored so that
  * foo->bar is before foo->bar->baz.
  */
-static int parent_set(struct string_list *list, const char *name)
+static int parent_set(struct string_list *list, const char *param_name, struct sm_state *sm)
 {
 	char *tmp;
 	int len;
 	int ret;
 
+	if (strncmp(param_name, "(*$)->", 6) == 0 && sm->sym && sm->sym->ident) {
+		char buf[64];
+
+		snprintf(buf, sizeof(buf), "*%s", sm->sym->ident->name);
+		if (get_state(my_id, buf, sm->sym))
+			return true;
+	}
+
 	FOR_EACH_PTR(list, tmp) {
 		len = strlen(tmp);
-		ret = strncmp(tmp, name, len);
+		ret = strncmp(tmp, sm->name, len);
 		if (ret < 0)
 			continue;
 		if (ret > 0)
 			return 0;
-		if (name[len] == '-')
+		if (sm->name[len] == '-')
 			return 1;
 	} END_FOR_EACH_PTR(tmp);
 
@@ -185,44 +244,55 @@ static void print_return_value_param_helper(int return_id, char *return_ranges, 
 	char two_dot[80] = "";
 	int count = 0;
 
+	__promote_sets_to_clears(return_id, return_ranges, expr);
+
 	FOR_EACH_MY_SM(my_id, __get_cur_stree(), sm) {
+		bool untracked = false;
+
 		if (!estate_rl(sm->state))
 			continue;
 		extra = __get_state(SMATCH_EXTRA, sm->name, sm->sym);
 		if (extra) {
 			rl = rl_intersection(estate_rl(sm->state), estate_rl(extra));
 			if (!rl)
-				continue;
+				untracked = true;
 		} else {
 			rl = estate_rl(sm->state);
 		}
 
-		param = get_param_num_from_sym(sm->sym);
-		if (param < 0)
+		param = get_param_key_from_sm(sm, NULL, &param_name);
+		if (param < 0 || !param_name)
 			continue;
-		param_name = get_param_name(sm);
-		if (!param_name)
+		if (param_name[0] == '&')
 			continue;
-		if (strcmp(param_name, "$") == 0) {
+		if (strcmp(param_name, "$") == 0 ||
+		    is_recursive_member(param_name) ||
+		    is_ignored_kernel_data(param_name)) {
 			insert_string(&set_list, (char *)sm->name);
 			continue;
 		}
-		if (is_recursive_member(param_name)) {
-			insert_string(&set_list, (char *)sm->name);
+		if (untracked) {
+			if (parent_was_PARAM_CLEAR(sm->name, sm->sym))
+				continue;
+
+			sql_insert_return_states(return_id, return_ranges,
+						 UNTRACKED_PARAM, param, param_name, "");
 			continue;
 		}
 
-		if (is_ignored_kernel_data(param_name)) {
-			insert_string(&set_list, (char *)sm->name);
-			continue;
-		}
 		if (limit) {
 			char *new = get_two_dots(param_name);
+
+			/* no useful information here. */
+			if (is_whole_rl(rl) && parent_set(set_list, param_name, sm))
+				continue;
 
 			if (new) {
 				if (strcmp(new, two_dot) == 0)
 					continue;
+
 				strncpy(two_dot, new, sizeof(two_dot));
+				insert_string(&set_list, (char *)sm->name);
 				sql_insert_return_states(return_id, return_ranges,
 					 PARAM_SET, param, new, "s64min-s64max");
 				continue;
@@ -230,7 +300,7 @@ static void print_return_value_param_helper(int return_id, char *return_ranges, 
 		}
 
 		math_str = get_value_in_terms_of_parameter_math_var_sym(sm->name, sm->sym);
-		if (math_str) {
+		if (math_str && strcmp(show_rl(rl), math_str) != 0) {
 			snprintf(buf, sizeof(buf), "%s[%s]", show_rl(rl), math_str);
 			insert_string(&set_list, (char *)sm->name);
 			sql_insert_return_states(return_id, return_ranges,
@@ -240,8 +310,13 @@ static void print_return_value_param_helper(int return_id, char *return_ranges, 
 		}
 
 		/* no useful information here. */
-		if (is_whole_rl(rl) && parent_set(set_list, sm->name))
+		if (is_whole_rl(rl) && parent_set(set_list, param_name, sm))
 			continue;
+		if (is_whole_rl(rl) && parent_was_PARAM_CLEAR(sm->name, sm->sym))
+			continue;
+		if (rl_is_zero(rl) && parent_was_PARAM_CLEAR_ZERO(sm->name, sm->sym))
+			continue;
+
 		insert_string(&set_list, (char *)sm->name);
 
 		sql_insert_return_states(return_id, return_ranges,
@@ -276,14 +351,42 @@ static int possibly_empty(struct sm_state *sm)
 	return 0;
 }
 
+static bool sym_was_set(struct symbol *sym)
+{
+	char buf[80];
+
+	if (!sym || !sym->ident)
+		return false;
+
+	snprintf(buf, sizeof(buf), "%s orig", sym->ident->name);
+	if (get_comparison_strings(sym->ident->name, buf) == SPECIAL_EQUAL)
+		return false;
+
+	return true;
+}
+
 int param_was_set_var_sym(const char *name, struct symbol *sym)
 {
+	struct symbol *param_sym;
+	const char *param_name;
 	struct sm_state *sm;
 	char buf[80];
 	int len, i;
 
+	param_name = get_param_var_sym_var_sym(name, sym, NULL, &param_sym);
+	if (param_name && param_sym) {
+		name = param_name;
+		sym = param_sym;
+	}
+
 	if (!name)
 		return 0;
+
+	if (name[0] == '&')
+		name++;
+
+	if (sym_was_set(sym))
+		return true;
 
 	len = strlen(name);
 	if (len >= sizeof(buf))
@@ -310,11 +413,25 @@ int param_was_set_var_sym(const char *name, struct symbol *sym)
 	return 0;
 }
 
+static struct expression *get_unfaked_expr(struct expression *expr)
+{
+	struct expression *tmp;
+
+	if (!is_fake_var(expr))
+		return expr;
+	tmp = expr_get_fake_parent_expr(expr);
+	if (!tmp || tmp->type != EXPR_ASSIGNMENT)
+		return expr;
+	return tmp->right;
+}
+
 int param_was_set(struct expression *expr)
 {
 	char *name;
 	struct symbol *sym;
 	int ret = 0;
+
+	expr = get_unfaked_expr(expr);
 
 	name = expr_to_var_sym(expr, &sym);
 	if (!name || !sym)
@@ -324,6 +441,53 @@ int param_was_set(struct expression *expr)
 free:
 	free_string(name);
 	return ret;
+}
+
+static void match_ignored(struct expression *expr)
+{
+	struct smatch_state *state = alloc_estate_whole(get_type(expr));
+
+	set_extra_expr_mod(expr, state);
+}
+
+static void register_ignored_params_from_file(void)
+{
+	char name[256];
+	struct token *token;
+	const char *func;
+	int param;
+
+	/*
+	 * Eventually I realized that we're ignoring uninitialized variables
+	 * from these functions because in practice they're always set.  I
+	 * thought about tracking them as PARAM_LOST, but that's not really
+	 * accurate, they're just set to unknown.
+	 *
+	 */
+
+	snprintf(name, 256, "%s.ignore_uninitialized_param", option_project_str);
+	name[255] = '\0';
+	token = get_tokens_file(name);
+	if (!token)
+		return;
+	if (token_type(token) != TOKEN_STREAMBEGIN)
+		return;
+	token = token->next;
+	while (token_type(token) != TOKEN_STREAMEND) {
+		if (token_type(token) != TOKEN_IDENT)
+			return;
+		func = show_ident(token->ident);
+
+		token = token->next;
+		if (token_type(token) != TOKEN_NUMBER)
+			return;
+		param = atoi(token->number);
+
+		add_param_key_expr_hook(func, match_ignored, param, "*$", NULL);
+
+		token = token->next;
+	}
+	clear_token_alloc();
 }
 
 void register_param_set(int id)
@@ -336,5 +500,6 @@ void register_param_set(int id)
 	add_unmatched_state_hook(my_id, &unmatched_state);
 	add_merge_hook(my_id, &merge_estates);
 	add_split_return_callback(&print_return_value_param);
+	register_ignored_params_from_file();
 }
 

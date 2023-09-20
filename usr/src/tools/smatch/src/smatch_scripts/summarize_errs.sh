@@ -2,7 +2,7 @@
 
 print_help()
 {
-    echo "usage: $0 <warning file>"
+    echo "usage: $(basename $0) <warning file>"
     exit 1;
 }
 
@@ -45,22 +45,26 @@ fi
 file=$1
 if [ "$file" = "" ] ; then
     if [ -e err-list ] ; then
-	file="err-list"
+        file="err-list"
     else
-	print_help
+        print_help
     fi
 fi
 
-TXT=$(cat $file | uniq -f 2)
-
 IFS='
 '
-for sm_err in $TXT ; do
+for sm_err in $(cat $file) ; do
     file=$(echo $sm_err | cut -d ':' -f 1)
     line=$(echo $sm_err | cut -d ' ' -f 1 | cut -d ':' -f 2)
 
+    func_plus=$(echo $sm_err | cut -d ' ' -f 2-)
+    if [ "$prev" = "$func_plus" ] ; then
+        continue
+    fi
+    prev=$func_plus
+
     if [ "$file" = "$skip_file" ] ; then
-	continue
+        continue
     fi
     skip_file=""
 
@@ -68,10 +72,10 @@ for sm_err in $TXT ; do
     last=$(echo $last | sed -e 's/line .*//')
 
     if [ "$NEW" = "Y" ] ; then
-	if grep -F "$last" *summary* > /dev/null ; then
-	    echo "skipping $sm_err"
-	    continue
-	fi
+        if grep -F "$last" *summary* > /dev/null ; then
+            echo "skipping $sm_err"
+            continue
+        fi
     fi
 
     set_title $sm_err
@@ -81,18 +85,18 @@ for sm_err in $TXT ; do
 
     ans="?"
     while echo $ans | grep '?' > /dev/null ; do
-	echo -n "[? for help]: "
-	read ans
-	if echo $ans | grep n > /dev/null ; then
-	    continue 2
-	fi
-	if echo $ans | grep f > /dev/null ; then
-	    skip_file=$file
-	    continue 2
-	fi
-	if echo $ans | grep '?' > /dev/null ; then
-	    cmd_help
-	fi
+        echo -n "[? for help]: "
+        read ans
+        if echo $ans | grep n > /dev/null ; then
+            continue 2
+        fi
+        if echo $ans | grep f > /dev/null ; then
+            skip_file=$file
+            continue 2
+        fi
+        if echo $ans | grep '?' > /dev/null ; then
+            cmd_help
+        fi
     done
 
     # I have this in my .vimrc
@@ -103,4 +107,3 @@ for sm_err in $TXT ; do
 
     save_thoughts
 done
-IFS=

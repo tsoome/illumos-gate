@@ -1,10 +1,12 @@
 #!/bin/bash
 
+set -e
+
 PROJECT=kernel
 
 function usage {
     echo
-    echo "Usage:  $0"
+    echo "Usage:  $(basename $0)"
     echo "Updates the smatch_data/ directory and builds the smatch database"
     echo
     exit 1

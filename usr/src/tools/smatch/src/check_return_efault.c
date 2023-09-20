@@ -95,6 +95,10 @@ static void match_return_call(struct expression *ret_value)
 	    strstr(cur_func, "_from_user"))
 		return;
 
+	if (strncmp(cur_func, "copy_from_", 10) == 0 ||
+	    strncmp(cur_func, "copy_to_", 8) == 0)
+		return;
+
 	fn = strip_expr(ret_value->fn);
 	if (fn->type != EXPR_SYMBOL)
 		return;
@@ -106,10 +110,9 @@ static void match_return_call(struct expression *ret_value)
 		return;
 
 	rl = db_return_vals_from_str(get_function());
-	if (!rl)
+	if (rl && !sval_is_negative(rl_min(rl)))
 		return;
-
-	if (!sval_is_negative(rl_min(rl)))
+	if (type_unsigned(cur_func_return_type()))
 		return;
 	sm_warning("maybe return -EFAULT instead of the bytes remaining?");
 }

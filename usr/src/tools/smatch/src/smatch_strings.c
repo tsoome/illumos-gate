@@ -55,7 +55,7 @@ struct expression *fake_string_from_mtag(mtag_t tag)
 	str = get_string_from_mtag(tag);
 	if (!str)
 		return NULL;
-	return string_expression(str);
+	return gen_string_expression(str);
 }
 
 static void match_strcpy(const char *fn, struct expression *expr, void *unused)
@@ -88,12 +88,18 @@ struct state_list *get_strings(struct expression *expr)
 		struct state_list *true_strings = NULL;
 		struct state_list *false_strings = NULL;
 
-		if (known_condition_true(expr->conditional))
-			return get_strings(expr->cond_true);
+		if (known_condition_true(expr->conditional)) {
+			if (expr->cond_true)
+				return get_strings(expr->cond_true);
+			return get_strings(expr->conditional);
+		}
 		if (known_condition_false(expr->conditional))
 			return get_strings(expr->cond_false);
 
-		true_strings = get_strings(expr->cond_true);
+		if (expr->cond_true)
+			true_strings = get_strings(expr->cond_true);
+		else
+			true_strings = get_strings(expr->conditional);
 		false_strings = get_strings(expr->cond_false);
 		concat_ptr_list((struct ptr_list *)true_strings, (struct ptr_list **)&false_strings);
 		free_slist(&true_strings);
@@ -130,7 +136,7 @@ static void match_string(struct expression *expr)
 {
 	mtag_t tag;
 
-	if (expr->type != EXPR_STRING || !expr->string->data)
+	if (expr->type != EXPR_STRING)
 		return;
 	if (expr->string->length > 255)
 		return;
@@ -138,7 +144,7 @@ static void match_string(struct expression *expr)
 	if (!get_string_mtag(expr, &tag))
 		return;
 
-	cache_sql(NULL, NULL, "insert into mtag_data values (%lld, %d, %d, '%q');",
+	cache_sql(NULL, NULL, "insert or ignore into mtag_data values (%lld, %d, %d, '%q');",
 		  tag, 0, STRING_VALUE, escape_newlines(expr->string->data));
 }
 

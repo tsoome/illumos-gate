@@ -36,7 +36,6 @@
 #include "smatch_extra.h"
 
 static int my_id;
-static int tracked;
 
 STATE(untracked);
 STATE(lost);
@@ -45,8 +44,6 @@ typedef void (untracked_hook)(struct expression *call, int param);
 DECLARE_PTR_LIST(untracked_hook_list, untracked_hook *);
 static struct untracked_hook_list *untracked_hooks;
 static struct untracked_hook_list *lost_hooks;
-
-struct int_stack *tracked_stack;
 
 void add_untracked_param_hook(void (func)(struct expression *call, int param))
 {
@@ -80,11 +77,6 @@ static void call_lost_callbacks(struct expression *expr, int param)
 	} END_FOR_EACH_PTR(fn);
 }
 
-static void assume_tracked(struct expression *call_expr, int param, char *key, char *value)
-{
-	tracked = 1;
-}
-
 static char *get_array_from_key(struct expression *expr, int param, const char *key, struct symbol **sym)
 {
 	struct expression *arg;
@@ -112,7 +104,7 @@ static void mark_untracked_lost(struct expression *expr, int param, const char *
 	if (expr->type != EXPR_CALL)
 		return;
 
-	name = return_state_to_var_sym(expr, param, key, &sym);
+	name = get_name_sym_from_param_key(expr, param, key, &sym);
 	if (!name || !sym) {
 		name = get_array_from_key(expr, param, key, &sym);
 		if (!name || !sym)
@@ -136,6 +128,16 @@ void mark_untracked(struct expression *expr, int param, char *key, char *value)
 void mark_lost(struct expression *expr, int param, char *key, char *value)
 {
 	mark_untracked_lost(expr, param, key, LOST_PARAM);
+}
+
+void mark_call_params_untracked(struct expression *call)
+{
+	struct expression *arg;
+	int i = 0;
+
+	FOR_EACH_PTR(call->args, arg) {
+		mark_untracked(call, i++, "$", NULL);
+	} END_FOR_EACH_PTR(arg);
 }
 
 static int lost_in_va_args(struct expression *expr)
@@ -163,13 +165,8 @@ static void match_after_call(struct expression *expr)
 	struct symbol *type;
 	int i;
 
-	if (lost_in_va_args(expr))
-		tracked = 0;
-
-	if (tracked) {
-		tracked = 0;
+	if (!lost_in_va_args(expr))
 		return;
-	}
 
 	i = -1;
 	FOR_EACH_PTR(expr->args, arg) {
@@ -180,10 +177,10 @@ static void match_after_call(struct expression *expr)
 			continue;
 
 		call_untracked_callbacks(expr, i);
+		call_lost_callbacks(expr, i);
 		set_state_expr(my_id, arg, &untracked);
 	} END_FOR_EACH_PTR(arg);
 }
-
 
 static void mark_all_params(int return_id, char *return_ranges, int type)
 {
@@ -243,20 +240,20 @@ static void print_untracked_params(int return_id, char *return_ranges, struct ex
 	} END_FOR_EACH_PTR(arg);
 }
 
-static void match_param_assign(struct expression *expr)
+static void match_assign(struct expression *expr)
 {
 	struct expression *right;
-	struct symbol *type;
 	int param;
 
-	if (__in_fake_assign)
+	if (is_fake_var_assign(expr))
 		return;
 
 	right = strip_expr(expr->right);
-	type = get_type(right);
-	if (!type || type->type != SYM_PTR)
-		return;
 
+	if (right->type != EXPR_SYMBOL)
+		return;
+	if (!is_pointer(expr->right))
+		return;
 	param = get_param_num(right);
 	if (param < 0)
 		return;
@@ -264,16 +261,15 @@ static void match_param_assign(struct expression *expr)
 	set_state_expr(my_id, right, &untracked);
 }
 
-
 static void match_param_assign_in_asm(struct statement *stmt)
 {
-
-	struct expression *tmp, *expr;
+	struct expression *expr;
+	struct asm_operand *op;
 	struct symbol *type;
 	int param;
 
-	FOR_EACH_PTR(stmt->asm_inputs, tmp) {
-		expr = strip_expr(tmp->expr);
+	FOR_EACH_PTR(stmt->asm_inputs, op) {
+		expr = strip_expr(op->expr);
 		type = get_type(expr);
 		if (!type || type->type != SYM_PTR)
 			continue;
@@ -281,33 +277,19 @@ static void match_param_assign_in_asm(struct statement *stmt)
 		if (param < 0)
 			continue;
 		set_state_expr(my_id, expr, &untracked);
-	} END_FOR_EACH_PTR(tmp);
-}
-
-static void match_inline_start(struct expression *expr)
-{
-	push_int(&tracked_stack, tracked);
-}
-
-static void match_inline_end(struct expression *expr)
-{
-	tracked = pop_int(&tracked_stack);
+	} END_FOR_EACH_PTR(op);
 }
 
 void register_untracked_param(int id)
 {
 	my_id = id;
 
-	select_return_states_hook(INTERNAL, &assume_tracked);
 	select_return_states_hook(UNTRACKED_PARAM, &mark_untracked);
 	select_return_states_hook(LOST_PARAM, &mark_lost);
 	add_hook(&match_after_call, FUNCTION_CALL_HOOK_AFTER_DB);
 
 	add_split_return_callback(&print_untracked_params);
 
-	add_hook(&match_param_assign, ASSIGNMENT_HOOK);
+	add_hook(&match_assign, ASSIGNMENT_HOOK);
 	add_hook(&match_param_assign_in_asm, ASM_HOOK);
-
-	add_hook(&match_inline_start, INLINE_FN_START);
-	add_hook(&match_inline_end, INLINE_FN_END);
 }

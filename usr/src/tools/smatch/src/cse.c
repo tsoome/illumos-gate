@@ -80,6 +80,10 @@ void cse_collect(struct instruction *insn)
 		hash += hashval(insn->src1);
 		break;
 
+	case OP_LABEL:
+		hash += hashval(insn->bb_true);
+		break;
+
 	case OP_SETVAL:
 		hash += hashval(insn->val);
 		break;
@@ -215,6 +219,11 @@ static int insn_compare(const void *_i1, const void *_i2)
 			return i1->src1 < i2->src1 ? -1 : 1;
 		break;
 
+	case OP_LABEL:
+		if (i1->bb_true != i2->bb_true)
+			return i1->bb_true < i2->bb_true ? -1 : 1;
+		break;
+
 	case OP_SETVAL:
 		if (i1->val != i2->val)
 			return i1->val < i2->val ? -1 : 1;
@@ -289,14 +298,6 @@ static inline void remove_instruction(struct instruction_list **list, struct ins
 	delete_ptr_list_entry((struct ptr_list **)list, insn, count);
 }
 
-static void add_instruction_to_end(struct instruction *insn, struct basic_block *bb)
-{
-	struct instruction *br = delete_last_instruction(&bb->insns);
-	insn->bb = bb;
-	add_instruction(&bb->insns, insn);
-	add_instruction(&bb->insns, br);
-}
-
 static struct instruction * try_to_cse(struct entrypoint *ep, struct instruction *i1, struct instruction *i2)
 {
 	struct basic_block *b1, *b2, *common;
@@ -334,7 +335,7 @@ static struct instruction * try_to_cse(struct entrypoint *ep, struct instruction
 	if (common) {
 		i1 = cse_one_instruction(i2, i1);
 		remove_instruction(&b1->insns, i1, 1);
-		add_instruction_to_end(i1, common);
+		insert_last_instruction(common, i1);
 	} else {
 		i1 = i2;
 	}

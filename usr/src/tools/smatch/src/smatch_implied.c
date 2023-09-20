@@ -64,22 +64,35 @@
 #include "smatch_extra.h"
 
 char *implied_debug_msg;
+static char *ignore_implications;
 
 bool implications_off;
 
-#define implied_debug 0
-#define DIMPLIED(msg...) do { if (implied_debug) printf(msg); } while (0)
+bool implied_debug;
+
+#define full_debug 0
+#define DIMPLIED(msg...) do { if (full_debug) printf(msg); } while (0)
 
 bool debug_implied(void)
 {
-	if (option_debug)
-		return true;
-	return implied_debug;
+	return option_debug || implied_debug || full_debug;
+}
+
+void turn_off_implications(int id)
+{
+	ignore_implications[id] = true;
+}
+
+static bool implications_turned_off(int owner)
+{
+	if (owner >= 0 && owner < num_checks)
+		return ignore_implications[owner];
+	return false;
 }
 
 /*
  * tmp_range_list():
- * It messes things up to free range list allocations.  This helper fuction
+ * It messes things up to free range list allocations.  This helper function
  * lets us reuse memory instead of doing new allocations.
  */
 static struct range_list *tmp_range_list(struct symbol *type, long long num)
@@ -102,24 +115,24 @@ static const char *show_comparison(int op)
 
 static void print_debug_tf(struct sm_state *sm, int istrue, int isfalse)
 {
-	if (!implied_debug && !option_debug)
+	if (!full_debug && !option_debug)
 		return;
 
 	if (istrue && isfalse) {
 		printf("%s: %d: does not exist.\n", show_sm(sm), sm->line);
 	} else if (istrue) {
 		printf("'%s = %s' from %d is true. %s[stree %d]\n", sm->name, show_state(sm->state),
-			sm->line, sm->merged ? "[merged]" : "[leaf]",
+			sm->line, is_leaf(sm) ? "[leaf]" : "[merged]",
 			get_stree_id(sm->pool));
 	} else if (isfalse) {
 		printf("'%s = %s' from %d is false. %s[stree %d]\n", sm->name, show_state(sm->state),
 			sm->line,
-			sm->merged ? "[merged]" : "[leaf]",
+			is_leaf(sm) ? "[leaf]" : "[merged]",
 			get_stree_id(sm->pool));
 	} else {
 		printf("'%s = %s' from %d could be true or false. %s[stree %d]\n", sm->name,
 			show_state(sm->state), sm->line,
-			sm->merged ? "[merged]" : "[leaf]",
+			is_leaf(sm) ? "[leaf]" : "[merged]",
 			get_stree_id(sm->pool));
 	}
 }
@@ -146,7 +159,7 @@ static int create_fake_history(struct sm_state *sm, int comparison, struct range
 
 	if (is_merged(sm) || sm->left || sm->right)
 		return 0;
-	if (!rl_to_sval(rl, &sval))
+	if (comparison != PARAM_LIMIT && !rl_to_sval(rl, &sval))
 		return 0;
 	if (!estate_rl(sm->state))
 		return 0;
@@ -173,7 +186,7 @@ static int create_fake_history(struct sm_state *sm, int comparison, struct range
 		return 0;
 	}
 
-	if (implied_debug)
+	if (full_debug)
 		sm_msg("fake_history: %s vs %s.  %s %s %s. --> T: %s F: %s",
 		       sm->name, show_rl(rl), sm->state->name, show_comparison(comparison), show_rl(rl),
 		       show_rl(true_rl), show_rl(false_rl));
@@ -197,6 +210,7 @@ static int create_fake_history(struct sm_state *sm, int comparison, struct range
 	true_sm->pool = true_stree;
 	false_sm->pool = false_stree;
 
+	sm->leaf = 1;
 	sm->merged = 1;
 	sm->left = true_sm;
 	sm->right = false_sm;
@@ -273,9 +287,8 @@ static bool possibly_false_helper(struct range_list *var_rl, int comparison, str
 		struct range_list *intersect;
 
 		intersect = rl_intersection(var_rl, rl);
-		if (!rl_equiv(var_rl, intersect))
-			return true;
-		return false;
+		/* if it's not equiv then it's possibly false */
+		return !rl_equiv(var_rl, intersect);
 	}
 	return possibly_false_rl(var_rl, comparison, rl);
 }
@@ -360,7 +373,7 @@ static void __separate_pools(struct sm_state *sm, int comparison, struct range_l
 	gettimeofday(&now, NULL);
 	timersub(&now, start_time, &diff);
 	if (diff.tv_sec >= 1) {
-		if (implied_debug) {
+		if (full_debug) {
 			sm_msg("debug: %s: implications taking too long.  (%s %s %s)",
 			       __func__, sm->state->name, show_comparison(comparison), show_rl(rl));
 		}
@@ -397,20 +410,20 @@ static void separate_pools(struct sm_state *sm, int comparison, struct range_lis
 	gettimeofday(&start_time, NULL);
 	__separate_pools(sm, comparison, rl, true_stack, &maybe_stack, false_stack, checked, mixed, sm, &start_time);
 
-	if (implied_debug) {
+	if (full_debug) {
 		struct sm_state *sm;
 
 		FOR_EACH_PTR(*true_stack, sm) {
-			sm_msg("TRUE %s [stree %d]", show_sm(sm), get_stree_id(sm->pool));
+			sm_msg("TRUE %s [stree %d %p]", show_sm(sm), get_stree_id(sm->pool), sm->pool);
 		} END_FOR_EACH_PTR(sm);
 
 		FOR_EACH_PTR(maybe_stack, sm) {
-			sm_msg("MAYBE %s %s[stree %d]",
-			       show_sm(sm), sm->merged ? "(merged) ": "", get_stree_id(sm->pool));
+			sm_msg("MAYBE %s %s[stree %d %p]",
+			       show_sm(sm), sm->merged ? "(merged) ": "", get_stree_id(sm->pool), sm->pool);
 		} END_FOR_EACH_PTR(sm);
 
 		FOR_EACH_PTR(*false_stack, sm) {
-			sm_msg("FALSE %s [stree %d]", show_sm(sm), get_stree_id(sm->pool));
+			sm_msg("FALSE %s [stree %d %p]", show_sm(sm), get_stree_id(sm->pool), sm->pool);
 		} END_FOR_EACH_PTR(sm);
 	}
 	/* if it's a maybe then remove it */
@@ -431,7 +444,7 @@ static int sm_in_keep_leafs(struct sm_state *sm, const struct state_list *keep_g
 	struct sm_state *tmp, *old;
 
 	FOR_EACH_PTR(keep_gates, tmp) {
-		if (is_merged(tmp))
+		if (!is_leaf(tmp))
 			continue;
 		old = get_sm_state_stree(tmp->pool, sm->owner, sm->name, sm->sym);
 		if (!old)
@@ -534,7 +547,7 @@ struct sm_state *filter_pools(struct sm_state *sm,
 	if (!is_merged(sm) || pool_in_pools(sm->pool, keep_stack) || sm_in_keep_leafs(sm, keep_stack)) {
 		DIMPLIED("%s: keep %s (%s, %s, %s): %s\n", __func__, sm->state->name,
 			is_merged(sm) ? "merged" : "not merged",
-			pool_in_pools(sm->pool, keep_stack) ? "not in keep pools" : "in keep pools",
+			pool_in_pools(sm->pool, keep_stack) ? "in keep pools" : "not in keep pools",
 			sm_in_keep_leafs(sm, keep_stack) ? "reachable keep leaf" : "no keep leaf",
 			sm_state_info(sm));
 		return sm;
@@ -649,6 +662,18 @@ static void separate_and_filter(struct sm_state *sm, int comparison, struct rang
 
 	separate_pools(sm, comparison, rl, &true_stack, &false_stack, NULL, mixed);
 
+	if (full_debug) {
+		struct sm_state *sm;
+
+		FOR_EACH_PTR(true_stack, sm) {
+			sm_msg("TRUE POOL: %p", sm->pool);
+		} END_FOR_EACH_PTR(sm);
+
+		FOR_EACH_PTR(false_stack, sm) {
+			sm_msg("FALSE POOL: %p", sm->pool);
+		} END_FOR_EACH_PTR(sm);
+	}
+
 	DIMPLIED("filtering true stack.\n");
 	*true_states = filter_stack(sm, pre_stree, false_stack, true_stack);
 	DIMPLIED("filtering false stack.\n");
@@ -658,9 +683,8 @@ static void separate_and_filter(struct sm_state *sm, int comparison, struct rang
 
 	gettimeofday(&time_after, NULL);
 	sec = time_after.tv_sec - time_before.tv_sec;
-	if (option_timeout && sec > option_timeout) {
-		sm_perror("Function too hairy.  Ignoring implications after %d seconds.", sec);
-	}
+	if (option_timeout && sec > option_timeout)
+		sm_msg("Function too hairy.  Implications taking too long: %d seconds.", sec);
 }
 
 static struct expression *get_last_expr(struct statement *stmt)
@@ -683,6 +707,7 @@ static struct expression *get_last_expr(struct statement *stmt)
 static struct expression *get_left_most_expr(struct expression *expr)
 {
 	struct statement *compound;
+	struct expression *fake;
 
 	compound = get_expression_statement(expr);
 	if (compound)
@@ -691,6 +716,9 @@ static struct expression *get_left_most_expr(struct expression *expr)
 	expr = strip_parens(expr);
 	if (expr->type == EXPR_ASSIGNMENT)
 		return get_left_most_expr(expr->left);
+	fake = expr_get_fake_parent_expr(expr);
+	if (fake && fake->type == EXPR_ASSIGNMENT)
+		return fake->left;
 	return expr;
 }
 
@@ -788,13 +816,6 @@ static int handle_zero_comparison(struct expression *expr,
 	if (expr->type == EXPR_POSTOP)
 		expr = strip_expr(expr->unop);
 
-	if (expr->type == EXPR_ASSIGNMENT) {
-		/* most of the time ->pools will be empty here because we
-		   just set the state, but if have assigned a conditional
-		   function there are implications. */
-		expr = expr->left;
-	}
-
 	name = expr_to_var_sym(expr, &sym);
 	if (!name || !sym)
 		goto free;
@@ -864,56 +885,6 @@ static int handled_by_extra_states(struct expression *expr,
 		return handle_zero_comparison(expr, implied_true, implied_false);
 }
 
-static int handled_by_parsed_conditions(struct expression *expr,
-					struct stree **implied_true,
-					struct stree **implied_false)
-{
-	struct state_list *true_stack = NULL;
-	struct state_list *false_stack = NULL;
-	struct stree *pre_stree;
-	struct sm_state *sm;
-
-	sm = parsed_condition_implication_hook(expr, &true_stack, &false_stack);
-	if (!sm)
-		return 0;
-
-	pre_stree = clone_stree(__get_cur_stree());
-
-	*implied_true = filter_stack(sm, pre_stree, false_stack, true_stack);
-	*implied_false = filter_stack(sm, pre_stree, true_stack, false_stack);
-
-	free_stree(&pre_stree);
-	free_slist(&true_stack);
-	free_slist(&false_stack);
-
-	return 1;
-}
-
-static int handled_by_stored_conditions(struct expression *expr,
-					struct stree **implied_true,
-					struct stree **implied_false)
-{
-	struct state_list *true_stack = NULL;
-	struct state_list *false_stack = NULL;
-	struct stree *pre_stree;
-	struct sm_state *sm;
-
-	sm = stored_condition_implication_hook(expr, &true_stack, &false_stack);
-	if (!sm)
-		return 0;
-
-	pre_stree = clone_stree(__get_cur_stree());
-
-	*implied_true = filter_stack(sm, pre_stree, false_stack, true_stack);
-	*implied_false = filter_stack(sm, pre_stree, true_stack, false_stack);
-
-	free_stree(&pre_stree);
-	free_slist(&true_stack);
-	free_slist(&false_stack);
-
-	return 1;
-}
-
 static struct stree *saved_implied_true;
 static struct stree *saved_implied_false;
 static struct stree *extra_saved_implied_true;
@@ -947,8 +918,17 @@ static void get_tf_states(struct expression *expr,
 			  struct stree **implied_true,
 			  struct stree **implied_false)
 {
-	if (handled_by_parsed_conditions(expr, implied_true, implied_false))
-		return;
+	struct state_list *true_stack = NULL;
+	struct state_list *false_stack = NULL;
+	struct stree *pre_stree;
+	struct sm_state *sm;
+
+	while (expr->type == EXPR_ASSIGNMENT && expr->op == '=')
+		expr = strip_parens(expr->left);
+
+	sm = parsed_condition_implication_hook(expr, &true_stack, &false_stack);
+	if (sm)
+		goto filter;
 
 	if (handled_by_comparison_hook(expr, implied_true, implied_false)) {
 		separate_implication_states(implied_true, implied_false, comparison_id);
@@ -960,8 +940,20 @@ static void get_tf_states(struct expression *expr,
 		return;
 	}
 
-	if (handled_by_stored_conditions(expr, implied_true, implied_false))
-		return;
+	sm = stored_condition_implication_hook(expr, &true_stack, &false_stack);
+	if (sm)
+		goto filter;
+
+	return;
+filter:
+	pre_stree = clone_stree(__get_cur_stree());
+
+	*implied_true = filter_stack(sm, pre_stree, false_stack, true_stack);
+	*implied_false = filter_stack(sm, pre_stree, true_stack, false_stack);
+
+	free_stree(&pre_stree);
+	free_slist(&true_stack);
+	free_slist(&false_stack);
 }
 
 static void save_implications_hook(struct expression *expr)
@@ -975,8 +967,8 @@ static void set_implied_states(struct expression *expr)
 {
 	struct sm_state *sm;
 
-	if (implied_debug &&
-	    (expr || saved_implied_true || saved_implied_false)) {
+	if ((full_debug || implied_debug) &&
+	    (saved_implied_true || saved_implied_false)) {
 		char *name;
 
 		name = expr_to_str(expr);
@@ -988,11 +980,15 @@ static void set_implied_states(struct expression *expr)
 	}
 
 	FOR_EACH_SM(saved_implied_true, sm) {
+		if (implications_turned_off(sm->owner))
+			continue;
 		__set_true_false_sm(sm, NULL);
 	} END_FOR_EACH_SM(sm);
 	free_stree(&saved_implied_true);
 
 	FOR_EACH_SM(saved_implied_false, sm) {
+		if (implications_turned_off(sm->owner))
+			continue;
 		__set_true_false_sm(NULL, sm);
 	} END_FOR_EACH_SM(sm);
 	free_stree(&saved_implied_false);
@@ -1004,7 +1000,7 @@ static void set_extra_implied_states(struct expression *expr)
 	saved_implied_false = extra_saved_implied_false;
 	extra_saved_implied_true = NULL;
 	extra_saved_implied_false = NULL;
-	set_implied_states(NULL);
+	set_implied_states(expr);
 }
 
 void param_limit_implications(struct expression *expr, int param, char *key, char *value, struct stree **implied)
@@ -1063,6 +1059,13 @@ void param_limit_implications(struct expression *expr, int param, char *key, cha
 		left_name = expr_to_var_sym(orig_expr->left, &left_sym);
 
 	FOR_EACH_SM(implied_true, tmp) {
+
+		if (implied_debug)
+			sm_msg("param_implication: param='%s' limit='%s' sm='%s'", name, show_rl(limit), show_sm(tmp));
+
+		if (implications_turned_off(tmp->owner))
+			continue;
+
 		/*
 		 * What we're trying to do here is preserve the sm state so that
 		 * smatch extra doesn't create a new sm state when it parses the
@@ -1075,8 +1078,7 @@ void param_limit_implications(struct expression *expr, int param, char *key, cha
 			continue;
 		}
 
-		// TODO why can't this just be __set_sm()?
-		__set_sm_fake_stree(tmp);
+		__set_sm(tmp);
 	} END_FOR_EACH_SM(tmp);
 
 	free_stree(&implied_true);
@@ -1138,15 +1140,20 @@ static void match_end_func(struct symbol *sym)
 static void get_tf_stacks_from_pool(struct sm_state *gate_sm,
 				    struct sm_state *pool_sm,
 				    struct state_list **true_stack,
-				    struct state_list **false_stack)
+				    struct state_list **false_stack,
+				    int *recurse_cnt)
 {
 	struct sm_state *tmp;
 	int possibly_true = 0;
 
+	if ((*recurse_cnt)++ >= 100)
+		return;
+
 	if (!gate_sm)
 		return;
 
-	if (strcmp(gate_sm->state->name, pool_sm->state->name) == 0) {
+	if (is_leaf(gate_sm) &&
+	    strcmp(gate_sm->state->name, pool_sm->state->name) == 0) {
 		add_ptr_list(true_stack, pool_sm);
 		return;
 	}
@@ -1163,8 +1170,8 @@ static void get_tf_stacks_from_pool(struct sm_state *gate_sm,
 		return;
 	}
 
-	get_tf_stacks_from_pool(gate_sm->left, pool_sm, true_stack, false_stack);
-	get_tf_stacks_from_pool(gate_sm->right, pool_sm, true_stack, false_stack);
+	get_tf_stacks_from_pool(gate_sm->left, pool_sm, true_stack, false_stack, recurse_cnt);
+	get_tf_stacks_from_pool(gate_sm->right, pool_sm, true_stack, false_stack, recurse_cnt);
 }
 
 /*
@@ -1180,11 +1187,12 @@ void overwrite_states_using_pool(struct sm_state *gate_sm, struct sm_state *pool
 	struct stree *pre_stree;
 	struct stree *implied_true;
 	struct sm_state *tmp;
+	int recurse_cnt = 0;
 
 	if (!pool_sm->pool)
 		return;
 
-	get_tf_stacks_from_pool(gate_sm, pool_sm, &true_stack, &false_stack);
+	get_tf_stacks_from_pool(gate_sm, pool_sm, &true_stack, &false_stack, &recurse_cnt);
 
 	pre_stree = clone_stree(__get_cur_stree());
 
@@ -1195,7 +1203,7 @@ void overwrite_states_using_pool(struct sm_state *gate_sm, struct sm_state *pool
 	free_slist(&false_stack);
 
 	FOR_EACH_SM(implied_true, tmp) {
-		set_state(tmp->owner, tmp->name, tmp->sym, tmp->state);
+		__set_sm(tmp);
 	} END_FOR_EACH_SM(tmp);
 
 	free_stree(&implied_true);
@@ -1243,6 +1251,9 @@ void __comparison_match_condition(struct expression *expr);
 void __stored_condition(struct expression *expr);
 void register_implications(int id)
 {
+	ignore_implications = malloc(num_checks);
+	memset(ignore_implications, 0, num_checks);
+
 	add_hook(&save_implications_hook, CONDITION_HOOK);
 	add_hook(&set_implied_states, CONDITION_HOOK);
 	add_hook(&__extra_match_condition, CONDITION_HOOK);

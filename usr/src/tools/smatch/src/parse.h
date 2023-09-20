@@ -26,6 +26,7 @@
  */
 
 #include "symbol.h"
+#include "expression.h"
 
 enum statement_type {
 	STMT_NONE,
@@ -73,6 +74,7 @@ struct statement {
 		};
 		struct /* labeled_struct */ {
 			struct symbol *label_identifier;
+			struct scope *label_scope;
 			struct statement *label_statement;
 		};
 		struct /* case_struct */ {
@@ -107,8 +109,8 @@ struct statement {
 		};
 		struct /* asm */ {
 			struct expression *asm_string;
-			struct expression_list *asm_outputs;
-			struct expression_list *asm_inputs;
+			struct asm_operand_list *asm_outputs;
+			struct asm_operand_list *asm_inputs;
 			struct expression_list *asm_clobbers;
 			struct symbol_list *asm_labels;
 		};
@@ -124,7 +126,8 @@ extern struct symbol_list *function_computed_target_list;
 extern struct statement_list *function_computed_goto_list;
 
 extern struct token *parse_expression(struct token *, struct expression **);
-extern struct symbol *label_symbol(struct token *token);
+extern struct symbol *label_symbol(struct token *token, int used);
+extern void check_label_usage(struct symbol *label, struct position use_pos);
 
 extern int show_statement(struct statement *);
 extern void show_statement_list(struct statement_list *, const char *);
@@ -143,12 +146,40 @@ static inline void stmt_set_parent_stmt(struct statement *stmt, struct statement
 {
 	if (!stmt)
 		return;
+	if (stmt->parent)
+		return;
 	stmt->parent = parent;
 }
 
 static inline struct statement *stmt_get_parent_stmt(struct statement *stmt)
 {
+	if (!stmt)
+		return NULL;
+	if ((unsigned long)stmt->parent & 0x1UL)
+		return NULL;
 	return stmt->parent;
 }
+
+static inline void stmt_set_parent_expr(struct statement *stmt, struct expression *parent)
+{
+	if (!stmt || !parent)
+		return;
+	if (stmt->parent)
+		return;
+	if (parent->smatch_flags & Fake)
+		return;
+	stmt->parent = (void *)((unsigned long)parent | 0x1UL);
+}
+
+static inline struct expression *stmt_get_parent_expr(struct statement *stmt)
+{
+	if (!stmt)
+		return NULL;
+	if (!((unsigned long)stmt->parent & 0x1UL))
+		return NULL;
+	return (void *)((unsigned long)stmt->parent & ~0x1UL);
+}
+
+struct token *expect(struct token *, int, const char *);
 
 #endif /* PARSE_H */

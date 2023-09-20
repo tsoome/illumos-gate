@@ -7,6 +7,18 @@
 ///
 // Pointer list manipulation
 // -------------------------
+//
+// The data structure handled here is designed to hold pointers
+// but two special cases need to be avoided or need special care:
+// * NULL is used by {PREPARE,NEXT}_PTR_LIST() to indicate the end-of-list.
+//   Thus, NULL can't be stored in lists using this API but is fine to
+//   use with FOR_EACH_PTR() and its variants.
+// * VOID is used to replace a removed pseudo 'usage'. Since phi-nodes
+//   (OP_PHI) use a list to store their operands, a VOID in a phi-node
+//   list must be ignored since it represents a removed operand. As
+//   consequence, VOIDs must never be used as phi-node operand.
+//   This is fine since phi-nodes make no sense with void values
+//   but VOID is also used for invalid types and in case of errors.
 
 #include <stdlib.h>
 #include <string.h>
@@ -143,10 +155,10 @@ void *ptr_list_nth_entry(struct ptr_list *list, unsigned int idx)
 // @head: the list to be linearized
 // @arr: a ``void*`` array to fill with @head's entries
 // @max: the maximum number of entries to store into @arr
-// @return: the number of entries linearized.
+// @return: the number of entries in the list.
 //
 // Linearize the entries of a list up to a total of @max,
-// and return the nr of entries linearized.
+// and return the number of entries in the list.
 //
 // The array to linearize into (@arr) should really
 // be ``void *x[]``, but we want to let people fill in any kind
@@ -159,14 +171,14 @@ int linearize_ptr_list(struct ptr_list *head, void **arr, int max)
 
 		do {
 			int i = list->nr;
+			nr += i;
+			if (max == 0)
+				continue;
 			if (i > max) 
 				i = max;
 			memcpy(arr, list->list, i*sizeof(void *));
 			arr += i;
-			nr += i;
 			max -= i;
-			if (!max)
-				break;
 		} while ((list = list->next) != head);
 	}
 	return nr;
@@ -216,7 +228,7 @@ restart:
 
 ///
 // split a ptrlist block
-// @head: the ptrlist block to be splitted
+// @head: the ptrlist block to be split
 //
 // A new block is inserted just after @head and the entries
 // at the half end of @head are moved to this new block.
@@ -370,7 +382,7 @@ out:
 ///
 // remove the last entry of a ptrlist
 // @head: a pointer to the list
-// @return: the last elemant of the list or NULL if the list is empty.
+// @return: the last element of the list or NULL if the list is empty.
 //
 // :note: this doesn't repack the list
 void * undo_ptr_list_last(struct ptr_list **head)
@@ -396,7 +408,7 @@ void * undo_ptr_list_last(struct ptr_list **head)
 ///
 // remove the last entry and repack the list
 // @head: a pointer to the list
-// @return: the last elemant of the list or NULL if the list is empty.
+// @return: the last element of the list or NULL if the list is empty.
 void * delete_ptr_list_last(struct ptr_list **head)
 {
 	void *ptr = NULL;

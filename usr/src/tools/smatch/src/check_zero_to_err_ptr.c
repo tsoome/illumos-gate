@@ -21,6 +21,21 @@
 
 static int my_id;
 
+static bool is_select_assign(struct expression *expr)
+{
+	/* select assignments are faked in smatch_conditions.c */
+	expr = expr_get_parent_expr(expr);
+	if (!expr || expr->type != EXPR_ASSIGNMENT)
+		return false;
+	expr = expr_get_parent_expr(expr);
+	if (!expr)
+		return false;
+	if (expr->type == EXPR_CONDITIONAL ||
+	    expr->type == EXPR_SELECT)
+		return true;
+	return false;
+}
+
 static int is_comparison_call(struct expression *expr)
 {
 	expr = expr_get_parent_expr(expr);
@@ -29,6 +44,25 @@ static int is_comparison_call(struct expression *expr)
 	if (expr->op != SPECIAL_EQUAL && expr->op != SPECIAL_NOTEQUAL)
 		return 0;
 	return 1;
+}
+
+static bool is_switch_condition(struct expression *expr)
+{
+	struct statement *stmt;
+
+	stmt = expr_get_parent_stmt(expr);
+	if (stmt && stmt->type == STMT_SWITCH)
+		return true;
+	return false;
+}
+
+static bool is_condition_expr(struct expression *expr)
+{
+	if (is_comparison_call(expr) ||
+	    is_select_assign(expr) ||
+	    is_switch_condition(expr))
+		return true;
+	return false;
 }
 
 static int next_line_is_if(struct expression *expr)
@@ -119,20 +153,58 @@ static int has_distinct_zero(struct range_list *rl)
 	return 0;
 }
 
+static bool has_distinct_positive(struct range_list *rl)
+{
+	sval_t max;
+	long long max_value;
+
+	/*
+	 * Initializially, I imagined only looking at the last range in
+	 * the range list.  Return true if it points to a single value
+	 * and then it's greater than zero.  But actually that doesn't
+	 * totally work because one bug was range 4-5.  And also there
+	 * is no need to make it so complicated.
+	 *
+	 */
+
+	if (!rl)
+		return false;
+
+	max = rl_max(rl);
+	/* extent the sign bit when compiling with -m32 */
+	max_value = max.value;
+	if (type_is_ptr(rl_type(rl)) &&
+	    type_bits(rl_type(rl)) == 32 &&
+	    sizeof(void *) == 8)
+		max_value = (int)max_value;
+	if (max_value > 0 && !sval_is_a_max(max))
+		return true;
+	return false;
+}
+
+static bool is_printing_percent_p(struct expression *expr)
+{
+	const char *macro = get_macro_name(expr->pos);
+	if (macro && strcmp(macro, "dev_err") == 0)
+		return true;
+	return false;
+}
+
 static void match_err_ptr(const char *fn, struct expression *expr, void *data)
 {
 	struct expression *arg_expr;
 	struct sm_state *sm, *tmp;
+	int arg = PTR_INT(data);
 
 	if (is_impossible_path())
 		return;
 
-	arg_expr = get_argument_from_call_expr(expr->args, 0);
+	arg_expr = get_argument_from_call_expr(expr->args, arg);
 	sm = get_sm_state_expr(SMATCH_EXTRA, arg_expr);
 	if (!sm)
 		return;
 
-	if (is_comparison_call(expr))
+	if (is_condition_expr(expr))
 		return;
 
 	if (next_line_checks_IS_ERR(expr, arg_expr))
@@ -142,7 +214,11 @@ static void match_err_ptr(const char *fn, struct expression *expr, void *data)
 		return;
 
 	FOR_EACH_PTR(sm->possible, tmp) {
+		sval_t sval;
+
 		if (!estate_rl(tmp->state))
+			continue;
+		if (estate_type(tmp->state) == &llong_ctype)
 			continue;
 		if (is_non_zero_int(estate_rl(tmp->state)))
 			continue;
@@ -150,6 +226,19 @@ static void match_err_ptr(const char *fn, struct expression *expr, void *data)
 			sm_warning("passing zero to '%s'", fn);
 			return;
 		}
+
+		if (has_distinct_positive(estate_rl(tmp->state))) {
+			if (is_printing_percent_p(expr))
+				return;
+			sm_warning("passing positive error code '%s' to '%s'", tmp->state->name, fn);
+			return;
+		}
+
+		if (estate_get_single_value(tmp->state, &sval) && sval.value < -4096) {
+			sm_warning("passing invalid error code %lld to '%s'", sval.value, fn);
+			return;
+		}
+
 		if (strcmp(fn, "PTR_ERR") != 0)
 			continue;
 		if (is_valid_ptr(estate_min(tmp->state)) &&
@@ -166,7 +255,8 @@ void check_zero_to_err_ptr(int id)
 		return;
 
 	my_id = id;
-	add_function_hook("ERR_PTR", &match_err_ptr, NULL);
-	add_function_hook("ERR_CAST", &match_err_ptr, NULL);
-	add_function_hook("PTR_ERR", &match_err_ptr, NULL);
+	add_function_hook("ERR_PTR", &match_err_ptr, INT_PTR(0));
+	add_function_hook("ERR_CAST", &match_err_ptr, INT_PTR(0));
+	add_function_hook("PTR_ERR", &match_err_ptr, INT_PTR(0));
+	add_function_hook("dev_err_probe", &match_err_ptr, INT_PTR(1));
 }

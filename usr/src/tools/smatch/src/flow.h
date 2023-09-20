@@ -6,11 +6,12 @@
 extern unsigned long bb_generation;
 
 #define REPEAT_CSE		(1 << 0)
-#define REPEAT_SYMBOL_CLEANUP	(1 << 1)
 #define REPEAT_CFG_CLEANUP	(1 << 2)
 
 struct entrypoint;
 struct instruction;
+
+extern int remove_phisources(struct basic_block *par, struct basic_block *old);
 
 extern int simplify_flow(struct entrypoint *ep);
 
@@ -18,10 +19,11 @@ extern void kill_dead_stores(struct entrypoint *ep, pseudo_t addr, int local);
 extern void simplify_symbol_usage(struct entrypoint *ep);
 extern void simplify_memops(struct entrypoint *ep);
 extern void pack_basic_blocks(struct entrypoint *ep);
+extern int simplify_cfg_early(struct entrypoint *ep);
+extern int convert_to_jump(struct instruction *insn, struct basic_block *target);
 
 extern void convert_instruction_target(struct instruction *insn, pseudo_t src);
 extern void remove_dead_insns(struct entrypoint *);
-extern int simplify_instruction(struct instruction *);
 
 extern void kill_bb(struct basic_block *);
 extern void kill_use(pseudo_t *);
@@ -39,9 +41,7 @@ static inline int kill_instruction_force(struct instruction *insn)
 }
 
 void check_access(struct instruction *insn);
-void convert_load_instruction(struct instruction *, pseudo_t);
-void rewrite_load_instruction(struct instruction *, struct pseudo_list *);
-int dominates(pseudo_t pseudo, struct instruction *insn, struct instruction *dom, int local);
+int dominates(struct instruction *insn, struct instruction *dom, int local);
 
 extern void vrfy_flow(struct entrypoint *ep);
 extern int pseudo_in_list(struct pseudo_list *list, pseudo_t pseudo);

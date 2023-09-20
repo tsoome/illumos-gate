@@ -30,7 +30,7 @@
  * The work around is that for now what this check only
  * checks simple expressions and doesn't check whether
  * foo->bar is leaked.
- * 
+ *
  */
 
 #include <fcntl.h>
@@ -51,6 +51,9 @@ static const char *allocation_funcs[] = {
 	"kmalloc",
 	"kzalloc",
 	"kmemdup",
+	"kmem_alloc",
+	"kmem_zalloc",
+	"kmem_cache_alloc",
 };
 
 static char *alloc_parent_str(struct symbol *sym)
@@ -116,14 +119,17 @@ static int is_param(struct expression *expr)
 out:
 	free_string(name);
 	return ret;
-	
 }
 
 static void match_alloc(const char *fn, struct expression *expr, void *unused)
 {
+	if (is_fake_var_assign(expr))
+		return;
 	if (!is_local(expr->left))
 		return;
 	if (is_param(expr->left))
+		return;
+	if (has_cleanup(expr->left))
 		return;
 	if (expr->left->type != EXPR_SYMBOL)
 		return;
@@ -193,13 +199,13 @@ static void warn_if_allocated(struct expression *expr)
 	char *name;
 	sval_t sval;
 
-	if (get_implied_value(expr, &sval) && sval.value == 0)
-		return;
-
 	sm = get_sm_state_expr(my_id, expr);
 	if (!sm)
 		return;
 	if (!slist_has_state(sm->possible, &allocated))
+		return;
+
+	if (get_implied_value(expr, &sval) && sval.value == 0)
 		return;
 
 	name = expr_to_var(expr);

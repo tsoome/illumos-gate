@@ -1,5 +1,5 @@
-Submitting patches: the sparse version
-======================================
+Submitting patches
+==================
 
 Sparse uses a patch submit process similar to the Linux Kernel
 [Submitting Patches](https://www.kernel.org/doc/html/v4.12/process/submitting-patches.html)
@@ -20,7 +20,7 @@ Kernel submitting process.
    Notice that sparse uses the MIT License.
 
 4. Smatch is built on top of Sparse but it is licensed under the GPLv2+ the
-   git repostories are:
+   git repositories are:
 
 	https://github.com/error27/smatch
 	https://repo.or.cz/w/smatch.git

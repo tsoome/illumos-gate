@@ -104,14 +104,6 @@ static void print_arg(struct symbol *sym)
 	} END_FOR_EACH_PTR(arg);
 }
 
-static void match_end_func(struct symbol *sym)
-{
-	if (__inline_fn)
-		return;
-	if (is_reachable())
-		match_return(NULL);
-}
-
 static void match_after_func(struct symbol *sym)
 {
 	struct tracker *tracker;
@@ -136,9 +128,10 @@ void check_frees_argument(int id)
 	add_hook(&match_function_def, FUNC_DEF_HOOK);
 	if (option_project == PROJ_KERNEL)
 		add_function_hook("kfree", &match_kfree, NULL);
+	else if (option_project == PROJ_ILLUMOS_KERNEL)
+		add_function_hook("kmem_free", &match_kfree, NULL);
 	else
 		add_function_hook("free", &match_kfree, NULL);
 	add_hook(&match_return, RETURN_HOOK);
-	add_hook(&match_end_func, END_FUNC_HOOK);
 	add_hook(&match_after_func, AFTER_FUNC_HOOK);
 }

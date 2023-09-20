@@ -206,7 +206,8 @@ char *get_constraint_str(struct expression *expr)
 	name = get_toplevel_name(expr);
 	if (name)
 		return name;
-	return get_member_name(expr);
+	name = get_member_name(expr);
+	return alloc_string(name);
 }
 
 static int save_int_callback(void *_p, int argc, char **argv, char **azColName)
@@ -503,7 +504,7 @@ static void db_returns_constrained(struct expression *expr, int param, char *key
 	char *name;
 	struct symbol *sym;
 
-	name = return_state_to_var_sym(expr, param, key, &sym);
+	name = get_name_sym_from_param_key(expr, param, key, &sym);
 	if (!name || !sym)
 		goto free;
 

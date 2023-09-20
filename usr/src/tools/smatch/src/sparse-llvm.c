@@ -29,7 +29,21 @@ static LLVMTypeRef symbol_type(struct symbol *sym);
 
 static LLVMTypeRef func_return_type(struct symbol *sym)
 {
+	if (sym->type == SYM_NODE)
+		sym = sym->ctype.base_type;
 	return symbol_type(sym->ctype.base_type);
+}
+
+// A call can be done either with a SYM_FN or a SYM_PTR (pointing to a SYM_FN).
+// Return the type corresponding to the SYM_FN.
+static LLVMTypeRef func_full_type(struct symbol *type)
+{
+	if (type->type == SYM_NODE) {
+		struct symbol *btype = type->ctype.base_type;
+		if (btype->type == SYM_PTR)
+			type = btype->ctype.base_type;
+	}
+	return symbol_type(type);
 }
 
 static LLVMTypeRef sym_func_type(struct symbol *sym)
@@ -294,15 +308,20 @@ static LLVMValueRef get_sym_value(LLVMModuleRef module, struct symbol *sym)
 		switch (expr->type) {
 		case EXPR_STRING: {
 			const char *s = expr->string->data;
+			size_t len = expr->string->length;
 			LLVMValueRef indices[] = { LLVMConstInt(LLVMInt64Type(), 0, 0), LLVMConstInt(LLVMInt64Type(), 0, 0) };
 			LLVMValueRef data;
 
-			data = LLVMAddGlobal(module, LLVMArrayType(LLVMInt8Type(), strlen(s) + 1), ".str");
+			data = LLVMAddGlobal(module, LLVMArrayType(LLVMInt8Type(), len), ".str");
 			LLVMSetLinkage(data, LLVMPrivateLinkage);
 			LLVMSetGlobalConstant(data, 1);
-			LLVMSetInitializer(data, LLVMConstString(strdup(s), strlen(s) + 1, true));
+			LLVMSetInitializer(data, LLVMConstString(s, len, true));
 
+#if LLVM_VERSION_MAJOR > 14
+			result = LLVMConstGEP2(LLVMTypeOf(data), data, indices, ARRAY_SIZE(indices));
+#else
 			result = LLVMConstGEP(data, indices, ARRAY_SIZE(indices));
+#endif
 			return result;
 		}
 		default:
@@ -485,7 +504,11 @@ static LLVMValueRef calc_gep(LLVMBuilderRef builder, LLVMValueRef base, LLVMValu
 	/* convert base to char* type */
 	base = LLVMBuildPointerCast(builder, base, bytep, name);
 	/* addr = base + off */
+#if LLVM_VERSION_MAJOR > 14
+	addr = LLVMBuildInBoundsGEP2(builder, LLVMTypeOf(base),  base, &off, 1, name);
+#else
 	addr = LLVMBuildInBoundsGEP(builder, base, &off, 1, name);
+#endif
 	/* convert back to the actual pointer type */
 	addr = LLVMBuildPointerCast(builder, addr, type, name);
 	return addr;
@@ -711,7 +734,11 @@ static void output_op_load(struct function *fn, struct instruction *insn)
 
 	/* perform load */
 	pseudo_name(insn->target, name);
+#if LLVM_VERSION_MAJOR > 14
+	target = LLVMBuildLoad2(fn->builder, symbol_type(insn->type), addr, name);
+#else
 	target = LLVMBuildLoad(fn->builder, addr, name);
+#endif
 
 	insn->target->priv = target;
 }
@@ -797,6 +824,7 @@ static void output_op_switch(struct function *fn, struct instruction *insn)
 static void output_op_call(struct function *fn, struct instruction *insn)
 {
 	LLVMValueRef target, func;
+	struct symbol *fntype;
 	struct symbol *ctype;
 	int n_arg = 0, i;
 	struct pseudo *arg;
@@ -812,51 +840,34 @@ static void output_op_call(struct function *fn, struct instruction *insn)
 	else
 		func = pseudo_to_value(fn, ctype, insn->func);
 	i = 0;
+	fntype = ctype;			// first symbol in the list is the function 'true' type
 	FOR_EACH_PTR(insn->arguments, arg) {
-		NEXT_PTR_LIST(ctype);
+		NEXT_PTR_LIST(ctype);	// the remaining ones are the arguments' type
 		args[i++] = pseudo_to_rvalue(fn, ctype, arg);
 	} END_FOR_EACH_PTR(arg);
 	FINISH_PTR_LIST(ctype);
 
 	pseudo_name(insn->target, name);
+#if LLVM_VERSION_MAJOR > 14
+	target = LLVMBuildCall2(fn->builder, func_full_type(fntype), func, args, n_arg, name);
+#else
+	(void) fntype;
 	target = LLVMBuildCall(fn->builder, func, args, n_arg, name);
+#endif
 
 	insn->target->priv = target;
 }
 
 static void output_op_phisrc(struct function *fn, struct instruction *insn)
 {
-	LLVMValueRef v;
-	struct instruction *phi;
-
-	assert(insn->target->priv == NULL);
-
-	/* target = src */
-	v = get_operand(fn, insn->type, insn->phi_src);
-
-	FOR_EACH_PTR(insn->phi_users, phi) {
-		LLVMValueRef load, ptr;
-
-		assert(phi->opcode == OP_PHI);
-		/* phi must be load from alloca */
-		load = phi->target->priv;
-		assert(LLVMGetInstructionOpcode(load) == LLVMLoad);
-		ptr = LLVMGetOperand(load, 0);
-		/* store v to alloca */
-		LLVMBuildStore(fn->builder, v, ptr);
-	} END_FOR_EACH_PTR(phi);
+	insn->src->priv = get_operand(fn, insn->type, insn->src);
 }
 
 static void output_op_phi(struct function *fn, struct instruction *insn)
 {
-	LLVMValueRef load = insn->target->priv;
+	LLVMTypeRef dst_type = insn_symbol_type(insn);
 
-	/* forward load */
-	assert(LLVMGetInstructionOpcode(load) == LLVMLoad);
-	/* forward load has no parent block */
-	assert(!LLVMGetInstructionParent(load));
-	/* finalize load in current block  */
-	LLVMInsertIntoBuilder(fn->builder, load);
+	insn->target->priv = LLVMBuildPhi(fn->builder, dst_type, "");
 }
 
 static void output_op_ptrcast(struct function *fn, struct instruction *insn)
@@ -958,6 +969,11 @@ static void output_op_fpcast(struct function *fn, struct instruction *insn)
 	insn->target->priv = target;
 }
 
+static void output_op_label(struct function *fn, struct instruction *insn)
+{
+	insn->target->priv = LLVMBlockAddress(fn->fn, insn->bb_true->priv);
+}
+
 static void output_op_setval(struct function *fn, struct instruction *insn)
 {
 	struct expression *val = insn->val;
@@ -997,6 +1013,9 @@ static void output_insn(struct function *fn, struct instruction *insn)
 		break;
 	case OP_SYMADDR:
 		assert(0);
+		break;
+	case OP_LABEL:
+		output_op_label(fn, insn);
 		break;
 	case OP_SETVAL:
 		output_op_setval(fn, insn);
@@ -1161,30 +1180,11 @@ static void output_fn(LLVMModuleRef module, struct entrypoint *ep)
 		static int nr_bb;
 		LLVMBasicBlockRef bbr;
 		char bbname[32];
-		struct instruction *insn;
 
 		sprintf(bbname, "L%d", nr_bb++);
 		bbr = LLVMAppendBasicBlock(function.fn, bbname);
 
 		bb->priv = bbr;
-
-		/* allocate alloca for each phi */
-		FOR_EACH_PTR(bb->insns, insn) {
-			LLVMBasicBlockRef entrybbr;
-			LLVMTypeRef phi_type;
-			LLVMValueRef ptr;
-
-			if (!insn->bb || insn->opcode != OP_PHI)
-				continue;
-			/* insert alloca into entry block */
-			entrybbr = LLVMGetEntryBasicBlock(function.fn);
-			LLVMPositionBuilderAtEnd(function.builder, entrybbr);
-			phi_type = insn_symbol_type(insn);
-			ptr = LLVMBuildAlloca(function.builder, phi_type, "");
-			/* emit forward load for phi */
-			LLVMClearInsertionPosition(function.builder);
-			insn->target->priv = LLVMBuildLoad(function.builder, ptr, "phi");
-		} END_FOR_EACH_PTR(insn);
 	}
 	END_FOR_EACH_PTR(bb);
 
@@ -1194,6 +1194,31 @@ static void output_fn(LLVMModuleRef module, struct entrypoint *ep)
 		output_bb(&function, bb);
 	}
 	END_FOR_EACH_PTR(bb);
+
+	FOR_EACH_PTR(ep->bbs, bb) {	// complete the OP_PHIs
+		struct instruction *insn;
+
+		FOR_EACH_PTR(bb->insns, insn) {
+			pseudo_t phi;
+
+			if (!insn->bb || insn->opcode != OP_PHI)
+				continue;
+
+			FOR_EACH_PTR(insn->phi_list, phi) {
+				struct instruction *phisrc;
+				LLVMBasicBlockRef bref;
+				LLVMValueRef vref;
+
+				if (phi == VOID)
+					continue;
+
+				phisrc = phi->def;
+				bref = phisrc->bb->priv;
+				vref = phisrc->src->priv;
+				LLVMAddIncoming(insn->target->priv, &vref, &bref, 1);
+			} END_FOR_EACH_PTR(phi);
+		} END_FOR_EACH_PTR(insn);
+	} END_FOR_EACH_PTR(bb);
 }
 
 static LLVMValueRef output_data(LLVMModuleRef module, struct symbol *sym)
@@ -1221,8 +1246,9 @@ static LLVMValueRef output_data(LLVMModuleRef module, struct symbol *sym)
 		}
 		case EXPR_STRING: {
 			const char *s = initializer->string->data;
+			size_t len = initializer->string->length;
 
-			initial_value = LLVMConstString(strdup(s), strlen(s) + 1, true);
+			initial_value = LLVMConstString(s, len, true);
 			break;
 		}
 		default:
@@ -1351,8 +1377,6 @@ int main(int argc, char **argv)
 
 	compile(module, symlist);
 
-	/* need ->phi_users */
-	dbg_dead = 1;
 	FOR_EACH_PTR(filelist, file) {
 		symlist = sparse(file);
 		if (die_if_error)

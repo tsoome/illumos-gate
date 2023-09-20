@@ -59,8 +59,10 @@ IDENT_RESERVED(__label__);
  * sparse. */
 IDENT(defined);
 IDENT(once);
-IDENT(__has_attribute);
-IDENT(__has_builtin);
+IDENT(c_alignas);
+IDENT(c_alignof);
+IDENT(c_generic_selections);
+IDENT(c_static_assert);
 __IDENT(pragma_ident, "__pragma__", 0);
 __IDENT(_Pragma_ident, "_Pragma", 0);
 __IDENT(__VA_ARGS___ident, "__VA_ARGS__", 0);
@@ -76,6 +78,12 @@ IDENT_RESERVED(__range__);
 IDENT(memset); IDENT(memcpy);
 IDENT(copy_to_user); IDENT(copy_from_user);
 IDENT(main);
+
+/* used by the symbolic checker */
+IDENT(__assume);
+IDENT(__assert);
+IDENT(__assert_eq);
+IDENT(__assert_const);
 
 #undef __IDENT
 #undef IDENT

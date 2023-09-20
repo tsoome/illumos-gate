@@ -37,57 +37,67 @@ sub insert_record($$$$$$$)
 
     my $sth;
     if ($file ne '') {
-        $sth = $db->prepare("select file, return_id, static from return_states where file = ? and function = ? and return = ? and type = 0;");
+        $sth = $db->prepare("select file, return_id, call_id, static from return_states where file = ? and function = ? and return = ? and type = 0;");
         $sth->execute($file, $func, $ret);
     } else {
-        $sth = $db->prepare("select file, return_id, static from return_states where function = ? and return = ? and type = 0;");
+        $sth = $db->prepare("select file, return_id, call_id, static from return_states where function = ? and return = ? and type = 0;");
         $sth->execute($func, $ret);
     }
 
+    my $exists = $db->prepare("select count(*) from return_states where file = ? and function = ? and return_id = ? and static = ? and return = ? and type = ? and parameter = ? and key = ? and value = ?;");
     my $insert = $db->prepare("insert into return_states values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
     while (my @row = $sth->fetchrow_array()) {
         my $file = $row[0];
         my $return_id = $row[1];
-        my $static = $row[2];
+        my $call_id = $row[2];
+        my $static = $row[3];
 
-        $insert->execute($file, $func, 0, $return_id, $ret, $static, $type, $param, $key, $value);
+        $exists->execute($file, $func, $return_id, $static, $ret, $type, $param, $key, $value);
+        my $count = $exists->fetchrow_array();
+        if ($count == 1) {
+            next;
+        }
+
+        $insert->execute($file, $func, $call_id, $return_id, $ret, $static, $type, $param, $key, $value);
     }
 }
 
 my ($ret, $insert, $file, $func, $type, $param, $key, $value);
 
-open(FILE, "<$insertions");
-while (<FILE>) {
+if (open(FILE, "<$insertions"))
+{
+    while (<FILE>) {
 
-    if ($_ =~ /^\s*#/) {
-        next;
+        if ($_ =~ /^\s*#/) {
+            next;
+        }
+
+        ($ret, $insert) = split(/\|/, $_);
+
+        if ($ret =~ /(.+),\W*(.+),\W*"(.*)"/) {
+            $file = $1;
+            $func = $2;
+            $ret = $3;
+        } elsif ($ret =~ /(.+),\W*"(.*)"/) {
+            $file = "";
+            $func = $1;
+            $ret = $2;
+        } else {
+            next;
+        }
+
+        ($type, $param, $key, $value) = split(/,/, $insert);
+
+        $type = int($type);
+        $param = int($param);
+        $key =~ s/^["\s]+|["\s]+$//g;
+        $value =~ s/^["\s]+|["\s]+$//g;
+        chomp($value);
+
+        insert_record($file, $func, $ret, $type, $param, $key, $value);
     }
-
-    ($ret, $insert) = split(/\|/, $_);
-
-    if ($ret =~ /(.+),\W*(.+),\W*"(.*)"/) {
-        $file = $1;
-        $func = $2;
-        $ret = $3;
-    } elsif ($ret =~ /(.+),\W*"(.*)"/) {
-        $file = "";
-        $func = $1;
-        $ret = $2;
-    } else {
-        next;
-    }
-
-    ($type, $param, $key, $value) = split(/,/, $insert);
-
-    $type = int($type);
-    $param = int($param);
-    $key =~ s/^["\s]+|["\s]+$//g;
-    $value =~ s/^["\s]+|["\s]+$//g;
-    chomp($value);
-
-    insert_record($file, $func, $ret, $type, $param, $key, $value);
+    close(FILE);
 }
-close(FILE);
 
 $db->commit();
 $db->disconnect();

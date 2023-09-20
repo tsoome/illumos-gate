@@ -92,8 +92,7 @@ static bool is_head_next(struct expression *expr)
 
 	if (expr->type != EXPR_DEREF)
 		return false;
-	if (!expr->member || !expr->member->name ||
-	    strcmp(expr->member->name, "next") != 0)
+	if (!expr->member || strcmp(expr->member->name, "next") != 0)
 		return false;
 
 	type = get_type(expr->deref);
@@ -103,8 +102,7 @@ static bool is_head_next(struct expression *expr)
 		type = get_real_base_type(type);
 	if (type->type != SYM_STRUCT)
 		return false;
-	if (!type->ident || !type->ident->name ||
-	    strcmp(type->ident->name, "list_head") != 0)
+	if (!type->ident || strcmp(type->ident->name, "list_head") != 0)
 		return false;
 	return true;
 }
@@ -119,6 +117,8 @@ static bool is_ignored_tag(mtag_t tag)
 
 static void insert_mtag_data(mtag_t tag, int offset, struct range_list *rl)
 {
+	if (in_fake_env)
+		return;
 	if (is_ignored_tag(tag))
 		return;
 
@@ -162,8 +162,6 @@ void update_mtag_data(struct expression *expr, struct smatch_state *state)
 	int offset;
 
 	if (!expr)
-		return;
-	if (is_local_variable(expr))
 		return;
 	if (is_ignored_macro(expr))
 		return;
@@ -228,7 +226,7 @@ static int save_mtag_data(void *_unused, int argc, char **argv, char **azColName
 		return 0;
 
 	rl = (struct range_list *)strtoul(argv[3], NULL, 10);
-	sm_msg("SQL: insert into mtag_data values ('%s', '%s', '%s', '%s');",
+	sm_msg("SQL: insert or ignore into mtag_data values ('%s', '%s', '%s', '%s');",
 	       argv[0], argv[1], argv[2], show_rl(rl));
 
 	return 0;
@@ -269,9 +267,11 @@ static int get_rl_from_mtag_offset(mtag_t tag, int offset, struct symbol *type, 
 {
 	struct db_info db_info = {};
 	mtag_t merged = tag | offset;
+	struct range_list *mem_rl;
 	static int idx;
-	int ret;
 	int i;
+
+	*rl = NULL;
 
 	for (i = 0; i < ARRAY_SIZE(cached_results); i++) {
 		if (merged == cached_results[i].tag) {
@@ -283,26 +283,28 @@ static int get_rl_from_mtag_offset(mtag_t tag, int offset, struct symbol *type, 
 		}
 	}
 
-	db_info.type = type;
+	mem_rl = select_orig(tag, offset);
+	if (is_whole_rl(mem_rl))
+		goto update_cache;
 
+	db_info.type = type;
 	run_sql(get_vals, &db_info,
 		"select value from mtag_data where tag = %lld and offset = %d and type = %d;",
 		tag, offset, DATA_VALUE);
-	if (!db_info.rl || is_whole_rl(db_info.rl)) {
-		db_info.rl = NULL;
-		ret = 0;
+	if (!db_info.rl)
 		goto update_cache;
-	}
+	db_info.rl = rl_union(mem_rl, db_info.rl);
+	if (is_whole_rl(db_info.rl))
+		goto update_cache;
 
 	*rl = db_info.rl;
-	ret = 1;
 
 update_cache:
 	cached_results[idx].tag = merged;
-	cached_results[idx].rl = db_info.rl;
+	cached_results[idx].rl = *rl;
 	idx = (idx + 1) % ARRAY_SIZE(cached_results);
 
-	return ret;
+	return !!*rl;
 }
 
 static void clear_cache(struct symbol *sym)
@@ -337,8 +339,8 @@ void register_mtag_data(int id)
 	ignored_mtag = str_to_mtag("extern boot_params");
 	add_hook(&clear_cache, FUNC_DEF_HOOK);
 
-//	if (!option_info)
-//		return;
+	if (!option_info)
+		return;
 	add_hook(&match_global_assign, GLOBAL_ASSIGNMENT_HOOK);
 	add_hook(&match_end_file, END_FILE_HOOK);
 }

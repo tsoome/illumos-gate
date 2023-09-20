@@ -45,24 +45,62 @@
 #include "smatch.h"
 #include "smatch_slist.h"
 #include "smatch_extra.h"
+#include "cwchash/hashtable.h"
 
-#include <md5.h>
+static DEFINE_HASHTABLE_INSERT(insert_sym, mtag_t, struct symbol);
+static DEFINE_HASHTABLE_SEARCH(search_sym, mtag_t, struct symbol);
+static struct hashtable *tag_sym_map;
 
 static int my_id;
 
+static inline unsigned int rehash(void *_tag)
+{
+	mtag_t *tag = _tag;
+	return (unsigned int)*tag;
+}
+
+static inline int equalkeys(void *_tag1, void *_tag2)
+{
+	mtag_t *tag1 = _tag1;
+	mtag_t *tag2 = _tag2;
+
+	return *tag1 == *tag2;
+}
+
+static void insert_tag_map(mtag_t tag, struct symbol *sym)
+{
+	mtag_t *p;
+
+	p = malloc(sizeof(tag));
+	*p = tag;
+	insert_sym(tag_sym_map, p, sym);
+}
+
+static void store_hash(const char *str, unsigned long long hash)
+{
+	sql_insert_cache_or_ignore(hash_string, "0x%llx, '%s'", hash, str);
+}
+
+unsigned long long str_to_llu_hash(const char *str)
+{
+	unsigned long long hash;
+
+	hash = str_to_llu_hash_helper(str);
+	store_hash(str, hash);
+
+	return hash;
+}
+
 mtag_t str_to_mtag(const char *str)
 {
-	unsigned char c[MD5_DIGEST_LENGTH];
-	unsigned long long *tag = (unsigned long long *)&c;
-	int len;
+	unsigned long long tag;
 
-	len = strlen(str);
-	md5_calc(c, str, len);
+	tag = str_to_llu_hash_helper(str);
 
-	*tag &= ~MTAG_ALIAS_BIT;
-	*tag &= ~MTAG_OFFSET_MASK;
+	tag &= ~MTAG_OFFSET_MASK;
+	tag &= ulong_ULONG_MAX.uvalue;
 
-	return *tag;
+	return tag;
 }
 
 static int save_allocator(void *_allocator, int argc, char **argv, char **azColName)
@@ -180,6 +218,14 @@ int get_string_mtag(struct expression *expr, mtag_t *tag)
 	return 1;
 }
 
+struct symbol *get_symbol_from_mtag(mtag_t tag)
+{
+	struct symbol *sym;
+
+	sym = search_sym(tag_sym_map, &tag);
+	return sym;
+}
+
 int get_toplevel_mtag(struct symbol *sym, mtag_t *tag)
 {
 	char buf[256];
@@ -195,6 +241,7 @@ int get_toplevel_mtag(struct symbol *sym, mtag_t *tag)
 		 (sym->ctype.modifiers & MOD_STATIC) ? get_filename() : "extern",
 		 sym->ident->name);
 	*tag = str_to_mtag(buf);
+	insert_tag_map(*tag, sym);
 	return 1;
 }
 
@@ -468,4 +515,5 @@ void register_mtag(int id)
 	 */
 
 	add_hook(&global_variable, BASE_HOOK);
+	tag_sym_map = create_hashtable(5000, rehash, equalkeys);
 }

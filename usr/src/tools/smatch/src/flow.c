@@ -1,9 +1,10 @@
 /*
- * Flow - walk the linearized flowgraph, simplifying it as we
- * go along.
- *
  * Copyright (C) 2004 Linus Torvalds
  */
+
+///
+// Flow simplification
+// -------------------
 
 #include <string.h>
 #include <stdarg.h>
@@ -15,10 +16,71 @@
 #include "parse.h"
 #include "expression.h"
 #include "linearize.h"
+#include "simplify.h"
 #include "flow.h"
 #include "target.h"
 
 unsigned long bb_generation;
+
+///
+// remove phi-sources from a removed edge
+//
+// :note: It's possible to have several edges between the same BBs.
+//	  It's common with switches but it's also possible with branches.
+//	  This function will only remove a single phi-source per edge.
+int remove_phisources(struct basic_block *par, struct basic_block *old)
+{
+	struct instruction *insn;
+	int changed = 0;
+
+	FOR_EACH_PTR(old->insns, insn) {
+		pseudo_t phi;
+
+		if (!insn->bb)
+			continue;
+		if (insn->opcode != OP_PHI)
+			return changed;
+
+		// found a phi-node in the target BB,
+		// now look after its phi-sources.
+		FOR_EACH_PTR(insn->phi_list, phi) {
+			struct instruction *phisrc = phi->def;
+
+			if (phi == VOID)
+				continue;
+			assert(phisrc->phi_node == insn);
+			if (phisrc->bb != par)
+				continue;
+			// found a phi-source corresponding to this edge:
+			// remove it but avoid the recursive killing.
+			REPLACE_CURRENT_PTR(phi, VOID);
+			remove_use(&phisrc->src);
+			phisrc->bb = NULL;
+			changed |= REPEAT_CSE;
+			// Only the first one must be removed.
+			goto next;
+		} END_FOR_EACH_PTR(phi);
+next: ;
+	} END_FOR_EACH_PTR(insn);
+	return changed;
+}
+
+///
+// remove all phisources but the one corresponding to the given target
+static int remove_other_phisources(struct basic_block *bb, struct multijmp_list *list, struct basic_block *target)
+{
+	struct multijmp *jmp;
+	int changed = 0;
+
+	FOR_EACH_PTR(list, jmp) {
+		if (jmp->target == target) {
+			target = NULL;
+			continue;
+		}
+		changed |= remove_phisources(bb, jmp->target);
+	} END_FOR_EACH_PTR(jmp);
+	return changed;
+}
 
 /*
  * Dammit, if we have a phi-node followed by a conditional
@@ -102,6 +164,52 @@ static int bb_depends_on_phi(struct basic_block *target, struct basic_block *src
 	return 0;
 }
 
+///
+// does the BB contains ignorable instructions but a final branch?
+// :note: something could be done for phi-sources but ... we'll see.
+static bool bb_is_forwarder(struct basic_block *bb)
+{
+	struct instruction *insn;
+
+	FOR_EACH_PTR(bb->insns, insn) {
+		if (!insn->bb)
+			continue;
+		switch (insn->opcode) {
+		case OP_NOP:
+		case OP_INLINED_CALL:
+			continue;
+		case OP_CBR:
+		case OP_BR:
+			return true;
+		default:
+			goto out;
+		}
+	} END_FOR_EACH_PTR(insn);
+out:
+	return false;
+}
+
+///
+// check if the sources of a phi-node match with the parent BBs
+static bool phi_check(struct instruction *node)
+{
+	struct basic_block *bb;
+	pseudo_t phi;
+
+	PREPARE_PTR_LIST(node->bb->parents, bb);
+	FOR_EACH_PTR(node->phi_list, phi) {
+		if (phi == VOID || !phi->def)
+			continue;
+		if (phi->def->bb != bb)
+			return false;
+		NEXT_PTR_LIST(bb);
+	} END_FOR_EACH_PTR(phi);
+	if (bb)
+		return false;
+	FINISH_PTR_LIST(bb);
+	return true;
+}
+
 /*
  * When we reach here, we have:
  *  - a basic block that ends in a conditional branch and
@@ -124,7 +232,7 @@ static int try_to_simplify_bb(struct basic_block *bb, struct instruction *first,
 	 * simplify_symbol_usage()/conversion to SSA form.
 	 * No sane simplification can be done when we have this.
 	 */
-	bogus = bb_list_size(bb->parents) != pseudo_list_size(first->phi_list);
+	bogus = !phi_check(first);
 
 	FOR_EACH_PTR(first->phi_list, phi) {
 		struct instruction *def = phi->def;
@@ -241,7 +349,7 @@ try_to_rewrite_target:
 	 */
 	if (bb_list_size(target->parents) != 1)
 		return retval;
-	insert_branch(target, insn, final);
+	convert_to_jump(insn, final);
 	return 1;
 }
 
@@ -302,13 +410,6 @@ void convert_instruction_target(struct instruction *insn, pseudo_t src)
 	target->users = NULL;
 }
 
-void convert_load_instruction(struct instruction *insn, pseudo_t src)
-{
-	convert_instruction_target(insn, src);
-	kill_instruction(insn);
-	repeat_phase |= REPEAT_SYMBOL_CLEANUP;
-}
-
 static int overlapping_memop(struct instruction *a, struct instruction *b)
 {
 	unsigned int a_start = bytes_to_bits(a->offset);
@@ -343,15 +444,24 @@ static inline int distinct_symbols(pseudo_t a, pseudo_t b)
  *
  * Return 0 if it doesn't, and -1 if you don't know.
  */
-int dominates(pseudo_t pseudo, struct instruction *insn, struct instruction *dom, int local)
+int dominates(struct instruction *insn, struct instruction *dom, int local)
 {
-	int opcode = dom->opcode;
-
-	if (opcode == OP_CALL || opcode == OP_ENTRY)
+	switch (dom->opcode) {
+	case OP_CALL: case OP_ENTRY:
 		return local ? 0 : -1;
-	if (opcode != OP_LOAD && opcode != OP_STORE)
+	case OP_LOAD: case OP_STORE:
+		break;
+	case OP_ASM:
+		if (dom->clobber_memory)
+			return -1;
+		if (dom->output_memory)
+			return -1;
 		return 0;
-	if (dom->src != pseudo) {
+	default:
+		return 0;
+	}
+
+	if (dom->src != insn->src) {
 		if (local)
 			return 0;
 		/* We don't think two explicitly different symbols ever alias */
@@ -361,54 +471,11 @@ int dominates(pseudo_t pseudo, struct instruction *insn, struct instruction *dom
 		return -1;
 	}
 	if (!same_memop(insn, dom)) {
-		if (dom->opcode == OP_LOAD)
-			return 0;
 		if (!overlapping_memop(insn, dom))
 			return 0;
 		return -1;
 	}
 	return 1;
-}
-
-/*
- * We should probably sort the phi list just to make it easier to compare
- * later for equality. 
- */
-void rewrite_load_instruction(struct instruction *insn, struct pseudo_list *dominators)
-{
-	pseudo_t new, phi;
-
-	/*
-	 * Check for somewhat common case of duplicate
-	 * phi nodes.
-	 */
-	new = first_pseudo(dominators)->def->phi_src;
-	FOR_EACH_PTR(dominators, phi) {
-		if (new != phi->def->phi_src)
-			goto complex_phi;
-		new->ident = new->ident ? : phi->ident;
-	} END_FOR_EACH_PTR(phi);
-
-	/*
-	 * All the same pseudo - mark the phi-nodes unused
-	 * and convert the load into a LNOP and replace the
-	 * pseudo.
-	 */
-	convert_load_instruction(insn, new);
-	FOR_EACH_PTR(dominators, phi) {
-		kill_instruction(phi->def);
-	} END_FOR_EACH_PTR(phi);
-	goto end;
-
-complex_phi:
-	/* We leave symbol pseudos with a bogus usage list here */
-	if (insn->src->type != PSEUDO_SYM)
-		kill_use(&insn->src);
-	insn->opcode = OP_PHI;
-	insn->phi_list = dominators;
-
-end:
-	repeat_phase |= REPEAT_SYMBOL_CLEANUP;
 }
 
 /* Kill a pseudo that is dead on exit from the bb */
@@ -723,13 +790,192 @@ void vrfy_flow(struct entrypoint *ep)
 	assert(!entry);
 }
 
+///
+// change a switch or a conditional branch into a branch
+int convert_to_jump(struct instruction *insn, struct basic_block *target)
+{
+	struct basic_block *bb = insn->bb;
+	struct basic_block *child;
+	int changed = REPEAT_CSE;
+
+	switch (insn->opcode) {
+	case OP_CBR:
+		changed |= remove_phisources(insn->bb, insn->bb_true == target ? insn->bb_false : insn->bb_true);
+		break;
+	case OP_SWITCH:
+		changed |= remove_other_phisources(insn->bb, insn->multijmp_list, target);
+		break;
+	}
+	kill_use(&insn->cond);
+	insn->bb_true = target;
+	insn->bb_false = NULL;
+	insn->cond = NULL;
+	insn->size = 0;
+	insn->opcode = OP_BR;
+
+	FOR_EACH_PTR(bb->children, child) {
+		if (child == target) {
+			target = NULL;	// leave first occurence
+			continue;
+		}
+		DELETE_CURRENT_PTR(child);
+		remove_bb_from_list(&child->parents, bb, 1);
+		changed |= REPEAT_CFG_CLEANUP;
+	} END_FOR_EACH_PTR(child);
+	PACK_PTR_LIST(&bb->children);
+	repeat_phase |= changed;
+	return changed;
+}
+
+static int retarget_parents(struct basic_block *bb, struct basic_block *target)
+{
+	struct basic_block *parent;
+
+	/*
+	 * We can't do FOR_EACH_PTR() here, because the parent list
+	 * may change when we rewrite the parent.
+	 */
+	while ((parent = first_basic_block(bb->parents))) {
+		if (!rewrite_parent_branch(parent, bb, target))
+			return 0;
+	}
+	kill_bb(bb);
+	return REPEAT_CFG_CLEANUP;
+}
+
+static void remove_merging_phisrc(struct instruction *insn, struct basic_block *bot)
+{
+	struct instruction *node = insn->phi_node;
+	pseudo_t phi;
+
+	if (!node) {
+		kill_instruction(insn);
+		return;
+	}
+
+	FOR_EACH_PTR(node->phi_list, phi) {
+		struct instruction *phisrc;
+
+		if (phi == VOID)
+			continue;
+		phisrc = phi->def;
+		if (phisrc->bb == bot) {
+			kill_instruction(insn);
+			return;
+		}
+	} END_FOR_EACH_PTR(phi);
+}
+
+static void remove_merging_phi(struct basic_block *top, struct instruction *insn)
+{
+	pseudo_t phi;
+
+	FOR_EACH_PTR(insn->phi_list, phi) {
+		struct instruction *def;
+
+		if (phi == VOID)
+			continue;
+
+		def = phi->def;
+		if (def->bb != top)
+			continue;
+
+		convert_instruction_target(insn, def->src);
+		kill_instruction(def);
+		kill_instruction(insn);
+	} END_FOR_EACH_PTR(phi);
+}
+
+///
+// merge two BBs
+// @top: the first BB to be merged
+// @bot: the second BB to be merged
+static int merge_bb(struct basic_block *top, struct basic_block *bot)
+{
+	struct instruction *insn;
+	struct basic_block *bb;
+
+	if (top == bot)
+		return 0;
+
+	top->children = bot->children;
+	bot->children = NULL;
+	bot->parents = NULL;
+
+	FOR_EACH_PTR(top->children, bb) {
+		replace_bb_in_list(&bb->parents, bot, top, 1);
+	} END_FOR_EACH_PTR(bb);
+
+	FOR_EACH_PTR(top->insns, insn) {
+		if (!insn->bb)
+			continue;
+		if (insn->opcode != OP_PHISOURCE)
+			continue;
+		remove_merging_phisrc(insn, bot);
+	} END_FOR_EACH_PTR(insn);
+
+	kill_instruction(delete_last_instruction(&top->insns));
+	FOR_EACH_PTR(bot->insns, insn) {
+		if (!insn->bb)
+			continue;
+		assert(insn->bb == bot);
+		switch (insn->opcode) {
+		case OP_PHI:
+			remove_merging_phi(top, insn);
+			continue;
+		}
+		insn->bb = top;
+		add_instruction(&top->insns, insn);
+	} END_FOR_EACH_PTR(insn);
+	bot->insns = NULL;
+	bot->ep = NULL;
+	return REPEAT_CFG_CLEANUP;
+}
+
+///
+// early simplification of the CFG
+// Three things are done here:
+//    # inactive BB are removed
+//    # branches to a 'forwarder' BB are redirected to the forwardee.
+//    # merge single-child/single-parent BBs.
+int simplify_cfg_early(struct entrypoint *ep)
+{
+	struct basic_block *bb;
+	int changed = 0;
+
+	FOR_EACH_PTR_REVERSE(ep->bbs, bb) {
+		struct instruction *insn;
+		struct basic_block *tgt;
+
+		if (!bb->ep) {
+			DELETE_CURRENT_PTR(bb);
+			changed = REPEAT_CFG_CLEANUP;
+			continue;
+		}
+
+		insn = last_instruction(bb->insns);
+		if (!insn)
+			continue;
+		switch (insn->opcode) {
+		case OP_BR:
+			tgt = insn->bb_true;
+			if (bb_is_forwarder(bb))
+				changed |= retarget_parents(bb, tgt);
+			else if (bb_list_size(tgt->parents) == 1)
+				changed |= merge_bb(bb, tgt);
+			break;
+		}
+	} END_FOR_EACH_PTR_REVERSE(bb);
+	return changed;
+}
+
 void pack_basic_blocks(struct entrypoint *ep)
 {
 	struct basic_block *bb;
 
 	/* See if we can merge a bb into another one.. */
 	FOR_EACH_PTR(ep->bbs, bb) {
-		struct instruction *first, *insn;
+		struct instruction *first;
 		struct basic_block *parent, *child, *last;
 
 		if (!bb_reachable(bb))
@@ -786,28 +1032,7 @@ out:
 				goto no_merge;
 		} END_FOR_EACH_PTR(child);
 
-		/*
-		 * Merge the two.
-		 */
-		repeat_phase |= REPEAT_CFG_CLEANUP;
-
-		parent->children = bb->children;
-		bb->children = NULL;
-		bb->parents = NULL;
-
-		FOR_EACH_PTR(parent->children, child) {
-			replace_bb_in_list(&child->parents, bb, parent, 0);
-		} END_FOR_EACH_PTR(child);
-
-		kill_instruction(delete_last_instruction(&parent->insns));
-		FOR_EACH_PTR(bb->insns, insn) {
-			if (!insn->bb)
-				continue;
-			assert(insn->bb == bb);
-			insn->bb = parent;
-			add_instruction(&parent->insns, insn);
-		} END_FOR_EACH_PTR(insn);
-		bb->insns = NULL;
+		repeat_phase |= merge_bb(parent, bb);
 
 	no_merge:
 		/* nothing to do */;

@@ -13,6 +13,9 @@ prog_name=`basename $0`
 if [ ! -x "$default_path/sparse-llvm" ]; then
 	disabled_cmds="sparsec sparsei sparse-llvm sparse-llvm-dis"
 fi
+if [ ! -x "$default_path/scheck" ]; then
+	disabled_cmds="$disabled_cmds scheck"
+fi
 
 # flags:
 #	- some tests gave an unexpected result
@@ -77,13 +80,15 @@ get_tag_value()
 	check_output_contains=0
 	check_output_excludes=0
 	check_output_pattern=0
+	check_output_match=0
+	check_output_returns=0
 	check_arch_ignore=""
 	check_arch_only=""
 	check_assert=""
 	check_cpp_if=""
 
-	lines=$(grep 'check-[a-z-]*' $1 | \
-		sed -e 's/^.*\(check-[a-z-]*:*\) *\(.*\)$/\1 \2/')
+	lines=$(grep '^ \* check-[a-z-]*' $1 | \
+		sed -e 's/^ \* \(check-[a-z-]*:*\) *\(.*\)$/\1 \2/')
 
 	while read tag val; do
 		#echo "-> tag: '$tag'"
@@ -100,6 +105,8 @@ get_tag_value()
 		check-output-contains:)	check_output_contains=1 ;;
 		check-output-excludes:)	check_output_excludes=1 ;;
 		check-output-pattern)	check_output_pattern=1 ;;
+		check-output-match)	check_output_match=1 ;;
+		check-output-returns:)	check_output_returns=1 ;;
 		check-arch-ignore:)	arch=$(uname -m)
 					check_arch_ignore="$val" ;;
 		check-arch-only:)	arch=$(uname -m)
@@ -198,6 +205,42 @@ minmax_patterns()
 			error "	Pattern '$pat' expected max $max times but got $n times"
 			return 1
 		    fi
+		fi
+	done
+
+	return $?
+}
+
+##
+match_patterns()
+{
+	ifile="$1"
+	patt="$2"
+	ofile="$3"
+	grep "$patt" "$ifile" | sed -e "s/^.*$patt(\(.*\)): *\(.*\)$/\1 \2/" | \
+	while read ins pat; do
+		grep -s "^	$ins\\.*[0-9]* " "$ofile" | grep -v -s -q "$pat"
+		if [ "$?" -ne 1 ]; then
+			error "	IR doesn't match '$pat'"
+			return 1
+		fi
+	done
+
+	return $?
+}
+
+##
+return_patterns()
+{
+	ifile="$1"
+	patt="$2"
+	ofile="$3"
+	grep "$patt:" "$ifile" | sed -e "s/^.*$patt: *\(.*\)$/\1/" | \
+	while read ret; do
+		grep -s "^	ret\\.[0-9]" "$ofile" | grep -v -s -q "[ \$]${ret}\$"
+		if [ "$?" -ne 1 ]; then
+			error "	Return doesn't match '$ret'"
+			return 1
 		fi
 	done
 
@@ -338,7 +381,7 @@ do_test()
 	# do we want a timeout?
 	pre_cmd=""
 	if [ $check_timeout -ne 0 ]; then
-		pre_cmd="timeout -k 1s $check_timeout"
+		pre_cmd="timeout $check_timeout"
 	fi
 
 	shift
@@ -391,6 +434,20 @@ do_test()
 	if [ $check_output_pattern -eq 1 ]; then
 		# verify the 'check-output-pattern(...)' tags
 		minmax_patterns "$file" 'check-output-pattern' $file.output.got
+		if [ "$?" -ne "0" ]; then
+			test_failed=1
+		fi
+	fi
+	if [ $check_output_match -eq 1 ]; then
+		# verify the 'check-output-match($insn): $patt' tags
+		match_patterns "$file" 'check-output-match' $file.output.got
+		if [ "$?" -ne "0" ]; then
+			test_failed=1
+		fi
+	fi
+	if [ $check_output_returns -eq 1 ]; then
+		# verify the 'check-output-return: $value' tags
+		return_patterns "$file" 'check-output-returns' $file.output.got
 		if [ "$?" -ne "0" ]; then
 			test_failed=1
 		fi
@@ -458,6 +515,9 @@ echo "options:"
 echo "    -a                         append the created test to the input file"
 echo "    -f                         write a test known to fail"
 echo "    -l                         write a test for linearized code"
+echo "    -r                         write a test for linearized code returning 1"
+echo "    -p                         write a test for pre-processing"
+echo "    -s                         write a test for symbolic checking"
 echo
 echo "argument(s):"
 echo "    file                       file containing the test case(s)"
@@ -473,8 +533,9 @@ do_format()
 	append=0
 	linear=0
 	fail=0
+	ret=''
 
-	while [ $# -gt 1 ] ; do
+	while [ $# -gt 0 ] ; do
 		case "$1" in
 		-a)
 			append=1 ;;
@@ -483,6 +544,14 @@ do_format()
 		-l)
 			def_cmd='test-linearize -Wno-decl $file'
 			linear=1 ;;
+		-r)
+			def_cmd='test-linearize -Wno-decl $file'
+			ret=1 ;;
+		-p)
+			def_cmd='sparse -E $file' ;;
+		-s)
+			def_cmd='scheck $file' ;;
+
 		help|-*)
 			do_format_help
 			return 0
@@ -492,6 +561,11 @@ do_format()
 		shift
 		continue
 	done
+
+	if [ $# -lt 1 -o $# -gt 3 ]; then
+		do_format_help
+		return 0
+	fi
 
 	arg_file "$1" || return 1
 
@@ -518,6 +592,12 @@ _EOF
 	fi
 	if [ $fail != 0 ]; then
 		echo " * check-known-to-fail"
+	fi
+	if [ "$ret" != '' ]; then
+		echo ' *'
+		echo ' * check-output-ignore'
+		echo " * check-output-returns: $ret"
+		rm -f "$file.output.got"
 	fi
 	if [ $linear != 0 ]; then
 		echo ' *'

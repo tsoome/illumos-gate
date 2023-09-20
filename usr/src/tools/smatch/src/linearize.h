@@ -18,17 +18,17 @@ struct pseudo_user {
 
 DECLARE_ALLOCATOR(pseudo_user);
 DECLARE_PTR_LIST(pseudo_user_list, struct pseudo_user);
-DECLARE_PTRMAP(phi_map, struct symbol *, pseudo_t);
+DECLARE_PTRMAP(phi_map, struct symbol *, struct instruction *);
 
 
 enum pseudo_type {
 	PSEUDO_VOID,
 	PSEUDO_UNDEF,
+	PSEUDO_PHI,
 	PSEUDO_REG,
+	PSEUDO_ARG,
 	PSEUDO_SYM,
 	PSEUDO_VAL,
-	PSEUDO_ARG,
-	PSEUDO_PHI,
 };
 
 struct pseudo {
@@ -58,6 +58,11 @@ static inline bool is_nonzero(pseudo_t pseudo)
 	return pseudo->type == PSEUDO_VAL && pseudo->value != 0;
 }
 
+static inline bool is_positive(pseudo_t pseudo, unsigned size)
+{
+	return pseudo->type == PSEUDO_VAL && !(pseudo->value & sign_bit(size));
+}
+
 
 struct multijmp {
 	struct basic_block *target;
@@ -68,6 +73,7 @@ struct asm_constraint {
 	pseudo_t pseudo;
 	const char *constraint;
 	const struct ident *ident;
+	unsigned int is_memory:1;
 };
 
 DECLARE_ALLOCATOR(asm_constraint);
@@ -108,23 +114,24 @@ struct instruction {
 		};
 		struct /* phi source */ {
 			pseudo_t phi_src;
-			struct instruction_list *phi_users;
+			struct instruction *phi_node;
 		};
 		struct /* unops */ {
 			pseudo_t src;
+			unsigned from;			/* slice */
 			struct symbol *orig_type;	/* casts */
 		};
 		struct /* memops */ {
 			pseudo_t addr;			/* alias .src */
-			unsigned int offset;
+			long long offset;
 			unsigned int is_volatile:1;
 		};
 		struct /* binops and sel */ {
 			pseudo_t src1, src2, src3;
 		};
-		struct /* slice */ {
-			pseudo_t base;
-			unsigned from, len;
+		struct /* compare */ {
+			pseudo_t _src1, _src2;		// alias .src[12]
+			struct symbol *itype;		// input operands' type
 		};
 		struct /* setval */ {
 			struct expression *val;
@@ -145,6 +152,8 @@ struct instruction {
 		struct /* asm */ {
 			const char *string;
 			struct asm_rules *asm_rules;
+			unsigned int clobber_memory:1;
+			unsigned int output_memory:1;
 		};
 	};
 };
@@ -155,21 +164,19 @@ struct instruction_list;
 struct basic_block {
 	struct position pos;
 	unsigned long generation;
-	union {
-		int context;
-		int postorder_nr;	/* postorder number */
-		int dom_level;		/* level in the dominance tree */
-	};
 	struct entrypoint *ep;
 	struct basic_block_list *parents; /* sources */
 	struct basic_block_list *children; /* destinations */
 	struct instruction_list *insns;	/* Linear list of instructions */
 	struct basic_block *idom;	/* link to the immediate dominator */
+	unsigned int nr;		/* unique id for label's names */
+	int dom_level;			/* level in the dominance tree */
 	struct basic_block_list *doms;	/* list of BB idominated by this one */
-	struct phi_map *phi_map;
 	struct pseudo_list *needs, *defines;
 	union {
-		unsigned int nr;	/* unique id for label's names */
+		struct phi_map *phi_map;/* needed during SSA conversion */
+		int postorder_nr;	/* postorder number */
+		int context;		/* needed during context checking */
 		void *priv;
 	};
 };
@@ -191,6 +198,14 @@ static inline void add_bb(struct basic_block_list **list, struct basic_block *bb
 static inline void add_instruction(struct instruction_list **list, struct instruction *insn)
 {
 	add_ptr_list(list, insn);
+}
+
+static inline void insert_last_instruction(struct basic_block *bb, struct instruction *insn)
+{
+	struct instruction *last = delete_last_instruction(&bb->insns);
+	add_instruction(&bb->insns, insn);
+	add_instruction(&bb->insns, last);
+	insn->bb = bb;
 }
 
 static inline void add_multijmp(struct multijmp_list **list, struct multijmp *multijmp)
@@ -244,6 +259,11 @@ static inline int has_use_list(pseudo_t p)
 	return (p && p->type != PSEUDO_VOID && p->type != PSEUDO_UNDEF && p->type != PSEUDO_VAL);
 }
 
+static inline bool has_definition(pseudo_t p)
+{
+	return p->type == PSEUDO_REG || p->type == PSEUDO_PHI;
+}
+
 static inline int pseudo_user_list_size(struct pseudo_user_list *list)
 {
 	return ptr_list_size((struct ptr_list *)list);
@@ -259,9 +279,9 @@ static inline int has_users(pseudo_t p)
 	return !pseudo_user_list_empty(p->users);
 }
 
-static inline bool multi_users(pseudo_t p)
+static inline bool one_use(pseudo_t p)
 {
-	return ptr_list_multiple((struct ptr_list *)(p->users));
+	return !ptr_list_multiple((struct ptr_list *)(p->users));
 }
 
 static inline int nbr_users(pseudo_t p)
@@ -282,6 +302,12 @@ static inline void use_pseudo(struct instruction *insn, pseudo_t p, pseudo_t *pp
 	*pp = p;
 	if (has_use_list(p))
 		add_pseudo_user_ptr(alloc_pseudo_user(insn, pp), &p->users);
+}
+
+static inline void link_phi(struct instruction *node, pseudo_t phi)
+{
+	use_pseudo(node, phi, add_pseudo(&node->phi_list, phi));
+	phi->def->phi_node = node;
 }
 
 static inline void remove_bb_from_list(struct basic_block_list **list, struct basic_block *entry, int count)
@@ -306,7 +332,6 @@ struct entrypoint {
 };
 
 extern void insert_select(struct basic_block *bb, struct instruction *br, struct instruction *phi, pseudo_t if_true, pseudo_t if_false);
-extern void insert_branch(struct basic_block *bb, struct instruction *br, struct basic_block *target);
 
 struct instruction *alloc_phisrc(pseudo_t pseudo, struct symbol *type);
 struct instruction *alloc_phi_node(struct basic_block *bb, struct symbol *type, struct ident *ident);
@@ -321,8 +346,10 @@ pseudo_t undef_pseudo(void);
 struct entrypoint *linearize_symbol(struct symbol *sym);
 int unssa(struct entrypoint *ep);
 void show_entry(struct entrypoint *ep);
+void show_insn_entry(struct instruction *insn);
 const char *show_pseudo(pseudo_t pseudo);
 void show_bb(struct basic_block *bb);
+void show_insn_bb(struct instruction *insn);
 const char *show_instruction(struct instruction *insn);
 const char *show_label(struct basic_block *bb);
 
