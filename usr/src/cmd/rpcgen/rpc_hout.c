@@ -19,10 +19,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
 /* Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T */
 /* All Rights Reserved */
 /*
@@ -33,6 +29,11 @@
  * University Acknowledgment- Portions of this document are derived from
  * software developed by the University of California, Berkeley, and its
  * contributors.
+ */
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 /*
@@ -94,6 +95,8 @@ print_datadef(definition *def)
 	case DEF_CONST:
 		pconstdef(def);
 		break;
+	default:
+		break;
 	}
 	if (def->def_kind != DEF_PROGRAM && def->def_kind != DEF_CONST)
 		storexdrfuncdecl(def->def_name, def->def_kind != DEF_TYPEDEF ||
@@ -108,6 +111,8 @@ print_funcdef(definition *def)
 	case DEF_PROGRAM:
 		f_print(fout, "\n");
 		pprogramdef(def);
+		break;
+	default:
 		break;
 	}
 }
@@ -348,7 +353,7 @@ pprogramdef(definition *def)
 
 void
 pprocdef(proc_list *proc, version_list *vp, char *addargtype, int server_p,
-								int mode)
+    int mode)
 {
 	if (mtflag) {
 		/* Print MT style stubs */

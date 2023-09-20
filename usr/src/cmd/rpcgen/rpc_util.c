@@ -19,10 +19,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
 /* Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T */
 /* All Rights Reserved */
 /*
@@ -33,6 +29,11 @@
  * University Acknowledgment- Portions of this document are derived from
  * software developed by the University of California, Berkeley, and its
  * contributors.
+ */
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 /*
@@ -219,7 +220,7 @@ locase(char *str)
 	static char buf[100];
 	char *p = buf;
 
-	while (c = *str++)
+	while ((c = *str++) != '\0')
 		*p++ = (c >= 'A' && c <= 'Z') ? (c - 'A' + 'a') : c;
 	*p = 0;
 	return (buf);

@@ -40,6 +40,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -62,23 +63,23 @@ extern void crash(void);
 extern void add_type(int, char *);
 extern void add_sample_msg(void);
 
-static void svc_output(char *, char *, int, char *);
-static void clnt_output(char *, char *, int, char *);
-static void c_output(char *, char *, int, char *);
+static void svc_output(char *, char *, bool, char *);
+static void clnt_output(char *, char *, bool, char *);
+static void c_output(char *, char *, bool, char *);
 static void mkfile_output(struct commandline *);
 static void c_initialize(void);
-static void h_output(char *, char *, int, char *);
+static void h_output(char *, char *, bool, char *);
 static void s_output(int, char *[], char *, char *, int, char *, int, int);
-static void l_output(char *, char *, int, char *);
-static void t_output(char *, char *, int, char *);
+static void l_output(char *, char *, bool, char *);
+static void t_output(char *, char *, bool, char *);
 static int do_registers(int, char *[]);
 static uint_t parseargs(int, char *[], struct commandline *);
 static void usage(void);
 static void version_info(void);
 static void options_usage(void);
 
-#define	EXTEND		1		/* alias for TRUE */
-#define	DONT_EXTEND	0		/* alias for FALSE */
+#define	EXTEND		true		/* alias for TRUE */
+#define	DONT_EXTEND	false		/* alias for FALSE */
 
 #define	SUNOS_CPP "/usr/lib/cpp"
 static int cppDefined = 0;	/* explicit path for C preprocessor */
@@ -229,6 +230,9 @@ extendfile(char *file, char *ext)
 {
 	char *res;
 	char *p;
+
+	if (file == NULL)
+		return (NULL);
 
 	res = malloc(strlen(file) + strlen(ext) + 1);
 	if (res == NULL)
@@ -390,7 +394,7 @@ file_name(char *file, char *ext)
 	char *temp;
 	temp = extendfile(file, ext);
 
-	if (access(temp, F_OK) != -1)
+	if (temp != NULL && access(temp, F_OK) != -1)
 		return (temp);
 	else
 		return ((char *)" ");
@@ -398,7 +402,7 @@ file_name(char *file, char *ext)
 
 
 static void
-c_output(char *infile, char *define, int extend, char *outfile)
+c_output(char *infile, char *define, bool extend, char *outfile)
 {
 	definition *def;
 	char *include;
@@ -410,12 +414,15 @@ c_output(char *infile, char *define, int extend, char *outfile)
 	outfilename = extend ? extendfile(infile, outfile) : outfile;
 	open_output(infile, outfilename);
 	add_warning();
-	if (infile && (include = extendfile(infile, ".h"))) {
+	include = extendfile(infile, ".h");
+	if (include != NULL) {
 		f_print(fout, "#include \"%s\"\n", include);
 		free(include);
 		/* .h file already contains rpc/rpc.h */
-	} else
+	} else {
 		f_print(fout, "#include <rpc/rpc.h>\n");
+	}
+
 	/*
 	 * Include stdlib.h to support mem_alloc calls.
 	 */
@@ -423,7 +430,7 @@ c_output(char *infile, char *define, int extend, char *outfile)
 	f_print(fout, "#include <stdlib.h>\n");
 	f_print(fout, "#endif /* !_KERNEL */\n\n");
 	tell = ftell(fout);
-	while (def = get_definition()) {
+	while ((def = get_definition()) != NULL) {
 		emit(def);
 	}
 	if (extend && tell == ftell(fout)) {
@@ -507,7 +514,7 @@ generate_guard(char *pathname)
 
 
 static void
-h_output(char *infile, char *define, int extend, char *outfile)
+h_output(char *infile, char *define, bool extend, char *outfile)
 {
 	definition *def;
 	char *outfilename;
@@ -562,7 +569,7 @@ h_output(char *infile, char *define, int extend, char *outfile)
 	tell = ftell(fout);
 
 	/* print data definitions */
-	while (def = get_definition())
+	while ((def = get_definition()) != NULL)
 		print_datadef(def);
 
 	/*
@@ -626,7 +633,7 @@ h_output(char *infile, char *define, int extend, char *outfile)
  */
 static void
 s_output(int argc, char *argv[], char *infile, char *define, int extend,
-					char *outfile, int nomain, int netflag)
+    char *outfile, int nomain, int netflag)
 {
 	char *include;
 	definition *def;
@@ -637,11 +644,13 @@ s_output(int argc, char *argv[], char *infile, char *define, int extend,
 	outfilename = extend ? extendfile(infile, outfile) : outfile;
 	open_output(infile, outfilename);
 	add_warning();
-	if (infile && (include = extendfile(infile, ".h"))) {
+	include = extendfile(infile, ".h");
+	if (include != NULL) {
 		f_print(fout, "#include \"%s\"\n", include);
 		free(include);
-	} else
+	} else {
 		f_print(fout, "#include <rpc/rpc.h>\n");
+	}
 
 	f_print(fout, "#include <stdio.h>\n");
 	f_print(fout, "#include <stdlib.h> /* getenv, exit */\n");
@@ -692,7 +701,7 @@ s_output(int argc, char *argv[], char *infile, char *define, int extend,
 	if (timerflag)
 		f_print(fout, "\n#define	_RPCSVC_CLOSEDOWN %s\n",
 		    svcclosetime);
-	while (def = get_definition())
+	while ((def = get_definition()) != NULL)
 		foundprogram |= (def->def_kind == DEF_PROGRAM);
 	if (extend && !foundprogram) {
 		(void) unlink(outfilename);
@@ -713,7 +722,7 @@ s_output(int argc, char *argv[], char *infile, char *define, int extend,
  * generate client side stubs
  */
 static void
-l_output(char *infile, char *define, int extend, char *outfile)
+l_output(char *infile, char *define, bool extend, char *outfile)
 {
 	char *include;
 	definition *def;
@@ -726,18 +735,20 @@ l_output(char *infile, char *define, int extend, char *outfile)
 	add_warning();
 	if (Cflag)
 		f_print(fout, "#include <memory.h> /* for memset */\n");
-	if (infile && (include = extendfile(infile, ".h"))) {
+	include = extendfile(infile, ".h");
+	if (include != NULL) {
 		f_print(fout, "#include \"%s\"\n", include);
 		free(include);
-	} else
+	} else {
 		f_print(fout, "#include <rpc/rpc.h>\n");
+	}
 
 	f_print(fout, "#ifndef _KERNEL\n");
 	f_print(fout, "#include <stdio.h>\n");
 	f_print(fout, "#include <stdlib.h> /* getenv, exit */\n");
 	f_print(fout, "#endif /* !_KERNEL */\n");
 
-	while (def = get_definition())
+	while ((def = get_definition()) != NULL)
 		foundprogram |= (def->def_kind == DEF_PROGRAM);
 	if (extend && !foundprogram) {
 		(void) unlink(outfilename);
@@ -750,7 +761,7 @@ l_output(char *infile, char *define, int extend, char *outfile)
  * generate the dispatch table
  */
 static void
-t_output(char *infile, char *define, int extend, char *outfile)
+t_output(char *infile, char *define, bool extend, char *outfile)
 {
 	definition *def;
 	int foundprogram = 0;
@@ -760,7 +771,7 @@ t_output(char *infile, char *define, int extend, char *outfile)
 	outfilename = extend ? extendfile(infile, outfile) : outfile;
 	open_output(infile, outfilename);
 	add_warning();
-	while (def = get_definition()) {
+	while ((def = get_definition()) != NULL) {
 		foundprogram |= (def->def_kind == DEF_PROGRAM);
 	}
 	if (extend && !foundprogram) {
@@ -772,7 +783,7 @@ t_output(char *infile, char *define, int extend, char *outfile)
 
 /* sample routine for the server template */
 static void
-svc_output(char *infile, char *define, int extend, char *outfile)
+svc_output(char *infile, char *define, bool extend, char *outfile)
 {
 	definition *def;
 	char *include;
@@ -800,7 +811,7 @@ svc_output(char *infile, char *define, int extend, char *outfile)
 	f_print(fout, "#include <signal.h>\n");
 
 	tell = ftell(fout);
-	while (def = get_definition())
+	while ((def = get_definition()) != NULL)
 		write_sample_svc(def);
 	if (extend && tell == ftell(fout))
 		(void) unlink(outfilename);
@@ -808,7 +819,7 @@ svc_output(char *infile, char *define, int extend, char *outfile)
 
 /* sample main routine for client */
 static void
-clnt_output(char *infile, char *define, int extend, char *outfile)
+clnt_output(char *infile, char *define, bool extend, char *outfile)
 {
 	definition *def;
 	char *include;
@@ -826,17 +837,19 @@ clnt_output(char *infile, char *define, int extend, char *outfile)
 
 	open_output(infile, outfilename);
 	add_sample_msg();
-	if (infile && (include = extendfile(infile, ".h"))) {
+	include = extendfile(infile, ".h");
+	if (include != NULL) {
 		f_print(fout, "#include \"%s\"\n", include);
 		free(include);
-	} else
+	} else {
 		f_print(fout, "#include <rpc/rpc.h>\n");
+	}
 
 	f_print(fout, "#include <stdio.h>\n");
 	f_print(fout, "#include <stdlib.h> /* getenv, exit */\n");
 
 	tell = ftell(fout);
-	while (def = get_definition())
+	while ((def = get_definition()) != NULL)
 		has_program += write_sample_clnt(def);
 
 	if (has_program)
@@ -1035,7 +1048,7 @@ parseargs(int argc, char *argv[], struct commandline *cmd)
 {
 	int i;
 	int j;
-	char c, ch;
+	int c, ch;
 	char flag[(1 << 8 * sizeof (char))];
 	int nflags;
 

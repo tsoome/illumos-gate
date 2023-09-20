@@ -19,10 +19,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
 /* Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T */
 /* All Rights Reserved */
 /*
@@ -33,6 +29,11 @@
  * University Acknowledgment- Portions of this document are derived from
  * software developed by the University of California, Berkeley, and its
  * contributors.
+ */
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 /*
@@ -97,6 +98,8 @@ emit(definition *def)
 		break;
 	case DEF_TYPEDEF:
 		emit_typedef(def);
+		break;
+	default:
 		break;
 	}
 	print_trailer();
@@ -526,7 +529,7 @@ inline_struct(decl_list *dl, decl_list *last, int flag, int indent)
 				sizestr = arraysize(sizestr, &dl->decl, size);
 			}
 		} else {
-			if (cur != NULL)
+			if (cur != NULL) {
 				if (sizestr == NULL && tsize < inlinelen) {
 					/*
 					 * don't expand into inline code
@@ -541,6 +544,7 @@ inline_struct(decl_list *dl, decl_list *last, int flag, int indent)
 					expand_inline(indent, sizestr,
 					    tsize, flag, dl, cur);
 				}
+			}
 			tsize = 0;
 			cur = NULL;
 			sizestr = NULL;
@@ -767,6 +771,8 @@ emit_inline(int indent, declaration *decl, int flag)
 		f_print(fout, "}\n");
 		tabify(fout, indent);
 		f_print(fout, "}\n");
+	default:
+		break;
 	}
 }
 
@@ -792,6 +798,8 @@ emit_inline64(int indent, declaration *decl, int flag)
 		f_print(fout, "}\n");
 		tabify(fout, indent);
 		f_print(fout, "}\n");
+	default:
+		break;
 	}
 }
 
