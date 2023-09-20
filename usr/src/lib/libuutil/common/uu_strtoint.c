@@ -182,8 +182,11 @@ uu_strtoint(const char *s, void *v, size_t sz, int base,
 			goto bad_argument;
 		break;
 	case 8:
-		if (max > INT64_MAX || min < INT64_MIN)
-			goto bad_argument;
+		/*
+		 * This check does not really work with int64_t.
+		 * if (max > INT64_MAX || min < INT64_MIN)
+		 *	goto bad_argument;
+		 */
 		break;
 	default:
 		goto bad_argument;
@@ -252,8 +255,11 @@ uu_strtouint(const char *s, void *v, size_t sz, int base,
 			goto bad_argument;
 		break;
 	case 8:
-		if (max > UINT64_MAX)
-			goto bad_argument;
+		/*
+		 * This check does not really work with uint64_t.
+		 * if (max > UINT64_MAX)
+		 *	goto bad_argument;
+		 */
 		break;
 	default:
 		goto bad_argument;
