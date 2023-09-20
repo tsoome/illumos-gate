@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Dan Carpenter.
+ * Copyright (C) 2020 Oracle.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,218 +15,451 @@
  * along with this program; if not, see http://www.gnu.org/copyleft/gpl.txt
  */
 
-/*
- * This is a kernel check to make sure we unwind everything on
- * on errors.
- *
- */
+#include <ctype.h>
 
 #include "smatch.h"
 #include "smatch_extra.h"
 #include "smatch_slist.h"
 
-#define EBUSY 16
-#define MAX_ERRNO 4095
-
 static int my_id;
+static int info_id;
 
-STATE(allocated);
-STATE(unallocated);
+#define IGNORE 100000
 
-/* state of unwind function */
-STATE(called);
+STATE(alloc);
+STATE(release);
+STATE(param_released);
+STATE(ignore);
+STATE(unknown);
 
-static int was_passed_as_param(struct expression *expr)
+static unsigned long fn_has_alloc;
+
+struct ref_func_info {
+	const char *name;
+	int type;
+	int param;
+	const char *key;
+	const sval_t *implies_start, *implies_end;
+	func_hook *call_back;
+};
+
+static struct ref_func_info func_table[] = {
+	{ "clk_prepare", ALLOC, 0, "$", &int_zero, &int_zero },
+	{ "clk_prepare_enable", ALLOC, 0, "$", &int_zero, &int_zero },
+	{ "clk_disable_unprepare", RELEASE, 0, "$" },
+	{ "clk_unprepare", RELEASE, 0, "$" },
+
+	{ "alloc_etherdev_mqs", ALLOC, -1, "$", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "free_netdev", RELEASE, 0, "$" },
+
+	/*
+	 * FIXME: A common pattern in release functions like amd76xrom_cleanup()
+	 * is to do:
+	 *
+	 * 	if (window->rsrc.parent)
+	 * 		release_resource(&window->rsrc);
+	 *
+	 * Which is slightly tricky to know how to merge the states so let's
+	 * hold off checking request_resource() for now.
+	 *
+	 * { "request_resource", ALLOC,   1, "$", &int_zero, &int_zero },
+	 * { "release_resource", RELEASE, 0, "$" },
+	 *
+	 */
+
+	{ "pci_request_regions", ALLOC,   0, "$", &int_zero, &int_zero },
+	{ "pci_release_regions", RELEASE, 0, "$" },
+
+	{ "request_free_mem_region", ALLOC,   -1, "$->start", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "__request_region", ALLOC,   1, "$", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "release_and_free_resource", RELEASE, 0, "$->start" },
+	{ "release_resource", RELEASE, 0, "$->start" },
+	{ "__release_region", RELEASE, 1, "$" },
+
+	{ "ioremap", ALLOC,  -1, "$", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "of_iomap", ALLOC,  -1, "$", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "ioremap_encrypted", ALLOC,  -1, "$", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "iounmap", RELEASE, 0, "$" },
+
+	{ "request_threaded_irq", ALLOC,   0, "$", &int_zero, &int_zero },
+	{ "request_irq", ALLOC,   0, "$", &int_zero, &int_zero },
+	{ "free_irq",    RELEASE, 0, "$" },
+	{ "pci_request_irq", ALLOC,   1, "$", &int_zero, &int_zero },
+	{ "pci_free_irq",    RELEASE, 1, "$" },
+
+	{ "register_netdev",   ALLOC,   0, "$", &int_zero, &int_zero },
+	{ "unregister_netdev", RELEASE, 0, "$" },
+
+	{ "misc_register",   ALLOC,   0, "$", &int_zero, &int_zero },
+	{ "misc_deregister", RELEASE, 0, "$" },
+
+	{ "ieee80211_alloc_hw", ALLOC,  -1, "$", &valid_ptr_min_sval, &valid_ptr_max_sval },
+	{ "ieee80211_free_hw",  RELEASE, 0, "$" },
+
+	{ "request_firmware", ALLOC,	0, "*$", &int_zero, &int_zero },
+	{ "release_firmware",  RELEASE, 0, "$" },
+};
+
+static struct smatch_state *unmatched_state(struct sm_state *sm)
 {
-	char *name;
-	struct symbol *sym;
-	struct symbol *arg;
+	struct smatch_state *state;
 
-	name = expr_to_var_sym(expr, &sym);
+	if (sm->state != &param_released)
+		return &undefined;
+
+	if (is_impossible_path())
+		return &param_released;
+
+	state = get_state(SMATCH_EXTRA, sm->name, sm->sym);
+	if (!state)
+		return &undefined;
+	if (!estate_rl(state) || is_err_or_null(estate_rl(state)))
+		return &param_released;
+	if (parent_is_err_or_null_var_sym(sm->name, sm->sym))
+		return &param_released;
+
+	if (estate_min(state).value == 0 &&
+	    estate_max(state).value == 0)
+		return &param_released;
+	if (estate_type(state) == &int_ctype &&
+	    sval_is_negative(estate_min(state)) &&
+	    (estate_max(state).value == -1 || estate_max(state).value == 0))
+		return &param_released;
+
+	 return &undefined;
+}
+
+static void pre_merge_hook(struct sm_state *cur, struct sm_state *other)
+{
+	if (cur->state == &param_released)
+		return;
+	if (is_impossible_path())
+		set_state(my_id, cur->name, cur->sym, &undefined);
+}
+
+static bool is_param_var_sym(const char *name, struct symbol *sym)
+{
+	const char *key;
+
+	return get_param_key_from_var_sym(name, sym, NULL, &key) >= 0;
+}
+
+static bool mark_same_name_as_undefined(const char *name)
+{
+	struct sm_state *sm;
+	int len;
+
 	if (!name)
-		return 0;
-	free_string(name);
+		return false;
 
-	FOR_EACH_PTR(cur_func_sym->ctype.base_type->arguments, arg) {
-		if (arg == sym)
-			return 1;
-	} END_FOR_EACH_PTR(arg);
-	return 0;
+	len = strlen(name);
+
+	FOR_EACH_MY_SM(my_id, __get_cur_stree(), sm) {
+		if (strncmp(sm->name, name, len) != 0)
+			continue;
+		if (sm->name[len] != ':')
+			continue;
+		set_state(sm->owner, sm->name, sm->sym, &unknown);
+		return true;
+	} END_FOR_EACH_SM(sm);
+
+	return false;
 }
 
-static void print_unwind_functions(const char *fn, struct expression *expr, void *_arg_no)
+static void mark_partial_matches_as_undefined(const char *key)
 {
-	struct expression *arg_expr;
-	int arg_no = PTR_INT(_arg_no);
-	static struct symbol *last_printed = NULL;
+	struct sm_state *sm;
+	int start_pos, state_len, key_len;
+	char *p;
 
-	arg_expr = get_argument_from_call_expr(expr->args, arg_no);
-	if (!was_passed_as_param(arg_expr))
-		return;
-	if (last_printed == cur_func_sym)
-		return;
-	last_printed = cur_func_sym;
-	sm_msg("info: is unwind function");
-}
-
-static void request_granted(const char *fn, struct expression *call_expr,
-			struct expression *assign_expr, void *_arg_no)
-{
-	struct expression *arg_expr;
-	int arg_no = PTR_INT(_arg_no);
-
-	if (arg_no == -1) {
-		if (!assign_expr)
+	while ((p = strchr(key, '-'))) {
+		if (p[1] != '>')
 			return;
-		arg_expr = assign_expr->left;
-	} else {
-		arg_expr = get_argument_from_call_expr(call_expr->args, arg_no);
+		key = p + 2;
 	}
-	set_state_expr(my_id, arg_expr, &allocated);
+	key_len = strlen(key);
+
+	FOR_EACH_MY_SM(my_id, __get_cur_stree(), sm) {
+		state_len = strlen(sm->name);
+		if (state_len < key_len)
+			continue;
+
+		start_pos = state_len - key_len;
+		if ((start_pos == 0 || !isalnum(sm->name[start_pos - 1])) &&
+		    strcmp(sm->name + start_pos, key) == 0)
+			update_ssa_state(my_id, sm->name, sm->sym, &unknown);
+
+	} END_FOR_EACH_SM(sm);
 }
 
-static void request_denied(const char *fn, struct expression *call_expr,
-			struct expression *assign_expr, void *_arg_no)
+static void mark_matches_as_undefined(const char *name)
 {
-	struct expression *arg_expr;
-	int arg_no = PTR_INT(_arg_no);
+	if (mark_same_name_as_undefined(name))
+		return;
+	mark_partial_matches_as_undefined(name);
+}
 
-	if (arg_no == -1) {
-		if (!assign_expr)
+static bool is_alloc_primitive(struct expression *expr)
+{
+	int i;
+
+	while (expr->type == EXPR_ASSIGNMENT)
+		expr = strip_expr(expr->right);
+	if (expr->type != EXPR_CALL)
+		return false;
+
+	if (expr->fn->type != EXPR_SYMBOL)
+		return false;
+
+	for (i = 0; i < ARRAY_SIZE(func_table); i++) {
+		if (sym_name_is(func_table[i].name, expr->fn))
+			return true;
+	}
+
+	return false;
+}
+
+static void return_param_alloc(struct expression *expr, const char *name, struct symbol *sym, void *data)
+{
+	struct smatch_state *state;
+	char *fn_name;
+
+	fn_has_alloc = true;
+
+	if (strncmp(name, "__fake_", 7) == 0)
+		return;
+
+	if (sym->ctype.modifiers & (MOD_NONLOCAL | MOD_STATIC | MOD_ADDRESSABLE))
+		return;
+
+	while (expr->type == EXPR_ASSIGNMENT)
+		expr = strip_expr(expr->right);
+	if (expr->type != EXPR_CALL)
+		return;
+	fn_name = expr_to_var(expr->fn);
+	if (!fn_name)
+		return;
+
+	state = alloc_state_str(fn_name);
+	state->data = &alloc;
+
+	set_ssa_state(my_id, name, sym, state);
+}
+
+static void return_param_release(struct expression *expr, const char *name, struct symbol *sym, void *data)
+{
+	struct sm_state *start_sm;
+
+	/* The !data means this comes from the DB (not hard coded). */
+	if (!data && is_alloc_primitive(expr))
+		return;
+
+	start_sm = get_ssa_sm_state(my_id, name, sym);
+	if (start_sm) {
+		update_ssa_sm(my_id, start_sm, &release);
+	} else {
+		if (fn_has_alloc) {
+			mark_matches_as_undefined(name);
 			return;
-		arg_expr = assign_expr->left;
-	} else {
-		arg_expr = get_argument_from_call_expr(call_expr->args, arg_no);
+		}
+		if (is_param_var_sym(name, sym))
+			set_state(info_id, name, sym, &param_released);
 	}
-	set_state_expr(my_id, arg_expr, &unallocated);
 }
 
-static void match_release(const char *fn, struct expression *expr, void *_arg_no)
+static void return_param_ignore(struct expression *expr, const char *name, struct symbol *sym, void *data)
 {
-	struct expression *arg_expr;
-	int arg_no = PTR_INT(_arg_no);
+	struct sm_state *start_sm;
 
-	arg_expr = get_argument_from_call_expr(expr->args, arg_no);
-	if (get_state_expr(my_id, arg_expr))
-		set_state_expr(my_id, arg_expr, &unallocated);
-	set_equiv_state_expr(my_id, arg_expr, &unallocated);
+	start_sm = get_ssa_sm_state(my_id, name, sym);
+	if (!start_sm)
+		return;
+	update_ssa_sm(my_id, start_sm, &ignore);
 }
 
-static void match_unwind_function(const char *fn, struct expression *expr, void *unused)
+static void match_sm_assign(struct sm_state *sm, struct expression *mod_expr)
 {
-	set_state(my_id, "unwind_function", NULL, &called);
+	char *left;
+	bool tracked = true;
+
+	if (!mod_expr || mod_expr->type != EXPR_ASSIGNMENT)
+		return;
+
+	left = expr_to_str(mod_expr->left);
+	if (!left || strchr(left, '['))
+		tracked = false;
+	free_string(left);
+
+	if (!tracked)
+		set_state(my_id, sm->name, sm->sym, &ignore);
 }
 
-static int func_returns_int(void)
+static void unwind_return_info_callback(int return_id, char *return_ranges,
+				 struct expression *returned_expr,
+				 int param,
+				 const char *printed_name,
+				 struct sm_state *sm)
 {
-	struct symbol *type;
+	if (param < 0)
+		return;
+	if (sm->state != &param_released)
+		return;
+	if (is_impossible_path())
+		return;
 
-	type = get_base_type(cur_func_sym);
-	if (!type || type->type != SYM_FN)
-		return 0;
-	type = get_base_type(type);
-	if (type && type->ctype.base_type == &int_type) {
-		return 1;
-	}
-	return 0;
+	sql_insert_return_states(return_id, return_ranges, RELEASE,
+				 param, printed_name, "");
 }
 
-static void match_return(struct expression *ret_value)
+static const char *get_alloc_fn(struct sm_state *sm)
 {
-	struct stree *stree;
 	struct sm_state *tmp;
-	sval_t sval;
 
-	if (!func_returns_int())
-		return;
-	if (get_value(ret_value, &sval) && sval_cmp_val(sval, 0) >= 0)
-		return;
-	if (!implied_not_equal(ret_value, 0))
-		return;
-	if (get_state(my_id, "unwind_function", NULL) == &called)
-		return;
+	if (slist_has_state(sm->possible, &unknown))
+		return NULL;
 
-	stree = __get_cur_stree();
-	FOR_EACH_MY_SM(my_id, stree, tmp) {
-		if (slist_has_state(tmp->possible, &allocated))
-			sm_warning("'%s' was not released on error", tmp->name);
-	} END_FOR_EACH_SM(tmp);
+	if (sm->state->data == &alloc)
+		return sm->state->name;
+
+	FOR_EACH_PTR(sm->possible, tmp) {
+		if (tmp->state->data == &alloc)
+			return tmp->state->name;
+	} END_FOR_EACH_PTR(tmp);
+
+	return NULL;
 }
 
-static void register_unwind_functions(void)
+static void check_balance(const char *name, struct symbol *sym)
 {
-	struct token *token;
-	const char *func;
+	struct range_list *inc_lines = NULL;
+	int inc_buckets[RET_UNKNOWN + 1] = {};
+	struct stree *stree, *orig_stree;
+	struct smatch_state *state;
+	struct sm_state *return_sm;
+	struct sm_state *sm;
+	sval_t line = sval_type_val(&int_ctype, 0);
+	const char *tmp_name, *fn_name = NULL;
+	int bucket;
 
-	token = get_tokens_file("kernel.unwind_functions");
-	if (!token)
-		return;
-	if (token_type(token) != TOKEN_STREAMBEGIN)
-		return;
-	token = token->next;
-	while (token_type(token) != TOKEN_STREAMEND) {
-		if (token_type(token) != TOKEN_IDENT)
-			return;
-		func = show_ident(token->ident);
-		add_function_hook(func, &match_unwind_function, NULL);
-		token = token->next;
-	}
-	clear_token_alloc();
+	FOR_EACH_PTR(get_all_return_strees(), stree) {
+		orig_stree = __swap_cur_stree(stree);
+
+		if (is_impossible_path())
+			goto swap_stree;
+		if (db_incomplete())
+			goto swap_stree;
+		if (has_devm_cleanup())
+			goto swap_stree;
+
+		return_sm = get_sm_state(RETURN_ID, "return_ranges", NULL);
+		if (!return_sm)
+			goto swap_stree;
+		line.value = return_sm->line;
+
+		sm = get_sm_state(my_id, name, sym);
+		if (!sm)
+			goto swap_stree;
+
+		state = sm->state;
+		if (state == &param_released)
+			state = &release;
+
+		tmp_name = get_alloc_fn(sm);
+		if (tmp_name) {
+			fn_name = tmp_name;
+			state = &alloc;
+		}
+
+		if (state != &alloc &&
+		    state != &release)
+			goto swap_stree;
+
+		bucket = success_fail_return(estate_rl(return_sm->state));
+		if (bucket != RET_FAIL)
+			goto swap_stree;
+
+		if (state == &alloc) {
+			add_range(&inc_lines, line, line);
+			inc_buckets[bucket] = true;
+		}
+swap_stree:
+		__swap_cur_stree(orig_stree);
+	} END_FOR_EACH_PTR(stree);
+
+	if (inc_buckets[RET_FAIL])
+		goto complain;
+
+	return;
+
+complain:
+	sm_warning("'%s' from %s() not released on lines: %s.", ssa_name(name), fn_name, show_rl(inc_lines));
 }
 
-static void release_function_indicator(const char *name)
+static void match_check_balanced(struct symbol *sym)
 {
-	if (!option_info)
-		return;
-	add_function_hook(name, &print_unwind_functions, INT_PTR(0));
+	struct sm_state *sm;
+
+	FOR_EACH_MY_SM(my_id, get_all_return_states(), sm) {
+		check_balance(sm->name, sm->sym);
+	} END_FOR_EACH_SM(sm);
 }
 
 void check_unwind(int id)
 {
-	if (option_project != PROJ_KERNEL || !option_spammy)
-		return;
+	struct ref_func_info *info;
+	int i;
+
 	my_id = id;
 
-	register_unwind_functions();
+	if (option_project != PROJ_KERNEL)
+		return;
 
-	return_implies_state("request_resource", 0, 0, &request_granted, INT_PTR(1));
-	return_implies_state("request_resource", -EBUSY, -EBUSY, &request_denied, INT_PTR(1));
-	add_function_hook("release_resource", &match_release, INT_PTR(0));
-	release_function_indicator("release_resource");
+	set_dynamic_states(my_id);
+	add_pre_merge_hook(my_id, &pre_merge_hook);
 
-	return_implies_state_sval("__request_region", valid_ptr_min_sval, valid_ptr_max_sval, &request_granted, INT_PTR(1));
-	return_implies_state("__request_region", 0, 0, &request_denied, INT_PTR(1));
-	add_function_hook("__release_region", &match_release, INT_PTR(1));
-	release_function_indicator("__release_region");
+	for (i = 0; i < ARRAY_SIZE(func_table); i++) {
+		param_key_hook *hook;
 
-	return_implies_state_sval("ioremap", valid_ptr_min_sval, valid_ptr_max_sval, &request_granted, INT_PTR(-1));
-	return_implies_state("ioremap", 0, 0, &request_denied, INT_PTR(-1));
-	add_function_hook("iounmap", &match_release, INT_PTR(0));
+		info = &func_table[i];
+		if (info->type == ALLOC)
+			hook = &return_param_alloc;
+		else if (info->type == RELEASE)
+			hook = &return_param_release;
+		else if (info->type == IGNORE)
+			hook = &return_param_ignore;
+		else
+			exit(1);
 
-	return_implies_state_sval("pci_iomap", valid_ptr_min_sval, valid_ptr_max_sval, &request_granted, INT_PTR(-1));
-	return_implies_state("pci_iomap", 0, 0, &request_denied, INT_PTR(-1));
-	add_function_hook("pci_iounmap", &match_release, INT_PTR(1));
-	release_function_indicator("pci_iounmap");
+		if (info->call_back) {
+			add_function_hook(info->name, info->call_back, info);
+		} else if (info->implies_start && info->type == ALLOC) {
+			return_implies_param_key_exact(info->name,
+					*info->implies_start,
+					*info->implies_end,
+					hook, info->param, info->key, info);
+		} else if (info->implies_start) {
+			return_implies_param_key(info->name,
+					*info->implies_start,
+					*info->implies_end,
+					hook, info->param, info->key, info);
+		} else {
+			add_function_param_key_hook(info->name,
+				hook, info->param, info->key, info);
+		}
+	}
 
-	return_implies_state_sval("__create_workqueue_key", valid_ptr_min_sval, valid_ptr_max_sval, &request_granted,
-			INT_PTR(-1));
-	return_implies_state("__create_workqueue_key", 0, 0, &request_denied, INT_PTR(-1));
-	add_function_hook("destroy_workqueue", &match_release, INT_PTR(0));
+	add_ssa_state_assigned_hook(my_id, match_sm_assign);
 
-	return_implies_state("request_irq", 0, 0, &request_granted, INT_PTR(0));
-	return_implies_state("request_irq", -MAX_ERRNO, -1, &request_denied, INT_PTR(0));
-	add_function_hook("free_irq", &match_release, INT_PTR(0));
-	release_function_indicator("free_irq");
+	add_function_data(&fn_has_alloc);
 
-	return_implies_state("register_netdev", 0, 0, &request_granted, INT_PTR(0));
-	return_implies_state("register_netdev", -MAX_ERRNO, -1, &request_denied, INT_PTR(0));
-	add_function_hook("unregister_netdev", &match_release, INT_PTR(0));
-	release_function_indicator("unregister_netdev");
+	select_return_param_key(RELEASE, &return_param_release);
+	add_hook(&match_check_balanced, END_FUNC_HOOK);
+}
 
-	return_implies_state("misc_register", 0, 0, &request_granted, INT_PTR(0));
-	return_implies_state("misc_register", -MAX_ERRNO, -1, &request_denied, INT_PTR(0));
-	add_function_hook("misc_deregister", &match_release, INT_PTR(0));
-	release_function_indicator("misc_deregister");
+void check_unwind_info(int id)
+{
+	info_id = id;
 
-	add_hook(&match_return, RETURN_HOOK);
+	add_unmatched_state_hook(info_id, &unmatched_state);
+	add_return_info_callback(info_id, unwind_return_info_callback);
 }

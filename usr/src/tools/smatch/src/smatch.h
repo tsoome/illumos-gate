@@ -32,17 +32,7 @@
 #include "parse.h"
 #include "expression.h"
 #include "avl.h"
-
-typedef struct {
-	struct symbol *type;
-	union {
-		long long value;
-		unsigned long long uvalue;
-		float fvalue;
-		double dvalue;
-		long double ldvalue;
-	};
-} sval_t;
+#include "smatch_constants.h"
 
 typedef long long mtag_t;
 
@@ -51,11 +41,19 @@ struct smatch_state {
 	void *data;
 };
 #define STATE(_x) static struct smatch_state _x = { .name = #_x }
+#define GLOBAL_STATE(_x) struct smatch_state _x = { .name = #_x }
 extern struct smatch_state undefined;
-extern struct smatch_state ghost;
 extern struct smatch_state merged;
 extern struct smatch_state true_state;
 extern struct smatch_state false_state;
+extern struct smatch_state unit_bit;
+extern struct smatch_state unit_byte;
+extern struct smatch_state unit_array_size;
+extern struct smatch_state unit_long;
+extern struct smatch_state unit_page;
+extern struct smatch_state unit_msec;
+extern struct smatch_state unit_ns;
+extern struct smatch_state unit_jiffy;
 DECLARE_ALLOCATOR(smatch_state);
 
 static inline void *INT_PTR(int i)
@@ -83,6 +81,7 @@ struct sm_state {
 	struct symbol *sym;
 	unsigned short owner;
 	unsigned short merged:1;
+	unsigned short leaf:1;
 	unsigned int line;
   	struct smatch_state *state;
 	struct stree *pool;
@@ -123,6 +122,7 @@ enum hook_type {
 	SYM_HOOK,
 	STRING_HOOK,
 	DECLARATION_HOOK,
+	DECLARATION_HOOK_AFTER,
 	ASSIGNMENT_HOOK,
 	ASSIGNMENT_HOOK_AFTER,
 	RAW_ASSIGNMENT_HOOK,
@@ -130,6 +130,8 @@ enum hook_type {
 	LOGIC_HOOK,
 	CONDITION_HOOK,
 	PRELOOP_HOOK,
+	POSTLOOP_HOOK,
+	AFTER_LOOP_NO_BREAKS,
 	SELECT_HOOK,
 	WHOLE_CONDITION_HOOK,
 	FUNCTION_CALL_HOOK_BEFORE,
@@ -140,7 +142,7 @@ enum hook_type {
 	MACRO_ASSIGNMENT_HOOK,
 	BINOP_HOOK,
 	OP_HOOK,
-	DEREF_HOOK,
+	DEREF_HOOK,  /* DEREF_HOOK is junk.  Better to use add_dereference_hook() */
 	CASE_HOOK,
 	ASM_HOOK,
 	CAST_HOOK,
@@ -162,6 +164,43 @@ enum hook_type {
 
 struct range_list;
 
+typedef void (void_fn)(void);
+typedef void (expr_func)(struct expression *expr);
+typedef void (stmt_func)(struct statement *stmt);
+typedef bool (bool_stmt_func)(struct statement *stmt);
+typedef void (sym_func)(struct symbol *sym);
+typedef void (name_sym_hook)(struct expression *expr, const char *name, struct symbol *sym);
+typedef void (sm_hook)(struct sm_state *sm, struct expression *mod_expr);
+typedef void (string_hook)(struct expression *expr, const char *str);
+DECLARE_PTR_LIST(void_fn_list, void_fn);
+DECLARE_PTR_LIST(expr_fn_list, expr_func);
+DECLARE_PTR_LIST(stmt_fn_list, stmt_func);
+DECLARE_PTR_LIST(bool_stmt_fn_list, bool_stmt_func);
+DECLARE_PTR_LIST(sym_fn_list, sym_func);
+DECLARE_PTR_LIST(name_sym_fn_list, name_sym_hook);
+DECLARE_PTR_LIST(string_hook_list, string_hook);
+void call_void_fns(struct void_fn_list *list);
+void call_expr_fns(struct expr_fn_list *list, struct expression *expr);
+void call_stmt_fns(struct stmt_fn_list *list, struct statement *stmt);
+void call_sym_fns(struct sym_fn_list *list, struct symbol *sym);
+void call_name_sym_fns(struct name_sym_fn_list *list, struct expression *expr, const char *name, struct symbol *sym);
+void call_string_hooks(struct string_hook_list *list, struct expression *expr, const char *str);
+
+void add_dereference_hook(expr_func *fn);
+
+struct allocation_info {
+	const char *fn_name;
+	const char *size_str;
+	struct expression *total_size;
+	struct expression *nr_elems;
+	struct expression *elem_size;
+	long min, max;
+	bool zeroed;
+	bool safe;  /* safe from overflows */
+};
+typedef void (alloc_hook)(struct expression *expr, const char *name, struct symbol *sym, struct allocation_info *info);
+void add_allocation_hook(alloc_hook *func);
+
 void add_hook(void *func, enum hook_type type);
 typedef struct smatch_state *(merge_func_t)(struct smatch_state *s1, struct smatch_state *s2);
 typedef struct smatch_state *(unmatched_func_t)(struct sm_state *state);
@@ -170,16 +209,24 @@ void add_unmatched_state_hook(int client_id, unmatched_func_t *func);
 void add_pre_merge_hook(int client_id, void (*hook)(struct sm_state *cur, struct sm_state *other));
 typedef void (scope_hook)(void *data);
 void add_scope_hook(scope_hook *hook, void *data);
+void add_return_string_hook(string_hook *fn);
+typedef void (param_key_hook)(struct expression *expr, const char *name, struct symbol *sym, void *data);
 typedef void (func_hook)(const char *fn, struct expression *expr, void *data);
 typedef void (implication_hook)(const char *fn, struct expression *call_expr,
 				struct expression *assign_expr, void *data);
 typedef void (return_implies_hook)(struct expression *call_expr,
 				   int param, char *key, char *value);
 typedef int (implied_return_hook)(struct expression *call_expr, void *info, struct range_list **rl);
+void add_function_hook_early(const char *look_for, func_hook *call_back, void *data);
 void add_function_hook(const char *look_for, func_hook *call_back, void *data);
+void add_function_hook_late(const char *look_for, func_hook *call_back, void *info);
 
 void add_function_assign_hook(const char *look_for, func_hook *call_back,
 			      void *info);
+void register_func_hooks_from_file(const char *file,
+				   func_hook *call_back, void *info);
+void register_assign_hooks_from_file(const char *file,
+				     func_hook *call_back, void *info);
 void add_implied_return_hook(const char *look_for,
 			     implied_return_hook *call_back,
 			     void *info);
@@ -191,10 +238,31 @@ void return_implies_state(const char *look_for, long long start, long long end,
 			 implication_hook *call_back, void *info);
 void return_implies_state_sval(const char *look_for, sval_t start, sval_t end,
 			 implication_hook *call_back, void *info);
+void return_implies_exact(const char *look_for, sval_t start, sval_t end,
+			  implication_hook *call_back, void *info);
+struct range_list *get_range_implications(const char *fn);
 void select_return_states_hook(int type, return_implies_hook *callback);
 void select_return_states_before(void (*fn)(void));
 void select_return_states_after(void (*fn)(void));
-int get_implied_return(struct expression *expr, struct range_list **rl);
+void add_param_key_expr_hook(const char *look_for, expr_func *call_back,
+			     int param, const char *key, void *info);
+void add_function_param_key_hook(const char *look_for, param_key_hook *call_back,
+				 int param, const char *key, void *info);
+void add_function_param_key_hook_early(const char *look_for, param_key_hook *call_back,
+				       int param, const char *key, void *info);
+void add_function_param_key_hook_late(const char *look_for, param_key_hook *call_back,
+				      int param, const char *key, void *info);
+void return_implies_param_key(const char *look_for, sval_t start, sval_t end,
+			      param_key_hook *call_back,
+			      int param, const char *key, void *info);
+void return_implies_param_key_exact(const char *look_for, sval_t start, sval_t end,
+				    param_key_hook *call_back,
+				    int param, const char *key, void *info);
+void return_implies_param_key_expr(const char *look_for, sval_t start, sval_t end,
+			      expr_func *call_back,
+			      int param, const char *key, void *info);
+void select_return_param_key(int type, param_key_hook *callback);
+bool get_implied_return(struct expression *expr, struct range_list **rl);
 void allocate_hook_memory(void);
 void allocate_tracker_array(int num_checks);
 
@@ -203,33 +271,46 @@ struct modification_data {
 	struct expression *cur;
 };
 
-typedef void (modification_hook)(struct sm_state *sm, struct expression *mod_expr);
-void add_modification_hook(int owner, modification_hook *call_back);
-void add_modification_hook_late(int owner, modification_hook *call_back);
+void allocate_modification_hooks(void);
+bool is_sub_member(const char *name, struct symbol *sym, struct sm_state *sm);
+void add_all_modifications_hook(int owner, name_sym_hook *hook);
+void add_modification_hook(int owner, sm_hook *call_back);
+void add_modification_hook_late(int owner, sm_hook *call_back);
 struct smatch_state *get_modification_state(struct expression *expr);
 
 int outside_of_function(void);
 const char *get_filename(void);
+extern int base_file_stream;
 const char *get_base_file(void);
+unsigned long long get_file_id(void);
+unsigned long long get_base_file_id(void);
 char *get_function(void);
+extern int __smatch_lineno;
 int get_lineno(void);
 extern int final_pass;
 extern struct symbol *cur_func_sym;
 extern int option_debug;
 extern int local_debug;
 extern int debug_db;
+extern bool implied_debug;
 bool debug_implied(void);
+bool debug_on(const char *check_name, const char *var);
 extern int option_info;
 extern int option_spammy;
 extern int option_timeout;
+extern int option_pedantic;
+extern int option_print_names;
 extern char *trace_variable;
 extern struct stree *global_states;
+void set_function_skipped(void);
 int is_skipped_function(void);
 int is_silenced_function(void);
 extern bool implications_off;
 
 /* smatch_impossible.c */
 int is_impossible_path(void);
+void set_true_path_impossible(void);
+void set_false_path_impossible(void);
 void set_path_impossible(void);
 
 extern FILE *sm_outfd;
@@ -260,6 +341,9 @@ extern const char *progname;
 static inline void sm_prefix(void)
 {
 	sm_printf("%s: %s:%d %s() ", progname, get_filename(), get_lineno(), get_function());
+	if (option_info || !option_print_names)
+		return;
+	sm_printf("[smatch.%s] ", __CHECKNAME__);
 }
 
 static inline void print_implied_debug_msg();
@@ -285,6 +369,8 @@ do {                                                           \
 	} else if (type == 3) {				       \
 		sm_printf("parse error: ");		       \
 		sm_nr_errors++;				       \
+	} else if (type == 4) {				       \
+		sm_printf("pedantic: ");		       \
 	}						       \
         sm_printf(msg);                                        \
         sm_printf("\n");                                       \
@@ -318,8 +404,15 @@ static inline void print_implied_debug_msg(void)
 } while(0)
 
 #define sm_warning(msg...) do { sm_print_msg(1, msg); } while (0)
+#define sm_warning_line(line, msg...) do {	\
+	int __orig = __smatch_lineno;		\
+	__smatch_lineno = line;			\
+	sm_print_msg(1, msg);			\
+	__smatch_lineno = __orig;		\
+} while (0)
 #define sm_error(msg...) do { sm_print_msg(2, msg); } while (0)
 #define sm_perror(msg...) do { sm_print_msg(3, msg); } while (0)
+#define sm_pedantic(msg...) do { if (option_pedantic) sm_print_msg(4, msg); } while (0)
 
 static inline void sm_fatal(const char *fmt, ...)
 {
@@ -350,9 +443,12 @@ static inline void sm_ierror(const char *fmt, ...)
 }
 #define ALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
+bool has_states(struct stree *stree, int owner);
 struct smatch_state *__get_state(int owner, const char *name, struct symbol *sym);
 struct smatch_state *get_state(int owner, const char *name, struct symbol *sym);
 struct smatch_state *get_state_expr(int owner, struct expression *expr);
+bool has_possible_state(int owner, const char *name, struct symbol *sym, struct smatch_state *state);
+bool expr_has_possible_state(int owner, struct expression *expr, struct smatch_state *state);
 struct state_list *get_possible_states(int owner, const char *name,
 				       struct symbol *sym);
 struct state_list *get_possible_states_expr(int owner, struct expression *expr);
@@ -360,8 +456,8 @@ struct sm_state *set_state(int owner, const char *name, struct symbol *sym,
 	       struct smatch_state *state);
 struct sm_state *set_state_expr(int owner, struct expression *expr,
 		struct smatch_state *state);
-void delete_state(int owner, const char *name, struct symbol *sym);
-void delete_state_expr(int owner, struct expression *expr);
+void preserve_out_of_scope(int owner);
+void __delete_state(int owner, const char *name, struct symbol *sym);
 void __delete_all_states_sym(struct symbol *sym);
 void set_true_false_states(int owner, const char *name, struct symbol *sym,
 			   struct smatch_state *true_state,
@@ -376,17 +472,34 @@ struct stree *__get_cur_stree(void);
 int is_reachable(void);
 void add_get_state_hook(void (*fn)(int owner, const char *name, struct symbol *sym));
 
+static inline void set_undefined(struct sm_state *sm, struct expression *mod_expr)
+{
+	set_state(sm->owner, sm->name, sm->sym, &undefined);
+}
+
+/* smatch_ssa.c */
+char *ssa_name(const char *name);
+void set_ssa_state(int owner, const char *name, struct symbol *sym, struct smatch_state *state);
+void update_ssa_state(int owner, const char *name, struct symbol *sym,
+		      struct smatch_state *state);
+void update_ssa_sm(int owner, struct sm_state *sm, struct smatch_state *state);
+void set_ssa_state_expr(int owner, struct expression *expr, struct smatch_state *state);
+struct sm_state *get_ssa_sm_state(int owner, const char *name, struct symbol *sym);
+struct sm_state *get_ssa_sm_state_expr(int owner, struct expression *expr);
+struct smatch_state *get_ssa_state(int owner, const char *name, struct symbol *sym);
+struct smatch_state *get_ssa_state_expr(int owner, struct expression *expr);
+
 /* smatch_helper.c */
 DECLARE_PTR_LIST(int_stack, int);
 char *alloc_string(const char *str);
 char *alloc_string_newline(const char *str);
 void free_string(char *str);
-void append(char *dest, const char *data, int buff_len);
 void remove_parens(char *str);
 struct smatch_state *alloc_state_num(int num);
 struct smatch_state *alloc_state_str(const char *name);
 struct smatch_state *merge_str_state(struct smatch_state *s1, struct smatch_state *s2);
 struct smatch_state *alloc_state_expr(struct expression *expr);
+struct expression *get_assigned_call(struct expression *expr);
 struct expression *get_argument_from_call_expr(struct expression_list *args,
 					       int num);
 struct expression *get_array_expr(struct expression *expr);
@@ -426,6 +539,7 @@ int implied_condition_true(struct expression *expr);
 int implied_condition_false(struct expression *expr);
 int can_integer_overflow(struct symbol *type, struct expression *expr);
 void clear_math_cache(void);
+void clear_strip_cache(void);
 void set_fast_math_only(void);
 void clear_fast_math_only(void);
 
@@ -434,10 +548,12 @@ struct expression *get_array_base(struct expression *expr);
 struct expression *get_array_offset(struct expression *expr);
 const char *show_state(struct smatch_state *state);
 struct statement *get_expression_statement(struct expression *expr);
+struct expression *strip__builtin_choose_expr(struct expression *expr);
+struct expression *strip_Generic(struct expression *expr);
 struct expression *strip_parens(struct expression *expr);
 struct expression *strip_expr(struct expression *expr);
+struct expression *strip_no_cast(struct expression *expr);
 struct expression *strip_expr_set_parent(struct expression *expr);
-void scoped_state(int my_id, const char *name, struct symbol *sym);
 int is_error_return(struct expression *expr);
 int getting_address(struct expression *expr);
 int get_struct_and_member(struct expression *expr, const char **type, const char **member);
@@ -449,23 +565,50 @@ struct statement *get_current_statement(void);
 struct statement *get_prev_statement(void);
 struct expression *get_last_expr_from_expression_stmt(struct expression *expr);
 
+enum { RET_SUCCESS, RET_FAIL, RET_UNKNOWN };
+int success_fail_return(struct range_list *rl);
+
 #define RETURN_VAR    -1
 #define LOCAL_SCOPE   -2
 #define FILE_SCOPE    -3
 #define GLOBAL_SCOPE  -4
 #define UNKNOWN_SCOPE -5
+
+char *swap_names(const char *orig, const char *remove, const char *add);
+char *get_param_var_sym_var_sym(const char *name, struct symbol *sym, struct expression *ret_expr, struct symbol **sym_p);
+char *get_param_name_sym(struct expression *expr, struct symbol **sym_p);
+int get_return_param_key_from_var_sym(const char *name, struct symbol *sym,
+				      struct expression *ret_expr,
+				      const char **key);
+int get_param_key_from_var_sym(const char *name, struct symbol *sym,
+			       struct expression *ret_expr,
+			       const char **key);
+int get_param_key_from_sm(struct sm_state *sm, struct expression *ret_expr,
+			  const char **key);
+int get_param_key_from_expr(struct expression *expr, struct expression *ret_expr,
+			    const char **key);
+const char *get_param_key_swap_dollar(struct expression *expr);
+int map_to_param(const char *name, struct symbol *sym);
 int get_param_num_from_sym(struct symbol *sym);
 int get_param_num(struct expression *expr);
 struct symbol *get_param_sym_from_num(int num);
+struct expression *map_container_of_to_simpler_expr_key(struct expression *expr, const char *orig_key, char **new_key);
+const char *get_container_of_str(struct expression *expr);
+bool get_offset_param(const char *ret_str, int *offset, int *param);
+/* smatch_points_to_container.c */
+struct expression *get_stored_container(struct expression *expr, int offset);
 
 int ms_since(struct timeval *start);
 int parent_is_gone_var_sym(const char *name, struct symbol *sym);
 int parent_is_gone(struct expression *expr);
+bool is_noderef_ptr(struct expression *expr);
 int invert_op(int op);
 int op_remove_assign(int op);
 int expr_equiv(struct expression *one, struct expression *two);
 void push_int(struct int_stack **stack, int num);
 int pop_int(struct int_stack **stack);
+bool macro_to_ul(const char *macro, unsigned long *val);
+bool has_cleanup(struct expression *expr);
 
 /* smatch_type.c */
 struct symbol *get_real_base_type(struct symbol *sym);
@@ -473,6 +616,7 @@ int type_bytes(struct symbol *type);
 int array_bytes(struct symbol *type);
 struct symbol *get_pointer_type(struct expression *expr);
 struct symbol *get_type(struct expression *expr);
+struct symbol *get_comparison_type(struct expression *expr);
 struct symbol *get_final_type(struct expression *expr);
 struct symbol *get_promoted_type(struct symbol *left, struct symbol *right);
 int type_signed(struct symbol *base_type);
@@ -480,6 +624,7 @@ int expr_unsigned(struct expression *expr);
 int expr_signed(struct expression *expr);
 int returns_unsigned(struct symbol *base_type);
 int is_pointer(struct expression *expr);
+bool is_void_ptr(struct symbol *type);
 int returns_pointer(struct symbol *base_type);
 sval_t sval_type_max(struct symbol *base_type);
 sval_t sval_type_min(struct symbol *base_type);
@@ -508,6 +653,7 @@ void add_ignore_expr(int owner, struct expression *expr);
 int is_ignored_expr(int owner, struct expression *expr);
 
 /* smatch_var_sym */
+struct smatch_state *alloc_var_sym_state(const char *var, struct symbol *sym);
 struct var_sym *alloc_var_sym(const char *var, struct symbol *sym);
 struct var_sym_list *expr_to_vsl(struct expression *expr);
 void add_var_sym(struct var_sym_list **list, const char *var, struct symbol *sym);
@@ -541,13 +687,21 @@ int in_condition(void);
 extern int __in_fake_assign;
 extern int __in_fake_parameter_assign;
 extern int __in_fake_struct_assign;
+extern int __in_buf_clear;
+extern int __in_fake_var_assign;
+extern int __in_builtin_overflow_func;
+extern int __fake_state_cnt;
+extern int __debug_skip;
 extern int in_fake_env;
+bool is_fake_var_assign(struct expression *expr);
 void smatch (struct string_list *filelist);
 int inside_loop(void);
 int definitely_inside_loop(void);
+void add_once_through_hook(bool_stmt_func *fn);
 struct expression *get_switch_expr(void);
 int in_expression_statement(void);
 void __process_post_op_stack(void);
+void parse_assignment(struct expression *expr, bool shallow);
 void __split_expr(struct expression *expr);
 void __split_label_stmt(struct statement *stmt);
 void __split_stmt(struct statement *stmt);
@@ -558,10 +712,14 @@ extern int option_two_passes;
 extern int option_no_db;
 extern int option_file_output;
 extern int option_time;
+extern int option_time_stmt;
 extern struct expression_list *big_expression_stack;
 extern struct expression_list *big_condition_stack;
 extern struct statement_list *big_statement_stack;
+int is_condition_call(struct expression *expr);
 int is_assigned_call(struct expression *expr);
+int is_fake_assigned_call(struct expression *expr);
+void add_function_data(unsigned long *fn_data);
 int inlinable(struct expression *expr);
 extern int __inline_call;
 extern struct expression *__inline_fn;
@@ -574,15 +732,23 @@ void init_fake_env(void);
 void end_fake_env(void);
 int time_parsing_function(void);
 bool taking_too_long(void);
+struct statement *get_last_stmt(void);
+int is_last_stmt(struct statement *cur_stmt);
 
 /* smatch_struct_assignment.c */
 struct expression *get_faked_expression(void);
 void __fake_struct_member_assignments(struct expression *expr);
+void create_recursive_fake_assignments(struct expression *expr,
+		void (*assign_handler)(struct expression *expr, void *data),
+		void *data);
 
 /* smatch_project.c */
 int is_no_inline_function(const char *function);
 
 /* smatch_conditions */
+void __set_confidence_implied(void);
+void __unset_confidence();
+void __split_whole_condition_tf(struct expression *expr, int *known_tf);
 void __split_whole_condition(struct expression *expr);
 void __handle_logic(struct expression *expr);
 int is_condition(struct expression *expr);
@@ -592,6 +758,7 @@ int __handle_expr_statement_assigns(struct expression *expr);
 
 /* smatch_implied.c */
 struct range_list_stack;
+void turn_off_implications(int id);
 void param_limit_implications(struct expression *expr, int param, char *key, char *value, struct stree **implied);
 struct stree *__implied_case_stree(struct expression *switch_expr,
 				   struct range_list *case_rl,
@@ -608,88 +775,12 @@ void set_dynamic_states(unsigned short owner);
 
 /* smatch_extras.c */
 int in_warn_on_macro(void);
-#define SMATCH_EXTRA 5 /* this is my_id from smatch extra set in smatch.c */
+extern int SMATCH_EXTRA;
 extern int RETURN_ID;
 
 struct data_range {
 	sval_t min;
 	sval_t max;
-};
-
-#define MTAG_ALIAS_BIT (1ULL << 63)
-#define MTAG_OFFSET_MASK 0xfffULL
-#define MTAG_SEED 0xdead << 12
-
-const extern unsigned long valid_ptr_min;
-extern unsigned long valid_ptr_max;
-extern const sval_t valid_ptr_min_sval;
-extern sval_t valid_ptr_max_sval;
-extern struct range_list *valid_ptr_rl;
-void alloc_valid_ptr_rl(void);
-
-static const sval_t array_min_sval = {
-	.type = &ptr_ctype,
-	{.value = 100000},
-};
-static const sval_t array_max_sval = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t text_seg_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t text_seg_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t data_seg_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t data_seg_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t bss_seg_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t bss_seg_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t stack_seg_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t stack_seg_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t kmalloc_seg_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t kmalloc_seg_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t vmalloc_seg_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t vmalloc_seg_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
-};
-static const sval_t fn_ptr_min = {
-	.type = &ptr_ctype,
-	{.value = 4096},
-};
-static const sval_t fn_ptr_max = {
-	.type = &ptr_ctype,
-	{.value = ULONG_MAX - 4095},
 };
 
 char *get_other_name_sym(const char *name, struct symbol *sym, struct symbol **new_sym);
@@ -703,10 +794,15 @@ int get_absolute_min_helper(struct expression *expr, sval_t *sval);
 int get_absolute_max_helper(struct expression *expr, sval_t *sval);
 
 /* smatch_type_value.c */
+void disable_type_val_lookups(void);
+void enable_type_val_lookups(void);
+void clear_type_value_cache(void);
 int get_db_type_rl(struct expression *expr, struct range_list **rl);
+
 /* smatch_data_val.c */
 int get_mtag_rl(struct expression *expr, struct range_list **rl);
 /* smatch_array_values.c */
+void clear_array_values_cache(void);
 int get_array_rl(struct expression *expr, struct range_list **rl);
 
 /* smatch_states.c */
@@ -723,7 +819,6 @@ void __set_cur_stree_readonly(void);
 void __set_cur_stree_writable(void);
 void __set_sm(struct sm_state *sm);
 void __set_sm_cur_stree(struct sm_state *sm);
-void __set_sm_fake_stree(struct sm_state *sm);
 void __set_true_false_sm(struct sm_state *true_state,
 			struct sm_state *false_state);
 void nullify_path(void);
@@ -782,6 +877,7 @@ int have_remaining_cases(void);
 void __merge_switches(struct expression *switch_expr, struct range_list *case_rl);
 void __push_default(void);
 void __set_default(void);
+bool __has_default_case(void);
 int __pop_default(void);
 
 void __push_conditions(void);
@@ -789,6 +885,8 @@ void __discard_conditions(void);
 
 void __save_gotos(const char *name, struct symbol *sym);
 void __merge_gotos(const char *name, struct symbol *sym);
+
+void __discard_fake_states(struct expression *call);
 
 void __print_cur_stree(void);
 bool __print_states(const char *owner);
@@ -807,10 +905,18 @@ struct smatch_state *__client_unmatched_state_function(struct sm_state *sm);
 void call_pre_merge_hook(struct sm_state *cur, struct sm_state *other);
 void __push_scope_hooks(void);
 void __call_scope_hooks(void);
+void __free_scope_hooks(void);
+void __call_all_scope_hooks(void);
+void add_array_initialized_hook(void (*hook)(struct expression *array, int nr));
+void __call_array_initialized_hooks(struct expression *array, int nr);
 
 /* smatch_function_hooks.c */
+void add_fake_call_after_return(struct expression *call);
 void create_function_hook_hash(void);
 void __match_initializer_call(struct symbol *sym);
+
+struct expression *get_unfaked_call(void);
+void fake_param_assign_helper(struct expression *call, struct expression *fake_assign, bool shallow);
 
 /* smatch_db.c */
 enum info_type {
@@ -821,9 +927,12 @@ enum info_type {
 	 * We select these in order by type so if the order matters, then give
 	 * it a number below 100-999,9000-9999 ranges. */
 
-	PARAM_CLEARED	= 101,
 	PARAM_LIMIT	= 103,
 	PARAM_FILTER	= 104,
+
+	RELEASE		= 500,
+	BUF_CLEARED	= 501,
+	BUF_ADD		= 502,
 
 	PARAM_VALUE	= 1001,
 	BUF_SIZE	= 1002,
@@ -834,6 +943,7 @@ enum info_type {
 	ABSOLUTE_LIMITS	= 1010,
 	PARAM_ADD	= 1012,
 	PARAM_FREED	= 1013,
+	MAYBE_FREED	= 2014,
 	DATA_SOURCE	= 1014,
 	FUZZY_MAX	= 1015,
 	HARD_MAX	= 2015,
@@ -860,24 +970,50 @@ enum info_type {
 	NOSPEC_WB	= 1036,
 	STMT_CNT	= 1037,
 	TERMINATED	= 1038,
+	SLEEP		= 1039,
 	FRESH_ALLOC	= 1044,
 	ALLOCATOR	= 1045,
+	FUNC_TIME	= 1047,
+	POWER_OF_TWO	= 1048,
+	POWER_OF_TWO_SET = 1049,
+	BIT_SET		= 1051,
+	BIT_CLEAR	= 1052,
+	BIT_IS_SET	= 1053,
+	BIT_IS_CLEAR	= 1054,
 
+	NEGATIVE_ERROR	= 1057,
+	ERR_PTR		= 1060,
+	PREEMPT_ADD	= 2054,
+	PREEMPT_SUB	= 2055,
+	FD_INSTALL	= 2058,
+	FGET		= 3059,
+	IRQ_CONTEXT	= 2062,
+	TASK_RUNNING	= 2063,
+	TASK_NOT_RUNNING = 2064,
 	/* put random temporary stuff in the 7000-7999 range for testing */
+	HOST_DATA	= 7016,
+	HOST_DATA_SET	= 7017,
+	HOST_PTR	= 7018,
+	HOST_PTR_SET	= 7019,
 	USER_DATA	= 8017,
 	USER_DATA_SET	= 9017,
+	USER_PTR	= 9018,
+	USER_PTR_SET	= 9019,
 	NO_OVERFLOW	= 8018,
 	NO_OVERFLOW_SIMPLE = 8019,
-	LOCKED		= 8020,
-	UNLOCKED	= 8021,
+	LOCK		= 8020,
+	UNLOCK		= 8021,
 	HALF_LOCKED	= 9022,
-	LOCK_RESTORED	= 9023,
+	RESTORE		= 9023,
 	KNOWN_LOCKED	= 9024,
 	KNOWN_UNLOCKED 	= 9025,
+	IGNORE_LOCK	= 9026,
 	SET_FS		= 8022,
 	ATOMIC_INC	= 8023,
 	ATOMIC_DEC	= 8024,
-	REFCOUNT	= 9025,
+	REFCOUNT_INIT	= 9025,
+	REFCOUNT_INC	= 9027,
+	REFCOUNT_DEC	= 9028,
 	NO_SIDE_EFFECT  = 8025,
 	FN_ARG_LINK	= 8028,
 	DATA_VALUE	= 8029,
@@ -885,36 +1021,53 @@ enum info_type {
 	SIZEOF_ARG	= 8034,
 	MEMORY_TAG	= 8036,
 	MTAG_ASSIGN	= 8035,
+	UNITS		= 8040,
 	STRING_VALUE	= 8041,
+	ALLOC		= 8045,
 
 	BYTE_COUNT	= 8050,
 	ELEM_COUNT	= 8051,
 	ELEM_LAST	= 8052,
 	USED_LAST	= 8053,
 	USED_COUNT	= 8054,
+
+	/* Do not use numbers above 100k */
 };
 
 extern struct sqlite3 *smatch_db;
 extern struct sqlite3 *mem_db;
 extern struct sqlite3 *cache_db;
 
+bool db_incomplete(void);
 void db_ignore_states(int id);
+typedef bool (delete_hook)(struct expression *expr);
+void add_delete_return_hook(delete_hook *hook);
 void select_caller_info_hook(void (*callback)(const char *name, struct symbol *sym, char *key, char *value), int type);
+void select_caller_name_sym(void (*fn)(const char *name, struct symbol *sym, char *value), int type);
 void add_member_info_callback(int owner, void (*callback)(struct expression *call, int param, char *printed_name, struct sm_state *sm));
 void add_caller_info_callback(int owner, void (*callback)(struct expression *call, int param, char *printed_name, struct sm_state *sm));
+void add_return_info_callback(int owner,
+			      void (*callback)(int return_id, char *return_ranges,
+					       struct expression *returned_expr,
+					       int param,
+					       const char *printed_name,
+					       struct sm_state *sm));
 void add_split_return_callback(void (*fn)(int return_id, char *return_ranges, struct expression *returned_expr));
 void add_returned_member_callback(int owner, void (*callback)(int return_id, char *return_ranges, struct expression *expr, char *printed_name, struct smatch_state *state));
 void select_call_implies_hook(int type, void (*callback)(struct expression *call, struct expression *arg, char *key, char *value));
+void select_return_implies_hook_early(int type, void (*callback)(struct expression *call, struct expression *arg, char *key, char *value));
 void select_return_implies_hook(int type, void (*callback)(struct expression *call, struct expression *arg, char *key, char *value));
 struct range_list *db_return_vals(struct expression *expr);
 struct range_list *db_return_vals_from_str(const char *fn_name);
 struct range_list *db_return_vals_no_args(struct expression *expr);
-char *return_state_to_var_sym(struct expression *expr, int param, const char *key, struct symbol **sym);
+bool split_param_key(const char *value, int *param, char *key, int len);
+bool get_implied_rl_from_call_str(struct expression *expr, const char *data, struct range_list **rl);
 char *get_chunk_from_key(struct expression *arg, char *key, struct symbol **sym, struct var_sym_list **vsl);
 char *get_variable_from_key(struct expression *arg, const char *key, struct symbol **sym);
-const char *state_name_to_param_name(const char *state_name, const char *param_name);
-const char *get_param_name_var_sym(const char *name, struct symbol *sym);
-const char *get_param_name(struct sm_state *sm);
+struct expression *get_function_param(struct expression *expr, int param);
+char *get_name_sym_from_param_key(struct expression *expr, int param, const char *key, struct symbol **sym);
+char *get_param_name_var_sym(const char *name, struct symbol *sym);
+char *get_param_name(struct sm_state *sm);
 const char *get_mtag_name_var_sym(const char *state_name, struct symbol *sym);
 const char *get_mtag_name_expr(struct expression *expr);
 char *get_data_info_name(struct expression *expr);
@@ -984,10 +1137,11 @@ do {										\
 	}									\
 } while (0)
 
-#define sql_insert(table, values...) sql_insert_helper(table, 0, 0, 0, values);
-#define sql_insert_or_ignore(table, values...) sql_insert_helper(table, 0, 1, 0, values);
-#define sql_insert_late(table, values...) sql_insert_helper(table, 0, 0, 1, values);
+#define sql_insert(table, values...) sql_insert_helper(table, NULL, 0, 0, values);
+#define sql_insert_or_ignore(table, values...) sql_insert_helper(table, NULL, 1, 0, values);
+#define sql_insert_late(table, values...) sql_insert_helper(table, NULL, 0, 1, values);
 #define sql_insert_cache(table, values...) sql_insert_helper(table, cache_db, 1, 0, values);
+#define sql_insert_cache_or_ignore(table, values...) sql_insert_helper(table, cache_db, 1, 0, values);
 
 char *get_static_filter(struct symbol *sym);
 
@@ -1021,6 +1175,7 @@ int mtag_map_select_tag(mtag_t container, int offset, mtag_t *tag);
 struct smatch_state *get_mtag_return(struct expression *expr, struct smatch_state *state);
 struct range_list *swap_mtag_seed(struct expression *expr, struct range_list *rl);
 
+bool is_fn_ptr(struct expression *fn);
 void sql_select_return_states(const char *cols, struct expression *call,
 	int (*callback)(void*, int, char**, char**), void *info);
 void sql_select_call_implies(const char *cols, struct expression *call,
@@ -1032,9 +1187,12 @@ void open_smatch_db(char *db_file);
 int open_data_file(const char *filename);
 int open_schema_file(const char *schema);
 struct token *get_tokens_file(const char *filename);
+struct string_list *load_strings_from_file(const char *project, const char *filename);
 
 /* smatch.c */
 extern char *option_debug_check;
+extern char *option_debug_var;
+extern char *option_process_function;
 extern char *option_project_str;
 extern char *bin_dir;
 extern char *data_dir;
@@ -1057,6 +1215,7 @@ int id_from_name(const char *name);
 
 
 /* smatch_buf_size.c */
+int bytes_to_elements(struct expression *expr, int bytes);
 int get_array_size(struct expression *expr);
 int get_array_size_bytes(struct expression *expr);
 int get_array_size_bytes_min(struct expression *expr);
@@ -1065,6 +1224,7 @@ struct range_list *get_array_size_bytes_rl(struct expression *expr);
 int get_real_array_size(struct expression *expr);
 int last_member_is_resizable(struct symbol *type);
 /* smatch_strlen.c */
+bool is_strlen(struct expression *expr);
 int get_implied_strlen(struct expression *expr, struct range_list **rl);
 int get_size_from_strlen(struct expression *expr);
 
@@ -1072,7 +1232,7 @@ int get_size_from_strlen(struct expression *expr);
 int is_capped(struct expression *expr);
 int is_capped_var_sym(const char *name, struct symbol *sym);
 
-/* check_user_data.c */
+/* smatch_kernel_user_data.c */
 int is_user_macro(struct expression *expr);
 int is_capped_user_data(struct expression *expr);
 int implied_user_data(struct expression *expr, struct range_list **rl);
@@ -1080,18 +1240,58 @@ struct stree *get_user_stree(void);
 int get_user_rl(struct expression *expr, struct range_list **rl);
 int is_user_rl(struct expression *expr);
 int get_user_rl_var_sym(const char *name, struct symbol *sym, struct range_list **rl);
+void mark_as_user_data(struct expression *expr, bool isnew);
+bool user_rl_capped_var_sym(const char *name, struct symbol *sym);
 bool user_rl_capped(struct expression *expr);
 struct range_list *var_user_rl(struct expression *expr);
+bool we_pass_user_data(struct expression *call);
+/* smatch_points_to_user_data.c */
+bool is_user_data_fn(struct symbol *fn);
+bool is_skb_data(struct expression *expr);
+bool is_socket_stuff(struct symbol *sym);
+bool points_to_user_data(struct expression *expr);
+void set_array_user_ptr(struct expression *expr, bool is_new);
 
+/* smatch_kernel_host_data.c */
+int is_host_macro(struct expression *expr);
+int get_host_data_fn_param(const char *fn);
+int is_capped_host_data(struct expression *expr);
+int implied_host_data(struct expression *expr, struct range_list **rl);
+struct stree *get_host_stree(void);
+int get_host_rl(struct expression *expr, struct range_list **rl);
+int is_host_rl(struct expression *expr);
+int get_host_rl_var_sym(const char *name, struct symbol *sym, struct range_list **rl);
+bool host_rl_capped(struct expression *expr);
+struct range_list *var_host_rl(struct expression *expr);
+bool we_pass_host_data(struct expression *call);
+/* smatch_points_to_host_data.c */
+bool is_host_data_fn(struct symbol *fn);
+bool points_to_host_data(struct expression *expr);
+void set_points_to_host_data(struct expression *expr, bool is_new);
+bool is_fn_points_to_host_data(const char *fn);
 /* check_locking.c */
 void print_held_locks();
+/* preempt */
+void __preempt_add(void);
+void __preempt_sub(void);
+int get_preempt_cnt(void);
+void clear_preempt_cnt(void);
+bool function_decrements_preempt(void);
+void add_sleep_callback(expr_func *fn);
+unsigned long GFP_DIRECT_RECLAIM(void);
+unsigned long GFP_ATOMIC(void);
+bool in_irq_context(void);
+void clear_irq_context(void);
 
 /* check_assigned_expr.c */
 extern int check_assigned_expr_id;
 struct expression *get_assigned_expr(struct expression *expr);
+struct sm_state *get_assigned_sm(struct expression *expr);
+struct expression *get_assigned_expr_recurse(struct expression *expr);
 struct expression *get_assigned_expr_name_sym(const char *name, struct symbol *sym);
+struct expression *get_assigned_expr_name_sym_recurse(const char *name, struct symbol *sym);
+
 /* smatch_return_to_param.c */
-void __add_return_to_param_mapping(struct expression *assign, const char *return_string);
 char *map_call_to_param_name_sym(struct expression *expr, struct symbol **sym);
 
 /* smatch_comparison.c */
@@ -1126,7 +1326,6 @@ int get_comparison_strings(const char *one, const char *two);
 int possible_comparison(struct expression *a, int comparison, struct expression *b);
 struct state_list *get_all_comparisons(struct expression *expr);
 struct state_list *get_all_possible_equal_comparisons(struct expression *expr);
-void __add_return_comparison(struct expression *call, const char *range);
 void __add_comparison_info(struct expression *expr, struct expression *call, const char *range);
 char *get_printed_param_name(struct expression *call, const char *param_name, struct symbol *param_sym);
 char *name_sym_to_param_comparison(const char *name, struct symbol *sym);
@@ -1142,6 +1341,13 @@ void __compare_param_limit_hook(struct expression *left_expr, struct expression 
 				const char *state_name,
 				struct smatch_state *true_state, struct smatch_state *false_state);
 int impossibly_high_comparison(struct expression *expr);
+void add_comparison_var_sym(
+		struct expression *left_expr,
+		const char *left_name, struct var_sym_list *left_vsl,
+		int comparison,
+		struct expression *right_expr,
+		const char *right_name, struct var_sym_list *right_vsl,
+		struct expression *mod_expr);
 
 /* smatch_sval.c */
 sval_t *sval_alloc(sval_t sval);
@@ -1167,6 +1373,7 @@ int sval_is_negative_min(sval_t sval);
 int sval_cmp_t(struct symbol *type, sval_t one, sval_t two);
 int sval_cmp_val(sval_t one, long long val);
 sval_t sval_min(sval_t one, sval_t two);
+sval_t sval_min_nonneg(sval_t one, sval_t two);
 sval_t sval_max(sval_t one, sval_t two);
 int sval_too_low(struct symbol *type, sval_t sval);
 int sval_too_high(struct symbol *type, sval_t sval);
@@ -1195,6 +1402,9 @@ struct string_list *combine_string_lists(struct string_list *one, struct string_
 struct stree *get_start_states(void);
 
 /* smatch_recurse.c */
+int recurse(struct expression *expr,
+	    int (func)(struct expression *expr, void *p),
+	    void *param, int nr);
 int has_symbol(struct expression *expr, struct symbol *sym);
 int has_variable(struct expression *expr, struct expression *var);
 int has_inc_dec(struct expression *expr);
@@ -1222,6 +1432,11 @@ int get_formatted_string_min_size(struct expression *call, int arg);
 int param_was_set(struct expression *expr);
 int param_was_set_var_sym(const char *name, struct symbol *sym);
 void print_limited_param_set(int return_id, char *return_ranges, struct expression *expr);
+/* param_clear */
+void __promote_sets_to_clears(int return_id, char *return_ranges, struct expression *expr);
+bool parent_was_PARAM_CLEAR(const char *name, struct symbol *sym);
+bool parent_was_PARAM_CLEAR_ZERO(const char *name, struct symbol *sym);
+
 /* smatch_param_filter.c */
 int param_has_filter_data(struct sm_state *sm);
 
@@ -1235,12 +1450,18 @@ const char *limit_type_str(unsigned int limit_type);
 struct expression *get_size_variable(struct expression *buf, int *limit_type);
 struct expression *get_array_variable(struct expression *size);
 int buf_comparison_index_ok(struct expression *expr);
+bool buf_comp_has_bytes(struct expression *buf, struct expression *var);
+bool buf_comp2_has_bytes(struct expression *buf_expr, struct expression *var);
+bool buf_has_bytes(struct expression *buf, struct expression *var);
 
 /* smatch_untracked_param.c */
-void mark_untracked(struct expression *expr, int param, const char *key, const char *value);
+void mark_untracked(struct expression *expr, int param, char *key, char *value);
+void mark_call_params_untracked(struct expression *call);
 void add_untracked_param_hook(void (func)(struct expression *call, int param));
 void add_lost_param_hook(void (func)(struct expression *call, int param));
 void mark_all_params_untracked(int return_id, char *return_ranges, struct expression *expr);
+/* smatch_untracked_var.c */
+bool is_untracked(struct expression *expr);
 
 /* smatch_strings.c */
 struct state_list *get_strings(struct expression *expr);
@@ -1256,6 +1477,7 @@ int get_member_offset_from_deref(struct expression *expr);
 
 /* for now this is in smatch_used_parameter.c */
 void __get_state_hook(int owner, const char *name, struct symbol *sym);
+extern int __ignore_param_used;
 
 /* smatch_buf_comparison.c */
 int db_var_is_array_limit(struct expression *array, const char *name, struct var_sym_list *vsl);
@@ -1266,8 +1488,13 @@ struct stree *get_all_return_states(void);
 struct stree_stack *get_all_return_strees(void);
 int on_atomic_dec_path(void);
 int was_inced(const char *name, struct symbol *sym);
+int refcount_was_inced_name_sym(const char *name, struct symbol *sym, const char *counter_str);
+int refcount_was_inced(struct expression *expr, const char *counter_str);
 void set_refcount_inc(char *name, struct symbol *sym);
 void set_refcount_dec(char *name, struct symbol *sym);
+void add_refcount_init_hook(name_sym_hook *hook);
+void add_refcount_inc_hook(name_sym_hook *hook);
+void add_refcount_dec_hook(name_sym_hook *hook);
 
 /* smatch_constraints.c */
 char *get_constraint_str(struct expression *expr);
@@ -1281,6 +1508,9 @@ int get_offset_from_container_of(struct expression *expr);
 char *get_container_name(struct expression *container, struct expression *expr);
 
 /* smatch_mtag.c */
+unsigned long long str_to_llu_hash_helper(const char *str);
+unsigned long long str_to_llu_hash(const char *str);
+struct symbol *get_symbol_from_mtag(mtag_t tag);
 mtag_t str_to_mtag(const char *str);
 int get_string_mtag(struct expression *expr, mtag_t *tag);
 int get_toplevel_mtag(struct symbol *sym, mtag_t *tag);
@@ -1292,27 +1522,76 @@ int get_mtag_sval(struct expression *expr, sval_t *sval);
 /* Trinity fuzzer stuff */
 const char *get_syscall_arg_type(struct symbol *sym);
 
+/* smatch_bits.c */
+int binfo_equiv(struct bit_info *one, struct bit_info *two);
+struct bit_info *alloc_bit_info(unsigned long long set, unsigned long long possible);
+struct smatch_state *alloc_bstate(unsigned long long set, unsigned long long possible);
+struct smatch_state *merge_bstates(struct smatch_state *one_state, struct smatch_state *two_state);
+
+/* smatch_param_bits_set.c */
+void __set_param_modified_helper(struct expression *expr, struct  smatch_state *state);
+void __set_param_modified_helper_sym(const char *name, struct symbol *sym,
+				     struct smatch_state *state);
+
+/* smatch_param_bits_clear.c */
+void __set_param_modified_helper_clear(struct expression *expr, struct smatch_state *state);
+void __set_param_modified_helper_sym_clear(const char *name, struct symbol *sym,
+					   struct smatch_state *state);
+
 /* smatch_bit_info.c */
 struct bit_info *rl_to_binfo(struct range_list *rl);
 struct bit_info *get_bit_info(struct expression *expr);
 struct bit_info *get_bit_info_var_sym(const char *name, struct symbol *sym);
+
 /* smatch_mem_tracker.c */
 extern int option_mem;
 unsigned long get_mem_kb(void);
 unsigned long get_max_memory(void);
 
+/* smatch_goto_tracker.c */
+struct sm_state *get_goto_sm_state(void);
+
 /* check_is_nospec.c */
 bool is_nospec(struct expression *expr);
 long get_stmt_cnt(void);
 
+/* check_kernel_units.c */
+struct smatch_state *get_units(struct expression *expr);
+char *get_unit_str(struct expression *expr);
+bool is_array_size_units(struct expression *expr);
 /* smatch_nul_terminator.c */
 bool is_nul_terminated_var_sym(const char *name, struct symbol *sym);
 bool is_nul_terminated(struct expression *expr);
 /* check_kernel.c  */
 bool is_ignored_kernel_data(const char *name);
+int get_gfp_param(struct expression *expr);
+struct expression *get_netdev_priv(struct expression *dev);
 
 bool is_fresh_alloc_var_sym(const char *var, struct symbol *sym);
 bool is_fresh_alloc(struct expression *expr);
+bool is_freed_var_sym(const char *name, struct symbol *sym);
+void track_freed_param(struct expression *expr, struct smatch_state *state);
+void track_freed_param_var_sym(const char *name, struct symbol *sym,
+			       struct smatch_state *state);
+bool is_part_of_condition(struct expression *expr);
+bool is_percent_p_print(struct expression *expr);
+
+void add_free_hook(name_sym_hook *hook);
+
+/* smatch_unconstant_macros.c */
+int is_unconstant_macro(struct expression *expr);
+
+/* smatch_assigned_state.c */
+void add_state_assigned_hook(int owner, sm_hook *call_back);
+void add_ssa_state_assigned_hook(int owner, sm_hook *call_back);
+
+/* check_returns_negative_error_code.c */
+bool holds_kernel_error_codes(struct expression *expr);
+bool possible_err_ptr(struct expression *expr);
+bool has_devm_cleanup(void);
+void add_set_current_state_hook(string_hook *hook);
+bool task_not_running(void);
+
 static inline bool type_is_ptr(struct symbol *type)
 {
 	return type &&

@@ -29,9 +29,13 @@ struct sqlite3 *cache_db;
 
 int debug_db;
 
+STATE(incomplete);
+static int my_id;
+
 static int return_id;
 
 static void call_return_state_hooks(struct expression *expr);
+static void call_return_states_callbacks(const char *return_ranges, struct expression *expr);
 
 #define SQLITE_CACHE_PAGES 1000
 
@@ -43,6 +47,14 @@ ALLOCATOR(def_callback, "definition db hook callbacks");
 DECLARE_PTR_LIST(callback_list, struct def_callback);
 static struct callback_list *select_caller_info_callbacks;
 
+struct def_name_sym_callback {
+	int hook_type;
+	void (*callback)(const char *name, struct symbol *sym, char *value);
+};
+ALLOCATOR(def_name_sym_callback, "definition db hook callbacks");
+DECLARE_PTR_LIST(name_sym_callback_list, struct def_name_sym_callback);
+static struct name_sym_callback_list *select_caller_name_sym_callbacks;
+
 struct member_info_callback {
 	int owner;
 	void (*callback)(struct expression *call, int param, char *printed_name, struct sm_state *sm);
@@ -51,6 +63,18 @@ ALLOCATOR(member_info_callback, "caller_info callbacks");
 DECLARE_PTR_LIST(member_info_cb_list, struct member_info_callback);
 static struct member_info_cb_list *member_callbacks;
 static struct member_info_cb_list *member_callbacks_new;
+
+struct return_info_callback {
+	int owner;
+	void (*callback)(int return_id, char *return_ranges,
+			 struct expression *returned_expr,
+			 int param,
+			 const char *printed_name,
+			 struct sm_state *sm);
+};
+ALLOCATOR(return_info_callback, "return_info callbacks");
+DECLARE_PTR_LIST(return_info_cb_list, struct return_info_callback);
+static struct return_info_cb_list *return_callbacks;
 
 struct returned_state_callback {
 	void (*callback)(int return_id, char *return_ranges, struct expression *return_expr);
@@ -73,8 +97,18 @@ struct db_implies_callback {
 };
 ALLOCATOR(db_implies_callback, "return_implies callbacks");
 DECLARE_PTR_LIST(db_implies_cb_list, struct db_implies_callback);
-static struct db_implies_cb_list *return_implies_cb_list;
+static struct db_implies_cb_list *return_implies_cb_list_early;
+static struct db_implies_cb_list *return_implies_cb_list_late;
 static struct db_implies_cb_list *call_implies_cb_list;
+
+DECLARE_PTR_LIST(delete_list, delete_hook);
+static struct delete_list *delete_hooks;
+
+struct split_data {
+	const char *func, *rl;
+};
+static struct split_data **forced_splits;
+static int split_count;
 
 /* silently truncates if needed. */
 char *escape_newlines(const char *str)
@@ -158,6 +192,39 @@ static const char *replace_return_ranges(const char *return_ranges)
 	return return_ranges;
 }
 
+static int delete_count;
+static char **delete_table;
+static bool is_delete_return(const char *return_ranges)
+{
+	int i;
+
+	if (!get_function())
+		return false;
+
+	for (i = 0; i < delete_count; i += 2) {
+		if (strcmp(delete_table[i], get_function()) == 0 &&
+		    strcmp(delete_table[i + 1], return_ranges) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+void add_delete_return_hook(delete_hook *hook)
+{
+	add_ptr_list(&delete_hooks, hook);
+}
+
+static bool is_project_delete_return(struct expression *expr)
+{
+	delete_hook *hook;
+
+	FOR_EACH_PTR(delete_hooks, hook) {
+		if (hook(expr))
+			return true;
+	} END_FOR_EACH_PTR(hook);
+	return false;
+}
 
 static char *use_states;
 static int get_db_state_count(void)
@@ -174,6 +241,31 @@ static int get_db_state_count(void)
 	return count;
 }
 
+static bool in_base_file(struct symbol *sym)
+{
+	return sym->pos.stream == base_file_stream;
+}
+
+static bool is_local(struct symbol *sym)
+{
+	if (sym->ctype.modifiers & MOD_STATIC)
+		return true;
+	if ((sym->ctype.modifiers & MOD_EXTERN) &&
+	    (sym->ctype.modifiers & MOD_INLINE) &&
+	    !in_base_file(sym))
+		return true;
+
+	if (!sym->definition)
+		return false;
+
+	if ((sym->definition->ctype.modifiers & MOD_EXTERN) &&
+	    (sym->definition->ctype.modifiers & MOD_INLINE) &&
+	    !in_base_file(sym->definition))
+		return true;
+
+	return false;
+}
+
 void db_ignore_states(int id)
 {
 	use_states[id] = 0;
@@ -184,7 +276,7 @@ static void set_fn_mtag(struct symbol *sym)
 {
 	char buf[128];
 
-	if (cur_func_sym->ctype.modifiers & MOD_STATIC)
+	if (is_local(cur_func_sym))
 		snprintf(buf, sizeof(buf), "%s %s", get_base_file(), get_function());
 	else
 		snprintf(buf, sizeof(buf), "extern %s", get_function());
@@ -205,10 +297,9 @@ void sql_insert_return_states(int return_id, const char *return_ranges,
 	else
 		id = __fn_mtag;
 
-	return_ranges = replace_return_ranges(return_ranges);
-	sql_insert(return_states, "'%s', '%s', %llu, %d, '%s', %d, %d, %d, '%s', '%s'",
-		   get_base_file(), get_function(), id, return_id,
-		   return_ranges, fn_static(), type, param, key, value);
+	sql_insert(return_states, "0x%llx, '%s', %llu, %d, '%s', %d, %d, %d, '%s', '%s'",
+		   get_base_file_id(), get_function(), id, return_id,
+		   return_ranges, is_local(cur_func_sym), type, param, key, value);
 }
 
 static struct string_list *common_funcs;
@@ -243,6 +334,8 @@ void sql_insert_caller_info(struct expression *call, int type,
 
 	if (!option_info && !__inline_call)
 		return;
+	if (unreachable())
+		return;
 
 	if (key && strlen(key) >= 80)
 		return;
@@ -253,8 +346,8 @@ void sql_insert_caller_info(struct expression *call, int type,
 
 	if (__inline_call) {
 		mem_sql(NULL, NULL,
-			"insert into caller_info values ('%s', '%s', '%s', %lu, %d, %d, %d, '%s', '%s');",
-			get_base_file(), get_function(), fn, (unsigned long)call,
+			"insert into caller_info values (0x%llx, '%s', '%s', %lu, %d, %d, %d, '%s', '%s');",
+			get_base_file_id(), get_function(), fn, (unsigned long)call,
 			is_static(call->fn), type, param, key, value);
 	}
 
@@ -268,8 +361,8 @@ void sql_insert_caller_info(struct expression *call, int type,
 
 	sm_outfd = caller_info_fd;
 	sm_msg("SQL_caller_info: insert into caller_info values ("
-	       "'%s', '%s', '%s', %%CALL_ID%%, %d, %d, %d, '%s', '%s');",
-	       get_base_file(), get_function(), fn, is_static(call->fn),
+	       "0x%llx, '%s', '%s', %%CALL_ID%%, %d, %d, %d, '%s', '%s');",
+	       get_base_file_id(), get_function(), fn, is_static(call->fn),
 	       type, param, key, value);
 	sm_outfd = tmp_fd;
 
@@ -278,59 +371,66 @@ void sql_insert_caller_info(struct expression *call, int type,
 
 void sql_insert_function_ptr(const char *fn, const char *struct_name)
 {
-	sql_insert_or_ignore(function_ptr, "'%s', '%s', '%s', 0",
-			     get_base_file(), fn, struct_name);
+	sql_insert_or_ignore(function_ptr, "0x%llx, '%s', '%s', 0",
+			     get_base_file_id(), fn, struct_name);
 }
 
 void sql_insert_return_implies(int type, int param, const char *key, const char *value)
 {
-	sql_insert_or_ignore(return_implies, "'%s', '%s', %lu, %d, %d, %d, '%s', '%s'",
-		get_base_file(), get_function(), (unsigned long)__inline_fn,
-		fn_static(), type, param, key, value);
+	unsigned long long id;
+
+	if (__inline_fn)
+		id = (unsigned long)__inline_fn;
+	else
+		id = __fn_mtag;
+
+	sql_insert_or_ignore(return_implies, "0x%llx, '%s', %llu, %d, %d, %d, '%s', '%s'",
+		get_base_file_id(), get_function(), id, fn_static(), type,
+		param, key, value);
 }
 
 void sql_insert_call_implies(int type, int param, const char *key, const char *value)
 {
-	sql_insert_or_ignore(call_implies, "'%s', '%s', %lu, %d, %d, %d, '%s', '%s'",
-		get_base_file(), get_function(), (unsigned long)__inline_fn,
+	sql_insert_or_ignore(call_implies, "0x%llx, '%s', %lu, %d, %d, %d, '%s', '%s'",
+		get_base_file_id(), get_function(), (unsigned long)__inline_fn,
 		fn_static(), type, param, key, value);
 }
 
 void sql_insert_function_type_size(const char *member, const char *ranges)
 {
-	sql_insert(function_type_size, "'%s', '%s', '%s', '%s'", get_base_file(), get_function(), member, ranges);
+	sql_insert(function_type_size, "0x%llx, '%s', '%s', '%s'", get_base_file_id(), get_function(), member, ranges);
 }
 
 void sql_insert_function_type_info(int type, const char *struct_type, const char *member, const char *value)
 {
-	sql_insert(function_type_info, "'%s', '%s', %d, '%s', '%s', '%s'", get_base_file(), get_function(), type, struct_type, member, value);
+	sql_insert(function_type_info, "0x%llx, '%s', %d, '%s', '%s', '%s'", get_base_file_id(), get_function(), type, struct_type, member, value);
 }
 
 void sql_insert_type_info(int type, const char *member, const char *value)
 {
-	sql_insert_cache(type_info, "'%s', %d, '%s', '%s'", get_base_file(), type, member, value);
+	sql_insert_cache(type_info, "0x%llx, %d, '%s', '%s'", get_base_file_id(), type, member, value);
 }
 
 void sql_insert_local_values(const char *name, const char *value)
 {
-	sql_insert(local_values, "'%s', '%s', '%s'", get_base_file(), name, value);
+	sql_insert(local_values, "0x%llx, '%s', '%s'", get_base_file_id(), name, value);
 }
 
 void sql_insert_function_type_value(const char *type, const char *value)
 {
-	sql_insert(function_type_value, "'%s', '%s', '%s', '%s'", get_base_file(), get_function(), type, value);
+	sql_insert(function_type_value, "0x%llx, '%s', '%s', '%s'", get_base_file_id(), get_function(), type, value);
 }
 
 void sql_insert_function_type(int param, const char *value)
 {
-	sql_insert(function_type, "'%s', '%s', %d, %d, '%s'",
-		   get_base_file(), get_function(), fn_static(), param, value);
+	sql_insert(function_type, "0x%llx, '%s', %d, %d, '%s'",
+		   get_base_file_id(), get_function(), fn_static(), param, value);
 }
 
 void sql_insert_parameter_name(int param, const char *value)
 {
-	sql_insert(parameter_name, "'%s', '%s', %d, %d, '%s'",
-		   get_base_file(), get_function(), fn_static(), param, value);
+	sql_insert(parameter_name, "0x%llx, '%s', %d, %d, '%s'",
+		   get_base_file_id(), get_function(), fn_static(), param, value);
 }
 
 void sql_insert_data_info(struct expression *data, int type, const char *value)
@@ -340,15 +440,15 @@ void sql_insert_data_info(struct expression *data, int type, const char *value)
 	data_name = get_data_info_name(data);
 	if (!data_name)
 		return;
-	sql_insert(data_info, "'%s', '%s', %d, '%s'",
-		   is_static(data) ? get_base_file() : "extern",
+	sql_insert(data_info, "0x%llx, '%s', %d, '%s'",
+		   is_static(data) ? get_base_file_id() : 0,
 		   data_name, type, value);
 }
 
 void sql_insert_data_info_var_sym(const char *var, struct symbol *sym, int type, const char *value)
 {
-	sql_insert(data_info, "'%s', '%s', %d, '%s'",
-		   (sym->ctype.modifiers & MOD_STATIC) ? get_base_file() : "extern",
+	sql_insert(data_info, "0x%llx, '%s', %d, '%s'",
+		   (sym->ctype.modifiers & MOD_STATIC) ? get_base_file_id() : 0,
 		   var, type, value);
 }
 
@@ -385,10 +485,10 @@ void sql_insert_fn_data_link(struct expression *fn, int type, int param, const c
 	if (fn->type != EXPR_SYMBOL || !fn->symbol->ident)
 		return;
 
-	sql_insert(fn_data_link, "'%s', '%s', %d, %d, %d, '%s', '%s'",
-		   (fn->symbol->ctype.modifiers & MOD_STATIC) ? get_base_file() : "extern",
+	sql_insert(fn_data_link, "0x%llx, '%s', %d, %d, %d, '%s', '%s'",
+		   is_local(fn->symbol) ? get_base_file_id() : 0,
 		   fn->symbol->ident->name,
-		   !!(fn->symbol->ctype.modifiers & MOD_STATIC),
+		   is_local(fn->symbol),
 		   type, param, key, value);
 }
 
@@ -467,10 +567,10 @@ char *get_static_filter(struct symbol *sym)
 		return sql_filter;
 	}
 
-	if (sym->ctype.modifiers & MOD_STATIC) {
+	if (is_local(sym)) {
 		snprintf(sql_filter, sizeof(sql_filter),
-			 "file = '%s' and function = '%s' and static = '1'",
-			 get_base_file(), sym->ident->name);
+			 "file = 0x%llx and function = '%s' and static = '1'",
+			 get_base_file_id(), sym->ident->name);
 	} else {
 		snprintf(sql_filter, sizeof(sql_filter),
 			 "function = '%s' and static = '0'", sym->ident->name);
@@ -490,16 +590,6 @@ static int get_row_count(void *_row_count, int argc, char **argv, char **azColNa
 	return 0;
 }
 
-static void mark_call_params_untracked(struct expression *call)
-{
-	struct expression *arg;
-	int i = 0;
-
-	FOR_EACH_PTR(call->args, arg) {
-		mark_untracked(call, i++, "$", NULL);
-	} END_FOR_EACH_PTR(arg);
-}
-
 static void sql_select_return_states_pointer(const char *cols,
 	struct expression *call, int (*callback)(void*, int, char**, char**), void *info)
 {
@@ -515,7 +605,13 @@ static void sql_select_return_states_pointer(const char *cols,
 		"where return_states.function == function_ptr.function and "
 		"ptr = '%s' and searchable = 1 and type = %d;", ptr, INTERNAL);
 	/* The magic number 100 is just from testing on the kernel. */
-	if (return_count > 100) {
+	if (return_count == 0 || return_count > 100) {
+		run_sql(callback, info,
+			"select distinct %s from return_states join function_ptr where "
+			"return_states.function == function_ptr.function and ptr = '%s' "
+			"and searchable = 1 and type = %d "
+			"order by function_ptr.file, return_states.file, return_id, type;",
+			cols, ptr, INTERNAL);
 		mark_call_params_untracked(call);
 		return;
 	}
@@ -537,6 +633,18 @@ static int is_local_symbol(struct expression *expr)
 	return 1;
 }
 
+bool is_fn_ptr(struct expression *fn)
+{
+	fn = strip_expr(fn);
+	if (fn->type != EXPR_SYMBOL)
+		return true;
+	if (!fn->symbol)
+		return true;
+	if (is_local_symbol(fn))
+		return true;
+	return false;
+}
+
 void sql_select_return_states(const char *cols, struct expression *call,
 	int (*callback)(void*, int, char**, char**), void *info)
 {
@@ -547,7 +655,7 @@ void sql_select_return_states(const char *cols, struct expression *call,
 		return;
 
 	fn = strip_expr(call->fn);
-	if (fn->type != EXPR_SYMBOL || !fn->symbol || is_local_symbol(fn)) {
+	if (is_fn_ptr(fn)) {
 		sql_select_return_states_pointer(cols, call, callback, info);
 		return;
 	}
@@ -561,11 +669,21 @@ void sql_select_return_states(const char *cols, struct expression *call,
 
 	run_sql(get_row_count, &row_count, "select count(*) from return_states where %s;",
 		get_static_filter(fn->symbol));
-	if (row_count > 3000)
+	if (row_count == 0 && fn->symbol && fn->symbol->definition &&
+	    !(fn->symbol->ident && strncmp(fn->symbol->ident->name, "__smatch", 8)))
+		set_state(my_id, "db_incomplete", NULL, &incomplete);
+	if (row_count == 0 || row_count > 3000) {
+		mark_call_params_untracked(call);
 		return;
+	}
 
 	run_sql(callback, info, "select %s from return_states where %s order by file, return_id, type;",
 		cols, get_static_filter(fn->symbol));
+}
+
+bool db_incomplete(void)
+{
+	return !!get_state(my_id, "db_incomplete", NULL);
 }
 
 #define CALL_IMPLIES 0
@@ -614,7 +732,7 @@ static void sql_select_caller_info(struct select_caller_info_data *data,
 		return;
 	}
 
-	if (sym->ident->name && is_common_function(sym->ident->name))
+	if (is_common_function(sym->ident->name))
 		return;
 	run_sql(caller_info_callback, data,
 		"select %s from common_caller_info where %s order by call_id;",
@@ -634,6 +752,15 @@ void select_caller_info_hook(void (*callback)(const char *name, struct symbol *s
 	def_callback->hook_type = type;
 	def_callback->callback = callback;
 	add_ptr_list(&select_caller_info_callbacks, def_callback);
+}
+
+void select_caller_name_sym(void (*fn)(const char *name, struct symbol *sym, char *value), int type)
+{
+	struct def_name_sym_callback *callback = __alloc_def_name_sym_callback(0);
+
+	callback->hook_type = type;
+	callback->callback = fn;
+	add_ptr_list(&select_caller_name_sym_callbacks, callback);
 }
 
 /*
@@ -657,6 +784,20 @@ void add_caller_info_callback(int owner, void (*callback)(struct expression *cal
 	member_callback->owner = owner;
 	member_callback->callback = callback;
 	add_ptr_list(&member_callbacks_new, member_callback);
+}
+
+void add_return_info_callback(int owner,
+			      void (*callback)(int return_id, char *return_ranges,
+					       struct expression *returned_expr,
+					       int param,
+					       const char *printed_name,
+					       struct sm_state *sm))
+{
+	struct return_info_callback *return_callback = __alloc_return_info_callback(0);
+
+	return_callback->owner = owner;
+	return_callback->callback = callback;
+	add_ptr_list(&return_callbacks, return_callback);
 }
 
 void add_split_return_callback(void (*fn)(int return_id, char *return_ranges, struct expression *returned_expr))
@@ -685,13 +826,22 @@ void select_call_implies_hook(int type, void (*callback)(struct expression *call
 	add_ptr_list(&call_implies_cb_list, cb);
 }
 
+void select_return_implies_hook_early(int type, void (*callback)(struct expression *call, struct expression *arg, char *key, char *value))
+{
+	struct db_implies_callback *cb = __alloc_db_implies_callback(0);
+
+	cb->type = type;
+	cb->callback = callback;
+	add_ptr_list(&return_implies_cb_list_early, cb);
+}
+
 void select_return_implies_hook(int type, void (*callback)(struct expression *call, struct expression *arg, char *key, char *value))
 {
 	struct db_implies_callback *cb = __alloc_db_implies_callback(0);
 
 	cb->type = type;
 	cb->callback = callback;
-	add_ptr_list(&return_implies_cb_list, cb);
+	add_ptr_list(&return_implies_cb_list_late, cb);
 }
 
 struct return_info {
@@ -713,19 +863,42 @@ static int db_return_callback(void *_ret_info, int argc, char **argv, char **azC
 	return 0;
 }
 
+static struct expression *cached_expr, *cached_no_args;
+static const char *cached_str;
+static struct range_list *cached_rl, *cached_str_rl, *cached_no_args_rl;
+
+static void clear_cached_return_vals(void)
+{
+	cached_expr = NULL;
+	cached_rl = NULL;
+	cached_str = NULL;
+	cached_str_rl = NULL;
+	cached_no_args = NULL;
+	cached_no_args_rl = NULL;
+}
+
 struct range_list *db_return_vals(struct expression *expr)
 {
 	struct return_info ret_info = {};
-	char buf[64];
 	struct sm_state *sm;
+
+	if (!expr)
+		return NULL;
 
 	if (is_fake_call(expr))
 		return NULL;
 
-	snprintf(buf, sizeof(buf), "return %p", expr);
-	sm = get_sm_state(SMATCH_EXTRA, buf, NULL);
-	if (sm)
+	if (expr == cached_expr)
+		return clone_rl(cached_rl);
+
+	cached_expr = expr;
+	cached_rl = NULL;
+
+	sm = get_extra_sm_state(expr);
+	if (sm) {
+		cached_rl = clone_rl(estate_rl(sm->state));
 		return clone_rl(estate_rl(sm->state));
+	}
 	ret_info.static_returns_call = expr;
 	ret_info.return_type = get_type(expr);
 	if (!ret_info.return_type)
@@ -744,12 +917,20 @@ struct range_list *db_return_vals(struct expression *expr)
 			"select distinct return from return_states where %s;",
 			get_static_filter(expr->fn->symbol));
 	}
+	cached_rl = clone_rl(ret_info.return_range_list);
 	return ret_info.return_range_list;
 }
 
 struct range_list *db_return_vals_from_str(const char *fn_name)
 {
 	struct return_info ret_info;
+
+	if (!fn_name)
+		return NULL;
+	if (fn_name == cached_str)
+		return clone_rl(cached_str_rl);
+	cached_str = fn_name;
+	cached_str_rl = NULL;
 
 	ret_info.static_returns_call = NULL;
 	ret_info.return_type = &llong_ctype;
@@ -758,6 +939,7 @@ struct range_list *db_return_vals_from_str(const char *fn_name)
 	run_sql(db_return_callback, &ret_info,
 		"select distinct return from return_states where function = '%s';",
 		fn_name);
+	cached_str_rl = clone_rl(ret_info.return_range_list);
 	return ret_info.return_range_list;
 }
 
@@ -775,6 +957,11 @@ struct range_list *db_return_vals_no_args(struct expression *expr)
 	if (!expr || expr->type != EXPR_SYMBOL)
 		return NULL;
 
+	if (expr == cached_no_args)
+		return clone_rl(cached_no_args_rl);
+	cached_no_args = expr;
+	cached_no_args_rl = NULL;
+
 	ret_info.static_returns_call = expr;
 	ret_info.return_type = get_type(expr);
 	ret_info.return_type = get_real_base_type(ret_info.return_type);
@@ -785,6 +972,7 @@ struct range_list *db_return_vals_no_args(struct expression *expr)
 		"select distinct return from return_states where %s;",
 		get_static_filter(expr->symbol));
 
+	cached_no_args_rl = clone_rl(ret_info.return_range_list);
 	return ret_info.return_range_list;
 }
 
@@ -887,7 +1075,8 @@ free:
 	return ret;
 }
 
-static void print_struct_members(struct expression *call, struct expression *expr, int param, struct stree *stree,
+static void print_struct_members(struct expression *call, struct expression *expr, int param,
+	int owner,
 	void (*callback)(struct expression *call, int param, char *printed_name, struct sm_state *sm),
 	bool new)
 {
@@ -905,7 +1094,7 @@ static void print_struct_members(struct expression *call, struct expression *exp
 	if (!expr)
 		return;
 	type = get_type(expr);
-	if (type && type_bits(type) < type_bits(&ulong_ctype))
+	if (!new && type && type_bits(type) < type_bits(&ulong_ctype))
 		return;
 
 	if (expr->type == EXPR_PREOP && expr->op == '&') {
@@ -918,9 +1107,10 @@ static void print_struct_members(struct expression *call, struct expression *exp
 		goto free;
 
 	len = strlen(name);
-	FOR_EACH_SM(stree, sm) {
-		if (sm->sym != sym)
+	FOR_EACH_SM(__get_cur_stree(), sm) {
+		if (sm->owner != owner || sm->sym != sym)
 			continue;
+
 		sm_name = sm->name;
 		add_star = false;
 		if (sm_name[0] == '*') {
@@ -956,6 +1146,22 @@ static void print_struct_members(struct expression *call, struct expression *exp
 					 "%s$%s", add_star ? "*" : "",
 					 sm_name + len);
 			}
+		} else if (sm_name[0] == '&' && strncmp(name, sm_name + 1, len) == 0) {
+			if (sm_name[len + 1] != '.' && sm_name[len + 1] != '-')
+				continue;
+			if (is_address && sm_name[len + 1] == '.') {
+				snprintf(printed_name, sizeof(printed_name),
+					 "&%s$->%s", add_star ? "*" : "",
+					 sm_name + len + 2);
+			} else if (is_address && sm_name[len] == '-') {
+				snprintf(printed_name, sizeof(printed_name),
+					 "&%s(*$)%s", add_star ? "*" : "",
+					 sm_name + len + 1);
+			} else {
+				snprintf(printed_name, sizeof(printed_name),
+					 "&%s$%s", add_star ? "*" : "",
+					 sm_name + len + 1);
+			}
 		} else {
 			continue;
 		}
@@ -971,50 +1177,60 @@ static void match_call_info(struct expression *call)
 {
 	struct member_info_callback *cb;
 	struct expression *arg;
-	struct stree *stree;
-	char *name;
 	int i;
 
-	name = get_fnptr_name(call->fn);
-	if (!name)
-		return;
-
 	FOR_EACH_PTR(member_callbacks, cb) {
-		stree = get_all_states_stree(cb->owner);
-		i = 0;
+		i = -1;
 		FOR_EACH_PTR(call->args, arg) {
-			print_struct_members(call, arg, i, stree, cb->callback, 0);
 			i++;
+			print_struct_members(call, arg, i, cb->owner, cb->callback, 0);
 		} END_FOR_EACH_PTR(arg);
-		free_stree(&stree);
 	} END_FOR_EACH_PTR(cb);
+}
 
-	free_string(name);
+static struct expression *get_fake_variable(struct expression *expr)
+{
+	struct expression *tmp;
+
+	tmp = expr_get_fake_parent_expr(expr);
+	if (!tmp || tmp->type != EXPR_ASSIGNMENT)
+		return NULL;
+
+	return tmp->left;
+}
+
+static struct sm_state *get_returned_sm(struct expression *expr)
+{
+	struct expression *fake;
+
+	fake = get_fake_variable(expr);
+	if (fake)
+		expr = fake;
+
+	return get_sm_state_expr(SMATCH_EXTRA, expr);
 }
 
 static void match_call_info_new(struct expression *call)
 {
 	struct member_info_callback *cb;
-	struct expression *arg;
-	struct stree *stree;
-	char *name;
+	struct expression *arg, *tmp;
 	int i;
 
-	name = get_fnptr_name(call->fn);
-	if (!name)
+	if (!option_info && !__inline_call && !local_debug)
 		return;
 
 	FOR_EACH_PTR(member_callbacks_new, cb) {
-		stree = get_all_states_stree(cb->owner);
-		i = 0;
+		i = -1;
 		FOR_EACH_PTR(call->args, arg) {
-			print_struct_members(call, arg, i, stree, cb->callback, 1);
 			i++;
+			tmp = get_fake_variable(arg);
+			if (!tmp)
+				tmp = arg;
+			__ignore_param_used++;
+			print_struct_members(call, tmp, i, cb->owner, cb->callback, 1);
+			__ignore_param_used--;
 		} END_FOR_EACH_PTR(arg);
-		free_stree(&stree);
 	} END_FOR_EACH_PTR(cb);
-
-	free_string(name);
 }
 
 static int get_param(int param, char **name, struct symbol **sym)
@@ -1024,16 +1240,6 @@ static int get_param(int param, char **name, struct symbol **sym)
 
 	i = 0;
 	FOR_EACH_PTR(cur_func_sym->ctype.base_type->arguments, arg) {
-		/*
-		 * this is a temporary hack to work around a bug (I think in sparse?)
-		 * 2.6.37-rc1:fs/reiserfs/journal.o
-		 * If there is a function definition without parameter name found
-		 * after a function implementation then it causes a crash.
-		 * int foo() {}
-		 * int bar(char *);
-		 */
-		if (arg->ident->name < (char *)100)
-			continue;
 		if (i == param) {
 			*name = arg->ident->name;
 			*sym = arg;
@@ -1068,8 +1274,11 @@ static int caller_info_callback(void *_data, int argc, char **argv, char **azCol
 	char *name = NULL;
 	struct symbol *sym = NULL;
 	struct def_callback *def_callback;
+	struct def_name_sym_callback *ns_callback;
 	struct stree *stree;
 	struct timeval cur_time;
+	char fullname[256];
+	char *p;
 
 	data->results = 1;
 
@@ -1118,6 +1327,17 @@ static int caller_info_callback(void *_data, int argc, char **argv, char **azCol
 			def_callback->callback(name, sym, key, value);
 	} END_FOR_EACH_PTR(def_callback);
 
+	p = strchr(key, '$');
+	if (name && p)
+		snprintf(fullname, sizeof(fullname), "%.*s%s%s", (int)(p - key), key, name, p + 1);
+	else
+		snprintf(fullname, sizeof(fullname), "%s", key);
+
+	FOR_EACH_PTR(select_caller_name_sym_callbacks, ns_callback) {
+		if (ns_callback->hook_type == type)
+			ns_callback->callback(fullname, sym, value);
+	} END_FOR_EACH_PTR(ns_callback);
+
 	return 0;
 }
 
@@ -1142,13 +1362,13 @@ static char *get_next_ptr_name(void)
 	return NULL;
 }
 
-static void get_ptr_names(const char *file, const char *name)
+static void get_ptr_names(unsigned long long file, const char *name)
 {
 	char sql_filter[1024];
 	int before, after;
 
 	if (file) {
-		snprintf(sql_filter, 1024, "file = '%s' and function = '%s';",
+		snprintf(sql_filter, 1024, "file = 0x%llx and function = '%s';",
 			 file, name);
 	} else {
 		snprintf(sql_filter, 1024, "function = '%s';", name);
@@ -1165,7 +1385,7 @@ static void get_ptr_names(const char *file, const char *name)
 		return;
 
 	while ((name = get_next_ptr_name()))
-		get_ptr_names(NULL, name);
+		get_ptr_names(0, name);
 }
 
 static void match_data_from_db(struct symbol *sym)
@@ -1188,9 +1408,9 @@ static void match_data_from_db(struct symbol *sym)
 		char *ptr;
 
 		if (sym->ctype.modifiers & MOD_STATIC)
-			get_ptr_names(get_base_file(), sym->ident->name);
+			get_ptr_names(get_base_file_id(), sym->ident->name);
 		else
-			get_ptr_names(NULL, sym->ident->name);
+			get_ptr_names(0, sym->ident->name);
 
 		if (ptr_list_size((struct ptr_list *)ptr_names) > 20) {
 			__free_ptr_list((struct ptr_list **)&ptr_names);
@@ -1274,14 +1494,18 @@ static int return_implies_callbacks(void *_info, int argc, char **argv, char **a
 	type = atoi(argv[1]);
 	param = atoi(argv[2]);
 
+	/* The caller doesn't pass the assignment so -1 can't be useful */
+	if (param == -1)
+		return 0;
+	if (param >= 0) {
+		arg = get_argument_from_call_expr(info->expr->args, param);
+		if (!arg)
+			return 0;
+	}
+
 	FOR_EACH_PTR(info->cb_list, cb) {
 		if (cb->type != type)
 			continue;
-		if (param != -1) {
-			arg = get_argument_from_call_expr(info->expr->args, param);
-			if (!arg)
-				continue;
-		}
 		cb->callback(info->expr, arg, argv[3], argv[4]);
 	} END_FOR_EACH_PTR(cb);
 
@@ -1319,11 +1543,11 @@ static int call_implies_callbacks(void *_info, int argc, char **argv, char **azC
 	return 0;
 }
 
-static void match_return_implies(struct expression *expr)
+static void match_return_implies_helper(struct expression *expr, struct db_implies_cb_list *cb_list)
 {
 	struct implies_info info = {
 		.type = RETURN_IMPLIES,
-		.cb_list = return_implies_cb_list,
+		.cb_list = cb_list,
 	};
 
 	if (expr->fn->type != EXPR_SYMBOL ||
@@ -1333,6 +1557,16 @@ static void match_return_implies(struct expression *expr)
 	info.sym = expr->fn->symbol;
 	sql_select_implies("function, type, parameter, key, value", &info,
 			   return_implies_callbacks);
+}
+
+static void match_return_implies_early(struct expression *expr)
+{
+	match_return_implies_helper(expr, return_implies_cb_list_early);
+}
+
+static void match_return_implies_late(struct expression *expr)
+{
+	match_return_implies_helper(expr, return_implies_cb_list_late);
 }
 
 static void match_call_implies(struct symbol *sym)
@@ -1415,12 +1649,14 @@ static char *get_return_compare_str(struct expression *expr)
 
 static const char *get_return_ranges_str(struct expression *expr, struct range_list **rl_p)
 {
+	struct expression *fake;
 	struct range_list *rl;
-	char *return_ranges;
+	const char *return_ranges;
 	sval_t sval;
+	const char *container_of_str;
+	const char *math_str;
 	char *fn_param_str;
 	char *compare_str;
-	char *math_str;
 	char buf[128];
 
 	*rl_p = NULL;
@@ -1428,15 +1664,28 @@ static const char *get_return_ranges_str(struct expression *expr, struct range_l
 	if (!expr)
 		return alloc_sname("");
 
+	fake = get_fake_variable(expr);
+	if (fake)
+		expr = fake;
+
+	container_of_str = get_container_of_str(expr);
+
 	if (get_implied_value(expr, &sval)) {
 		sval = sval_cast(cur_func_return_type(), sval);
 		*rl_p = alloc_rl(sval, sval);
-		return sval_to_str_or_err_ptr(sval);
+		return_ranges = sval_to_str_or_err_ptr(sval);
+		if (container_of_str) {
+			snprintf(buf, sizeof(buf), "%s[%s]", return_ranges, container_of_str);
+			return alloc_sname(buf);
+		}
+		return return_ranges;
 	}
 
 	fn_param_str = get_fn_param_str(expr);
+	math_str = get_param_key_swap_dollar(expr);
 	compare_str = expr_equal_to_param(expr, -1);
-	math_str = get_value_in_terms_of_parameter_math(expr);
+	if (!math_str)
+		math_str = get_value_in_terms_of_parameter_math(expr);
 
 	if (get_implied_rl(expr, &rl) && !is_whole_rl(rl)) {
 		rl = cast_rl(cur_func_return_type(), rl);
@@ -1451,6 +1700,10 @@ static const char *get_return_ranges_str(struct expression *expr, struct range_l
 	}
 	*rl_p = rl;
 
+	if (container_of_str) {
+		snprintf(buf, sizeof(buf), "%s[%s]", return_ranges, container_of_str);
+		return alloc_sname(buf);
+	}
 	if (fn_param_str) {
 		snprintf(buf, sizeof(buf), "%s%s", return_ranges, fn_param_str);
 		return alloc_sname(buf);
@@ -1510,9 +1763,77 @@ static bool call_return_state_hooks_conditional(struct expression *expr)
 	return true;
 }
 
-static void call_return_state_hooks_compare(struct expression *expr)
+static bool handle_forced_split(const char *return_ranges, struct expression *expr)
+{
+	struct split_data *data = NULL;
+	struct expression *compare;
+	struct range_list *rl;
+	char buf[64];
+	char *math;
+	sval_t sval;
+	bool undo;
+	int i;
+
+	for (i = 0; i < split_count; i++) {
+		if (get_function() &&
+		    strcmp(get_function(), forced_splits[i]->func) == 0) {
+			data = forced_splits[i];
+			break;
+		}
+	}
+	if (!data)
+		return false;
+
+	// FIXME: this works for copy_to/from_user() because the only thing we
+	// care about is zero/non-zero
+	if (strcmp(data->rl, "0") != 0)
+		return false;
+
+	compare = compare_expression(expr, SPECIAL_EQUAL, zero_expr());
+	if (!compare)
+		return false;
+	if (get_implied_value(compare, &sval))
+		return false;
+
+	undo = assume(compare_expression(expr, SPECIAL_EQUAL, zero_expr()));
+	call_return_states_callbacks("0", expr);
+	if (undo)
+		end_assume();
+
+	undo = assume(compare_expression(expr, SPECIAL_NOTEQUAL, zero_expr()));
+	if (get_implied_rl(expr, &rl)) {
+		math = strchr(return_ranges, '[');
+		snprintf(buf, sizeof(buf), "%s%s", show_rl(rl), math ?: "");
+	} else {
+		snprintf(buf, sizeof(buf), "%s", return_ranges);
+	}
+	call_return_states_callbacks(buf, expr);
+	if (undo)
+		end_assume();
+
+	return true;
+}
+
+static void call_return_states_callbacks(const char *return_ranges, struct expression *expr)
 {
 	struct returned_state_callback *cb;
+
+	return_ranges = replace_return_ranges(return_ranges);
+	if (is_delete_return(return_ranges))
+		return;
+	if (is_project_delete_return(expr))
+		return;
+	if (handle_forced_split(return_ranges, expr))
+		return;
+
+	return_id++;
+	FOR_EACH_PTR(returned_state_callbacks, cb) {
+		cb->callback(return_id, (char *)return_ranges, expr);
+	} END_FOR_EACH_PTR(cb);
+}
+
+static void call_return_state_hooks_compare(struct expression *expr)
+{
 	char *return_ranges;
 	int final_pass_orig = final_pass;
 	sval_t sval = { .type = &int_ctype };
@@ -1532,10 +1853,7 @@ static void call_return_state_hooks_compare(struct expression *expr)
 		sval.value = 1;
 		set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_sval(sval));
 
-		return_id++;
-		FOR_EACH_PTR(returned_state_callbacks, cb) {
-			cb->callback(return_id, return_ranges, expr);
-		} END_FOR_EACH_PTR(cb);
+		call_return_states_callbacks(return_ranges, expr);
 	}
 
 	__push_true_states();
@@ -1546,14 +1864,26 @@ static void call_return_state_hooks_compare(struct expression *expr)
 		sval.value = 0;
 		set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_sval(sval));
 
-		return_id++;
-		FOR_EACH_PTR(returned_state_callbacks, cb) {
-			cb->callback(return_id, return_ranges, expr);
-		} END_FOR_EACH_PTR(cb);
+		call_return_states_callbacks(return_ranges, expr);
 	}
 
 	__merge_true_states();
 	__free_fake_cur_stree();
+}
+
+static bool is_implies_function(struct expression *expr)
+{
+	struct range_list *rl;
+
+	if (!expr)
+		return false;
+
+	rl = get_range_implications(get_function());
+	if (!rl)
+		return false;
+
+	sm_msg("%s: is implied", __func__);
+	return true;
 }
 
 static int ptr_in_list(struct sm_state *sm, struct state_list *slist)
@@ -1570,7 +1900,6 @@ static int ptr_in_list(struct sm_state *sm, struct state_list *slist)
 
 static int split_possible_helper(struct sm_state *sm, struct expression *expr)
 {
-	struct returned_state_callback *cb;
 	struct range_list *rl;
 	char *return_ranges;
 	struct sm_state *tmp;
@@ -1584,7 +1913,7 @@ static int split_possible_helper(struct sm_state *sm, struct expression *expr)
 	if (!sm || !sm->merged)
 		return 0;
 
-	if (too_many_possible(sm))
+	if (too_many_possible(sm) && !is_implies_function(expr))
 		return 0;
 
 	/* bail if it gets too complicated */
@@ -1599,11 +1928,11 @@ static int split_possible_helper(struct sm_state *sm, struct expression *expr)
 	} END_FOR_EACH_PTR(tmp);
 	free_slist(&already_handled);
 	nr_states = get_db_state_count();
-	if (nr_states * nr_possible >= 2000)
+	if (nr_states * nr_possible >= 2000 && !is_implies_function(expr))
 		return 0;
 
 	FOR_EACH_PTR(sm->possible, tmp) {
-		if (tmp->merged)
+		if (!is_leaf(tmp))
 			continue;
 		if (ptr_in_list(tmp, already_handled))
 			continue;
@@ -1617,18 +1946,19 @@ static int split_possible_helper(struct sm_state *sm, struct expression *expr)
 		rl = cast_rl(cur_func_return_type(), estate_rl(tmp->state));
 		return_ranges = show_rl(rl);
 		set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(clone_rl(rl)));
-		if (!rl_to_sval(rl, &sval)) {
-			compare_str = get_return_compare_str(expr);
-			if (compare_str) {
-				snprintf(buf, sizeof(buf), "%s%s", return_ranges, compare_str);
-				return_ranges = alloc_sname(buf);
-			}
+		compare_str = get_return_compare_str(expr);
+		/* ignore obvious stuff like 0 <= param */
+		/* Is this worthile when we have PARAM_COMPARE? */
+		if (compare_str &&
+		    strncmp(compare_str, "[=", 2) != 0 &&
+		    rl_to_sval(rl, &sval))
+			compare_str = NULL;
+		if (compare_str) {
+			snprintf(buf, sizeof(buf), "%s%s", return_ranges, compare_str);
+			return_ranges = alloc_sname(buf);
 		}
 
-		return_id++;
-		FOR_EACH_PTR(returned_state_callbacks, cb) {
-			cb->callback(return_id, return_ranges, expr);
-		} END_FOR_EACH_PTR(cb);
+		call_return_states_callbacks(return_ranges, expr);
 
 		__free_fake_cur_stree();
 	} END_FOR_EACH_PTR(tmp);
@@ -1645,8 +1975,20 @@ static int call_return_state_hooks_split_possible(struct expression *expr)
 	if (!expr)
 		return 0;
 
-	sm = get_sm_state_expr(SMATCH_EXTRA, expr);
+	sm = get_returned_sm(expr);
 	return split_possible_helper(sm, expr);
+}
+
+static bool has_empty_state(struct sm_state *sm)
+{
+	struct sm_state *tmp;
+
+	FOR_EACH_PTR(sm->possible, tmp) {
+		if (!estate_rl(tmp->state))
+			return true;
+	} END_FOR_EACH_PTR(tmp);
+
+	return false;
 }
 
 static bool has_possible_negative(struct sm_state *sm)
@@ -1685,7 +2027,6 @@ static bool has_separate_zero_null(struct sm_state *sm)
 static int split_positive_from_negative(struct expression *expr)
 {
 	struct sm_state *sm;
-	struct returned_state_callback *cb;
 	struct range_list *rl;
 	const char *return_ranges;
 	struct range_list *ret_rl;
@@ -1704,8 +2045,10 @@ static int split_positive_from_negative(struct expression *expr)
 	if (!sval_is_negative(rl_min(rl)))
 		return 0;
 
-	sm = get_sm_state_expr(SMATCH_EXTRA, expr);
+	sm = get_returned_sm(expr);
 	if (!sm)
+		return 0;
+	if (has_empty_state(sm))
 		return 0;
 	if (!has_possible_negative(sm))
 		return 0;
@@ -1714,24 +2057,18 @@ static int split_positive_from_negative(struct expression *expr)
 	if (!assume(compare_expression(expr, separate_zero ? '>' : SPECIAL_GTE, zero_expr())))
 		return 0;
 
-	return_id++;
 	return_ranges = get_return_ranges_str(expr, &ret_rl);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(ret_rl));
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, (char *)return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
 
 	end_assume();
 
 	if (separate_zero) {
 		undo = assume(compare_expression(expr, SPECIAL_EQUAL, zero_expr()));
 
-		return_id++;
 		return_ranges = get_return_ranges_str(expr, &ret_rl);
 		set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(ret_rl));
-		FOR_EACH_PTR(returned_state_callbacks, cb) {
-			cb->callback(return_id, (char *)return_ranges, expr);
-		} END_FOR_EACH_PTR(cb);
+		call_return_states_callbacks(return_ranges, expr);
 
 		if (undo)
 			end_assume();
@@ -1739,12 +2076,9 @@ static int split_positive_from_negative(struct expression *expr)
 
 	undo = assume(compare_expression(expr, '<', zero_expr()));
 
-	return_id++;
 	return_ranges = get_return_ranges_str(expr, &ret_rl);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(ret_rl));
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, (char *)return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
 
 	if (undo)
 		end_assume();
@@ -1754,7 +2088,6 @@ static int split_positive_from_negative(struct expression *expr)
 
 static int call_return_state_hooks_split_null_non_null_zero(struct expression *expr)
 {
-	struct returned_state_callback *cb;
 	struct range_list *rl;
 	struct range_list *nonnull_rl;
 	sval_t null_sval;
@@ -1770,7 +2103,7 @@ static int call_return_state_hooks_split_null_non_null_zero(struct expression *e
 	if (expr->type == EXPR_CALL)
 		return 0;
 
-	sm = get_sm_state_expr(SMATCH_EXTRA, expr);
+	sm = get_returned_sm(expr);
 	if (!sm)
 		return 0;
 	if (ptr_list_size((struct ptr_list *)sm->possible) == 1)
@@ -1801,10 +2134,7 @@ static int call_return_state_hooks_split_null_non_null_zero(struct expression *e
 	return_ranges = show_rl(nonnull_rl);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(nonnull_rl));
 
-	return_id++;
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
 
 	__push_true_states();
 	__use_false_states();
@@ -1813,15 +2143,41 @@ static int call_return_state_hooks_split_null_non_null_zero(struct expression *e
 	null_sval = sval_type_val(rl_type(rl), 0);
 	add_range(&null_rl, null_sval, null_sval);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(null_rl));
-	return_id++;
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
 
 	__merge_true_states();
 	__free_fake_cur_stree();
 
 	return 1;
+}
+
+static bool is_neg_and_pos_err_code(struct range_list *rl)
+{
+	struct data_range *tmp, *last;
+
+	if (option_project != PROJ_KERNEL)
+		return false;
+	if (!rl)
+		return false;
+
+	/* Assume s32min-(14),(-12)-(-1),1-s32max is an error code. */
+	last = last_ptr_list((struct ptr_list *)rl);
+	if (last->max.value >= 0 &&
+	    (last->min.value != 1 ||
+	     last->max.value != INT_MAX))
+		return false;
+
+
+	FOR_EACH_PTR(rl, tmp) {
+		if (tmp == last)
+			break;
+		if (tmp->min.value != INT_MIN && tmp->min.value < -4095)
+			return false;
+		if (tmp->max.value < -4095 || tmp->max.value >= 0)
+			return false;
+	} END_FOR_EACH_PTR(tmp);
+
+	return true;
 }
 
 static bool is_kernel_success_fail(struct sm_state *sm)
@@ -1831,6 +2187,9 @@ static bool is_kernel_success_fail(struct sm_state *sm)
 	bool has_zero = false;
 	bool has_neg = false;
 
+	if (!sm)
+		return false;
+
 	if (!type_signed(estate_type(sm->state)))
 		return false;
 
@@ -1838,16 +2197,14 @@ static bool is_kernel_success_fail(struct sm_state *sm)
 		rl = estate_rl(tmp->state);
 		if (!rl)
 			return false;
+		if (!is_leaf(tmp))
+			continue;
 		if (rl_min(rl).value == 0 && rl_max(rl).value == 0) {
 			has_zero = true;
 			continue;
 		}
 		has_neg = true;
-		if (rl_min(rl).value >= -4095 && rl_max(rl).value < 0)
-			continue;
-		if (strcmp(tmp->state->name, "s32min-(-1)") == 0)
-			continue;
-		if (strcmp(tmp->state->name, "s32min-(-1),1-s32max") == 0)
+		if (is_neg_and_pos_err_code(estate_rl(tmp->state)))
 			continue;
 		return false;
 	} END_FOR_EACH_PTR(tmp);
@@ -1857,13 +2214,13 @@ static bool is_kernel_success_fail(struct sm_state *sm)
 
 static int call_return_state_hooks_split_success_fail(struct expression *expr)
 {
+	struct expression *tmp_ret;
 	struct sm_state *sm;
 	struct range_list *rl;
 	struct range_list *nonzero_rl;
 	sval_t zero_sval;
 	struct range_list *zero_rl = NULL;
 	int nr_states;
-	struct returned_state_callback *cb;
 	char *return_ranges;
 	int final_pass_orig = final_pass;
 
@@ -1874,7 +2231,10 @@ static int call_return_state_hooks_split_success_fail(struct expression *expr)
 	if (nr_states > 2000)
 		return 0;
 
-	sm = get_sm_state_expr(SMATCH_EXTRA, expr);
+	tmp_ret = get_fake_variable(expr);
+	if (!tmp_ret)
+		tmp_ret = expr;
+	sm = get_returned_sm(tmp_ret);
 	if (!sm)
 		return 0;
 	if (ptr_list_size((struct ptr_list *)sm->possible) == 1)
@@ -1889,7 +2249,7 @@ static int call_return_state_hooks_split_success_fail(struct expression *expr)
 	__push_fake_cur_stree();
 
 	final_pass = 0;
-	__split_whole_condition(expr);
+	__split_whole_condition(tmp_ret);
 	final_pass = final_pass_orig;
 
 	nonzero_rl = rl_filter(rl, rl_zero());
@@ -1897,10 +2257,7 @@ static int call_return_state_hooks_split_success_fail(struct expression *expr)
 	return_ranges = show_rl(nonzero_rl);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(nonzero_rl));
 
-	return_id++;
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
 
 	__push_true_states();
 	__use_false_states();
@@ -1909,10 +2266,7 @@ static int call_return_state_hooks_split_success_fail(struct expression *expr)
 	zero_sval = sval_type_val(rl_type(rl), 0);
 	add_range(&zero_rl, zero_sval, zero_sval);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(zero_rl));
-	return_id++;
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
 
 	__merge_true_states();
 	__free_fake_cur_stree();
@@ -1934,12 +2288,10 @@ static int is_boolean(struct expression *expr)
 static int splitable_function_call(struct expression *expr)
 {
 	struct sm_state *sm;
-	char buf[64];
 
 	if (!expr || expr->type != EXPR_CALL)
 		return 0;
-	snprintf(buf, sizeof(buf), "return %p", expr);
-	sm = get_sm_state(SMATCH_EXTRA, buf, NULL);
+	sm = get_extra_sm_state(expr);
 	return split_possible_helper(sm, expr);
 }
 
@@ -1983,7 +2335,6 @@ found:
 
 static int split_on_bool_sm(struct sm_state *sm, struct expression *expr)
 {
-	struct returned_state_callback *cb;
 	struct range_list *ret_rl;
 	const char *return_ranges;
 	struct sm_state *tmp;
@@ -2010,10 +2361,7 @@ static int split_on_bool_sm(struct sm_state *sm, struct expression *expr)
 
 		return_ranges = get_return_ranges_str(expr, &ret_rl);
 		set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(ret_rl));
-		return_id++;
-		FOR_EACH_PTR(returned_state_callbacks, cb) {
-			cb->callback(return_id, (char *)return_ranges, expr);
-		} END_FOR_EACH_PTR(cb);
+		call_return_states_callbacks(return_ranges, expr);
 
 		__free_fake_cur_stree();
 	} END_FOR_EACH_PTR(tmp);
@@ -2047,11 +2395,8 @@ static int split_by_null_nonnull_param(struct expression *expr)
 	struct sm_state *sm;
 	int nr_possible;
 
-	/* function must only take one pointer */
-	if (ptr_list_size((struct ptr_list *)cur_func_sym->ctype.base_type->arguments) != 1)
-		return 0;
 	arg = first_ptr_list((struct ptr_list *)cur_func_sym->ctype.base_type->arguments);
-	if (!arg->ident)
+	if (!arg || !arg->ident)
 		return 0;
 	if (get_real_base_type(arg)->type != SYM_PTR)
 		return 0;
@@ -2070,6 +2415,70 @@ static int split_by_null_nonnull_param(struct expression *expr)
 		return 0;
 
 	return split_on_bool_sm(sm, expr);
+}
+
+static void call_hooks_based_on_pool(struct expression *expr, struct sm_state *gate_sm, struct sm_state *pool_sm)
+{
+	struct range_list *ret_rl;
+	const char *return_ranges;
+
+	__push_fake_cur_stree();
+
+	overwrite_states_using_pool(gate_sm, pool_sm);
+
+	return_ranges = get_return_ranges_str(expr, &ret_rl);
+	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(ret_rl));
+	call_return_states_callbacks(return_ranges, expr);
+
+	__free_fake_cur_stree();
+}
+
+static bool split_by_impossible(struct expression *expr)
+{
+	static int impossible_id;
+	struct sm_state *sm, *tmp;
+	int nr_states;
+
+	if (!impossible_id)
+		impossible_id = id_from_name("register_impossible_return");
+	if (!impossible_id)
+		return false;
+
+	/*
+	 * The only states for register_impossible_return are &impossible,
+	 * &undefined and &merged.  This function will break otherwise.
+	 */
+
+	sm = get_sm_state(impossible_id, "impossible", NULL);
+	if (!sm || sm->state != &merged)
+		return false;
+
+	nr_states = get_db_state_count();
+	if (nr_states >= 1000)
+		return false;
+
+	/* handle possible */
+	FOR_EACH_PTR(sm->possible, tmp) {
+		if (!is_leaf(tmp))
+			continue;
+		if (tmp->state != &undefined)
+			continue;
+		call_hooks_based_on_pool(expr, sm, tmp);
+		goto impossible;
+	} END_FOR_EACH_PTR(tmp);
+
+impossible:
+	/* handle impossible */
+	FOR_EACH_PTR(sm->possible, tmp) {
+		if (!is_leaf(tmp))
+			continue;
+		if (strcmp(tmp->state->name, "impossible") != 0)
+			continue;
+		call_hooks_based_on_pool(expr, sm, tmp);
+		return true;
+	} END_FOR_EACH_PTR(tmp);
+
+	return false;
 }
 
 struct expression *strip_expr_statement(struct expression *expr)
@@ -2099,33 +2508,36 @@ static bool is_kernel_error_path(struct expression *expr)
 {
 	struct range_list *rl;
 
-	/*
-	 * Splitting up returns requires resources.  It also requires resources
-	 * for the caller.  It doesn't seem worth it to split anything up.
-	 */
+	if (option_project != PROJ_KERNEL)
+		return false;
+
 	if (!get_implied_rl(expr, &rl))
 		return false;
 	if (rl_type(rl) != &int_ctype)
 		return false;
-	if (rl_min(rl).value >= -4095 &&
-	    rl_max(rl).value < 0)
-		return true;
-	return false;
+	if (!is_neg_and_pos_err_code(rl))
+		return false;
+	return true;
 }
 
 static void call_return_state_hooks(struct expression *expr)
 {
-	struct returned_state_callback *cb;
 	struct range_list *ret_rl;
 	const char *return_ranges;
 	int nr_states;
 	sval_t sval;
 
+	if (debug_db) {
+		struct range_list *rl = NULL;
+
+		get_absolute_rl(expr, &rl);
+		sm_msg("RETURN: expr='%s' rl='%s' %lu states%s", expr_to_str(expr),
+		       show_rl(rl), stree_count(__get_cur_stree()),
+		       is_impossible_path() ? " (impossible path)" : "");
+	}
+
 	if (__path_is_null())
 		return;
-
-	expr = strip_expr(expr);
-	expr = strip_expr_statement(expr);
 
 	if (is_impossible_path())
 		goto vanilla;
@@ -2134,23 +2546,48 @@ static void call_return_state_hooks(struct expression *expr)
 		     !get_implied_value(expr, &sval)) &&
 	    (is_condition(expr) || is_boolean(expr))) {
 		call_return_state_hooks_compare(expr);
+		if (debug_db)
+			sm_msg("%s: bool", __func__);
 		return;
 	} else if (call_return_state_hooks_conditional(expr)) {
+		if (debug_db)
+			sm_msg("%s: condition", __func__);
 		return;
 	} else if (is_kernel_error_path(expr)) {
+		if (debug_db)
+			sm_msg("%s: kernel error path", __func__);
 		goto vanilla;
+	} else if (call_return_state_hooks_split_success_fail(expr)) {
+		if (debug_db)
+			sm_msg("%s: success_fail", __func__);
+		return;
 	} else if (call_return_state_hooks_split_possible(expr)) {
+		if (debug_db)
+			sm_msg("%s: split_possible", __func__);
 		return;
 	} else if (split_positive_from_negative(expr)) {
+		if (debug_db)
+			sm_msg("%s: positive negative", __func__);
 		return;
 	} else if (call_return_state_hooks_split_null_non_null_zero(expr)) {
-		return;
-	} else if (call_return_state_hooks_split_success_fail(expr)) {
+		if (debug_db)
+			sm_msg("%s: split zero non-zero", __func__);
 		return;
 	} else if (splitable_function_call(expr)) {
+		if (debug_db)
+			sm_msg("%s: split_function_call", __func__);
 		return;
 	} else if (split_by_bool_param(expr)) {
+		if (debug_db)
+			sm_msg("%s: bool param", __func__);
+		return;
 	} else if (split_by_null_nonnull_param(expr)) {
+		if (debug_db)
+			sm_msg("%s: null non-null param", __func__);
+		return;
+	} else if (split_by_impossible(expr)) {
+		if (debug_db)
+			sm_msg("%s: split by impossible", __func__);
 		return;
 	}
 
@@ -2158,23 +2595,22 @@ vanilla:
 	return_ranges = get_return_ranges_str(expr, &ret_rl);
 	set_state(RETURN_ID, "return_ranges", NULL, alloc_estate_rl(ret_rl));
 
-	return_id++;
 	nr_states = get_db_state_count();
 	if (nr_states >= 10000) {
+		return_id++;
 		match_return_info(return_id, (char *)return_ranges, expr);
 		print_limited_param_set(return_id, (char *)return_ranges, expr);
 		mark_all_params_untracked(return_id, (char *)return_ranges, expr);
 		return;
 	}
-	FOR_EACH_PTR(returned_state_callbacks, cb) {
-		cb->callback(return_id, (char *)return_ranges, expr);
-	} END_FOR_EACH_PTR(cb);
+	call_return_states_callbacks(return_ranges, expr);
+	if (debug_db)
+		sm_msg("%s: vanilla", __func__);
 }
 
 static void print_returned_struct_members(int return_id, char *return_ranges, struct expression *expr)
 {
 	struct returned_member_callback *cb;
-	struct stree *stree;
 	struct sm_state *sm;
 	struct symbol *type;
 	char *name;
@@ -2188,13 +2624,9 @@ static void print_returned_struct_members(int return_id, char *return_ranges, st
 	if (!name)
 		return;
 
-	member_name[sizeof(member_name) - 1] = '\0';
-	strcpy(member_name, "$");
-
 	len = strlen(name);
 	FOR_EACH_PTR(returned_member_callbacks, cb) {
-		stree = __get_cur_stree();
-		FOR_EACH_MY_SM(cb->owner, stree, sm) {
+		FOR_EACH_MY_SM(cb->owner, __get_cur_stree(), sm) {
 			if (sm->name[0] == '*' && strcmp(sm->name + 1, name) == 0) {
 				strcpy(member_name, "*$");
 				cb->callback(return_id, return_ranges, expr, member_name, sm->state);
@@ -2210,6 +2642,55 @@ static void print_returned_struct_members(int return_id, char *return_ranges, st
 	} END_FOR_EACH_PTR(cb);
 
 	free_string(name);
+}
+
+static void print_return_struct_info(int return_id, char *return_ranges,
+				     struct expression *expr,
+				     struct symbol *sym,
+				     struct return_info_callback *cb)
+{
+	struct sm_state *sm;
+	const char *printed_name;
+	int param;
+
+	FOR_EACH_MY_SM(cb->owner, __get_cur_stree(), sm) {
+		param = get_param_key_from_var_sym(sm->name, sm->sym, expr, &printed_name);
+		if (!printed_name)
+			continue;
+		if (param < 0)
+			continue;
+		cb->callback(return_id, return_ranges, expr, param, printed_name, sm);
+	} END_FOR_EACH_SM(sm);
+
+	/* always print returned states after processing param states */
+	FOR_EACH_MY_SM(cb->owner, __get_cur_stree(), sm) {
+		param = get_return_param_key_from_var_sym(sm->name, sm->sym, expr, &printed_name);
+		if (param != -1 || !printed_name)
+			continue;
+		cb->callback(return_id, return_ranges, expr, -1, printed_name, sm);
+	} END_FOR_EACH_SM(sm);
+}
+
+static void print_return_info(int return_id, char *return_ranges, struct expression *expr)
+{
+	struct return_info_callback *cb;
+	struct expression *tmp;
+	struct symbol *sym;
+
+	if (!option_info && !__inline_fn &&
+	    !local_debug && !option_debug)
+		return;
+
+	tmp = get_fake_variable(expr);
+	if (tmp)
+		expr = tmp;
+	sym = expr_to_sym(expr);
+
+	FOR_EACH_PTR(return_callbacks, cb) {
+		__ignore_param_used++;
+		print_return_struct_info(return_id, return_ranges, expr, sym, cb);
+		__ignore_param_used--;
+	} END_FOR_EACH_PTR(cb);
 }
 
 static void reset_memdb(struct symbol *sym)
@@ -2229,6 +2710,7 @@ static void match_end_func_info(struct symbol *sym)
 
 static void match_after_func(struct symbol *sym)
 {
+	clear_cached_return_vals();
 	if (!__inline_fn)
 		reset_memdb(sym);
 }
@@ -2312,6 +2794,7 @@ static void init_cachedb(void)
 		"db/mtag_data.schema",
 		"db/mtag_info.schema",
 		"db/sink_info.schema",
+		"db/hash_string.schema",
 	};
 	static char buf[4096];
 	int fd;
@@ -2377,7 +2860,7 @@ static void dump_cache(struct symbol_list *sym_list)
 {
 	const char *cache_tables[] = {
 		"type_info", "return_implies", "call_implies", "mtag_data",
-		"mtag_info", "mtag_about", "sink_info",
+		"mtag_info", "mtag_about", "sink_info", "hash_string",
 	};
 	char buf[64];
 	int i;
@@ -2398,8 +2881,8 @@ void open_smatch_db(char *db_file)
 	if (option_no_db)
 		return;
 
-	use_states = malloc(num_checks + 1);
-	memset(use_states, 0xff, num_checks + 1);
+	use_states = malloc(num_checks);
+	memset(use_states, 0xff, num_checks);
 
 	init_memdb();
 	init_cachedb();
@@ -2412,33 +2895,6 @@ void open_smatch_db(char *db_file)
 	run_sql(NULL, NULL,
 		"PRAGMA cache_size = %d;", SQLITE_CACHE_PAGES);
 	return;
-}
-
-static void register_common_funcs(void)
-{
-	struct token *token;
-	char *func;
-	char filename[256];
-
-	if (option_project == PROJ_NONE)
-		strcpy(filename, "common_functions");
-	else
-		snprintf(filename, 256, "%s.common_functions", option_project_str);
-
-	token = get_tokens_file(filename);
-	if (!token)
-		return;
-	if (token_type(token) != TOKEN_STREAMBEGIN)
-		return;
-	token = token->next;
-	while (token_type(token) != TOKEN_STREAMEND) {
-		if (token_type(token) != TOKEN_IDENT)
-			return;
-		func = alloc_string(show_ident(token->ident));
-		add_ptr_list(&common_funcs, func);
-		token = token->next;
-	}
-	clear_token_alloc();
 }
 
 static char *get_next_string(char **str)
@@ -2484,15 +2940,15 @@ static char *get_next_string(char **str)
 	return string;
 }
 
-static void register_return_replacements(void)
+static void register_return_deletes(void)
 {
-	char *func, *orig, *new;
+	char *func, *ret_str;
 	char filename[256];
 	char buf[4096];
 	int fd, ret, i;
 	char *p;
 
-	snprintf(filename, 256, "db/%s.return_fixes", option_project_str);
+	snprintf(filename, 256, "db/%s.delete.return_states", option_project_str);
 	fd = open_schema_file(filename);
 	if (fd < 0)
 		return;
@@ -2510,10 +2966,69 @@ static void register_return_replacements(void)
 	p = buf;
 	while (*p) {
 		get_next_string(&p);
+		delete_count++;
+	}
+	if (delete_count == 0)
+		return;
+	if (delete_count % 2 != 0) {
+		printf("error parsing '%s' delete_count=%d\n", filename, delete_count);
+		delete_count = 0;
+		return;
+	}
+	delete_table = malloc(delete_count * sizeof(char *));
+
+	p = buf;
+	i = 0;
+	while (*p) {
+		func = alloc_string(get_next_string(&p));
+		ret_str = alloc_string(get_next_string(&p));
+
+		delete_table[i++] = func;
+		delete_table[i++] = ret_str;
+	}
+}
+
+#define RETURN_FIX_SIZE 8196
+static void register_return_replacements(void)
+{
+	char *func, *orig, *new;
+	char filename[256];
+	int fd, ret, i;
+	char *buf;
+	char *p;
+
+	snprintf(filename, 256, "db/%s.return_fixes", option_project_str);
+	fd = open_schema_file(filename);
+	if (fd < 0)
+		return;
+	buf = malloc(RETURN_FIX_SIZE);
+	ret = read(fd, buf, RETURN_FIX_SIZE);
+	close(fd);
+	if (ret < 0) {
+		free(buf);
+		return;
+	}
+	if (ret == RETURN_FIX_SIZE) {
+		sm_ierror("file too large:  %s (limit %d bytes)",
+		       filename, RETURN_FIX_SIZE);
+		free(buf);
+		return;
+	}
+	buf[ret] = '\0';
+
+	p = buf;
+	while (*p) {
+		get_next_string(&p);
 		replace_count++;
 	}
-	if (replace_count == 0 || replace_count % 3 != 0) {
+	if (replace_count == 0) {
+		free(buf);
+		return;
+	}
+	if (replace_count % 3 != 0) {
+		printf("error parsing '%s' replace_count=%d\n", filename, replace_count);
 		replace_count = 0;
+		free(buf);
 		return;
 	}
 	replace_table = malloc(replace_count * sizeof(char *));
@@ -2529,267 +3044,91 @@ static void register_return_replacements(void)
 		replace_table[i++] = orig;
 		replace_table[i++] = new;
 	}
+	free(buf);
+}
+
+static void register_forced_return_splits(void)
+{
+	int struct_members = sizeof(struct split_data) / sizeof(char *);
+	char filename[256];
+	char buf[4096];
+	int fd, ret, i;
+	char *p;
+
+	snprintf(filename, 256, "db/%s.forced_return_splits", option_project_str);
+	fd = open_schema_file(filename);
+	if (fd < 0)
+		return;
+	ret = read(fd, buf, sizeof(buf));
+	close(fd);
+	if (ret < 0)
+		return;
+	if (ret == sizeof(buf)) {
+		sm_ierror("file too large:  %s (limit %zd bytes)",
+		       filename, sizeof(buf));
+		return;
+	}
+	buf[ret] = '\0';
+
+	p = buf;
+	while (*p) {
+		get_next_string(&p);
+		split_count++;
+	}
+	if (split_count == 0)
+		return;
+	if (split_count % struct_members != 0) {
+		printf("error parsing '%s' split_count=%d\n", filename, split_count);
+		split_count = 0;
+		return;
+	}
+	split_count /= struct_members;
+	forced_splits = malloc(split_count * sizeof(void *));
+
+	p = buf;
+	i = 0;
+	while (*p) {
+		struct split_data *split = malloc(sizeof(*split));
+
+		split->func = alloc_string(get_next_string(&p));
+		split->rl = alloc_string(get_next_string(&p));
+		forced_splits[i++] = split;
+	}
 }
 
 void register_definition_db_callbacks(int id)
 {
-	add_hook(&match_call_info, FUNCTION_CALL_HOOK);
-	add_hook(&match_call_info_new, FUNCTION_CALL_HOOK);
+	my_id = id;
+
+	add_hook(&match_call_info, FUNCTION_CALL_HOOK_BEFORE);
+	add_hook(&match_call_info_new, FUNCTION_CALL_HOOK_BEFORE);
 	add_split_return_callback(match_return_info);
 	add_split_return_callback(print_returned_struct_members);
+	add_split_return_callback(print_return_info);
 	add_hook(&call_return_state_hooks, RETURN_HOOK);
 	add_hook(&match_end_func_info, END_FUNC_HOOK);
 	add_hook(&match_after_func, AFTER_FUNC_HOOK);
 
 	add_hook(&match_data_from_db, FUNC_DEF_HOOK);
 	add_hook(&match_call_implies, FUNC_DEF_HOOK);
-	add_hook(&match_return_implies, CALL_HOOK_AFTER_INLINE);
+	add_hook(&match_return_implies_early, CALL_HOOK_AFTER_INLINE);
 
-	register_common_funcs();
+	common_funcs = load_strings_from_file(option_project_str, "common_functions");
+	register_return_deletes();
 	register_return_replacements();
+	register_forced_return_splits();
 
 	add_hook(&dump_cache, END_FILE_HOOK);
 }
 
+void register_definition_db_callbacks_late(int id)
+{
+	add_hook(&match_return_implies_late, CALL_HOOK_AFTER_INLINE);
+}
+
 void register_db_call_marker(int id)
 {
-	add_hook(&match_call_marker, FUNCTION_CALL_HOOK);
-}
-
-char *return_state_to_var_sym(struct expression *expr, int param, const char *key, struct symbol **sym)
-{
-	struct expression *arg;
-	char *name = NULL;
-	char member_name[256];
-
-	*sym = NULL;
-
-	if (param == -1) {
-		const char *star = "";
-
-		if (expr->type != EXPR_ASSIGNMENT)
-			return NULL;
-		if (get_type(expr->left) == &int_ctype && strcmp(key, "$") != 0)
-			return NULL;
-		name = expr_to_var_sym(expr->left, sym);
-		if (!name)
-			return NULL;
-		if (key[0] == '*') {
-			star = "*";
-			key++;
-		}
-		if (strncmp(key, "$", 1) != 0)
-			return name;
-		snprintf(member_name, sizeof(member_name), "%s%s%s", star, name, key + 1);
-		free_string(name);
-		return alloc_string(member_name);
-	}
-
-	while (expr->type == EXPR_ASSIGNMENT)
-		expr = strip_expr(expr->right);
-	if (expr->type != EXPR_CALL)
-		return NULL;
-
-	arg = get_argument_from_call_expr(expr->args, param);
-	if (!arg)
-		return NULL;
-
-	return get_variable_from_key(arg, key, sym);
-}
-
-char *get_variable_from_key(struct expression *arg, const char *key, struct symbol **sym)
-{
-	struct symbol *type;
-	char buf[256];
-	char *tmp;
-	int star_cnt = 0;
-	bool add_dot = false;
-
-	if (!arg)
-		return NULL;
-
-	arg = strip_expr(arg);
-
-	if (strcmp(key, "$") == 0)
-		return expr_to_var_sym(arg, sym);
-
-	if (strcmp(key, "*$") == 0) {
-		if (arg->type == EXPR_PREOP && arg->op == '&') {
-			arg = strip_expr(arg->unop);
-			return expr_to_var_sym(arg, sym);
-		} else {
-			tmp = expr_to_var_sym(arg, sym);
-			if (!tmp)
-				return NULL;
-			snprintf(buf, sizeof(buf), "*%s", tmp);
-			free_string(tmp);
-			return alloc_string(buf);
-		}
-	}
-
-	if (strncmp(key, "(*$)", 4) == 0) {
-		char buf[64];
-
-		if (arg->type == EXPR_PREOP && arg->op == '&') {
-			arg = strip_expr(arg->unop);
-			snprintf(buf, sizeof(buf), "$%s", key + 4);
-			return get_variable_from_key(arg, buf, sym);
-		} else {
-			tmp = expr_to_var_sym(arg, sym);
-			if (!tmp)
-				return NULL;
-			snprintf(buf, sizeof(buf), "(*%s)%s", tmp, key + 4);
-			free_string(tmp);
-			return alloc_string(buf);
-		}
-	}
-
-	while (key[0] == '*') {
-		star_cnt++;
-		key++;
-	}
-
-	/*
-	 * FIXME:  This is a hack.
-	 * We should be able to parse expressions like (*$)->foo and *$->foo.
-	 */
-	type = get_type(arg);
-	if (is_struct_ptr(type))
-		add_dot = true;
-
-	if (arg->type == EXPR_PREOP && arg->op == '&' && star_cnt && !add_dot) {
-		arg = strip_expr(arg->unop);
-		star_cnt--;
-	}
-
-	if (arg->type == EXPR_PREOP && arg->op == '&') {
-		arg = strip_expr(arg->unop);
-		tmp = expr_to_var_sym(arg, sym);
-		if (!tmp)
-			return NULL;
-		snprintf(buf, sizeof(buf), "%.*s%s.%s",
-			 star_cnt, "**********", tmp, key + 3);
-		return alloc_string(buf);
-	}
-
-	tmp = expr_to_var_sym(arg, sym);
-	if (!tmp)
-		return NULL;
-	snprintf(buf, sizeof(buf), "%.*s%s%s", star_cnt, "**********", tmp, key + 1);
-	free_string(tmp);
-	return alloc_string(buf);
-}
-
-char *get_chunk_from_key(struct expression *arg, char *key, struct symbol **sym, struct var_sym_list **vsl)
-{
-	*vsl = NULL;
-
-	if (strcmp("$", key) == 0)
-		return expr_to_chunk_sym_vsl(arg, sym, vsl);
-	return get_variable_from_key(arg, key, sym);
-}
-
-const char *state_name_to_param_name(const char *state_name, const char *param_name)
-{
-	int star_cnt = 0;
-	int name_len;
-	char buf[256];
-
-	name_len = strlen(param_name);
-
-	while (state_name[0] == '*') {
-		star_cnt++;
-		state_name++;
-	}
-
-	/* ten out of ten stars! */
-	if (star_cnt > 10)
-		return NULL;
-
-	if (strncmp(state_name, "(*", 2) == 0 &&
-	    strncmp(state_name + 2, param_name, name_len) == 0 &&
-	    state_name[name_len + 2] == ')') {
-		snprintf(buf, sizeof(buf), "%.*s(*$)%s", star_cnt, "**********",
-			 state_name + name_len + 3);
-		return alloc_sname(buf);
-	}
-
-	if (strcmp(state_name, param_name) == 0) {
-		snprintf(buf, sizeof(buf), "%.*s$", star_cnt, "**********");
-		return alloc_sname(buf);
-	}
-
-	/* check for '-' from "->" */
-	if (strncmp(state_name, param_name, name_len) == 0 &&
-	    state_name[name_len] == '-') {
-		snprintf(buf, sizeof(buf), "%.*s$%s", star_cnt, "**********", state_name + name_len);
-		return alloc_sname(buf);
-	}
-	return NULL;
-}
-
-const char *get_param_name_var_sym(const char *name, struct symbol *sym)
-{
-	if (!sym || !sym->ident)
-		return NULL;
-
-	return state_name_to_param_name(name, sym->ident->name);
-}
-
-const char *get_mtag_name_var_sym(const char *state_name, struct symbol *sym)
-{
-	struct symbol *type;
-	const char *sym_name;
-	int name_len;
-	static char buf[256];
-
-	/*
-	 * mtag_name is different from param_name because mtags can be a struct
-	 * instead of a struct pointer.  But we want to treat it like a pointer
-	 * because really an mtag is a pointer.  Or in other words, if you pass
-	 * a struct foo then you want to talk about foo.bar but with an mtag
-	 * you want to refer to it as foo->bar.
-	 *
-	 */
-
-	if (!sym || !sym->ident)
-		return NULL;
-
-	type = get_real_base_type(sym);
-	if (type && type->type == SYM_BASETYPE)
-		return "*$";
-
-	sym_name = sym->ident->name;
-	name_len = strlen(sym_name);
-
-	if (state_name[name_len] == '.' && /* check for '-' from "->" */
-	    strncmp(state_name, sym_name, name_len) == 0) {
-		snprintf(buf, sizeof(buf), "$->%s", state_name + name_len + 1);
-		return buf;
-	}
-
-	return state_name_to_param_name(state_name, sym_name);
-}
-
-const char *get_mtag_name_expr(struct expression *expr)
-{
-	char *name;
-	struct symbol *sym;
-	const char *ret = NULL;
-
-	name = expr_to_var_sym(expr, &sym);
-	if (!name || !sym)
-		goto free;
-
-	ret = get_mtag_name_var_sym(name, sym);
-free:
-	free_string(name);
-	return ret;
-}
-
-const char *get_param_name(struct sm_state *sm)
-{
-	return get_param_name_var_sym(sm->name, sm->sym);
+	add_hook(&match_call_marker, FUNCTION_CALL_HOOK_BEFORE);
 }
 
 char *get_data_info_name(struct expression *expr)

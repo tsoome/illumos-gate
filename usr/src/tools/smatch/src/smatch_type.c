@@ -20,6 +20,7 @@
  * want to know what the type is for that.
  */
 
+#include <ctype.h>
 #include "smatch.h"
 #include "smatch_slist.h"
 
@@ -56,7 +57,23 @@ int array_bytes(struct symbol *type)
 {
 	if (!type || type->type != SYM_ARRAY)
 		return 0;
+	if (!type->array_size)
+		return 0;
 	return bits_to_bytes(type->bit_size);
+}
+
+bool is_long(struct symbol *type)
+{
+	if (type == &ulong_ctype || type == &long_ctype)
+		return true;
+	return false;
+}
+
+bool is_int(struct symbol *type)
+{
+	if (type == &uint_ctype || type == &int_ctype)
+		return true;
+	return false;
 }
 
 static struct symbol *get_binop_type(struct expression *expr)
@@ -109,15 +126,24 @@ static struct symbol *get_binop_type(struct expression *expr)
 
 	if (type_positive_bits(left) > type_positive_bits(right))
 		return left;
+	if (is_long(left) && is_int(right))
+		return left;
+	if (is_long(right) && is_int(left))
+		return right;
 	return right;
 }
 
 static struct symbol *get_type_symbol(struct expression *expr)
 {
+	struct symbol *type;
+
 	if (!expr || expr->type != EXPR_SYMBOL || !expr->symbol)
 		return NULL;
 
-	return get_real_base_type(expr->symbol);
+	type = get_real_base_type(expr->symbol);
+	if (type == &autotype_ctype)
+		return get_type(expr->symbol->initializer);
+	return type;
 }
 
 static struct symbol *get_member_symbol(struct symbol_list *symbol_list, struct ident *member)
@@ -316,6 +342,10 @@ static struct symbol *get_type_helper(struct expression *expr)
 	case EXPR_OFFSETOF:
 		ret = &ulong_ctype;
 		break;
+	case EXPR_GENERIC:
+		return get_type_helper(strip_Generic(expr));
+	case EXPR_COMMA:
+		return get_type_helper(expr->right);
 	default:
 		return NULL;
 	}
@@ -343,12 +373,23 @@ static struct symbol *get_final_type_helper(struct expression *expr)
 
 	if (expr->type == EXPR_COMPARE)
 		return &int_ctype;
+	if (expr->type == EXPR_PREOP && expr->op == '!')
+		return &int_ctype;
 
 	return NULL;
 }
 
 struct symbol *get_type(struct expression *expr)
 {
+	return get_type_helper(expr);
+}
+
+struct symbol *get_comparison_type(struct expression *expr)
+{
+	/*
+	 * Eventually we will probably have to figure out how to make get_type()
+	 * return &int_ctype so let's create a helper function to transition to.
+	 */
 	return get_type_helper(expr);
 }
 
@@ -425,7 +466,18 @@ int returns_unsigned(struct symbol *sym)
 
 int is_pointer(struct expression *expr)
 {
-	return type_is_ptr(get_type(expr));
+	return type_is_ptr(get_final_type(expr));
+}
+
+bool is_void_ptr(struct symbol *type)
+{
+	if (!type)
+		return false;
+	if (type->type != SYM_PTR)
+		return false;
+	type = get_real_base_type(type);
+
+	return types_equiv(type, &void_ctype);
 }
 
 int returns_pointer(struct symbol *sym)
@@ -578,10 +630,20 @@ free:
 	return ret;
 }
 
+static struct expression *get_symbol_expr(struct expression *expr)
+{
+	if (!expr)
+		return NULL;
+	while (expr && expr->type == EXPR_DEREF && expr->op == '.')
+		expr = strip_expr(expr->deref);
+	return expr;
+}
+
 bool is_local_variable(struct expression *expr)
 {
 	struct symbol *sym;
 
+	expr = get_symbol_expr(expr);
 	if (!expr || expr->type != EXPR_SYMBOL || !expr->symbol)
 		return false;
 	sym = expr->symbol;
@@ -709,6 +771,16 @@ static struct symbol *get_member_from_string(struct symbol_list *symbol_list, co
 	return NULL;
 }
 
+static struct symbol *get_type_from_container_of_key(struct expression *expr, const char *key)
+{
+	char *new_key;
+
+	expr = map_container_of_to_simpler_expr_key(expr, key, &new_key);
+	if (!expr)
+		return NULL;
+	return get_member_type_from_key(expr, new_key);
+}
+
 struct symbol *get_member_type_from_key(struct expression *expr, const char *key)
 {
 	struct symbol *sym;
@@ -720,10 +792,15 @@ struct symbol *get_member_type_from_key(struct expression *expr, const char *key
 
 	if (strcmp(key, "*$") == 0) {
 		sym = get_type(expr);
-		if (!sym || sym->type != SYM_PTR)
+		if (!sym)
+			return NULL;
+		if (sym->type != SYM_PTR && sym->type != SYM_ARRAY)
 			return NULL;
 		return get_real_base_type(sym);
 	}
+
+	if (strstr(key, "<~$"))
+		return get_type_from_container_of_key(expr, key);
 
 	sym = get_type(expr);
 	if (!sym)
@@ -802,9 +879,9 @@ static struct {
 	{&llong_ctype, "llong"},
 	{&sllong_ctype, "sllong"},
 	{&ullong_ctype, "ullong"},
-	{&lllong_ctype, "lllong"},
-	{&slllong_ctype, "slllong"},
-	{&ulllong_ctype, "ulllong"},
+	{&int128_ctype, "lllong"},
+	{&sint128_ctype, "slllong"},
+	{&uint128_ctype, "ulllong"},
 	{&float_ctype, "float"},
 	{&double_ctype, "double"},
 	{&ldouble_ctype, "ldouble"},
@@ -903,5 +980,5 @@ char *type_to_str(struct symbol *type)
 
 	buf[0] = '\0';
 	type_str_helper(buf, sizeof(buf), type);
-	return buf;
+	return alloc_sname(buf);
 }

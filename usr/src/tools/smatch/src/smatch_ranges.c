@@ -32,14 +32,76 @@ bool is_err_ptr(sval_t sval)
 		return false;
 	if (!type_is_ptr(sval.type))
 		return false;
-	if (sval.uvalue < -4095ULL)
+	if (sval_cmp(sval, valid_ptr_max_sval) <= 0)
 		return false;
 	return true;
+}
+
+bool is_err_or_null(struct range_list *rl)
+{
+	struct range_list *no_null;
+
+	if (!rl)
+		return false;
+
+	if (rl_min(rl).value == 0 && rl_max(rl).value == 0)
+		return true;
+
+	if (rl_min(rl).value != 0)
+		no_null = rl;
+	else
+		no_null = remove_range(rl, rl_min(rl), rl_min(rl));
+
+	return is_err_ptr(rl_min(no_null)) && is_err_ptr(rl_max(no_null));
+}
+
+static bool is_oxdead(struct range_list *rl)
+{
+	sval_t sval;
+
+	/* check for 0xdead000000000000 */
+	if (!rl_to_sval(rl, &sval))
+		return false;
+	if ((sval.uvalue >> (bits_in_pointer - 16)) == 0xdead)
+		return true;
+
+	return false;
+}
+
+bool is_noderef_ptr_rl(struct range_list *rl)
+{
+	if (!rl)
+		return false;
+
+	if (rl_min(rl).value == 0 && rl_max(rl).value == 0)
+		return true;
+	if (is_err_or_null(rl))
+		return true;
+	if (is_oxdead(rl))
+		return true;
+	return false;
+}
+
+bool rl_is_zero(struct range_list *rl)
+{
+	if (!rl)
+		return false;
+	if (rl_min(rl).value == 0 && rl_max(rl).value == 0)
+		return true;
+	return false;
+}
+
+long long sign_extend_err_ptr(long long value)
+{
+	if (sval_type_max(&ulong_ctype).value == UINT_MAX)
+		return (int)value;
+	return value;
 }
 
 static char *get_err_pointer_str(struct data_range *drange)
 {
 	static char buf[20];
+	long long min, max;
 
 	/*
 	 * The kernel has error pointers where you do essentially:
@@ -53,10 +115,14 @@ static char *get_err_pointer_str(struct data_range *drange)
 	if (!is_err_ptr(drange->min))
 		return NULL;
 
+	min = drange->min.value;
+	max = drange->max.value;
+
 	if (drange->min.value == drange->max.value)
-		snprintf(buf, sizeof(buf), "(%lld)", drange->min.value);
+		snprintf(buf, sizeof(buf), "(%lld)", sign_extend_err_ptr(min));
 	else
-		snprintf(buf, sizeof(buf), "(%lld)-(%lld)", drange->min.value, drange->max.value);
+		snprintf(buf, sizeof(buf), "(%lld)-(%lld)",
+			 sign_extend_err_ptr(min), sign_extend_err_ptr(max));
 	return buf;
 }
 
@@ -352,7 +418,8 @@ void filter_by_comparison(struct range_list **rl, int comparison, struct range_l
 	struct symbol *cast_type;
 	sval_t min, max;
 
-	if (comparison == UNKNOWN_COMPARISON)
+	if (comparison == UNKNOWN_COMPARISON ||
+	    comparison == IMPOSSIBLE_COMPARISON)
 		return;
 
 	cast_type = rl_type(left_orig);
@@ -490,6 +557,10 @@ static sval_t parse_val(int use_max, struct expression *call, struct symbol *typ
 	} else if (start[0] == '[') {
 		/* this parses [==p0] comparisons */
 		get_val_from_key(1, type, start, call, &c, &ret);
+	} else if (type_is_ptr(type)) {
+		ret = sval_type_val(type, strtoll(start, (char **)&c, 0));
+		if (sval_type_max(&ulong_ctype).value == UINT_MAX)
+			ret.uvalue &= UINT_MAX;
 	} else if (type_positive_bits(type) == 64) {
 		ret = sval_type_val(type, strtoull(start, (char **)&c, 0));
 	} else {
@@ -721,6 +792,37 @@ int is_unknown_ptr(struct range_list *rl)
 	} END_FOR_EACH_PTR(drange);
 
 	return 0;
+}
+
+bool is_whole_ptr_rl(struct range_list *rl)
+{
+	struct data_range *drange;
+	int cnt = 0;
+
+	/* A whole pointer range is either 0-ulong_max or NULL, valid range, and
+	 * error pointers.
+	 */
+	if (is_whole_rl(rl))
+		return true;
+
+	if (ptr_list_size((struct ptr_list *)rl) != 2)
+		return false;
+
+	FOR_EACH_PTR(rl, drange) {
+		cnt++;
+
+		if (cnt == 1) {
+			if (drange->min.value != 0 ||
+			    drange->max.value != 0)
+				return false;
+		} if (cnt == 2) {
+			if (drange->min.value != valid_ptr_min ||
+			    drange->max.value != ULONG_MAX)
+				return false;
+		}
+	} END_FOR_EACH_PTR(drange);
+
+	return true;
 }
 
 int is_whole_rl_non_zero(struct range_list *rl)
@@ -1237,6 +1339,8 @@ int possibly_true(struct expression *left, int comparison, struct expression *ri
 
 	if (comparison == UNKNOWN_COMPARISON)
 		return 1;
+	if (comparison == IMPOSSIBLE_COMPARISON)
+		return 0;
 	if (!get_implied_rl(left, &rl_left))
 		return 1;
 	if (!get_implied_rl(right, &rl_right))
@@ -1296,6 +1400,8 @@ int possibly_true_rl(struct range_list *left_ranges, int comparison, struct rang
 
 	if (!left_ranges || !right_ranges || comparison == UNKNOWN_COMPARISON)
 		return 1;
+	if (comparison == IMPOSSIBLE_COMPARISON)
+		return 0;
 
 	type = rl_type(left_ranges);
 	if (type_positive_bits(type) < type_positive_bits(rl_type(right_ranges)))
@@ -1322,6 +1428,8 @@ int possibly_false_rl(struct range_list *left_ranges, int comparison, struct ran
 
 	if (!left_ranges || !right_ranges || comparison == UNKNOWN_COMPARISON)
 		return 1;
+	if (comparison == IMPOSSIBLE_COMPARISON)
+		return 0;
 
 	type = rl_type(left_ranges);
 	if (type_positive_bits(type) < type_positive_bits(rl_type(right_ranges)))
@@ -1520,6 +1628,9 @@ struct range_list *cast_rl(struct symbol *type, struct range_list *rl)
 	return ret;
 }
 
+/*
+ * This is the opposite of rl_intersection().
+ */
 struct range_list *rl_filter(struct range_list *rl, struct range_list *filter)
 {
 	struct data_range *tmp;
@@ -1898,16 +2009,17 @@ static struct range_list *handle_AND_rl(struct range_list *left, struct range_li
 {
 	struct bit_info *one, *two;
 	struct range_list *rl;
-	sval_t min, max, zero;
+	sval_t min, max, zero, bits_sval;
 	unsigned long long bits;
 
 	one = rl_to_binfo(left);
 	two = rl_to_binfo(right);
 	bits = one->possible & two->possible;
+	bits_sval = rl_max(left);
+	bits_sval.uvalue = bits;
 
-	max = rl_max(left);
-	max.uvalue = bits;
-	min = sval_lowest_set_bit(max);
+	max = sval_min_nonneg(rl_max(left), rl_max(right));
+	min = sval_lowest_set_bit(bits_sval);
 
 	rl = alloc_rl(min, max);
 
@@ -2046,6 +2158,7 @@ void free_data_info_allocs(void)
 
 	free_all_rl();
 	clear_math_cache();
+	clear_strip_cache();
 
 	desc->blobs = NULL;
 	desc->allocations = 0;
@@ -2057,6 +2170,8 @@ void free_data_info_allocs(void)
 		blob_free(blob, desc->chunking);
 		blob = next;
 	}
+	clear_array_values_cache();
+	clear_type_value_cache();
 	clear_data_range_alloc();
 }
 

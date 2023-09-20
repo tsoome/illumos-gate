@@ -24,6 +24,16 @@ static int my_id;
 STATE(uninitialized);
 STATE(initialized);
 
+static bool uncertain_code_path(void)
+{
+	if (implications_off || parse_error)
+		return true;
+	if (is_impossible_path())
+		return true;
+
+	return false;
+}
+
 static void pre_merge_hook(struct sm_state *cur, struct sm_state *other)
 {
 	if (is_impossible_path())
@@ -54,6 +64,9 @@ static void match_declarations(struct symbol *sym)
 {
 	struct symbol *type;
 
+	if (!cur_func_sym)
+		return;
+
 	if (sym->initializer)
 		return;
 
@@ -77,18 +90,66 @@ static void match_declarations(struct symbol *sym)
 	set_state(my_id, sym->ident->name, sym, &uninitialized);
 }
 
+static int is_initialized(struct expression *expr)
+{
+	struct sm_state *sm;
+
+	expr = strip_expr(expr);
+	if (expr->type != EXPR_SYMBOL)
+		return 1;
+	sm = get_sm_state_expr(my_id, expr);
+	if (!sm)
+		return 1;
+	if (!slist_has_state(sm->possible, &uninitialized))
+		return 1;
+	return 0;
+}
+
+static void warn_about_special_assign(struct expression *expr)
+{
+	char *name;
+
+	if (!expr || expr->type != EXPR_ASSIGNMENT || expr->op == '=')
+		return;
+
+	if (uncertain_code_path())
+		return;
+
+	if (is_initialized(expr->left))
+		return;
+
+	name = expr_to_str(expr->left);
+	sm_warning("uninitialized special assign '%s'", name);
+	free_string(name);
+}
+
 static void extra_mod_hook(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
 {
+	struct expression *parent = expr_get_parent_expr(expr);
+
+	if (!cur_func_sym)
+		return;
+
+	if (__in_fake_struct_assign && parent &&
+	    parent->type == EXPR_ASSIGNMENT &&
+	    is_fake_call(parent->right))
+		return;
+	if (expr && expr->smatch_flags & Fake)
+		return;
 	if (!sym || !sym->ident)
 		return;
 	if (strcmp(name, sym->ident->name) != 0)
 		return;
+	warn_about_special_assign(expr);
 	set_state(my_id, name, sym, &initialized);
 }
 
 static void match_assign(struct expression *expr)
 {
 	struct expression *right;
+
+	if (is_fake_var_assign(expr))
+		return;
 
 	right = strip_expr(expr->right);
 	if (right->type == EXPR_PREOP && right->op == '&')
@@ -130,31 +191,51 @@ static void match_negative_comparison(struct expression *expr)
 	end_assume();
 }
 
-static int is_initialized(struct expression *expr)
+static struct statement *clear_states;
+static void match_enum_switch(struct statement *stmt)
+{
+	struct expression *expr;
+	struct symbol *type;
+
+	if (stmt->type != STMT_COMPOUND)
+		return;
+	stmt = stmt_get_parent_stmt(stmt);
+	if (!stmt || stmt->type != STMT_SWITCH)
+		return;
+
+	/* This ended up way uglier than I imagined */
+	if (__has_default_case())
+		return;
+
+	expr = strip_expr(stmt->switch_expression);
+	type = expr->ctype;
+	if (!type || type->type != SYM_ENUM)
+		return;
+
+	clear_states = stmt;
+}
+
+static void match_enum_switch_after(struct statement *stmt)
 {
 	struct sm_state *sm;
 
-	expr = strip_expr(expr);
-	if (expr->type != EXPR_SYMBOL)
-		return 1;
-	sm = get_sm_state_expr(my_id, expr);
-	if (!sm)
-		return 1;
-	if (!slist_has_state(sm->possible, &uninitialized))
-		return 1;
-	return 0;
+	if (clear_states != stmt)
+		return;
+
+	FOR_EACH_MY_SM(my_id, __get_cur_stree(), sm) {
+		if (sm->state == &merged)
+			set_state(my_id, sm->name, sm->sym, &initialized);
+	} END_FOR_EACH_SM(sm);
 }
 
 static void match_dereferences(struct expression *expr)
 {
 	char *name;
 
-	if (implications_off || parse_error)
+	if (uncertain_code_path())
 		return;
 
 	if (expr->type != EXPR_PREOP)
-		return;
-	if (is_impossible_path())
 		return;
 	if (is_initialized(expr->unop))
 		return;
@@ -170,10 +251,7 @@ static void match_condition(struct expression *expr)
 {
 	char *name;
 
-	if (implications_off || parse_error)
-		return;
-
-	if (is_impossible_path())
+	if (uncertain_code_path())
 		return;
 
 	if (is_initialized(expr))
@@ -186,15 +264,36 @@ static void match_condition(struct expression *expr)
 	set_state_expr(my_id, expr, &initialized);
 }
 
+static void match_function_pointer_call(struct expression *expr)
+{
+	struct expression *parent, *arg, *tmp;
+
+	/*
+	 * If you call a function pointer foo->read(&val) without checking
+	 * for errors then you knew what you were doing when you wrote that
+	 * code.  I'm not the police to try to prevent intentional bugs.
+	 *
+	 */
+	parent = expr_get_parent_expr(expr);
+	if (parent)
+		return;
+	if (expr->fn->type == EXPR_SYMBOL)
+		return;
+
+	FOR_EACH_PTR(expr->args, arg) {
+		tmp = strip_expr(arg);
+		if (tmp->type != EXPR_PREOP || tmp->op != '&')
+			continue;
+		set_state_expr(my_id, tmp->unop, &initialized);
+	} END_FOR_EACH_PTR(arg);
+}
+
 static void match_call(struct expression *expr)
 {
 	struct expression *arg;
 	char *name;
 
-	if (parse_error)
-		return;
-
-	if (is_impossible_path())
+	if (uncertain_code_path())
 		return;
 
 	FOR_EACH_PTR(expr->args, arg) {
@@ -296,20 +395,42 @@ static int is_being_modified(struct expression *expr)
 	return 0;
 }
 
+static bool is_just_silencing_used_variable(struct expression *expr)
+{
+	struct symbol *type;
+
+	while ((expr = expr_get_parent_expr(expr))) {
+		if (expr->type == EXPR_PREOP && expr->op == '(')
+			continue;
+		if (expr->type == EXPR_CAST) {
+			type = expr->cast_type;
+
+			if (!type)
+				return false;
+			if (type->type == SYM_NODE)
+				type = get_real_base_type(type);
+			if (type == &void_ctype)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 static void match_symbol(struct expression *expr)
 {
 	char *name;
 
-	if (implications_off || parse_error)
-		return;
-
-	if (is_impossible_path())
+	if (uncertain_code_path())
 		return;
 
 	if (is_initialized(expr))
 		return;
 
 	if (is_being_modified(expr))
+		return;
+
+	if (is_just_silencing_used_variable(expr))
 		return;
 
 	name = expr_to_str(expr);
@@ -388,12 +509,15 @@ void check_uninitialized(int id)
 	add_extra_mod_hook(&extra_mod_hook);
 	add_hook(&match_assign, ASSIGNMENT_HOOK);
 	add_hook(&match_negative_comparison, CONDITION_HOOK);
+	add_hook(&match_enum_switch, STMT_HOOK_AFTER);
+	add_hook(&match_enum_switch_after, STMT_HOOK_AFTER);
 	add_untracked_param_hook(&match_untracked);
 	add_pre_merge_hook(my_id, &pre_merge_hook);
 
 	add_hook(&match_dereferences, DEREF_HOOK);
 	add_hook(&match_condition, CONDITION_HOOK);
 	add_hook(&match_call, FUNCTION_CALL_HOOK);
+	add_hook(&match_function_pointer_call, FUNCTION_CALL_HOOK);
 	add_hook(&match_call_struct_members, FUNCTION_CALL_HOOK);
 	add_hook(&match_symbol, SYM_HOOK);
 

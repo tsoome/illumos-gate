@@ -62,6 +62,9 @@ static void match_symbol(struct expression *expr)
 	if (__in_fake_parameter_assign)
 		return;
 
+	if (is_part_of_condition(expr))
+		return;
+
 	parent = expr_get_parent_expr(expr);
 	while (parent && parent->type == EXPR_PREOP && parent->op == '(')
 		parent = expr_get_parent_expr(parent);
@@ -70,6 +73,10 @@ static void match_symbol(struct expression *expr)
 
 	if (!is_freed(expr))
 		return;
+
+	if (is_percent_p_print(expr))
+		return;
+
 	name = expr_to_var(expr);
 	sm_warning("'%s' was already freed.", name);
 	free_string(name);
@@ -173,6 +180,8 @@ static void match_call(struct expression *expr)
 			continue;
 		if (ignored_params[i])
 			continue;
+		if (is_percent_p_print(arg))
+			continue;
 
 		name = expr_to_var(arg);
 		if (is_free_func(expr->fn))
@@ -243,6 +252,7 @@ int parent_is_free_var_sym(const char *name, struct symbol *sym)
 	char *start;
 	char *end;
 	struct smatch_state *state;
+	char orig;
 
 	if (option_project == PROJ_KERNEL)
 		return parent_is_free_var_sym_strict(name, sym);
@@ -253,12 +263,15 @@ int parent_is_free_var_sym(const char *name, struct symbol *sym)
 	start = &buf[0];
 	while ((*start == '&'))
 		start++;
-
-	while ((end = strrchr(start, '-'))) {
+	end = start;
+	while ((end = strrchr(end, '-'))) {
+		orig = *end;
 		*end = '\0';
 		state = __get_state(my_id, start, sym);
 		if (state == &freed)
 			return 1;
+		*end = orig;
+		end++;
 	}
 	return 0;
 }

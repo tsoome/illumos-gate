@@ -20,6 +20,12 @@ off those warnings, pass the negation of the associated warning option,
 .
 .SH WARNING OPTIONS
 .TP
+.B \-fmax-errors=COUNT
+Set the maximum number of displayed errors to COUNT, which should be
+a numerical value or 'unlimited'.
+The default limit is 100.
+.
+.TP
 .B \-fmax-warnings=COUNT
 Set the maximum number of displayed warnings to COUNT, which should be
 a numerical value or 'unlimited'.
@@ -251,6 +257,36 @@ Sparse issues these warnings by default.  To turn them off, use
 \fB\-Wno\-external\-function\-has\-definition\fR.
 .
 .TP
+.B -Wflexible-array-array
+Warn about arrays of structures containing a flexible array.
+
+Sparse issues these warnings by default. To turn them off, use
+\fB-Wno-flexible-array-array\fR.
+.
+.TP
+.B -Wflexible-array-nested
+Warn about structures containing a flexible array being contained into
+another structure, union or array.
+
+Sparse does not issue these warnings by default.
+.
+.TP
+.B -Wflexible-array-sizeof
+Warn about using the sizeof operator on a structure containing a flexible array,
+possibly recursively.
+
+Sparse does not issue these warnings by default.
+.
+.TP
+.B -Wflexible-array-union
+Enable the warnings regarding flexible arrays and unions.
+To have any effect, at least one of \fB-Wflexible-array-array\fR,
+\fB-Wflexible-array-nested\fR or \fB-Wflexible-array-sizeof\fR must also
+be enabled.
+
+Sparse does issue these warnings by default.
+.
+.TP
 .B \-Winit\-cstring
 Warn about initialization of a char array with a too long constant C string.
 
@@ -278,6 +314,13 @@ Sparse issues these warnings by default. To turn them off, use
 
 The limit can be changed with \fB\-fmemcpy\-max\-count=COUNT\fR,
 the default being \fB100000\fR.
+.
+.TP
+.B \-Wnewline\-eof
+Warn if the input file doesn't end with a newline.
+
+Sparse issues these warnings by default.  To turn them off, use
+\fB\-Wno\-newline\-eof\fR.
 .
 .TP
 .B \-Wnon\-pointer\-null
@@ -331,6 +374,13 @@ Warn about the use of a parenthesized string to initialize an array.
 Standard C syntax does not permit a parenthesized string as an array
 initializer.  GCC allows this syntax as an extension.  With
 \fB\-Wparen\-string\fR, Sparse will warn about this syntax.
+
+Sparse does not issue these warnings by default.
+.
+.TP
+.B -Wpast-deep-designator
+Warn when, in a initializer-list, a initializer with a deep (nested)
+designator is followed by a non-designated one.
 
 Sparse does not issue these warnings by default.
 .
@@ -428,7 +478,31 @@ However, this behavior can lead to subtle errors.
 
 Sparse does not issue these warnings by default.
 .
+.TP
+.B \-Wuniversal\-initializer
+Do not suppress warnings caused by using '{\ 0\ }' instead of '{\ }' on
+aggregate types, ignoring its special status as universal initializer.
+The concerned warnings are, for example, those triggered by
+\fB\-Wdesignated\-init\fR or \fB\-Wnon\-pointer\-null\fR.
+
+Sparse does not issue these warnings by default, processing '{\ 0\ }'
+the same as '{\ }'.
+.
+.TP
+.B -Wunion-cast
+Warn on casts to union types.
+
+Sparse does not issues these warnings by default.
+.
 .SH MISC OPTIONS
+.TP
+.B \-\-arch=\fIARCH\fR
+Specify the target architecture.
+For architectures having both a 32-bit and a 64-bit variant (mips, powerpc,
+riscv and sparc) the architecture name can be suffixed with \fI32\fR or \fI64\fR.
+
+The default architecture and size is the one of the machine used to build Sparse.
+.
 .TP
 .B \-gcc-base-dir \fIdir\fR
 Look for compiler-provided system headers in \fIdir\fR/include/ and \fIdir\fR/include-fixed/.
@@ -438,6 +512,16 @@ Look for compiler-provided system headers in \fIdir\fR/include/ and \fIdir\fR/in
 Look for system headers in the multiarch subdirectory \fIdir\fR.
 The \fIdir\fR name would normally take the form of the target's
 normalized GNU triplet. (e.g. i386-linux-gnu).
+.
+.TP
+.B --os=\fIOS\fR
+Specify the target Operating System.
+This only makes a few differences with the predefined types.
+The accepted values are: linux, unix, freebsd, netbsd, opensd, sunos, darwin
+and cygwin.
+
+The default OS is the one of the machine used to build Sparse if it can be
+detected, otherwise some generic settings are used.
 .
 .SH DEBUG OPTIONS
 .TP
@@ -464,6 +548,12 @@ column numbers in warnings or errors.  If the value is less than 1 or
 greater than 100, the option is ignored.  The default is 8.
 .
 .TP
+.B \-f[no-]unsigned-bitfields, \-f[no-]signed-bitfields
+Determine the signedness of bitfields declared without an
+explicit sign ('signed' or 'unsigned').
+By default such bitfields are signed, like others plain integers.
+.
+.TP
 .B \-f[no-]unsigned-char, \-f[no-]signed-char
 Let plain 'char' be unsigned or signed.
 By default chars are signed.
@@ -472,12 +562,12 @@ By default chars are signed.
 .BR cgcc (1)
 .
 .SH HOMEPAGE
-http://www.kernel.org/pub/software/devel/sparse/
+https://sparse.docs.kernel.org
 .
 .SH MAILING LIST
 linux-sparse@vger.kernel.org
 .
-.SH CONTRIBUTINGS AND REPORTING BUGS
+.SH CONTRIBUTING AND REPORTING BUGS
 Submission of patches and reporting of bugs, as well as discussions
 related to Sparse, should be done via the mailing list (linux-sparse@vger.kernel.org)
 where the development and maintenance is primarily done.
@@ -485,6 +575,10 @@ You do not have to be subscribed to the list to send a message there.
 
 Bugs can also be reported and tracked via the Linux kernel's bugzilla:
 http://bugzilla.kernel.org/enter_bug.cgi?component=Sparse&product=Tools .
+.
+.SH DOCUMENTATION
+More documentation about Sparse can be found at
+https://sparse.docs.kernel.org
 .
 .SH AUTHORS
 Sparse was started by Linus Torvalds.

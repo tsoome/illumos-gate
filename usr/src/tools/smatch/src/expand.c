@@ -66,6 +66,14 @@ static int expand_symbol_expression(struct expression *expr)
 		expr->taint = 0;
 		return 0;
 	}
+
+	// expand compound literals (C99 & C11 6.5.2.5)
+	// FIXME: is this the correct way to identify them?
+	//	All compound literals are anonymous but is
+	//	the reverse true?
+	if (sym->initializer && !expr->symbol_name)
+		return expand_expression(sym->initializer);
+
 	/* The cost of a symbol expression is lower for on-stack symbols */
 	return (sym->ctype.modifiers & (MOD_STATIC | MOD_EXTERN)) ? 2 : 1;
 }
@@ -86,9 +94,9 @@ static long long get_longlong(struct expression *expr)
 	return (value & andmask) | ormask;
 }
 
-void cast_value(struct expression *expr, struct symbol *newtype,
-		struct expression *old, struct symbol *oldtype)
+void cast_value(struct expression *expr, struct symbol *newtype, struct expression *old)
 {
+	struct symbol *oldtype = old->ctype;
 	int old_size = oldtype->bit_size;
 	int new_size = newtype->bit_size;
 	long long value, mask, signmask;
@@ -102,11 +110,13 @@ void cast_value(struct expression *expr, struct symbol *newtype,
 	expr->taint = old->taint;
 	if (old_size == new_size) {
 		expr->value = old->value;
+		expr->ctype = newtype;
 		return;
 	}
 
 	// expand it to the full "long long" value
 	value = get_longlong(old);
+	expr->ctype = newtype;
 
 Int:
 	// _Bool requires a zero test rather than truncation.
@@ -145,6 +155,7 @@ Float:
 		value = (long long)old->fvalue;
 		expr->type = EXPR_VALUE;
 		expr->taint = 0;
+		expr->ctype = newtype;
 		goto Int;
 	}
 
@@ -153,30 +164,14 @@ Float:
 	else
 		expr->fvalue = old->fvalue;
 
-	if (!(newtype->ctype.modifiers & MOD_LONGLONG) && \
-	    !(newtype->ctype.modifiers & MOD_LONGLONGLONG)) {
-		if ((newtype->ctype.modifiers & MOD_LONG))
+	if (newtype->rank <= 0) {
+		if (newtype->rank == 0)
 			expr->fvalue = (double)expr->fvalue;
 		else
 			expr->fvalue = (float)expr->fvalue;
 	}
 	expr->type = EXPR_FVALUE;
-}
-
-static void warn_shift_count(struct expression *expr, struct symbol *ctype, long long count)
-{
-	if (count < 0) {
-		if (!Wshift_count_negative)
-			return;
-		warning(expr->pos, "shift count is negative (%lld)", count);
-		return;
-	}
-	if (ctype->type == SYM_NODE)
-		ctype = ctype->ctype.base_type;
-
-	if (!Wshift_count_overflow)
-		return;
-	warning(expr->pos, "shift too big (%llu) for type %s", count, show_typename(ctype));
+	expr->ctype = newtype;
 }
 
 /* Return true if constant shift size is valid */
@@ -187,8 +182,6 @@ static bool check_shift_count(struct expression *expr, struct expression *right)
 
 	if (count >= 0 && count < ctype->bit_size)
 		return true;
-	if (!conservative)
-		warn_shift_count(expr, ctype, count);
 	return false;
 }
 
@@ -350,7 +343,7 @@ static int simplify_cmp_binop(struct expression *expr, struct symbol *ctype)
 static int simplify_float_binop(struct expression *expr)
 {
 	struct expression *left = expr->left, *right = expr->right;
-	unsigned long mod = expr->ctype->ctype.modifiers;
+	int rank = expr->ctype->rank;
 	long double l, r, res;
 
 	if (left->type != EXPR_FVALUE || right->type != EXPR_FVALUE)
@@ -359,7 +352,7 @@ static int simplify_float_binop(struct expression *expr)
 	l = left->fvalue;
 	r = right->fvalue;
 
-	if (mod & MOD_LONGLONG) {
+	if (rank > 0) {
 		switch (expr->op) {
 		case '+':	res = l + r; break;
 		case '-':	res = l - r; break;
@@ -368,7 +361,7 @@ static int simplify_float_binop(struct expression *expr)
 				res = l / r; break;
 		default: return 0;
 		}
-	} else if (mod & MOD_LONG) {
+	} else if (rank == 0) {
 		switch (expr->op) {
 		case '+':	res = (double) l + (double) r; break;
 		case '-':	res = (double) l - (double) r; break;
@@ -614,12 +607,70 @@ static int expand_addressof(struct expression *expr)
 	return expand_expression(expr->unop);
 }
 
+///
+// lookup the type of a struct's memeber at the requested offset
+static struct symbol *find_member(struct symbol *sym, int offset)
+{
+	struct ptr_list *head, *list;
+
+	head = (struct ptr_list *) sym->symbol_list;
+	list = head;
+	if (!head)
+		return NULL;
+	do {
+		int nr = list->nr;
+		int i;
+		for (i = 0; i < nr; i++) {
+			struct symbol *ent = (struct symbol *) list->list[i];
+			int curr = ent->offset;
+			if (curr == offset)
+				return ent;
+			if (curr > offset)
+				return NULL;
+		}
+	} while ((list = list->next) != head);
+	return NULL;
+}
+
+///
+// lookup a suitable default initializer value at the requested offset
+static struct expression *default_initializer(struct symbol *sym, int offset)
+{
+	static struct expression value;
+	struct symbol *type;
+
+redo:
+	switch (sym->type) {
+	case SYM_NODE:
+		sym = sym->ctype.base_type;
+		goto redo;
+	case SYM_STRUCT:
+		type = find_member(sym, offset);
+		if (!type)
+			return NULL;
+		break;
+	case SYM_ARRAY:
+		type = sym->ctype.base_type;
+		break;
+	default:
+		return NULL;
+	}
+
+	if (is_integral_type(type))
+		value.type = EXPR_VALUE;
+	else if (is_float_type(type))
+		value.type = EXPR_FVALUE;
+	else
+		return NULL;
+
+	value.ctype = type;
+	return &value;
+}
+
 /*
  * Look up a trustable initializer value at the requested offset.
  *
  * Return NULL if no such value can be found or statically trusted.
- *
- * FIXME!! We should check that the size is right!
  */
 static struct expression *constant_symbol_value(struct symbol *sym, int offset)
 {
@@ -641,10 +692,11 @@ static struct expression *constant_symbol_value(struct symbol *sym, int offset)
 			if (entry->init_offset < offset)
 				continue;
 			if (entry->init_offset > offset)
-				return NULL;
+				break;
 			return entry->init_expr;
 		} END_FOR_EACH_PTR(entry);
-		return NULL;
+
+		value = default_initializer(sym, offset);
 	}
 	return value;
 }
@@ -671,22 +723,26 @@ static int expand_dereference(struct expression *expr)
 	 * Is it "symbol" or "symbol + offset"?
 	 */
 	offset = 0;
-	if (unop->type == EXPR_BINOP && unop->op == '+') {
+	while (unop->type == EXPR_BINOP && unop->op == '+') {
 		struct expression *right = unop->right;
-		if (right->type == EXPR_VALUE) {
-			offset = right->value;
-			unop = unop->left;
-		}
+		if (right->type != EXPR_VALUE)
+			break;
+		offset += right->value;
+		unop = unop->left;
 	}
 
 	if (unop->type == EXPR_SYMBOL) {
 		struct symbol *sym = unop->symbol;
+		struct symbol *ctype = expr->ctype;
 		struct expression *value = constant_symbol_value(sym, offset);
 
 		/* Const symbol with a constant initializer? */
-		if (value) {
-			/* FIXME! We should check that the size is right! */
+		if (value && value->ctype) {
+			if (ctype->bit_size != value->ctype->bit_size)
+				return UNSAFE;
 			if (value->type == EXPR_VALUE) {
+				if (!is_integral_type(ctype))
+					return UNSAFE;
 				if (is_bitfield_type(value->ctype))
 					return UNSAFE;
 				expr->type = EXPR_VALUE;
@@ -694,6 +750,8 @@ static int expand_dereference(struct expression *expr)
 				expr->taint = 0;
 				return 0;
 			} else if (value->type == EXPR_FVALUE) {
+				if (!is_float_type(ctype))
+					return UNSAFE;
 				expr->type = EXPR_FVALUE;
 				expr->fvalue = value->fvalue;
 				return 0;
@@ -818,7 +876,7 @@ static int expand_cast(struct expression *expr)
 
 	/* Simplify normal integer casts.. */
 	if (target->type == EXPR_VALUE || target->type == EXPR_FVALUE) {
-		cast_value(expr, expr->ctype, target, target->ctype);
+		cast_value(expr, expr->ctype, target);
 		return 0;
 	}
 	return cost + 1;
@@ -837,6 +895,25 @@ static int expand_symbol_call(struct expression *expr, int cost)
 
 	if (fn->type != EXPR_PREOP)
 		return SIDE_EFFECTS;
+
+	if (ctype->ctype.modifiers & MOD_INLINE) {
+		struct symbol *def;
+
+		def = ctype->definition ? ctype->definition : ctype;
+		if (inline_function(expr, def)) {
+			struct symbol *fn = def->ctype.base_type;
+			struct symbol *curr = current_fn;
+
+			current_fn = def;
+			evaluate_statement(expr->statement);
+			current_fn = curr;
+
+			fn->expanding = 1;
+			cost = expand_expression(expr);
+			fn->expanding = 0;
+			return cost;
+		}
+	}
 
 	if (ctype->op && ctype->op->expand)
 		return ctype->op->expand(expr, cost);
@@ -1089,14 +1166,12 @@ static int expand_expression(struct expression *expr)
 	case EXPR_POS:
 		return expand_pos_expression(expr);
 
+	case EXPR_GENERIC:
 	case EXPR_SIZEOF:
 	case EXPR_PTRSIZEOF:
 	case EXPR_ALIGNOF:
 	case EXPR_OFFSETOF:
 		expression_error(expr, "internal front-end error: sizeof in expansion?");
-		return UNSAFE;
-	case EXPR_ASM_OPERAND:
-		expression_error(expr, "internal front-end error: ASM_OPERAND in expansion?");
 		return UNSAFE;
 	}
 	return SIDE_EFFECTS;
@@ -1106,8 +1181,12 @@ static void expand_const_expression(struct expression *expr, const char *where)
 {
 	if (expr) {
 		expand_expression(expr);
-		if (expr->type != EXPR_VALUE)
+		if (expr->type != EXPR_VALUE) {
 			expression_error(expr, "Expected constant expression in %s", where);
+			expr->ctype = &int_ctype;
+			expr->type = EXPR_VALUE;
+			expr->value = 0;
+		}
 	}
 }
 
@@ -1165,6 +1244,22 @@ static int expand_if_statement(struct statement *stmt)
 	expand_statement(stmt->if_true);
 	expand_statement(stmt->if_false);
 	return SIDE_EFFECTS;
+}
+
+static int expand_asm_statement(struct statement *stmt)
+{
+	struct asm_operand *op;
+	int cost = 0;
+
+	FOR_EACH_PTR(stmt->asm_outputs, op) {
+		cost += expand_expression(op->expr);
+	} END_FOR_EACH_PTR(op);
+
+	FOR_EACH_PTR(stmt->asm_inputs, op) {
+		cost += expand_expression(op->expr);
+	} END_FOR_EACH_PTR(op);
+
+	return cost;
 }
 
 /*
@@ -1257,7 +1352,7 @@ static int expand_statement(struct statement *stmt)
 	case STMT_NONE:
 		break;
 	case STMT_ASM:
-		/* FIXME! Do the asm parameter evaluation! */
+		expand_asm_statement(stmt);
 		break;
 	case STMT_CONTEXT:
 		expand_expression(stmt->expression);

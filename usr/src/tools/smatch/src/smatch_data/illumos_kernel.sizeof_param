@@ -1,0 +1,2 @@
+kmem_alloc 0 -1
+kmem_zalloc 0 -1

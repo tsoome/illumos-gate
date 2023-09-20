@@ -40,8 +40,8 @@ enum {
 	BOTH = 2
 };
 
-static modification_hook **hooks;
-static modification_hook **hooks_late;
+static sm_hook **hooks;
+static sm_hook **hooks_late;
 
 ALLOCATOR(modification_data, "modification data");
 
@@ -69,40 +69,54 @@ static struct smatch_state *alloc_my_state(struct expression *expr, struct smatc
 	return state;
 }
 
-void add_modification_hook(int owner, modification_hook *call_back)
+void add_modification_hook(int owner, sm_hook *call_back)
 {
 	if (hooks[owner])
 		sm_fatal("multiple modification hooks for %s", check_name(owner));
 	hooks[owner] = call_back;
 }
 
-void add_modification_hook_late(int owner, modification_hook *call_back)
+void add_modification_hook_late(int owner, sm_hook *call_back)
 {
 	if (hooks_late[owner])
 		sm_fatal("multiple late modification hooks for %s", check_name(owner));
 	hooks_late[owner] = call_back;
 }
 
-static int matches(char *name, struct symbol *sym, struct sm_state *sm)
+static int shared_cnt(const char *one, const char *two)
 {
+	int c = 0;
+
+	while (one[c] && two[c] && one[c] == two[c])
+		c++;
+	return c;
+}
+
+bool is_sub_member(const char *name, struct symbol *sym, struct sm_state *sm)
+{
+	const char *sm_name;
 	int len;
 
 	if (sym != sm->sym)
 		return false;
 
-	len = strlen(name);
-	if (strncmp(sm->name, name, len) == 0) {
-		if (sm->name[len] == '\0')
+	sm_name = sm->name;
+	if (sm_name[0] == '&')
+		sm_name++;
+
+	len = shared_cnt(sm_name, name);
+	if (name[len] == '\0') {
+		if (sm_name[len] == '\0')
 			return true;
-		if (sm->name[len] == '-' || sm->name[len] == '.')
+		if (sm_name[len] == '-' || sm_name[len] == '.')
 			return true;
 	}
-	if (sm->name[0] != '*')
+	if (sm_name[0] != '*')
 		return false;
-	if (strncmp(sm->name + 1, name, len) == 0) {
-		if (sm->name[len + 1] == '\0')
+	if (strncmp(sm_name + 1, name, len) == 0) {
+		if (sm_name[len + 1] == '\0')
 			return true;
-		if (sm->name[len + 1] == '-' || sm->name[len + 1] == '.')
+		if (sm_name[len + 1] == '-' || sm_name[len + 1] == '.')
 			return true;
 	}
 	return false;
@@ -119,10 +133,12 @@ static void call_modification_hooks_name_sym(char *name, struct symbol *sym, str
 	if (cur_func_sym && !__in_fake_assign)
 		set_state(my_id, name, sym, alloc_my_state(mod_expr, prev));
 
-	FOR_EACH_SM(__get_cur_stree(), sm) {
+	FOR_EACH_SM_SAFE(__get_cur_stree(), sm) {
 		if (sm->owner > num_checks)
 			continue;
-		match = matches(name, sym, sm);
+		if (!hooks[sm->owner] && !hooks_late[sm->owner])
+			continue;
+		match = is_sub_member(name, sym, sm);
 		if (!match)
 			continue;
 
@@ -134,8 +150,7 @@ static void call_modification_hooks_name_sym(char *name, struct symbol *sym, str
 			if (hooks_late[sm->owner])
 				(hooks_late[sm->owner])(sm, mod_expr);
 		}
-
-	} END_FOR_EACH_SM(sm);
+	} END_FOR_EACH_SM_SAFE(sm);
 }
 
 static void call_modification_hooks(struct expression *expr, struct expression *mod_expr, int late)
@@ -188,6 +203,10 @@ free:
 
 static void match_assign(struct expression *expr, int late)
 {
+	if (__in_fake_parameter_assign)
+		return;
+	if (expr->left->smatch_flags & Fake)
+		return;
 	call_modification_hooks(expr->left, expr, late);
 }
 
@@ -218,13 +237,11 @@ static void match_call(struct expression *expr)
 
 static void asm_expr(struct statement *stmt, int late)
 {
-	struct expression *expr;
+	struct asm_operand *op;
 
-	FOR_EACH_PTR(stmt->asm_outputs, expr) {
-		if (expr->type != EXPR_ASM_OPERAND)
-			continue;
-		call_modification_hooks(expr->expr, NULL, late);
-	} END_FOR_EACH_PTR(expr);
+	FOR_EACH_PTR(stmt->asm_outputs, op) {
+		call_modification_hooks(op->expr, NULL, late);
+	} END_FOR_EACH_PTR(op);
 }
 
 static void match_assign_early(struct expression *expr)
@@ -262,16 +279,19 @@ struct smatch_state *get_modification_state(struct expression *expr)
 	return get_state_expr(my_id, expr);
 }
 
+void allocate_modification_hooks(void)
+{
+	hooks = malloc(num_checks * sizeof(*hooks));
+	memset(hooks, 0, num_checks * sizeof(*hooks));
+	hooks_late = malloc(num_checks * sizeof(*hooks));
+	memset(hooks_late, 0, num_checks * sizeof(*hooks));
+}
+
 void register_modification_hooks(int id)
 {
 	my_id = id;
 
 	set_dynamic_states(my_id);
-
-	hooks = malloc((num_checks + 1) * sizeof(*hooks));
-	memset(hooks, 0, (num_checks + 1) * sizeof(*hooks));
-	hooks_late = malloc((num_checks + 1) * sizeof(*hooks));
-	memset(hooks_late, 0, (num_checks + 1) * sizeof(*hooks));
 
 	add_hook(&match_assign_early, ASSIGNMENT_HOOK);
 	add_hook(&unop_expr_early, OP_HOOK);

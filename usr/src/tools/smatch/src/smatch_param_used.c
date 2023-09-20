@@ -19,27 +19,42 @@
 #include "smatch_slist.h"
 
 static int my_id;
+int __ignore_param_used;
 
 static struct stree *used_stree;
-static struct stree_stack *saved_stack;
 
 STATE(used);
 
 static void get_state_hook(int owner, const char *name, struct symbol *sym)
 {
+	static const char *prev;
 	int arg;
 
 	if (!option_info)
 		return;
 
-	if (__in_fake_assign || __in_fake_parameter_assign || __in_function_def || __in_unmatched_hook)
+	if (__ignore_param_used ||
+	    __in_fake_assign ||
+	    __in_fake_parameter_assign ||
+	    __in_function_def ||
+	    __in_unmatched_hook)
 		return;
+
+	if (!name || name[0] == '&')
+		return;
+
+	if (name == prev)
+		return;
+	prev = name;
 
 	arg = get_param_num_from_sym(sym);
 	if (arg < 0)
 		return;
 	if (param_was_set_var_sym(name, sym))
 		return;
+	if (parent_was_PARAM_CLEAR(name, sym))
+		return;
+
 	set_state_stree(&used_stree, my_id, name, sym, &used);
 }
 
@@ -50,6 +65,9 @@ static void set_param_used(struct expression *call, struct expression *arg, char
 	int arg_nr;
 
 	if (!option_info)
+		return;
+
+	if (key[0] == '&')
 		return;
 
 	name = get_variable_from_key(arg, key, &sym);
@@ -79,6 +97,9 @@ static void process_states(void)
 		name = get_param_name(tmp);
 		if (!name)
 			continue;
+		if (strcmp(name, "$") == 0 ||
+		    strcmp(name, "*$") == 0)
+			continue;
 		if (is_recursive_member(name))
 			continue;
 
@@ -96,28 +117,14 @@ static void match_function_def(struct symbol *sym)
 	free_stree(&used_stree);
 }
 
-static void match_save_states(struct expression *expr)
-{
-	push_stree(&saved_stack, used_stree);
-	used_stree = NULL;
-}
-
-static void match_restore_states(struct expression *expr)
-{
-	free_stree(&used_stree);
-	used_stree = pop_stree(&saved_stack);
-}
-
 void register_param_used(int id)
 {
 	my_id = id;
 
-	add_hook(&match_function_def, FUNC_DEF_HOOK);
+	add_hook(&match_function_def, AFTER_FUNC_HOOK);
+	add_function_data((unsigned long *)&used_stree);
 
 	add_get_state_hook(&get_state_hook);
-
-	add_hook(&match_save_states, INLINE_FN_START);
-	add_hook(&match_restore_states, INLINE_FN_END);
 
 	select_return_implies_hook(PARAM_USED, &set_param_used);
 	all_return_states_hook(&process_states);

@@ -288,6 +288,22 @@ sval_t sval_min(sval_t one, sval_t two)
 	return one;
 }
 
+sval_t sval_min_nonneg(sval_t one, sval_t two)
+{
+	sval_t ret = one;
+
+	if (sval_is_negative(one) && sval_is_negative(two)) {
+		ret.value = 0;
+		return ret;
+	}
+	if (sval_is_negative(one))
+		return two;
+	if (sval_is_negative(two))
+		return one;
+
+	return sval_min(one, two);
+}
+
 sval_t sval_max(sval_t one, sval_t two)
 {
 	if (sval_cmp(one, two) < 0)
@@ -833,8 +849,9 @@ const char *sval_to_str_or_err_ptr(sval_t sval)
 	    !is_ptr_type(sval.type))
 		return sval_to_str(sval);
 
-	if (!sval_is_fp(sval) && sval.uvalue >= -4905ULL) {
-		snprintf(buf, sizeof(buf), "(%lld)", sval.value);
+	if (!sval_is_fp(sval) &&
+	    sval_cmp(sval, valid_ptr_max_sval) > 0) {
+		snprintf(buf, sizeof(buf), "(%lld)", sign_extend_err_ptr(sval.value));
 		return alloc_sname(buf);
 	}
 

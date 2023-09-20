@@ -33,7 +33,7 @@ static struct stree_stack *all_pools;
 
 const char *show_sm(struct sm_state *sm)
 {
-	static char buf[256];
+	char buf[256];
 	struct sm_state *tmp;
 	int pos;
 	int i;
@@ -41,14 +41,14 @@ const char *show_sm(struct sm_state *sm)
 	if (!sm)
 		return "<none>";
 
-	pos = snprintf(buf, sizeof(buf), "[%s] %s = '%s'%s",
-		       check_name(sm->owner), sm->name, show_state(sm->state),
+	pos = snprintf(buf, sizeof(buf), "[%s] %s %p = '%s'%s",
+		       check_name(sm->owner), sm->name, sm->sym, show_state(sm->state),
 		       sm->merged ? " [merged]" : "");
 	if (pos > sizeof(buf))
 		goto truncate;
 
 	if (ptr_list_size((struct ptr_list *)sm->possible) == 1)
-		return buf;
+		return alloc_sname(buf);
 
 	pos += snprintf(buf + pos, sizeof(buf) - pos, " (");
 	if (pos > sizeof(buf))
@@ -66,12 +66,12 @@ const char *show_sm(struct sm_state *sm)
 	} END_FOR_EACH_PTR(tmp);
 	snprintf(buf + pos, sizeof(buf) - pos, ")");
 
-	return buf;
+	return alloc_sname(buf);
 
 truncate:
 	for (i = 0; i < 3; i++)
 		buf[sizeof(buf) - 2 - i] = '.';
-	return buf;
+	return alloc_sname(buf);
 }
 
 void __print_stree(struct stree *stree)
@@ -85,6 +85,43 @@ void __print_stree(struct stree *stree)
 	} END_FOR_EACH_SM(sm);
 	sm_printf("---\n");
 	option_debug--;
+}
+
+void __diff_stree(struct stree *old, struct stree *new)
+{
+	AvlIter old_iter;
+	AvlIter new_iter;
+
+	avl_iter_begin(&old_iter, old, FORWARD);
+	avl_iter_begin(&new_iter, new, FORWARD);
+
+	for (;;) {
+		if (!old_iter.sm && !new_iter.sm)
+			return;
+		if (cmp_tracker(old_iter.sm, new_iter.sm) < 0) {
+			sm_msg(" OLD: %s", show_sm(old_iter.sm));
+			sm_msg(" NEW: <none>");
+			avl_iter_next(&old_iter);
+			continue;
+		}
+
+		if (cmp_tracker(old_iter.sm, new_iter.sm) > 0) {
+			sm_msg(" OLD: <none>");
+			sm_msg(" NEW: %s", show_sm(new_iter.sm));
+			avl_iter_next(&new_iter);
+			continue;
+		}
+
+		if (old_iter.sm == new_iter.sm) {
+			sm_msg("SAME: %s", show_sm(old_iter.sm));
+		} else {
+			sm_msg(" OLD: %s", show_sm(old_iter.sm));
+			sm_msg(" NEW: %s", show_sm(new_iter.sm));
+		}
+
+		avl_iter_next(&old_iter);
+		avl_iter_next(&new_iter);
+	}
 }
 
 /* NULL states go at the end to simplify merge_slist */
@@ -125,7 +162,7 @@ int cmp_tracker(const struct sm_state *a, const struct sm_state *b)
 int *dynamic_states;
 void allocate_dynamic_states_array(int num_checks)
 {
-	dynamic_states = calloc(num_checks + 1, sizeof(int));
+	dynamic_states = calloc(num_checks, sizeof(int));
 }
 
 void set_dynamic_states(unsigned short owner)
@@ -403,7 +440,11 @@ int is_merged(struct sm_state *sm)
 
 int is_leaf(struct sm_state *sm)
 {
-	return !sm->merged;
+	if (!sm->merged)
+		return true;
+	if (sm->leaf)
+		return true;
+	return false;
 }
 
 int slist_has_state(struct state_list *slist, struct smatch_state *state)
@@ -439,10 +480,6 @@ static struct smatch_state *merge_states(int owner, const char *name,
 		ret = state1;
 	else if (__has_merge_function(owner))
 		ret = __client_merge_function(owner, state1, state2);
-	else if (state1 == &ghost)
-		ret = state2;
-	else if (state2 == &ghost)
-		ret = state1;
 	else if (!state1 || !state2)
 		ret = &undefined;
 	else
@@ -494,8 +531,7 @@ struct sm_state *merge_sm_states(struct sm_state *one, struct sm_state *two)
 	if (result->state == two->state)
 		result->line = two->line;
 
-	if (option_debug ||
-	    strcmp(check_name(one->owner), option_debug_check) == 0) {
+	if (debug_on(check_name(one->owner), one->name)) {
 		struct sm_state *tmp;
 		int i = 0;
 
@@ -528,7 +564,6 @@ struct sm_state *get_sm_state_stree(struct stree *stree, int owner, const char *
 
 	if (!name)
 		return NULL;
-
 
 	return avl_lookup(stree, (struct sm_state *)&tracker);
 }
@@ -577,6 +612,7 @@ void set_state_stree_perm(struct stree **stree, int owner, const char *name,
 
 	sm = malloc(sizeof(*sm) + strlen(name) + 1);
 	memset(sm, 0, sizeof(*sm));
+	sm->line = get_lineno();
 	sm->owner = owner;
 	sm->name = (char *)(sm + 1);
 	strcpy((char *)sm->name, name);

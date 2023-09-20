@@ -33,13 +33,12 @@ struct hook_container {
 ALLOCATOR(hook_container, "hook functions");
 DECLARE_PTR_LIST(hook_func_list, struct hook_container);
 
-typedef void (expr_func)(struct expression *expr);
-typedef void (stmt_func)(struct statement *stmt);
-typedef void (sym_func)(struct symbol *sym);
 typedef void (sym_list_func)(struct symbol_list *sym_list);
+typedef void (array_init_hook)(struct expression *array, int nr);
 
 static struct hook_func_list *merge_funcs;
 static struct hook_func_list *unmatched_state_funcs;
+static struct hook_func_list *array_init_hooks;
 static struct hook_func_list *hook_array[NUM_HOOKS] = {};
 static const enum data_type data_types[NUM_HOOKS] = {
 	[EXPR_HOOK] = EXPR_PTR,
@@ -49,6 +48,7 @@ static const enum data_type data_types[NUM_HOOKS] = {
 	[SYM_HOOK] = EXPR_PTR,
 	[STRING_HOOK] = EXPR_PTR,
 	[DECLARATION_HOOK] = SYMBOL_PTR,
+	[DECLARATION_HOOK_AFTER] = SYMBOL_PTR,
 	[ASSIGNMENT_HOOK] = EXPR_PTR,
 	[ASSIGNMENT_HOOK_AFTER] = EXPR_PTR,
 	[RAW_ASSIGNMENT_HOOK] = EXPR_PTR,
@@ -59,9 +59,12 @@ static const enum data_type data_types[NUM_HOOKS] = {
 	[OP_HOOK] = EXPR_PTR,
 	[LOGIC_HOOK] = EXPR_PTR,
 	[PRELOOP_HOOK] = STMT_PTR,
+	[POSTLOOP_HOOK] = STMT_PTR,
+	[AFTER_LOOP_NO_BREAKS] = STMT_PTR,
 	[CONDITION_HOOK] = EXPR_PTR,
 	[SELECT_HOOK] = EXPR_PTR,
 	[WHOLE_CONDITION_HOOK] = EXPR_PTR,
+	[FUNCTION_CALL_HOOK_BEFORE] = EXPR_PTR,
 	[FUNCTION_CALL_HOOK] = EXPR_PTR,
 	[CALL_HOOK_AFTER_INLINE] = EXPR_PTR,
 	[FUNCTION_CALL_HOOK_AFTER_DB] = EXPR_PTR,
@@ -91,11 +94,14 @@ ALLOCATOR(scope_container, "scope hook functions");
 DECLARE_PTR_LIST(scope_hook_list, struct scope_container);
 DECLARE_PTR_LIST(scope_hook_stack, struct scope_hook_list);
 static struct scope_hook_stack *scope_hooks;
+int my_id;
 
+extern int __cur_check_id;
 void add_hook(void *func, enum hook_type type)
 {
 	struct hook_container *container = __alloc_hook_container(0);
 
+	container->owner = __cur_check_id;
 	container->hook_type = type;
 	container->fn = func;
 
@@ -147,6 +153,9 @@ void __pass_to_client(void *data, enum hook_type type)
 {
 	struct hook_container *container;
 
+	if (__debug_skip)
+		return;
+
 	FOR_EACH_PTR(hook_array[type], container) {
 		switch (data_types[type]) {
 		case EXPR_PTR:
@@ -161,6 +170,8 @@ void __pass_to_client(void *data, enum hook_type type)
 		case SYM_LIST_PTR:
 			pass_sym_list_to_client(container->fn, data);
 			break;
+		default:
+			sm_warning("internal error. Unhandled hook type: %d", type);
 		}
 	} END_FOR_EACH_PTR(container);
 }
@@ -238,9 +249,9 @@ static struct scope_hook_list *pop_scope_hook_list(struct scope_hook_stack **sta
 	return hook_list;
 }
 
-static void push_scope_hook_list(struct scope_hook_stack **stack, struct scope_hook_list *l)
+static void push_scope_hook_list(struct scope_hook_stack **stack, struct scope_hook_list *list)
 {
-	add_ptr_list(stack, l);
+	add_ptr_list(stack, list);
 }
 
 void add_scope_hook(scope_hook *fn, void *data)
@@ -248,8 +259,6 @@ void add_scope_hook(scope_hook *fn, void *data)
 	struct scope_hook_list *hook_list;
 	struct scope_container *new;
 
-	if (!scope_hooks)
-		return;
 	hook_list = pop_scope_hook_list(&scope_hooks);
 	new = __alloc_scope_container(0);
 	new->fn = fn;
@@ -268,13 +277,51 @@ void __call_scope_hooks(void)
 	struct scope_hook_list *hook_list;
 	struct scope_container *tmp;
 
-	if (!scope_hooks)
-		return;
-
 	hook_list = pop_scope_hook_list(&scope_hooks);
-	FOR_EACH_PTR(hook_list, tmp) {
+	FOR_EACH_PTR_REVERSE(hook_list, tmp) {
 		((scope_hook *)tmp->fn)(tmp->data);
 		__free_scope_container(tmp);
+	} END_FOR_EACH_PTR_REVERSE(tmp);
+}
+
+void __free_scope_hooks(void)
+{
+	struct scope_hook_list *hook_list;
+	struct scope_container *tmp;
+
+	hook_list = pop_scope_hook_list(&scope_hooks);
+	FOR_EACH_PTR_REVERSE(hook_list, tmp) {
+		__free_scope_container(tmp);
+	} END_FOR_EACH_PTR_REVERSE(tmp);
+}
+
+void __call_all_scope_hooks(void)
+{
+	struct scope_hook_list *tmp_scope;
+	struct scope_container *tmp;
+
+	FOR_EACH_PTR_REVERSE(scope_hooks, tmp_scope) {
+		FOR_EACH_PTR_REVERSE(tmp_scope, tmp) {
+			((scope_hook *)tmp->fn)(tmp->data);
+		} END_FOR_EACH_PTR_REVERSE(tmp);
+	} END_FOR_EACH_PTR_REVERSE(tmp_scope);
+}
+
+void add_array_initialized_hook(void (*hook)(struct expression *array, int nr))
+{
+	struct hook_container *container = __alloc_hook_container(0);
+
+	container->fn = hook;
+
+	add_ptr_list(&array_init_hooks, container);
+}
+
+void __call_array_initialized_hooks(struct expression *array, int nr)
+{
+	struct hook_container *tmp;
+
+	FOR_EACH_PTR(array_init_hooks, tmp) {
+		((array_init_hook *)tmp->fn)(array, nr);
 	} END_FOR_EACH_PTR(tmp);
 }
 
@@ -282,5 +329,65 @@ void allocate_hook_memory(void)
 {
 	pre_merge_hooks = malloc(num_checks * sizeof(*pre_merge_hooks));
 	memset(pre_merge_hooks, 0, num_checks * sizeof(*pre_merge_hooks));
+}
+
+void register_hooks(int id)
+{
+	add_function_data((unsigned long *)&scope_hooks);
+	my_id = id;
+}
+
+void call_void_fns(struct void_fn_list *list)
+{
+	void_fn *fn;
+
+	FOR_EACH_PTR(list, fn) {
+		(fn)();
+	} END_FOR_EACH_PTR(fn);
+}
+
+void call_expr_fns(struct expr_fn_list *list, struct expression *expr)
+{
+	expr_func *fn;
+
+	FOR_EACH_PTR(list, fn) {
+		(fn)(expr);
+	} END_FOR_EACH_PTR(fn);
+}
+
+void call_stmt_fns(struct stmt_fn_list *list, struct statement *stmt)
+{
+	stmt_func *fn;
+
+	FOR_EACH_PTR(list, fn) {
+		(fn)(stmt);
+	} END_FOR_EACH_PTR(fn);
+}
+
+void call_sym_fns(struct sym_fn_list *list, struct symbol *sym)
+{
+	sym_func *fn;
+
+	FOR_EACH_PTR(list, fn) {
+		(fn)(sym);
+	} END_FOR_EACH_PTR(fn);
+}
+
+void call_name_sym_fns(struct name_sym_fn_list *list, struct expression *expr, const char *name, struct symbol *sym)
+{
+	name_sym_hook *fn;
+
+	FOR_EACH_PTR(list, fn) {
+		(fn)(expr, name, sym);
+	} END_FOR_EACH_PTR(fn);
+}
+
+void call_string_hooks(struct string_hook_list *list, struct expression *expr, const char *str)
+{
+	string_hook *fn;
+
+	FOR_EACH_PTR(list, fn) {
+		(fn)(expr, str);
+	} END_FOR_EACH_PTR(fn);
 }
 

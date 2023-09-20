@@ -26,12 +26,8 @@
 
 static int my_id;
 
-static const struct bit_info unknown_bit_info = {
-	.possible = -1ULL,
-};
-
 ALLOCATOR(bit_info, "bit data");
-static struct bit_info *alloc_bit_info(unsigned long long set, unsigned long long possible)
+struct bit_info *alloc_bit_info(unsigned long long set, unsigned long long possible)
 {
 	struct bit_info *bit_info = __alloc_bit_info(0);
 
@@ -41,7 +37,18 @@ static struct bit_info *alloc_bit_info(unsigned long long set, unsigned long lon
 	return bit_info;
 }
 
-static struct smatch_state *alloc_bstate(unsigned long long set, unsigned long long possible)
+void set_bits_modified_expr(struct expression *expr, struct smatch_state *state)
+{
+	__set_param_modified_helper(expr, state);
+	set_state_expr(my_id, expr, state);
+}
+
+void set_bits_modified_expr_sym(const char *name, struct symbol *sym, struct smatch_state *state)
+{
+	__set_param_modified_helper_sym(name, sym, state);
+	set_state(my_id, name, sym, state);
+}
+struct smatch_state *alloc_bstate(unsigned long long set, unsigned long long possible)
 {
 	struct smatch_state *state;
 	char buf[64];
@@ -151,10 +158,11 @@ static void match_modify(struct sm_state *sm, struct expression *mod_expr)
 
 	if (handled_by_assign_hook(mod_expr))
 		return;
-	set_state(my_id, sm->name, sm->sym, alloc_bstate(0, -1ULL));
+
+	set_bits_modified_expr_sym(sm->name, sm->sym, alloc_bstate(0, -1ULL));
 }
 
-static int binfo_equiv(struct bit_info *one, struct bit_info *two)
+int binfo_equiv(struct bit_info *one, struct bit_info *two)
 {
 	if (one->set == two->set &&
 	    one->possible == two->possible)
@@ -162,7 +170,7 @@ static int binfo_equiv(struct bit_info *one, struct bit_info *two)
 	return 0;
 }
 
-static struct smatch_state *merge_bstates(struct smatch_state *one_state, struct smatch_state *two_state)
+struct smatch_state *merge_bstates(struct smatch_state *one_state, struct smatch_state *two_state)
 {
 	struct bit_info *one, *two;
 
@@ -237,13 +245,24 @@ static struct bit_info *binfo_OR(struct bit_info *left, struct bit_info *right)
 	return alloc_bit_info(set, possible);
 }
 
+static unsigned long long get_type_possible(struct symbol *type)
+{
+	if (!type)
+		type = &ullong_ctype;
+
+	if (type_bits(type) == 64)
+		return -1ULL;
+
+	return (1ULL << type_bits(type)) - 1;
+}
+
 struct bit_info *get_bit_info(struct expression *expr)
 {
 	struct range_list *rl;
 	struct smatch_state *bstate;
-	struct bit_info tmp;
 	struct bit_info *extra_info;
 	struct bit_info *bit_info;
+	struct bit_info unknown_bit_info = { };
 	sval_t known;
 
 	expr = strip_parens(expr);
@@ -260,28 +279,18 @@ struct bit_info *get_bit_info(struct expression *expr)
 					get_bit_info(expr->right));
 	}
 
+	unknown_bit_info.possible = get_type_possible(get_type(expr));
+
 	if (get_implied_rl(expr, &rl))
 		extra_info = rl_to_binfo(rl);
-	else {
-		struct symbol *type;
-
-		tmp = unknown_bit_info;
-		extra_info = &tmp;
-
-		type = get_type(expr);
-		if (!type)
-			type = &ullong_ctype;
-		if (type_bits(type) == 64)
-			extra_info->possible = -1ULL;
-		else
-			extra_info->possible = (1ULL << type_bits(type)) - 1;
-	}
+	else
+		extra_info = &unknown_bit_info;
 
 	bstate = get_state_expr(my_id, expr);
 	if (bstate)
 		bit_info = bstate->data;
 	else
-		bit_info = (struct bit_info *)&unknown_bit_info;
+		bit_info = &unknown_bit_info;
 
 	return combine_bit_info(extra_info, bit_info);
 }
@@ -322,28 +331,38 @@ static void match_compare(struct expression *expr)
 static void match_assign(struct expression *expr)
 {
 	struct bit_info *start, *binfo;
-	struct smatch_state *new;
+	struct bit_info new;
+	unsigned long long mask;
 
 	if (!handled_by_assign_hook(expr))
 		return;
 
 	binfo = get_bit_info(expr->right);
-	if (!binfo)
-		return;
 	if (expr->op == '=') {
-		if (is_unknown_binfo(get_type(expr->left), binfo))
-			return;
-
-		set_state_expr(my_id, expr->left, alloc_bstate(binfo->set, binfo->possible));
+		new.set = binfo->set;
+		new.possible = binfo->possible;
 	} else if (expr->op == SPECIAL_OR_ASSIGN) {
 		start = get_bit_info(expr->left);
-		new = alloc_bstate(start->set | binfo->set, start->possible | binfo->possible);
-		set_state_expr(my_id, expr->left, new);
+		new.set = start->set | binfo->set;
+		new.possible = start->possible | binfo->possible;
+		goto done;
 	} else if (expr->op == SPECIAL_AND_ASSIGN) {
 		start = get_bit_info(expr->left);
-		new = alloc_bstate(start->set & binfo->set, start->possible & binfo->possible);
-		set_state_expr(my_id, expr->left, new);
+		new.set = start->set & binfo->set;
+		new.possible = start->possible & binfo->possible;
+		goto done;
 	}
+
+done:
+	mask = get_type_possible(get_type(expr->left));
+	new.set &= mask;
+	new.possible &= mask;
+
+	if (is_unknown_binfo(get_type(expr->left), &new) &&
+	    !get_state_expr(my_id, expr->left))
+		return;
+
+	set_bits_modified_expr(expr->left, alloc_bstate(new.set, new.possible));
 }
 
 static void match_condition(struct expression *expr)
@@ -454,7 +473,42 @@ static void set_param_bits(const char *name, struct symbol *sym, char *key, char
 	value++;
 	possible = strtoull(value, &value, 16);
 
-	set_state(my_id, fullname, sym, alloc_bstate(set, possible));
+	set_bits_modified_expr_sym(fullname, sym, alloc_bstate(set, possible));
+}
+
+static void returns_bit_set(struct expression *expr, int param, char *key, char *value)
+{
+	char *name;
+	struct symbol *sym;
+	unsigned long long set;
+	char *pEnd;
+
+	name = get_name_sym_from_param_key(expr, param, key, &sym);
+
+	if (!name)
+		return;
+
+	set = strtoull(value, &pEnd, 16);
+	set_state(my_id, name, sym, alloc_bstate(set, -1ULL));
+}
+
+static void returns_bit_clear(struct expression *expr, int param, char *key, char *value)
+{
+	char *name;
+	struct symbol *sym;
+	unsigned long long possible;
+	char *pEnd;
+	struct bit_info *binfo;
+
+	name = get_name_sym_from_param_key(expr, param, key, &sym);
+
+	if (!name)
+		return;
+
+	binfo = get_bit_info(expr);
+	possible = strtoull(value, &pEnd, 16);
+	set_state(my_id, name, sym, alloc_bstate(possible & binfo->set,
+						 possible & binfo->possible));
 }
 
 void register_bits(int id)
@@ -474,4 +528,7 @@ void register_bits(int id)
 	add_hook(&match_call_info, FUNCTION_CALL_HOOK);
 	add_member_info_callback(my_id, struct_member_callback);
 	select_caller_info_hook(set_param_bits, BIT_INFO);
+
+	select_return_states_hook(BIT_SET, &returns_bit_set);
+	select_return_states_hook(BIT_CLEAR, &returns_bit_clear);
 }

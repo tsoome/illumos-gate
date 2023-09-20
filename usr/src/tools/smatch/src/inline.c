@@ -155,6 +155,8 @@ static struct expression * copy_expression(struct expression *expr)
 
 	/* Cast/sizeof/__alignof__ */
 	case EXPR_CAST:
+		if (!expr->cast_expression)
+			return NULL;
 		if (expr->cast_expression->type == EXPR_INITIALIZER) {
 			struct expression *cast = expr->cast_expression;
 			struct symbol *sym = expr->cast_type;
@@ -274,26 +276,32 @@ static struct expression * copy_expression(struct expression *expr)
 		}
 		break;
 	}
-	case EXPR_ASM_OPERAND: {
+	case EXPR_GENERIC:
 		expr = dup_expression(expr);
-		expr->constraint = copy_expression(expr->constraint);
-		expr->expr = copy_expression(expr->expr);
+		expr->control = copy_expression(expr->control);
+		if (!evaluate_expression(expr))
+			return NULL;
+		expr = copy_expression(expr);
 		break;
-	}
+
 	default:
 		warning(expr->pos, "trying to copy expression type %d", expr->type);
 	}
 	return expr;
 }
 
-static struct expression_list *copy_asm_constraints(struct expression_list *in)
+static struct asm_operand_list *copy_asm_operands(struct asm_operand_list *in)
 {
-	struct expression_list *out = NULL;
-	struct expression *expr;
+	struct asm_operand_list *out = NULL;
+	struct asm_operand *old;
 
-	FOR_EACH_PTR(in, expr) {
-		add_expression(&out, copy_expression(expr));
-	} END_FOR_EACH_PTR(expr);
+	FOR_EACH_PTR(in, old) {
+		struct asm_operand *new = __alloc_asm_operand(0);
+		new->name = old->name;
+		new->constraint = copy_expression(old->constraint);
+		new->expr = copy_expression(old->expr);
+		add_ptr_list(&out, new);
+	} END_FOR_EACH_PTR(old);
 	return out;
 }
 
@@ -445,8 +453,8 @@ static struct statement *copy_one_statement(struct statement *stmt)
 	}
 	case STMT_ASM: {
 		stmt = dup_statement(stmt);
-		stmt->asm_inputs = copy_asm_constraints(stmt->asm_inputs);
-		stmt->asm_outputs = copy_asm_constraints(stmt->asm_outputs);
+		stmt->asm_inputs = copy_asm_operands(stmt->asm_inputs);
+		stmt->asm_outputs = copy_asm_operands(stmt->asm_outputs);
 		/* no need to dup "clobbers", since they are all constant strings */
 		break;
 	}
@@ -508,9 +516,8 @@ int inline_function(struct expression *expr, struct symbol *sym)
 {
 	struct symbol_list * fn_symbol_list;
 	struct symbol *fn = sym->ctype.base_type;
-	struct expression_list *arg_list = expr->args;
-	struct statement *stmt = alloc_statement(expr->pos, STMT_COMPOUND);
-	struct symbol_list *name_list, *arg_decl;
+	struct statement *stmt;
+	struct symbol_list *arg_decl;
 	struct symbol *name;
 	struct expression *arg;
 
@@ -521,10 +528,7 @@ int inline_function(struct expression *expr, struct symbol *sym)
 	if (fn->expanding)
 		return 0;
 
-	fn->expanding = 1;
-
-	name_list = fn->arguments;
-
+	stmt = alloc_statement(expr->pos, STMT_COMPOUND);
 	expr->type = EXPR_STATEMENT;
 	expr->statement = stmt;
 	expr->ctype = fn->ctype.base_type;
@@ -532,18 +536,22 @@ int inline_function(struct expression *expr, struct symbol *sym)
 	fn_symbol_list = create_symbol_list(sym->inline_symbol_list);
 
 	arg_decl = NULL;
-	PREPARE_PTR_LIST(name_list, name);
-	FOR_EACH_PTR(arg_list, arg) {
+	PREPARE_PTR_LIST(fn->arguments, name);
+	FOR_EACH_PTR(expr->args, arg) {
 		struct symbol *a = alloc_symbol(arg->pos, SYM_NODE);
 
-		a->ctype.base_type = arg->ctype;
 		if (name) {
 			*a = *name;
 			set_replace(name, a);
 			add_symbol(&fn_symbol_list, a);
+			a->initializer = arg;
+			add_symbol(&arg_decl, a);
+		} else {
+			// This may create a node of a node but it will
+			// be resolved later when the corresponding
+			// STMT_DECLARATION will be evaluated.
+			a->ctype.base_type = arg->ctype;
 		}
-		a->initializer = arg;
-		add_symbol(&arg_decl, a);
 
 		NEXT_PTR_LIST(name);
 	} END_FOR_EACH_PTR(arg);
@@ -559,10 +567,8 @@ int inline_function(struct expression *expr, struct symbol *sym)
 	stmt->inline_fn = sym;
 
 	unset_replace_list(fn_symbol_list);
+	free_ptr_list(&fn_symbol_list);
 
-	evaluate_statement(stmt);
-
-	fn->expanding = 0;
 	return 1;
 }
 
