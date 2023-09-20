@@ -1890,10 +1890,12 @@ const int		ttisgmt;
 		error(gettext("too many local time types"));
 		exit(EXIT_FAILURE);
 	}
+#ifdef _LP64
 	if (!(-1L - 2147483647L <= gmtoff && gmtoff <= 2147483647L)) {
 		error(gettext("UTC offset out of range"));
 		exit(EXIT_FAILURE);
 	}
+#endif
 	gmtoffs[i] = gmtoff;
 	isdsts[i] = isdst;
 	ttisstds[i] = ttisstd;
