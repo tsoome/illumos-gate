@@ -35,30 +35,6 @@
 
 static int my_id;
 
-static struct stree *start_states;
-static struct stree_stack *saved_stack;
-static void save_start_states(struct statement *stmt)
-{
-	start_states = get_all_states_stree(SMATCH_EXTRA);
-}
-
-static void free_start_states(void)
-{
-	free_stree(&start_states);
-}
-
-static void match_save_states(struct expression *expr)
-{
-	push_stree(&saved_stack, start_states);
-	start_states = NULL;
-}
-
-static void match_restore_states(struct expression *expr)
-{
-	free_stree(&start_states);
-	start_states = pop_stree(&saved_stack);
-}
-
 static struct smatch_state *unmatched_state(struct sm_state *sm)
 {
 	struct smatch_state *state;
@@ -92,20 +68,25 @@ static void pre_merge_hook(struct sm_state *cur, struct sm_state *other)
 
 static void extra_mod_hook(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
 {
-	int param;
+	struct symbol *param_sym;
+	char *param_name;
 
 	if (__in_fake_assign)
 		return;
 
-	param = get_param_num_from_sym(sym);
-	if (param < 0)
-		return;
+	param_name = get_param_var_sym_var_sym(name, sym, NULL, &param_sym);
+	if (!param_name || !param_sym)
+		goto free;
+	if (get_param_num_from_sym(param_sym) < 0)
+		goto free;
 
 	/* on stack parameters are handled in smatch_param_limit.c */
-	if (sym->ident && strcmp(sym->ident->name, name) == 0)
+	if (param_sym->ident && strcmp(param_sym->ident->name, name) == 0)
 		return;
 
-	set_state(my_id, name, sym, alloc_estate_empty());
+	set_state(my_id, param_name, param_sym, alloc_estate_empty());
+free:
+	free_string(param_name);
 }
 
 /*
@@ -203,16 +184,11 @@ void register_param_filter(int id)
 	my_id = id;
 
 	set_dynamic_states(my_id);
-	add_hook(&save_start_states, AFTER_DEF_HOOK);
-	add_hook(&free_start_states, AFTER_FUNC_HOOK);
 
 	add_extra_mod_hook(&extra_mod_hook);
 	add_unmatched_state_hook(my_id, &unmatched_state);
 	add_pre_merge_hook(my_id, &pre_merge_hook);
 	add_merge_hook(my_id, &merge_estates);
-
-	add_hook(&match_save_states, INLINE_FN_START);
-	add_hook(&match_restore_states, INLINE_FN_END);
 
 	add_split_return_callback(&print_return_value_param);
 }

@@ -12,6 +12,11 @@ if [[ "$info_file" = "" ]] ; then
     exit 1
 fi
 
+if [ ! -e "$info_file" ] ; then
+    echo "no such file: $info_file"
+    exit 1
+fi
+
 bin_dir=$(dirname $0)
 db_file=smatch_db.sqlite.new
 
@@ -54,6 +59,13 @@ echo "delete from function_ptr where rowid not in (select min(rowid) from functi
 ${bin_dir}/apply_return_fixes.sh -p=${PROJ} $db_file
 if [ "$PROJ" != "" ] ; then
     ${bin_dir}/insert_manual_states.pl ${PROJ} $db_file
+fi
+
+# test the new DB
+if ! echo "select * from return_states where type = 0 limit 1;" | \
+    sqlite3 $db_file > /dev/null ; then
+    echo "$0 failed."
+    exit 1
 fi
 
 mv $db_file smatch_db.sqlite

@@ -27,9 +27,9 @@
 #include "smatch_extra.h"
 
 #define	CE_PANIC (3)
+#define	DER_PANIC (7)
 
-void match_cmn_err(const char *fn, struct expression *expr,
-			void *unused)
+void match_cmn_err(const char *fn, struct expression *expr, void *unused)
 {
 	struct expression *arg;
 	sval_t sval;
@@ -42,6 +42,18 @@ void match_cmn_err(const char *fn, struct expression *expr,
 		nullify_path();
 }
 
+void match_ddi_err(const char *fn, struct expression *expr, void *unused)
+{
+	struct expression *arg;
+	sval_t sval;
+
+	arg = get_argument_from_call_expr(expr->args, 0);
+	if (!get_implied_value(arg, &sval))
+		return;
+
+	if (sval.value == DER_PANIC)
+		nullify_path();
+}
 
 void check_cmn_err(int id)
 {
@@ -49,4 +61,5 @@ void check_cmn_err(int id)
 		return;
 
 	add_function_hook("cmn_err", &match_cmn_err, NULL);
+	add_function_hook("ddi_err", &match_ddi_err, NULL);
 }

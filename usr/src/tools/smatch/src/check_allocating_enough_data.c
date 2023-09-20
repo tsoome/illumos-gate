@@ -25,8 +25,11 @@ static void db_returns_buf_size(struct expression *expr, int param, char *unused
 	sval_t sval;
 	char *str;
 
-	if (expr->type != EXPR_ASSIGNMENT)
+	if (expr->type != EXPR_ASSIGNMENT || is_fake_var_assign(expr))
 		return;
+	if (!is_fresh_alloc(expr->right))
+		return;
+
 	right_type = get_pointer_type(expr->right);
 	if (!right_type || type_bits(right_type) != -1)
 		return;

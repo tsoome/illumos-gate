@@ -39,7 +39,10 @@ static void asm_liveness(struct basic_block *bb, struct instruction *insn,
 	} END_FOR_EACH_PTR(entry);
 		
 	FOR_EACH_PTR(insn->asm_rules->outputs, entry) {
-		def(bb, entry->pseudo);
+		if (entry->is_memory)
+			use(bb, entry->pseudo);
+		else
+			def(bb, entry->pseudo);
 	} END_FOR_EACH_PTR(entry);
 }
 
@@ -73,7 +76,8 @@ static void track_instruction_usage(struct basic_block *bb, struct instruction *
 	/* Uni */
 	case OP_UNOP ... OP_UNOP_END:
 	case OP_SYMADDR:
-		USES(src1); DEFINES(target);
+	case OP_SLICE:
+		USES(src); DEFINES(target);
 		break;
 
 	case OP_SEL:
@@ -89,6 +93,7 @@ static void track_instruction_usage(struct basic_block *bb, struct instruction *
 		USES(src); USES(target);
 		break;
 
+	case OP_LABEL:
 	case OP_SETVAL:
 	case OP_SETFVAL:
 		DEFINES(target);
@@ -115,10 +120,6 @@ static void track_instruction_usage(struct basic_block *bb, struct instruction *
 		FOR_EACH_PTR(insn->arguments, pseudo) {
 			use(bb, pseudo);
 		} END_FOR_EACH_PTR(pseudo);
-		break;
-
-	case OP_SLICE:
-		USES(base); DEFINES(target);
 		break;
 
 	case OP_ASM:
@@ -256,7 +257,6 @@ static void track_phi_uses(struct instruction *insn)
 			continue;
 		def = phi->def;
 		assert(def->opcode == OP_PHISOURCE);
-		add_ptr_list(&def->phi_users, insn);
 	} END_FOR_EACH_PTR(phi);
 }
 

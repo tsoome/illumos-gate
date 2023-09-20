@@ -20,7 +20,7 @@
 #
 
 PROG = smatch
-SPARSE_VERSION = 0.6.1-rc1-il-7
+SPARSE_VERSION = 0.6.4-il-1
 
 include ../Makefile.tools
 
@@ -43,13 +43,14 @@ SMATCHDATADIR = $(ROOTONBLDSHARE)/smatch
 CFLAGS += -DSMATCHDATADIR='"$(SMATCHDATADIR)"'
 CFLAGS += -DGCC_BASE='"/no/such/dir"'
 CFLAGS += -DMULTIARCH_TRIPLET=NULL
+CFLAGS += -D__CHECKNAME__='"$(<F:%.c=%)"'
 
 LDCHECKS = $(ZASSERTDEFLIB) $(ZGUIDANCE) $(ZFATALWARNINGS)
-LDLIBS += $(ZLAZYLOAD) $(ZDIRECT) -lsqlite3 -lmd -lgcc -lm -lc
+LDLIBS += $(ZLAZYLOAD) $(ZDIRECT) -lcrypto -lsqlite3 -lgcc -lm -lc
 LDFLAGS = $(MAPFILE.NES:%=-Wl,-M%)
 LDFLAGS += -L$(NATIVE_ADJUNCT)/lib -R$(NATIVE_ADJUNCT)/lib
 
-NATIVE_LIBS += libsqlite3.so libmd.so libm.so libc.so
+NATIVE_LIBS += libcrypto.so libsqlite3.so libm.so libc.so
 LDFLAGS += $(NATIVE_LIBS:%=$(ZASSERTDEFLIB)=%)
 
 CPPFLAGS += -nostdinc
@@ -84,7 +85,9 @@ LIB_OBJS += liveness.o
 LIB_OBJS += memops.o
 LIB_OBJS += opcode.o
 LIB_OBJS += optimize.o
+LIB_OBJS += options.o
 LIB_OBJS += parse.o
+LIB_OBJS += predefine.o
 LIB_OBJS += pre-process.o
 LIB_OBJS += ptrlist.o
 LIB_OBJS += ptrmap.o
@@ -93,27 +96,48 @@ LIB_OBJS += show-parse.o
 LIB_OBJS += simplify.o
 LIB_OBJS += sort.o
 LIB_OBJS += ssa.o
-LIB_OBJS += sset.o
 LIB_OBJS += stats.o
 LIB_OBJS += storage.o
 LIB_OBJS += symbol.o
 LIB_OBJS += target.o
+LIB_OBJS += target-alpha.o
+LIB_OBJS += target-arm.o
+LIB_OBJS += target-arm64.o
+LIB_OBJS += target-bfin.o
+LIB_OBJS += target-default.o
+LIB_OBJS += target-h8300.o
+LIB_OBJS += target-m68k.o
+LIB_OBJS += target-microblaze.o
+LIB_OBJS += target-mips.o
+LIB_OBJS += target-nds32.o
+LIB_OBJS += target-nios2.o
+LIB_OBJS += target-openrisc.o
+LIB_OBJS += target-ppc.o
+LIB_OBJS += target-riscv.o
+LIB_OBJS += target-s390.o
+LIB_OBJS += target-sh.o
+LIB_OBJS += target-sparc.o
+LIB_OBJS += target-x86.o
+LIB_OBJS += target-xtensa.o
 LIB_OBJS += tokenize.o
 LIB_OBJS += unssa.o
 LIB_OBJS += utils.o
 LIB_OBJS += macro_table.o
 LIB_OBJS += token_store.o
 LIB_OBJS += hashtable.o
+LIB_OBJS += version.o
 
 SMATCH_OBJS =
 SMATCH_OBJS += avl.o
 SMATCH_OBJS += smatch_about_fn_ptr_arg.o
 SMATCH_OBJS += smatch_address.o
+SMATCH_OBJS += smatch_allocations.o
 SMATCH_OBJS += smatch_annotate.o
 SMATCH_OBJS += smatch_array_values.o
 SMATCH_OBJS += smatch_assigned_expr.o
 SMATCH_OBJS += smatch_bits.o
 SMATCH_OBJS += smatch_buf_comparison.o
+SMATCH_OBJS += smatch_buf_comparison2.o
 SMATCH_OBJS += smatch_buf_size.o
 SMATCH_OBJS += smatch_capped.o
 SMATCH_OBJS += smatch_common_functions.o
@@ -124,6 +148,7 @@ SMATCH_OBJS += smatch_constraints_required.o
 SMATCH_OBJS += smatch_container_of.o
 SMATCH_OBJS += smatch_data_source.o
 SMATCH_OBJS += smatch_db.o
+SMATCH_OBJS += smatch_dereference.o
 SMATCH_OBJS += smatch_equiv.o
 SMATCH_OBJS += smatch_estate.o
 SMATCH_OBJS += smatch_expressions.o
@@ -131,11 +156,13 @@ SMATCH_OBJS += smatch_expression_stacks.o
 SMATCH_OBJS += smatch_extra.o
 SMATCH_OBJS += smatch_files.o
 SMATCH_OBJS += smatch_flow.o
-SMATCH_OBJS += smatch_fresh_alloc.o
 SMATCH_OBJS += smatch_fn_arg_link.o
+SMATCH_OBJS += smatch_fresh_alloc.o
 SMATCH_OBJS += smatch_function_hooks.o
 SMATCH_OBJS += smatch_function_info.o
 SMATCH_OBJS += smatch_function_ptrs.o
+SMATCH_OBJS += smatch_goto_tracker.o
+SMATCH_OBJS += smatch_hash.o
 SMATCH_OBJS += smatch_helper.o
 SMATCH_OBJS += smatch_hooks.o
 SMATCH_OBJS += smatch_ignore.o
@@ -143,7 +170,17 @@ SMATCH_OBJS += smatch_imaginary_absolute.o
 SMATCH_OBJS += smatch_implied.o
 SMATCH_OBJS += smatch_impossible.o
 SMATCH_OBJS += smatch_integer_overflow.o
+SMATCH_OBJS += smatch_kernel_atomic_dec_test_path.o
+SMATCH_OBJS += smatch_kernel_err_ptr.o
+SMATCH_OBJS += smatch_kernel_has_devm_cleanup.o
+SMATCH_OBJS += smatch_kernel_irq_context.o
+SMATCH_OBJS += smatch_kernel_kref_put.o
+SMATCH_OBJS += smatch_kernel_netdev_priv.o
+SMATCH_OBJS += smatch_kernel_task_state.o
+SMATCH_OBJS += smatch_kernel_task_state_info.o
 SMATCH_OBJS += smatch_kernel_user_data.o
+SMATCH_OBJS += smatch_kernel_host_data.o
+SMATCH_OBJS += smatch_kernel_xa_err.o
 SMATCH_OBJS += smatch_links.o
 SMATCH_OBJS += smatch_math.o
 SMATCH_OBJS += smatch_mem_tracker.o
@@ -152,27 +189,39 @@ SMATCH_OBJS += smatch_mtag_data.o
 SMATCH_OBJS += smatch_mtag_map.o
 SMATCH_OBJS += smatch_mtag.o
 SMATCH_OBJS += smatch_nul_terminator.o
+SMATCH_OBJS += smatch_param_bits_set.o
+SMATCH_OBJS += smatch_param_bits_clear.o
 SMATCH_OBJS += smatch_param_cleared.o
 SMATCH_OBJS += smatch_param_compare_limit.o
 SMATCH_OBJS += smatch_parameter_names.o
 SMATCH_OBJS += smatch_param_filter.o
+SMATCH_OBJS += smatch_param_key.o
 SMATCH_OBJS += smatch_param_limit.o
 SMATCH_OBJS += smatch_param_set.o
 SMATCH_OBJS += smatch_param_to_mtag_data.o
 SMATCH_OBJS += smatch_param_used.o
 SMATCH_OBJS += smatch_parse_call_math.o
+SMATCH_OBJS += smatch_parsed_conditions.o
 SMATCH_OBJS += smatch_passes_array_size.o
+SMATCH_OBJS += smatch_points_to_container.o
+SMATCH_OBJS += smatch_points_to_user_data.o
+SMATCH_OBJS += smatch_points_to_host_data.o
+SMATCH_OBJS += smatch_power_of_two.o
 SMATCH_OBJS += smatch_project.o
 SMATCH_OBJS += smatch_ranges.o
 SMATCH_OBJS += smatch_real_absolute.o
 SMATCH_OBJS += smatch_recurse.o
+SMATCH_OBJS += smatch_refcount.o
+SMATCH_OBJS += smatch_refcount_info.o
 SMATCH_OBJS += smatch_returns.o
 SMATCH_OBJS += smatch_return_to_param.o
+SMATCH_OBJS += smatch_ssa.o
 SMATCH_OBJS += smatch_scope.o
 SMATCH_OBJS += smatch_slist.o
 SMATCH_OBJS += smatch_start_states.o
 SMATCH_OBJS += smatch_statement_count.o
 SMATCH_OBJS += smatch_states.o
+SMATCH_OBJS += smatch_state_assigned.o
 SMATCH_OBJS += smatch_stored_conditions.o
 SMATCH_OBJS += smatch_string_list.o
 SMATCH_OBJS += smatch_strings.o
@@ -183,47 +232,52 @@ SMATCH_OBJS += smatch_tracker.o
 SMATCH_OBJS += smatch_type_links.o
 SMATCH_OBJS += smatch_type.o
 SMATCH_OBJS += smatch_type_val.o
+SMATCH_OBJS += smatch_unconstant_macros.o
+SMATCH_OBJS += smatch_units.o
 SMATCH_OBJS += smatch_unknown_value.o
 SMATCH_OBJS += smatch_untracked_param.o
+SMATCH_OBJS += smatch_untracked_var.o
 SMATCH_OBJS += smatch_var_sym.o
-SMATCH_OBJS += smatch_parsed_conditions.o
 
 SMATCH_CHECK_OBJS:sh=ls src/check_*.c | sed -e 's+\.c+.o+;s+src/++;'
 
 OBJS = smatch.o $(LIB_OBJS) $(SMATCH_OBJS) $(SMATCH_CHECK_OBJS)
 
-SMATCH_DATA = \
-	illumos_kernel.skipped_functions \
-	illumos_user.skipped_functions
+SMATCH_DATA =
+SMATCH_DATA += illumos_kernel.allocation_funcs_gfp
+SMATCH_DATA += illumos_kernel.sizeof_param
+SMATCH_DATA += illumos_kernel.skipped_functions
+SMATCH_DATA += illumos_user.skipped_functions
 
 SMATCH_DB_DATA =
 SMATCH_DB_DATA += call_implies.schema
-SMATCH_DB_DATA += function_ptr.schema
-SMATCH_DB_DATA += mtag_map.schema
 SMATCH_DB_DATA += caller_info.schema
-SMATCH_DB_DATA += function_type.schema
-SMATCH_DB_DATA += param_map.schema
 SMATCH_DB_DATA += common_caller_info.schema
-SMATCH_DB_DATA += function_type_info.schema
-SMATCH_DB_DATA += parameter_name.schema
-SMATCH_DB_DATA += constraints.schema
-SMATCH_DB_DATA += function_type_size.schema
-SMATCH_DB_DATA += return_implies.schema
 SMATCH_DB_DATA += constraints_required.schema
-SMATCH_DB_DATA += function_type_value.schema
-SMATCH_DB_DATA += return_states.schema
+SMATCH_DB_DATA += constraints.schema
 SMATCH_DB_DATA += data_info.schema
-SMATCH_DB_DATA += local_values.schema
-SMATCH_DB_DATA += sink_info.schema
 SMATCH_DB_DATA += db.schema
-SMATCH_DB_DATA += mtag_about.schema
-SMATCH_DB_DATA += type_info.schema
 SMATCH_DB_DATA += fn_data_link.schema
-SMATCH_DB_DATA += mtag_alias.schema
-SMATCH_DB_DATA += type_size.schema
 SMATCH_DB_DATA += fn_ptr_data_link.schema
+SMATCH_DB_DATA += function_ptr.schema
+SMATCH_DB_DATA += function_type_info.schema
+SMATCH_DB_DATA += function_type_size.schema
+SMATCH_DB_DATA += function_type_value.schema
+SMATCH_DB_DATA += function_type.schema
+SMATCH_DB_DATA += hash_string.schema
+SMATCH_DB_DATA += local_values.schema
+SMATCH_DB_DATA += mtag_about.schema
+SMATCH_DB_DATA += mtag_alias.schema
 SMATCH_DB_DATA += mtag_data.schema
 SMATCH_DB_DATA += mtag_info.schema
+SMATCH_DB_DATA += mtag_map.schema
+SMATCH_DB_DATA += param_map.schema
+SMATCH_DB_DATA += parameter_name.schema
+SMATCH_DB_DATA += return_implies.schema
+SMATCH_DB_DATA += return_states.schema
+SMATCH_DB_DATA += sink_info.schema
+SMATCH_DB_DATA += type_info.schema
+SMATCH_DB_DATA += type_size.schema
 SMATCH_DB_DATA += type_value.schema
 
 ROOTONBLDDATAFILES = $(SMATCH_DATA:%=$(SMATCHDATADIR)/smatch_data/%)

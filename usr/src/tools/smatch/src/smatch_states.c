@@ -38,7 +38,6 @@
 #include "smatch_extra.h"
 
 struct smatch_state undefined = { .name = "undefined" };
-struct smatch_state ghost = { .name = "ghost" };
 struct smatch_state merged = { .name = "merged" };
 struct smatch_state true_state = { .name = "true" };
 struct smatch_state false_state = { .name = "false" };
@@ -66,6 +65,7 @@ static struct stree_stack *continue_stack;
 static struct named_stree_stack *goto_stack;
 
 static struct ptr_list *backup;
+static bool *keep_out_of_scope;
 
 int option_debug;
 
@@ -88,6 +88,9 @@ bool __print_states(const char *owner)
 		sm_msg("%s", show_sm(sm));
 		found = true;
 	} END_FOR_EACH_SM(sm);
+
+	if (!found)
+		sm_msg("no states found for '%s'", owner);
 
 	return found;
 }
@@ -146,6 +149,20 @@ void allocate_tracker_array(int num_checks)
 {
 	tracker_hooks = malloc(num_checks * sizeof(void *));
 	memset(tracker_hooks, 0, num_checks * sizeof(void *));
+
+	keep_out_of_scope = malloc(num_checks * sizeof(*keep_out_of_scope));
+	memset(keep_out_of_scope, 0, num_checks * sizeof(*keep_out_of_scope));
+}
+
+bool debug_on(const char *check_name, const char *var)
+{
+	if (option_debug)
+		return true;
+	if (option_debug_check && strstr(check_name, option_debug_check))
+		return true;
+	if (option_debug_var && strcmp(var, option_debug_var) == 0)
+		return true;
+	return false;
 }
 
 struct sm_state *set_state(int owner, const char *name, struct symbol *sym, struct smatch_state *state)
@@ -158,7 +175,7 @@ struct sm_state *set_state(int owner, const char *name, struct symbol *sym, stru
 	if (read_only)
 		sm_perror("cur_stree is read only.");
 
-	if (option_debug || strcmp(check_name(owner), option_debug_check) == 0) {
+	if (debug_on(check_name(owner), name)) {
 		struct smatch_state *s;
 
 		s = __get_state(owner, name, sym);
@@ -267,8 +284,7 @@ void __set_sm(struct sm_state *sm)
 	if (read_only)
 		sm_perror("cur_stree is read only.");
 
-	if (option_debug ||
-	    strcmp(check_name(sm->owner), option_debug_check) == 0) {
+	if (debug_on(check_name(sm->owner), sm->name)) {
 		struct smatch_state *s;
 
 		s = __get_state(sm->owner, sm->name, sm->sym);
@@ -293,8 +309,7 @@ void __set_sm_cur_stree(struct sm_state *sm)
 	if (read_only)
 		sm_perror("cur_stree is read only.");
 
-	if (option_debug ||
-	    strcmp(check_name(sm->owner), option_debug_check) == 0) {
+	if (debug_on(check_name(sm->owner), sm->name)) {
 		struct smatch_state *s;
 
 		s = __get_state(sm->owner, sm->name, sm->sym);
@@ -310,30 +325,6 @@ void __set_sm_cur_stree(struct sm_state *sm)
 
 	overwrite_sm_state_stree(&cur_stree, sm);
 }
-
-void __set_sm_fake_stree(struct sm_state *sm)
-{
-	if (read_only)
-		sm_perror("cur_stree is read only.");
-
-	if (option_debug ||
-	    strcmp(check_name(sm->owner), option_debug_check) == 0) {
-		struct smatch_state *s;
-
-		s = __get_state(sm->owner, sm->name, sm->sym);
-		if (!s)
-			sm_msg("%s new %s", __func__, show_sm(sm));
-		else
-			sm_msg("%s change %s (was %s)",
-				__func__, show_sm(sm), show_state(s));
-	}
-
-	if (unreachable())
-		return;
-
-	overwrite_sm_state_stree_stack(&fake_cur_stree_stack, sm);
-}
-
 
 typedef void (get_state_hook)(int owner, const char *name, struct symbol *sym);
 DECLARE_PTR_LIST(fn_list, get_state_hook *);
@@ -362,6 +353,17 @@ static void call_get_state_hooks(int owner, const char *name, struct symbol *sym
 	recursion = 0;
 }
 
+bool has_states(struct stree *stree, int owner)
+{
+	if (owner < 0 || owner > USHRT_MAX)
+		return false;
+	if (!stree)
+		return false;
+	if (owner == USHRT_MAX)
+		return true;
+	return stree->has_states[owner];
+}
+
 struct smatch_state *__get_state(int owner, const char *name, struct symbol *sym)
 {
 	struct sm_state *sm;
@@ -381,18 +383,47 @@ struct smatch_state *get_state(int owner, const char *name, struct symbol *sym)
 
 struct smatch_state *get_state_expr(int owner, struct expression *expr)
 {
+	struct expression *fake_parent;
 	char *name;
 	struct symbol *sym;
 	struct smatch_state *ret = NULL;
 
 	expr = strip_expr(expr);
 	name = expr_to_var_sym(expr, &sym);
-	if (!name || !sym)
-		goto free;
+	if (!name || !sym) {
+		fake_parent = expr_get_fake_parent_expr(expr);
+		if (!fake_parent)
+			goto free;
+		name = expr_to_var_sym(fake_parent->left, &sym);
+		if (!name || !sym)
+			goto free;
+	}
 	ret = get_state(owner, name, sym);
 free:
 	free_string(name);
 	return ret;
+}
+
+bool has_possible_state(int owner, const char *name, struct symbol *sym, struct smatch_state *state)
+{
+	struct sm_state *sm;
+
+	sm = get_sm_state(owner, name, sym);
+	if (!sm)
+		return false;
+
+	return slist_has_state(sm->possible, state);
+}
+
+bool expr_has_possible_state(int owner, struct expression *expr, struct smatch_state *state)
+{
+	struct sm_state *sm;
+
+	sm = get_sm_state_expr(owner, expr);
+	if (!sm)
+		return false;
+
+	return slist_has_state(sm->possible, state);
 }
 
 struct state_list *get_possible_states(int owner, const char *name, struct symbol *sym)
@@ -448,7 +479,7 @@ free:
 	return ret;
 }
 
-void delete_state(int owner, const char *name, struct symbol *sym)
+void __delete_state(int owner, const char *name, struct symbol *sym)
 {
 	delete_state_stree(&cur_stree, owner, name, sym);
 	if (cond_true_stack) {
@@ -458,18 +489,9 @@ void delete_state(int owner, const char *name, struct symbol *sym)
 	}
 }
 
-void delete_state_expr(int owner, struct expression *expr)
+void preserve_out_of_scope(int owner)
 {
-	char *name;
-	struct symbol *sym;
-
-	expr = strip_expr(expr);
-	name = expr_to_var_sym(expr, &sym);
-	if (!name || !sym)
-		goto free;
-	delete_state(owner, name, sym);
-free:
-	free_string(name);
+	keep_out_of_scope[owner] = true;
 }
 
 static void delete_all_states_stree_sym(struct stree **stree, struct symbol *sym)
@@ -478,7 +500,7 @@ static void delete_all_states_stree_sym(struct stree **stree, struct symbol *sym
 	struct sm_state *sm;
 
 	FOR_EACH_SM(*stree, sm) {
-		if (sm->sym == sym)
+		if (sm->sym == sym && !keep_out_of_scope[sm->owner])
 			add_ptr_list(&slist, sm);
 	} END_FOR_EACH_SM(sm);
 
@@ -560,7 +582,12 @@ void set_true_false_states(int owner, const char *name, struct symbol *sym,
 	if (read_only)
 		sm_perror("cur_stree is read only.");
 
-	if (option_debug || strcmp(check_name(owner), option_debug_check) == 0) {
+	if (!name)
+		return;
+	if (!true_state && !false_state)
+		return;
+
+	if (debug_on(check_name(owner), name)) {
 		struct smatch_state *tmp;
 
 		tmp = __get_state(owner, name, sym);
@@ -614,7 +641,7 @@ void __set_true_false_sm(struct sm_state *true_sm, struct sm_state *false_sm)
 	owner = true_sm ? true_sm->owner : false_sm->owner;
 	name = true_sm ? true_sm->name : false_sm->name;
 	sym = true_sm ? true_sm->sym : false_sm->sym;
-	if (option_debug || strcmp(check_name(owner), option_debug_check) == 0) {
+	if (debug_on(check_name(owner), name)) {
 		struct smatch_state *tmp;
 
 		tmp = __get_state(owner, name, sym);
@@ -669,13 +696,12 @@ int __path_is_null(void)
 	return 1;
 }
 
-static void check_stree_stack_free(struct stree_stack **stack)
-{
-	if (*stack) {
-		sm_perror("stack not empty");
-		free_stack_and_strees(stack);
-	}
-}
+#define check_stree_stack_free(stack) do {					\
+	if (*stack) {								\
+		sm_perror("stack not empty %s", #stack);			\
+		free_stack_and_strees(stack);					\
+	}									\
+} while(0)
 
 void save_all_states(void)
 {
@@ -773,6 +799,7 @@ void clear_all_states(void)
 
 	free_goto_stack();
 
+	clear_array_values_cache();
 	free_every_single_sm_state();
 	free_tmp_expressions();
 }
@@ -836,7 +863,8 @@ struct stree *__pop_cond_false_stack(void)
 /*
  * This combines the pre cond states with either the true or false states.
  * For example:
- * a = kmalloc() ; if (a !! foo(a)
+ * 	a = kmalloc();
+ *	if (a || foo(a)) {
  * In the pre state a is possibly null.  In the true state it is non null.
  * In the false state it is null.  Combine the pre and the false to get
  * that when we call 'foo', 'a' is null.
@@ -1188,6 +1216,14 @@ void __set_default(void)
 	set_state_stree_stack(&default_stack, 0, "has_default", NULL, &true_state);
 }
 
+bool __has_default_case(void)
+{
+	struct stree *stree;
+
+	stree = last_ptr_list((struct ptr_list *)default_stack);
+	return !!stree;
+}
+
 int __pop_default(void)
 {
 	struct stree *stree;
@@ -1235,4 +1271,37 @@ void __merge_gotos(const char *name, struct symbol *sym)
 	stree = get_named_stree(goto_stack, name, sym);
 	if (stree)
 		merge_stree(&cur_stree, *stree);
+}
+
+void __discard_fake_states(struct expression *call)
+{
+	struct stree *new = NULL;
+	struct sm_state *sm;
+	char buf[64];
+	int len;
+
+	if (__fake_state_cnt == 0)
+		return;
+
+	/*
+	 * This is just a best effort type of thing.  There could be
+	 * fake states in the true/false trees already.  They might
+	 * eventually get cleared out too because we call after probably
+	 * 50% of function calls.  But the point is that I don't want to
+	 * waste resources tracking them.
+	 */
+	FOR_EACH_SM(cur_stree, sm) {
+		if (call) {
+			len = snprintf(buf, sizeof(buf), "__fake_param_%p_", call);
+			if (strncmp(sm->name, buf, len) != 0)
+				avl_insert(&new, sm);
+			continue;
+		}
+		if (strncmp(sm->name, "__fake_param_", 13) != 0)
+			avl_insert(&new, sm);
+	} END_FOR_EACH_SM(sm);
+
+	free_stree(&cur_stree);
+	cur_stree = new;
+	__fake_state_cnt = 0;
 }

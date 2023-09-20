@@ -48,6 +48,16 @@ struct expression *zero_expr(void)
 	return zero;
 }
 
+struct expression *sval_to_expr(sval_t sval)
+{
+	struct expression *expr;
+
+	expr = alloc_tmp_expression(get_cur_pos(), EXPR_VALUE);
+	expr->value = sval.value;
+	expr->ctype = sval.type;
+	return expr;
+}
+
 struct expression *value_expr(long long val)
 {
 	struct expression *expr;
@@ -59,6 +69,34 @@ struct expression *value_expr(long long val)
 	expr->value = val;
 	expr->ctype = &llong_ctype;
 	return expr;
+}
+
+static struct expression *symbol_expression_helper(struct symbol *sym, bool perm)
+{
+	struct expression *expr;
+
+	if (perm)
+		expr = alloc_expression(sym->pos, EXPR_SYMBOL);
+	else
+		expr = alloc_tmp_expression(sym->pos, EXPR_SYMBOL);
+	expr->symbol = sym;
+	expr->symbol_name = sym->ident;
+	return expr;
+}
+
+struct expression *symbol_expression(struct symbol *sym)
+{
+	return symbol_expression_helper(sym, false);
+}
+
+struct expression *cast_expression(struct expression *expr, struct symbol *type)
+{
+	struct expression *cast;
+
+	cast = alloc_tmp_expression(expr->pos, EXPR_CAST);
+	cast->cast_type = type;
+	cast->cast_expression = expr;
+	return cast;
 }
 
 struct expression *member_expression(struct expression *deref, int op, struct ident *member)
@@ -85,8 +123,16 @@ struct expression *preop_expression(struct expression *expr, int op)
 
 struct expression *deref_expression(struct expression *expr)
 {
+	/* The *&foo is just foo */
+	if (expr->type == EXPR_PREOP && expr->op == '&')
+		return strip_expr(expr->unop);
 	if (expr->type == EXPR_BINOP)
 		expr = preop_expression(expr, '(');
+	return preop_expression(expr, '*');
+}
+
+struct expression *deref_expression_no_parens(struct expression *expr)
+{
 	return preop_expression(expr, '*');
 }
 
@@ -105,6 +151,47 @@ struct expression *assign_expression(struct expression *left, int op, struct exp
 	return expr;
 }
 
+struct expression *assign_expression_perm(struct expression *left, int op, struct expression *right)
+{
+	struct expression *expr;
+
+	if (!right)
+		return NULL;
+
+	expr = alloc_expression(right->pos, EXPR_ASSIGNMENT);
+	expr->op = op;
+	expr->left = left;
+	expr->right = right;
+	return expr;
+}
+
+struct expression *create_fake_assign(const char *name, struct symbol *type, struct expression *right)
+{
+	struct expression *left, *assign;
+
+	if (!right)
+		return NULL;
+
+	if (!type) {
+		type = get_type(right);
+		if (!type)
+			return NULL;
+	}
+
+	left = fake_variable_perm(type, name);
+
+	assign = assign_expression_perm(left, '=', right);
+
+	assign->smatch_flags |= Fake;
+
+	assign->parent = right->parent;
+	expr_set_parent_expr(right, assign);
+
+	__fake_state_cnt++;
+
+	return assign;
+}
+
 struct expression *binop_expression(struct expression *left, int op, struct expression *right)
 {
 	struct expression *expr;
@@ -121,22 +208,15 @@ struct expression *array_element_expression(struct expression *array, struct exp
 	struct expression *expr;
 
 	expr = binop_expression(array, '+', offset);
-	return deref_expression(expr);
-}
-
-struct expression *symbol_expression(struct symbol *sym)
-{
-	struct expression *expr;
-
-	expr = alloc_tmp_expression(sym->pos, EXPR_SYMBOL);
-	expr->symbol = sym;
-	expr->symbol_name = sym->ident;
-	return expr;
+	return deref_expression_no_parens(expr);
 }
 
 struct expression *compare_expression(struct expression *left, int op, struct expression *right)
 {
 	struct expression *expr;
+
+	if (!left || !right)
+		return NULL;
 
 	expr = alloc_tmp_expression(get_cur_pos(), EXPR_COMPARE);
 	expr->op = op;
@@ -145,7 +225,20 @@ struct expression *compare_expression(struct expression *left, int op, struct ex
 	return expr;
 }
 
-struct expression *string_expression(char *str)
+struct expression *alloc_expression_stmt_perm(struct statement *last_stmt)
+{
+	struct expression *expr;
+
+	if (!last_stmt)
+		return NULL;
+
+	expr = alloc_tmp_expression(last_stmt->pos, EXPR_STATEMENT);
+	expr->statement = last_stmt;
+
+	return expr;
+}
+
+struct expression *gen_string_expression(char *str)
 {
 	struct expression *ret;
 	struct string *string;
@@ -223,20 +316,31 @@ free:
 	return ret;
 }
 
-struct expression *gen_expression_from_name_sym(const char *name, struct symbol *sym)
+static struct expression *gen_expression_from_name_sym_helper(const char *name, struct symbol *sym)
 {
-	struct expression *base;
-	int skip = 0;
 	struct expression *ret;
+	int skip = 0;
 
-	if (!name || !sym)
+	if (!sym)
 		return NULL;
 
-	base = symbol_expression(sym);
+	if (name[0] == '&' ||
+	    name[0] == '*' ||
+	    name[0] == '(') {
+		ret = gen_expression_from_name_sym_helper(name + 1, sym);
+		return preop_expression(ret, name[0]);
+	}
 	while (name[skip] != '\0' && name[skip] != '.' && name[skip] != '-')
 		skip++;
 
-	ret = get_expression_from_base_and_str(base, name + skip);
+	return get_expression_from_base_and_str(symbol_expression(sym), name + skip);
+}
+
+struct expression *gen_expression_from_name_sym(const char *name, struct symbol *sym)
+{
+	struct expression *ret;
+
+	ret = gen_expression_from_name_sym_helper(name, sym);
 	if (ret) {
 		char *new = expr_to_str(ret);
 
@@ -254,11 +358,23 @@ struct expression *gen_expression_from_name_sym(const char *name, struct symbol 
 struct expression *gen_expression_from_key(struct expression *arg, const char *key)
 {
 	struct expression *ret;
-	struct token *token, *prev, *end;
+	struct token *token, *end;
 	const char *p = key;
 	char buf[4095];
 	char *alloc;
+	int cnt = 0;
 	size_t len;
+	bool star;
+
+	if (strcmp(key, "$") == 0)
+		return arg;
+
+	if (strcmp(key, "*$") == 0) {
+		if (arg->type == EXPR_PREOP &&
+		    arg->op == '&')
+			return strip_expr(arg->unop);
+		return deref_expression(arg);
+	}
 
 	/* The idea is that we can parse either $0->foo or $->foo */
 	if (key[0] != '$')
@@ -279,14 +395,23 @@ struct expression *gen_expression_from_key(struct expression *arg, const char *k
 	ret = arg;
 	while (token_type(token) == TOKEN_SPECIAL &&
 	       (token->special == SPECIAL_DEREFERENCE || token->special == '.')) {
-		prev = token;
+		if (token->special == SPECIAL_DEREFERENCE)
+			star = true;
+		else
+			star = false;
+
+		if (cnt++ == 0 && ret->type == EXPR_PREOP && ret->op == '&') {
+			ret = strip_expr(ret->unop);
+			star = false;
+		}
+
 		token = token->next;
 		if (token_type(token) != TOKEN_IDENT)
 			return NULL;
-		ret = deref_expression(ret);
-		ret = member_expression(ret,
-				        (prev->special == SPECIAL_DEREFERENCE) ? '*' : '.',
-					token->ident);
+
+		if (star)
+			ret = deref_expression(ret);
+		ret = member_expression(ret, star ? '*' : '.', token->ident);
 		token = token->next;
 	}
 
@@ -296,10 +421,110 @@ struct expression *gen_expression_from_key(struct expression *arg, const char *k
 	return ret;
 }
 
+struct expression *gen_expr_from_param_key(struct expression *expr, int param, const char *key)
+{
+	struct expression *call, *arg;
+
+	if (!expr)
+		return NULL;
+
+	call = expr;
+	while (call->type == EXPR_ASSIGNMENT)
+		call = strip_expr(call->right);
+	if (call->type != EXPR_CALL)
+		return NULL;
+
+	if (param == -1) {
+		if (expr->type != EXPR_ASSIGNMENT)
+			return NULL;
+		arg = expr->left;
+	} else {
+		arg = get_argument_from_call_expr(call->args, param);
+		if (!arg)
+			return NULL;
+	}
+
+	return gen_expression_from_key(arg, key);
+}
+
+bool is_fake_var(struct expression *expr)
+{
+	if (expr && (expr->smatch_flags & Fake))
+		return true;
+	return false;
+}
+
+bool is_fake_var_assign(struct expression *expr)
+{
+	struct expression *left;
+	struct symbol *sym;
+
+	if (!expr || expr->type != EXPR_ASSIGNMENT || expr->op != '=')
+		return false;
+	left = expr->left;
+	if (left->type != EXPR_SYMBOL)
+		return false;
+	if (!is_fake_var(left))
+		return false;
+
+	sym = left->symbol;
+	if (strncmp(sym->ident->name, "__fake_", 7) != 0)
+		return false;
+	return true;
+}
+
+static struct expression *fake_variable_helper(struct symbol *type, const char *name, bool perm)
+{
+	struct symbol *sym, *node;
+	struct expression *ret;
+	struct ident *ident;
+
+	if (!type)
+		type = &llong_ctype;
+
+	ident = alloc_ident(name, strlen(name));
+
+	sym = alloc_symbol(get_cur_pos(), type->type);
+	sym->ident = ident;
+	sym->ctype.base_type = type;
+	sym->ctype.modifiers |= MOD_AUTO;
+
+	node = alloc_symbol(get_cur_pos(), SYM_NODE);
+	node->ident = ident;
+	node->ctype.base_type = type;
+	node->ctype.modifiers |= MOD_AUTO;
+
+	if (perm)
+		ret = symbol_expression_helper(node, true);
+	else
+		ret = symbol_expression(node);
+
+	ret->smatch_flags |= Fake;
+
+	return ret;
+}
+
+struct expression *fake_variable(struct symbol *type, const char *name)
+{
+	return fake_variable_helper(type, name, false);
+}
+
+struct expression *fake_variable_perm(struct symbol *type, const char *name)
+{
+	return fake_variable_helper(type, name, true);
+}
+
 void expr_set_parent_expr(struct expression *expr, struct expression *parent)
 {
-	if (!expr)
+	struct expression *prev;
+
+	if (!expr || !parent)
 		return;
+
+	prev = expr_get_parent_expr(expr);
+	if (prev == parent)
+		return;
+
 	if (parent && parent->smatch_flags & Tmp)
 		return;
 
@@ -315,19 +540,60 @@ void expr_set_parent_stmt(struct expression *expr, struct statement *parent)
 
 struct expression *expr_get_parent_expr(struct expression *expr)
 {
+	struct expression *parent;
+
 	if (!expr)
 		return NULL;
 	if (!(expr->parent & 0x1UL))
 		return NULL;
-	return (struct expression *)(expr->parent & ~0x1UL);
+
+	parent = (struct expression *)(expr->parent & ~0x1UL);
+	if (parent && (parent->smatch_flags & Fake))
+		return expr_get_parent_expr(parent);
+	return parent;
+}
+
+struct expression *expr_get_fake_parent_expr(struct expression *expr)
+{
+	struct expression *parent;
+
+	if (!expr)
+		return NULL;
+	if (!(expr->parent & 0x1UL))
+		return NULL;
+
+	parent = (struct expression *)(expr->parent & ~0x1UL);
+	if (parent && (parent->smatch_flags & Fake))
+		return parent;
+	return NULL;
 }
 
 struct statement *expr_get_parent_stmt(struct expression *expr)
 {
+	struct expression *parent;
+
 	if (!expr)
 		return NULL;
-	if (expr->parent & 0x1UL)
+	if (expr->parent & 0x1UL) {
+		parent = (struct expression *)(expr->parent & ~0x1UL);
+		if (parent->smatch_flags & Fake)
+			return expr_get_parent_stmt(parent);
 		return NULL;
+	}
 	return (struct statement *)expr->parent;
 }
 
+struct statement *get_parent_stmt(struct expression *expr)
+{
+	struct expression *tmp;
+	int count = 10;
+
+	if (!expr)
+		return NULL;
+	while (--count > 0 && (tmp = expr_get_parent_expr(expr)))
+		expr = tmp;
+	if (!count)
+		return NULL;
+
+	return expr_get_parent_stmt(expr);
+}

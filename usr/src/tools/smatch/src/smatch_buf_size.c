@@ -60,16 +60,6 @@ static void add_allocation_function(const char *func, void *call_back, int param
 	add_function_assign_hook(func, call_back, INT_PTR(param));
 }
 
-static int estate_to_size(struct smatch_state *state)
-{
-	sval_t sval;
-
-	if (!state || !estate_rl(state))
-		return 0;
-	sval = estate_max(state);
-	return sval.value;
-}
-
 static struct smatch_state *size_to_estate(int size)
 {
 	sval_t sval;
@@ -130,7 +120,7 @@ static int bytes_per_element(struct expression *expr)
 	if (!expr)
 		return 0;
 	if (expr->type == EXPR_STRING)
-		return 1;
+		return expr->wide + 1;
 	if (expr->type == EXPR_PREOP && expr->op == '&') {
 		type = get_type(expr->unop);
 		if (type && type->type == SYM_ARRAY)
@@ -147,7 +137,7 @@ static int bytes_per_element(struct expression *expr)
 	return type_bytes(type);
 }
 
-static int bytes_to_elements(struct expression *expr, int bytes)
+int bytes_to_elements(struct expression *expr, int bytes)
 {
 	int bpe;
 
@@ -169,7 +159,7 @@ static int get_initializer_size(struct expression *expr)
 {
 	switch (expr->type) {
 	case EXPR_STRING:
-		return expr->string->length;
+		return expr->string->length * (expr->wide + 1);
 	case EXPR_INITIALIZER: {
 		struct expression *tmp;
 		int i = 0;
@@ -188,6 +178,8 @@ static int get_initializer_size(struct expression *expr)
 	}
 	case EXPR_SYMBOL:
 		return get_array_size(expr);
+	default:
+		break;
 	}
 	return 0;
 }
@@ -206,33 +198,78 @@ static int db_size_callback(void *unused, int argc, char **argv, char **azColNam
 	return 0;
 }
 
-static struct range_list *size_from_db_type(struct expression *expr)
+static struct expression *cached_type_expr, *cached_sym_expr;
+static struct range_list *cached_type_rl, *cached_sym_rl;
+
+static void match_clear_cache(struct symbol *sym)
 {
-	int this_file_only = 0;
+	cached_type_expr = NULL;
+	cached_type_rl = NULL;
+	cached_sym_expr = NULL;
+	cached_sym_rl = NULL;
+}
+
+static char *get_stored_buffer_name(struct expression *buffer, bool *add_static)
+{
+	struct expression *array;
+	char buf[64];
 	char *name;
 
-	name = get_member_name(expr);
-	if (!name && is_static(expr)) {
-		name = expr_to_var(expr);
-		this_file_only = 1;
+	*add_static = false;
+
+	name = get_member_name(buffer);
+	if (name)
+		return name;
+
+	if (is_static(buffer)) {
+		name = expr_to_var(buffer);
+		if (!name)
+			return NULL;
+		*add_static = 1;
+		return name;
 	}
+
+	array = get_array_base(buffer);
+	if (array) {
+		name = get_member_name(array);
+		if (!name)
+			return NULL;
+		snprintf(buf, sizeof(buf), "%s[]", name);
+		free_string(name);
+		return alloc_string(buf);
+	}
+
+	return NULL;
+}
+
+static struct range_list *size_from_db_type(struct expression *expr)
+{
+	bool this_file_only;
+	char *name;
+
+	name = get_stored_buffer_name(expr, &this_file_only);
 	if (!name)
 		return NULL;
+
+	if (expr == cached_type_expr)
+		return clone_rl(cached_type_rl);
+	cached_type_expr = expr;
+	cached_type_rl = NULL;
 
 	if (this_file_only) {
 		db_size_rl = NULL;
 		run_sql(db_size_callback, NULL,
-			"select size from function_type_size where type = '%s' and file = '%s';",
-			name, get_filename());
-		if (db_size_rl)
-			return db_size_rl;
-		return NULL;
+			"select size from function_type_size where type = '%s' and file = %d;",
+			name, get_file_id());
+		cached_type_rl = clone_rl(db_size_rl);
+		return db_size_rl;
 	}
 
 	db_size_rl = NULL;
 	run_sql(db_size_callback, NULL,
 		"select size from type_size where type = '%s';",
 		name);
+	cached_type_rl = clone_rl(db_size_rl);
 	return db_size_rl;
 }
 
@@ -248,10 +285,16 @@ static struct range_list *size_from_db_symbol(struct expression *expr)
 	    sym->ctype.modifiers & MOD_STATIC)
 		return NULL;
 
+	if (expr == cached_sym_expr)
+		return clone_rl(cached_sym_rl);
+	cached_sym_expr = expr;
+	cached_sym_rl = NULL;
+
 	db_size_rl = NULL;
 	run_sql(db_size_callback, NULL,
-		"select value from data_info where file = 'extern' and data = '%s' and type = %d;",
+		"select value from data_info where file = 0 and data = '%s' and type = %d;",
 		sym->ident->name, BUF_SIZE);
+	cached_sym_rl = clone_rl(db_size_rl);
 	return db_size_rl;
 }
 
@@ -381,6 +424,9 @@ static int is_last_member_of_struct(struct symbol *sym, struct ident *member)
 	struct symbol *tmp;
 	int i;
 
+	if (sym->type != SYM_STRUCT)
+		return false;
+
 	i = 0;
 	FOR_EACH_PTR_REVERSE(sym->symbol_list, tmp) {
 		if (i++ || !tmp->ident)
@@ -412,6 +458,9 @@ int last_member_is_resizable(struct symbol *sym)
 	if (type->type != SYM_ARRAY)
 		return 0;
 
+	if (!type->array_size)
+		return 1;
+
 	if (!get_implied_value(type->array_size, &sval))
 		return 0;
 
@@ -421,43 +470,109 @@ int last_member_is_resizable(struct symbol *sym)
 	return 1;
 }
 
-static int get_stored_size_end_struct_bytes(struct expression *expr)
+static struct range_list *get_stored_size_end_struct_bytes(struct expression *expr)
 {
 	struct symbol *sym;
 	struct symbol *base_sym;
 	struct smatch_state *state;
+	sval_t base_size = {
+		.type = &int_ctype,
+	};
 
 	if (expr->type == EXPR_BINOP) /* array elements foo[5] */
-		return 0;
+		return NULL;
 
 	if (expr->type == EXPR_PREOP && expr->op == '&')
 		expr = strip_parens(expr->unop);
 
 	sym = expr_to_sym(expr);
 	if (!sym || !sym->ident)
-		return 0;
+		return NULL;
 	if (!type_bytes(sym))
-		return 0;
+		return NULL;
 	if (sym->type != SYM_NODE)
-		return 0;
+		return NULL;
 
 	base_sym = get_real_base_type(sym);
 	if (!base_sym || base_sym->type != SYM_PTR)
-		return 0;
+		return NULL;
 	base_sym = get_real_base_type(base_sym);
 	if (!base_sym || base_sym->type != SYM_STRUCT)
-		return 0;
+		return NULL;
 
 	if (!is_last_member_of_struct(base_sym, expr->member))
-		return 0;
+		return NULL;
 	if (!last_member_is_resizable(base_sym))
-		return 0;
+		return NULL;
 
 	state = get_state(my_size_id, sym->ident->name, sym);
-	if (!estate_to_size(state) || estate_to_size(state) == -1)
-		return 0;
+	if (!estate_rl(state))
+		return NULL;
+	base_size.value = type_bytes(base_sym) - type_bytes(get_type(expr));
+	if (sval_cmp(estate_min(state), base_size) < 0)
+		return NULL;
 
-	return estate_to_size(state) - type_bytes(base_sym) + type_bytes(get_type(expr));
+	return rl_binop(estate_rl(state), '-', alloc_rl(base_size, base_size));
+}
+
+static int get_last_element_bytes(struct expression *expr)
+{
+	struct symbol *type, *member, *member_type;
+
+	type = get_type(expr);
+	if (!type || type->type != SYM_STRUCT)
+		return 0;
+	member = last_ptr_list((struct ptr_list *)type->symbol_list);
+	if (!member)
+		return 0;
+	member_type = get_real_base_type(member);
+	if (!member_type)
+		return 0;
+	return type_bytes(member_type);
+}
+
+static struct range_list *get_outer_end_struct_bytes(struct expression *expr)
+{
+	struct expression *outer;
+	int last_element_size;
+	struct symbol *type;
+	sval_t bytes = {
+		.type = &int_ctype,
+	};
+
+	/*
+	 * What we're checking here is for when "u.bar.baz" is a zero element
+	 * array and "u" has a buffer to determine the space for baz.  Like
+	 * this:
+	 * struct { struct bar bar; char buf[256]; } u;
+	 *
+	 */
+
+	if (expr->type == EXPR_PREOP && expr->op == '&')
+		expr = strip_parens(expr->unop);
+	if (expr->type != EXPR_DEREF)
+		return NULL;
+	outer = expr->deref;
+	if (outer->type != EXPR_DEREF)
+		return NULL;
+	type = get_type(outer);
+	if (!type)
+		return NULL;
+
+	if (!is_last_member_of_struct(type, expr->member))
+		return NULL;
+	if (!last_member_is_resizable(type))
+		return NULL;
+
+	last_element_size = get_last_element_bytes(outer->deref);
+	if (last_element_size == 0)
+		return NULL;
+	if (type_bytes(get_type(outer)) + last_element_size !=
+	    type_bytes(get_type(outer->deref)))
+		return NULL;
+
+	bytes.value = last_element_size;
+	return alloc_rl(bytes, bytes);
 }
 
 static struct range_list *alloc_int_rl(int value)
@@ -470,11 +585,29 @@ static struct range_list *alloc_int_rl(int value)
 	return alloc_rl(sval, sval);
 }
 
+struct range_list *filter_size_rl(struct range_list *rl)
+{
+	sval_t minus_one = {
+		.type = &int_ctype,
+		{ .value = -1 },
+	};
+
+	sval_t zero = {
+		.type = &int_ctype,
+		{ .value = 0 },
+	};
+
+	return remove_range(rl, minus_one, zero);
+}
+
 struct range_list *get_array_size_bytes_rl(struct expression *expr)
 {
 	struct range_list *ret = NULL;
 	sval_t sval;
 	int size;
+
+	if (is_fake_call(expr))
+		return NULL;
 
 	expr = remove_addr_fluff(expr);
 	if (!expr)
@@ -482,7 +615,7 @@ struct range_list *get_array_size_bytes_rl(struct expression *expr)
 
 	/* "BAR" */
 	if (expr->type == EXPR_STRING)
-		return alloc_int_rl(expr->string->length);
+		return alloc_int_rl(expr->string->length * (expr->wide + 1));
 
 	if (expr->type == EXPR_BINOP && expr->op == '+') {
 		sval_t offset;
@@ -512,9 +645,13 @@ struct range_list *get_array_size_bytes_rl(struct expression *expr)
 	if (ret)
 		return ret;
 
-	size = get_stored_size_end_struct_bytes(expr);
-	if (size)
-		return alloc_int_rl(size);
+	ret = get_stored_size_end_struct_bytes(expr);
+	if (ret)
+		return ret;
+
+	ret = get_outer_end_struct_bytes(expr);
+	if (ret)
+		return ret;
 
 	/* buf[4] */
 	size = get_real_array_size(expr);
@@ -531,6 +668,8 @@ struct range_list *get_array_size_bytes_rl(struct expression *expr)
 		return alloc_int_rl(size);
 
 	ret = size_from_db(expr);
+	return filter_size_rl(ret);
+
 	if (rl_to_sval(ret, &sval) && sval.value == -1)
 		return NULL;
 	if (ret)
@@ -614,14 +753,10 @@ static struct expression *strip_ampersands(struct expression *expr)
 
 static void info_record_alloction(struct expression *buffer, struct range_list *rl)
 {
+	bool add_static;
 	char *name;
 
-	if (!option_info)
-		return;
-
-	name = get_member_name(buffer);
-	if (!name && is_static(buffer))
-		name = expr_to_var(buffer);
+	name = get_stored_buffer_name(buffer, &add_static);
 	if (!name)
 		return;
 	if (rl && !is_whole_rl(rl))
@@ -648,14 +783,20 @@ static void store_alloc(struct expression *expr, struct range_list *rl)
 	type = get_type(expr);
 	if (!type)
 		return;
-	if (type->type != SYM_PTR)
+	if (type->type != SYM_PTR &&
+	    type->type != SYM_ARRAY)
 		return;
 	type = get_real_base_type(type);
 	if (!type)
 		return;
+// Why not store the size for void pointers?
 	if (type == &void_ctype)
 		return;
-	if (type->type != SYM_BASETYPE && type->type != SYM_PTR)
+// Because of 4 files that produce 30 warnings like this:
+// arch/x86/crypto/des3_ede_glue.c:145 __cbc_encrypt() warn: potential memory corrupting cast 8 vs 1 bytes
+	if (type->type != SYM_BASETYPE &&
+	    type->type != SYM_PTR &&
+	    type->type != SYM_ARRAY)
 		return;
 
 	info_record_alloction(expr, rl);
@@ -686,8 +827,9 @@ static void match_array_assignment(struct expression *expr)
 	right = strip_expr(expr->right);
 	right = strip_ampersands(right);
 
-	if (!is_pointer(left))
+	if (!is_pointer(left) && !get_state_expr(my_size_id, expr))
 		return;
+
 	/* char buf[24] = "str"; */
 	if (is_array_base(left))
 		return;
@@ -717,18 +859,68 @@ store:
 	store_alloc(left, rl);
 }
 
+static struct expression *get_variable_struct_member(struct expression *expr)
+{
+	struct symbol *type, *last_member;
+	sval_t sval;
+
+	/*
+	 * This is a hack.  It should look at how the size is calculated instead
+	 * of just assuming that it's the last element.  However, ugly hacks are
+	 * easier to write.
+	 */
+
+	type = get_type(expr);
+	if (!type || type->type != SYM_PTR)
+		return NULL;
+	type = get_real_base_type(type);
+	if (!type || type->type != SYM_STRUCT)
+		return NULL;
+	last_member = last_ptr_list((struct ptr_list *)type->symbol_list);
+	if (!last_member || !last_member->ident)
+		return NULL;
+	type = get_real_base_type(last_member);
+	if (!type || type->type != SYM_ARRAY)
+		return NULL;
+	/* Is non-zero array size */
+	if (type->array_size) {
+		if (!get_implied_value(type->array_size, &sval) ||
+		    sval.value != 0)
+			return NULL;
+	}
+
+	return member_expression(expr, '*', last_member->ident);
+}
+
+static void match_struct_size_helper(struct expression *pointer, struct range_list *rl)
+{
+	struct range_list *buf_size;
+	struct expression *member;
+	sval_t sval = { .type = &ulong_ctype };
+
+	member = get_variable_struct_member(pointer);
+	if (!member)
+		return;
+	sval.value = bytes_per_element(pointer);
+	if (!sval.value)
+		return;
+	buf_size = rl_binop(rl, '-', alloc_rl(sval, sval));
+	store_alloc(member, buf_size);
+}
+
 static void match_alloc(const char *fn, struct expression *expr, void *_size_arg)
 {
 	int size_arg = PTR_INT(_size_arg);
-	struct expression *right;
-	struct expression *arg;
+	struct expression *pointer, *right, *arg;
 	struct range_list *rl;
 
+	pointer = strip_expr(expr->left);
 	right = strip_expr(expr->right);
 	arg = get_argument_from_call_expr(right->args, size_arg);
 	get_absolute_rl(arg, &rl);
-	rl = cast_rl(&int_ctype, rl);
-	store_alloc(expr->left, rl);
+	rl = cast_rl(&ulong_ctype, rl);
+	store_alloc(pointer, rl);
+	match_struct_size_helper(pointer, rl);
 }
 
 static void match_calloc(const char *fn, struct expression *expr, void *_param)
@@ -758,6 +950,31 @@ static void match_page(const char *fn, struct expression *expr, void *_unused)
 	store_alloc(expr->left, alloc_rl(page_size, page_size));
 }
 
+static void match_bitmap_alloc(const char *fn, struct expression *expr, void *_size_arg)
+{
+	int size_arg = PTR_INT(_size_arg);
+	struct expression *right;
+	struct expression *arg;
+	struct range_list *rl;
+	sval_t int_8 = {
+		.type = &int_ctype,
+		.value = 8,
+	};
+
+	right = strip_expr(expr->right);
+	arg = get_argument_from_call_expr(right->args, size_arg);
+	get_absolute_rl(arg, &rl);
+	if (rl_max(rl).uvalue <= SHRT_MAX && rl_max(rl).uvalue % 8) {
+		sval_t max = rl_max(rl);
+		/* round up */
+		max.uvalue += 7;
+		rl = alloc_rl(rl_min(rl), max);
+	}
+	rl = rl_binop(rl, '/', alloc_rl(int_8, int_8));
+	rl = cast_rl(&ulong_ctype, rl);
+	store_alloc(expr->left, rl);
+}
+
 static void match_strndup(const char *fn, struct expression *expr, void *unused)
 {
 	struct expression *fn_expr;
@@ -772,7 +989,6 @@ static void match_strndup(const char *fn, struct expression *expr, void *unused)
 	} else {
 		store_alloc(expr->left, size_to_rl(UNKNOWN_SIZE));
 	}
-
 }
 
 static void match_alloc_pages(const char *fn, struct expression *expr, void *_order_arg)
@@ -790,13 +1006,12 @@ static void match_alloc_pages(const char *fn, struct expression *expr, void *_or
 		return;
 
 	sval.type = &int_ctype;
-	sval.value = 1 << sval.value;
-	sval.value *= 4096;
+	sval.value = (1 << sval.value) * 4096;
 
 	store_alloc(expr->left, alloc_rl(sval, sval));
 }
 
-static int is_type_bytes(struct range_list *rl, struct expression *arg)
+static int is_type_bytes(struct range_list *rl, struct expression *call, int nr)
 {
 	struct symbol *type;
 	sval_t sval;
@@ -804,15 +1019,12 @@ static int is_type_bytes(struct range_list *rl, struct expression *arg)
 	if (!rl_to_sval(rl, &sval))
 		return 0;
 
-	type = get_type(arg);
+	type = get_arg_type(call->fn, nr);
 	if (!type)
 		return 0;
 	if (type->type != SYM_PTR)
 		return 0;
 	type = get_real_base_type(type);
-	if (type->type != SYM_STRUCT &&
-	    type->type != SYM_UNION)
-		return 0;
 	if (sval.value != type_bytes(type))
 		return 0;
 	return 1;
@@ -839,7 +1051,7 @@ static void match_call(struct expression *expr)
 			continue;
 		if (is_whole_rl(rl))
 			continue;
-		if (is_type_bytes(rl, arg))
+		if (is_type_bytes(rl, expr, i))
 			continue;
 		sql_insert_caller_info(expr, BUF_SIZE, i, "$", show_rl(rl));
 	} END_FOR_EACH_PTR(arg);
@@ -938,14 +1150,13 @@ void register_buf_size(int id)
 		add_allocation_function("__vmalloc", &match_alloc, 0);
 		add_allocation_function("kvmalloc", &match_alloc, 0);
 		add_allocation_function("kcalloc", &match_calloc, 0);
+		add_allocation_function("kvcalloc", &match_calloc, 0);
 		add_allocation_function("kmalloc_array", &match_calloc, 0);
 		add_allocation_function("devm_kmalloc_array", &match_calloc, 1);
 		add_allocation_function("sock_kmalloc", &match_alloc, 1);
 		add_allocation_function("kmemdup", &match_alloc, 1);
-		add_allocation_function("kmemdup_user", &match_alloc, 1);
+		add_allocation_function("memdup_user", &match_alloc, 1);
 		add_allocation_function("dma_alloc_attrs", &match_alloc, 1);
-		add_allocation_function("pci_alloc_consistent", &match_alloc, 1);
-		add_allocation_function("pci_alloc_coherent", &match_alloc, 1);
 		add_allocation_function("devm_kmalloc", &match_alloc, 1);
 		add_allocation_function("devm_kzalloc", &match_alloc, 1);
 		add_allocation_function("krealloc", &match_alloc, 1);
@@ -960,6 +1171,15 @@ void register_buf_size(int id)
 		add_allocation_function("__get_free_pages", &match_alloc_pages, 1);
 		add_allocation_function("dma_alloc_contiguous", &match_alloc, 1);
 		add_allocation_function("dma_alloc_coherent", &match_alloc, 1);
+		add_allocation_function("bitmap_alloc", &match_bitmap_alloc, 0);
+		add_allocation_function("bitmap_alloc_node", &match_bitmap_alloc, 0);
+		add_allocation_function("bitmap_zalloc", &match_bitmap_alloc, 0);
+		add_allocation_function("devm_bitmap_alloc", &match_bitmap_alloc, 1);
+		add_allocation_function("devm_bitmap_zalloc", &match_bitmap_alloc, 1);
+	}
+	if (option_project == PROJ_ILLUMOS_KERNEL) {
+		add_allocation_function("kmem_alloc", &match_alloc, 0);
+		add_allocation_function("kmem_zalloc", &match_alloc, 0);
 	}
 
 	add_allocation_function("strndup", match_strndup, 0);
@@ -972,6 +1192,8 @@ void register_buf_size(int id)
 
 	if (option_info)
 		add_hook(record_global_size, BASE_HOOK);
+
+	add_hook(&match_clear_cache, AFTER_FUNC_HOOK);
 }
 
 void register_buf_size_late(int id)

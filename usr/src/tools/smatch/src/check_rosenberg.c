@@ -40,6 +40,12 @@ static void extra_mod_hook(const char *name, struct symbol *sym, struct expressi
 	if (!type || type->type != SYM_STRUCT)
 		return;
 
+	if (!cur_func_sym)
+		return;
+
+	if (name && strstr(name, "->"))
+		return;
+
 	set_state(my_member_id, name, sym, state);
 }
 
@@ -60,28 +66,35 @@ static void print_holey_warning(struct expression *data, const char *member)
 
 static int check_struct(struct expression *expr, struct symbol *type)
 {
-	struct symbol *tmp, *base_type;
-	const char *prev = NULL;
+	struct symbol *base_type, *prev_type;
+	struct symbol *tmp, *prev;
 	int align;
 
 	if (type->ctype.alignment == 1)
 		return 0;
 
 	align = 0;
+	prev = NULL;
+	prev_type = NULL;
 	FOR_EACH_PTR(type->symbol_list, tmp) {
 		base_type = get_real_base_type(tmp);
 		if (base_type && base_type->type == SYM_STRUCT) {
 			if (check_struct(expr, base_type))
 				return 1;
 		}
+		if (base_type && base_type->type == SYM_BITFIELD &&
+		    prev_type && prev_type->type == SYM_BITFIELD)
+			goto next;
 
 		if (!tmp->ctype.alignment) {
 			sm_perror("cannot determine the alignment here");
 		} else if (align % tmp->ctype.alignment) {
-			print_holey_warning(expr, prev);
+
+			print_holey_warning(expr, prev->ident ? prev->ident->name : "<unknown>");
 			return 1;
 		}
 
+next:
 		if (base_type == &bool_ctype)
 			align += 1;
 		else if (type_bits(tmp) <= 0)
@@ -89,14 +102,20 @@ static int check_struct(struct expression *expr, struct symbol *type)
 		else
 			align += type_bytes(tmp);
 
-		if (tmp->ident)
-			prev = tmp->ident->name;
-		else
-			prev = NULL;
+		prev = tmp;
+		prev_type = base_type;
 	} END_FOR_EACH_PTR(tmp);
 
+	// FIXME: this isn't the correct fix.  See sbni_siocdevprivate().
+	if (prev_type && prev_type->type == SYM_BITFIELD)
+		return 0;
 	if (align % type->ctype.alignment) {
-		print_holey_warning(expr, prev);
+			sm_msg("%s: tmp='%s' align=%d ctype.align=%ld type='%s'", __func__,
+			       tmp->ident ? tmp->ident->name : "<unknown>",
+			       align, tmp->ctype.alignment,
+			       type_to_str(get_real_base_type(tmp)));
+
+		print_holey_warning(expr, (prev && prev->ident) ? prev->ident->name : "<unknown>");
 		return 1;
 	}
 
@@ -125,14 +144,43 @@ static int has_global_scope(struct expression *expr)
 	return toplevel(sym->scope);
 }
 
+static int was_initialized(struct expression *expr)
+{
+	struct symbol *sym, *type;
+
+	sym = expr_to_sym(expr);
+	if (!sym)
+		return 0;
+	if (!sym->initializer)
+		return 0;
+
+	type = get_real_base_type(sym);
+	if (!type)
+		return 0;
+	if (type->type != SYM_STRUCT)
+		return 1;
+
+	/* Fully initializing a struct does not clear the holes */
+	if (sym->initializer->type != EXPR_INITIALIZER)
+		return 0;
+	if (ptr_list_size((struct ptr_list *)sym->initializer->expr_list) >=
+	    ptr_list_size((struct ptr_list *)type->symbol_list))
+		return 0;
+
+	return 1;
+}
+
 static void match_clear(const char *fn, struct expression *expr, void *_arg_no)
 {
-	struct expression *ptr;
+	struct expression *ptr, *tmp;
 	int arg_no = PTR_INT(_arg_no);
 
 	ptr = get_argument_from_call_expr(expr->args, arg_no);
 	if (!ptr)
 		return;
+	tmp = get_assigned_expr(ptr);
+	if (tmp)
+		ptr = tmp;
 	ptr = strip_expr(ptr);
 	if (ptr->type != EXPR_PREOP || ptr->op != '&')
 		return;
@@ -245,6 +293,8 @@ static void check_was_initialized(struct expression *data)
 		return;
 
 	if (has_global_scope(data))
+		return;
+	if (was_initialized(data))
 		return;
 	if (was_memset(data))
 		return;
@@ -406,7 +456,7 @@ void check_rosenberg(int id)
 	add_function_hook("__builtin_memcpy", &match_clear, INT_PTR(0));
 
 	register_clears_argument();
-	select_return_states_hook(PARAM_CLEARED, &db_param_cleared);
+	select_return_states_hook(BUF_CLEARED, &db_param_cleared);
 
 	register_copy_funcs_from_file();
 }

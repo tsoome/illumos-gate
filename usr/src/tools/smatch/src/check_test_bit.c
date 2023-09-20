@@ -35,7 +35,7 @@ static void match_test_bit(const char *fn, struct expression *expr, void *data)
 	macro = get_macro_name(arg->pos);
 	if (macro && strstr(macro, "cpu_has"))
 		return;
-	sm_warning("test_bit() takes a bit number");
+	sm_warning("%s() takes a bit number", fn);
 }
 
 void check_test_bit(int id)
@@ -47,8 +47,18 @@ void check_test_bit(int id)
 
 	add_function_hook("test_bit", &match_test_bit, NULL);
 	add_function_hook("variable_test_bit", &match_test_bit, NULL);
+
 	add_function_hook("set_bit", &match_test_bit, NULL);
 	add_function_hook("clear_bit", &match_test_bit, NULL);
-	add_function_hook("test_and_clear_bit", &match_test_bit, NULL);
+	add_function_hook("change_bit", &match_test_bit, NULL);
+	add_function_hook("__set_bit", &match_test_bit, NULL);
+	add_function_hook("__clear_bit", &match_test_bit, NULL);
+	add_function_hook("__change_bit", &match_test_bit, NULL);
+
 	add_function_hook("test_and_set_bit", &match_test_bit, NULL);
+	add_function_hook("test_and_clear_bit", &match_test_bit, NULL);
+	add_function_hook("test_and_change_bit", &match_test_bit, NULL);
+	add_function_hook("__test_and_set_bit", &match_test_bit, NULL);
+	add_function_hook("__test_and_clear_bit", &match_test_bit, NULL);
+	add_function_hook("__test_and_change_bit", &match_test_bit, NULL);
 }

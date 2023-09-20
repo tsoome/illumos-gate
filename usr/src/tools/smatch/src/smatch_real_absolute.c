@@ -95,36 +95,58 @@ static int in_iterator_pre_statement(void)
 	return 1;
 }
 
+static bool get_absolute(struct expression *expr, struct range_list **rl)
+{
+	struct smatch_state *state;
+
+	if (__in_fake_struct_assign) {
+		state = get_state_expr(my_id, expr);
+		if (!state)
+			return false;
+		*rl = estate_rl(state);
+		return true;
+	}
+	get_real_absolute_rl(expr, rl);
+	return true;
+}
+
 static void match_assign(struct expression *expr)
 {
+	struct expression *right;
 	struct range_list *rl;
 	struct symbol *type;
 	sval_t sval;
 
 	if (expr->op != '=')
-		return;
-	if (is_fake_call(expr->right))
-		return;
+		goto clear;
+	right = strip_expr(expr->right);
+	if (right->type == EXPR_CALL)
+		goto clear;
 	if (in_iterator_pre_statement())
-		return;
+		goto clear;
 
-	get_real_absolute_rl(expr->right, &rl);
+	if (!get_absolute(expr->right, &rl))
+		goto clear;
 
 	type = get_type(expr->left);
 	if (!type)
-		return;
-	if (type->type != SYM_PTR && type->type != SYM_BASETYPE &&
-	    type->type != SYM_ENUM)
-		return;
+		goto clear;
+	if (type->type != SYM_BASETYPE && type->type != SYM_ENUM)
+		goto clear;
 
 	rl = cast_rl(type, rl);
 	if (is_whole_rl(rl) && !get_state_expr(my_id, expr->left))
-		return;
+		goto clear;
 	/* These are handled by smatch_extra.c */
 	if (rl_to_sval(rl, &sval) && !get_state_expr(my_id, expr->left))
-		return;
+		goto clear;
 
 	set_state_expr(my_id, expr->left, alloc_estate_rl(clone_rl(rl)));
+	return;
+
+clear:
+	if (get_state_expr(my_id, expr->left))
+		set_state_expr(my_id, expr->left, alloc_estate_whole(get_type(expr->left)));
 }
 
 struct smatch_state *get_real_absolute_state(struct expression *expr)

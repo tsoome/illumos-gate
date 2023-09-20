@@ -38,9 +38,20 @@
 
 static int my_id;
 
-struct stree_stack *fn_type_val_stack;
+static int no_type_vals;
+
 struct stree *fn_type_val;
 struct stree *global_type_val;
+
+void disable_type_val_lookups(void)
+{
+	no_type_vals++;
+}
+
+void enable_type_val_lookups(void)
+{
+	no_type_vals--;
+}
 
 static int get_vals(void *_db_vals, int argc, char **argv, char **azColName)
 {
@@ -50,23 +61,11 @@ static int get_vals(void *_db_vals, int argc, char **argv, char **azColName)
 	return 0;
 }
 
-static void match_inline_start(struct expression *expr)
-{
-	push_stree(&fn_type_val_stack, fn_type_val);
-	fn_type_val = NULL;
-}
-
-static void match_inline_end(struct expression *expr)
-{
-	free_stree(&fn_type_val);
-	fn_type_val = pop_stree(&fn_type_val_stack);
-}
-
 struct expr_rl {
 	struct expression *expr;
 	struct range_list *rl;
 };
-static struct expr_rl cached_results[10];
+static struct expr_rl cached_results[24];
 static int res_idx;
 
 static int get_cached(struct expression *expr, struct range_list **rl, int *ret)
@@ -98,6 +97,9 @@ int get_db_type_rl(struct expression *expr, struct range_list **rl)
 
 	if (get_cached(expr, rl, &ret))
 		return ret;
+
+	if (no_type_vals)
+		return 0;
 
 	member = get_member_name(expr);
 	if (!member)
@@ -328,6 +330,8 @@ static int is_ignored_function(void)
 		return 1;
 	if (sym_name_is("kmem_alloc", expr->fn))
 		return 1;
+	if (sym_name_is("kmem_zalloc", expr->fn))
+		return 1;
 	if (sym_name_is("alloc_pages", expr->fn))
 		return 1;
 
@@ -406,8 +410,8 @@ static char *db_get_parameter_type(int param)
 
 	run_sql(set_param_type, &ret,
 		"select value from fn_data_link where "
-		"file = '%s' and function = '%s' and static = %d and type = %d and parameter = %d and key = '$';",
-		(cur_func_sym->ctype.modifiers & MOD_STATIC) ? get_base_file() : "extern",
+		"file = 0x%llx and function = '%s' and static = %d and type = %d and parameter = %d and key = '$';",
+		(cur_func_sym->ctype.modifiers & MOD_STATIC) ? get_base_file_id() : 0,
 		cur_func_sym->ident->name,
 		!!(cur_func_sym->ctype.modifiers & MOD_STATIC),
 		PASSES_TYPE, param);
@@ -574,18 +578,18 @@ static void unop_expr(struct expression *expr)
 
 static void asm_expr(struct statement *stmt)
 {
-	struct expression *expr;
+	struct asm_operand *op;
 	struct range_list *rl;
 	char *member;
 
-	FOR_EACH_PTR(stmt->asm_outputs, expr) {
-		member = get_member_name(expr->expr);
+	FOR_EACH_PTR(stmt->asm_outputs, op) {
+		member = get_member_name(op->expr);
 		if (!member)
 			continue;
-		rl = alloc_whole_rl(get_type(expr->expr));
+		rl = alloc_whole_rl(get_type(op->expr));
 		add_type_val(member, rl);
 		free_string(member);
-	} END_FOR_EACH_PTR(expr);
+	} END_FOR_EACH_PTR(op);
 }
 
 static void db_param_add(struct expression *expr, int param, char *key, char *value)
@@ -642,7 +646,7 @@ static void match_end_func_info(struct symbol *sym)
 	} END_FOR_EACH_SM(sm);
 }
 
-static void clear_cache(struct symbol *sym)
+void clear_type_value_cache(void)
 {
 	memset(cached_results, 0, sizeof(cached_results));
 }
@@ -664,7 +668,6 @@ static void match_end_file(struct symbol_list *sym_list)
 void register_type_val(int id)
 {
 	my_id = id;
-	add_hook(&clear_cache, AFTER_FUNC_HOOK);
 
 	if (!option_info)
 		return;
@@ -677,8 +680,7 @@ void register_type_val(int id)
 	select_return_states_hook(PARAM_SET, &db_param_add);
 
 
-	add_hook(&match_inline_start, INLINE_FN_START);
-	add_hook(&match_inline_end, INLINE_FN_END);
+	add_function_data((unsigned long *)&fn_type_val);
 
 	add_hook(&match_end_func_info, END_FUNC_HOOK);
 	add_hook(&match_after_func, AFTER_FUNC_HOOK);

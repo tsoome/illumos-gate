@@ -215,6 +215,40 @@ static void match_user_rl(const char *fn, struct expression *expr, void *info)
 	free_string(name);
 }
 
+static void match_host_rl(const char *fn, struct expression *expr, void *info)
+{
+       struct expression *arg;
+       struct range_list *rl = NULL;
+       struct sm_state *sm;
+       bool capped = false;
+       bool new = false;
+       int host_id;
+       char *name;
+
+       host_id = id_from_name("register_kernel_host_data");
+       if (!host_id) {
+               sm_msg("no host id");
+               return;
+       }
+
+       arg = get_argument_from_call_expr(expr->args, 0);
+       name = expr_to_str(arg);
+
+       get_host_rl(arg, &rl);
+       if (rl)
+               capped = host_rl_capped(arg);
+       sm = get_sm_state_expr(host_id, arg);
+       if (sm && estate_new(sm->state))
+               new = true;
+
+       sm_msg("host rl: '%s' = '%s'%s %s sm='%s'", name, show_rl(rl),
+              capped ? " (capped)" : "",
+              new ? "(new)" : "(old)",
+              show_sm(sm));
+
+       free_string(name);
+}
+
 static void match_capped(const char *fn, struct expression *expr, void *info)
 {
 	struct expression *arg;
@@ -371,7 +405,7 @@ static void match_possible(const char *fn, struct expression *expr, void *info)
 static void match_strlen(const char *fn, struct expression *expr, void *info)
 {
 	struct expression *arg;
-	struct range_list *rl;
+	struct range_list *rl = NULL;
 	char *name;
 
 	arg = get_argument_from_call_expr(expr->args, 0);
@@ -494,19 +528,38 @@ static void match_debug_check(const char *fn, struct expression *expr, void *inf
 	sm_msg("arg = '%s'", option_debug_check);
 }
 
+static void match_debug_var(const char *fn, struct expression *expr, void *info)
+{
+	struct expression *arg;
+
+	arg = get_argument_from_call_expr(expr->args, 0);
+	if (!arg || arg->type != EXPR_STRING)
+		return;
+	option_debug_var = arg->string->data;
+	sm_msg("debug var = '%s'", option_debug_var);
+}
+
 static void match_debug_off(const char *fn, struct expression *expr, void *info)
 {
-	option_debug_check = (char *)"";
+	option_debug_check = NULL;
+	option_debug_var = NULL;
 	option_debug = 0;
+}
+
+static void match_start_skip(const char *fn, struct expression *expr, void *info)
+{
+	__debug_skip = true;
 }
 
 static void match_local_debug_on(const char *fn, struct expression *expr, void *info)
 {
 	local_debug = 1;
+	option_print_names++;
 }
 
 static void match_local_debug_off(const char *fn, struct expression *expr, void *info)
 {
+	option_print_names--;
 	local_debug = 0;
 }
 
@@ -518,6 +571,16 @@ static void match_debug_db_on(const char *fn, struct expression *expr, void *inf
 static void match_debug_db_off(const char *fn, struct expression *expr, void *info)
 {
 	debug_db = 0;
+}
+
+static void match_debug_implied_on(const char *fn, struct expression *expr, void *info)
+{
+	implied_debug = true;
+}
+
+static void match_debug_implied_off(const char *fn, struct expression *expr, void *info)
+{
+	implied_debug = false;
 }
 
 static void mtag_info(struct expression *expr)
@@ -534,8 +597,10 @@ static void mtag_info(struct expression *expr)
 static void match_about(const char *fn, struct expression *expr, void *info)
 {
 	struct expression *arg;
+	struct range_list *rl;
 	struct sm_state *sm;
 	char *name;
+	int len;
 
 	sm_msg("---- about ----");
 	match_print_implied(fn, expr, NULL);
@@ -551,9 +616,20 @@ static void match_about(const char *fn, struct expression *expr, void *info)
 		return;
 	}
 
+	if (get_user_rl(arg, &rl))
+		sm_msg("user_rl = '%s'", show_rl(rl));
+	if (points_to_user_data(arg))
+		sm_msg("points to user data");
+
+	len = strlen(name);
 	FOR_EACH_SM(__get_cur_stree(), sm) {
-		if (strcmp(sm->name, name) != 0)
-			continue;
+		if (strcmp(sm->name, name) == 0)
+			goto print;
+		if (strncmp(sm->name, name, len) == 0 &&
+		    sm->name[len] == ':')
+			goto print;
+		continue;
+print:
 		sm_msg("%s", show_sm(sm));
 	} END_FOR_EACH_SM(sm);
 }
@@ -672,6 +748,25 @@ static void match_bits(const char *fn, struct expression *expr, void *_unused)
 	       name, info->set, info->possible);
 }
 
+static void match_units(const char *fn, struct expression *expr, void *info)
+{
+	static int units_id;
+	struct expression *arg;
+	struct sm_state *sm;
+	char *name;
+
+	if (!units_id)
+		units_id = id_from_name("register_units");
+
+	arg = get_argument_from_call_expr(expr->args, 0);
+	sm = get_sm_state_expr(units_id, arg);
+	name = expr_to_str(arg);
+
+	sm_msg("units: '%s' '%s'", name, sm ? show_sm(sm) : get_unit_str(arg));
+
+	free_string(name);
+}
+
 static void match_mtag(const char *fn, struct expression *expr, void *info)
 {
 	struct expression *arg;
@@ -714,6 +809,43 @@ static void match_container(const char *fn, struct expression *expr, void *info)
 	sm_msg("container: '%s' vs '%s' --> '%s'", cont, name, str);
 	free_string(cont);
 	free_string(name);
+}
+
+static void match_param_key(const char *fn, struct expression *expr, void *info)
+{
+	struct expression *arg;
+	const char *key = NULL;
+	char *name;
+	int param;
+
+	arg = get_argument_from_call_expr(expr->args, 0);
+
+	param = get_param_key_from_expr(arg, NULL, &key);
+
+	name = expr_to_str(expr);
+	sm_msg("expr='%s' param=%d key='%s'", name, param, key);
+	free_string(name);
+}
+
+static struct timeval debug_timer;
+static void match_timer_start(const char *fn, struct expression *expr, void *info)
+{
+	gettimeofday(&debug_timer, NULL);
+}
+
+static void match_timer_stop(const char *fn, struct expression *expr, void *info)
+{
+	struct timeval stop;
+	long sec, usec, msec;
+
+	gettimeofday(&stop, NULL);
+
+	sec = stop.tv_sec - debug_timer.tv_sec;
+	usec = stop.tv_usec - debug_timer.tv_usec;
+	msec = sec * 1000 + usec / 1000;
+
+	sm_msg("timer: %ld msec", msec);
+	gettimeofday(&debug_timer, NULL);
 }
 
 static void match_expr(const char *fn, struct expression *expr, void *info)
@@ -807,6 +939,7 @@ void check_debug(int id)
 	add_function_hook("__smatch_implied_min", &match_print_implied_min, NULL);
 	add_function_hook("__smatch_implied_max", &match_print_implied_max, NULL);
 	add_function_hook("__smatch_user_rl", &match_user_rl, NULL);
+	add_function_hook("__smatch_host_rl", &match_host_rl, NULL);
 	add_function_hook("__smatch_capped", &match_capped, NULL);
 	add_function_hook("__smatch_hard_max", &match_print_hard_max, NULL);
 	add_function_hook("__smatch_fuzzy_max", &match_print_fuzzy_max, NULL);
@@ -825,11 +958,15 @@ void check_debug(int id)
 	add_function_hook("__smatch_compare", &match_compare, NULL);
 	add_function_hook("__smatch_debug_on", &match_debug_on, NULL);
 	add_function_hook("__smatch_debug_check", &match_debug_check, NULL);
+	add_function_hook("__smatch_debug_var", &match_debug_var, NULL);
 	add_function_hook("__smatch_debug_off", &match_debug_off, NULL);
+	add_function_hook("__smatch_start_skip", &match_start_skip, NULL);
 	add_function_hook("__smatch_local_debug_on", &match_local_debug_on, NULL);
 	add_function_hook("__smatch_local_debug_off", &match_local_debug_off, NULL);
 	add_function_hook("__smatch_debug_db_on", &match_debug_db_on, NULL);
 	add_function_hook("__smatch_debug_db_off", &match_debug_db_off, NULL);
+	add_function_hook("__smatch_debug_implied_on", &match_debug_implied_on, NULL);
+	add_function_hook("__smatch_debug_implied_off", &match_debug_implied_off, NULL);
 	add_function_hook("__smatch_intersection", &match_intersection, NULL);
 	add_function_hook("__smatch_type", &match_type, NULL);
 	add_implied_return_hook("__smatch_type_rl_helper", &match_type_rl_return, NULL);
@@ -842,7 +979,11 @@ void check_debug(int id)
 	add_function_hook("__smatch_state_count", &match_state_count, NULL);
 	add_function_hook("__smatch_mem", &match_mem, NULL);
 	add_function_hook("__smatch_exit", &match_exit, NULL);
+	add_function_hook("__smatch_units", &match_units, NULL);
 	add_function_hook("__smatch_container", &match_container, NULL);
+	add_function_hook("__smatch_param_key", &match_param_key, NULL);
+	add_function_hook("__smatch_timer_start", &match_timer_start, NULL);
+	add_function_hook("__smatch_timer_stop", &match_timer_stop, NULL);
 
 	add_hook(free_old_stree, AFTER_FUNC_HOOK);
 	add_hook(trace_var, STMT_HOOK_AFTER);

@@ -24,7 +24,9 @@
 #include "smatch_slist.h"
 #include "check_list.h"
 
-char *option_debug_check = (char *)"";
+char *option_debug_check;
+char *option_debug_var;
+char *option_process_function;
 char *option_project_str = (char *)"smatch_generic";
 static char *option_db_file = (char *)"smatch_db.sqlite";
 enum project_type option_project = PROJ_NONE;
@@ -32,6 +34,8 @@ char *bin_dir;
 char *data_dir;
 int option_no_data = 0;
 int option_spammy = 0;
+int option_pedantic;
+int option_print_names;
 int option_info = 0;
 int option_full_path = 0;
 int option_call_tree = 0;
@@ -40,11 +44,13 @@ int option_enable = 0;
 int option_disable = 0;
 int option_file_output;
 int option_time;
+int option_time_stmt;
 int option_mem;
 char *option_datadir_str;
 int option_fatal_checks;
 int option_succeed;
-int option_timeout = 60;
+int option_timeout;
+int SMATCH_EXTRA;
 
 FILE *sm_outfd;
 FILE *sql_outfd;
@@ -52,6 +58,7 @@ FILE *caller_info_fd;
 
 int sm_nr_errors;
 int sm_nr_checks;
+int __cur_check_id;
 
 bool __silence_warnings_for_stmt;
 
@@ -64,11 +71,11 @@ static struct reg_func_info {
 	reg_func func;
 	int enabled;
 } reg_funcs[] = {
-	{NULL, NULL},
+	{"internal", NULL},
 #include "check_list.h"
 };
 #undef CK
-int num_checks = ARRAY_SIZE(reg_funcs) - 1;
+int num_checks = ARRAY_SIZE(reg_funcs);
 
 const char *check_name(unsigned short id)
 {
@@ -139,6 +146,7 @@ static void help(void)
 	printf("--project=<name> or -p=<name>: project specific tests\n");
 	printf("--succeed: don't exit with an error\n");
 	printf("--spammy:  print superfluous crap.\n");
+	printf("--pedantic:  intended for reviewing new drivers.\n");
 	printf("--info:  print info used to fill smatch_data/.\n");
 	printf("--debug:  print lots of debug output.\n");
 	printf("--no-data:  do not use the /smatch_data/ directory.\n");
@@ -174,7 +182,7 @@ static int match_option(const char *arg, const char *option)
 }
 
 #define OPTION(_x) do {					\
-	if (match_option((*argvp)[i], #_x)) { 		\
+	if (match_option((*argvp)[i], #_x)) {		\
 		option_##_x = 1;			\
 	}                                               \
 } while (0)
@@ -183,26 +191,26 @@ void parse_args(int *argcp, char ***argvp)
 {
 	int i;
 
-	for (i = 1 ; i < *argcp; i++) {
-		if (!strcmp((*argvp)[i], "--help"))
+	for (i = 1; i < *argcp; i++) {
+		if (strcmp((*argvp)[i], "--help") == 0)
 			help();
 
-		if (!strcmp((*argvp)[i], "--show-checks"))
+		if (strcmp((*argvp)[i], "--show-checks") == 0)
 			show_checks();
 
-		if (!strncmp((*argvp)[i], "--project=", 10))
+		if (strncmp((*argvp)[i], "--project=", 10) == 0)
 			option_project_str = (*argvp)[i] + 10;
 
-		if (!strncmp((*argvp)[i], "-p=", 3))
+		if (strncmp((*argvp)[i], "-p=", 3) == 0)
 			option_project_str = (*argvp)[i] + 3;
 
-		if (!strncmp((*argvp)[i], "--db-file=", 10))
+		if (strncmp((*argvp)[i], "--db-file=", 10) == 0)
 			option_db_file = (*argvp)[i] + 10;
 
-		if (!strncmp((*argvp)[i], "--data=", 7))
+		if (strncmp((*argvp)[i], "--data=", 7) == 0)
 			option_datadir_str = (*argvp)[i] + 7;
 
-		if (!strncmp((*argvp)[i], "--debug=", 8))
+		if (strncmp((*argvp)[i], "--debug=", 8) == 0)
 			option_debug_check = (*argvp)[i] + 8;
 
 		if (strncmp((*argvp)[i], "--trace=", 8) == 0)
@@ -219,7 +227,10 @@ void parse_args(int *argcp, char ***argvp)
 			option_disable = 1;
 		}
 
-		if (!strncmp((*argvp)[i], "--timeout=", 10)) {
+		if (strncmp((*argvp)[i], "--function=", 11) == 0)
+			option_process_function = (*argvp)[i] + 11;
+
+		if (strncmp((*argvp)[i], "--timeout=", 10) == 0) {
 			if (sscanf((*argvp)[i] + 10, "%d",
 			    &option_timeout) != 1)
 				sm_fatal("invalid option %s", (*argvp)[i]);
@@ -227,6 +238,7 @@ void parse_args(int *argcp, char ***argvp)
 
 		OPTION(fatal_checks);
 		OPTION(spammy);
+		OPTION(pedantic);
 		OPTION(info);
 		OPTION(debug);
 		OPTION(assume_loops);
@@ -236,9 +248,11 @@ void parse_args(int *argcp, char ***argvp)
 		OPTION(call_tree);
 		OPTION(file_output);
 		OPTION(time);
+		OPTION(time_stmt);
 		OPTION(mem);
 		OPTION(no_db);
 		OPTION(succeed);
+		OPTION(print_names);
 	}
 
 	if (strcmp(option_project_str, "smatch_generic") != 0)
@@ -344,9 +358,12 @@ int main(int argc, char **argv)
 	create_function_hook_hash();
 	open_smatch_db(option_db_file);
 	sparse_initialize(argc, argv, &filelist);
-	alloc_valid_ptr_rl();
+	alloc_ptr_constants();
+	SMATCH_EXTRA = id_from_name("register_smatch_extra");
+	allocate_modification_hooks();
 
 	for (i = 1; i < ARRAY_SIZE(reg_funcs); i++) {
+		__cur_check_id = i;
 		func = reg_funcs[i].func;
 		/* The script IDs start at 1.
 		   0 is used for internal stuff. */
@@ -355,6 +372,7 @@ int main(int argc, char **argv)
 		    strncmp(reg_funcs[i].name, "register_", 9) == 0)
 			func(i);
 	}
+	__cur_check_id = 0;
 
 	smatch(filelist);
 	free_string(data_dir);

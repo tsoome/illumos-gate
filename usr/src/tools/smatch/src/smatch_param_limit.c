@@ -16,17 +16,9 @@
  */
 
 /*
- * This is almost the same as smatch_param_filter.c.  The difference is that
- * this only deals with values passed on the stack and param filter only deals
- * with values changed so that the caller sees the new value.  It other words
- * the key for these should always be "$" and the key for param_filter should
- * never be "$".  Also smatch_param_set() should never use "$" as the key.
- * Param set should work together with param_filter to determine the value that
- * the caller sees at the end.
+ * The PARAM_LIMIT code is for functions like this:
  *
- * This is for functions like this:
- *
- * int foo(int a)
+ * int frob(int a)
  * {
  *        if (a >= 0 && a < 10) {
  *                 a = 42;
@@ -35,40 +27,51 @@
  *        return 0;
  * }
  *
- * If we pass in 5, it returns 1.
+ * If frob() returns 1, then we know that a must have been in the 0-9 range
+ * at the start.  Or if we return 0 then a is outside that range.  So if the
+ * caller passes a 5 then the function must return 1.
  *
- * It's a bit complicated because we can't just consider the final value, we
- * have to always consider the passed in value.
+ * The "a" variable gets set to 42 in the middle, but we don't care about
+ * that, we only care about the passed in value.
  *
+ * Originally, this code looked at the starting stree and the final stree and
+ * asked was this variable set part way through?  (Over simplification).  This
+ * approach works, but the problem is that it produces too many results.  For
+ * example, if we dereference a pointer then we know that it must be non-NULL.
+ * So that was recorded as a PARAM_LIMIT.  Another thing is that if we have
+ * two callers and we do "if (caller_one) return true; else return false;".  The
+ * if (caller_one) condition might have implications so maybe it sets twenty
+ * different states instead of just the one.
+ *
+ * These extra PARAM_LIMITs are still correct, but the problem is that they
+ * take up space in the database.  Perhaps more importantly parsing PARAM_LIMITS
+ * is very expensive because we have to figure out the implications for that.
+ * (2023: idea: Parse all the PARAM_LIMITS at once instead of sequentially).
+ * The PARAM_LIMITS create a lot of sm_state history and use a lot of resources.
+ *
+ * So we need a more deliberate approach.
  */
 
-#include "scope.h"
 #include "smatch.h"
 #include "smatch_extra.h"
 #include "smatch_slist.h"
 
 static int my_id;
 
-static struct stree *start_states;
-static struct stree_stack *saved_stack;
+static struct stree *limit_states;
+static struct stree *ignore_states;
 
-static void save_start_states(struct statement *stmt)
-{
-	start_states = get_all_states_stree(SMATCH_EXTRA);
-}
-
-static void free_start_states(void)
-{
-	free_stree(&start_states);
-}
+int __no_limits;
 
 static struct smatch_state *unmatched_state(struct sm_state *sm)
 {
 	struct smatch_state *state;
 
-	state = __get_state(SMATCH_EXTRA, sm->name, sm->sym);
-	if (state)
-		return state;
+	if (!param_was_set_var_sym(sm->name, sm->sym)) {
+		state = __get_state(SMATCH_EXTRA, sm->name, sm->sym);
+		if (state)
+			return state;
+	}
 	return alloc_estate_whole(estate_type(sm->state));
 }
 
@@ -84,20 +87,6 @@ struct smatch_state *get_orig_estate(const char *name, struct symbol *sym)
 	if (state)
 		return state;
 	return alloc_estate_rl(alloc_whole_rl(get_real_base_type(sym)));
-}
-
-struct smatch_state *get_orig_estate_type(const char *name, struct symbol *sym, struct symbol *type)
-{
-	struct smatch_state *state;
-
-	state = get_state(my_id, name, sym);
-	if (state)
-		return state;
-
-	state = get_state(SMATCH_EXTRA, name, sym);
-	if (state)
-		return state;
-	return alloc_estate_rl(alloc_whole_rl(type));
 }
 
 static struct range_list *generify_mtag_range(struct smatch_state *state)
@@ -130,81 +119,162 @@ static struct range_list *generify_mtag_range(struct smatch_state *state)
 	return estate_rl(state);
 }
 
+static bool sm_was_set(struct sm_state *sm)
+{
+	struct relation *rel;
+
+	if (!estate_related(sm->state))
+		return param_was_set_var_sym(sm->name, sm->sym);
+
+	FOR_EACH_PTR(estate_related(sm->state), rel) {
+		if (param_was_set_var_sym(sm->name, sm->sym))
+			return true;
+	} END_FOR_EACH_PTR(rel);
+	return false;
+}
+
+static bool is_boring_pointer_info(const char *name, struct range_list *rl)
+{
+	char *rl_str;
+
+	/* addresses are always boring */
+	if (name[0] == '&')
+		return true;
+
+	/*
+	 * One way that PARAM_LIMIT can be set is by dereferencing pointers.
+	 * It's not necessarily very valuable to track that a pointer must
+	 * be non-NULL.  It's even less valuable to know that it's either NULL
+	 * or valid.  It can be nice to know that it's not an error pointer, I
+	 * suppose.  But let's not pass that data back to all the callers
+	 * forever.
+	 *
+	 */
+
+	if (strlen(name) < 40)
+		return false;
+
+	rl_str = show_rl(rl);
+	if (!rl_str)
+		return false;
+
+	if (strcmp(rl_str, "4096-ptr_max") == 0 ||
+	    strcmp(rl_str, "0,4096-ptr_max") == 0)
+		return true;
+
+	return false;
+}
+
 static void print_return_value_param(int return_id, char *return_ranges, struct expression *expr)
 {
 	struct smatch_state *state, *old;
 	struct sm_state *tmp;
 	struct range_list *rl;
-	const char *param_name;
+	const char *orig_name, *key;
+	struct symbol *sym;
 	int param;
 
 	FOR_EACH_MY_SM(SMATCH_EXTRA, __get_cur_stree(), tmp) {
-		param = get_param_num_from_sym(tmp->sym);
+		if (tmp->name[0] == '&')
+			continue;
+
+		if (!get_state_stree(limit_states, my_id, tmp->name, tmp->sym) &&
+		    get_state_stree(ignore_states, my_id, tmp->name, tmp->sym))
+			continue;
+
+		orig_name = get_param_var_sym_var_sym(tmp->name, tmp->sym, NULL, &sym);
+		if (!orig_name || !sym)
+			continue;
+		param = get_param_key_from_var_sym(orig_name, sym, NULL, &key);
 		if (param < 0)
 			continue;
 
-		param_name = get_param_name(tmp);
-		if (!param_name)
-			continue;
-
-		state = __get_state(my_id, tmp->name, tmp->sym);
-		if (!state)
+		state = __get_state(my_id, orig_name, sym);
+		if (!state) {
+			if (sm_was_set(tmp))
+				continue;
 			state = tmp->state;
+		}
 
 		if (estate_is_whole(state) || estate_is_empty(state))
 			continue;
-		old = get_state_stree(start_states, SMATCH_EXTRA, tmp->name, tmp->sym);
+		old = get_state_stree(get_start_states(), SMATCH_EXTRA, tmp->name, tmp->sym);
 		if (old && rl_equiv(estate_rl(old), estate_rl(state)))
 			continue;
 
-		if (is_ignored_kernel_data(param_name))
+		if (is_ignored_kernel_data(key))
 			continue;
 
 		rl = generify_mtag_range(state);
+		if (is_boring_pointer_info(key, rl))
+			continue;
+
 		sql_insert_return_states(return_id, return_ranges, PARAM_LIMIT,
-					 param, param_name, show_rl(rl));
+					 param, key, show_rl(rl));
 	} END_FOR_EACH_SM(tmp);
 }
 
 static void extra_mod_hook(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
 {
-	struct smatch_state *orig_vals;
-	int param;
+	struct smatch_state *orig;
+	struct symbol *param_sym;
+	char *param_name;
 
-	param = get_param_num_from_sym(sym);
-	if (param < 0)
+	if (expr && expr->smatch_flags & Fake)
 		return;
 
-	orig_vals = get_orig_estate_type(name, sym, estate_type(state));
-	set_state(my_id, name, sym, orig_vals);
+	param_name = get_param_var_sym_var_sym(name, sym, NULL, &param_sym);
+	if (!param_name || !param_sym)
+		goto free;
+	if (get_param_num_from_sym(param_sym) < 0)
+		goto free;
+
+	/* already saved */
+	if (get_state(my_id, param_name, param_sym))
+		goto free;
+
+	if (__in_buf_clear)
+		return;
+
+	orig = get_state(SMATCH_EXTRA, param_name, param_sym);
+	if (!orig)
+		orig = alloc_estate_whole(estate_type(state));
+
+	set_state(my_id, param_name, param_sym, orig);
+free:
+	free_string(param_name);
 }
 
-static void match_save_states(struct expression *expr)
+static void extra_nomod_hook(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
 {
-	push_stree(&saved_stack, start_states);
-	start_states = NULL;
+	if (__no_limits) {
+		set_state_stree(&ignore_states, my_id, name, sym, &undefined);
+		return;
+	}
+	set_state_stree(&limit_states, my_id, name, sym, &undefined);
 }
 
-static void match_restore_states(struct expression *expr)
+static void match_end_func(struct symbol *sym)
 {
-	free_stree(&start_states);
-	start_states = pop_stree(&saved_stack);
+	free_stree(&ignore_states);
+	free_stree(&limit_states);
 }
 
 void register_param_limit(int id)
 {
 	my_id = id;
 
+	add_function_data((unsigned long *)&limit_states);
+	add_function_data((unsigned long *)&ignore_states);
+	add_hook(&match_end_func, END_FUNC_HOOK);
+
+	db_ignore_states(my_id);
 	set_dynamic_states(my_id);
-	add_hook(&save_start_states, AFTER_DEF_HOOK);
-	add_hook(&free_start_states, AFTER_FUNC_HOOK);
 
 	add_extra_mod_hook(&extra_mod_hook);
+	add_extra_nomod_hook(&extra_nomod_hook);
 	add_unmatched_state_hook(my_id, &unmatched_state);
 	add_merge_hook(my_id, &merge_estates);
-
-	add_hook(&match_save_states, INLINE_FN_START);
-	add_hook(&match_restore_states, INLINE_FN_END);
 
 	add_split_return_callback(&print_return_value_param);
 }

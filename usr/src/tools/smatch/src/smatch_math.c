@@ -15,6 +15,9 @@
  * along with this program; if not, see http://www.gnu.org/copyleft/gpl.txt
  */
 
+#define _GNU_SOURCE
+#include <string.h>
+
 #include "symbol.h"
 #include "smatch.h"
 #include "smatch_slist.h"
@@ -183,12 +186,9 @@ static bool handle_minus_preop(struct expression *expr, int implied, int *recurs
 	struct range_list *rl;
 	struct range_list *ret = NULL;
 	struct symbol *type;
-	sval_t neg_one = { 0 };
-	sval_t zero = { 0 };
+	sval_t neg_one = { .value = -1 };
+	sval_t zero = { .value = 0 };
 	sval_t sval = {};
-
-	neg_one.value = -1;
-	zero.value = 0;
 
 	if (!get_rl_sval(expr->unop, implied, recurse_cnt, &rl, &sval))
 		return false;
@@ -269,19 +269,8 @@ static bool handle_preop_rl(struct expression *expr, int implied, int *recurse_c
 	}
 }
 
-static bool handle_divide_rl(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res)
+static bool handle_divide_rl(struct range_list *left_rl, struct range_list *right_rl, int implied, int *recurse_cnt, struct range_list **res)
 {
-	struct range_list *left_rl = NULL;
-	struct range_list *right_rl = NULL;
-	struct symbol *type;
-
-	type = get_type(expr);
-
-	get_rl_internal(expr->left, implied, recurse_cnt, &left_rl);
-	left_rl = cast_rl(type, left_rl);
-	get_rl_internal(expr->right, implied, recurse_cnt, &right_rl);
-	right_rl = cast_rl(type, right_rl);
-
 	if (!left_rl || !right_rl)
 		return false;
 
@@ -335,6 +324,69 @@ static int handle_offset_subtraction(struct expression *expr)
 	return left_offset - right_offset;
 }
 
+static bool handle_container_of(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res)
+{
+	struct expression *left, *right;
+	struct range_list *left_orig = NULL;
+	struct symbol *type;
+	sval_t left_sval, right_sval;
+
+	/*
+	 * I'm not 100% if ABSOLUTE should be handled like this but I think if
+	 * IMPLIED overrules ABSOLUTE so it's a moot point.
+	 *
+	 * What this function does is if we have:
+	 * 	p = container_of(foo, struct my_struct, member);
+	 * Then if the offset is non-zero we can assume that p is a valid
+	 * pointer.  Mathematically, that's not necessarily true, but in
+	 * pratical terms if p isn't valid then we're already in deep trouble
+	 * to the point where printing more warnings now won't help.
+	 *
+	 * There are places were the author knows that container_of() is a
+	 * no-op so the code will do a NULL test on the result.  (This is
+	 * obviously horrible code).  So to handle code like this if the offset
+	 * is zero then the result can be NULL.
+	 */
+	if (implied != RL_IMPLIED &&
+	    implied != RL_ABSOLUTE &&
+	    implied != RL_REAL_ABSOLUTE)
+		return false;
+
+	type = get_type(expr);
+	if (!type || type->type != SYM_PTR)
+		return false;
+	type = get_real_base_type(type);
+	if (!type || (type_bits(type) != 8 && (type != &void_ctype)))
+		return false;
+
+	left = strip_expr(expr->left);
+	right = strip_expr(expr->right);
+
+	if (right->type != EXPR_OFFSETOF)
+		return false;
+
+	if (!get_value(right, &right_sval))
+		return false;
+	/* Handle offset == 0 in the caller if possible. */
+	if (right_sval.value == 0)
+		return false;
+
+	get_rl_internal(left, implied, recurse_cnt, &left_orig);
+	/*
+	 * I think known binops are already handled at this point so this
+	 * should be impossible.  But handle it in the caller either way.
+	 */
+	if (rl_to_sval(left_orig, &left_sval))
+		return false;
+
+	// TODO: it might be safer to say that known possible NULL or error
+	// error pointers return false.
+
+	*res = clone_rl(valid_ptr_rl);
+
+	return true;
+}
+
 static bool max_is_unknown_max(struct range_list *rl)
 {
 	/*
@@ -356,6 +408,41 @@ static bool max_is_unknown_max(struct range_list *rl)
 	return sval_is_max(rl_max(rl));
 }
 
+static bool handle_add_rl(struct expression *expr,
+			  struct range_list *left_rl, struct range_list *right_rl,
+			  int implied, int *recurse_cnt, struct range_list **res)
+{
+	struct range_list *valid;
+	struct symbol *type;
+	sval_t min, max;
+
+	type = get_type(expr);
+
+	if (!left_rl)
+		return false;
+
+	if (type_is_ptr(type) && !var_user_rl(expr->right)) {
+		valid = rl_intersection(left_rl, valid_ptr_rl);
+		if (valid && rl_equiv(valid, left_rl))
+			return valid_ptr_rl;
+	}
+
+	if (!right_rl)
+		return false;
+
+	if (sval_binop_overflows(rl_min(left_rl), expr->op, rl_min(right_rl)) ||
+	    sval_binop_overflows(rl_max(left_rl), expr->op, rl_max(right_rl))) {
+		min = sval_type_min(type);
+		max = sval_type_max(type);
+	} else {
+		min = sval_binop(rl_min(left_rl), expr->op, rl_min(right_rl));
+		max = sval_binop(rl_max(left_rl), expr->op, rl_max(right_rl));
+	}
+
+	*res = alloc_rl(min, max);
+	return true;
+}
+
 static bool handle_subtract_rl(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res)
 {
 	struct symbol *type;
@@ -375,6 +462,9 @@ static bool handle_subtract_rl(struct expression *expr, int implied, int *recurs
 		*res = alloc_rl(tmp, tmp);
 		return true;
 	}
+
+	if (handle_container_of(expr, implied, recurse_cnt, res))
+		return true;
 
 	comparison = get_comparison(expr->left, expr->right);
 
@@ -650,8 +740,6 @@ static bool handle_binop_rl_helper(struct expression *expr, int implied, int *re
 	left_rl = cast_rl(type, left_rl);
 	get_rl_internal(expr->right, implied, recurse_cnt, &right_rl);
 	right_rl = cast_rl(type, right_rl);
-	if (!left_rl && !right_rl)
-		return false;
 
 	rl = handle_implied_binop(left_rl, expr->op, right_rl);
 	if (rl) {
@@ -671,22 +759,25 @@ static bool handle_binop_rl_helper(struct expression *expr, int implied, int *re
 		return handle_right_shift(expr, implied, recurse_cnt, res);
 	case SPECIAL_LEFTSHIFT:
 		return handle_left_shift(expr, implied, recurse_cnt, res);
+	case '+':
+		return handle_add_rl(expr, left_rl, right_rl, implied, recurse_cnt, res);
 	case '-':
 		return handle_subtract_rl(expr, implied, recurse_cnt, res);
 	case '/':
-		return handle_divide_rl(expr, implied, recurse_cnt, res);
+		return handle_divide_rl(left_rl, right_rl, implied, recurse_cnt, res);
 	}
 
 	if (!left_rl || !right_rl)
 		return false;
 
-	if (sval_binop_overflows(rl_min(left_rl), expr->op, rl_min(right_rl)))
-		return false;
-	if (sval_binop_overflows(rl_max(left_rl), expr->op, rl_max(right_rl)))
-		return false;
-
-	min = sval_binop(rl_min(left_rl), expr->op, rl_min(right_rl));
-	max = sval_binop(rl_max(left_rl), expr->op, rl_max(right_rl));
+	if (sval_binop_overflows(rl_min(left_rl), expr->op, rl_min(right_rl)) ||
+	    sval_binop_overflows(rl_max(left_rl), expr->op, rl_max(right_rl))) {
+		min = sval_type_min(type);
+		max = sval_type_max(type);
+	} else {
+		min = sval_binop(rl_min(left_rl), expr->op, rl_min(right_rl));
+		max = sval_binop(rl_max(left_rl), expr->op, rl_max(right_rl));
+	}
 
 	*res = alloc_rl(min, max);
 	return true;
@@ -699,7 +790,14 @@ static bool handle_binop_rl(struct expression *expr, int implied, int *recurse_c
 	struct range_list *rl;
 	sval_t val;
 
+	if (expr->sval) {
+		*res_sval = *expr->sval;
+		return true;
+	}
+
 	if (handle_known_binop(expr, &val)) {
+		expr->sval = malloc(sizeof(sval_t));
+		*expr->sval = val;
 		*res_sval = val;
 		return true;
 	}
@@ -764,6 +862,19 @@ static bool handle_comparison_rl(struct expression *expr, int implied, int *recu
 
 		left = get_real_base_type(expr->left->symbol);
 		right = get_real_base_type(expr->right->symbol);
+
+		while (type_is_ptr(left) || type_is_ptr(right)) {
+
+			if ((type_is_ptr(left) && !type_is_ptr(right)) ||
+			    (!type_is_ptr(left) && type_is_ptr(right))) {
+				*res_sval = zero;
+				return true;
+			}
+
+			left = get_real_base_type(left);
+			right = get_real_base_type(right);
+		}
+
 		if (type_bits(left) == type_bits(right) &&
 		    type_positive_bits(left) == type_positive_bits(right))
 			*res_sval = one;
@@ -831,11 +942,12 @@ static bool handle_logical_rl(struct expression *expr, int implied, int *recurse
 			goto zero;
 		break;
 	case SPECIAL_LOGICAL_AND:
-		if (left_known && right_known) {
-			if (left.value && right.value)
-				goto one;
+		if (left_known && left.value == 0)
 			goto zero;
-		}
+		if (right_known && right.value == 0)
+			goto zero;
+		if (left_known && right_known)
+			goto one;
 		break;
 	default:
 		return false;
@@ -860,7 +972,6 @@ static bool handle_conditional_rl(struct expression *expr, int implied, int *rec
 	struct expression *cond_true;
 	struct range_list *true_rl, *false_rl;
 	struct symbol *type;
-	int final_pass_orig = final_pass;
 
 	cond_true = expr->cond_true;
 	if (!cond_true)
@@ -885,8 +996,7 @@ static bool handle_conditional_rl(struct expression *expr, int implied, int *rec
 
 	type = get_type(expr);
 
-	__push_fake_cur_stree();
-	final_pass = 0;
+	init_fake_env();
 	__split_whole_condition(expr->conditional);
 	true_rl = NULL;
 	get_rl_internal(cond_true, implied, recurse_cnt, &true_rl);
@@ -895,8 +1005,7 @@ static bool handle_conditional_rl(struct expression *expr, int implied, int *rec
 	false_rl = NULL;
 	get_rl_internal(expr->cond_false, implied, recurse_cnt, &false_rl);
 	__merge_true_states();
-	__free_fake_cur_stree();
-	final_pass = final_pass_orig;
+	end_fake_env();
 
 	if (!true_rl || !false_rl)
 		return false;
@@ -977,10 +1086,16 @@ struct range_list *var_to_absolute_rl(struct expression *expr)
 			return rl;
 		return alloc_whole_rl(get_type(expr));
 	}
-	/* err on the side of saying things are possible */
-	if (!estate_rl(state))
-		return alloc_whole_rl(get_type(expr));
 	return clone_rl(estate_rl(state));
+}
+
+static bool is_param_sym(struct expression *expr)
+{
+	if (expr->type != EXPR_SYMBOL)
+		return false;
+	if (get_param_num(expr) < 0)
+		return false;
+	return true;
 }
 
 static bool handle_variable(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *res_sval)
@@ -1016,7 +1131,7 @@ static bool handle_variable(struct expression *expr, int implied, int *recurse_c
 
 	type = get_type(expr);
 	if (type &&
-	    (type->type == SYM_ARRAY ||
+	    ((type->type == SYM_ARRAY && !is_param_sym(expr)) ||
 	     type->type == SYM_FN))
 		return handle_address(expr, implied, recurse_cnt, res, res_sval);
 
@@ -1032,9 +1147,11 @@ static bool handle_variable(struct expression *expr, int implied, int *recurse_c
 				return false;
 			if (get_mtag_rl(expr, res))
 				return true;
-			if (get_db_type_rl(expr, res))
-				return true;
 			if (is_array(expr) && get_array_rl(expr, res))
+				return true;
+			if (implied == RL_IMPLIED)
+				return false;
+			if (get_db_type_rl(expr, res))
 				return true;
 			return false;
 		}
@@ -1186,14 +1303,38 @@ static bool handle_strlen(struct expression *expr, int implied, int *recurse_cnt
 
 static bool handle_builtin_constant_p(struct expression *expr, int implied, int *recurse_cnt, sval_t *res_sval)
 {
-	struct expression *arg;
+	struct expression *arg, *assigned;
 	struct range_list *rl;
+	static bool nested;
 
 	arg = get_argument_from_call_expr(expr->args, 0);
-	if (get_rl_internal(arg, RL_EXACT, recurse_cnt, &rl))
+	/*
+	 * Originally, Smatch used to pretend there were no constants but then
+	 * it turned out that we need to know at build time if some paths are
+	 * impossible or not to avoid crazy false positives.
+	 *
+	 * But then someone added a BUILD_BUG_ON(!__builtin_constant_p(_mask)).
+	 * So now we try to figure out if GCC can determine the value at
+	 * build time.
+	 */
+	if (get_rl_internal(arg, RL_EXACT, recurse_cnt, &rl)) {
+		*res_sval = one;
+		return true;
+	}
+
+	if (nested) {
+		*res_sval = zero;
+		return true;
+	}
+
+	assigned = get_assigned_expr(arg);
+	nested = true;
+	if (assigned && get_rl_internal(assigned, RL_EXACT, recurse_cnt, &rl))
 		*res_sval = one;
 	else
 		*res_sval = zero;
+	nested = false;
+
 	return true;
 }
 
@@ -1212,6 +1353,43 @@ static bool handle__builtin_choose_expr(struct expression *expr, int implied, in
 		return get_rl_sval(expr1, implied, recurse_cnt, res, res_sval);
 	else
 		return get_rl_sval(expr2, implied, recurse_cnt, res, res_sval);
+}
+
+int smatch_fls(unsigned long long value)
+{
+	int i;
+
+	for (i = 63; i >= 0; i--) {
+		if (value & 1ULL << i)
+			return i + 1;
+	}
+	return 0;
+}
+
+static bool handle_ffs(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *res_sval)
+{
+	struct expression *arg;
+	struct bit_info *bits;
+	sval_t high = { .type = &int_ctype };
+	sval_t low = { .type = &int_ctype };
+
+	arg = get_argument_from_call_expr(expr->args, 0);
+
+	bits = get_bit_info(arg);
+	if (bits->possible == 0) {
+		high.value = 0;
+		*res_sval = high;
+		return true;
+	}
+
+	high.value = ffsll(bits->set);
+	if (!high.value)
+		high.value = smatch_fls(bits->possible);
+
+	low.value = ffsll(bits->possible);
+
+	*res = alloc_rl(low, high);
+	return false;
 }
 
 static bool handle_call_rl(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *res_sval)
@@ -1234,7 +1412,13 @@ static bool handle_call_rl(struct expression *expr, int implied, int *recurse_cn
 		return get_rl_sval(arg, implied, recurse_cnt, res, res_sval);
 	}
 
-	if (sym_name_is("strlen", expr->fn))
+	if (sym_name_is("__builtin_ffs", expr->fn) ||
+	    sym_name_is("__builtin_ffsl", expr->fn) ||
+	    sym_name_is("__builtin_ffsll", expr->fn) ||
+	    sym_name_is("__ffs", expr->fn))
+		return handle_ffs(expr, implied, recurse_cnt, res, res_sval);
+
+	if (is_strlen(expr))
 		return handle_strlen(expr, implied, recurse_cnt, res, res_sval);
 
 	if (implied == RL_EXACT || implied == RL_HARD)
@@ -1287,107 +1471,59 @@ static bool handle_cast(struct expression *expr, int implied, int *recurse_cnt, 
 	return false;
 }
 
-static bool get_offset_from_down(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *res_sval)
-{
-	struct expression *index;
-	struct symbol *type = expr->in;
-	struct range_list *rl;
-	struct symbol *field;
-	int offset = 0;
-	sval_t sval = { .type = ssize_t_ctype };
-	sval_t tmp_sval = {};
-
-	/*
-	 * FIXME:  I don't really know what I'm doing here.  I wish that I
-	 * could just get rid of the __builtin_offset() function and use:
-	 * "&((struct bpf_prog *)NULL)->insns[fprog->len]" instead...
-	 * Anyway, I have done the minimum ammount of work to get that
-	 * expression to work.
-	 *
-	 */
-
-	if (expr->op != '.' || !expr->down ||
-	    expr->down->type != EXPR_OFFSETOF ||
-	    expr->down->op != '[' ||
-	    !expr->down->index)
-		return false;
-
-	index = expr->down->index;
-
-	examine_symbol_type(type);
-	type = get_real_base_type(type);
-	if (!type)
-		return false;
-	field = find_identifier(expr->ident, type->symbol_list, &offset);
-	if (!field)
-		return false;
-
-	type = get_real_base_type(field);
-	if (!type || type->type != SYM_ARRAY)
-		return false;
-	type = get_real_base_type(type);
-
-	if (get_implied_value_internal(index, recurse_cnt, &sval)) {
-		res_sval->type = ssize_t_ctype;
-		res_sval->value = offset + sval.value * type_bytes(type);
-		return true;
-	}
-
-	if (!get_rl_sval(index, implied, recurse_cnt, &rl, &tmp_sval))
-		return false;
-
-	/*
-	 * I'm not sure why get_rl_sval() would return an sval when
-	 * get_implied_value_internal() failed but it does when I
-	 * parse drivers/net/ethernet/mellanox/mlx5/core/en/monitor_stats.c
-	 *
-	 */
-	if (tmp_sval.type) {
-		res_sval->type = ssize_t_ctype;
-		res_sval->value = offset + sval.value * type_bytes(type);
-		return true;
-	}
-
-	sval.value = type_bytes(type);
-	rl = rl_binop(rl, '*', alloc_rl(sval, sval));
-	sval.value = offset;
-	*res = rl_binop(rl, '+', alloc_rl(sval, sval));
-	return true;
-}
-
-static bool get_offset_from_in(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *res_sval)
-{
-	struct symbol *type = get_real_base_type(expr->in);
-	struct symbol *field;
-	int offset = 0;
-
-	if (expr->op != '.' || !type || !expr->ident)
-		return false;
-
-	field = find_identifier(expr->ident, type->symbol_list, &offset);
-	if (!field)
-		return false;
-
-	res_sval->type = size_t_ctype;
-	res_sval->value = offset;
-
-	return true;
-}
-
 static bool handle_offsetof_rl(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *res_sval)
 {
-	if (get_offset_from_down(expr, implied, recurse_cnt, res, res_sval))
-		return true;
+	struct expression *down = expr->down;
+	struct range_list *offset_rl = NULL, *down_rl = NULL;
+	sval_t sval = { .type = ssize_t_ctype };
+	struct symbol *type;
 
-	if (get_offset_from_in(expr, implied, recurse_cnt, res, res_sval))
-		return true;
+	type = get_real_base_type(expr->in);
+	if (!type)
+		return false;
 
-	evaluate_expression(expr);
-	if (expr->type == EXPR_VALUE) {
-		*res_sval = sval_from_val(expr, expr->value);
-		return true;
+	if (expr->op == '.') {
+		struct symbol *field;
+		int offset = 0;
+
+		field = find_identifier(expr->ident, type->symbol_list, &offset);
+		if (!field)
+			return false;
+
+		sval.value = offset;
+		offset_rl = alloc_rl(sval, sval);
+		type = field;
+	} else {
+		if (!expr->index) {
+			sval.value = 0;
+			offset_rl = alloc_rl(sval, sval);
+		} else {
+			struct range_list *idx_rl = NULL, *bytes_rl;
+
+			if (get_rl_internal(expr->index, implied, recurse_cnt, &idx_rl))
+				return false;
+
+			sval.value = type_bytes(type);
+			if (sval.value <= 0)
+				return false;
+			bytes_rl = alloc_rl(sval, sval);
+
+			offset_rl = rl_binop(idx_rl, '*', bytes_rl);
+		}
 	}
-	return false;
+
+	if (down) {
+		if (down->type == EXPR_OFFSETOF && !down->in)
+			down->in = type;
+		if (!get_rl_internal(down, implied, recurse_cnt, &down_rl))
+			return false;
+
+		*res = rl_binop(offset_rl, '+', down_rl);
+	} else {
+		*res = offset_rl;
+	}
+
+	return true;
 }
 
 static bool get_rl_sval(struct expression *expr, int implied, int *recurse_cnt, struct range_list **res, sval_t *sval_res)
@@ -1483,7 +1619,8 @@ out_cast:
 		*res = rl;
 		return true;
 	}
-	if (type && (implied == RL_ABSOLUTE || implied == RL_REAL_ABSOLUTE)) {
+	if (type && (implied == RL_ABSOLUTE || implied == RL_REAL_ABSOLUTE) &&
+	    !custom_handle_variable) {
 		*res = alloc_whole_rl(type);
 		return true;
 	}
@@ -1512,6 +1649,13 @@ static bool get_rl_helper(struct expression *expr, int implied, struct range_lis
 	int recurse_cnt = 0;
 
 	if (get_value(expr, &sval)) {
+		if (implied == RL_HARD) {
+			if (sval.uvalue == INT_MAX ||
+			    sval.uvalue == UINT_MAX ||
+			    sval.uvalue == LONG_MAX ||
+			    sval.uvalue == ULONG_MAX)
+				return false;
+		}
 		*res = alloc_rl(sval, sval);
 		return true;
 	}
@@ -1526,7 +1670,7 @@ static bool get_rl_helper(struct expression *expr, int implied, struct range_lis
 	return true;
 }
 
-struct {
+static struct {
 	struct expression *expr;
 	sval_t sval;
 } cached_results[24];
@@ -1687,7 +1831,7 @@ static int get_absolute_rl_internal(struct expression *expr, struct range_list *
 int get_absolute_rl(struct expression *expr, struct range_list **rl)
 {
 	*rl = NULL;
-	 get_rl_helper(expr, RL_ABSOLUTE, rl);
+	get_rl_helper(expr, RL_ABSOLUTE, rl);
 	if (!*rl)
 		*rl = alloc_whole_rl(get_type(expr));
 	return 1;
@@ -1706,12 +1850,14 @@ int custom_get_absolute_rl(struct expression *expr,
 			   struct range_list *(*fn)(struct expression *expr),
 			   struct range_list **rl)
 {
+	struct range_list *(*orig_fn)(struct expression *expr);
 	int ret;
 
 	*rl = NULL;
+	orig_fn = custom_handle_variable;
 	custom_handle_variable = fn;
 	ret = get_rl_helper(expr, RL_REAL_ABSOLUTE, rl);
-	custom_handle_variable = NULL;
+	custom_handle_variable = orig_fn;
 	return ret;
 }
 

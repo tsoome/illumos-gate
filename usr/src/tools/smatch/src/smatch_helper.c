@@ -28,6 +28,8 @@
 
 #define VAR_LEN 512
 
+static struct expression *strip_expr_helper(struct expression *expr, bool set_parent, bool cast, int *nest);
+
 char *alloc_string(const char *str)
 {
 	char *tmp;
@@ -120,9 +122,30 @@ struct smatch_state *alloc_state_expr(struct expression *expr)
 	return state;
 }
 
-void append(char *dest, const char *data, int buff_len)
+static int FORMAT_ATTR(4) append(char *dest, int off, int len, const char *fmt, ...)
 {
-	strncat(dest, data, buff_len - strlen(dest) - 1);
+	int n;
+	va_list args;
+
+	if (len <= 0 || off < 0 || off >= len - 1)
+		return 0;
+
+	va_start(args, fmt);
+	n = vsnprintf(dest + off, len - off, fmt, args);
+	va_end(args);
+
+	if (n > len - off - 1)
+		return len - off - 1;
+	return n;
+}
+
+struct expression *get_assigned_call(struct expression *expr)
+{
+	while (expr && expr->type == EXPR_ASSIGNMENT)
+		expr = strip_expr(expr->right);
+	if (!expr || expr->type != EXPR_CALL)
+		return NULL;
+	return expr;
 }
 
 /*
@@ -172,209 +195,221 @@ struct expression *get_array_expr(struct expression *expr)
 	return NULL;
 }
 
-static void __get_variable_from_expr(struct symbol **sym_ptr, char *buf,
-				     struct expression *expr, int len,
+static struct expression *strip_star_address(struct expression *expr)
+{
+	struct expression *unop;
+
+	if (expr->type != EXPR_PREOP || expr->op != '*')
+		return expr;
+	unop = strip_parens(expr->unop);
+	if (unop->type != EXPR_PREOP || unop->op != '&')
+		return expr;
+
+	return unop->unop;
+}
+
+static struct expression *strip_parens_symbol(struct expression *expr)
+{
+	struct expression *unop;
+
+	if (expr->type != EXPR_PREOP || expr->op != '(')
+		return expr;
+	/*
+	 * This should probably be strip_parens() but expr_to_str() doesn't
+	 * print casts so we may as well strip those too.  In other words,
+	 * instead of fixing the code to print the cast, it's easier to just
+	 * write even more code that relies on the bug.  ;)
+	 */
+	unop = strip_expr(expr->unop);
+	if (unop->type != EXPR_SYMBOL)
+		return expr;
+	return unop;
+}
+
+static int __get_variable_from_expr(struct symbol **sym_ptr, char *buf,
+				     struct expression *expr, int off, int len,
 				     int *complicated)
 {
+	int orig_off = off;
+
 	if (!expr) {
 		/* can't happen on valid code */
 		*complicated = 1;
-		return;
+		return 0;
 	}
+
+	expr = strip_star_address(expr);
+	expr = strip_parens_symbol(expr);
 
 	switch (expr->type) {
 	case EXPR_DEREF: {
 		struct expression *deref;
 		int op;
 
+		op = expr->op;
 		deref = expr->deref;
-		op = deref->op;
-		if (deref->type == EXPR_PREOP && op == '*') {
-			struct expression *unop = strip_expr(deref->unop);
 
-			if (unop->type == EXPR_PREOP && unop->op == '&') {
-				deref = unop->unop;
-				op = '.';
-			} else {
-				if (!is_pointer(deref) && !is_pointer(deref->unop))
-					op = '.';
-				deref = deref->unop;
-			}
+		/* this is pure guess work and nonsense programming */
+		if (deref->type == EXPR_PREOP && deref->op == '*') {
+			op = '*';
+			deref = deref->unop;
 		}
 
-		__get_variable_from_expr(sym_ptr, buf, deref, len, complicated);
+		off += __get_variable_from_expr(sym_ptr, buf, deref, off, len, complicated);
 
 		if (op == '*')
-			append(buf, "->", len);
+			off += append(buf, off, len, "->");
 		else
-			append(buf, ".", len);
+			off += append(buf, off, len, ".");
 
 		if (expr->member)
-			append(buf, expr->member->name, len);
+			off += append(buf, off, len, "%s", expr->member->name);
 		else
-			append(buf, "unknown_member", len);
-
-		return;
+			off += append(buf, off, len, "unknown_member");
+		return off - orig_off;
 	}
 	case EXPR_SYMBOL:
 		if (expr->symbol_name)
-			append(buf, expr->symbol_name->name, len);
+			off += append(buf, off, len, "%s", expr->symbol_name->name);
 		if (sym_ptr) {
 			if (*sym_ptr)
 				*complicated = 1;
 			*sym_ptr = expr->symbol;
 		}
-		return;
+		return off - orig_off;
 	case EXPR_PREOP: {
 		const char *tmp;
 
 		if (get_expression_statement(expr)) {
 			*complicated = 2;
-			return;
+			return 0;
 		}
-
-		if (expr->op == '(') {
-			if (expr->unop->type != EXPR_SYMBOL)
-				append(buf, "(", len);
-		} else if (expr->op != '*' || !get_array_expr(expr->unop)) {
-			tmp = show_special(expr->op);
-			append(buf, tmp, len);
-		}
-		__get_variable_from_expr(sym_ptr, buf, expr->unop,
-						 len, complicated);
-
-		if (expr->op == '(' && expr->unop->type != EXPR_SYMBOL)
-			append(buf, ")", len);
-
 		if (expr->op == SPECIAL_DECREMENT ||
 		    expr->op == SPECIAL_INCREMENT)
 			*complicated = 1;
 
-		return;
+		if (expr->op == '*' && get_array_expr(expr->unop))
+			tmp = "";
+		else
+			tmp = show_special(expr->op);
+
+		off += append(buf, off, len, "%s", tmp);
+		off += __get_variable_from_expr(sym_ptr, buf, expr->unop, off,
+						len, complicated);
+		if (expr->op == '(')
+			off += append(buf, off, len, ")");
+
+		return off - orig_off;
 	}
 	case EXPR_POSTOP: {
-		const char *tmp;
-
-		__get_variable_from_expr(sym_ptr, buf, expr->unop,
-						 len, complicated);
-		tmp = show_special(expr->op);
-		append(buf, tmp, len);
+		off += __get_variable_from_expr(sym_ptr, buf, expr->unop, off, len,
+						complicated);
+		off += append(buf, off, len, "%s", show_special(expr->op));
 
 		if (expr->op == SPECIAL_DECREMENT || expr->op == SPECIAL_INCREMENT)
 			*complicated = 1;
-		return;
+		return off - orig_off;
 	}
 	case EXPR_ASSIGNMENT:
 	case EXPR_COMPARE:
 	case EXPR_LOGICAL:
-	case EXPR_BINOP: {
-		char tmp[10];
+	case EXPR_BINOP:
+	case EXPR_COMMA: {
 		struct expression *array_expr;
 
 		*complicated = 1;
 		array_expr = get_array_expr(expr);
 		if (array_expr) {
-			__get_variable_from_expr(sym_ptr, buf, array_expr, len, complicated);
-			append(buf, "[", len);
+			off += __get_variable_from_expr(sym_ptr, buf, array_expr, off, len, complicated);
+			off += append(buf, off, len, "[");
 		} else {
-			__get_variable_from_expr(sym_ptr, buf, expr->left, len, complicated);
-			snprintf(tmp, sizeof(tmp), " %s ", show_special(expr->op));
-			append(buf, tmp, len);
+			off += __get_variable_from_expr(sym_ptr, buf, expr->left, off, len, complicated);
+			off += append(buf, off, len, "%s%s ",
+				      (expr->type == EXPR_COMMA) ? "" : " ",
+				      show_special(expr->op));
 		}
-		__get_variable_from_expr(NULL, buf, expr->right, len, complicated);
+		off += __get_variable_from_expr(NULL, buf, expr->right, off, len, complicated);
 		if (array_expr)
-			append(buf, "]", len);
-		return;
+			off += append(buf, off, len, "]");
+		return off - orig_off;
 	}
 	case EXPR_VALUE: {
 		sval_t sval = {};
-		char tmp[25];
 
 		*complicated = 1;
 		if (!get_value(expr, &sval))
-			return;
-		snprintf(tmp, 25, "%s", sval_to_numstr(sval));
-		append(buf, tmp, len);
-		return;
+			return 0;
+		off += append(buf, off, len, "%s", sval_to_numstr(sval));
+		return off - orig_off;
 	}
 	case EXPR_FVALUE: {
 		sval_t sval = {};
-		char tmp[25];
 
 		*complicated = 1;
 		if (!get_value(expr, &sval))
-			return;
-		snprintf(tmp, 25, "%s", sval_to_numstr(sval));
-		append(buf, tmp, len);
-		return;
+			return 0;
+
+		off += append(buf, off, len, "%s", sval_to_numstr(sval));
+		return off - orig_off;
 	}
 	case EXPR_STRING:
-		append(buf, "\"", len);
+		off += append(buf, off, len, "\"");
 		if (expr->string)
-			append(buf, expr->string->data, len);
-		append(buf, "\"", len);
-		return;
+			off += append(buf, off, len, "%s", expr->string->data);
+		off += append(buf, off, len, "\"");
+		return off - orig_off;
 	case EXPR_CALL: {
 		struct expression *tmp;
 		int i;
 
 		*complicated = 1;
-		__get_variable_from_expr(NULL, buf, expr->fn, len, complicated);
-		append(buf, "(", len);
+		off += __get_variable_from_expr(NULL, buf, expr->fn, off, len, complicated);
+		off += append(buf, off, len, "(");
 		i = 0;
 		FOR_EACH_PTR(expr->args, tmp) {
 			if (i++)
-				append(buf, ", ", len);
-			__get_variable_from_expr(NULL, buf, tmp, len, complicated);
+				off += append(buf, off, len, ", ");
+			off += __get_variable_from_expr(NULL, buf, tmp, off, len, complicated);
 		} END_FOR_EACH_PTR(tmp);
-		append(buf, ")", len);
-		return;
+		off += append(buf, off, len, ")");
+		return off - orig_off;
 	}
 	case EXPR_CAST:
 	case EXPR_FORCE_CAST:
-		__get_variable_from_expr(sym_ptr, buf,
-					 expr->cast_expression, len,
-					 complicated);
-		return;
+		return __get_variable_from_expr(sym_ptr, buf,
+						expr->cast_expression, off, len,
+						complicated);
 	case EXPR_SIZEOF: {
 		sval_t sval;
 		int size;
-		char tmp[25];
 
 		if (expr->cast_type && get_base_type(expr->cast_type)) {
 			size = type_bytes(get_base_type(expr->cast_type));
-			snprintf(tmp, 25, "%d", size);
-			append(buf, tmp, len);
+			off += append(buf, off, len, "%d", size);
 		} else if (get_value(expr, &sval)) {
-			snprintf(tmp, 25, "%s", sval_to_str(sval));
-			append(buf, tmp, len);
+			off += append(buf, off, len, "%s", sval_to_str(sval));
 		}
-		return;
+		return off - orig_off;
 	}
 	case EXPR_IDENTIFIER:
 		*complicated = 1;
 		if (expr->expr_ident)
-			append(buf, expr->expr_ident->name, len);
-		return;
+			off += append(buf, off, len, "%s", expr->expr_ident->name);
+		return off - orig_off;
 	case EXPR_SELECT:
 	case EXPR_CONDITIONAL:
 		*complicated = 1;
-		append(buf, "(", len);
-		__get_variable_from_expr(NULL, buf, expr->conditional, len, complicated);
-		append(buf, ") ?", len);
+		off += append(buf, off, len, "(");
+		off += __get_variable_from_expr(NULL, buf, expr->conditional, off, len, complicated);
+		off += append(buf, off, len, ") ?");
 		if (expr->cond_true)
-			__get_variable_from_expr(NULL, buf, expr->cond_true, len, complicated);
-		append(buf, ":", len);
-		__get_variable_from_expr(NULL, buf, expr->cond_false, len, complicated);
-		return;
-	default: {
-			char tmp[64];
-
-			snprintf(tmp, sizeof(tmp), "$expr_%p(%d)", expr, expr->type);
-			append(buf, tmp, len);
-			*complicated = 1;
-		}
-		return;
+			off += __get_variable_from_expr(NULL, buf, expr->cond_true, off, len, complicated);
+		off += append(buf, off, len, ":");
+		off += __get_variable_from_expr(NULL, buf, expr->cond_false, off, len, complicated);
+		return off - orig_off;
+	default:
+		off += append(buf, off, len, "$expr_%p(%d)", expr, expr->type);
+		return off - orig_off;
 	}
 }
 
@@ -404,7 +439,7 @@ static void get_variable_from_expr(struct symbol **sym_ptr, char *buf,
 		}
 	}
 
-	__get_variable_from_expr(&tmp_sym, buf, expr, len, complicated);
+	__get_variable_from_expr(&tmp_sym, buf, expr, 0, len, complicated);
 	if (sym_ptr)
 		*sym_ptr = tmp_sym;
 
@@ -685,7 +720,10 @@ struct expression *get_array_offset(struct expression *expr)
 		expr = strip_expr(expr->unop);
 	if (expr->type != EXPR_BINOP || expr->op != '+')
 		return NULL;
-	return strip_parens(expr->right);
+	expr = strip_parens(expr->right);
+	if (expr->type == EXPR_POSTOP)
+		expr = strip_parens(expr->unop);
+	return expr;
 }
 
 const char *show_state(struct smatch_state *state)
@@ -730,8 +768,94 @@ struct expression *strip_parens(struct expression *expr)
 	return expr;
 }
 
-static struct expression *strip_expr_helper(struct expression *expr, bool set_parent)
+struct expression *strip__builtin_choose_expr(struct expression *expr)
 {
+	struct expression *const_expr, *expr1, *expr2;
+	sval_t sval;
+
+	if (expr->type != EXPR_CALL)
+		return expr;
+
+	if (!sym_name_is("__builtin_choose_expr", expr->fn))
+		return expr;
+
+	const_expr = get_argument_from_call_expr(expr->args, 0);
+	expr1 = get_argument_from_call_expr(expr->args, 1);
+	expr2 = get_argument_from_call_expr(expr->args, 2);
+
+	if (!get_value(const_expr, &sval) || !expr1 || !expr2)
+		return expr;
+
+	if (sval.value)
+		return strip_expr(expr1);
+	else
+		return strip_expr(expr2);
+}
+
+struct expression *strip_Generic(struct expression *expr)
+{
+	struct type_expression *map;
+	struct symbol *type, *tmp;
+
+	if (!expr || expr->type != EXPR_GENERIC)
+		return expr;
+
+	type = get_type(expr->control);
+
+	for (map = expr->map; map; map = map->next) {
+		tmp = get_real_base_type(map->type);
+		if (!types_equiv(type, tmp))
+			continue;
+		if (!map->expr)
+			return expr;
+		return map->expr;
+	}
+
+	if (!expr->def)
+		return expr;
+
+	return expr->def;
+}
+
+static struct expression *strip_plus_zero(struct expression *expr, bool set_parent, bool cast, int *nest)
+{
+	struct symbol *left_type, *right_type;
+
+	if (*nest > 4)
+		return expr;
+
+	if (expr->type != EXPR_BINOP || expr->op != '+')
+		return expr;
+
+	/* don't strip away zero from the my_array[0] */
+	if (!is_array(expr->left))
+		return expr;
+
+	left_type = get_type(expr->left);
+	right_type = get_type(expr->right);
+	if (!left_type || !right_type)
+		return expr;
+
+	if (expr_is_zero(expr->left)) {
+		if (type_positive_bits(left_type) > 31 &&
+		    type_positive_bits(left_type) > type_positive_bits(right_type))
+			return expr;
+		return strip_expr_helper(expr->right, set_parent, cast, nest);
+	}
+	if (expr_is_zero(expr->right)) {
+		if (type_positive_bits(right_type) > 31 &&
+		    type_positive_bits(right_type) > type_positive_bits(left_type))
+			return expr;
+		return strip_expr_helper(expr->left, set_parent, cast, nest);
+	}
+
+	return expr;
+}
+
+static struct expression *strip_expr_helper(struct expression *expr, bool set_parent, bool cast, int *nest)
+{
+	(*nest)++;
+
 	if (!expr)
 		return NULL;
 
@@ -743,7 +867,14 @@ static struct expression *strip_expr_helper(struct expression *expr, bool set_pa
 
 		if (!expr->cast_expression)
 			return expr;
-		return strip_expr_helper(expr->cast_expression, set_parent);
+		if (!cast) {
+			struct symbol *type;
+
+			type = get_type(expr->cast_expression);
+			if (type != expr->cast_type)
+				return expr;
+		}
+		return strip_expr_helper(expr->cast_expression, set_parent, cast, nest);
 	case EXPR_PREOP: {
 		struct expression *unop;
 
@@ -752,12 +883,16 @@ static struct expression *strip_expr_helper(struct expression *expr, bool set_pa
 		if (set_parent)
 			expr_set_parent_expr(expr->unop, expr);
 
+		while (expr->op == '(' &&
+		       expr->unop->type == EXPR_PREOP &&
+		       expr->unop->op == '(')
+			expr = expr->unop;
 
 		if (expr->op == '(' && expr->unop->type == EXPR_STATEMENT &&
 			expr->unop->statement->type == STMT_COMPOUND)
 			return expr;
 
-		unop = strip_expr_helper(expr->unop, set_parent);
+		unop = strip_expr_helper(expr->unop, set_parent, cast, nest);
 
 		if (expr->op == '*' && unop &&
 		    unop->type == EXPR_PREOP && unop->op == '&') {
@@ -765,7 +900,7 @@ static struct expression *strip_expr_helper(struct expression *expr, bool set_pa
 
 			if (type && type->type == SYM_ARRAY)
 				return expr;
-			return strip_expr_helper(unop->unop, set_parent);
+			return strip_expr_helper(unop->unop, set_parent, cast, nest);
 		}
 
 		if (expr->op == '(')
@@ -778,16 +913,16 @@ static struct expression *strip_expr_helper(struct expression *expr, bool set_pa
 			if (expr->cond_true) {
 				if (set_parent)
 					expr_set_parent_expr(expr->cond_true, expr);
-				return strip_expr_helper(expr->cond_true, set_parent);
+				return strip_expr_helper(expr->cond_true, set_parent, cast, nest);
 			}
 			if (set_parent)
 				expr_set_parent_expr(expr->conditional, expr);
-			return strip_expr_helper(expr->conditional, set_parent);
+			return strip_expr_helper(expr->conditional, set_parent, cast, nest);
 		}
 		if (known_condition_false(expr->conditional)) {
 			if (set_parent)
 				expr_set_parent_expr(expr->cond_false, expr);
-			return strip_expr_helper(expr->cond_false, set_parent);
+			return strip_expr_helper(expr->cond_false, set_parent, cast, nest);
 		}
 		return expr;
 	case EXPR_CALL:
@@ -796,35 +931,79 @@ static struct expression *strip_expr_helper(struct expression *expr, bool set_pa
 		    sym_name_is("__builtin_bswap32", expr->fn) ||
 		    sym_name_is("__builtin_bswap64", expr->fn)) {
 			expr = get_argument_from_call_expr(expr->args, 0);
-			return strip_expr_helper(expr, set_parent);
+			return strip_expr_helper(expr, set_parent, cast, nest);
 		}
+		if (sym_name_is("__builtin_choose_expr", expr->fn))
+			return strip__builtin_choose_expr(expr);
 		return expr;
+	case EXPR_BINOP:
+		return strip_plus_zero(expr, set_parent, cast, nest);
+	case EXPR_GENERIC:
+		return strip_Generic(expr);
 	}
 	return expr;
 }
 
+struct strip_cache_res {
+	struct expression *expr;
+	struct expression *res;
+};
+#define STRIP_CACHE_SIZE 4
+static struct strip_cache_res strip_cache[STRIP_CACHE_SIZE];
+static struct strip_cache_res strip_no_cast_cache[STRIP_CACHE_SIZE];
+static struct strip_cache_res strip_set_parent_cache[STRIP_CACHE_SIZE];
+
+static struct expression *call_strip_helper(struct expression *expr,
+					    struct strip_cache_res *cache,
+					    int *idx,
+					    bool set_parent,
+					    bool cast)
+{
+	struct expression *ret;
+	int nest = 0;
+	int i;
+
+	if (!expr)
+		return NULL;
+
+	for (i = 0; i < ARRAY_SIZE(strip_cache); i++) {
+		if (cache[i].expr == expr)
+			return cache[i].res;
+	}
+
+	ret = strip_expr_helper(expr, set_parent, cast, &nest);
+	*idx = (*idx + 1) % STRIP_CACHE_SIZE;
+	cache[*idx].expr = expr;
+	cache[*idx].res = ret;
+	return ret;
+}
+
 struct expression *strip_expr(struct expression *expr)
 {
-	return strip_expr_helper(expr, false);
+	static int cache_idx;
+
+	return call_strip_helper(expr, strip_cache, &cache_idx, false, true);
+}
+
+struct expression *strip_no_cast(struct expression *expr)
+{
+	static int cache_idx;
+
+	return call_strip_helper(expr, strip_no_cast_cache, &cache_idx, false, false);
 }
 
 struct expression *strip_expr_set_parent(struct expression *expr)
 {
-	return strip_expr_helper(expr, true);
+	static int cache_idx;
+
+	return call_strip_helper(expr, strip_set_parent_cache, &cache_idx, true, true);
 }
 
-static void delete_state_tracker(struct tracker *t)
+void clear_strip_cache(void)
 {
-	delete_state(t->owner, t->name, t->sym);
-	__free_tracker(t);
-}
-
-void scoped_state(int my_id, const char *name, struct symbol *sym)
-{
-	struct tracker *t;
-
-	t = alloc_tracker(my_id, name, sym);
-	add_scope_hook((scope_hook *)&delete_state_tracker, t);
+	memset(strip_cache, 0, sizeof(strip_cache));
+	memset(strip_no_cast_cache, 0, sizeof(strip_no_cast_cache));
+	memset(strip_set_parent_cache, 0, sizeof(strip_set_parent_cache));
 }
 
 int is_error_return(struct expression *expr)
@@ -912,6 +1091,8 @@ char *get_member_name(struct expression *expr)
 	sym = get_type(expr->deref);
 	if (!sym)
 		return NULL;
+	if (sym->type == SYM_PTR)
+		sym = get_real_base_type(sym);
 	if (sym->type == SYM_UNION) {
 		snprintf(buf, sizeof(buf), "(union %s)->%s",
 			 sym->ident ? sym->ident->name : "anonymous",
@@ -930,7 +1111,7 @@ char *get_member_name(struct expression *expr)
 		 *
 		 */
 
-		deref = expr->deref;
+		deref = strip_parens(expr->deref);
 		if (deref->type != EXPR_DEREF || !deref->member)
 			return NULL;
 		sym = get_type(deref->deref);
@@ -1059,68 +1240,6 @@ struct expression *get_last_expr_from_expression_stmt(struct expression *expr)
 	return NULL;
 }
 
-int get_param_num_from_sym(struct symbol *sym)
-{
-	struct symbol *tmp;
-	int i;
-
-	if (!sym)
-		return UNKNOWN_SCOPE;
-
-	if (sym->ctype.modifiers & MOD_TOPLEVEL) {
-		if (sym->ctype.modifiers & MOD_STATIC)
-			return FILE_SCOPE;
-		return GLOBAL_SCOPE;
-	}
-
-	if (!cur_func_sym) {
-		if (!parse_error) {
-			sm_msg("warn: internal.  problem with scope:  %s",
-			       sym->ident ? sym->ident->name : "<anon var>");
-		}
-		return GLOBAL_SCOPE;
-	}
-
-
-	i = 0;
-	FOR_EACH_PTR(cur_func_sym->ctype.base_type->arguments, tmp) {
-		if (tmp == sym)
-			return i;
-		i++;
-	} END_FOR_EACH_PTR(tmp);
-	return LOCAL_SCOPE;
-}
-
-int get_param_num(struct expression *expr)
-{
-	struct symbol *sym;
-	char *name;
-
-	if (!cur_func_sym)
-		return UNKNOWN_SCOPE;
-	name = expr_to_var_sym(expr, &sym);
-	free_string(name);
-	if (!sym)
-		return UNKNOWN_SCOPE;
-	return get_param_num_from_sym(sym);
-}
-
-struct symbol *get_param_sym_from_num(int num)
-{
-	struct symbol *sym;
-	int i;
-
-	if (!cur_func_sym)
-		return NULL;
-
-	i = 0;
-	FOR_EACH_PTR(cur_func_sym->ctype.base_type->arguments, sym) {
-		if (i++ == num)
-			return sym;
-	} END_FOR_EACH_PTR(sym);
-	return NULL;
-}
-
 int ms_since(struct timeval *start)
 {
 	struct timeval end;
@@ -1137,7 +1256,7 @@ int parent_is_gone_var_sym(const char *name, struct symbol *sym)
 	if (!name || !sym)
 		return 0;
 
-	if (parent_is_null_var_sym(name, sym) ||
+	if (parent_is_err_or_null_var_sym(name, sym) ||
 	    parent_is_free_var_sym(name, sym))
 		return 1;
 	return 0;
@@ -1216,6 +1335,8 @@ int expr_equiv(struct expression *one, struct expression *two)
 
 	if (!one || !two)
 		return 0;
+	if (one == two)
+		return 1;
 	if (one->type != two->type)
 		return 0;
 	if (is_fake_call(one) || is_fake_call(two))
@@ -1267,4 +1388,95 @@ int pop_int(struct int_stack **stack)
 	delete_ptr_list_last((struct ptr_list **)stack);
 
 	return PTR_INT(num) >> 2;
+}
+
+bool token_to_ul(struct token *token, unsigned long *val)
+{
+	int cnt = 0;
+
+	/* this function only works for very specific simple defines */
+	while (cnt++ < 20 && token) {
+		switch (token_type(token)) {
+		case TOKEN_IDENT:
+			if (macro_to_ul(show_ident(token->ident), val))
+				return true;
+			break;
+		case TOKEN_NUMBER:
+			*val = strtoul(token->number, NULL, 0);
+			return true;
+		case TOKEN_SPECIAL:
+			if (token->special == '(' || token->special == ')')
+				break;
+			return false;
+		default:
+			return false;
+		}
+		token = token->next;
+	}
+	return false;
+}
+
+bool macro_to_ul(const char *macro, unsigned long *val)
+{
+	struct symbol *macro_sym;
+
+	if (!macro)
+		return false;
+
+	macro_sym = lookup_macro_symbol(macro);
+	if (!macro_sym || !macro_sym->expansion)
+		return false;
+	return token_to_ul(macro_sym->expansion, val);
+}
+
+int success_fail_return(struct range_list *rl)
+{
+	char *str;
+	sval_t sval;
+
+	if (!rl)
+		return RET_SUCCESS;
+
+	/* NFSv3 uses negative error codes such as -EIOCBQUEUED for success */
+	if (rl_to_sval(rl, &sval) && sval.value == -529)
+		return RET_SUCCESS;
+
+	// Negatives are a failure
+	if (sval_is_negative(rl_max(rl)))
+		return RET_FAIL;
+
+	// NULL and error pointers are a failure
+	if (type_is_ptr(rl_type(rl)) && is_err_or_null(rl))
+		return RET_FAIL;
+
+	if (rl_to_sval(rl, &sval)) {
+		if (sval.value == 0) {
+			// Zero is normally success but false is a failure
+			if (type_bits(sval.type) == 1)
+				return RET_FAIL;
+			else
+				return RET_SUCCESS;
+		}
+		// true is success
+		if (sval.value == 1 && type_bits(sval.type) == 1)
+			return RET_SUCCESS;
+	}
+
+	str = show_rl(rl);
+	if (strcmp(str, "s32min-(-1),1-s32max") == 0)
+		return RET_FAIL;
+
+	if (strcmp(str, "0-s32max") == 0)
+		return RET_SUCCESS;
+
+	return RET_UNKNOWN;
+}
+
+bool has_cleanup(struct expression *expr)
+{
+	expr = strip_expr(expr);
+	if (!expr || expr->type != EXPR_SYMBOL)
+		return false;
+
+	return !!expr->symbol->cleanup;
 }

@@ -1,7 +1,7 @@
 .. default-domain:: ir
 
-Sparse's Intermediate Representation
-====================================
+Intermediate Representation
+===========================
 
 Instructions
 ~~~~~~~~~~~~
@@ -47,6 +47,9 @@ Terminators
 	* .type: type of .cond, must be an integral type
 	* .multijmp_list: pairs of case-value - destination basic block
 
+.. op:: OP_UNREACH
+	Mark code as unreachable
+
 .. op:: OP_COMPUTEDGOTO
 	Computed goto / branch to register
 
@@ -56,7 +59,7 @@ Terminators
 Arithmetic binops
 -----------------
 They all follow the same signature:
-	* .src1, .src1: operands (types must be compatible with .target)
+	* .src1, .src2: operands (types must be compatible with .target)
 	* .target: result of the operation (must be an integral type)
 	* .type: type of .target
 
@@ -93,7 +96,7 @@ They all follow the same signature:
 Floating-point binops
 ---------------------
 They all follow the same signature:
-	* .src1, .src1: operands (types must be compatible with .target)
+	* .src1, .src2: operands (types must be compatible with .target)
 	* .target: result of the operation (must be a floating-point type)
 	* .type: type of .target
 
@@ -131,6 +134,7 @@ They all have the following signature:
 	* .src1, .src2: operands (types must be compatible)
 	* .target: result of the operation (0/1 valued integer)
 	* .type: type of .target, must be an integral type
+	* .itype: type of the input operands
 
 .. op:: OP_SET_EQ
 	Compare equal.
@@ -306,6 +310,13 @@ Ternary ops
 	* .target: result of the operation
 	* .type: type of .target
 
+.. op:: OP_FMADD
+    Fused multiply-add.
+
+	* .src1, .src2, .src3: operands (types must be compatible with .target)
+	* .target: result of the operation (must be a floating-point type)
+	* .type: type of .target
+
 .. op:: OP_RANGE
 	Range/bounds checking (only used for an unused sparse extension).
 
@@ -341,12 +352,19 @@ Others
 	* .type: type of the literal & .target
 
 .. op:: OP_SETVAL
-	Create a pseudo corresponding to a string literal or a label-as-value.
-	The value is given as an expression EXPR_STRING or EXPR_LABEL.
+	Create a pseudo corresponding to a string literal.
+	The value is given as an expression EXPR_STRING.
 
 	* .val: (expression) input expression
 	* .target: the resulting value
 	* .type: type of .target, the value
+
+.. op:: OP_LABEL
+	Create a pseudo corresponding to a label-as-value.
+
+	* .bb_true: the BB corresponding to the label
+	* .target: the resulting value
+	* .type: type of .target (void \*)
 
 .. op:: OP_PHI
 	Phi-node (for SSA form).
@@ -363,7 +381,7 @@ Others
 	* .phi_src: operand (type must be compatible with .target, alias .src)
 	* .target: the "result" PSEUDO_PHI
 	* .type: type of .target
-	* .phi_users: list of phi instructions using the target pseudo
+	* .phi_node: the unique phi instruction using the target pseudo
 
 .. op:: OP_CALL
 	Function call.
@@ -390,7 +408,7 @@ Others
 	Extract a "slice" from an aggregate.
 
 	* .base: (pseudo_t) aggregate (alias .src)
-	* .from, .len: offet & size of the "slice" within the aggregate
+	* .from: offset of the "slice" within the aggregate
 	* .target: result
 	* .type: type of .target
 

@@ -21,6 +21,21 @@
 
 static int my_id;
 
+static bool is_select_assign(struct expression *expr)
+{
+	/* select assignments are faked in smatch_conditions.c */
+	expr = expr_get_parent_expr(expr);
+	if (!expr || expr->type != EXPR_ASSIGNMENT)
+		return false;
+	expr = expr_get_parent_expr(expr);
+	if (!expr)
+		return false;
+	if (expr->type == EXPR_CONDITIONAL ||
+	    expr->type == EXPR_SELECT)
+		return true;
+	return false;
+}
+
 static int is_comparison_call(struct expression *expr)
 {
 	expr = expr_get_parent_expr(expr);
@@ -29,6 +44,25 @@ static int is_comparison_call(struct expression *expr)
 	if (expr->op != SPECIAL_EQUAL && expr->op != SPECIAL_NOTEQUAL)
 		return 0;
 	return 1;
+}
+
+static bool is_switch_condition(struct expression *expr)
+{
+	struct statement *stmt;
+
+	stmt = expr_get_parent_stmt(expr);
+	if (stmt && stmt->type == STMT_SWITCH)
+		return true;
+	return false;
+}
+
+static bool is_condition_expr(struct expression *expr)
+{
+	if (is_comparison_call(expr) ||
+	    is_select_assign(expr) ||
+	    is_switch_condition(expr))
+		return true;
+	return false;
 }
 
 static int next_line_is_if(struct expression *expr)
@@ -123,16 +157,17 @@ static void match_err_ptr(const char *fn, struct expression *expr, void *data)
 {
 	struct expression *arg_expr;
 	struct sm_state *sm, *tmp;
+	int arg = PTR_INT(data);
 
 	if (is_impossible_path())
 		return;
 
-	arg_expr = get_argument_from_call_expr(expr->args, 0);
+	arg_expr = get_argument_from_call_expr(expr->args, arg);
 	sm = get_sm_state_expr(SMATCH_EXTRA, arg_expr);
 	if (!sm)
 		return;
 
-	if (is_comparison_call(expr))
+	if (is_condition_expr(expr))
 		return;
 
 	if (next_line_checks_IS_ERR(expr, arg_expr))
@@ -143,6 +178,8 @@ static void match_err_ptr(const char *fn, struct expression *expr, void *data)
 
 	FOR_EACH_PTR(sm->possible, tmp) {
 		if (!estate_rl(tmp->state))
+			continue;
+		if (estate_type(tmp->state) == &llong_ctype)
 			continue;
 		if (is_non_zero_int(estate_rl(tmp->state)))
 			continue;
@@ -166,7 +203,8 @@ void check_zero_to_err_ptr(int id)
 		return;
 
 	my_id = id;
-	add_function_hook("ERR_PTR", &match_err_ptr, NULL);
-	add_function_hook("ERR_CAST", &match_err_ptr, NULL);
-	add_function_hook("PTR_ERR", &match_err_ptr, NULL);
+	add_function_hook("ERR_PTR", &match_err_ptr, INT_PTR(0));
+	add_function_hook("ERR_CAST", &match_err_ptr, INT_PTR(0));
+	add_function_hook("PTR_ERR", &match_err_ptr, INT_PTR(0));
+	add_function_hook("dev_err_probe", &match_err_ptr, INT_PTR(1));
 }
