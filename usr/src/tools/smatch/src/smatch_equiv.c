@@ -148,6 +148,9 @@ void remove_from_equiv(const char *name, struct symbol *sym)
 	struct smatch_state *state;
 	struct related_list *to_update;
 
+	// FIXME: is this the right permanent solution.  Perhaps it is, I guess.
+	if (in_fake_env)
+		return;
 	orig_sm = get_sm_state(SMATCH_EXTRA, name, sym);
 	if (!orig_sm || !get_dinfo(orig_sm->state)->related)
 		return;
@@ -166,19 +169,6 @@ void remove_from_equiv(const char *name, struct symbol *sym)
 		get_dinfo(new_sm->state)->related = to_update;
 		__set_sm(new_sm);
 	} END_FOR_EACH_PTR(rel);
-}
-
-void remove_from_equiv_expr(struct expression *expr)
-{
-	char *name;
-	struct symbol *sym;
-
-	name = expr_to_var_sym(expr, &sym);
-	if (!name || !sym)
-		goto free;
-	remove_from_equiv(name, sym);
-free:
-	free_string(name);
 }
 
 void set_related(struct smatch_state *estate, struct related_list *rlist)
@@ -203,6 +193,8 @@ void set_equiv(struct expression *left, struct expression *right)
 	char *other_name;
 	struct symbol *other_sym;
 
+	if (in_fake_env)
+		return;
 	left_name = expr_to_var_sym(left, &left_sym);
 	if (!left_name || !left_sym)
 		goto free;

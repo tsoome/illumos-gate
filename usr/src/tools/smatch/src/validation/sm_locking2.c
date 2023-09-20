@@ -4,7 +4,7 @@ int _spin_trylock(int name);
 
 int a;
 int b;
-int func (void)
+void func (void)
 {
 	int mylock = 1;
 	int mylock2 = 1;
@@ -21,18 +21,17 @@ int func (void)
 		_spin_unlock(mylock);
 	_spin_lock(mylock2);
 
-	if (!_spin_trylock(mylock3))
+	if (!_spin_trylock(mylock3)) {
 		return;
+	}
+	// FIXME: should we warn about start_state/lock mixed returns?
 	return;
 }
 /*
  * check-name: Smatch locking #2
- * check-command: smatch --project=kernel sm_locking2.c
+ * check-command: smatch --project=kernel -DCONFIG_SMP=y sm_locking2.c
  *
  * check-output-start
 sm_locking2.c:21 func() error: double unlocked 'mylock' (orig line 17)
-sm_locking2.c:26 func() warn: inconsistent returns 'mylock3'.
-  Locked on  : 26
-  Unlocked on: 25
  * check-output-end
  */

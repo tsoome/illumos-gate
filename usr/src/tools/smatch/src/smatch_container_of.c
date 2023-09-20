@@ -283,7 +283,7 @@ char *get_container_name(struct expression *container, struct expression *expr)
 	return NULL;
 }
 
-static bool is_fn_ptr(struct expression *expr)
+static bool is_fn_ptr_arg(struct expression *expr)
 {
 	struct symbol *type;
 
@@ -343,7 +343,7 @@ static void match_call(struct expression *call)
 	fn_param = -1;
 	FOR_EACH_PTR(call->args, arg) {
 		fn_param++;
-		if (!is_fn_ptr(arg))
+		if (!is_fn_ptr_arg(arg))
 			continue;
 		param = -1;
 		FOR_EACH_PTR(call->args, tmp) {
@@ -576,15 +576,9 @@ static void load_container_data(struct symbol *arg, const char *info)
 
 	while (true) {
 		container_offset = strtoul(p, &p, 0);
-		if (local_debug)
-			sm_msg("%s: cur_tag = %llu container_offset = %d",
-			       __func__, cur_tag, container_offset);
 		if (!mtag_map_select_container(cur_tag, -container_offset, &container_tag))
 			return;
 		cur_tag = container_tag;
-		if (local_debug)
-			sm_msg("%s: container_tag = %llu p = '%s'",
-			       __func__, container_tag, p);
 		if (!p)
 			return;
 		if (p[0] != '-')

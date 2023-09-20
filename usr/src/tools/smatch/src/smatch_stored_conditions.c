@@ -37,6 +37,7 @@
  */
 
 #include "smatch.h"
+#include "smatch_extra.h"
 #include "smatch_slist.h"
 
 static int my_id;
@@ -46,24 +47,22 @@ static struct smatch_state *alloc_link_state(struct expression_list *expr_list)
 {
 	struct expression *tmp;
 	struct smatch_state *state;
-	static char buf[256];
+	static char buf[256] = "";
 	char *name;
-	int i;
+	int cnt = 0;
 
 	state = __alloc_smatch_state(0);
 
-	i = 0;
 	FOR_EACH_PTR(expr_list, tmp) {
 		name = expr_to_str(tmp);
-		if (!i++) {
-			snprintf(buf, sizeof(buf), "%s", name);
-		} else {
-			append(buf, ", ", sizeof(buf));
-			append(buf, name, sizeof(buf));
-		}
+		cnt += snprintf(buf + cnt, sizeof(buf) - cnt, "%s%s",
+				cnt ? ", " : "", name);
 		free_string(name);
+		if (cnt >= sizeof(buf))
+			goto done;
 	} END_FOR_EACH_PTR(tmp);
 
+done:
 	state->name = alloc_sname(buf);
 	state->data = expr_list;
 	return state;
@@ -153,38 +152,41 @@ static struct smatch_state *alloc_state(struct expression *expr, int is_true)
 
 static void store_all_links(struct expression *expr, struct expression *condition)
 {
+	struct var_sym_list *vsl;
+	struct var_sym *vs;
 	char *var;
 	struct symbol *sym;
 
 	expr = strip_expr(expr);
-
-	if (is_array(expr)) {
-		var = expr_to_known_chunk_sym(expr, &sym);
-		if (var)
-			save_link_var_sym(var, sym, condition);
-	}
-
-	switch (expr->type) {
-	case EXPR_COMPARE:
-	case EXPR_BINOP:
-		store_all_links(expr->left, condition);
-		store_all_links(expr->right, condition);
+	if (!expr)
 		return;
-	case EXPR_VALUE:
-		return;
-	}
 
-	var = expr_to_var_sym(expr, &sym);
-	if (!var || !sym)
+	vsl = expr_to_vsl(expr);
+	FOR_EACH_PTR(vsl, vs) {
+		save_link_var_sym(vs->var, vs->sym, condition);
+	} END_FOR_EACH_PTR(vs);
+
+	/* This is used to store "array[0]" from "if (array[0] == 1) " */
+	var = expr_to_known_chunk_sym(expr, &sym);
+	if (!var && !sym)
 		goto free;
 	save_link_var_sym(var, sym, condition);
 free:
 	free_string(var);
 }
 
+static int is_untracked_var_helper(struct expression *expr, void *unused)
+{
+	if (expr->type == EXPR_SYMBOL)
+		return is_untracked(expr);
+	return 0;
+}
+
 static int condition_too_complicated(struct expression *expr)
 {
 	if (get_complication_score(expr) > 2)
+		return 1;
+	if (recurse(expr, is_untracked_var_helper, NULL, 0) == 1)
 		return 1;
 	return 0;
 }
@@ -193,9 +195,9 @@ void __stored_condition(struct expression *expr)
 {
 	struct smatch_state *true_state, *false_state;
 	char *name;
-	sval_t val;
 
-	if (get_value(expr, &val))
+	if (implied_condition_true(expr) ||
+	    implied_condition_false(expr))
 		return;
 
 	if (condition_too_complicated(expr))
@@ -206,6 +208,7 @@ void __stored_condition(struct expression *expr)
 		return;
 	true_state = alloc_state(expr, TRUE);
 	false_state = alloc_state(expr, FALSE);
+
 	set_true_false_states(my_id, name, NULL, true_state, false_state);
 	store_all_links(expr, expr);
 	free_string(name);

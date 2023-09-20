@@ -56,10 +56,15 @@ static struct smatch_state *merge_links(struct smatch_state *s1, struct smatch_s
 	return &merged;
 }
 
+static struct expression *ignore_link_mod;
 static void match_link_modify(struct sm_state *sm, struct expression *mod_expr)
 {
 	struct expression *expr;
 	struct sm_state *tmp;
+
+	if (mod_expr == ignore_link_mod)
+		return;
+	ignore_link_mod = NULL;
 
 	expr = sm->state->data;
 	if (expr) {
@@ -74,6 +79,12 @@ static void match_link_modify(struct sm_state *sm, struct expression *mod_expr)
 			set_state_expr(size_id, expr, &undefined);
 	} END_FOR_EACH_PTR(tmp);
 	set_state(link_id, sm->name, sm->sym, &undefined);
+}
+
+static void add_link(struct expression *size, struct expression *buf, struct expression *mod_expr)
+{
+	ignore_link_mod = mod_expr;
+	set_state_expr(link_id, size, alloc_state_expr(buf));
 }
 
 static const char *limit_map[] = {
@@ -150,24 +161,22 @@ static void db_save_type_links(struct expression *array, int type_limit, struct 
 	sql_insert_data_info(size, type_limit, array_name);
 }
 
-static void match_alloc_helper(struct expression *pointer, struct expression *size)
+static void match_alloc_helper(struct expression *pointer, struct expression *size, struct expression *mod_expr)
 {
+	struct smatch_state *state;
 	struct expression *tmp;
 	struct sm_state *sm;
-	int limit_type = ELEM_COUNT;
+	int limit_type = BYTE_COUNT;
 	sval_t sval;
-	int cnt = 0;
 
 	pointer = strip_expr(pointer);
 	size = strip_expr(size);
 	if (!size || !pointer)
 		return;
 
-	while ((tmp = get_assigned_expr(size))) {
+	tmp = get_assigned_expr_recurse(size);
+	if (tmp && tmp->type == EXPR_BINOP)
 		size = strip_expr(tmp);
-		if (cnt++ > 5)
-			break;
-	}
 
 	if (size->type == EXPR_BINOP && size->op == '*') {
 		struct expression *mult_left, *mult_right;
@@ -183,6 +192,7 @@ static void match_alloc_helper(struct expression *pointer, struct expression *si
 			size = mult_left;
 		else
 			return;
+		limit_type = ELEM_COUNT;
 	}
 
 	/* Only save links to variables, not fixed sizes */
@@ -196,10 +206,101 @@ static void match_alloc_helper(struct expression *pointer, struct expression *si
 	}
 
 	db_save_type_links(pointer, limit_type, size);
-	sm = set_state_expr(size_id, pointer, alloc_compare_size(limit_type, size));
+	state = alloc_compare_size(limit_type, size);
+	sm = set_state_expr(size_id, pointer, state);
 	if (!sm)
 		return;
-	set_state_expr(link_id, size, alloc_state_expr(pointer));
+	add_link(size, pointer, mod_expr);
+}
+
+static struct expression *get_struct_size_count(struct expression *expr)
+{
+	/*
+	 * There are three ways that struct_size() can be implemented but
+	 * we can ignore build time constants so really there are two ways we
+	 * care about:
+	 * 1) Using __ab_c_size()
+	 * 2) Using size_add(struct_size, size_mul(elem_count, elem_size))
+	 *
+	 */
+
+	if (expr->type != EXPR_CALL)
+		return NULL;
+
+	if (sym_name_is("__ab_c_size", expr->fn))
+		return get_argument_from_call_expr(expr->args, 0);
+
+	if (!sym_name_is("size_add", expr->fn))
+		return NULL;
+	expr = get_argument_from_call_expr(expr->args, 1);
+	expr = strip_expr(expr);
+	if (!expr || expr->type != EXPR_CALL ||
+	    !sym_name_is("size_mul", expr->fn))
+		return NULL;
+
+	return get_argument_from_call_expr(expr->args, 0);
+}
+
+static struct expression *get_variable_struct_member(struct expression *expr)
+{
+	struct symbol *type, *last_member;
+	sval_t sval;
+
+	/*
+	 * This is a hack.  It should look at how the size is calculated instead
+	 * of just assuming that it's the last element.  However, ugly hacks are
+	 * easier to write.
+	 */
+
+	type = get_type(expr);
+	if (!type || type->type != SYM_PTR)
+		return NULL;
+	type = get_real_base_type(type);
+	if (!type || type->type != SYM_STRUCT)
+		return NULL;
+	last_member = last_ptr_list((struct ptr_list *)type->symbol_list);
+	if (!last_member || !last_member->ident)
+		return NULL;
+	type = get_real_base_type(last_member);
+	if (!type || type->type != SYM_ARRAY)
+		return NULL;
+	/* Is non-zero array size */
+	if (type->array_size) {
+		if (!get_implied_value(type->array_size, &sval) ||
+		    sval.value != 0)
+			return NULL;
+	}
+
+	return member_expression(expr, '*', last_member->ident);
+}
+
+static void match_struct_size_helper(struct expression *pointer, struct expression *size, struct expression *mod_expr)
+{
+	struct expression *tmp, *count, *member;
+	struct smatch_state *state;
+	struct sm_state *sm;
+
+	if (option_project != PROJ_KERNEL)
+		return;
+
+	pointer = strip_expr(pointer);
+	tmp = get_assigned_expr_recurse(size);
+	if (tmp)
+		size = tmp;
+	size = strip_expr(size);
+	if (!size || !pointer)
+		return;
+	count = get_struct_size_count(size);
+	if (!count)
+		return;
+	member = get_variable_struct_member(pointer);
+
+	db_save_type_links(member, ELEM_COUNT, count);
+	state = alloc_compare_size(ELEM_COUNT, count);
+	sm = set_state_expr(size_id, member, state);
+	if (!sm)
+		return;
+	add_link(count, member, mod_expr);
 }
 
 static void match_alloc(const char *fn, struct expression *expr, void *_size_arg)
@@ -210,11 +311,13 @@ static void match_alloc(const char *fn, struct expression *expr, void *_size_arg
 	pointer = strip_expr(expr->left);
 	call = strip_expr(expr->right);
 	arg = get_argument_from_call_expr(call->args, size_arg);
-	match_alloc_helper(pointer, arg);
+	match_alloc_helper(pointer, arg, expr);
+	match_struct_size_helper(pointer, arg, expr);
 }
 
 static void match_calloc(const char *fn, struct expression *expr, void *_start_arg)
 {
+	struct smatch_state *state;
 	int start_arg = PTR_INT(_start_arg);
 	struct expression *pointer, *call, *arg;
 	struct sm_state *tmp;
@@ -234,16 +337,64 @@ static void match_calloc(const char *fn, struct expression *expr, void *_start_a
 		limit_type = ELEM_LAST;
 	}
 
+	state = alloc_compare_size(limit_type, arg);
 	db_save_type_links(pointer, limit_type, arg);
-	tmp = set_state_expr(size_id, pointer, alloc_compare_size(limit_type, arg));
+	tmp = set_state_expr(size_id, pointer, state);
 	if (!tmp)
 		return;
-	set_state_expr(link_id, arg, alloc_state_expr(pointer));
+	add_link(arg, pointer, expr);
+}
+
+static struct expression *get_size_variable_from_binop(struct expression *expr, int *limit_type)
+{
+	struct smatch_state *state;
+	struct expression *ret;
+	struct symbol *type;
+	sval_t orig_fixed;
+	int offset_bytes;
+	sval_t offset;
+
+	if (!get_value(expr->right, &offset))
+		return NULL;
+	state = get_state_expr(size_id, expr->left);
+	if (!state || !state->data)
+		return NULL;
+
+	type = get_type(expr->left);
+	if (!type_is_ptr(type))
+		return NULL;
+	type = get_real_base_type(type);
+	if (!type_bytes(type))
+		return NULL;
+	offset_bytes = offset.value * type_bytes(type);
+
+	ret = state->data;
+	if (ret->type != EXPR_BINOP || ret->op != '+')
+		return NULL;
+
+	*limit_type = state_to_limit(state);
+
+	if (get_value(ret->left, &orig_fixed) && orig_fixed.value == offset_bytes)
+		return ret->right;
+	if (get_value(ret->right, &orig_fixed) && orig_fixed.value == offset_bytes)
+		return ret->left;
+
+	return NULL;
 }
 
 struct expression *get_size_variable(struct expression *buf, int *limit_type)
 {
 	struct smatch_state *state;
+	struct expression *ret;
+
+	buf = strip_expr(buf);
+	if (!buf)
+		return NULL;
+	if (buf->type == EXPR_BINOP && buf->op == '+') {
+		ret = get_size_variable_from_binop(buf, limit_type);
+		if (ret)
+			return ret;
+	}
 
 	state = get_state_expr(size_id, buf);
 	if (!state)
@@ -282,6 +433,8 @@ static void array_check(struct expression *expr)
 		return;
 	offset = get_array_offset(expr);
 	if (!possible_comparison(size, SPECIAL_EQUAL, offset))
+		return;
+	if (getting_address(expr))
 		return;
 
 	array_str = expr_to_str(array);
@@ -384,6 +537,11 @@ int buf_comparison_index_ok(struct expression *expr)
 	if ((limit_type == ELEM_COUNT || limit_type == ELEM_LAST) &&
 	    (comparison == '<' || comparison == SPECIAL_UNSIGNED_LT))
 		return 1;
+
+	if (limit_type == BYTE_COUNT && bytes_per_element(array) == 1 &&
+	    (comparison == '<' || comparison == SPECIAL_UNSIGNED_LT))
+		return 1;
+
 	if (limit_type == ELEM_LAST &&
 	    (comparison == SPECIAL_LTE ||
 	     comparison == SPECIAL_UNSIGNED_LTE ||
@@ -391,6 +549,30 @@ int buf_comparison_index_ok(struct expression *expr)
 		return 1;
 
 	return 0;
+}
+
+bool buf_comp_has_bytes(struct expression *buf, struct expression *var)
+{
+	struct expression *size;
+	int limit_type;
+	int comparison;
+
+	if (buf_comp2_has_bytes(buf, var))
+		return true;
+
+	size = get_size_variable(buf, &limit_type);
+	if (!size)
+		return false;
+	comparison = get_comparison(size, var);
+	if (comparison == UNKNOWN_COMPARISON ||
+	    comparison == IMPOSSIBLE_COMPARISON)
+		return false;
+
+	if (show_special(comparison)[0] == '<' ||
+	    show_special(comparison)[0] == '=')
+		return true;
+
+	return false;
 }
 
 static int known_access_ok_numbers(struct expression *expr)
@@ -612,6 +794,7 @@ static int get_param(int param, char **name, struct symbol **sym)
 
 static void set_param_compare(const char *array_name, struct symbol *array_sym, char *key, char *value)
 {
+	struct smatch_state *state;
 	struct expression *array_expr;
 	struct expression *size_expr;
 	struct symbol *size_sym;
@@ -629,10 +812,11 @@ static void set_param_compare(const char *array_name, struct symbol *array_sym, 
 	size_expr = symbol_expression(size_sym);
 	limit_type = strtol(value, NULL, 10);
 
-	tmp = set_state_expr(size_id, array_expr, alloc_compare_size(limit_type, size_expr));
+	state = alloc_compare_size(limit_type, size_expr);
+	tmp = set_state_expr(size_id, array_expr, state);
 	if (!tmp)
 		return;
-	set_state_expr(link_id, size_expr, alloc_state_expr(array_expr));
+	add_link(size_expr, array_expr, NULL);
 }
 
 static void set_implied(struct expression *call, struct expression *array_expr, char *key, char *value)
@@ -655,7 +839,7 @@ static void set_implied(struct expression *call, struct expression *array_expr, 
 	tmp = set_state_expr(size_id, array_expr, alloc_compare_size(limit_type, size_expr));
 	if (!tmp)
 		return;
-	set_state_expr(link_id, size_expr, alloc_state_expr(array_expr));
+	add_link(size_expr, array_expr, call);
 }
 
 static void munge_start_states(struct statement *stmt)
@@ -717,7 +901,7 @@ static void set_used(struct expression *expr)
 	tmp = set_state_expr(size_id, array, alloc_compare_size(limit_type, offset->unop));
 	if (!tmp)
 		return;
-	set_state_expr(link_id, offset->unop, alloc_state_expr(array));
+	add_link(offset->unop, array, expr);
 }
 
 static int match_assign_array(struct expression *expr)
@@ -755,8 +939,40 @@ static int match_assign_size(struct expression *expr)
 	tmp = set_state_expr(size_id, array, alloc_compare_size(limit_type, expr->left));
 	if (!tmp)
 		return 0;
-	set_state_expr(link_id, expr->left, alloc_state_expr(array));
+	add_link(expr->left, array, expr);
 	return 1;
+}
+
+static bool match_assign_smaller(struct expression *expr)
+{
+	struct expression *array;
+	int comparison;
+	sval_t sval;
+
+	array = get_array_variable(expr->left);
+	if (!array)
+		return false;
+
+	if (get_value(expr->right, &sval))
+		return false;
+
+	comparison = get_comparison(expr->left, expr->right);
+	if (comparison == UNKNOWN_COMPARISON ||
+	    comparison == IMPOSSIBLE_COMPARISON)
+		return false;
+
+	/* This is assigning a smaller value to the variable than what it was. */
+	if (show_special(comparison)[0] != '>')
+		return false;
+
+	/*
+	 * This module doesn't have a way to say that it's less than the limit
+	 * only that it *is* the limit.  So you might expect to set a state here
+	 * but there is already a state so all we can do is ignore the
+	 * assignment.
+	 */
+	ignore_link_mod = expr;
+	return true;
 }
 
 static void match_assign(struct expression *expr)
@@ -764,9 +980,15 @@ static void match_assign(struct expression *expr)
 	if (expr->op != '=')
 		return;
 
+	if (is_fake_var_assign(expr))
+		return;
+
 	if (match_assign_array(expr))
 		return;
-	match_assign_size(expr);
+	if (match_assign_size(expr))
+		return;
+	if (match_assign_smaller(expr))
+		return;
 }
 
 static void match_copy(const char *fn, struct expression *expr, void *unused)
@@ -813,10 +1035,9 @@ void register_buf_comparison(int id)
 		add_allocation_function("__vmalloc", &match_alloc, 0);
 		add_allocation_function("sock_kmalloc", &match_alloc, 1);
 		add_allocation_function("kmemdup", &match_alloc, 1);
-		add_allocation_function("kmemdup_user", &match_alloc, 1);
+		add_allocation_function("memdup_user", &match_alloc, 1);
 		add_allocation_function("dma_alloc_attrs", &match_alloc, 1);
-		add_allocation_function("pci_alloc_consistent", &match_alloc, 1);
-		add_allocation_function("pci_alloc_coherent", &match_alloc, 1);
+		add_allocation_function("dma_alloc_coherent", &match_alloc, 1);
 		add_allocation_function("devm_kmalloc", &match_alloc, 1);
 		add_allocation_function("devm_kzalloc", &match_alloc, 1);
 		add_allocation_function("kcalloc", &match_calloc, 0);
@@ -849,5 +1070,5 @@ void register_buf_comparison_links(int id)
 	link_id = id;
 	set_dynamic_states(link_id);
 	add_merge_hook(link_id, &merge_links);
-	add_modification_hook(link_id, &match_link_modify);
+	add_modification_hook_late(link_id, &match_link_modify);
 }

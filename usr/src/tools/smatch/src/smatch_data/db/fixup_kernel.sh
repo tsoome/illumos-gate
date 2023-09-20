@@ -1,18 +1,23 @@
 #!/bin/bash
 
 db_file=$1
+bin_dir=$(dirname $0)
+
+FS_READ_WRITE=$(${bin_dir}/sm_hash 'fs/read_write.c')
+DRIVERS_PCI_ACCESS=$(${bin_dir}/sm_hash 'drivers/pci/access.c')
+DRIVERS_RAPIDIO_ACCESS=$(${bin_dir}/sm_hash 'drivers/rapidio/rio-access.c')
+
 cat << EOF | sqlite3 $db_file
 /* we only care about the main ->read/write() functions. */
-delete from caller_info where function = '(struct file_operations)->read' and file != 'fs/read_write.c';
-delete from caller_info where function = '(struct file_operations)->write' and file != 'fs/read_write.c';
-delete from caller_info where function = '(struct file_operations)->read' and caller != '__vfs_read';
-delete from caller_info where function = '(struct file_operations)->write' and caller != '__vfs_write';
+delete from caller_info where function = '(struct file_operations)->read' and caller != 'vfs_read';
+delete from caller_info where function = '(struct file_operations)->write' and caller != 'vfs_write';
 delete from function_ptr where function = '(struct file_operations)->read';
 delete from function_ptr where function = '(struct file_operations)->write';
-delete from caller_info where function = '__vfs_write' and caller != 'vfs_write';
-delete from caller_info where function = '__vfs_read' and caller != 'vfs_read';
 delete from caller_info where function = '(struct file_operations)->write' and caller = 'do_loop_readv_writev';
+delete from caller_info where caller = '__kernel_write';
 delete from caller_info where function = 'do_splice_from' and caller = 'direct_splice_actor';
+delete from caller_info where function = 'vfs_write' and type = 8017 and parameter = 0;
+delete from caller_info where function = 'vfs_read' and type = 8017 and parameter = 0;
 
 /* delete these function pointers which cause false positives */
 delete from caller_info where function = '(struct file_operations)->open' and type != 0;
@@ -22,6 +27,7 @@ delete from caller_info where function = '(struct irq_router)->get' and type != 
 delete from caller_info where function = '(struct irq_router)->set' and type != 0;
 delete from caller_info where function = '(struct net_device_ops)->ndo_change_mtu' and caller = 'i40e_dbg_netdev_ops_write';
 delete from caller_info where function = '(struct timer_list)->function' and type != 0;
+delete from caller_info where function = '(struct work_struct)->func' and type != 0;
 
 /* 8017 is USER_DATA and  9017 is USER_DATA_SET */
 delete from caller_info where function = 'dev_hard_start_xmit' and type = 8017;
@@ -35,24 +41,44 @@ delete from return_states where function='scnprintf' and type = 8017;
 delete from return_states where function='vsnprintf' and type = 8017;
 delete from return_states where function='snprintf' and type = 8017;
 delete from return_states where function='sprintf' and type = 8017;
+delete from return_states where function='poly1305_update' and type = 8017 and key = '\$->buflen';
 /* There is something setting skb->sk->sk_mark and friends to user_data and */
 /* because of recursion it gets passed to everything and is impossible to debug */
 delete from caller_info where function = '__dev_queue_xmit' and type = 8017;
 delete from caller_info where function = '__netdev_start_xmit' and type = 8017;
+delete from caller_info where function = '(struct net_device_ops)->ndo_start_xmit' and type = 8017;
+delete from caller_info where function = '(struct net_device_ops)->ndo_start_xmit' and type = 9018;
+delete from caller_info where function = '(struct ieee80211_ops)->tx' and type = 8017;
+delete from caller_info where function = '(struct ieee80211_ops)->tx' and type = 9018;
+delete from caller_info where function = '(struct inet6_protocol)->handler' and type = 8017;
+delete from caller_info where function = '(struct inet6_protocol)->handler' and type = 9018;
+delete from caller_info where function = '__udp6_lib_rcv' and (type = 8017 or type = 9018);
+delete from caller_info where function = 'udpv6_rcv' and (type = 8017 or type = 9018);
 delete from caller_info where function = '(struct packet_type)->func' and type = 8017;
 delete from caller_info where function = '(struct bio)->bi_end_io' and type = 8017;
+delete from caller_info where function = '(struct mISDNchannel)->recv' and type = 8017;
 delete from caller_info where type = 8017 and key = '*\$->bi_private';
 delete from caller_info where type = 8017 and key = '\$->bi_private';
 delete from caller_info where caller = 'NF_HOOK_COND' and type = 8017;
 delete from caller_info where caller = 'NF_HOOK' and type = 8017;
+delete from caller_info where caller = 'bus_for_each_drv' and type = 8017;
 /* comparison doesn't deal with chunks, I guess.  */
 delete from return_states where function='get_tty_driver' and type = 8017;
 delete from caller_info where caller = 'snd_ctl_elem_write' and function = '(struct snd_kcontrol)->put' and type = 8017;
 delete from caller_info where caller = 'snd_ctl_elem_read' and function = '(struct snd_kcontrol)->get' and type = 8017;
 delete from caller_info where function = 'nf_tables_newexpr' and type = 8017 and key = '\$->family';
 delete from caller_info where caller = 'fb_set_var' and function = '(struct fb_ops)->fb_set_par' and type = 8017 and parameter = 0;
+delete from caller_info where caller = 'f_audio_complete' and function = '(struct usb_audio_control)->set' and type = 8017;
 delete from return_states where function = 'tty_lookup_driver' and parameter = 2 and type = 8017;
 delete from caller_info where function = 'iomap_apply' and type = 8017 and key = '*\$';
+delete from caller_info where function = '(struct inet6_protocol)->handler' and type = 9018;
+delete from caller_info where function = 'do_dentry_open param 2' and type = 8017;
+delete from caller_info where function = 'do_dentry_open param 2' and type = 9018;
+delete from caller_info where function = 'param_array param 7' and type = 9018;
+# this is just too complicated for Smatch.  See how snd_ctl_find_id() is called.
+delete from caller_info where function = 'snd_ctl_notify_one' and type = 8017;
+#temporary.  Just to fix recursion
+delete from caller_info where caller = 'ecryptfs_mkdir' and type = 8017;
 
 insert into caller_info values ('userspace', '', 'compat_sys_ioctl', 0, 0, 8017, 0, '\$', '1');
 insert into caller_info values ('userspace', '', 'compat_sys_ioctl', 0, 0, 8017, 1, '\$', '1');
@@ -89,14 +115,6 @@ insert into return_states values ('faked', 'ksize', 0, 1, '0', 0,    0, -1, '', 
 insert into return_states values ('faked', 'ksize', 0, 1, '0', 0, 103,  0, '\$', '16');
 insert into return_states values ('faked', 'ksize', 0, 2, '1-4000000', 0,    0,  -1, '', '');
 
-/* store a bunch of capped functions */
-update return_states set return = '0-u32max[<=\$2]' where function = 'copy_to_user';
-update return_states set return = '0-u32max[<=\$2]' where function = '_copy_to_user';
-update return_states set return = '0-u32max[<=\$2]' where function = '__copy_to_user';
-update return_states set return = '0-u32max[<=\$2]' where function = 'copy_from_user';
-update return_states set return = '0-u32max[<=\$2]' where function = '_copy_from_user';
-update return_states set return = '0-u32max[<=\$2]' where function = '__copy_from_user';
-
 update return_states set return = '0-8' where function = '__arch_hweight8';
 update return_states set return = '0-16' where function = '__arch_hweight16';
 update return_states set return = '0-32' where function = '__arch_hweight32';
@@ -115,12 +133,13 @@ update return_states set return = '0-u16max[==\$0]' where function = '__builtin_
 
 delete from return_states where function = 'bitmap_allocate_region' and return = '1';
 /* Just delete a lot of returns that everyone ignores */
-delete from return_states where file = 'drivers/pci/access.c' and (return >= 129 and return <= 137);
+delete from return_states where file = ${DRIVERS_PCI_ACCESS} and (return >= 129 and return <= 137);
+delete from return_states where function = 'pci_bus_read_config_byte' and return != '0';
+delete from return_states where function = 'pci_bus_read_config_word' and return != '0';
+delete from return_states where function = 'pci_bus_read_config_dword' and return != '0';
 
 /* Smatch can't parse wait_for_completion() */
 update return_states set return = '(-108),(-22),0' where function = '__spi_sync' and return = '(-115),(-108),(-22)';
-
-delete from caller_info where caller = '__kernel_write';
 
 /* We sometimes use pre-allocated 4097 byte buffers for performance critical code but pretend it is always PAGE_SIZE */
 update caller_info set value = 4096 where caller='kernfs_file_direct_read' and function='(struct kernfs_ops)->read' and type = 1002 and parameter = 1;
@@ -149,21 +168,18 @@ delete from return_states where function = "__write_once_size";
 
 update return_states set value = "s32min-s32max[\$1]" where function = 'atomic_set' and parameter = 0 and type = 1025;
 
-/* handled in the check itself */
-delete from return_states where function = 'atomic_inc_return' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_add_return' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_sub_return' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_sub_and_test' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_dec_and_test' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_dec' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_inc' and (type = 8023 or type = 8024);
-delete from return_states where function = 'atomic_sub' and (type = 8023 or type = 8024);
-delete from return_states where function = 'refcount_add_not_zero' and (type = 8023 or type = 8024);
-delete from return_states where function = 'refcount_inc_not_zero' and (type = 8023 or type = 8024);
-delete from return_states where function = 'refcount_sub_and_test' and (type = 8023 or type = 8024);
+/* other atomic stuff */
+delete from return_states where function = 'sg_common_write' and type = 8023;
+delete from return_states where function = 'schedule' and type = 8024;
+delete from return_states where function = '__mutex_lock_common' and type = 8024;
+delete from return_states where function = 'mutex_unlock' and type = 8024;
+delete from return_states where function = 'printk' and type = 8024;
+delete from return_states where function = 'vsnprintf' and type = 8024;
 
 update return_states set return = '0-32,2147483648-2147483690' where function = '_parse_integer' and return = '0';
 update return_states set value = '0-u64max' where function = '_parse_integer' and type = 1025 and parameter = 2 and key = '*$';
+update return_states set value = '0-s32max' where function = 'dm_split_args' and type = 1025 and parameter = 0 and key = '*$';
+update return_states set value = '(-4095)-0' where function = 'usb_submit_urb' and return ='0' and type = 1025 and parameter = 0 and key = '\$->status';
 
 /* delete some function pointers which are sometimes byte units */
 delete from caller_info where function = '(struct i2c_algorithm)->master_xfer' and type = 1027;
@@ -172,7 +188,7 @@ delete from caller_info where function = '(struct i2c_algorithm)->master_xfer' a
 delete from type_info where key = '(union anonymous)->__val';
 
 /* This is RIO_BAD_SIZE */
-delete from return_states where file = 'drivers/rapidio/rio-access.c' and return = '129';
+delete from return_states where file = ${DRIVERS_RAPIDIO_ACCESS} and return = '129';
 
 /* Smatch sucks at loops */
 delete from return_states where function = 'ata_dev_next' and type = 103;
@@ -185,13 +201,37 @@ update return_states set parameter = -1, key = '\$' where function = 'ipmi_ssif_
 update return_states set parameter = 1, key = '\$->tree->tree_lock' where function = 'hfs_find_init' and type = 8020 and parameter = 0;
 delete from return_states where function = '__oom_kill_process' and type = 8021;
 
-EOF
+/* These can not return NULL */
+delete from return_states where function='ext4_append' and return = '0';
 
-# fixme: this is totally broken
-call_id=$(echo "select distinct call_id from caller_info where function = '__kernel_write';" | sqlite3 $db_file)
-for id in $call_id ; do
-    echo "insert into caller_info values ('fake', '', '__kernel_write', $id, 0, 8017, 1, '*\$', '');" | sqlite3 $db_file
-done
+/* Smatch doesn't understand the allocation in genl_family_rcv_msg_attrs_parse() */
+delete from type_size where type = '(struct genl_info)->attrs';
+
+delete from return_states where function = 'fib6_tables_dump' and return = '1';
+
+insert into function_ptr values ("fixup_kernel.sh", "r get_handler()", "ioctl_standard_call ptr param 4", 1);
+insert into function_ptr values ("fixup_kernel.sh", "r get_handler()", "ioctl_standard_iw_point param 3", 1);
+
+/* device_add() returns too many states so delete stuff */
+delete from return_states where function = '__device_attach' and type = 1012;
+
+delete from return_states where function = 'bus_for_each_dev' and return = '1';
+/* This matches the wrong function pointers with the wrong data pointer. */
+/* Delete it until it can be handled correctly. */
+delete from caller_info where function = 'device_for_each_child' and type != 0;
+
+/* kfree does poison stuff but it ends up being a lot of data to track all that */
+delete from return_states where function = 'kfree' and (type = 501 or type = 502 or type = 1012 or type = 1025) and key = '*$';
+delete from return_states where function = 'vfree' and (type = 501 or type = 502 or type = 1012 or type = 1025) and key = '*$';
+
+/* The only work queue we care about is process_one_work() */
+delete from caller_info where caller = 'cache_set_flush' and function = '(struct work_struct)->func';
+delete from caller_info where caller = 'sctp_inq_push' and function = '(struct work_struct)->func';
+
+/* dev_err() stores that dev->[class,bus,driver] is not an error pointer (useless info). */
+delete from return_states where function = '__dev_printk' and type = 103;
+
+EOF
 
 for i in $(echo "select distinct return from return_states where function = 'clear_user';" | sqlite3 $db_file ) ; do
     echo "update return_states set return = \"$i[<=\$1]\" where return = \"$i\" and function = 'clear_user';" | sqlite3 $db_file
@@ -214,7 +254,6 @@ echo "select distinct file, function from function_ptr where ptr='(struct rtl_ha
          | sqlite3 $db_file
 done
 
-
 for func in __kmalloc __kmalloc_track_caller ; do
 
     cat << EOF | sqlite3 $db_file
@@ -227,4 +266,11 @@ insert into return_states values ('faked', '$func', 0, 2, '4096-ptr_max', 0, 103
 insert into return_states values ('faked', '$func', 0, 3, '0', 0,    0,  -1, '', '');
 insert into return_states values ('faked', '$func', 0, 3, '0', 0,    103,  0, '\$', '1-long_max');
 EOF
+
 done
+
+# it's easiest to pretend that invalid kobjects don't exist
+ID=$(echo "select distinct(return_id) from return_states where function = 'kobject_init' order by return_id desc limit 1;" | sqlite3 $db_file)
+echo "delete from return_states where function = 'kobject_init' and return_id = '$ID';" | sqlite3 $db_file
+
+

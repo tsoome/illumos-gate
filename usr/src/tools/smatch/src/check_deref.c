@@ -22,7 +22,7 @@
  * This test only complains about:
  * 1) dereferencing uninitialized variables
  * 2) dereferencing variables which were assigned as null.
- * 3) dereferencing variables which were assigned a function the returns 
+ * 3) dereferencing variables which were assigned a function the returns
  *    null.
  *
  * If we dereference something then we complain if any of those three
@@ -37,6 +37,8 @@
 static int my_id;
 
 #define __GFP_NOFAIL 0x800
+
+#define	KM_SLEEP	0x0000
 
 STATE(null);
 STATE(ok);
@@ -61,6 +63,24 @@ static void is_ok(struct sm_state *sm, struct expression *mod_expr)
 	set_state(my_id, sm->name, sm->sym, &ok);
 }
 
+static bool is_possibly_zero(const char *name, struct symbol *sym)
+{
+	struct sm_state *sm, *tmp;
+
+	sm = get_sm_state(SMATCH_EXTRA, name, sym);
+	if (!sm)
+		return false;
+	FOR_EACH_PTR(sm->possible, tmp) {
+		if (!estate_rl(tmp->state))
+			continue;
+		if (rl_min(estate_rl(tmp->state)).value == 0 &&
+		    rl_max(estate_rl(tmp->state)).value == 0)
+			return true;
+	} END_FOR_EACH_PTR(tmp);
+
+	return false;
+}
+
 static void check_dereference(struct expression *expr)
 {
 	struct sm_state *sm;
@@ -74,7 +94,7 @@ static void check_dereference(struct expression *expr)
 		return;
 	if (is_ignored(my_id, sm->name, sm->sym))
 		return;
-	if (implied_not_equal(expr, 0))
+	if (!is_possibly_zero(sm->name, sm->sym))
 		return;
 	if (is_impossible_path())
 		return;
@@ -85,16 +105,10 @@ static void check_dereference(struct expression *expr)
 		if (tmp->state == &ok)
 			continue;
 		add_ignore(my_id, sm->name, sm->sym);
-		if (tmp->state == &null) {
-			if (option_spammy)
-				sm_error("potential NULL dereference '%s'.", tmp->name);
+		if (tmp->state == &null)
 			return;
-		}
-		if (tmp->state == &uninitialized) {
-			if (option_spammy)
-				sm_error("potentially dereferencing uninitialized '%s'.", tmp->name);
+		if (tmp->state == &uninitialized)
 			return;
-		}
 		sm_error("potential null dereference '%s'.  (%s returns null)",
 			tmp->name, tmp->state->name);
 		return;
@@ -111,7 +125,7 @@ static void check_dereference_name_sym(char *name, struct symbol *sym)
 		return;
 	if (is_ignored(my_id, sm->name, sm->sym))
 		return;
-	if (implied_not_equal_name_sym(name, sym, 0))
+	if (!is_possibly_zero(sm->name, sm->sym))
 		return;
 	if (is_impossible_path())
 		return;
@@ -122,16 +136,10 @@ static void check_dereference_name_sym(char *name, struct symbol *sym)
 		if (tmp->state == &ok)
 			continue;
 		add_ignore(my_id, sm->name, sm->sym);
-		if (tmp->state == &null) {
-			if (option_spammy)
-				sm_error("potential NULL dereference '%s'.", tmp->name);
+		if (tmp->state == &null)
 			return;
-		}
-		if (tmp->state == &uninitialized) {
-			if (option_spammy)
-				sm_error("potentially dereferencing uninitialized '%s'.", tmp->name);
+		if (tmp->state == &uninitialized)
 			return;
-		}
 		sm_error("potential null dereference '%s'.  (%s returns null)",
 			tmp->name, tmp->state->name);
 		return;
@@ -192,11 +200,9 @@ static void match_assign(struct expression *expr)
 	if (__in_fake_assign)
 		return;
 
-	FOR_EACH_PTR_REVERSE(big_statement_stack, stmt) {
-		if (stmt->type == STMT_DECLARATION)
-			return;
-		break;
-	} END_FOR_EACH_PTR_REVERSE(stmt);
+	stmt = get_current_statement();
+	if (stmt && stmt->type == STMT_DECLARATION)
+		return;
 
 	set_state_expr(my_id, expr->left, &null);
 }
@@ -233,8 +239,14 @@ static int called_with_no_fail(struct expression *call, int param)
 	if (call->type != EXPR_CALL)
 		return 0;
 	arg = get_argument_from_call_expr(call->args, param);
-	if (get_value(arg, &sval) && (sval.uvalue & __GFP_NOFAIL))
-		return 1;
+	if (get_value(arg, &sval)) {
+		if (option_project == PROJ_ILLUMOS_KERNEL &&
+		    sval.uvalue == KM_SLEEP)
+			return 1;
+		if (option_project == PROJ_KERNEL &&
+		    sval.uvalue & __GFP_NOFAIL)
+			return 1;
+	}
 	return 0;
 }
 
@@ -249,13 +261,13 @@ static void match_assign_returns_null(const char *fn, struct expression *expr, v
 	set_state_expr(my_id, expr->left, state);
 }
 
-static void register_allocation_funcs(void)
+static void register_allocation_funcs(char *name)
 {
 	struct token *token;
 	const char *func;
 	int arg;
 
-	token = get_tokens_file("kernel.allocation_funcs_gfp");
+	token = get_tokens_file(name);
 	if (!token)
 		return;
 	if (token_type(token) != TOKEN_STREAMBEGIN)
@@ -292,5 +304,7 @@ void check_deref(int id)
 	add_hook(&match_assign, ASSIGNMENT_HOOK);
 	add_hook(&match_assigns_address, ASSIGNMENT_HOOK);
 	if (option_project == PROJ_KERNEL)
-		register_allocation_funcs();
+		register_allocation_funcs("kernel.allocation_funcs_gfp");
+	if (option_project == PROJ_ILLUMOS_KERNEL)
+		register_allocation_funcs("illumos_kernel.allocation_funcs_gfp");
 }

@@ -33,7 +33,7 @@ static struct stree_stack *all_pools;
 
 const char *show_sm(struct sm_state *sm)
 {
-	static char buf[256];
+	char buf[256];
 	struct sm_state *tmp;
 	int pos;
 	int i;
@@ -41,14 +41,14 @@ const char *show_sm(struct sm_state *sm)
 	if (!sm)
 		return "<none>";
 
-	pos = snprintf(buf, sizeof(buf), "[%s] %s = '%s'%s",
-		       check_name(sm->owner), sm->name, show_state(sm->state),
+	pos = snprintf(buf, sizeof(buf), "[%s] %s %p = '%s'%s",
+		       check_name(sm->owner), sm->name, sm->sym, show_state(sm->state),
 		       sm->merged ? " [merged]" : "");
 	if (pos > sizeof(buf))
 		goto truncate;
 
 	if (ptr_list_size((struct ptr_list *)sm->possible) == 1)
-		return buf;
+		return alloc_sname(buf);
 
 	pos += snprintf(buf + pos, sizeof(buf) - pos, " (");
 	if (pos > sizeof(buf))
@@ -66,12 +66,12 @@ const char *show_sm(struct sm_state *sm)
 	} END_FOR_EACH_PTR(tmp);
 	snprintf(buf + pos, sizeof(buf) - pos, ")");
 
-	return buf;
+	return alloc_sname(buf);
 
 truncate:
 	for (i = 0; i < 3; i++)
 		buf[sizeof(buf) - 2 - i] = '.';
-	return buf;
+	return alloc_sname(buf);
 }
 
 void __print_stree(struct stree *stree)
@@ -125,7 +125,7 @@ int cmp_tracker(const struct sm_state *a, const struct sm_state *b)
 int *dynamic_states;
 void allocate_dynamic_states_array(int num_checks)
 {
-	dynamic_states = calloc(num_checks + 1, sizeof(int));
+	dynamic_states = calloc(num_checks, sizeof(int));
 }
 
 void set_dynamic_states(unsigned short owner)
@@ -403,7 +403,11 @@ int is_merged(struct sm_state *sm)
 
 int is_leaf(struct sm_state *sm)
 {
-	return !sm->merged;
+	if (!sm->merged)
+		return true;
+	if (sm->leaf)
+		return true;
+	return false;
 }
 
 int slist_has_state(struct state_list *slist, struct smatch_state *state)
@@ -439,10 +443,6 @@ static struct smatch_state *merge_states(int owner, const char *name,
 		ret = state1;
 	else if (__has_merge_function(owner))
 		ret = __client_merge_function(owner, state1, state2);
-	else if (state1 == &ghost)
-		ret = state2;
-	else if (state2 == &ghost)
-		ret = state1;
 	else if (!state1 || !state2)
 		ret = &undefined;
 	else
@@ -494,8 +494,7 @@ struct sm_state *merge_sm_states(struct sm_state *one, struct sm_state *two)
 	if (result->state == two->state)
 		result->line = two->line;
 
-	if (option_debug ||
-	    strcmp(check_name(one->owner), option_debug_check) == 0) {
+	if (debug_on(check_name(one->owner), one->name)) {
 		struct sm_state *tmp;
 		int i = 0;
 
@@ -528,7 +527,6 @@ struct sm_state *get_sm_state_stree(struct stree *stree, int owner, const char *
 
 	if (!name)
 		return NULL;
-
 
 	return avl_lookup(stree, (struct sm_state *)&tracker);
 }

@@ -384,6 +384,55 @@ static void hackup_unsigned_compares(struct expression *expr)
 		expr->op = make_op_unsigned(expr->op);
 }
 
+static bool handle_expr_statement_conditions(struct expression *expr)
+{
+	struct statement *last_stmt, *stmt;
+	struct expression *last_expr;
+
+	if (expr->type == EXPR_PREOP && expr->op == '(')
+		expr = expr->unop;
+	if (expr->type != EXPR_STATEMENT)
+		return false;
+
+	stmt = expr->statement;
+	if (stmt->type != STMT_COMPOUND)
+		return false;
+
+	last_stmt = last_ptr_list((struct ptr_list *)stmt->stmts);
+	if (!last_stmt)
+		return false;
+
+	/*
+	 * I don't think this is right, but I'm not sure how to handle other
+	 * types of statements.
+	 */
+	if (last_stmt->type == STMT_EXPRESSION)
+		last_expr = last_stmt->expression;
+	else if (last_stmt->type == STMT_LABEL &&
+		 last_stmt->label_statement->type == STMT_EXPRESSION)
+		last_expr = last_stmt->label_statement->expression;
+	else
+		return false;
+
+	__expr_stmt_count++;
+	__push_scope_hooks();
+	FOR_EACH_PTR(stmt->stmts, stmt) {
+		if (stmt == last_stmt) {
+			if (stmt->type == STMT_LABEL)
+				__split_label_stmt(stmt);
+			split_conditions(last_expr);
+			goto done;
+		}
+		__split_stmt(stmt);
+	} END_FOR_EACH_PTR(stmt);
+	exit(1);
+done:
+	__call_scope_hooks();
+	__expr_stmt_count--;
+
+	return true;
+}
+
 static void do_condition(struct expression *expr)
 {
 	__fold_in_set_states();
@@ -406,6 +455,9 @@ static void split_conditions(struct expression *expr)
 		__fold_in_set_states();
 		return;
 	}
+
+	if (handle_expr_statement_conditions(expr))
+		return;
 
 	/*
 	 * On fast paths (and also I guess some people think it's cool) people
@@ -498,7 +550,6 @@ static void split_conditions(struct expression *expr)
 static int inside_condition;
 void __split_whole_condition(struct expression *expr)
 {
-	sm_debug("%d in __split_whole_condition\n", get_lineno());
 	inside_condition++;
 	__save_pre_cond_states();
 	__push_cond_stacks();
@@ -510,12 +561,10 @@ void __split_whole_condition(struct expression *expr)
 	__pass_to_client(expr, WHOLE_CONDITION_HOOK);
 	pop_expression(&big_expression_stack);
 	inside_condition--;
-	sm_debug("%d done __split_whole_condition\n", get_lineno());
 }
 
 void __handle_logic(struct expression *expr)
 {
-	sm_debug("%d in __handle_logic\n", get_lineno());
 	inside_condition++;
 	__save_pre_cond_states();
 	__push_cond_stacks();
@@ -529,7 +578,6 @@ void __handle_logic(struct expression *expr)
 	pop_expression(&big_expression_stack);
 	__merge_false_states();
 	inside_condition--;
-	sm_debug("%d done __handle_logic\n", get_lineno());
 }
 
 int is_condition(struct expression *expr)
@@ -562,7 +610,6 @@ int __handle_condition_assigns(struct expression *expr)
 	if (!is_condition(expr->right))
 		return 0;
 
-	sm_debug("%d in __handle_condition_assigns\n", get_lineno());
 	inside_condition++;
 	__save_pre_cond_states();
 	__push_cond_stacks();
@@ -606,7 +653,7 @@ int __handle_condition_assigns(struct expression *expr)
 	} END_FOR_EACH_SM(sm);
 
 	__pass_to_client(expr, ASSIGNMENT_HOOK);
-	sm_debug("%d done __handle_condition_assigns\n", get_lineno());
+
 	return 1;
 }
 
@@ -626,41 +673,68 @@ static int is_select_assign(struct expression *expr)
 
 int __handle_select_assigns(struct expression *expr)
 {
-	struct expression *right;
+	struct expression *right, *condition;
 	struct stree *final_states = NULL;
 	struct sm_state *sm;
 	int is_true;
 	int is_false;
+	char buf[64];
 
 	if (!is_select_assign(expr))
 		return 0;
-	sm_debug("%d in __handle_ternary_assigns\n", get_lineno());
 	right = strip_expr(expr->right);
 	__pass_to_client(right, SELECT_HOOK);
 
+	// FIXME: why is this implied instead of known?
 	is_true = implied_condition_true(right->conditional);
 	is_false = implied_condition_false(right->conditional);
 
-	/* hah hah.  the ultra fake out */
-	__save_pre_cond_states();
-	__split_whole_condition(right->conditional);
+	/*
+	 * For "x = frob() ?: y;" we only want to parse the frob() call once
+	 * so do the assignment and parse the condition in one step.
+	 */
+	if (right->cond_true) {
+		condition = right->conditional;
+		expr_set_parent_expr(condition, right);
+		__save_pre_cond_states();
+		__split_whole_condition(condition);
+	} else {
+		struct expression *fake_condition, *fake_assign;
 
-	if (!is_false) {
+		snprintf(buf, sizeof(buf), "fake_cond_%p", expr);
+		fake_condition = create_fake_assign(buf, get_type(right->conditional), right->conditional);
+		if (!fake_condition) {
+			sm_perror("cannot parse condition");
+			return 0;
+		}
+		expr_set_parent_expr(fake_condition, right);
+		__save_pre_cond_states();
+		__split_whole_condition(fake_condition);
+		fake_assign = assign_expression(expr->left, expr->op, fake_condition->left);
+		expr_set_parent_expr(fake_assign, right);
+		__split_expr(fake_assign);
+	}
+
+	if (!is_false && right->cond_true) {
 		struct expression *fake_expr;
 
-		if (right->cond_true)
-			fake_expr = assign_expression(expr->left, expr->op, right->cond_true);
-		else
-			fake_expr = assign_expression(expr->left, expr->op, right->conditional);
+		fake_expr = assign_expression(expr->left, expr->op, right->cond_true);
+		expr_set_parent_expr(fake_expr, expr);
 		__split_expr(fake_expr);
+		final_states = clone_stree(__get_cur_stree());
+	} else if (!is_false) {
 		final_states = clone_stree(__get_cur_stree());
 	}
 
-	__use_false_states();
-	if (!is_true) {
+	if (is_true) {
+		__discard_false_states();
+		merge_stree(&final_states, __get_cur_stree());
+	} else {
 		struct expression *fake_expr;
 
+		__use_false_states();
 		fake_expr = assign_expression(expr->left, expr->op, right->cond_false);
+		expr_set_parent_expr(fake_expr, expr);
 		__split_expr(fake_expr);
 		merge_stree(&final_states, __get_cur_stree());
 	}
@@ -672,8 +746,6 @@ int __handle_select_assigns(struct expression *expr)
 	} END_FOR_EACH_SM(sm);
 
 	free_stree(&final_states);
-
-	sm_debug("%d done __handle_ternary_assigns\n", get_lineno());
 
 	return 1;
 }
@@ -731,6 +803,7 @@ int __handle_expr_statement_assigns(struct expression *expr)
 		fake_expr_stmt.statement = last_stmt;
 
 		fake_assign = assign_expression(expr->left, expr->op, &fake_expr_stmt);
+		expr_set_parent_expr(fake_assign, expr);
 		__split_expr(fake_assign);
 
 		__pass_to_client(stmt, STMT_HOOK_AFTER);
@@ -738,7 +811,9 @@ int __handle_expr_statement_assigns(struct expression *expr)
 	} else if (stmt->type == STMT_EXPRESSION) {
 		struct expression *fake_assign;
 
-		fake_assign = assign_expression(expr->left, expr->op, stmt->expression);
+		right = strip_no_cast(stmt->expression);
+		fake_assign = assign_expression(expr->left, expr->op, right);
+		expr_set_parent_expr(fake_assign, expr);
 		__split_expr(fake_assign);
 
 	} else {

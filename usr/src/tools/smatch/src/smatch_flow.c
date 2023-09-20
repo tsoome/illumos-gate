@@ -27,12 +27,16 @@
 
 int __in_fake_assign;
 int __in_fake_struct_assign;
+int __in_buf_clear;
+int __in_fake_var_assign;
+int __fake_state_cnt;
+int __debug_skip;
 int in_fake_env;
 int final_pass;
 int __inline_call;
 struct expression  *__inline_fn;
 
-static int __smatch_lineno = 0;
+int __smatch_lineno = 0;
 
 static char *base_file;
 static const char *filename;
@@ -40,6 +44,7 @@ static char *pathname;
 static char *full_filename;
 static char *full_base_file;
 static char *cur_func;
+int base_file_stream;
 static unsigned int loop_count;
 static int last_goto_statement_handled;
 int __expr_stmt_count;
@@ -48,6 +53,7 @@ int __in_unmatched_hook;
 static struct expression_list *switch_expr_stack = NULL;
 static struct expression_list *post_op_stack = NULL;
 
+static struct ptr_list *fn_data_list;
 static struct ptr_list *backup;
 
 struct expression_list *big_expression_stack;
@@ -55,6 +61,8 @@ struct statement_list *big_statement_stack;
 struct statement *__prev_stmt;
 struct statement *__cur_stmt;
 struct statement *__next_stmt;
+static struct expression_list *parsed_calls;
+static int indent_cnt;
 int __in_pre_condition = 0;
 int __bail_on_rest_of_function = 0;
 static struct timeval fn_start_time;
@@ -69,6 +77,8 @@ int in_expression_statement(void) { return !!__expr_stmt_count; }
 static void split_symlist(struct symbol_list *sym_list);
 static void split_declaration(struct symbol_list *sym_list);
 static void split_expr_list(struct expression_list *expr_list, struct expression *parent);
+static void split_args(struct expression *expr);
+static struct expression *fake_a_variable_assign(struct symbol *type, struct expression *call, struct expression *expr, int nr);
 static void add_inline_function(struct symbol *sym);
 static void parse_inline(struct expression *expr);
 
@@ -83,13 +93,17 @@ const sval_t valid_ptr_min_sval = {
 	.type = &ptr_ctype,
 	{.value = 4096},
 };
+sval_t ptr_err_min = { .type = &ptr_ctype };
+sval_t ptr_err_max = { .type = &ptr_ctype };
+sval_t ulong_ULONG_MAX = { .type = &ulong_ctype };
+
 sval_t valid_ptr_max_sval = {
 	.type = &ptr_ctype,
 	{.value = ULONG_MAX & ~(MTAG_OFFSET_MASK)},
 };
 struct range_list *valid_ptr_rl;
 
-void alloc_valid_ptr_rl(void)
+void alloc_ptr_constants(void)
 {
 	valid_ptr_max = sval_type_max(&ulong_ctype).value & ~(MTAG_OFFSET_MASK);
 	valid_ptr_max_sval.value = valid_ptr_max;
@@ -97,6 +111,10 @@ void alloc_valid_ptr_rl(void)
 	valid_ptr_rl = alloc_rl(valid_ptr_min_sval, valid_ptr_max_sval);
 	valid_ptr_rl = cast_rl(&ptr_ctype, valid_ptr_rl);
 	valid_ptr_rl = clone_rl_permanent(valid_ptr_rl);
+
+	ptr_err_min = sval_cast(&ptr_ctype, err_min);
+	ptr_err_max = sval_cast(&ptr_ctype, err_max);
+	ulong_ULONG_MAX = sval_type_max(&ulong_ctype);
 }
 
 int outside_of_function(void)
@@ -120,6 +138,16 @@ const char *get_base_file(void)
 	if (option_full_path)
 		return full_base_file;
 	return base_file;
+}
+
+unsigned long long get_file_id(void)
+{
+	return str_to_llu_hash(get_filename());
+}
+
+unsigned long long get_base_file_id(void)
+{
+	return str_to_llu_hash(get_base_file());
 }
 
 static void set_position(struct position pos)
@@ -165,12 +193,28 @@ int is_assigned_call(struct expression *expr)
 	return 0;
 }
 
-static int is_inline_func(struct expression *expr)
+int is_fake_assigned_call(struct expression *expr)
+{
+	struct expression *parent = expr_get_fake_parent_expr(expr);
+
+	if (parent &&
+	    parent->type == EXPR_ASSIGNMENT &&
+	    parent->op == '=' &&
+	    strip_expr(parent->right) == expr)
+		return 1;
+
+	return 0;
+}
+
+static bool is_inline_func(struct expression *expr)
 {
 	if (expr->type != EXPR_SYMBOL || !expr->symbol)
-		return 0;
-	if (expr->symbol->ctype.modifiers & MOD_INLINE)
-		return 1;
+		return false;
+	if (!expr->symbol->definition)
+		return false;
+	if (expr->symbol->definition->ctype.modifiers & MOD_INLINE)
+		return true;
+
 	return 0;
 }
 
@@ -178,9 +222,39 @@ static int is_noreturn_func(struct expression *expr)
 {
 	if (expr->type != EXPR_SYMBOL || !expr->symbol)
 		return 0;
+
+	/*
+	 * It's almost impossible for Smatch to handle __builtin_constant_p()
+	 * the same way that GCC does so Smatch ends up making some functions
+	 * as no return functions incorrectly.
+	 *
+	 */
+	if (option_project == PROJ_KERNEL && expr->symbol->ident &&
+	    strstr(expr->symbol->ident->name, "__compiletime_assert"))
+		return 0;
+
 	if (expr->symbol->ctype.modifiers & MOD_NORETURN)
 		return 1;
 	return 0;
+}
+
+static int save_func_time(void *_rl, int argc, char **argv, char **azColName)
+{
+	unsigned long *rl = _rl;
+
+	*rl = strtoul(argv[0], NULL, 10);
+	return 0;
+}
+
+static int get_func_time(struct symbol *sym)
+{
+	unsigned long time = 0;
+
+	run_sql(&save_func_time, &time,
+		"select key from return_implies where %s and type = %d;",
+		get_static_filter(sym), FUNC_TIME);
+
+	return time;
 }
 
 static int inline_budget = 20;
@@ -218,6 +292,9 @@ int inlinable(struct expression *expr)
 
 	/* the magic numbers in this function are pulled out of my bum. */
 	if (last_stmt->pos.line > sym->pos.line + inline_budget)
+		return 0;
+
+	if (get_func_time(expr->symbol) >= 2)
 		return 0;
 
 	return 1;
@@ -289,6 +366,14 @@ static int prev_expression_is_getting_address(struct expression *expr)
 			goto next;
 		if (parent->type == EXPR_DEREF && parent->op == '.')
 			goto next;
+		/* Handle &foo->array[offset] */
+		if (parent->type == EXPR_BINOP && parent->op == '+') {
+			parent = expr_get_parent_expr(parent);
+			if (!parent)
+				return 0;
+			if (parent->type == EXPR_PREOP && parent->op == '*')
+				goto next;
+		}
 
 		return 0;
 next:
@@ -296,6 +381,7 @@ next:
 	} while (1);
 }
 
+int __in_builtin_overflow_func;
 static void handle_builtin_overflow_func(struct expression *expr)
 {
 	struct expression *a, *b, *res, *assign;
@@ -315,7 +401,10 @@ static void handle_builtin_overflow_func(struct expression *expr)
 	res = get_argument_from_call_expr(expr->args, 2);
 
 	assign = assign_expression(deref_expression(res), '=', binop_expression(a, op, b));
+
+	__in_builtin_overflow_func++;
 	__split_expr(assign);
+	__in_builtin_overflow_func--;
 }
 
 static int handle__builtin_choose_expr(struct expression *expr)
@@ -344,7 +433,12 @@ static int handle__builtin_choose_expr_assigns(struct expression *expr)
 	struct expression *const_expr, *right, *expr1, *expr2, *fake;
 	sval_t sval;
 
-	right = strip_expr(expr->right);
+	/*
+	 * We can't use strip_no_cast() because it strips out
+	 * __builtin_choose_expr() which turns this function into a no-op.
+	 *
+	 */
+	right = strip_parens(expr->right);
 	if (right->type != EXPR_CALL)
 		return 0;
 	if (!sym_name_is("__builtin_choose_expr", right->fn))
@@ -362,12 +456,194 @@ static int handle__builtin_choose_expr_assigns(struct expression *expr)
 	return 1;
 }
 
+int is_condition_call(struct expression *expr)
+{
+	struct expression *tmp;
+
+	FOR_EACH_PTR_REVERSE(big_condition_stack, tmp) {
+		if (expr == tmp || expr_get_parent_expr(expr) == tmp)
+			return 1;
+		if (tmp->pos.line < expr->pos.line)
+			return 0;
+	} END_FOR_EACH_PTR_REVERSE(tmp);
+
+	return 0;
+}
+
+static struct expression *expr_get_parent_no_parens(struct expression *expr)
+{
+	do {
+		expr = expr_get_parent_expr(expr);
+	} while (expr &&
+		 expr->type == EXPR_PREOP &&
+		 expr->op == '(');
+
+	return expr;
+}
+
+static bool gen_fake_function_assign(struct expression *expr)
+{
+	static struct expression *parsed;
+	struct expression *assign, *parent;
+	struct symbol *type;
+	char buf[64];
+
+	/* The rule is that every non-void function call has to be part of an
+	 * assignment.  TODO:  Should we create a fake non-casted assignment
+	 * for casted assignments?  Also faked assigns for += assignments?
+	 */
+	type = get_type(expr);
+	if (!type || type == &void_ctype)
+		return false;
+
+	parent = expr_get_parent_no_parens(expr);
+	if (parent && parent->type == EXPR_ASSIGNMENT)
+		return false;
+
+	parent = expr_get_fake_parent_expr(expr);
+	if (parent) {
+		struct expression *left = parent->left;
+
+		if (parent == parsed)
+			return false;
+		if (!left || left->type != EXPR_SYMBOL)
+			return false;
+		if (strncmp(left->symbol_name->name, "__fake_assign_", 14) != 0)
+			return false;
+		parsed = parent;
+		__split_expr(parent);
+		return true;
+	}
+
+	// TODO: faked_assign skipping conditions is a hack
+	if (is_condition_call(expr))
+		return false;
+
+	snprintf(buf, sizeof(buf), "__fake_assign_%p", expr);
+	assign = create_fake_assign(buf, get_type(expr), expr);
+
+	parsed = assign;
+	__split_expr(assign);
+	return true;
+}
+
+static void split_call(struct expression *expr)
+{
+	if (gen_fake_function_assign(expr))
+		return;
+
+	expr_set_parent_expr(expr->fn, expr);
+
+	if (sym_name_is("__builtin_constant_p", expr->fn))
+		return;
+	if (handle__builtin_choose_expr(expr))
+		return;
+	__split_expr(expr->fn);
+	split_args(expr);
+	if (is_inline_func(expr->fn))
+		add_inline_function(expr->fn->symbol->definition);
+	if (inlinable(expr->fn))
+		__inline_call = 1;
+	__process_post_op_stack();
+	__pass_to_client(expr, FUNCTION_CALL_HOOK_BEFORE);
+	__pass_to_client(expr, FUNCTION_CALL_HOOK);
+	__inline_call = 0;
+	if (inlinable(expr->fn))
+		parse_inline(expr);
+	__pass_to_client(expr, CALL_HOOK_AFTER_INLINE);
+	if (is_noreturn_func(expr->fn))
+		nullify_path();
+	if (!expr_get_parent_expr(expr) && indent_cnt == 1)
+		__discard_fake_states(expr);
+	handle_builtin_overflow_func(expr);
+	__add_ptr_list((struct ptr_list **)&parsed_calls, expr);
+}
+
+static unsigned long skip_split;
+void parse_assignment(struct expression *expr, bool shallow)
+{
+	struct expression *right;
+
+	expr_set_parent_expr(expr->left, expr);
+	expr_set_parent_expr(expr->right, expr);
+
+	right = strip_expr(expr->right);
+	if (!right)
+		return;
+
+	if (shallow)
+		skip_split++;
+
+	__pass_to_client(expr, RAW_ASSIGNMENT_HOOK);
+
+	/* foo = !bar() */
+	if (__handle_condition_assigns(expr))
+		goto after_assign;
+	/* foo = (x < 5 ? foo : 5); */
+	if (__handle_select_assigns(expr))
+		goto after_assign;
+	/* foo = ({frob(); frob(); frob(); 1;}) */
+	if (__handle_expr_statement_assigns(expr))
+		goto done;  // FIXME: goto after
+	/* foo = (3, 4); */
+	if (handle_comma_assigns(expr))
+		goto after_assign;
+	if (handle__builtin_choose_expr_assigns(expr))
+		goto after_assign;
+	if (handle_postop_assigns(expr))
+		goto done;  /* no need to goto after_assign */
+
+	__split_expr(expr->right);
+	if (outside_of_function())
+		__pass_to_client(expr, GLOBAL_ASSIGNMENT_HOOK);
+	else
+		__pass_to_client(expr, ASSIGNMENT_HOOK);
+
+
+	// FIXME: the ordering of this is tricky
+	__fake_struct_member_assignments(expr);
+
+	/* Re-examine ->right for inlines.  See the commit message */
+	right = strip_expr(expr->right);
+	if (expr->op == '=' && right->type == EXPR_CALL)
+		__pass_to_client(expr, CALL_ASSIGNMENT_HOOK);
+
+after_assign:
+	if (get_macro_name(right->pos) &&
+	    get_macro_name(expr->left->pos) != get_macro_name(right->pos))
+		__pass_to_client(expr, MACRO_ASSIGNMENT_HOOK);
+
+	__pass_to_client(expr, ASSIGNMENT_HOOK_AFTER);
+	__split_expr(expr->left);
+
+done:
+	if (shallow)
+		skip_split--;
+}
+
+static bool skip_split_off(struct expression *expr)
+{
+	if (expr->type == EXPR_CALL &&
+	    sym_name_is("__smatch_stop_skip", expr->fn))
+		return true;
+	return false;
+}
+
 void __split_expr(struct expression *expr)
 {
 	if (!expr)
 		return;
 
-	// sm_msg(" Debug expr_type %d %s", expr->type, show_special(expr->op));
+	if (skip_split_off(expr))
+		__debug_skip = 0;
+	if (__debug_skip)
+		return;
+
+	if (skip_split)
+		return;
+
+//	if (local_debug)
+//		sm_msg("Debug expr_type %d %s expr = '%s'", expr->type, show_special(expr->op), expr_to_str(expr));
 
 	if (__in_fake_assign && expr->type != EXPR_ASSIGNMENT)
 		return;
@@ -416,6 +692,9 @@ void __split_expr(struct expression *expr)
 		expr_set_parent_expr(expr->right, expr);
 
 		__pass_to_client(expr, BINOP_HOOK);
+		__split_expr(expr->left);
+		__split_expr(expr->right);
+		break;
 	case EXPR_COMMA:
 		expr_set_parent_expr(expr->left, expr);
 		expr_set_parent_expr(expr->right, expr);
@@ -424,57 +703,9 @@ void __split_expr(struct expression *expr)
 		__process_post_op_stack();
 		__split_expr(expr->right);
 		break;
-	case EXPR_ASSIGNMENT: {
-		struct expression *right;
-
-		expr_set_parent_expr(expr->left, expr);
-		expr_set_parent_expr(expr->right, expr);
-
-		right = strip_expr(expr->right);
-		if (!right)
-			break;
-
-		__pass_to_client(expr, RAW_ASSIGNMENT_HOOK);
-
-		/* foo = !bar() */
-		if (__handle_condition_assigns(expr))
-			goto after_assign;
-		/* foo = (x < 5 ? foo : 5); */
-		if (__handle_select_assigns(expr))
-			goto after_assign;
-		/* foo = ({frob(); frob(); frob(); 1;}) */
-		if (__handle_expr_statement_assigns(expr))
-			break;  // FIXME: got after
-		/* foo = (3, 4); */
-		if (handle_comma_assigns(expr))
-			goto after_assign;
-		if (handle__builtin_choose_expr_assigns(expr))
-			goto after_assign;
-		if (handle_postop_assigns(expr))
-			break;  /* no need to goto after_assign */
-
-		__split_expr(expr->right);
-		if (outside_of_function())
-			__pass_to_client(expr, GLOBAL_ASSIGNMENT_HOOK);
-		else
-			__pass_to_client(expr, ASSIGNMENT_HOOK);
-
-		__fake_struct_member_assignments(expr);
-
-		/* Re-examine ->right for inlines.  See the commit message */
-		right = strip_expr(expr->right);
-		if (expr->op == '=' && right->type == EXPR_CALL)
-			__pass_to_client(expr, CALL_ASSIGNMENT_HOOK);
-
-		if (get_macro_name(right->pos) &&
-		    get_macro_name(expr->pos) != get_macro_name(right->pos))
-			__pass_to_client(expr, MACRO_ASSIGNMENT_HOOK);
-
-after_assign:
-		__pass_to_client(expr, ASSIGNMENT_HOOK_AFTER);
-		__split_expr(expr->left);
+	case EXPR_ASSIGNMENT:
+		parse_assignment(expr, false);
 		break;
-	}
 	case EXPR_DEREF:
 		expr_set_parent_expr(expr->deref, expr);
 
@@ -524,29 +755,7 @@ after_assign:
 		__merge_true_states();
 		break;
 	case EXPR_CALL:
-		expr_set_parent_expr(expr->fn, expr);
-
-		if (sym_name_is("__builtin_constant_p", expr->fn))
-			break;
-		if (handle__builtin_choose_expr(expr))
-			break;
-		__split_expr(expr->fn);
-		split_expr_list(expr->args, expr);
-		if (is_inline_func(expr->fn))
-			add_inline_function(expr->fn->symbol);
-		if (inlinable(expr->fn))
-			__inline_call = 1;
-		__process_post_op_stack();
-		__pass_to_client(expr, FUNCTION_CALL_HOOK_BEFORE);
-		__pass_to_client(expr, FUNCTION_CALL_HOOK);
-		__inline_call = 0;
-		if (inlinable(expr->fn)) {
-			parse_inline(expr);
-		}
-		__pass_to_client(expr, CALL_HOOK_AFTER_INLINE);
-		if (is_noreturn_func(expr->fn))
-			nullify_path();
-		handle_builtin_overflow_func(expr);
+		split_call(expr);
 		break;
 	case EXPR_INITIALIZER:
 		split_expr_list(expr->expr_list, expr);
@@ -569,6 +778,14 @@ after_assign:
 	case EXPR_STRING:
 		__pass_to_client(expr, STRING_HOOK);
 		break;
+	case EXPR_GENERIC: {
+		struct expression *tmp;
+
+		tmp = strip_Generic(expr);
+		if (tmp != expr)
+			__split_expr(tmp);
+		break;
+	}
 	default:
 		break;
 	};
@@ -605,6 +822,29 @@ static char *get_loop_name(int num)
 	return alloc_sname(buf);
 }
 
+static struct bool_stmt_fn_list *once_through_hooks;
+void add_once_through_hook(bool_stmt_func *fn)
+{
+	add_ptr_list(&once_through_hooks, fn);
+}
+
+static bool call_once_through_hooks(struct statement *stmt)
+{
+	bool_stmt_func *fn;
+
+	if (implied_condition_true(stmt->iterator_pre_condition))
+		return true;
+	if (option_assume_loops)
+		return true;
+
+	FOR_EACH_PTR(once_through_hooks, fn) {
+		if ((fn)(stmt))
+			return true;
+	} END_FOR_EACH_PTR(fn);
+
+	return false;
+}
+
 /*
  * Pre Loops are while and for loops.
  */
@@ -617,13 +857,18 @@ static void handle_pre_loop(struct statement *stmt)
 	struct stree *stree = NULL;
 	struct sm_state *sm = NULL;
 
+	__push_scope_hooks();
+
 	loop_name = get_loop_name(loop_num);
 	loop_num++;
 
-	__split_stmt(stmt->iterator_pre_statement);
-	__prev_stmt = stmt->iterator_pre_statement;
+	split_declaration(stmt->iterator_syms);
+	if (stmt->iterator_pre_statement) {
+		__split_stmt(stmt->iterator_pre_statement);
+		__prev_stmt = stmt->iterator_pre_statement;
+	}
 
-	once_through = implied_condition_true(stmt->iterator_pre_condition);
+	once_through = call_once_through_hooks(stmt);
 
 	loop_count++;
 	__push_continues();
@@ -643,9 +888,6 @@ static void handle_pre_loop(struct statement *stmt)
 	if (extra_sm)
 		extra_sm = get_sm_state(extra_sm->owner, extra_sm->name, extra_sm->sym);
 
-	if (option_assume_loops)
-		once_through = 1;
-
 	__split_stmt(stmt->iterator_statement);
 	if (is_forever_loop(stmt)) {
 		__merge_continues();
@@ -656,6 +898,7 @@ static void handle_pre_loop(struct statement *stmt)
 		stree = __pop_fake_cur_stree();
 
 		__discard_false_states();
+		__pass_to_client(stmt, AFTER_LOOP_NO_BREAKS);
 		__use_breaks();
 
 		if (!__path_is_null())
@@ -683,9 +926,12 @@ static void handle_pre_loop(struct statement *stmt)
 			__extra_pre_loop_hook_after(extra_sm,
 						stmt->iterator_post_statement,
 						stmt->iterator_pre_condition);
+		__pass_to_client(stmt, AFTER_LOOP_NO_BREAKS);
 		__merge_breaks();
 	}
 	loop_count--;
+
+	__call_scope_hooks();
 }
 
 /*
@@ -699,6 +945,8 @@ static void handle_post_loop(struct statement *stmt)
 	loop_num++;
 	loop_count++;
 
+	__pass_to_client(stmt, POSTLOOP_HOOK);
+
 	__push_continues();
 	__push_breaks();
 	__merge_gotos(loop_name, NULL);
@@ -708,10 +956,12 @@ static void handle_post_loop(struct statement *stmt)
 		__save_gotos(loop_name, NULL);
 
 	if (is_forever_loop(stmt)) {
+		__pass_to_client(stmt, AFTER_LOOP_NO_BREAKS);
 		__use_breaks();
 	} else {
 		__split_whole_condition(stmt->iterator_post_condition);
 		__use_false_states();
+		__pass_to_client(stmt, AFTER_LOOP_NO_BREAKS);
 		__merge_breaks();
 	}
 	loop_count--;
@@ -741,23 +991,13 @@ static int last_stmt_on_same_line(void)
 	return 0;
 }
 
-static void split_asm_constraints(struct expression_list *expr_list)
+static void split_asm_ops(struct asm_operand_list *ops)
 {
-	struct expression *expr;
-	int state = 0;
+	struct asm_operand *op;
 
-	FOR_EACH_PTR(expr_list, expr) {
-		switch (state) {
-		case 0: /* identifier */
-		case 1: /* constraint */
-			state++;
-			continue;
-		case 2: /* expression */
-			state = 0;
-			__split_expr(expr);
-			continue;
-		}
-	} END_FOR_EACH_PTR(expr);
+	FOR_EACH_PTR(ops, op) {
+		__split_expr(op->expr);
+	} END_FOR_EACH_PTR(op);
 }
 
 static int is_case_val(struct statement *stmt, sval_t sval)
@@ -817,14 +1057,19 @@ static void split_known_switch(struct statement *stmt, sval_t sval)
 	__push_scope_hooks();
 	FOR_EACH_PTR(stmt->stmts, tmp) {
 		__smatch_lineno = tmp->pos.line;
+		// FIXME: what if default comes before the known case statement?
 		if (is_case_val(tmp, sval)) {
 			rl = alloc_rl(sval, sval);
 			__merge_switches(top_expression(switch_expr_stack), rl);
 			__pass_case_to_client(top_expression(switch_expr_stack), rl);
+			stmt_set_parent_stmt(tmp->case_statement, tmp);
+			__split_stmt(tmp->case_statement);
+			goto next;
 		}
 		if (__path_is_null())
 			continue;
 		__split_stmt(tmp);
+next:
 		if (__path_is_null()) {
 			__set_default();
 			goto out;
@@ -855,10 +1100,11 @@ static void split_case(struct statement *stmt)
 				  stmt->case_statement->case_expression,
 				  stmt->case_statement->case_to);
 		if (!tmp)
-			break;
+			goto next;
 		rl = rl_union(rl, tmp);
 		if (!stmt->case_expression)
 			__set_default();
+next:
 		stmt = stmt->case_statement;
 	}
 
@@ -866,6 +1112,8 @@ static void split_case(struct statement *stmt)
 
 	if (!stmt->case_expression)
 		__set_default();
+
+	stmt_set_parent_stmt(stmt->case_statement, stmt);
 	__split_stmt(stmt->case_statement);
 }
 
@@ -886,27 +1134,48 @@ bool taking_too_long(void)
 	return 0;
 }
 
-static int is_last_stmt(struct statement *cur_stmt)
+struct statement *get_last_stmt(void)
 {
 	struct symbol *fn;
 	struct statement *stmt;
 
-	if (!cur_func_sym)
-		return 0;
 	fn = get_base_type(cur_func_sym);
 	if (!fn)
-		return 0;
+		return NULL;
 	stmt = fn->stmt;
 	if (!stmt)
 		stmt = fn->inline_stmt;
 	if (!stmt || stmt->type != STMT_COMPOUND)
-		return 0;
+		return NULL;
 	stmt = last_ptr_list((struct ptr_list *)stmt->stmts);
 	if (stmt && stmt->type == STMT_LABEL)
 		stmt = stmt->label_statement;
-	if (stmt == cur_stmt)
+	return stmt;
+}
+
+int is_last_stmt(struct statement *cur_stmt)
+{
+	struct statement *last;
+
+	last = get_last_stmt();
+	if (last && last == cur_stmt)
 		return 1;
 	return 0;
+}
+
+static bool is_function_scope(struct statement *stmt)
+{
+	struct symbol *base_type;
+
+	if (!cur_func_sym)
+		return false;
+
+	base_type = get_base_type(cur_func_sym);
+	if (base_type->stmt == stmt ||
+	    base_type->inline_stmt == stmt)
+		return true;
+
+	return false;
 }
 
 static void handle_backward_goto(struct statement *goto_stmt)
@@ -956,17 +1225,32 @@ static void handle_backward_goto(struct statement *goto_stmt)
 
 static void fake_a_return(void)
 {
-	struct symbol *return_type;
+	struct expression *ret = NULL;
 
 	nullify_path();
 	__unnullify_path();
 
-	return_type = get_real_base_type(cur_func_sym);
-	return_type = get_real_base_type(return_type);
-	if (return_type != &void_ctype) {
-		__pass_to_client(unknown_value_expression(NULL), RETURN_HOOK);
-		nullify_path();
-	}
+	if (cur_func_return_type() != &void_ctype)
+		ret = unknown_value_expression(NULL);
+
+	__pass_to_client(ret, RETURN_HOOK);
+	nullify_path();
+}
+
+static void split_ret_value(struct expression *expr)
+{
+	struct symbol *type;
+
+	if (!expr)
+		return;
+
+	type = get_real_base_type(cur_func_sym);
+	type = get_real_base_type(type);
+	expr = fake_a_variable_assign(type, NULL, expr, -1);
+
+	__in_fake_var_assign++;
+	__split_expr(expr);
+	__in_fake_var_assign--;
 }
 
 static void fake_an_empty_default(struct position pos)
@@ -1009,29 +1293,10 @@ static void split_compound(struct statement *stmt)
 
 	/*
 	 * For function scope, then delay calling the scope hooks until the
-	 * end of function hooks can run.  I'm not positive this is the right
-	 * thing...
+	 * end of function hooks can run.
 	 */
-	if (!is_last_stmt(cur))
+	if (!is_function_scope(stmt))
 		__call_scope_hooks();
-}
-
-/*
- * This is a hack, work around for detecting empty functions.
- */
-static int need_delayed_scope_hooks(void)
-{
-	struct symbol *fn = get_base_type(cur_func_sym);
-	struct statement *stmt;
-
-	if (!fn)
-		return 0;
-	stmt = fn->stmt;
-	if (!stmt)
-		stmt = fn->inline_stmt;
-	if (stmt && stmt->type == STMT_COMPOUND)
-		return 1;
-	return 0;
 }
 
 void __split_label_stmt(struct statement *stmt)
@@ -1053,9 +1318,31 @@ static void find_asm_gotos(struct statement *stmt)
 	} END_FOR_EACH_PTR(sym);
 }
 
+static bool already_parsed_call(struct expression *call)
+{
+	struct expression *expr;
+
+	FOR_EACH_PTR(parsed_calls, expr) {
+		if (expr == call)
+			return true;
+	} END_FOR_EACH_PTR(expr);
+	return false;
+}
+
+static void free_parsed_call_stuff(bool free_fake_states)
+{
+	free_expression_stack(&parsed_calls);
+	if (free_fake_states)
+		__discard_fake_states(NULL);
+}
+
 void __split_stmt(struct statement *stmt)
 {
 	sval_t sval;
+	struct timeval start, stop;
+	bool skip_after = false;
+
+	gettimeofday(&start, NULL);
 
 	if (!stmt)
 		goto out;
@@ -1067,21 +1354,22 @@ void __split_stmt(struct statement *stmt)
 		return;
 
 	if (out_of_memory() || taking_too_long()) {
-		struct timeval stop;
-
-		gettimeofday(&stop, NULL);
+		gettimeofday(&start, NULL);
 
 		__bail_on_rest_of_function = 1;
 		final_pass = 1;
 		sm_perror("Function too hairy.  Giving up. %lu seconds",
-		       stop.tv_sec - fn_start_time.tv_sec);
+		       start.tv_sec - fn_start_time.tv_sec);
 		fake_a_return();
 		final_pass = 0;  /* turn off sm_msg() from here */
 		return;
 	}
 
+	indent_cnt++;
+
 	add_ptr_list(&big_statement_stack, stmt);
 	free_expression_stack(&big_expression_stack);
+	free_parsed_call_stuff(indent_cnt == 1);
 	set_position(stmt->pos);
 	__pass_to_client(stmt, STMT_HOOK);
 
@@ -1092,7 +1380,7 @@ void __split_stmt(struct statement *stmt)
 	case STMT_RETURN:
 		expr_set_parent_stmt(stmt->ret_value, stmt);
 
-		__split_expr(stmt->ret_value);
+		split_ret_value(stmt->ret_value);
 		__pass_to_client(stmt->ret_value, RETURN_HOOK);
 		__process_post_op_stack();
 		nullify_path();
@@ -1172,6 +1460,8 @@ void __split_stmt(struct statement *stmt)
 		break;
 	case STMT_LABEL:
 		__split_label_stmt(stmt);
+		__pass_to_client(stmt, STMT_HOOK_AFTER);
+		skip_after = true;
 		__split_stmt(stmt->label_statement);
 		break;
 	case STMT_GOTO:
@@ -1202,9 +1492,9 @@ void __split_stmt(struct statement *stmt)
 		find_asm_gotos(stmt);
 		__pass_to_client(stmt, ASM_HOOK);
 		__split_expr(stmt->asm_string);
-		split_asm_constraints(stmt->asm_outputs);
-		split_asm_constraints(stmt->asm_inputs);
-		split_asm_constraints(stmt->asm_clobbers);
+		split_asm_ops(stmt->asm_outputs);
+		split_asm_ops(stmt->asm_inputs);
+		split_expr_list(stmt->asm_clobbers, NULL);
 		break;
 	case STMT_CONTEXT:
 		break;
@@ -1214,9 +1504,19 @@ void __split_stmt(struct statement *stmt)
 		__split_expr(stmt->range_high);
 		break;
 	}
-	__pass_to_client(stmt, STMT_HOOK_AFTER);
+	if (!skip_after)
+		__pass_to_client(stmt, STMT_HOOK_AFTER);
+	if (--indent_cnt == 1)
+		free_parsed_call_stuff(true);
+
 out:
 	__process_post_op_stack();
+
+	gettimeofday(&stop, NULL);
+	if (option_time_stmt && stmt)
+		sm_msg("stmt_time%s: %ld",
+		       stmt->type == STMT_COMPOUND ? "_block" : "",
+		       stop.tv_sec - start.tv_sec);
 }
 
 static void split_expr_list(struct expression_list *expr_list, struct expression *parent)
@@ -1230,6 +1530,136 @@ static void split_expr_list(struct expression_list *expr_list, struct expression
 	} END_FOR_EACH_PTR(expr);
 }
 
+static bool cast_arg(struct symbol *type, struct expression *arg)
+{
+	struct symbol *orig;
+
+	if (!type)
+		return false;
+
+	arg = strip_parens(arg);
+	if (arg != strip_expr(arg))
+		return true;
+
+	orig = get_type(arg);
+	if (!orig)
+		return true;
+	if (types_equiv(orig, type))
+		return false;
+
+	if (orig->type == SYM_ARRAY && type->type == SYM_PTR)
+		return true;
+
+	/*
+	 * I would have expected that we could just do use (orig == type) but I
+	 * guess for pointers we need to get the basetype to do that comparison.
+	 *
+	 */
+
+	if (orig->type != SYM_PTR ||
+	    type->type != SYM_PTR) {
+		if (type_fits(type, orig))
+			return false;
+		return true;
+	}
+	orig = get_real_base_type(orig);
+	type = get_real_base_type(type);
+	if (orig == type)
+		return false;
+
+	return true;
+}
+
+static struct expression *fake_a_variable_assign(struct symbol *type, struct expression *call, struct expression *expr, int nr)
+{
+	char buf[64];
+	bool cast;
+
+	if (!expr || !cur_func_sym)
+		return NULL;
+
+	if (already_parsed_call(call))
+		return NULL;
+
+	if (expr->type == EXPR_ASSIGNMENT)
+		return expr;
+
+	/* for va_args then we don't know the type */
+	if (!type)
+		type = get_type(expr);
+
+	cast = cast_arg(type, expr);
+	/*
+	 * Using expr_to_sym() here is a hack.  We want to say that we don't
+	 * need to assign frob(foo) or frob(foo->bar) if the types are right.
+	 * It turns out faking these assignments is way more expensive than I
+	 * would have imagined.  I'm not sure why exactly.
+	 *
+	 */
+	if (!cast) {
+		/*
+		 * if the code is "return *p;" where "p" is a user pointer then
+		 * we want to create a fake assignment so that it sets the state
+		 * in check_kernel_user_data.c.
+		 *
+		 */
+		if (expr->type != EXPR_PREOP &&
+		    expr->op != '*' && expr->op != '&' &&
+		    expr_to_sym(expr))
+			return expr;
+	}
+
+	if (nr == -1)
+		snprintf(buf, sizeof(buf), "__fake_return_%p", expr);
+	else
+		snprintf(buf, sizeof(buf), "__fake_param_%p_%d", call, nr);
+
+	return create_fake_assign(buf, type, expr);
+}
+
+static void split_args(struct expression *expr)
+{
+	struct expression *arg, *tmp;
+	struct symbol *type;
+	int i;
+
+	i = -1;
+	FOR_EACH_PTR(expr->args, arg) {
+		i++;
+		expr_set_parent_expr(arg, expr);
+		type = get_arg_type(expr->fn, i);
+		tmp = fake_a_variable_assign(type, expr, arg, i);
+		if (tmp != arg)
+			__in_fake_var_assign++;
+		__split_expr(tmp);
+		if (tmp != arg)
+			__in_fake_var_assign--;
+		__process_post_op_stack();
+	} END_FOR_EACH_PTR(arg);
+}
+
+static void call_cleanup_fn(void *_sym)
+{
+	struct symbol *sym = _sym;
+	struct expression *call, *arg;
+	struct expression_list *args = NULL;
+
+	if (!sym->cleanup)
+		return;
+
+	arg = symbol_expression(sym);
+	arg = preop_expression(arg, '&');
+	add_ptr_list(&args, arg);
+	call = call_expression(sym->cleanup, args);
+
+	__split_expr(call);
+}
+
+static void add_cleanup_hook(struct symbol *sym)
+{
+	add_scope_hook(&call_cleanup_fn, sym);
+}
+
 static void split_sym(struct symbol *sym)
 {
 	if (!sym)
@@ -1239,6 +1669,8 @@ static void split_sym(struct symbol *sym)
 
 	__split_stmt(sym->stmt);
 	__split_expr(sym->array_size);
+	if (sym->cleanup)
+		add_cleanup_hook(sym);
 	split_symlist(sym->arguments);
 	split_symlist(sym->symbol_list);
 	__split_stmt(sym->inline_stmt);
@@ -1340,12 +1772,6 @@ static void set_unset_to_zero(struct symbol *type, struct expression *expr)
 	struct symbol *tmp;
 	struct expression *member = NULL;
 	struct expression *assign;
-	int op = '*';
-
-	if (expr->type == EXPR_PREOP && expr->op == '&') {
-		expr = strip_expr(expr->unop);
-		op = '.';
-	}
 
 	FOR_EACH_PTR(type->symbol_list, tmp) {
 		type = get_real_base_type(tmp);
@@ -1353,7 +1779,7 @@ static void set_unset_to_zero(struct symbol *type, struct expression *expr)
 			continue;
 
 		if (tmp->ident) {
-			member = member_expression(expr, op, tmp->ident);
+			member = member_expression(expr, '.', tmp->ident);
 			if (get_extra_state(member))
 				continue;
 		}
@@ -1440,17 +1866,20 @@ static void fake_element_assigns_helper(struct expression *array, struct express
 {
 	struct expression *offset, *binop, *assign, *tmp;
 	struct symbol *type;
-	int idx;
+	int idx, max;
 
 	if (ptr_list_size((struct ptr_list *)expr_list) > 1000)
 		return;
 
+	max = 0;
 	idx = 0;
 	FOR_EACH_PTR(expr_list, tmp) {
 		if (tmp->type == EXPR_INDEX) {
 			if (tmp->idx_from != tmp->idx_to)
 				return;
 			idx = tmp->idx_from;
+			if (idx > max)
+				max = idx;
 			if (!tmp->idx_expression)
 				goto next;
 			tmp = tmp->idx_expression;
@@ -1469,7 +1898,11 @@ static void fake_element_assigns_helper(struct expression *array, struct express
 		}
 next:
 		idx++;
+		if (idx > max)
+			max = idx;
 	} END_FOR_EACH_PTR(tmp);
+
+	__call_array_initialized_hooks(array, max);
 }
 
 static void fake_element_assigns(struct symbol *sym, fake_cb *fake_cb)
@@ -1508,6 +1941,7 @@ static void split_declaration(struct symbol_list *sym_list)
 	FOR_EACH_PTR(sym_list, sym) {
 		__pass_to_client(sym, DECLARATION_HOOK);
 		do_initializer_stuff(sym);
+		__pass_to_client(sym, DECLARATION_HOOK_AFTER);
 		split_sym(sym);
 	} END_FOR_EACH_PTR(sym);
 }
@@ -1562,10 +1996,46 @@ static void start_function_definition(struct symbol *sym)
 
 }
 
+static void parse_fn_statements(struct symbol *base)
+{
+	__split_stmt(base->stmt);
+	__split_stmt(base->inline_stmt);
+}
+
+void add_function_data(unsigned long *fn_data)
+{
+	__add_ptr_list(&fn_data_list, fn_data);
+}
+
+static void clear_function_data(void)
+{
+	unsigned long *tmp;
+
+	FOR_EACH_PTR(fn_data_list, tmp) {
+		*tmp = 0;
+	} END_FOR_EACH_PTR(tmp);
+}
+
+static void record_func_time(void)
+{
+	struct timeval stop;
+	int func_time;
+	char buf[32];
+
+	gettimeofday(&stop, NULL);
+	func_time = stop.tv_sec - fn_start_time.tv_sec;
+	snprintf(buf, sizeof(buf), "%d", func_time);
+	sql_insert_return_implies(FUNC_TIME, 0, "", buf);
+	if (option_time && func_time > 2) {
+		final_pass++;
+		sm_msg("func_time: %d", func_time);
+		final_pass--;
+	}
+}
+
 static void split_function(struct symbol *sym)
 {
 	struct symbol *base_type = get_base_type(sym);
-	struct timeval stop;
 
 	if (!base_type->stmt && !base_type->inline_stmt)
 		return;
@@ -1575,7 +2045,11 @@ static void split_function(struct symbol *sym)
 	cur_func_sym = sym;
 	if (sym->ident)
 		cur_func = sym->ident->name;
+	if (option_process_function && cur_func &&
+	    strcmp(option_process_function, cur_func) != 0)
+		return;
 	set_position(sym->pos);
+	clear_function_data();
 	loop_count = 0;
 	last_goto_statement_handled = 0;
 	sm_debug("new function:  %s\n", cur_func);
@@ -1585,29 +2059,30 @@ static void split_function(struct symbol *sym)
 		loop_num = 0;
 		final_pass = 0;
 		start_function_definition(sym);
-		__split_stmt(base_type->stmt);
-		__split_stmt(base_type->inline_stmt);
+		parse_fn_statements(base_type);
+		__call_scope_hooks();
 		nullify_path();
 	}
 	__unnullify_path();
 	loop_num = 0;
 	final_pass = 1;
 	start_function_definition(sym);
-	__split_stmt(base_type->stmt);
-	__split_stmt(base_type->inline_stmt);
+	parse_fn_statements(base_type);
+	if (!__path_is_null() &&
+	    cur_func_return_type() == &void_ctype &&
+	    !__bail_on_rest_of_function) {
+		__pass_to_client(NULL, RETURN_HOOK);
+		nullify_path();
+	}
 	__pass_to_client(sym, END_FUNC_HOOK);
-	if (need_delayed_scope_hooks())
-		__call_scope_hooks();
+	__call_scope_hooks();
 	__pass_to_client(sym, AFTER_FUNC_HOOK);
+	sym->parsed = true;
 
 	clear_all_states();
 
-	gettimeofday(&stop, NULL);
-	if (option_time && stop.tv_sec - fn_start_time.tv_sec > 2) {
-		final_pass++;
-		sm_msg("func_time: %lu", stop.tv_sec - fn_start_time.tv_sec);
-		final_pass--;
-	}
+	record_func_time();
+
 	cur_func_sym = NULL;
 	cur_func = NULL;
 	free_data_info_allocs();
@@ -1618,6 +2093,8 @@ static void split_function(struct symbol *sym)
 
 static void save_flow_state(void)
 {
+	unsigned long *tmp;
+
 	__add_ptr_list(&backup, INT_PTR(loop_num << 2));
 	__add_ptr_list(&backup, INT_PTR(loop_count << 2));
 	__add_ptr_list(&backup, INT_PTR(final_pass << 2));
@@ -1629,9 +2106,15 @@ static void save_flow_state(void)
 
 	__add_ptr_list(&backup, cur_func_sym);
 
+	__add_ptr_list(&backup, parsed_calls);
+
 	__add_ptr_list(&backup, __prev_stmt);
 	__add_ptr_list(&backup, __cur_stmt);
 	__add_ptr_list(&backup, __next_stmt);
+
+	FOR_EACH_PTR(fn_data_list, tmp) {
+		__add_ptr_list(&backup, (void *)*tmp);
+	} END_FOR_EACH_PTR(tmp);
 }
 
 static void *pop_backup(void)
@@ -1645,9 +2128,17 @@ static void *pop_backup(void)
 
 static void restore_flow_state(void)
 {
+	unsigned long *tmp;
+
+	FOR_EACH_PTR_REVERSE(fn_data_list, tmp) {
+		*tmp = (unsigned long)pop_backup();
+	} END_FOR_EACH_PTR_REVERSE(tmp);
+
 	__next_stmt = pop_backup();
 	__cur_stmt = pop_backup();
 	__prev_stmt = pop_backup();
+
+	parsed_calls = pop_backup();
 
 	cur_func_sym = pop_backup();
 	switch_expr_stack = pop_backup();
@@ -1659,7 +2150,7 @@ static void restore_flow_state(void)
 	loop_num = PTR_INT(pop_backup()) >> 2;
 }
 
-static void parse_inline(struct expression *call)
+void parse_inline(struct expression *call)
 {
 	struct symbol *base_type;
 	char *cur_func_bak = cur_func;  /* not aligned correctly for backup */
@@ -1668,6 +2159,9 @@ static void parse_inline(struct expression *call)
 	int orig_budget;
 
 	if (out_of_memory() || taking_too_long())
+		return;
+
+	if (already_parsed_call(call))
 		return;
 
 	save_flow_state();
@@ -1691,16 +2185,19 @@ static void parse_inline(struct expression *call)
 	big_expression_stack = NULL;
 	big_condition_stack = NULL;
 	switch_expr_stack = NULL;
+	parsed_calls = NULL;
 
 	sm_debug("inline function:  %s\n", cur_func);
 	__unnullify_path();
+	clear_function_data();
 	loop_num = 0;
 	loop_count = 0;
 	start_function_definition(call->fn->symbol);
-	__split_stmt(base_type->stmt);
-	__split_stmt(base_type->inline_stmt);
+	parse_fn_statements(base_type);
 	__pass_to_client(call->fn->symbol, END_FUNC_HOOK);
+	__call_scope_hooks();
 	__pass_to_client(call->fn->symbol, AFTER_FUNC_HOOK);
+	call->fn->symbol->parsed = true;
 
 	free_expression_stack(&switch_expr_stack);
 	__free_ptr_list((struct ptr_list **)&big_statement_stack);
@@ -1847,6 +2344,7 @@ static void split_c_file_functions(struct symbol_list *sym_list)
 		if (sym->type != SYM_NODE || get_base_type(sym)->type != SYM_FN) {
 			__pass_to_client(sym, BASE_HOOK);
 			fake_global_assign(sym);
+			__pass_to_client(sym, DECLARATION_HOOK_AFTER);
 		}
 	} END_FOR_EACH_PTR(sym);
 	global_states = clone_estates_perm(get_all_states_stree(SMATCH_EXTRA));
@@ -1879,7 +2377,7 @@ void init_fake_env(void)
 
 void end_fake_env(void)
 {
-	__pop_fake_cur_stree();
+	__free_fake_cur_stree();
 	in_fake_env--;
 	if (!in_fake_env)
 		final_pass = final_before_fake;
@@ -1929,6 +2427,7 @@ void smatch(struct string_list *filelist)
 		}
 		if (option_file_output)
 			open_output_files(base_file);
+		base_file_stream = input_stream_nr;
 		sym_list = sparse_keep_tokens(base_file);
 		split_c_file_functions(sym_list);
 	} END_FOR_EACH_PTR_NOTAG(base_file);

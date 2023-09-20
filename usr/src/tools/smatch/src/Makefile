@@ -1,4 +1,4 @@
-VERSION=0.6.1-rc1-il-6
+VERSION=0.6.4-il-1
 
 ########################################################################
 # The following variables can be overwritten from the command line
@@ -6,6 +6,7 @@ OS = linux
 
 
 CC ?= gcc
+CXX = g++
 LD = $(CC)
 AR = ar
 
@@ -14,7 +15,8 @@ CFLAGS ?= -g
 DESTDIR ?=
 PREFIX ?= $(HOME)
 BINDIR ?= $(PREFIX)/bin
-MANDIR ?= $(PREFIX)/share/man
+SHAREDIR ?= $(PREFIX)/share
+MANDIR ?= $(SHAREDIR)/man
 
 PKG_CONFIG ?= pkg-config
 
@@ -51,7 +53,9 @@ LIB_OBJS += liveness.o
 LIB_OBJS += memops.o
 LIB_OBJS += opcode.o
 LIB_OBJS += optimize.o
+LIB_OBJS += options.o
 LIB_OBJS += parse.o
+LIB_OBJS += predefine.o
 LIB_OBJS += pre-process.o
 LIB_OBJS += ptrlist.o
 LIB_OBJS += ptrmap.o
@@ -60,17 +64,36 @@ LIB_OBJS += show-parse.o
 LIB_OBJS += simplify.o
 LIB_OBJS += sort.o
 LIB_OBJS += ssa.o
-LIB_OBJS += sset.o
 LIB_OBJS += stats.o
 LIB_OBJS += storage.o
 LIB_OBJS += symbol.o
 LIB_OBJS += target.o
+LIB_OBJS += target-alpha.o
+LIB_OBJS += target-arm.o
+LIB_OBJS += target-arm64.o
+LIB_OBJS += target-bfin.o
+LIB_OBJS += target-default.o
+LIB_OBJS += target-h8300.o
+LIB_OBJS += target-m68k.o
+LIB_OBJS += target-microblaze.o
+LIB_OBJS += target-mips.o
+LIB_OBJS += target-nds32.o
+LIB_OBJS += target-nios2.o
+LIB_OBJS += target-openrisc.o
+LIB_OBJS += target-ppc.o
+LIB_OBJS += target-riscv.o
+LIB_OBJS += target-s390.o
+LIB_OBJS += target-sh.o
+LIB_OBJS += target-sparc.o
+LIB_OBJS += target-x86.o
+LIB_OBJS += target-xtensa.o
 LIB_OBJS += tokenize.o
 LIB_OBJS += unssa.o
 LIB_OBJS += utils.o
 LIB_OBJS += macro_table.o
 LIB_OBJS += token_store.o
 LIB_OBJS += cwchash/hashtable.o
+LIB_OBJS += version.o
 
 PROGRAMS :=
 PROGRAMS += compile
@@ -83,11 +106,14 @@ PROGRAMS += test-dissect
 PROGRAMS += test-lexing
 PROGRAMS += test-linearize
 PROGRAMS += test-parsing
+PROGRAMS += test-show-type
 PROGRAMS += test-unssa
 
-INST_PROGRAMS=smatch sparse cgcc
-INST_MAN1=sparse.1 cgcc.1
-
+INST_PROGRAMS = smatch sparse cgcc
+INST_MAN1 = sparse.1 cgcc.1
+INST_ASSETS = $(wildcard smatch_data/db/*.schema)
+INST_ASSETS += $(wildcard smatch_data/*)
+INST_ASSETS += $(wildcard smatch_data/db/kernel.*)
 
 all:
 
@@ -106,6 +132,7 @@ cflags += -DMULTIARCH_TRIPLET=\"$(MULTIARCH_TRIPLET)\"
 
 bindir := $(DESTDIR)$(BINDIR)
 man1dir := $(DESTDIR)$(MANDIR)/man1
+smatch_datadir := $(DESTDIR)$(SHAREDIR)/smatch
 
 ########################################################################
 # target specificities
@@ -130,6 +157,24 @@ c2xml-ldlibs := $(shell $(PKG_CONFIG) --libs libxml-2.0)
 c2xml-cflags := $(shell $(PKG_CONFIG) --cflags libxml-2.0)
 else
 $(warning Your system does not have libxml, disabling c2xml)
+endif
+
+HAVE_SQLITE := $(shell $(PKG_CONFIG) --exists sqlite3 2>/dev/null && echo 'yes')
+ifeq ($(HAVE_SQLITE),yes)
+SQLITE_VERSION:=$(shell $(PKG_CONFIG) --modversion sqlite3)
+SQLITE_VNUMBER:=$(shell printf '%d%02d%02d' $(subst ., ,$(SQLITE_VERSION)))
+ifeq ($(shell expr "$(SQLITE_VNUMBER)" '>=' 32400),1)
+PROGRAMS += semind
+INST_PROGRAMS += semind
+INST_MAN1 += semind.1
+semind-ldlibs := $(shell $(PKG_CONFIG) --libs sqlite3)
+semind-cflags := $(shell $(PKG_CONFIG) --cflags sqlite3)
+semind-cflags += -std=gnu99
+else
+$(warning Your SQLite3 version ($(SQLITE_VERSION)) is too old, 3.24.0 or later is required.)
+endif
+else
+$(warning Your system does not have sqlite3, disabling semind)
 endif
 
 # Can we use gtk (needed for test-inspect)
@@ -164,11 +209,12 @@ arch := x32
 endif
 ifneq ($(filter ${arch},i386 i486 i586 i686 x86_64 amd64),)
 LLVM_VERSION:=$(shell $(LLVM_CONFIG) --version)
-ifeq ($(shell expr "$(LLVM_VERSION)" : '[3-9]\.'),2)
+LLVM_VERSION_MAJOR:=$(firstword $(subst ., ,$(LLVM_VERSION)))
+ifeq ($(shell expr "$(LLVM_VERSION_MAJOR)" '>=' 3),1)
 LLVM_PROGS := sparse-llvm
-$(LLVM_PROGS): LD := g++
+$(LLVM_PROGS): LD := $(CXX)
 LLVM_LDFLAGS := $(shell $(LLVM_CONFIG) --ldflags)
-LLVM_CFLAGS := -I$(shell $(LLVM_CONFIG) --includedir)
+LLVM_CFLAGS := $(shell $(LLVM_CONFIG) --cppflags)
 LLVM_LIBS := $(shell $(LLVM_CONFIG) --libs)
 LLVM_LIBS += $(shell $(LLVM_CONFIG) --system-libs 2>/dev/null)
 LLVM_LIBS += $(shell $(LLVM_CONFIG) --cxxflags | grep -F -q -e '-stdlib=libc++' && echo -lc++)
@@ -187,6 +233,13 @@ else
 $(warning Your system does not have llvm, disabling sparse-llvm)
 endif
 
+ifeq ($(HAVE_BOOLECTOR),yes)
+PROGRAMS += scheck
+scheck-cflags  := -I${BOOLECTORDIR}/include/boolector
+scheck-ldflags := -L${BOOLECTORDIR}/lib
+scheck-ldlibs  := -lboolector -llgl -lbtor2parser
+endif
+
 ########################################################################
 LIBS := libsparse.a
 OBJS := $(LIB_OBJS) $(EXTRA_OBJS) $(PROGRAMS:%=%.o)
@@ -197,17 +250,17 @@ Q := $(V:1=)
 
 ########################################################################
 
-SMATCHDATADIR=$(INSTALL_PREFIX)/share/smatch
-
 SMATCH_OBJS :=
 SMATCH_OBJS += avl.o
 SMATCH_OBJS += smatch_about_fn_ptr_arg.o
 SMATCH_OBJS += smatch_address.o
+SMATCH_OBJS += smatch_allocations.o
 SMATCH_OBJS += smatch_annotate.o
 SMATCH_OBJS += smatch_array_values.o
 SMATCH_OBJS += smatch_assigned_expr.o
 SMATCH_OBJS += smatch_bits.o
 SMATCH_OBJS += smatch_buf_comparison.o
+SMATCH_OBJS += smatch_buf_comparison2.o
 SMATCH_OBJS += smatch_buf_size.o
 SMATCH_OBJS += smatch_capped.o
 SMATCH_OBJS += smatch_common_functions.o
@@ -218,6 +271,7 @@ SMATCH_OBJS += smatch_constraints_required.o
 SMATCH_OBJS += smatch_container_of.o
 SMATCH_OBJS += smatch_data_source.o
 SMATCH_OBJS += smatch_db.o
+SMATCH_OBJS += smatch_dereference.o
 SMATCH_OBJS += smatch_equiv.o
 SMATCH_OBJS += smatch_estate.o
 SMATCH_OBJS += smatch_expressions.o
@@ -230,6 +284,8 @@ SMATCH_OBJS += smatch_fresh_alloc.o
 SMATCH_OBJS += smatch_function_hooks.o
 SMATCH_OBJS += smatch_function_info.o
 SMATCH_OBJS += smatch_function_ptrs.o
+SMATCH_OBJS += smatch_goto_tracker.o
+SMATCH_OBJS += smatch_hash.o
 SMATCH_OBJS += smatch_helper.o
 SMATCH_OBJS += smatch_hooks.o
 SMATCH_OBJS += smatch_ignore.o
@@ -237,7 +293,14 @@ SMATCH_OBJS += smatch_imaginary_absolute.o
 SMATCH_OBJS += smatch_implied.o
 SMATCH_OBJS += smatch_impossible.o
 SMATCH_OBJS += smatch_integer_overflow.o
+SMATCH_OBJS += smatch_kernel_atomic_dec_test_path.o
+SMATCH_OBJS += smatch_kernel_err_ptr.o
+SMATCH_OBJS += smatch_kernel_has_devm_cleanup.o
+SMATCH_OBJS += smatch_kernel_netdev_priv.o
+SMATCH_OBJS += smatch_kernel_task_state.o
+SMATCH_OBJS += smatch_kernel_task_state_info.o
 SMATCH_OBJS += smatch_kernel_user_data.o
+SMATCH_OBJS += smatch_kernel_host_data.o
 SMATCH_OBJS += smatch_links.o
 SMATCH_OBJS += smatch_math.o
 SMATCH_OBJS += smatch_mem_tracker.o
@@ -246,10 +309,13 @@ SMATCH_OBJS += smatch_mtag_data.o
 SMATCH_OBJS += smatch_mtag_map.o
 SMATCH_OBJS += smatch_mtag.o
 SMATCH_OBJS += smatch_nul_terminator.o
+SMATCH_OBJS += smatch_param_bits_set.o
+SMATCH_OBJS += smatch_param_bits_clear.o
 SMATCH_OBJS += smatch_param_cleared.o
 SMATCH_OBJS += smatch_param_compare_limit.o
 SMATCH_OBJS += smatch_parameter_names.o
 SMATCH_OBJS += smatch_param_filter.o
+SMATCH_OBJS += smatch_param_key.o
 SMATCH_OBJS += smatch_param_limit.o
 SMATCH_OBJS += smatch_param_set.o
 SMATCH_OBJS += smatch_param_to_mtag_data.o
@@ -257,17 +323,25 @@ SMATCH_OBJS += smatch_param_used.o
 SMATCH_OBJS += smatch_parse_call_math.o
 SMATCH_OBJS += smatch_parsed_conditions.o
 SMATCH_OBJS += smatch_passes_array_size.o
+SMATCH_OBJS += smatch_points_to_container.o
+SMATCH_OBJS += smatch_points_to_user_data.o
+SMATCH_OBJS += smatch_points_to_host_data.o
+SMATCH_OBJS += smatch_power_of_two.o
 SMATCH_OBJS += smatch_project.o
 SMATCH_OBJS += smatch_ranges.o
 SMATCH_OBJS += smatch_real_absolute.o
 SMATCH_OBJS += smatch_recurse.o
+SMATCH_OBJS += smatch_refcount.o
+SMATCH_OBJS += smatch_refcount_info.o
 SMATCH_OBJS += smatch_returns.o
 SMATCH_OBJS += smatch_return_to_param.o
+SMATCH_OBJS += smatch_ssa.o
 SMATCH_OBJS += smatch_scope.o
 SMATCH_OBJS += smatch_slist.o
 SMATCH_OBJS += smatch_start_states.o
 SMATCH_OBJS += smatch_statement_count.o
 SMATCH_OBJS += smatch_states.o
+SMATCH_OBJS += smatch_state_assigned.o
 SMATCH_OBJS += smatch_stored_conditions.o
 SMATCH_OBJS += smatch_string_list.o
 SMATCH_OBJS += smatch_strings.o
@@ -278,9 +352,14 @@ SMATCH_OBJS += smatch_tracker.o
 SMATCH_OBJS += smatch_type_links.o
 SMATCH_OBJS += smatch_type.o
 SMATCH_OBJS += smatch_type_val.o
+SMATCH_OBJS += smatch_unconstant_macros.o
+SMATCH_OBJS += smatch_units.o
 SMATCH_OBJS += smatch_unknown_value.o
 SMATCH_OBJS += smatch_untracked_param.o
+SMATCH_OBJS += smatch_untracked_var.o
 SMATCH_OBJS += smatch_var_sym.o
+
+CFLAGS+=-D__CHECKNAME__='"$(subst .c,,$(notdir $<))"'
 
 SMATCH_CHECKS=$(shell ls check_*.c | sed -e 's/\.c/.o/')
 SMATCH_DATA=smatch_data/kernel.allocation_funcs \
@@ -313,16 +392,23 @@ SMATCH_LDFLAGS := -lsqlite3  -lssl -lcrypto -lm
 smatch: smatch.o $(SMATCH_OBJS) $(SMATCH_CHECKS) $(LIBS)
 	$(Q)$(LD) -o $@ $< $(SMATCH_OBJS) $(SMATCH_CHECKS) $(LIBS) $(SMATCH_LDFLAGS)
 
+smatch_data/db/sm_hash: sm_hash.o $(SMATCH_OBJS)
+	$(Q)$(LD) -o smatch_data/db/sm_hash sm_hash.o smatch_hash.o $(SMATCH_LDFLAGS)
+
+sm_hash.o: sm_hash.c smatch.h
+	$(CC) $(CFLAGS) -c sm_hash.c
+
 check_list_local.h:
 	touch check_list_local.h
 
 smatch.o: smatch.c $(LIB_H) smatch.h check_list.h check_list_local.h
-	$(CC) $(CFLAGS) -c smatch.c -DSMATCHDATADIR='"$(SMATCHDATADIR)"'
+	$(CC) $(CFLAGS) -c smatch.c -DSMATCHDATADIR='"$(smatch_datadir)"'
 
-$(SMATCH_OBJS) $(SMATCH_CHECKS): smatch.h smatch_slist.h smatch_extra.h avl.h
+$(SMATCH_OBJS) $(SMATCH_CHECKS): smatch.h smatch_slist.h smatch_extra.h \
+	smatch_constants.h avl.h
 
 ########################################################################
-all: $(PROGRAMS) smatch
+all: $(PROGRAMS) smatch smatch_data/db/sm_hash
 
 ldflags += $($(@)-ldflags) $(LDFLAGS)
 ldlibs  += $($(@)-ldlibs)  $(LDLIBS) -lm
@@ -346,9 +432,8 @@ cflags   += $($(*)-cflags) $(CPPFLAGS) $(CFLAGS)
 
 selfcheck: $(OBJS:.o=.sc)
 
-
 SPARSE_VERSION:=$(shell git describe --dirty 2>/dev/null || echo '$(VERSION)')
-lib.o: version.h
+version.o: version.h
 version.h: FORCE
 	@echo '#define SPARSE_VERSION "$(SPARSE_VERSION)"' > version.h.tmp
 	@if cmp -s version.h version.h.tmp; then \
@@ -361,12 +446,12 @@ version.h: FORCE
 
 check: all
 	$(Q)cd validation && ./test-suite
-validation/%.t: $(PROGRAMS)
-	@validation/test-suite single $*.c
+validation/%: $(PROGRAMS) FORCE
+	$(Q)validation/test-suite $*
 
 
 clean: clean-check
-	@rm -f *.[oa] .*.d $(PROGRAMS) version.h smatch
+	@rm -f *.[oa] .*.d cwchash/hashtable.o cwchash/.hashtable.o.d $(PROGRAMS) version.h smatch
 clean-check:
 	@echo "  CLEAN"
 	@find validation/ \( -name "*.c.output.*" \
@@ -375,14 +460,15 @@ clean-check:
 	                  \) -exec rm {} \;
 
 
-install: install-bin install-man
+install: install-bin install-man install-assets
 install-bin: $(INST_PROGRAMS:%=$(bindir)/%)
 install-man: $(INST_MAN1:%=$(man1dir)/%)
+install-assets: $(INST_ASSETS:%=$(smatch_datadir)/%)
 
 $(bindir)/%: %
 	@echo "  INSTALL $@"
 	$(Q)install -D        $< $@ || exit 1;
-$(man1dir)/%: %
+$(man1dir)/% $(smatch_datadir)/%: %
 	@echo "  INSTALL $@"
 	$(Q)install -D -m 644 $< $@ || exit 1;
 

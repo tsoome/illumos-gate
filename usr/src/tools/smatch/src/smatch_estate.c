@@ -35,6 +35,7 @@ struct smatch_state *merge_estates(struct smatch_state *s1, struct smatch_state 
 	struct smatch_state *tmp;
 	struct range_list *value_ranges;
 	struct related_list *rlist;
+	bool capped = false;
 
 	if (estates_equiv(s1, s2))
 		return s1;
@@ -51,10 +52,21 @@ struct smatch_state *merge_estates(struct smatch_state *s1, struct smatch_state 
 	estate_set_fuzzy_max(tmp, sval_max(estate_get_fuzzy_max(s1), estate_get_fuzzy_max(s2)));
 
 	if (estate_capped(s1) && estate_capped(s2))
+		capped = true;
+	if (estate_rl(s1) && estate_rl(s2)) {
+		if (estate_capped(s1) && estate_max(s2).uvalue < 100)
+			capped = true;
+		if (estate_capped(s2) && estate_max(s1).uvalue < 100)
+			capped = true;
+	}
+	if (capped)
 		estate_set_capped(tmp);
 
 	if (estate_treat_untagged(s1) && estate_treat_untagged(s2))
 		estate_set_treat_untagged(tmp);
+
+	if (estate_assigned(s1) || estate_assigned(s2))
+		estate_set_assigned(tmp);
 
 	if (estate_new(s1) || estate_new(s2))
 		estate_set_new(tmp);
@@ -101,6 +113,8 @@ int estate_has_fuzzy_max(struct smatch_state *state)
 
 void estate_set_fuzzy_max(struct smatch_state *state, sval_t fuzzy_max)
 {
+	if (is_ptr_type(estate_type(state)))
+		return;
 	if (!rl_has_sval(estate_rl(state), fuzzy_max))
 		return;
 	get_dinfo(state)->fuzzy_max = fuzzy_max;
@@ -108,6 +122,8 @@ void estate_set_fuzzy_max(struct smatch_state *state, sval_t fuzzy_max)
 
 void estate_copy_fuzzy_max(struct smatch_state *new, struct smatch_state *old)
 {
+	if (is_ptr_type(estate_type(new)))
+		return;
 	if (!estate_has_fuzzy_max(old))
 		return;
 	estate_set_fuzzy_max(new, estate_get_fuzzy_max(old));
@@ -178,6 +194,18 @@ bool estate_treat_untagged(struct smatch_state *state)
 void estate_set_treat_untagged(struct smatch_state *state)
 {
 	get_dinfo(state)->treat_untagged = true;
+}
+
+bool estate_assigned(struct smatch_state *state)
+{
+	if (!estate_rl(state))
+		return false;
+	return get_dinfo(state)->assigned;
+}
+
+void estate_set_assigned(struct smatch_state *state)
+{
+	get_dinfo(state)->assigned = true;
 }
 
 bool estate_new(struct smatch_state *state)

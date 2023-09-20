@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Copyright (C) 2013 Oracle.
 #
@@ -8,27 +8,28 @@ import sqlite3
 import sys
 import re
 import subprocess
+import io
 
 try:
     con = sqlite3.connect('smatch_db.sqlite')
-except sqlite3.Error, e:
-    print "Error %s:" % e.args[0]
+except sqlite3.Error as e:
+    print("Error %s:" % e.args[0])
     sys.exit(1)
 
 def usage():
-    print "%s" %(sys.argv[0])
-    print "<function> - how a function is called"
-    print "info <type> - how a function is called, filtered by type"
-    print "return_states <function> - what a function returns"
-    print "call_tree <function> - show the call tree"
-    print "where <struct_type> <member> - where a struct member is set"
-    print "type_size <struct_type> <member> - how a struct member is allocated"
-    print "data_info <struct_type> <member> - information about a given data type"
-    print "function_ptr <function> - which function pointers point to this"
-    print "trace_param <function> <param> - trace where a parameter came from"
-    print "find_tagged <function> <param> - find the source of a tagged value (arm64)"
-    print "parse_warns_tagged <smatch_warns.txt> - parse warns file for summary of tagged issues (arm64)"
-    print "locals <file> - print the local values in a file."
+    print("%s" % (sys.argv[0]))
+    print("<function> - how a function is called")
+    print("info <type> - how a function is called, filtered by type")
+    print("return_states <function> - what a function returns")
+    print("call_tree <function> - show the call tree")
+    print("where <struct_type> <member> - where a struct member is set")
+    print("type_size <struct_type> <member> - how a struct member is allocated")
+    print("data_info <struct_type> <member> - information about a given data type")
+    print("function_ptr <function> - which function pointers point to this")
+    print("trace_param <function> <param> - trace where a parameter came from")
+    print("find_tagged <function> <param> - find the source of a tagged value (arm64)")
+    print("parse_warns_tagged <smatch_warns.txt> - parse warns file for summary of tagged issues (arm64)")
+    print("locals <file> - print the local values in a file.")
     sys.exit(1)
 
 function_ptrs = []
@@ -54,9 +55,11 @@ def get_function_pointers(func):
     return function_ptrs
 
 db_types = {   0: "INTERNAL",
-             101: "PARAM_CLEARED",
              103: "PARAM_LIMIT",
              104: "PARAM_FILTER",
+             500: "RELEASE",
+             501: "BUF_CLEARED",
+             502: "BUF_ADD",
             1001: "PARAM_VALUE",
             1002: "BUF_SIZE",
             1004: "CAPPED_DATA",
@@ -68,6 +71,7 @@ db_types = {   0: "INTERNAL",
             1010: "ABSOLUTE_LIMITS",
             1012: "PARAM_ADD",
             1013: "PARAM_FREED",
+            2014: "MAYBE_FREED",
             1014: "DATA_SOURCE",
             1015: "FUZZY_MAX",
             1016: "STR_LEN",
@@ -96,19 +100,35 @@ db_types = {   0: "INTERNAL",
             1040: "PREEMPT_CNT",
             1041: "SMALLISH",
             1042: "FRESH_MTAG",
+            1044: "FRESH_ALLOC",
+            1047: "TIME",
+
+            2053: "DEVICE_RELEASED",
+            2054: "PREEMPT_ADD",
+            2055: "PREEMPT_SUB",
+
+            7016: "HOST_DATA",
+            7017: "HOST_DATA_SET",
+            7018: "HOST_PTR",
+            7019: "HOST_PTR_SET",
 
             8017: "USER_DATA",
             9017: "USER_DATA_SET",
+            9018: "USER_PTR",
+            9019: "USER_PTR_SET",
             8018: "NO_OVERFLOW",
             8019: "NO_OVERFLOW_SIMPLE",
             8020: "LOCKED",
             8021: "UNLOCKED",
+            8044: "PUT_DEVICE",
             9022: "HALF_LOCKED",
             9023: "LOCK_RESTORED",
             9024: "KNOWN_LOCKED",
             9025: "KNOWN_UNLOCKED",
             8023: "ATOMIC_INC",
             8024: "ATOMIC_DEC",
+            9027: "REFCOUNT_INC",
+            9028: "REFCOUNT_DEC",
 };
 
 def add_range(rl, min_val, max_val):
@@ -201,7 +221,7 @@ def rl_union(rl1, rl2):
         ret = add_range(ret, r[0], r[1])
 
     if (rl1 or rl2) and not ret:
-        print "bug: merging %s + %s gives empty" %(rl1, rl2)
+        print("bug: merging %s + %s gives empty" %(rl1, rl2))
 
     return ret
 
@@ -256,6 +276,19 @@ def val_to_txt(val):
     else:
         return "%d" %(val)
 
+hash_strings = {}
+def hash_to_string(sha):
+    if sha in hash_strings:
+        return hash_strings[sha]
+
+    cur = con.cursor()
+    cur.execute("select value from hash_string where hash = '%d';" %(sha))
+    for txt in cur:
+        hash_strings[sha] = txt[0]
+    if not sha in hash_strings:
+        hash_strings[sha] = "%x" %(sha)
+    return hash_strings[sha]
+
 def get_next_str(txt):
     val = ""
     parsed = 0
@@ -299,7 +332,7 @@ def txt_to_rl(txt):
 
 #    Hm...  Smatch won't call INT_MAX s32max if the variable is unsigned.
 #    if txt != rl_to_txt(ret):
-#        print "bug: converting: text = %s rl = %s internal = %s" %(txt, rl_to_txt(ret), ret)
+#        print("bug: converting: text = %s rl = %s internal = %s" %(txt, rl_to_txt(ret), ret))
 
     return ret
 
@@ -323,7 +356,7 @@ def rl_to_txt(rl):
 def type_to_str(type_int):
 
     t = int(type_int)
-    if db_types.has_key(t):
+    if t in db_types:
         return db_types[t]
     return type_int
 
@@ -336,7 +369,7 @@ def type_to_int(type_string):
 def display_caller_info(printed, cur, param_names):
     for txt in cur:
         if not printed:
-            print "file | caller | function | type | parameter | key | value |"
+            print("file | caller | function | type | parameter | key | value |")
         printed = 1
 
         parameter = int(txt[6])
@@ -344,9 +377,9 @@ def display_caller_info(printed, cur, param_names):
         if len(param_names) and parameter in param_names:
             key = key.replace("$", param_names[parameter])
 
-        print "%20s | %20s | %20s |" %(txt[0], txt[1], txt[2]),
-        print " %10s |" %(type_to_str(txt[5])),
-        print " %d | %s | %s" %(parameter, key, txt[8])
+        print("%20s | %20s | %20s |" %(hash_to_string(txt[0]), txt[1], txt[2]), end = '')
+        print(" %18s |" %(type_to_str(txt[5])), end = '')
+        print(" %2d | %15s | %s" %(parameter, key, txt[8]))
     return printed
 
 def get_caller_info(filename, ptrs, my_type):
@@ -420,7 +453,7 @@ def print_merged_caller_values(filename, func, ptrs, param_names, call_cnt):
         for name in sorted(vals[param]):
             if vals[param][name][0] != call_cnt:
                 continue
-            print "%d %s -> %s" %(param, name, rl_to_txt(vals[param][name][1]))
+            print("%d %s -> %s" %(param, name, rl_to_txt(vals[param][name][1])))
 
 
 def print_unmerged_caller_values(filename, func, ptrs, param_names):
@@ -438,15 +471,15 @@ def print_unmerged_caller_values(filename, func, ptrs, param_names):
             else:
                 name = name.replace("$", "$%d" %(parameter))
 
-            print "%s | %s | %s | %s" %(filename, caller, name, value)
-        print "=========================="
+            print("%s | %s | %s | %s" %(hash_to_string(filename), caller, name, value))
+        print("==========================")
 
 def print_caller_values(filename, func, ptrs):
     param_names = get_param_names(filename, func)
     call_cnt = get_caller_count(ptrs)
 
     print_merged_caller_values(filename, func, ptrs, param_names, call_cnt)
-    print "=========================="
+    print("==========================")
     print_unmerged_caller_values(filename, func, ptrs, param_names)
 
 def caller_info_values(filename, func):
@@ -457,14 +490,17 @@ def print_return_states(func):
     cur = con.cursor()
     cur.execute("select * from return_states where function = '%s';" %(func))
     count = 0
-    for txt in cur:
-        printed = 1
-        if count == 0:
-            print "file | function | return_id | return_value | type | param | key | value |"
-        count += 1
-        print "%s | %s | %2s | %13s" %(txt[0], txt[1], txt[3], txt[4]),
-        print "| %13s |" %(type_to_str(txt[6])),
-        print " %2d | %20s | %20s |" %(txt[7], txt[8], txt[9])
+    try:
+        for txt in cur:
+            printed = 1
+            if count == 0:
+                print("file | function | return_id | return_value | type | param | key | value |")
+            count += 1
+            print("%s | %s | %2s | %13s" %(hash_to_string(txt[0]), txt[1], txt[3], txt[4]), end = '')
+            print("| %15s |" %(type_to_str(txt[6])), end = '')
+            print(" %2d | %20s | %20s |" %(txt[7], txt[8], txt[9]))
+    except:
+        print("\n<ERROR parsing: 'select * from return_states where function = '%s';'>\n" %(func))
 
 def print_return_implies(func):
     cur = con.cursor()
@@ -472,83 +508,167 @@ def print_return_implies(func):
     count = 0
     for txt in cur:
         if not count:
-            print "file | function | type | param | key | value |"
+            print("file | function | type | param | key | value |")
         count += 1
-        print "%15s | %15s" %(txt[0], txt[1]),
-        print "| %15s" %(type_to_str(txt[4])),
-        print "| %3d | %s | %15s |" %(txt[5], txt[6], txt[7])
+        print("%15s | %15s" %(hash_to_string(txt[0]), txt[1]), end = '')
+        print("| %15s" %(type_to_str(txt[4])), end = '')
+        print("| %3d | %15s | %15s |" %(txt[5], txt[6], txt[7]))
 
 def print_type_size(struct_type, member):
     cur = con.cursor()
-    cur.execute("select * from type_size where type like '(struct %s)->%s';" %(struct_type, member))
-    print "type | size"
+    cur.execute("select * from function_type_value where type = '(struct %s)->%s';" %(struct_type, member))
+    print("type | size")
     for txt in cur:
-        print "%-15s | %s" %(txt[0], txt[1])
+        print("%-15s | %s" %(txt[0], txt[1]))
 
     cur.execute("select * from function_type_size where type like '(struct %s)->%s';" %(struct_type, member))
-    print "file | function | type | size"
+    print("file | function | type | size")
     for txt in cur:
-        print "%-15s | %-15s | %-15s | %s" %(txt[0], txt[1], txt[2], txt[3])
+        print("%-15s | %-15s | %-15s | %s" %(hash_to_string(txt[0]), txt[1], txt[2], txt[3]))
 
 def print_data_info(struct_type, member):
     cur = con.cursor()
     cur.execute("select * from data_info where data like '(struct %s)->%s';" %(struct_type, member))
-    print "file | data | type | value"
+    print("file | data | type | value")
     for txt in cur:
-        print "%-15s | %-15s | %-15s | %s" %(txt[0], txt[1], type_to_str(txt[2]), txt[3])
+        print("%-15s | %-15s | %-15s | %s" %(hash_to_string(txt[0]), txt[1], type_to_str(txt[2]), txt[3]))
 
 def print_fn_ptrs(func):
     ptrs = get_function_pointers(func)
     if not ptrs:
         return
-    print "%s = " %(func),
+    print("%s = " %(func), end = '')
     print(ptrs)
 
-def print_functions(member):
+def print_functions(struct, member):
     cur = con.cursor()
-    cur.execute("select * from function_ptr where ptr like '%%->%s';" %(member))
-    print "File | Pointer | Function | Static"
+    if struct:
+         cur.execute("select * from function_ptr where ptr like '(struct %s)->%s';" %(struct, member))
+    elif member.find(" ") >= 0:
+        cur.execute("select * from function_ptr where ptr = '%s';" %(member))
+    else:
+        cur.execute("select * from function_ptr where ptr like '%%->%s';" %(member))
+    print("File | Pointer | Function | Static")
     for txt in cur:
-        print "%-15s | %-15s | %-15s | %s" %(txt[0], txt[2], txt[1], txt[3])
+        print("%-15s | %-15s | %-15s | %s" %(hash_to_string(txt[0]), txt[2], txt[1], txt[3]))
 
-def get_callers(func):
+class CallTree:
+    def __init__(self, func, printed = ""):
+        self.name = func;
+        if printed == "":
+            self.printed = func + "()"
+        else:
+            self.printed = printed;
+        self.callers = []
+
+    def has_func(self, func):
+        if func == self.name:
+            return True
+        for c in self.callers:
+            if c.has_func(func):
+                return True
+        return False
+
+    def print_tree(self, out):
+        max_indent = 0
+        for c in self.callers:
+            indent = c.print_tree(out)
+            if indent > max_indent:
+                max_indent = indent
+        if max_indent != 0:
+            out.write("%s-> " %(" " *((max_indent - 1) * 3)))
+        out.write("%s\n" %(self.printed))
+        return max_indent + 1
+
+    def __repr__(self):
+        out = io.StringIO()
+        indent = 0
+        self.print_tree(out)
+        return out.getvalue()
+
+    def add_caller(self, func, printed = ""):
+        for c in self.callers:
+            if func == c.name:
+                return None
+        t = CallTree(func, printed)
+        self.callers.append(t)
+        return t
+
+def get_callers(func, restrict = ""):
+    if restrict == "":
+        restrict = "and type = 0"
     ret = []
     cur = con.cursor()
     ptrs = get_function_pointers(func)
     for ptr in ptrs:
-        cur.execute("select distinct caller from caller_info where function = '%s';" %(ptr))
+        cur.execute("select distinct caller from caller_info where function = '%s' %s;" %(ptr, restrict))
         for row in cur:
-            ret.append(row[0])
+                ret.append(row[0])
     return ret
 
 printed_funcs = []
-def call_tree_helper(func, indent = 0):
+def call_tree_helper(func, restrict = "", indent = 0):
     global printed_funcs
     if func in printed_funcs:
         return
-    print "%s%s()" %(" " * indent, func)
     if func == "too common":
         return
-    if indent > 6:
+    if indent > 30:
         return
     printed_funcs.append(func)
-    callers = get_callers(func)
+    callers = get_callers(func, restrict)
     if len(callers) >= 20:
-        print "Over 20 callers for %s()" %(func)
+        print("Over 20 callers for %s()" %(func))
         return
     for caller in callers:
-        call_tree_helper(caller, indent + 2)
+        if caller in printed_funcs:
+            print("%s+ %s()" %(" " * indent, caller))
+        else:
+            print("%s%s()" %(" " * (indent + 2), caller))
+        call_tree_helper(caller, restrict, indent + 2)
 
 def print_call_tree(func):
     global printed_funcs
     printed_funcs = []
+    print("%s()" %(func))
     call_tree_helper(func)
+
+def get_preempt_callers(call_tree, branch, func):
+    cur = con.cursor()
+    ptrs = get_function_pointers(func)
+    for ptr in ptrs:
+        cur.execute("select caller, value from caller_info where function = '%s' and type = 2054;" %(ptr))
+        for row in cur:
+            func = row[0]
+            if row[1] == "":
+                printed = func + "()"
+            else:
+                printed = func + "() " + row[1]
+            if not call_tree.has_func(func):
+                b = branch.add_caller(func, printed)
+                get_preempt_callers(call_tree, b, func)
+            else:
+                printed = printed + " <duplicate>"
+                branch.add_caller(func, printed)
+
+    return call_tree
+
+def print_preempt_tree(func):
+    global printed_funcs
+    printed_funcs = []
+    call_tree = CallTree(func)
+    get_preempt_callers(call_tree, call_tree, func)
+    print(call_tree)
 
 def function_type_value(struct_type, member):
     cur = con.cursor()
-    cur.execute("select * from function_type_value where type like '(struct %s)->%s';" %(struct_type, member))
+    if struct_type == "%":
+        cur.execute("select * from function_type_value where type like '(struct %s)->%s';" %(struct_type, member))
+    else:
+        cur.execute("select * from function_type_value where type = '(struct %s)->%s';" %(struct_type, member))
+
     for txt in cur:
-        print "%-30s | %-30s | %s | %s" %(txt[0], txt[1], txt[2], txt[3])
+        print("%-30s | %-30s | %s | %s" %(hash_to_string(txt[0]), txt[1], txt[2], txt[3]))
 
 def rl_too_big(txt):
     rl = txt_to_rl(txt)
@@ -592,24 +712,24 @@ def parse_warns_tagged(filename):
         if not line:
             break
 
-	linepos = re.search("([^\s]+)", line).group(1)
-	groupre = re.search("potentially tagged address \(([^,]+), ([^,]+), ([^\)]+)\)", line)
-	groupre.group(1)
+    linepos = re.search("([^\s]+)", line).group(1)
+    groupre = re.search("potentially tagged address \(([^,]+), ([^,]+), ([^\)]+)\)", line)
+    groupre.group(1)
 
-	func = groupre.group(1)
-	param = int(groupre.group(2))
-	var = groupre.group(3)
+    func = groupre.group(1)
+    param = int(groupre.group(2))
+    var = groupre.group(3)
 
-	if ("end" in var or "size" in var or "len" in var):
-		continue
+    if ("end" in var or "size" in var or "len" in var):
+        return
 
-	print "\n%s (func: %s, param: %d:%s) may be caused by:" %(linepos, func, param, var)
+    print("\n%s (func: %s, param: %d:%s) may be caused by:" %(linepos, func, param, var))
 
-	if (param != -1):
-		if not find_tagged(func, param, 0, []):
-			print "    %s (param %d) (can't walk call tree)" % (func, param)
-	else:
-		print "    %s (variable %s (can't walk call tree)" % (func, var)
+    if (param != -1):
+        if not find_tagged(func, param, 0, []):
+            print("    %s (param %d) (can't walk call tree)" % (func, param))
+    else:
+        print("    %s (variable %s (can't walk call tree)" % (func, var))
 
 def find_tagged(func, param, caller_call_id, printed):
 
@@ -633,21 +753,21 @@ def find_tagged(func, param, caller_call_id, printed):
         for row in cur:
             if not rl_is_tagged(row[2]):
                 continue
-	    if rl_is_treat_untagged(row[2]):
-	        continue
-            found = 1
-            if row[1] not in callers:
-                callers[row[1]] = {}
-            if "param" not in callers[row[1]]:
-                line = "    %s (param ?) -> %s (param %d)" % (row[0], func, param)
-                if line not in printed:
-                        printed.append(line)
-                        print line
-                continue
-            if row[0] not in printed:
-                printed.append(row[0])
-                if not find_tagged(row[0], callers[row[1]]["param"], row[1], printed):
-                    print "    %s (param %d)" % (row[0], param)
+        if rl_is_treat_untagged(row[2]):
+            continue
+        found = 1
+        if row[1] not in callers:
+            callers[row[1]] = {}
+        if "param" not in callers[row[1]]:
+            line = "    %s (param ?) -> %s (param %d)" % (row[0], func, param)
+            if line not in printed:
+                    printed.append(line)
+                    print(line)
+            continue
+        if row[0] not in printed:
+            printed.append(row[0])
+            if not find_tagged(row[0], callers[row[1]]["param"], row[1], printed):
+                print("    %s (param %d)" % (row[0], param))
 
     return found
 
@@ -674,7 +794,7 @@ def trace_param_helper(func, param, indent = 0):
     global printed_funcs
     if func in printed_funcs:
         return
-    print "%s%s(param %d)" %(" " * indent, func, param)
+    print("%s%s(param %d)" %(" " * indent, func, param))
     if func == "too common":
         return
     if indent > 20:
@@ -687,27 +807,27 @@ def trace_param_helper(func, param, indent = 0):
             p = int(re.findall('\d+', path[1][1:])[0])
             trace_param_helper(path[0], p, indent + 2)
         elif len(path[0]) and path[0][0] == '%':
-            print "  %s%s" %(" " * indent, path[1])
+            print("  %s%s" %(" " * indent, path[1]))
         else:
-            print "* %s%s %s" %(" " * (indent - 1), path[0], path[1])
+            print("* %s%s %s" %(" " * (indent - 1), path[0], path[1]))
 
 def trace_param(func, param):
     global printed_funcs
     printed_funcs = []
-    print "tracing %s %d" %(func, param)
+    print("tracing %s %d" %(func, param))
     trace_param_helper(func, param)
 
 def print_locals(filename):
     cur = con.cursor()
     cur.execute("select file,data,value from data_info where file = '%s' and type = 8029 and value != 0;" %(filename))
     for txt in cur:
-        print "%s | %s | %s" %(txt[0], txt[1], txt[2])
+        print("%s | %s | %s" %(hash_to_string(txt[0]), txt[1], txt[2]))
 
 def constraint(struct_type, member):
     cur = con.cursor()
     cur.execute("select * from constraints_required where data like '(struct %s)->%s' or bound like '(struct %s)->%s';" %(struct_type, member, struct_type, member))
     for txt in cur:
-        print "%-30s | %-30s | %s | %s" %(txt[0], txt[1], txt[2], txt[3])
+        print("%-30s | %-30s | %s | %s" %(txt[0], txt[1], txt[2], txt[3]))
 
 if len(sys.argv) < 2:
     usage()
@@ -734,7 +854,7 @@ elif sys.argv[1] == "function_ptr" or sys.argv[1] == "fn_ptr":
 elif sys.argv[1] == "return_states":
     func = sys.argv[2]
     print_return_states(func)
-    print "================================================"
+    print("================================================")
     print_return_implies(func)
 elif sys.argv[1] == "return_implies":
     func = sys.argv[2]
@@ -750,6 +870,9 @@ elif sys.argv[1] == "data_info":
 elif sys.argv[1] == "call_tree":
     func = sys.argv[2]
     print_call_tree(func)
+elif sys.argv[1] == "preempt":
+    func = sys.argv[2]
+    print_preempt_tree(func)
 elif sys.argv[1] == "find_tagged":
     func = sys.argv[2]
     param = int(sys.argv[3])
@@ -772,8 +895,13 @@ elif sys.argv[1] == "local":
         variable = sys.argv[3]
     local_values(filename, variable)
 elif sys.argv[1] == "functions":
-    member = sys.argv[2]
-    print_functions(member)
+    if len(sys.argv) == 4:
+        struct = sys.argv[2]
+        member = sys.argv[3]
+    else:
+        struct = ""
+        member = sys.argv[2]
+    print_functions(struct, member)
 elif sys.argv[1] == "trace_param":
     if len(sys.argv) != 4:
         usage()

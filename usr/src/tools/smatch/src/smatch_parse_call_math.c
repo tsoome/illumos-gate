@@ -124,6 +124,8 @@ static int read_rl_from_var(struct expression *call, const char *p, const char *
 	char buf[256];
 	int star;
 
+	if (!call || call->type != EXPR_CALL)
+		return 0;
 	p++;
 	param = strtol(p, (char **)&p, 10);
 
@@ -292,6 +294,7 @@ static int format_name_sym_helper(char *buf, int remaining, char *name, struct s
 	int arg;
 	char *param_name;
 	int name_len;
+	int len;
 
 	if (!name || !sym || !sym->ident)
 		goto free;
@@ -302,11 +305,12 @@ static int format_name_sym_helper(char *buf, int remaining, char *name, struct s
 		goto free;
 
 	param_name = sym->ident->name;
+	len = strlen(name);
 	name_len = strlen(param_name);
 
-	if (name[name_len] == '\0')
+	if (name_len == len)
 		ret = snprintf(buf, remaining, "$%d", arg);
-	else if (name[name_len] == '-')
+	else if (name_len < len && name[name_len] == '-')
 		ret = snprintf(buf, remaining, "$%d%s", arg, name + name_len);
 	else
 		goto free;
@@ -445,7 +449,6 @@ char *get_value_in_terms_of_parameter_math_var_sym(const char *name, struct symb
 	char buf[256] = "";
 	int ret;
 	int cnt = 0;
-	sval_t sval;
 
 	expr = get_assigned_expr_name_sym(name, sym);
 	if (!expr)
@@ -455,9 +458,6 @@ char *get_value_in_terms_of_parameter_math_var_sym(const char *name, struct symb
 		if (++cnt > 3)
 			break;
 	}
-
-	if (get_implied_value(expr, &sval))
-		return NULL;
 
 	ret = format_expr_helper(buf, sizeof(buf), expr);
 	if (ret == 0)

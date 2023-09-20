@@ -13,6 +13,7 @@ static inline void __smatch_implied(long long val){}
 static inline void __smatch_implied_min(long long val){}
 static inline void __smatch_implied_max(long long val){}
 static inline void __smatch_user_rl(long long val){}
+static inline void __smatch_host_rl(long long val){}
 static inline void __smatch_capped(long long val){}
 
 static inline void __smatch_hard_max(long long val){}
@@ -41,6 +42,7 @@ static inline void __smatch_compare(long long one, long long two){}
 
 static inline void __smatch_debug_on(void){}
 static inline void __smatch_debug_check(const char *check_name){}
+static inline void __smatch_debug_var(const char *var_name){}
 static inline void __smatch_debug_off(void){}
 
 static inline void __smatch_local_debug_on(void){}
@@ -80,6 +82,12 @@ static inline void __smatch_expr(const char *str, void *p){}
 static inline void __smatch_state_count(void){}
 static inline void __smatch_mem(void){}
 
+static inline void __smatch_units(long long var){}
+
+static inline void __smatch_timer_start(void){}
+static inline void __smatch_timer_stop(void){}
+
 static inline void __smatch_container(long long container, long long x){}
+static inline void __smatch_param_key(long long val){}
 
 #endif

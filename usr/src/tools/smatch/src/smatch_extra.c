@@ -61,9 +61,9 @@ int in_warn_on_macro(void)
 }
 
 typedef void (mod_hook)(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state);
-DECLARE_PTR_LIST(void_fn_list, mod_hook *);
-static struct void_fn_list *extra_mod_hooks;
-static struct void_fn_list *extra_nomod_hooks;
+DECLARE_PTR_LIST(mod_hook_list, mod_hook *);
+static struct mod_hook_list *extra_mod_hooks;
+static struct mod_hook_list *extra_nomod_hooks;
 
 void add_extra_mod_hook(mod_hook *fn)
 {
@@ -79,7 +79,7 @@ void add_extra_nomod_hook(mod_hook *fn)
 	add_ptr_list(&extra_nomod_hooks, p);
 }
 
-void call_extra_hooks(struct void_fn_list *hooks, const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
+void call_extra_hooks(struct mod_hook_list *hooks, const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
 {
 	mod_hook **fn;
 
@@ -168,21 +168,72 @@ done:
 	in_recurse = false;
 }
 
-static bool in_param_set;
-void set_extra_mod_helper(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
+extern int __no_limits;
+static void mark_sub_members_gone(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
+{
+	struct sm_state *sm;
+
+	if (__in_fake_assign)
+		return;
+	if (is_fake_var_assign(expr))
+		return;
+
+	if (!estate_type(state) || estate_type(state)->type != SYM_PTR)
+		return;
+	if (!is_noderef_ptr_rl(estate_rl(state)))
+		return;
+
+	FOR_EACH_MY_SM(SMATCH_EXTRA, __get_cur_stree(), sm) {
+		if (sm->sym != sym)
+			continue;
+		if (strcmp(name, sm->name) == 0)
+			continue;
+		if (!is_sub_member(name, sym, sm))
+			continue;
+		__no_limits++;
+		set_extra_nomod(sm->name, sm->sym, NULL, alloc_estate_empty());
+		__no_limits--;
+	} END_FOR_EACH_SM(sm);
+}
+
+static bool is_fake_assign(struct expression *expr)
 {
 	struct expression *faked;
 
+	if (is_fake_var_assign(expr))
+		return true;
+
+	faked = get_faked_expression();
+	if (!faked || faked->type != EXPR_ASSIGNMENT || faked->op != '=')
+		return false;
+
+	faked = strip_expr(faked->right);
+	if (faked->type == EXPR_PREOP && faked->op == '&')
+		return true;
+
+	return false;
+}
+
+static void call_update_mtag_data(struct expression *expr,
+				  struct smatch_state *state)
+{
+	if (is_fake_assign(expr))
+		return;
+
+	update_mtag_data(expr, state);
+}
+
+static bool in_param_set;
+void set_extra_mod_helper(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
+{
 	if (!expr)
 		expr = gen_expression_from_name_sym(name, sym);
 	remove_from_equiv(name, sym);
 	set_union_info(name, sym, expr, state);
+	mark_sub_members_gone(name, sym, expr, state);
 	call_extra_mod_hooks(name, sym, expr, state);
-	faked = get_faked_expression();
-	if (!faked ||
-	    (faked->type == EXPR_ASSIGNMENT && is_fresh_alloc(faked->right)))
-		update_mtag_data(expr, state);
-	if (in_param_set &&
+	call_update_mtag_data(expr, state);
+	if ((__in_fake_assign || in_param_set) &&
 	    estate_is_unknown(state) && !get_state(SMATCH_EXTRA, name, sym))
 		return;
 	set_state(SMATCH_EXTRA, name, sym, state);
@@ -257,44 +308,27 @@ free:
 
 static char *get_long_name_sym(const char *name, struct symbol *sym, struct symbol **new_sym, bool use_stack)
 {
-	struct expression *tmp;
-	struct sm_state *sm;
-	char buf[256];
+	struct expression *orig;
+	struct symbol *orig_sym;
+	char *orig_name, *ret;
 
-	/*
-	 * Just prepend the name with a different name/sym and return that.
-	 * For example, if we set "foo->bar = bar;" then the other name
-	 * for "bar->baz" is "foo->bar->baz".  Or if we have "foo = bar;" then
-	 * the other name for "bar" is "foo".  A third option is if we have
-	 * "foo = bar;" then another name for "*bar" is "*foo".
-	 */
+	if (!sym || !sym->ident)
+		return NULL;
 
-	FOR_EACH_MY_SM(check_assigned_expr_id, __get_cur_stree(), sm) {
-		tmp = sm->state->data;
-		if (!tmp || tmp->type != EXPR_SYMBOL)
-			continue;
-		if (tmp->symbol == sym)
-			goto found;
-	} END_FOR_EACH_SM(sm);
+	orig = get_assigned_expr_name_sym(sym->ident->name, sym);
+	if (orig) {
+		orig_name = expr_to_var_sym(orig, &orig_sym);
+		if (!orig_name)
+			return NULL;
+
+		ret = swap_names(name, sym->ident->name, orig_name);
+		free_string(orig_name);
+		if (ret)
+			*new_sym = orig_sym;
+		return ret;
+	}
 
 	return NULL;
-
-found:
-	if (!use_stack && name[tmp->symbol->ident->len] != '-')
-		return NULL;
-
-	if (name[0] == '*' && strcmp(name + 1, tmp->symbol_name->name) == 0)
-		snprintf(buf, sizeof(buf), "*%s", sm->name);
-	else if (name[tmp->symbol->ident->len] == '-' ||
-		 name[tmp->symbol->ident->len] == '.')
-		snprintf(buf, sizeof(buf), "%s%s", sm->name, name + tmp->symbol->ident->len);
-	else if (strcmp(name, tmp->symbol_name->name) == 0)
-		snprintf(buf, sizeof(buf), "%s", sm->name);
-	else
-		return NULL;
-
-	*new_sym = sm->sym;
-	return alloc_string(buf);
 }
 
 char *get_other_name_sym_helper(const char *name, struct symbol *sym, struct symbol **new_sym, bool use_stack)
@@ -702,7 +736,7 @@ static struct sm_state *handle_canonical_for_inc(struct expression *iter_expr,
 	struct sm_state *sm;
 	struct smatch_state *estate;
 	sval_t start, end, max;
-	struct symbol *type;
+	bool unknown_end = false;
 
 	iter_var = iter_expr->unop;
 	sm = get_sm_state_expr(SMATCH_EXTRA, iter_var);
@@ -710,8 +744,12 @@ static struct sm_state *handle_canonical_for_inc(struct expression *iter_expr,
 		return NULL;
 	if (!estate_get_single_value(sm->state, &start))
 		return NULL;
-	if (!get_implied_value(condition->right, &end))
-		return NULL;
+	if (!get_implied_max(condition->right, &end)) {
+		end = sval_type_max(get_type(condition->right));
+		end = sval_cast(start.type, end);
+		if (sval_is_max(end))
+			unknown_end = true;
+	}
 
 	if (get_sm_state_expr(SMATCH_EXTRA, condition->left) != sm)
 		return NULL;
@@ -720,7 +758,7 @@ static struct sm_state *handle_canonical_for_inc(struct expression *iter_expr,
 	case SPECIAL_UNSIGNED_LT:
 	case SPECIAL_NOTEQUAL:
 	case '<':
-		if (!sval_is_min(end))
+		if (!sval_is_min(end) && !unknown_end)
 			end.value--;
 		break;
 	case SPECIAL_UNSIGNED_LTE:
@@ -731,9 +769,7 @@ static struct sm_state *handle_canonical_for_inc(struct expression *iter_expr,
 	}
 	if (sval_cmp(end, start) < 0)
 		return NULL;
-	type = get_type(iter_var);
-	start = sval_cast(type, start);
-	end = sval_cast(type, end);
+	end = sval_cast(start.type, end);
 	estate = alloc_estate_range(start, end);
 	if (get_hard_max(condition->right, &max)) {
 		if (!get_macro_name(condition->pos))
@@ -742,7 +778,7 @@ static struct sm_state *handle_canonical_for_inc(struct expression *iter_expr,
 		    condition->op == SPECIAL_UNSIGNED_LT ||
 		    condition->op == SPECIAL_NOTEQUAL)
 			max.value--;
-		max = sval_cast(type, max);
+		max = sval_cast(start.type, max);
 		estate_set_fuzzy_max(estate, max);
 	}
 	set_extra_expr_mod(iter_var, estate);
@@ -864,6 +900,7 @@ void __extra_pre_loop_hook_after(struct sm_state *sm,
 	struct expression *iter_expr;
 	sval_t limit;
 	struct smatch_state *state;
+	sval_t end;
 
 	if (!iterator) {
 		while_count_down_after(sm, condition);
@@ -874,8 +911,13 @@ void __extra_pre_loop_hook_after(struct sm_state *sm,
 
 	if (condition->type != EXPR_COMPARE)
 		return;
+
 	if (iter_expr->op == SPECIAL_INCREMENT) {
-		limit = sval_binop(estate_max(sm->state), '+',
+		if (!get_implied_value(condition->right, &end) &&
+		    sval_is_max(estate_max(sm->state)))
+			limit = estate_max(sm->state);
+		else
+			limit = sval_binop(estate_max(sm->state), '+',
 				   sval_type_val(estate_type(sm->state), 1));
 	} else {
 		limit = sval_binop(estate_min(sm->state), '-',
@@ -923,6 +965,7 @@ static struct stree *unmatched_stree;
 static struct smatch_state *unmatched_state(struct sm_state *sm)
 {
 	struct smatch_state *state;
+	struct expression *expr;
 	struct range_list *rl;
 
 	if (unmatched_stree) {
@@ -934,7 +977,12 @@ static struct smatch_state *unmatched_state(struct sm_state *sm)
 		return alloc_estate_empty();
 	if (get_global_rl(sm->name, sm->sym, &rl))
 		return alloc_estate_rl(rl);
-	return alloc_estate_whole(estate_type(sm->state));
+
+	expr = gen_expression_from_name_sym(sm->name, sm->sym);
+	if (!expr)
+		return alloc_estate_whole(estate_type(sm->state));
+	get_absolute_rl(expr, &rl);
+	return alloc_estate_rl(rl);
 }
 
 static void clear_the_pointed_at(struct expression *expr)
@@ -1010,10 +1058,12 @@ int values_fit_type(struct expression *left, struct expression *right)
 	get_absolute_rl(right, &rl);
 	if (type == rl_type(rl))
 		return 1;
-	if (type_unsigned(type) && sval_is_negative(rl_min(rl)))
-		return 0;
-	if (sval_cmp(sval_type_min(type), rl_min(rl)) > 0)
-		return 0;
+	if (sval_is_negative(rl_min(rl))) {
+		if (type_unsigned(type))
+			return 0;
+		if (sval_cmp(sval_type_min(type), rl_min(rl)) > 0)
+			return 0;
+	}
 	if (sval_cmp(sval_type_max(type), rl_max(rl)) < 0)
 		return 0;
 	return 1;
@@ -1083,6 +1133,9 @@ static void match_vanilla_assign(struct expression *left, struct expression *rig
 	if (is_struct(left))
 		return;
 
+	if (expr_equiv(left, right))
+		return;
+
 	save_chunk_info(left, right);
 
 	name = expr_to_var_sym(left, &sym);
@@ -1111,24 +1164,25 @@ static void match_vanilla_assign(struct expression *left, struct expression *rig
 		goto done;
 	}
 
-	if (__in_fake_assign) {
+	if (__in_fake_assign || is_fake_var(left)) {
 		struct smatch_state *right_state;
-		sval_t sval;
-
-		if (get_value(right, &sval)) {
-			sval = sval_cast(left_type, sval);
-			state = alloc_estate_sval(sval);
-			goto done;
-		}
+		struct range_list *rl;
 
 		right_state = get_state(SMATCH_EXTRA, right_name, right_sym);
 		if (right_state) {
-			/* simple assignment */
-			state = clone_estate(right_state);
+			state = clone_estate_cast(left_type, right_state);
 			goto done;
 		}
 
-		state = alloc_estate_rl(alloc_whole_rl(left_type));
+		if (get_implied_rl(right, &rl)) {
+			rl = cast_rl(left_type, rl);
+			state = alloc_estate_rl(rl);
+			goto done;
+		}
+
+		rl = alloc_whole_rl(right_type);
+		rl = cast_rl(left_type, rl);
+		state = alloc_estate_rl(rl);
 		goto done;
 	}
 
@@ -1181,7 +1235,8 @@ static void match_assign(struct expression *expr)
 
 	if (expr->op == '=' && is_condition(expr->right))
 		return; /* handled in smatch_condition.c */
-	if (expr->op == '=' && right->type == EXPR_CALL)
+	if (expr->op == '=' && right->type == EXPR_CALL &&
+	    !is_fake_call(right))
 		return; /* handled in smatch_function_hooks.c */
 	if (expr->op == '=') {
 		match_vanilla_assign(left, right);
@@ -1319,18 +1374,13 @@ static void unop_expr(struct expression *expr)
 
 static void asm_expr(struct statement *stmt)
 {
-
-	struct expression *expr;
+	struct asm_operand *op;
 	struct symbol *type;
 
-	FOR_EACH_PTR(stmt->asm_outputs, expr) {
-		if (expr->type != EXPR_ASM_OPERAND) {
-			sm_perror("unexpected asm param type %d", expr->type);
-			continue;
-		}
-		type = get_type(strip_expr(expr->expr));
-		set_extra_expr_mod(expr->expr, alloc_estate_whole(type));
-	} END_FOR_EACH_PTR(expr);
+	FOR_EACH_PTR(stmt->asm_outputs, op) {
+		type = get_type(strip_expr(op->expr));
+		set_extra_expr_mod(op->expr, alloc_estate_whole(type));
+	} END_FOR_EACH_PTR(op);
 }
 
 static void check_dereference(struct expression *expr)
@@ -1357,7 +1407,9 @@ static void check_dereference(struct expression *expr)
 		else
 			rl = clone_rl(valid_ptr_rl);
 
+		__no_limits++;
 		set_extra_expr_nomod(expr, alloc_estate_rl(rl));
+		__no_limits--;
 	}
 }
 
@@ -1394,6 +1446,17 @@ static void set_param_dereferenced(struct expression *call, struct expression *a
 	struct symbol *sym;
 	char *name;
 
+	if (strcmp(key, "$") == 0 && arg->type == EXPR_PREOP && arg->op == '&') {
+		struct expression *tmp;
+
+		tmp = strip_expr(arg->unop);
+		if (tmp->type == EXPR_DEREF) {
+			tmp = strip_expr(tmp->deref);
+			if (tmp->type == EXPR_PREOP && tmp->op == '*')
+				arg = strip_expr(tmp->unop);
+		}
+	}
+
 	name = get_variable_from_key(arg, key, &sym);
 	if (name && sym) {
 		struct smatch_state *orig, *new;
@@ -1409,7 +1472,11 @@ static void set_param_dereferenced(struct expression *call, struct expression *a
 			new = alloc_estate_range(valid_ptr_min_sval, valid_ptr_max_sval);
 		}
 
+		if (!orig)
+			__no_limits++;
 		set_extra_nomod(name, sym, NULL, new);
+		if (!orig)
+			__no_limits--;
 	}
 	free_string(name);
 
@@ -1511,6 +1578,7 @@ static bool in_macro(struct expression *left, struct expression *right)
 
 static void handle_comparison(struct symbol *type, struct expression *left, int op, struct expression *right)
 {
+	struct smatch_state *left_state_orig, *right_state_orig;
 	struct range_list *left_orig;
 	struct range_list *left_true;
 	struct range_list *left_false;
@@ -1548,9 +1616,11 @@ static void handle_comparison(struct symbol *type, struct expression *left, int 
 	if (is_impossible_variable(left) || is_impossible_variable(right))
 		return;
 
+	left_state_orig = get_extra_state(left);
 	get_real_absolute_rl(left, &left_orig);
 	left_orig = cast_rl(type, left_orig);
 
+	right_state_orig = get_extra_state(right);
 	get_real_absolute_rl(right, &right_orig);
 	right_orig = cast_rl(type, right_orig);
 
@@ -1591,18 +1661,18 @@ static void handle_comparison(struct symbol *type, struct expression *left, int 
 	case SPECIAL_UNSIGNED_LT:
 	case SPECIAL_UNSIGNED_LTE:
 	case SPECIAL_LTE:
-		if (get_implied_value(right, &dummy) && !in_macro(left, right))
+		if (get_hard_max(right, &dummy) && !in_macro(left, right))
 			estate_set_hard_max(left_true_state);
-		if (get_implied_value(left, &dummy) && !in_macro(left, right))
+		if (get_hard_max(left, &dummy) && !in_macro(left, right))
 			estate_set_hard_max(right_false_state);
 		break;
 	case '>':
 	case SPECIAL_UNSIGNED_GT:
 	case SPECIAL_UNSIGNED_GTE:
 	case SPECIAL_GTE:
-		if (get_implied_value(left, &dummy) && !in_macro(left, right))
+		if (get_hard_max(left, &dummy) && !in_macro(left, right))
 			estate_set_hard_max(right_true_state);
-		if (get_implied_value(right, &dummy) && !in_macro(left, right))
+		if (get_hard_max(right, &dummy) && !in_macro(left, right))
 			estate_set_hard_max(left_false_state);
 		break;
 	}
@@ -1708,13 +1778,13 @@ static void handle_comparison(struct symbol *type, struct expression *left, int 
 	}
 
 	/* Don't introduce new states for known true/false conditions */
-	if (rl_equiv(left_orig, estate_rl(left_true_state)))
+	if (rl_equiv(estate_rl(left_state_orig), estate_rl(left_true_state)))
 		left_true_state = NULL;
-	if (rl_equiv(left_orig, estate_rl(left_false_state)))
+	if (rl_equiv(estate_rl(left_state_orig), estate_rl(left_false_state)))
 		left_false_state = NULL;
-	if (rl_equiv(right_orig, estate_rl(right_true_state)))
+	if (rl_equiv(estate_rl(right_state_orig), estate_rl(right_true_state)))
 		right_true_state = NULL;
-	if (rl_equiv(right_orig, estate_rl(right_false_state)))
+	if (rl_equiv(estate_rl(right_state_orig), estate_rl(right_false_state)))
 		right_false_state = NULL;
 
 	set_extra_expr_true_false(left, left_true_state, left_false_state);
@@ -1885,6 +1955,7 @@ static int match_func_comparison(struct expression *expr)
 	struct expression *right = strip_expr(expr->right);
 
 	if (left->type == EXPR_CALL || right->type == EXPR_CALL) {
+		// TODO: faked_assign this should be handled as a fake assignment instead
 		function_comparison(left, expr->op, right);
 		return 1;
 	}
@@ -1966,7 +2037,7 @@ static void match_comparison(struct expression *expr)
 		handle_comparison(type, left, expr->op, right);
 
 	prev = get_assigned_expr(left_orig);
-	if (is_simple_math(prev) && has_variable(prev, left_orig) == 0) {
+	if (is_simple_math(prev) && !has_variable(prev, left_orig)) {
 		left = prev;
 		right = right_orig;
 		move_known_values(&left, &right);
@@ -1974,7 +2045,7 @@ static void match_comparison(struct expression *expr)
 	}
 
 	prev = get_assigned_expr(right_orig);
-	if (is_simple_math(prev) && has_variable(prev, right_orig) == 0) {
+	if (is_simple_math(prev) && !has_variable(prev, right_orig)) {
 		left = left_orig;
 		right = prev;
 		move_known_values(&left, &right);
@@ -2032,7 +2103,7 @@ static sval_t get_high_mask(sval_t known)
 
 static bool handle_bit_test(struct expression *expr)
 {
-	struct range_list *orig_rl, *rl;
+	struct range_list *orig_rl, *rlt, *rlf, *true_rl, *false_rl;
 	struct expression *shift, *mask, *var;
 	struct bit_info *bit_info;
 	sval_t sval;
@@ -2054,23 +2125,29 @@ static bool handle_bit_test(struct expression *expr)
 	bit_info = get_bit_info(mask);
 	if (!bit_info)
 		return false;
-	if (!bit_info->possible)
+	if (!bit_info->possible){
+		set_true_false_states_expr(my_id, var, alloc_estate_empty(), NULL);
 		return false;
+	}
 
 	get_absolute_rl(var, &orig_rl);
 	if (sval_is_negative(rl_min(orig_rl)) ||
 	    rl_max(orig_rl).uvalue > type_bits(get_type(shift->left)))
 		return false;
 
-	low.value = ffsll(bit_info->possible);
-	high.value = sm_fls64(bit_info->possible);
-	rl = alloc_rl(low, high);
-	rl = cast_rl(get_type(var), rl);
-	rl = rl_intersection(orig_rl, rl);
-	if (!rl)
-		return false;
+	low.value = ffsll(bit_info->possible) - 1;
+	high.value = sm_fls64(bit_info->possible) - 1;
+	rlt = alloc_rl(low, high);
+	rlt = cast_rl(get_type(var), rlt);
+	true_rl = rl_intersection(orig_rl, rlt);
 
-	set_extra_expr_true_false(shift->right, alloc_estate_rl(rl), NULL);
+	low.value = ffsll(bit_info->set) - 1;
+	high.value = sm_fls64(bit_info->set) - 1;
+	rlf = alloc_rl(low, high);
+	rlf = cast_rl(get_type(var), rlf);
+	false_rl = rl_filter(orig_rl, rlf);
+
+	set_extra_expr_true_false(var, alloc_estate_rl(true_rl), alloc_estate_rl(false_rl));
 
 	return true;
 }
@@ -2136,13 +2213,14 @@ static void handle_MOD_condition(struct expression *expr)
 	struct range_list *true_rl;
 	struct range_list *false_rl = NULL;
 	sval_t right;
-	sval_t zero = { 0, };
+	sval_t zero = {
+		.value = 0,
+	};
 
 	if (!get_implied_value(expr->right, &right) || right.value == 0)
 		return;
 	get_absolute_rl(expr->left, &orig_rl);
 
-	zero.value = 0;
 	zero.type = rl_type(orig_rl);
 
 	/* We're basically dorking around the min and max here */
@@ -2277,12 +2355,21 @@ int implied_not_equal_name_sym(char *name, struct symbol *sym, long long val)
 	return 0;
 }
 
-int parent_is_null_var_sym(const char *name, struct symbol *sym)
+bool is_noderef_ptr(struct expression *expr)
 {
+	struct range_list *rl;
+
+	if (!get_implied_rl(expr, &rl))
+		return false;
+	return is_noderef_ptr_rl(rl);
+}
+
+static int parent_is_err_or_null_var_sym_helper(const char *name, struct symbol *sym, bool check_err_ptr)
+{
+	struct smatch_state *state;
 	char buf[256];
 	char *start;
-	char *end;
-	struct smatch_state *state;
+	int len;
 
 	strncpy(buf, name, sizeof(buf) - 1);
 	buf[sizeof(buf) - 1] = '\0';
@@ -2295,8 +2382,7 @@ int parent_is_null_var_sym(const char *name, struct symbol *sym)
 			continue;
 		if (!estate_rl(state))
 			return 1;
-		if (estate_min(state).value == 0 &&
-		    estate_max(state).value == 0)
+		if (is_noderef_ptr_rl(estate_rl(state)))
 			return 1;
 	}
 
@@ -2304,16 +2390,34 @@ int parent_is_null_var_sym(const char *name, struct symbol *sym)
 	while (*start == '&')
 		start++;
 
-	while ((end = strrchr(start, '-'))) {
-		*end = '\0';
+	len = strlen(start);
+	while (true) {
+		while (len > 0) {
+			len--;
+			if (start[len] == '-' ||
+			    start[len] == '.') {
+				start[len] = '\0';
+				break;
+			}
+		}
+		if (len == 0)
+			return 0;
 		state = __get_state(SMATCH_EXTRA, start, sym);
 		if (!state)
 			continue;
-		if (estate_min(state).value == 0 &&
-		    estate_max(state).value == 0)
+		if (is_noderef_ptr_rl(estate_rl(state)))
 			return 1;
 	}
-	return 0;
+}
+
+int parent_is_null_var_sym(const char *name, struct symbol *sym)
+{
+	return parent_is_err_or_null_var_sym_helper(name, sym, false);
+}
+
+int parent_is_err_or_null_var_sym(const char *name, struct symbol *sym)
+{
+	return parent_is_err_or_null_var_sym_helper(name, sym, (option_project == PROJ_KERNEL));
 }
 
 int parent_is_null(struct expression *expr)
@@ -2381,6 +2485,10 @@ static int filter_unused_param_value_info(struct expression *call, int param, ch
 
 	/* for function pointers assume everything is used */
 	if (call->fn->type != EXPR_SYMBOL)
+		return 0;
+
+	if (strcmp(printed_name, "$") == 0 ||
+	    strcmp(printed_name, "*$") == 0)
 		return 0;
 
 	/*
@@ -2455,11 +2563,13 @@ struct range_list *intersect_with_real_abs_expr(struct expression *expr, struct 
 	return rl_intersection(abs_rl, start);
 }
 
-static void struct_member_callback(struct expression *call, int param, char *printed_name, struct sm_state *sm)
+static void caller_info_callback(struct expression *call, int param, char *printed_name, struct sm_state *sm)
 {
 	struct range_list *rl;
 	sval_t dummy;
 
+	if (printed_name[0] == '&')
+		return;
 	if (estate_is_whole(sm->state) || !estate_rl(sm->state))
 		return;
 	if (filter_unused_param_value_info(call, param, printed_name, sm))
@@ -2492,6 +2602,8 @@ static void returned_struct_members(int return_id, char *return_ranges, struct e
 	// FIXME handle *$
 
 	if (!is_pointer(expr))
+		return;
+	if (return_ranges && strstr(return_ranges, "[==$"))
 		return;
 
 	returned_name = expr_to_var_sym(expr, &returned_sym);
@@ -2536,20 +2648,12 @@ static void db_limited_after(void)
 
 static int basically_the_same(struct range_list *orig, struct range_list *new)
 {
-	if (rl_equiv(orig, new))
-		return 1;
+	if (type_is_ptr(rl_type(orig)) &&
+	    is_whole_ptr_rl(orig) &&
+	    is_whole_ptr_rl(new))
+		return true;
 
-	/*
-	 * The whole range is essentially the same as 0,4096-27777777777 so
-	 * don't overwrite the implications just to store that.
-	 *
-	 */
-	if (rl_type(orig)->type == SYM_PTR &&
-	    is_whole_rl(orig) &&
-	    rl_min(new).value == 0 &&
-	    rl_max(new).value == valid_ptr_max)
-		return 1;
-	return 0;
+	return rl_equiv(orig, new);
 }
 
 static void db_param_limit_binops(struct expression *arg, char *key, struct range_list *rl)
@@ -2558,6 +2662,8 @@ static void db_param_limit_binops(struct expression *arg, char *key, struct rang
 	sval_t zero = {	.type = rl_type(rl), };
 	sval_t sval;
 
+	if (strcmp(key, "$") != 0)
+		return;
 	if (arg->op != '*')
 		return;
 	if (!get_implied_value(arg->right, &sval))
@@ -2574,6 +2680,7 @@ static void db_param_limit_binops(struct expression *arg, char *key, struct rang
 
 static void db_param_limit_filter(struct expression *expr, int param, char *key, char *value, enum info_type op)
 {
+	struct smatch_state *state;
 	struct expression *arg;
 	char *name;
 	struct symbol *sym;
@@ -2628,16 +2735,21 @@ static void db_param_limit_filter(struct expression *expr, int param, char *key,
 		goto free;
 	other_name = get_other_name_sym(name, sym, &other_sym);
 
-	if (op == PARAM_LIMIT)
-		set_extra_nomod_vsl(name, sym, vsl, NULL, alloc_estate_rl(new));
-	else
-		set_extra_mod(name, sym, NULL, alloc_estate_rl(new));
+	state = alloc_estate_rl(new);
+	if (sm && estate_has_hard_max(sm->state))
+		estate_set_hard_max(state);
+
+	if (op == PARAM_LIMIT) {
+		set_extra_nomod_vsl(name, sym, vsl, NULL, state);
+	} else
+		set_extra_mod(name, sym, NULL, state);
 
 	if (other_name && other_sym) {
+		state = clone_estate(state);
 		if (op == PARAM_LIMIT)
-			set_extra_nomod_vsl(other_name, other_sym, vsl, NULL, alloc_estate_rl(new));
+			set_extra_nomod_vsl(other_name, other_sym, vsl, NULL, state);
 		else
-			set_extra_mod(other_name, other_sym, NULL, alloc_estate_rl(new));
+			set_extra_mod(other_name, other_sym, NULL, state);
 	}
 
 	if (op == PARAM_LIMIT && arg->type == EXPR_BINOP)
@@ -2656,6 +2768,80 @@ static void db_param_filter(struct expression *expr, int param, char *key, char 
 	db_param_limit_filter(expr, param, key, value, PARAM_FILTER);
 }
 
+static struct expression *get_star_pointer_hack(struct expression *arg, const char *key)
+{
+	/* if we are setting *(p + offset) then we are setting *p */
+	if (strcmp(key, "*$") != 0)
+		return NULL;
+
+	arg = strip_expr(arg);
+	if (arg->op != '+')
+		return NULL;
+	arg = strip_expr(arg->left);
+	if (!is_pointer(arg))
+		return NULL;
+	return arg;
+}
+
+static bool handle_param_assign(struct expression *expr, int param, char *key, char *value)
+{
+	struct expression *arg, *left, *right, *fake_assign;
+	struct range_list *filter, *filtered;
+	struct symbol *arg_type, *param_type;
+	struct smatch_state *state, *clone;
+	char right_key[64];
+	int right_param;
+	char buf[64];
+	char *p;
+
+	p = strchr(value, '[');
+	if (!p)
+		return false;
+	p++;
+	if (*p != '$')
+		return false;
+	snprintf(buf, sizeof(buf), "%s", p);
+	p = strchr(buf, ']');
+	if (!p)
+		return false;
+	*p = '\0';
+
+	if (!split_param_key(buf, &right_param, right_key, sizeof(right_key)))
+		return false;
+
+	left = gen_expr_from_param_key(expr, param, key);
+	if (!left)
+		return false;
+	right = gen_expr_from_param_key(expr, right_param, right_key);
+	if (!right)
+		return false;
+
+	fake_assign = assign_expression(left, '=', right);
+	fake_param_assign_helper(expr, fake_assign, true);
+
+	/* Assignment faked.  Now filter the results */
+	arg = get_argument_from_call_expr(expr->args, param);
+	if (!arg)
+		return false;
+	state = get_extra_state(left);
+	if (!state)
+		return false;
+	arg_type = get_arg_type_from_key(expr->fn, param, arg, key);
+	param_type = get_member_type_from_key(arg, key);
+	if (param_type && param_type->type == SYM_STRUCT)
+		return false;
+	call_results_to_rl(expr, arg_type, value, &filter);
+	filter = cast_rl(param_type, filter);
+	filtered = rl_intersection(estate_rl(state), filter);
+
+	if (!rl_equiv(estate_rl(state), filtered)) {
+		clone = clone_partial_estate(state, filtered);
+		set_extra_expr_nomod(left, clone);
+	}
+
+	return true;
+}
+
 static void db_param_add_set(struct expression *expr, int param, char *key, char *value, enum info_type op)
 {
 	struct expression *arg, *gen_expr;
@@ -2672,6 +2858,11 @@ static void db_param_add_set(struct expression *expr, int param, char *key, char
 	if (expr->type != EXPR_CALL)
 		return;
 
+	if (op == PARAM_SET) {
+		if (handle_param_assign(expr, param, key, value))
+			return;
+	}
+
 	arg = get_argument_from_call_expr(expr->args, param);
 	if (!arg)
 		return;
@@ -2681,8 +2872,14 @@ static void db_param_add_set(struct expression *expr, int param, char *key, char
 	if (param_type && param_type->type == SYM_STRUCT)
 		return;
 	name = get_variable_from_key(arg, key, &sym);
-	if (!name || !sym)
-		goto free;
+	if (!name || !sym) {
+		arg = get_star_pointer_hack(arg, key);
+		if (!arg)
+			goto free;
+		name = get_variable_from_key(arg, key, &sym);
+		if (!name || !sym)
+			goto free;
+	}
 	gen_expr = gen_expression_from_key(arg, key);
 
 	state = get_state(SMATCH_EXTRA, name, sym);
@@ -2766,38 +2963,6 @@ free:
 	free_string(name);
 }
 
-static void match_call_info(struct expression *expr)
-{
-	struct smatch_state *state;
-	struct range_list *rl = NULL;
-	struct expression *arg;
-	struct symbol *type;
-	sval_t dummy;
-	int i = 0;
-
-	FOR_EACH_PTR(expr->args, arg) {
-		type = get_arg_type(expr->fn, i);
-
-		get_absolute_rl(arg, &rl);
-		rl = cast_rl(type, rl);
-
-		if (!is_whole_rl(rl)) {
-			rl = intersect_with_real_abs_expr(arg, rl);
-			sql_insert_caller_info(expr, PARAM_VALUE, i, "$", show_rl(rl));
-		}
-		state = get_state_expr(SMATCH_EXTRA, arg);
-		if (!estate_get_single_value(state, &dummy) && estate_has_hard_max(state)) {
-			sql_insert_caller_info(expr, HARD_MAX, i, "$",
-					       sval_to_str(estate_max(state)));
-		}
-		if (estate_has_fuzzy_max(state)) {
-			sql_insert_caller_info(expr, FUZZY_MAX, i, "$",
-					       sval_to_str(estate_get_fuzzy_max(state)));
-		}
-		i++;
-	} END_FOR_EACH_PTR(arg);
-}
-
 static void set_param_value(const char *name, struct symbol *sym, char *key, char *value)
 {
 	struct expression *expr;
@@ -2819,6 +2984,38 @@ static void set_param_value(const char *name, struct symbol *sym, char *key, cha
 	if (estate_get_single_value(state, &dummy))
 		estate_set_hard_max(state);
 	set_state(SMATCH_EXTRA, fullname, sym, state);
+}
+
+static void db_buf_add_helper(struct expression *expr, void *data)
+{
+	struct expression *left = expr->left;
+	struct sm_state *sm;
+
+	sm = get_sm_state_expr(my_id, left);
+	if (!sm)
+		return;
+
+	set_state(my_id, sm->name, sm->sym, alloc_estate_whole(estate_type(sm->state)));
+}
+
+static void db_buf_add(struct expression *expr, int param, char *key, char *value)
+{
+	struct expression *arg;
+
+	/*
+	 * There really isn't much we can do with a BUF_ADD.  A BUF_CLEAR is
+	 * like a full modification which some stuff cares about.  A no_mod
+	 * thing is useful because that's normally bounds checking etc.  But
+	 * with BUF_ADD the only thing we can say is do is delete any previous
+	 * known states.
+	 *
+	 */
+
+	arg = gen_expr_from_param_key(expr, param, key);
+	if (!arg)
+		return;
+
+	create_recursive_fake_assignments(deref_expression(arg), &db_buf_add_helper, NULL);
 }
 
 static void set_param_fuzzy_max(const char *name, struct symbol *sym, char *key, char *value)
@@ -2862,11 +3059,38 @@ static void set_param_hard_max(const char *name, struct symbol *sym, char *key, 
 	estate_set_hard_max(state);
 }
 
+static struct sm_state *get_sm_from_call(struct expression *expr)
+{
+	struct expression *fake;
+	struct sm_state *ret;
+	char buf[32];
+
+	if (is_fake_call(expr))
+		return NULL;
+
+	fake = expr_get_fake_parent_expr(expr);
+	if (fake && fake->type == EXPR_ASSIGNMENT) {
+		ret = get_sm_state_expr(SMATCH_EXTRA, fake->left);
+		if (ret)
+			return ret;
+	}
+
+	snprintf(buf, sizeof(buf), "return %p", expr);
+	return get_sm_state(SMATCH_EXTRA, buf, NULL);
+}
+
 struct sm_state *get_extra_sm_state(struct expression *expr)
 {
 	char *name;
 	struct symbol *sym;
 	struct sm_state *ret = NULL;
+
+	expr = strip_expr(expr);
+	if (!expr)
+		return NULL;
+
+	if (expr->type == EXPR_CALL)
+		return get_sm_from_call(expr);
 
 	name = expr_to_known_chunk_sym(expr, &sym);
 	if (!name)
@@ -2903,6 +3127,7 @@ void register_smatch_extra(int id)
 	select_return_states_hook(PARAM_FILTER, &db_param_filter);
 	select_return_states_hook(PARAM_ADD, &db_param_add);
 	select_return_states_hook(PARAM_SET, &db_param_set);
+	select_return_states_hook(BUF_ADD, &db_buf_add);
 	add_lost_param_hook(&match_lost_param);
 	select_return_states_hook(PARAM_VALUE, &db_param_value);
 	select_return_states_after(&db_limited_after);
@@ -2940,15 +3165,14 @@ void register_smatch_extra_late(int id)
 	add_modification_hook(link_id, &match_link_modify);
 	add_hook(&match_dereferences, DEREF_HOOK);
 	add_hook(&match_pointer_as_array, OP_HOOK);
-	select_return_implies_hook(DEREFERENCE, &set_param_dereferenced);
+	select_return_implies_hook_early(DEREFERENCE, &set_param_dereferenced);
 	add_hook(&match_function_call, FUNCTION_CALL_HOOK);
 	add_hook(&match_assign, ASSIGNMENT_HOOK);
 	add_hook(&match_assign, GLOBAL_ASSIGNMENT_HOOK);
 	add_hook(&unop_expr, OP_HOOK);
 	add_hook(&asm_expr, ASM_HOOK);
 
-	add_hook(&match_call_info, FUNCTION_CALL_HOOK);
-	add_member_info_callback(my_id, struct_member_callback);
+	add_caller_info_callback(my_id, caller_info_callback);
 	add_split_return_callback(&returned_struct_members);
 
 //	add_hook(&assume_indexes_are_valid, OP_HOOK);

@@ -22,7 +22,13 @@ static int my_id;
 extern int second_half_id;
 extern void set_spectre_first_half(struct expression *expr);
 
+enum kernel_data_types {
+	USER_DATA_TYPE = 0,
+	HOST_DATA_TYPE = 1,
+};
+
 static int suppress_multiple = 1;
+static int analyzed_data_type = USER_DATA_TYPE;
 
 static int is_write(struct expression *expr)
 {
@@ -92,12 +98,12 @@ static int is_harmless(struct expression *expr)
 
 static unsigned long long get_max_by_type(struct expression *expr)
 {
+	sval_t max = {
+		.type = &ullong_ctype,
+		.uvalue = -1ULL,
+	};
 	struct symbol *type;
 	int cnt = 0;
-	sval_t max;
-
-	max.type = &ullong_ctype;
-	max.uvalue = -1ULL;
 
 	while (true) {
 		expr = strip_parens(expr);
@@ -173,8 +179,19 @@ static void array_check(struct expression *expr)
 	}
 
 	offset = get_array_offset(expr);
-	if (!is_user_rl(offset))
-		return;
+	switch(analyzed_data_type) {
+		case USER_DATA_TYPE:
+			if (!is_user_rl(offset))
+				return;
+			break;
+		case HOST_DATA_TYPE:
+			if (!is_host_rl(offset))
+				return;
+			break;
+		default:
+			return;
+	}
+
 	if (is_nospec(offset))
 		return;
 
@@ -208,6 +225,8 @@ void check_spectre(int id)
 	my_id = id;
 
 	suppress_multiple = getenv("FULL_SPECTRE") == NULL;
+	if (getenv("ANALYZE_HOST_DATA"))
+		analyzed_data_type = HOST_DATA_TYPE;
 
 	if (option_project != PROJ_KERNEL)
 		return;

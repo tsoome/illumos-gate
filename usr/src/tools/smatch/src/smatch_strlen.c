@@ -22,8 +22,6 @@
 #include "smatch_slist.h"
 #include "smatch_extra.h"
 
-#define UNKNOWN_SIZE (-1)
-
 static int my_strlen_id;
 /*
  * The trick with the my_equiv_id is that if we have:
@@ -43,19 +41,42 @@ static struct smatch_state *size_to_estate(int size)
 	return alloc_estate_sval(sval);
 }
 
+static struct smatch_state *unknown_strlen(void)
+{
+	return alloc_estate_sval(int_minus_one);
+}
+
 static struct smatch_state *unmatched_strlen_state(struct sm_state *sm)
 {
-	return size_to_estate(UNKNOWN_SIZE);
+	return unknown_strlen();
+}
+
+static bool handle_plus_plus(struct sm_state *sm, struct expression *mod_expr)
+{
+	struct range_list *rl;
+
+	if (!mod_expr)
+		return false;
+	if (mod_expr->type != EXPR_PREOP && mod_expr->type != EXPR_POSTOP)
+		return false;
+	if (mod_expr->op != SPECIAL_INCREMENT)
+		return false;
+
+	if (inside_loop())
+		return false;
+	if (!estate_rl(sm->state) || estate_min(sm->state).value <= 0)
+		return false;
+
+	rl = rl_binop(estate_rl(sm->state), '-', alloc_rl(int_one, int_one));
+	set_state(sm->owner, sm->name, sm->sym, alloc_estate_rl(rl));
+	return true;
 }
 
 static void set_strlen_undefined(struct sm_state *sm, struct expression *mod_expr)
 {
-	set_state(sm->owner, sm->name, sm->sym, size_to_estate(UNKNOWN_SIZE));
-}
-
-static void set_strlen_equiv_undefined(struct sm_state *sm, struct expression *mod_expr)
-{
-	set_state(sm->owner, sm->name, sm->sym, &undefined);
+	if (handle_plus_plus(sm, mod_expr))
+		return;
+	set_state(sm->owner, sm->name, sm->sym, unknown_strlen());
 }
 
 static void match_string_assignment(struct expression *expr)
@@ -67,6 +88,19 @@ static void match_string_assignment(struct expression *expr)
 	if (!get_implied_strlen(expr->right, &rl))
 		return;
 	set_state_expr(my_strlen_id, expr->left, alloc_estate_rl(clone_rl(rl)));
+}
+
+bool is_strlen(struct expression *expr)
+{
+	if (!expr || expr->type != EXPR_CALL)
+		return false;
+
+	if (sym_name_is("strlen", expr->fn) ||
+	    sym_name_is("__builtin_strlen", expr->fn) ||
+	    sym_name_is("__fortify_strlen", expr->fn))
+		return true;
+
+	return false;
 }
 
 static void match_strlen(const char *fn, struct expression *expr, void *unused)
@@ -104,17 +138,18 @@ static void match_strlen_condition(struct expression *expr)
 	struct smatch_state *false_state = NULL;
 	int op;
 
+	expr = strip_expr(expr);
 	if (expr->type != EXPR_COMPARE)
 		return;
 
 	left = strip_expr(expr->left);
 	right = strip_expr(expr->right);
 
-	if (left->type == EXPR_CALL && sym_name_is("strlen", left->fn)) {
+	if (left->type == EXPR_CALL && is_strlen(left)) {
 		str = get_argument_from_call_expr(left->args, 0);
 		strlen_left = 1;
 	}
-	if (right->type == EXPR_CALL && sym_name_is("strlen", right->fn)) {
+	if (right->type == EXPR_CALL && is_strlen(right)) {
 		str = get_argument_from_call_expr(right->args, 0);
 		strlen_right = 1;
 	}
@@ -185,6 +220,7 @@ static void match_strlcpycat(const char *fn, struct expression *expr, void *unus
 	struct expression *dest;
 	struct expression *src;
 	struct expression *limit_expr;
+	struct smatch_state *state;
 	int src_len;
 	sval_t limit;
 
@@ -201,23 +237,48 @@ static void match_strlcpycat(const char *fn, struct expression *expr, void *unus
 	if (src_len != 0 && strcmp(fn, "strcpy") == 0 && src_len < limit.value)
 		limit.value = src_len;
 
-	set_state_expr(my_strlen_id, dest, size_to_estate(limit.value - 1));
+	state = alloc_estate_range(int_zero, sval_type_val(&int_ctype, limit.value - 1));
+	set_state_expr(my_strlen_id, dest, state);
 }
 
 static void match_strcpy(const char *fn, struct expression *expr, void *unused)
 {
 	struct expression *dest;
 	struct expression *src;
-	int src_len;
+	struct range_list *rl;
 
 	dest = get_argument_from_call_expr(expr->args, 0);
 	src = get_argument_from_call_expr(expr->args, 1);
 
-	src_len = get_size_from_strlen(src);
-	if (src_len == 0)
+	if (!get_implied_strlen(src, &rl))
 		return;
 
-	set_state_expr(my_strlen_id, dest, size_to_estate(src_len - 1));
+	set_state_expr(my_strlen_id, dest, alloc_estate_rl(rl));
+}
+
+static void match_str_chr(struct expression *expr, const char *name, struct symbol *sym, void *data)
+{
+	struct expression *call, *orig;
+	struct smatch_state *state;
+	struct range_list *rl;
+	sval_t max;
+
+	call = expr;
+	while (call && call->type == EXPR_ASSIGNMENT)
+		call = strip_expr(expr->right);
+	if (!call || call->type != EXPR_CALL)
+		return;
+
+	orig = get_argument_from_call_expr(call->args, 0);
+	if (!get_implied_strlen(orig, &rl))
+		return;
+	max = rl_max(rl);
+	max.value--;
+	if (max.value < 0)
+		return;
+
+	state = alloc_estate_range(int_one, max);
+	set_state(my_strlen_id, name, sym, state);
 }
 
 static int get_strlen_from_string(struct expression *expr, struct range_list **rl)
@@ -348,9 +409,19 @@ void register_strlen(int id)
 
 	add_function_hook("snprintf", &match_snprintf, NULL);
 
+	add_function_hook("strscpy", &match_strlcpycat, NULL);
 	add_function_hook("strlcpy", &match_strlcpycat, NULL);
 	add_function_hook("strlcat", &match_strlcpycat, NULL);
 	add_function_hook("strcpy", &match_strcpy, NULL);
+	/*
+	 * I would have made strchr only apply for success returns but some
+	 * arches (arm64) impliment strchr outside the kernel so we don't know
+	 * the return values.  Having a NULL with a strlen is fine because if
+	 * someone uses the NULL then we're already in trouble.
+	 */
+	add_function_param_key_hook("strchr", match_str_chr, -1, "$", NULL);
+
+	add_function_hook("__builtin_strcpy", &match_strcpy, NULL);
 }
 
 void register_strlen_equiv(int id)
@@ -358,6 +429,8 @@ void register_strlen_equiv(int id)
 	my_equiv_id = id;
 	set_dynamic_states(my_equiv_id);
 	add_function_assign_hook("strlen", &match_strlen, NULL);
-	add_modification_hook(my_equiv_id, &set_strlen_equiv_undefined);
+	add_function_assign_hook("__builtin_strlen", &match_strlen, NULL);
+	add_function_assign_hook("__fortify_strlen", &match_strlen, NULL);
+	add_modification_hook(my_equiv_id, &set_undefined);
 }
 

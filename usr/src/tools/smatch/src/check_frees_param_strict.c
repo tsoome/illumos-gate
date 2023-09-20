@@ -27,136 +27,85 @@
 
 static int my_id;
 
-STATE(freed);
 STATE(ignore);
 
 static struct smatch_state *unmatched_state(struct sm_state *sm)
 {
-	if (sm->state != &freed)
-		return &undefined;
 	if (parent_is_null_var_sym(sm->name, sm->sym))
-		return &freed;
+		return sm->state;
 	return &undefined;
 }
 
 static void set_ignore(struct sm_state *sm, struct expression *mod_expr)
 {
+	if (sm->sym && sm->sym->ident &&
+	    strcmp(sm->sym->ident->name, sm->name) == 0)
+		return;
 	set_state(my_id, sm->name, sm->sym, &ignore);
 }
 
-static int counter_was_inced(struct expression *expr)
+void track_freed_param(struct expression *expr, struct smatch_state *state)
 {
-	char *name;
-	struct symbol *sym;
-	char buf[256];
-	int ret = 0;
-
-	name = expr_to_var_sym(expr, &sym);
-	if (!name || !sym)
-		goto free;
-
-	snprintf(buf, sizeof(buf), "%s->users.counter", name);
-	ret = was_inced(buf, sym);
-free:
-	free_string(name);
-	return ret;
-}
-
-static void match_free(const char *fn, struct expression *expr, void *param)
-{
-	struct expression *arg, *tmp;
-	int cnt = 0;
-
-	arg = get_argument_from_call_expr(expr->args, PTR_INT(param));
-	if (!arg)
-		return;
-	while ((tmp = get_assigned_expr(arg))) {
-		arg = strip_expr(tmp);
-		if (cnt++ > 5)
-			break;
-	}
-
-	if (get_param_num(arg) < 0)
-		return;
-	if (param_was_set(arg))
-		return;
-	if (strcmp(fn, "kfree_skb") == 0 && counter_was_inced(arg))
-		return;
-
-	set_state_expr(my_id, arg, &freed);
-}
-
-static void set_param_freed(struct expression *expr, int param, char *key, char *value)
-{
-	struct expression *arg;
-	char *name;
-	struct symbol *sym;
-
-	while (expr->type == EXPR_ASSIGNMENT)
-		expr = strip_expr(expr->right);
-	if (expr->type != EXPR_CALL)
-		return;
-
-	arg = get_argument_from_call_expr(expr->args, param);
-	if (!arg)
-		return;
-	name = get_variable_from_key(arg, key, &sym);
-	if (!name || !sym)
-		goto free;
-	if (get_param_num_from_sym(sym) < 0)
-		goto free;
-
-	if (param_was_set_var_sym(name, sym))
-		goto free;
-
-	set_state(my_id, name, sym, &freed);
-free:
-	free_string(name);
-}
-
-static void param_freed_info(int return_id, char *return_ranges, struct expression *expr)
-{
-	struct sm_state *sm;
+	struct expression *tmp;
+	const char *key;
 	int param;
-	const char *param_name;
+
+	tmp = get_assigned_expr(expr);
+	if (tmp)
+		expr = tmp;
+
+	param = get_param_key_from_expr(expr, NULL, &key);
+	if (param < 0)
+		return;
+	if (param_was_set(expr))
+		return;
+
+	set_state_expr(my_id, expr, state);
+}
+
+void track_freed_param_var_sym(const char *name, struct symbol *sym,
+			       struct smatch_state *state)
+{
+	struct expression *tmp;
+
+	tmp = get_assigned_expr_name_sym(name, sym);
+	if (tmp)
+		track_freed_param(tmp, state);
+
+	if (get_param_num_from_sym(sym) < 0)
+		return;
+	/*
+	 * FIXME: some unpublished code made this apply to only '$' and I
+	 * don't remember why I would do that.  But there was probably
+	 * a reason.
+	 */
+	if (param_was_set_var_sym(name, sym))
+		return;
+
+	set_state(my_id, name, sym, state);
+}
+
+static void return_freed_callback(int return_id, char *return_ranges,
+				 struct expression *returned_expr,
+				 int param,
+				 const char *printed_name,
+				 struct sm_state *sm)
+{
+	if (strcmp(sm->state->name, "freed") != 0)
+		return;
 
 	if (on_atomic_dec_path())
 		return;
 
-	FOR_EACH_MY_SM(my_id, __get_cur_stree(), sm) {
-		if (sm->state != &freed)
-			continue;
-
-		param = get_param_num_from_sym(sm->sym);
-		if (param < 0)
-			continue;
-
-		param_name = get_param_name(sm);
-		if (!param_name)
-			continue;
-
-		sql_insert_return_states(return_id, return_ranges, PARAM_FREED,
-					 param, param_name, "");
-	} END_FOR_EACH_SM(sm);
+	sql_insert_return_states(return_id, return_ranges, PARAM_FREED,
+				 param, printed_name, "");
 }
 
 void check_frees_param_strict(int id)
 {
 	my_id = id;
 
-	if (option_project != PROJ_KERNEL)
-		return;
-
-	add_function_hook("kfree", &match_free, INT_PTR(0));
-	add_function_hook("kmem_cache_free", &match_free, INT_PTR(1));
-	add_function_hook("kfree_skb", &match_free, INT_PTR(0));
-	add_function_hook("kfree_skbmem", &match_free, INT_PTR(0));
-	add_function_hook("dma_pool_free", &match_free, INT_PTR(1));
-	add_function_hook("spi_unregister_controller", &match_free, INT_PTR(0));
-
-	select_return_states_hook(PARAM_FREED, &set_param_freed);
 	add_modification_hook(my_id, &set_ignore);
-	add_split_return_callback(&param_freed_info);
-
+	add_return_info_callback(my_id, return_freed_callback);
 	add_unmatched_state_hook(my_id, &unmatched_state);
 }

@@ -28,7 +28,7 @@ void func (void)
 }
 /*
  * check-name: Smatch locking #6
- * check-command: smatch -p=kernel sm_locking6.c
+ * check-command: smatch -p=kernel -DCONFIG_SMP=y sm_locking6.c
  *
  * check-output-start
 sm_locking6.c:27 func() warn: inconsistent returns 'flags'.
@@ -36,6 +36,6 @@ sm_locking6.c:27 func() warn: inconsistent returns 'flags'.
   Unlocked on: 21,24,27
 sm_locking6.c:27 func() warn: inconsistent returns 'lock'.
   Locked on  : 26
-  Unlocked on: 21,24,27
+  Unlocked on: 24,27
  * check-output-end
  */

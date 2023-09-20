@@ -32,6 +32,11 @@ STATE(fresh);
 
 struct alloc_info *alloc_funcs;
 
+struct alloc_info illumos_kernel_allocation_funcs[] = {
+	{"kmem_alloc", 0},
+	{"kmem_zalloc", 0},
+};
+
 struct alloc_info kernel_allocation_funcs[] = {
 	{"kmalloc", 0},
 	{"kmalloc_node", 0},
@@ -44,10 +49,9 @@ struct alloc_info kernel_allocation_funcs[] = {
 	{"kmalloc_array", 0, 1},
 	{"sock_kmalloc", 1},
 	{"kmemdup", 1},
-	{"kmemdup_user", 1},
+	{"memdup_user", 1},
 	{"dma_alloc_attrs", 1},
-	{"pci_alloc_consistent", 1},
-	{"pci_alloc_coherent", 1},
+	{"dma_alloc_coherent", 1},
 	{"devm_kmalloc", 1},
 	{"devm_kzalloc", 1},
 	{"krealloc", 1},
@@ -84,15 +88,28 @@ static int fresh_callback(void *fresh, int argc, char **argv, char **azColName)
 
 static int fresh_from_db(struct expression *call)
 {
+	static struct expression *prev_call;
+	static int prev_ret;
 	int fresh = 0;
 
-	/* for function pointers assume everything is used */
-	if (call->fn->type != EXPR_SYMBOL)
+	if (is_fake_call(call))
 		return 0;
+
+	if (call == prev_call)
+		return prev_ret;
+	prev_call = call;
+
+	/* for function pointers assume everything is used */
+	if (call->fn->type != EXPR_SYMBOL) {
+		prev_ret = 0;
+		return 0;
+	}
 
 	run_sql(&fresh_callback, &fresh,
 		"select * from return_states where %s and type = %d and parameter = -1 and key = '$' limit 1;",
 		get_static_filter(call->fn->symbol), FRESH_ALLOC);
+
+	prev_ret = fresh;
 	return fresh;
 }
 
@@ -121,7 +138,7 @@ bool is_fresh_alloc(struct expression *expr)
 		return true;
 	i = -1;
 	while (alloc_funcs[++i].fn) {
-		if (sym_name_is(kernel_allocation_funcs[i].fn, expr->fn))
+		if (sym_name_is(alloc_funcs[i].fn, expr->fn))
 			return true;
 	}
 	return false;
@@ -201,10 +218,19 @@ void register_fresh_alloc(int id)
 
 	my_id = id;
 
-	if (option_project == PROJ_KERNEL)
+	switch (option_project) {
+	case PROJ_ILLUMOS_KERNEL:
+		alloc_funcs = illumos_kernel_allocation_funcs;
+		break;
+
+	case PROJ_KERNEL:
 		alloc_funcs = kernel_allocation_funcs;
-	else
+		break;
+
+	default:
 		alloc_funcs = general_allocation_funcs;
+		break;
+	}
 
 	i = -1;
 	while (alloc_funcs[++i].fn)

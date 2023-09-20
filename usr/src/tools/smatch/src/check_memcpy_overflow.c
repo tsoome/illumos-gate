@@ -28,7 +28,7 @@ struct limiter {
 static struct limiter b0_l2 = {0, 2};
 static struct limiter b1_l2 = {1, 2};
 
-struct string_list *ignored_structs;
+static struct string_list *ignored_structs;
 
 static int get_the_max(struct expression *expr, sval_t *sval)
 {
@@ -233,6 +233,16 @@ static int is_ignored_struct(struct expression *expr)
 	return 0;
 }
 
+static bool is_marked_unsafe(struct expression *expr)
+{
+	char *macro;
+
+	macro = get_macro_name(expr->pos);
+	if (!macro)
+		return false;
+	return strcmp(macro, "unsafe_memcpy") == 0;
+}
+
 static void match_limited(const char *fn, struct expression *expr, void *_limiter)
 {
 	struct limiter *limiter = (struct limiter *)_limiter;
@@ -267,7 +277,13 @@ static void match_limited(const char *fn, struct expression *expr, void *_limite
 	if (is_one_element_array(dest))
 		return;
 
+	if (buf_comp_has_bytes(dest, limit))
+		return;
+
 	if (is_ignored_struct(dest))
+		return;
+
+	if (is_marked_unsafe(dest))
 		return;
 
 	dest_name = expr_to_str(dest);

@@ -38,22 +38,20 @@ static int link_id;
 static struct smatch_state *alloc_link_state(struct string_list *links)
 {
 	struct smatch_state *state;
-	static char buf[256];
+	static char buf[256] = "";
 	char *tmp;
-	int i;
+	int cnt = 0;
 
 	state = __alloc_smatch_state(0);
 
-	i = 0;
 	FOR_EACH_PTR(links, tmp) {
-		if (!i++) {
-			snprintf(buf, sizeof(buf), "%s", tmp);
-		} else {
-			append(buf, ", ", sizeof(buf));
-			append(buf, tmp, sizeof(buf));
-		}
+		cnt += snprintf(buf + cnt, sizeof(buf) - cnt, "%s%s",
+				cnt ? ", " : "", tmp);
+		if (cnt >= sizeof(buf))
+			goto done;
 	} END_FOR_EACH_PTR(tmp);
 
+done:
 	state->name = alloc_sname(buf);
 	state->data = links;
 	return state;
@@ -88,7 +86,7 @@ static void save_link_var_sym(const char *var, struct symbol *sym, const char *l
 	set_state(link_id, var, sym, new_state);
 }
 
-static void add_comparison_var_sym(const char *left_name,
+static void add_comparison_limit_var_sym(const char *left_name,
 		struct var_sym_list *left_vsl,
 		int comparison,
 		const char *right_name, struct var_sym_list *right_vsl)
@@ -192,7 +190,9 @@ static void print_return_comparison(int return_id, char *return_ranges, struct e
 			if (!sm)
 				continue;
 			data = sm->state->data;
-			if (!data || !data->comparison)
+			if (!data ||
+			    data->comparison == UNKNOWN_COMPARISON ||
+			    data->comparison == IMPOSSIBLE_COMPARISON)
 				continue;
 			if (ptr_list_size((struct ptr_list *)data->left_vsl) != 1 ||
 			    ptr_list_size((struct ptr_list *)data->right_vsl) != 1)
@@ -346,7 +346,7 @@ static void db_return_comparison(struct expression *expr, int left_param, char *
 	add_var_sym(&left_vsl, left_name, left_sym);
 	add_var_sym(&right_vsl, right_name, right_sym);
 
-	add_comparison_var_sym(left_name, left_vsl, op, right_name, right_vsl);
+	add_comparison_limit_var_sym(left_name, left_vsl, op, right_name, right_vsl);
 
 free:
 	free_string(left_name);

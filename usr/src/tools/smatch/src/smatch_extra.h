@@ -32,6 +32,7 @@ struct data_info {
 	unsigned int hard_max:1;
 	unsigned int capped:1;
 	unsigned int treat_untagged:1;
+	unsigned int assigned:1;
 	unsigned int set:1;
 };
 DECLARE_ALLOCATOR(data_info);
@@ -50,6 +51,7 @@ struct data_range *alloc_range(sval_t min, sval_t max);
 struct data_range *alloc_range_perm(sval_t min, sval_t max);
 
 int rl_fits_in_type(struct range_list *rl, struct symbol *type);
+int values_fit_type(struct expression *left, struct expression *right);
 
 struct range_list *alloc_rl(sval_t min, sval_t max);
 struct range_list *clone_rl(struct range_list *list);
@@ -76,10 +78,14 @@ int rl_has_sval(struct range_list *rl, sval_t sval);
 int ranges_equiv(struct data_range *one, struct data_range *two);
 
 bool is_err_ptr(sval_t sval);
+bool is_err_or_null(struct range_list *rl);
+bool is_noderef_ptr_rl(struct range_list *rl);
+bool rl_is_zero(struct range_list *rl);
 
 int rl_equiv(struct range_list *one, struct range_list *two);
 int is_whole_rl(struct range_list *rl);
 int is_unknown_ptr(struct range_list *rl);
+bool is_whole_ptr_rl(struct range_list *rl);
 int is_whole_rl_non_zero(struct range_list *rl);
 int estate_is_unknown(struct smatch_state *state);
 
@@ -153,6 +159,8 @@ bool estate_capped(struct smatch_state *state);
 void estate_set_capped(struct smatch_state *state);
 bool estate_treat_untagged(struct smatch_state *state);
 void estate_set_treat_untagged(struct smatch_state *state);
+bool estate_assigned(struct smatch_state *state);
+void estate_set_assigned(struct smatch_state *state);
 bool estate_new(struct smatch_state *state);
 void estate_set_new(struct smatch_state *state);
 
@@ -182,6 +190,7 @@ void add_extra_nomod_hook(void (*fn)(const char *name, struct symbol *sym, struc
 int implied_not_equal(struct expression *expr, long long val);
 int implied_not_equal_name_sym(char *name, struct symbol *sym, long long val);
 int parent_is_null_var_sym(const char *name, struct symbol *sym);
+int parent_is_err_or_null_var_sym(const char *name, struct symbol *sym);
 int parent_is_null(struct expression *expr);
 int parent_is_free_var_sym_strict(const char *name, struct symbol *sym);
 int parent_is_free_var_sym(const char *name, struct symbol *sym);
@@ -208,26 +217,37 @@ void function_comparison(struct expression *left, int comparison, struct express
 
 /* smatch_expressions.c */
 struct expression *zero_expr();
+struct expression *sval_to_expr(sval_t sval);
 struct expression *value_expr(long long val);
+struct expression *cast_expression(struct expression *expr, struct symbol *type);
 struct expression *member_expression(struct expression *deref, int op, struct ident *member);
 struct expression *preop_expression(struct expression *expr, int op);
 struct expression *deref_expression(struct expression *expr);
 struct expression *assign_expression(struct expression *left, int op, struct expression *right);
+struct expression *assign_expression_perm(struct expression *left, int op, struct expression *right);
+struct expression *create_fake_assign(const char *name, struct symbol *type, struct expression *right);
 struct expression *binop_expression(struct expression *left, int op, struct expression *right);
 struct expression *array_element_expression(struct expression *array, struct expression *offset);
 struct expression *symbol_expression(struct symbol *sym);
-struct expression *string_expression(char *str);
+struct expression *gen_string_expression(char *str);
 struct expression *compare_expression(struct expression *left, int op, struct expression *right);
+struct expression *alloc_expression_stmt_perm(struct statement *last_stmt);
 struct expression *call_expression(struct expression *fn, struct expression_list *args);
 struct expression *unknown_value_expression(struct expression *expr);
 int is_fake_call(struct expression *expr);
 struct expression *gen_expression_from_name_sym(const char *name, struct symbol *sym);
 struct expression *gen_expression_from_key(struct expression *arg, const char *key);
+struct expression *gen_expr_from_param_key(struct expression *expr, int param, const char *key);
+bool is_fake_var(struct expression *expr);
+struct expression *fake_variable(struct symbol *type, const char *name);
+struct expression *fake_variable_perm(struct symbol *type, const char *name);
 void free_tmp_expressions(void);
 void expr_set_parent_expr(struct expression *expr, struct expression *parent);
 void expr_set_parent_stmt(struct expression *expr, struct statement *parent);
 struct expression *expr_get_parent_expr(struct expression *expr);
+struct expression *expr_get_fake_parent_expr(struct expression *expr);
 struct statement *expr_get_parent_stmt(struct expression *expr);
+struct statement *get_parent_stmt(struct expression *expr);
 
 /* smatch_param_limit.c */
 struct smatch_state *get_orig_estate(const char *name, struct symbol *sym);

@@ -55,7 +55,7 @@ struct expression *fake_string_from_mtag(mtag_t tag)
 	str = get_string_from_mtag(tag);
 	if (!str)
 		return NULL;
-	return string_expression(str);
+	return gen_string_expression(str);
 }
 
 static void match_strcpy(const char *fn, struct expression *expr, void *unused)
@@ -130,7 +130,7 @@ static void match_string(struct expression *expr)
 {
 	mtag_t tag;
 
-	if (expr->type != EXPR_STRING || !expr->string->data)
+	if (expr->type != EXPR_STRING)
 		return;
 	if (expr->string->length > 255)
 		return;
@@ -138,7 +138,7 @@ static void match_string(struct expression *expr)
 	if (!get_string_mtag(expr, &tag))
 		return;
 
-	cache_sql(NULL, NULL, "insert into mtag_data values (%lld, %d, %d, '%q');",
+	cache_sql(NULL, NULL, "insert or ignore into mtag_data values (%lld, %d, %d, '%q');",
 		  tag, 0, STRING_VALUE, escape_newlines(expr->string->data));
 }
 

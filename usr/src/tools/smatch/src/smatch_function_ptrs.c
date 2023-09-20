@@ -319,6 +319,8 @@ static void match_function_assign(struct expression *expr)
 
 	if (__in_fake_assign)
 		return;
+	if (is_fake_var_assign(expr))
+		return;
 
 	right = strip_expr(expr->right);
 	if (right->type == EXPR_PREOP && right->op == '&')
