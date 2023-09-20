@@ -34,3 +34,5 @@ SRCS= $(OBJS:%.o=%.c)
 CERRWARN +=	-_gcc=-Wno-switch
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	-_gcc=-Wno-char-subscripts
+# disable smatch 'variable dereferenced before check' warning.
+rpc_main.o := SMOFF +=	check_deref_check
