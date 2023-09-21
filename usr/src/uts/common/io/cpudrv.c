@@ -166,7 +166,7 @@ int cpudrv_direct_pm = 0;
 		(cpudsp)->cpudrv_pm.timeout_id = \
 		    timeout(cpudrv_monitor_disp, \
 		    (cpudsp), (((cpudsp)->cpudrv_pm.cur_spd == NULL) ? \
-		    CPUDRV_QUANT_CNT_OTHR : \
+		    (clock_t)CPUDRV_QUANT_CNT_OTHR : \
 		    (cpudsp)->cpudrv_pm.cur_spd->quant_cnt)); \
 	} \
 }
