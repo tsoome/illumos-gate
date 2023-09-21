@@ -97,6 +97,9 @@ CFLAGS		+= $(CALLSYMS)
 # very hairy
 $(OBJS_DIR)/u8_textprep.o := SMATCH=off
 
+# smatch 0.6.4 runs out of memory
+$(OBJS_DIR)/xattr.o := SMATCH=off
+
 # false positives
 SMOFF += index_overflow
 $(OBJS_DIR)/seg_vn.o := SMOFF += deref_check
