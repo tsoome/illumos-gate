@@ -145,7 +145,7 @@ priocntl_common(int pc_version, procset_t *psp, int cmd, caddr_t arg,
 	int			clnullflag;
 	int			error = 0;
 	int			error1 = 0;
-	int			rv = 0;
+	long			rv = 0;
 	pid_t			saved_pid;
 	id_t			classid;
 	int			size;
