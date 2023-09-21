@@ -152,8 +152,7 @@ kvm_open(const char *namelist, const char *corefile, const char *swapfile,
 		 * that, we insist on at least mmap(2)ing the dump map.
 		 */
 		kd->kvm_coremapsize = (size_t)corestat.st_size;
-		if (corestat.st_size > LONG_MAX ||
-		    (kd->kvm_core = mmap64(0, kd->kvm_coremapsize,
+		if ((kd->kvm_core = mmap64(0, kd->kvm_coremapsize,
 		    PROT_READ, MAP_SHARED, kd->kvm_corefd, 0)) == MAP_FAILED) {
 			kd->kvm_coremapsize = kd->kvm_dump.dump_data;
 			if ((kd->kvm_core = mmap64(0, kd->kvm_coremapsize,
