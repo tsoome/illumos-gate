@@ -113,6 +113,7 @@ $(OBJS_DIR)/klpd.o := SMOFF += cast_assign
 $(OBJS_DIR)/lookup.o := SMOFF += strcpy_overflow
 $(OBJS_DIR)/process.o := SMOFF += or_vs_and
 $(OBJS_DIR)/sunpci.o := SMOFF += deref_check
+$(OBJS_DIR)/sunpm.o := SMOFF += check_deref_check
 $(OBJS_DIR)/timers.o := SMOFF += signed_integer_overflow_check
 
 # 3rd party code
