@@ -43,7 +43,7 @@ extern "C" {
 struct refstr {
 	uint32_t	rs_size;	/* allocation size */
 	uint32_t	rs_refcnt;	/* reference count */
-	char		rs_string[1];	/* constant string */
+	char		rs_string[];	/* constant string */
 };
 
 #ifdef	__cplusplus
