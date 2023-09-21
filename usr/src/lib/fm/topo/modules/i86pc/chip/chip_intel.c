@@ -201,9 +201,14 @@ mc_add_dimms(topo_mod_t *mod, uint16_t chip_smbid, tnode_t *pnode,
 	char *label = NULL;
 	char *name;
 	id_t smbid = -1;
+	topo_instance_t max;
 
-	if (topo_node_range_create(mod, pnode, DIMM, 0,
-	    maxdimms ? maxdimms-1 : ndimms-1) < 0) {
+	if (maxdimms > 0)
+		max = maxdimms - 1;
+	else
+		max = ndimms - 1;
+
+	if (topo_node_range_create(mod, pnode, DIMM, 0, max) < 0) {
 		whinge(mod, NULL,
 		    "mc_add_dimms: node range create failed\n");
 		return;
