@@ -832,15 +832,12 @@ ghd_timer_detach(ccc_t *cccp)
 
 	mutex_enter(&tmrp->t_mutex);
 
-	prevpp = &tmrp->t_ccc_listp;
-	ASSERT(*prevpp != NULL);
-
 	/* run down the linked list to find the entry that preceeds this one */
-	do {
+	for (prevpp = &tmrp->t_ccc_listp; *prevpp != NULL;
+	    prevpp = &(*prevpp)->ccc_nextp) {
 		if (*prevpp == cccp)
 			goto remove_it;
-		prevpp = &(*prevpp)->ccc_nextp;
-	} while (*prevpp != NULL);
+	}
 
 	/* fell off the end of the list */
 	GDBG_ERROR(("ghd_timer_detach: corrupt list, cccp=0x%p\n",
