@@ -208,10 +208,10 @@ struct log_control {
 };
 
 static struct log_control log_control = {
-    (struct log_entry *) NULL,
+    NULL,
     0,
-    (char *) NULL,
-    (char *) NULL,
+    NULL,
+    NULL,
     0
 };
 static struct log_entry	def_log_entry;
@@ -1370,8 +1370,7 @@ void krb5_klog_remove_stderr() {
 			else
 				log_control.log_entries = tmp_log_entries;
 		} else {
-			if (log_control.log_entries != NULL)
-				free(log_control.log_entries);
+			free(log_control.log_entries);
 		}
 	}
 }
