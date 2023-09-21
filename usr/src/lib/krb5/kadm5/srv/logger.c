@@ -649,8 +649,9 @@ krb5_klog_init(krb5_context kcontext, char *ename, char *whoami, krb5_boolean do
 				    krb5_deltat	dt;
 				    int vers;
 
-				    strcpy(rotate_kw, ename);
-				    strcat(rotate_kw, "_rotate");
+				    (void) snprintf(rotate_kw,
+					sizeof (rotate_kw), "%s_rotate",
+					ename);
 
 				    if (!profile_get_string(kcontext->profile,
 				        "logging", rotate_kw, "period",
