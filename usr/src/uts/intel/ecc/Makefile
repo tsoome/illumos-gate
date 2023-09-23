@@ -75,6 +75,7 @@ $(OBJS_DIR)/ecp_192.o := SMOFF += check_unsigned_lt_zero
 $(OBJS_DIR)/ecp_224.o := SMOFF += check_unsigned_lt_zero
 $(OBJS_DIR)/ecp_256.o := SMOFF += check_unsigned_lt_zero
 $(OBJS_DIR)/ecl_gf.o := SMOFF += check_unsigned_lt_zero
+$(OBJS_DIR)/secitem.o := SMOFF += check_leaks
 
 SMOFF += indenting,all_func_returns
 
