@@ -4762,6 +4762,7 @@ gem_do_attach(dev_info_t *dip, int port,
 	if ((macp = mac_alloc(MAC_VERSION)) == NULL) {
 		cmn_err(CE_WARN, "!gem%d: %s: mac_alloc failed",
 		    unit, __func__);
+		kmem_free(dp, GEM_LOCAL_DATA_SIZE(gc));
 		return (NULL);
 	}
 	/* ddi_set_driver_private(dip, dp); */
@@ -5013,7 +5014,6 @@ err_free_ring:
 	gem_free_memory(dp);
 err_free_regs:
 	ddi_regs_map_free(&dp->regs_handle);
-err_free_locks:
 	mutex_destroy(&dp->xmitlock);
 	mutex_destroy(&dp->intrlock);
 	cv_destroy(&dp->tx_drain_cv);
