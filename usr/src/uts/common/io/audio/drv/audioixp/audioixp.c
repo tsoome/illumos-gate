@@ -734,6 +734,7 @@ audioixp_alloc_port(audioixp_state_t *statep, int num)
 		port->nchan = max(port->nchan, 2);
 		break;
 	default:
+		kmem_free(port, sizeof (*port));
 		audio_dev_warn(adev, "bad port number (%d)!", num);
 		return (DDI_FAILURE);
 	}
