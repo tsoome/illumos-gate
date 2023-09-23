@@ -315,7 +315,7 @@ mii_reset_phy(mii_handle_t mac, int phy, enum mii_wait_type wait)
 				break;
 			drv_usecwait(10);
 		}
-		if (i)
+		if (i == -1)
 			goto reset_completed;
 	}
 
