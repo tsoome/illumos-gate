@@ -3429,7 +3429,7 @@ nxge_nlp2020_xcvr_init(p_nxge_t nxgep)
 		(void) nxge_mdio_read(nxgep, phy_port_addr,
 		    NLP2020_PMA_PMD_ADDR, NLP2020_PMA_PMD_CTL_REG, &ctrl_reg);
 	}
-	if (count == 0) {
+	if (count == -1) {
 		NXGE_ERROR_MSG((nxgep, NXGE_ERR_CTL, "nxge_nlp2020_xcvr_init: "
 		    "PMA_PMD reset failed"));
 		goto fail;
