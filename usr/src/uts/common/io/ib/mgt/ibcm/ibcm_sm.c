@@ -8507,7 +8507,7 @@ ibcm_cep_state_apr(ibcm_state_data_t *statep, ibcm_lap_msg_t *lap_msg,
 		}
 
 		/* initialize the ap status */
-		statep->cm_handler(statep->state_cm_private, &event,
+		(void) statep->cm_handler(statep->state_cm_private, &event,
 		    NULL, apr_msg->apr_private_data, IBT_APR_PRIV_DATA_SZ);
 	}
 	mutex_enter(&statep->state_mutex);
@@ -8700,8 +8700,8 @@ ibcm_sync_lapr_idle(ibcm_state_data_t *statep)
 			event.cm_event.apr.apr_status = IBT_CM_AP_ABORT;
 
 			/* Call the cm handler */
-			statep->cm_handler(statep->state_cm_private, &event,
-			    NULL, NULL, 0);
+			(void) statep->cm_handler(statep->state_cm_private,
+			    &event, NULL, NULL, 0);
 			IBTF_DPRINTF_L3(cmlog, "ibcm_sync_lapr_idle:"
 			    "non-blocked wait");
 		}

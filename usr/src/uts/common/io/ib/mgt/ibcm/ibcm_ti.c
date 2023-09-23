@@ -65,7 +65,7 @@ ibcm_ar_t	*ibcm_ar_list;
 
 /*
  * Tunable parameter to turnoff the overriding of pi_path_mtu value.
- *	1 	By default override the path record's pi_path_mtu value to
+ *	1	By default override the path record's pi_path_mtu value to
  *		IB_MTU_1K for all RC channels. This is done only for the
  *		channels established on Tavor HCA and the path's pi_path_mtu
  *		is greater than IB_MTU_1K.
@@ -1839,8 +1839,7 @@ ibcm_local_cm_handler(void *priv, ibt_cm_ud_event_t *event,
 		    len);
 
 		/* Free memory allocated for local handler's private data. */
-		if (handler_priv != NULL)
-			kmem_free(handler_priv, sizeof (*handler_priv));
+		kmem_free(handler_priv, sizeof (*handler_priv));
 
 		break;
 	default:
@@ -3828,8 +3827,8 @@ check_for_work:
 ibt_status_t
 ibt_ofuvcm_get_req_data(void *session_id, ibt_ofuvcm_req_data_t *req_data)
 {
-	ibcm_state_data_t 	*statep = (ibcm_state_data_t *)session_id;
-	ibcm_req_msg_t 		*req_msgp;
+	ibcm_state_data_t	*statep = (ibcm_state_data_t *)session_id;
+	ibcm_req_msg_t		*req_msgp;
 
 	IBTF_DPRINTF_L3(cmlog, "ibt_get_ofuvcm_req_data: session_id %p",
 	    session_id);
@@ -3899,7 +3898,7 @@ ibt_ofuvcm_proceed(ibt_cm_event_type_t event, void *session_id,
 
 /*
  * Function:
- * 	ibt_cm_proceed
+ *	ibt_cm_proceed
  *
  * Verifies the arguments and dispatches the cm state machine processing
  * via taskq
@@ -4039,7 +4038,7 @@ ibt_cm_proceed(ibt_cm_event_type_t event, void *session_id,
 
 /*
  * Function:
- * 	ibcm_proceed_via_taskq
+ *	ibcm_proceed_via_taskq
  *
  * Called from taskq, dispatched by ibt_cm_proceed
  * Completes the cm state processing for ibt_cm_proceed
@@ -4097,7 +4096,7 @@ ibcm_proceed_via_taskq(void *targs)
 
 /*
  * Function:
- * 	ibt_cm_ud_proceed
+ *	ibt_cm_ud_proceed
  *
  * Verifies the arguments and dispatches the cm state machine processing
  * via taskq
@@ -4212,7 +4211,7 @@ ibt_cm_ud_proceed(void *session_id, ibt_channel_hdl_t ud_channel,
 
 /*
  * Function:
- * 	ibcm_ud_proceed_via_taskq
+ *	ibcm_ud_proceed_via_taskq
  *
  * Called from taskq, dispatched by ibt_cm_ud_proceed
  * Completes the cm state processing for ibt_cm_ud_proceed
@@ -4740,11 +4739,11 @@ ibcm_add_incr_mcg_entry(sa_mcmember_record_t *mcg_req,
  *
  * Return value:
  * IBCM_SUCCESS		Entry found and ref_cnt is now zero. So go-ahead and
- * 			leave the MCG group. The return arg *jstate will have
- * 			a valid join_state value that needed to be used by
- * 			xxx_leave_mcg().
+ *			leave the MCG group. The return arg *jstate will have
+ *			a valid join_state value that needed to be used by
+ *			xxx_leave_mcg().
  * IBCM_LOOKUP_EXISTS	Entry found and ref_cnt is decremented but is NOT zero.
- * 			So do not leave the MCG group yet.
+ *			So do not leave the MCG group yet.
  * IBCM_LOOKUP_FAIL	Entry is NOT found.
  */
 ibcm_status_t
@@ -5948,7 +5947,7 @@ ibt_lid_to_node_info(ib_lid_t lid, ibt_node_info_t *node_info_p)
 	ibt_status_t	retval;
 	ibcm_hca_info_t	*hcap;
 	uint8_t		i, j;
-	ib_guid_t	*guid_array = NULL;
+	ib_guid_t	*guid_array;
 	uint_t		num_hcas = 0;
 
 
@@ -6074,8 +6073,7 @@ ibt_lid_to_node_info(ib_lid_t lid, ibt_node_info_t *node_info_p)
 	}
 
 lid_to_ni_exit:
-	if (guid_array)
-		ibt_free_hca_list(guid_array, num_hcas);
+	ibt_free_hca_list(guid_array, num_hcas);
 
 	IBTF_DPRINTF_L3(cmlog, "ibt_lid_to_node_info: done. Status %d", retval);
 

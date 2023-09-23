@@ -64,9 +64,6 @@ CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= $(CNOWARN_UNINIT)
 CERRWARN	+= -_gcc=-Wno-unused-value
 
-# needs work
-SMATCH=off
-
 #
 #	depends on misc/ibtl and misc/ibmf
 #
