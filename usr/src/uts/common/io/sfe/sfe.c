@@ -1622,7 +1622,7 @@ sfe_interrupt(struct gem_dev *dp)
 		    dp->name, isr, INTR_BITS);
 		need_to_reset = B_TRUE;
 	}
-reset:
+
 	if (need_to_reset) {
 		(void) gem_restart_nic(dp, GEM_RESTART_KEEP_BUF);
 		flags |= INTR_RESTART_TX;
