@@ -69,6 +69,8 @@ CERRWARN	+= $(CNOWARN_UNINIT)
 
 # false positive
 $(OBJS_DIR)/sbd_scsi.o := SMOFF += check_leaks
+$(OBJS_DIR)/sbd.o := SMOFF += check_strcpy_overflow
+
 #
 #	Default build targets.
 #
