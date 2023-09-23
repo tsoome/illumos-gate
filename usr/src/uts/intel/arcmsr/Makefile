@@ -46,9 +46,6 @@ CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 
-# needs work
-$(OBJS_DIR)/arcmsr.o := SMOFF += deref_check
-
 #
 # Define targets.
 #
