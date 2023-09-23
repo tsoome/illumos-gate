@@ -53,6 +53,7 @@ CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
 SMOFF += all_func_returns,indenting
+$(OBJS_DIR)/e1000_mac.o := SMOFF += check_missing_error_code2
 
 CFLAGS		+= -I$(UTSBASE)/common/io/e1000api
 CFLAGS		+= -I$(UTSBASE)/common/io/igb

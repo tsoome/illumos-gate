@@ -55,7 +55,7 @@ CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= -_gcc=-Wno-unused-variable
 
 SMOFF += all_func_returns,indenting,shift_to_zero
-
+$(OBJS_DIR)/e1000_mac.o := SMOFF += check_missing_error_code2
 
 #
 #	Define targets
