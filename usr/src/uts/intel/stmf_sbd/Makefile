@@ -68,6 +68,8 @@ CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 
+# false positive
+$(OBJS_DIR)/sbd_scsi.o := SMOFF += check_leaks
 #
 #	Default build targets.
 #
