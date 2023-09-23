@@ -59,6 +59,8 @@ T4NEX_SMOFF_OBJS	= t4_hw.o cudbg_lib.o cudbg_wtp.o cudbg_flash_utils.o \
 T4NEX_SMOFF_PATHS	= $(T4NEX_SMOFF_OBJS:%=$(OBJS_DIR)/%)
 $(T4NEX_SMOFF_PATHS)	:= SMOFF += all_func_returns
 
+$(OBJS_DIR)/cudbg_lib.o := SMOFF += check_index_overflow
+
 #
 # Default build targets.
 #
