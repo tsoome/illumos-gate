@@ -1922,7 +1922,6 @@ nodrain:
 		    (icr & ~RIEN));
 	}
 	mutex_exit(&asy->asy_excl_hi);
-out:
 	ttycommon_close(&async->async_ttycommon);
 
 	/*
