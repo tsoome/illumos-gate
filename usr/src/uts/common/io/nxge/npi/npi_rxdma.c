@@ -440,7 +440,7 @@ npi_rxdma_cfg_rdc_ctl(npi_handle_t handle, uint8_t rdc, uint8_t op)
 				RXDMA_REG_READ64(handle, RXDMA_CFIG1_REG, rdc,
 				    &cfg.value);
 			}
-			if (count == 0) {
+			if (count == -1) {
 				NPI_ERROR_MSG((handle.function, NPI_ERR_CTL,
 				    " npi_rxdma_cfg_rdc_ctl"
 				    " Reset Failed for RDC %d \n",
