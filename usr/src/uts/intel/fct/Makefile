@@ -62,7 +62,6 @@ LDFLAGS		+= -Ndrv/stmf
 # to investigate and remove these for maximum coverage.
 #
 
-CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-switch
 CERRWARN	+= $(CNOWARN_UNINIT)
 
