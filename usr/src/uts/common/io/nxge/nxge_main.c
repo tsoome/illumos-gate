@@ -2415,7 +2415,6 @@ nxge_alloc_rx_mem_pool(p_nxge_t nxgep)
 	NXGE_DEBUG_MSG((nxgep, DMA_CTL,
 	    "<== nxge_alloc_rx_mem_pool:status 0x%08x", status));
 
-nxge_alloc_rx_mem_pool_exit:
 	return (status);
 }
 
