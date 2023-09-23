@@ -956,7 +956,7 @@ cmediahd_hwinit(cmediahd_devc_t *devc)
 		drv_usecwait(100);
 	}
 
-	if (!count)
+	if (count == -1)
 		audio_dev_warn(devc->adev, "CMI8788 AC97 not ready");
 
 	sVal = INW(devc, AC97_CTRL);
