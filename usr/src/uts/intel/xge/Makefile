@@ -102,7 +102,7 @@ SMOFF += no_if_block
 SMOFF += allocating_enough_data
 
 # too hairy
-obj64/xgehal-mgmtaux.o := SMATCH=off
+$(OBJS_DIR)/xgehal-mgmtaux.o := SMATCH=off
 
 #
 #
