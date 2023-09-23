@@ -1240,7 +1240,7 @@ static void
 arcmsr_tran_destroy_pkt(struct scsi_address *ap, struct scsi_pkt *pkt)
 {
 	struct CCB *ccb = pkt->pkt_ha_private;
-	ddi_dma_handle_t pkt_dma_handle = ccb->pkt_dma_handle;
+	ddi_dma_handle_t pkt_dma_handle;
 
 	if (ccb == NULL) {
 		return;
@@ -1248,6 +1248,9 @@ arcmsr_tran_destroy_pkt(struct scsi_address *ap, struct scsi_pkt *pkt)
 	if (ccb->pkt != pkt) {
 		return;
 	}
+
+	pkt_dma_handle = ccb->pkt_dma_handle;
+
 	if (ccb->ccb_flags & CCB_FLAG_DMAVALID) {
 		ccb->ccb_flags &= ~CCB_FLAG_DMAVALID;
 		if (pkt_dma_handle) {
