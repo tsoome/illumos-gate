@@ -87,7 +87,9 @@ CERRWARN	+= -_gcc=-Wno-unused-function
 SMOFF += all_func_returns,indenting
 $(OBJS_DIR)/llex.o := SMOFF += index_overflow
 $(OBJS_DIR)/metaslab.o := SMOFF += no_if_block
-$(OBJS_DIR)/zfs_vnops.o := SMOFF += signed
+$(OBJS_DIR)/zfs_replay.o := SMATCH=off
+$(OBJS_DIR)/zfs_znode.o := SMATCH=off
+$(OBJS_DIR)/zfs_vnops.o := SMATCH=off
 # needs work
 $(OBJS_DIR)/zvol.o := SMOFF += deref_check,signed
 
