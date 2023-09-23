@@ -3913,7 +3913,6 @@ ippath_error2:
 	if (dinfo && len)
 		kmem_free(dinfo, len);
 
-ippath_error1:
 	if (sl)
 		ibtl_cm_free_active_plist(sl);
 
