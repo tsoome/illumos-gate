@@ -2963,16 +2963,12 @@ arcmsr_do_ddi_attach(dev_info_t *dev_info, int instance)
 	return (DDI_SUCCESS);
 
 error_level_8:
-
-error_level_7:
-error_level_6:
 	(void) scsi_hba_detach(dev_info);
 
 error_level_5:
 	arcmsr_remove_intr(acb);
 
 error_level_3:
-error_level_4:
 	if (acb->scsi_hba_transport)
 		scsi_hba_tran_free(acb->scsi_hba_transport);
 
@@ -4861,7 +4857,6 @@ arcmsr_polling_hba_ccbdone(struct ACB *acb, struct CCB *poll_ccb)
 
 	phbamu = (struct HBA_msgUnit *)acb->pmu;
 
-polling_ccb_retry:
 	/* TODO: Use correct offset and size for syncing? */
 	if (ddi_dma_sync(acb->ccbs_pool_handle, 0, 0,
 	    DDI_DMA_SYNC_FORKERNEL) != DDI_SUCCESS)
@@ -4940,8 +4935,6 @@ arcmsr_polling_hbb_ccbdone(struct ACB *acb, struct CCB *poll_ccb)
 
 	phbbmu = (struct HBB_msgUnit *)acb->pmu;
 
-
-polling_ccb_retry:
 	/* Use correct offset and size for syncing */
 	if (ddi_dma_sync(acb->ccbs_pool_handle, 0, 0,
 	    DDI_DMA_SYNC_FORKERNEL) != DDI_SUCCESS)
@@ -5021,8 +5014,6 @@ arcmsr_polling_hbc_ccbdone(struct ACB *acb, struct CCB *poll_ccb)
 
 
 	phbcmu = (struct HBC_msgUnit *)acb->pmu;
-
-polling_ccb_retry:
 
 	/* Use correct offset and size for syncing */
 	if (ddi_dma_sync(acb->ccbs_pool_handle, 0, 0,
