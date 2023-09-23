@@ -71,6 +71,10 @@ CERRWARN	+= -_gcc=-Wno-parentheses
 # false positive
 $(OBJS_DIR)/ecdecode.o := SMOFF += assign_vs_compare
 $(OBJS_DIR)/ec.o := SMOFF += assign_vs_compare
+$(OBJS_DIR)/ecp_192.o := SMOFF += check_unsigned_lt_zero
+$(OBJS_DIR)/ecp_224.o := SMOFF += check_unsigned_lt_zero
+$(OBJS_DIR)/ecp_256.o := SMOFF += check_unsigned_lt_zero
+$(OBJS_DIR)/ecl_gf.o := SMOFF += check_unsigned_lt_zero
 
 SMOFF += indenting,all_func_returns
 
