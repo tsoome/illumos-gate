@@ -523,7 +523,7 @@ out:
 		resp->status = NFS3ERR_JUKEBOX;
 	} else
 		resp->status = puterrno3(error);
-out1:
+
 	if (vp != NULL)
 		VN_RELE(vp);
 	vattr_to_post_op_attr(vap, &resp->resfail.attr);
