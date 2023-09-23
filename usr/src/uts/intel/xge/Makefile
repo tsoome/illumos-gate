@@ -101,6 +101,9 @@ SMOFF += all_func_returns
 SMOFF += no_if_block
 SMOFF += allocating_enough_data
 
+# too hairy
+obj64/xgehal-mgmtaux.o := SMATCH=off
+
 #
 #
 #	Default build targets.
