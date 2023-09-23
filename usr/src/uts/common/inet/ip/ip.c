@@ -2545,7 +2545,7 @@ ip_opt_get_user(conn_t *connp, uchar_t *buf)
 			break;
 		}
 	}
-done:
+
 	/* Pad the resulting options */
 	while (len & 0x3) {
 		*buf++ = IPOPT_EOL;
