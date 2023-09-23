@@ -69,6 +69,8 @@ TOKGEN		 = $(SRCDIR)/nl7ctokgen
 DERIVED_FILES	 = nl7ctokgen.h
 CFLAGS		+= -I.
 
+$(OBJS_DIR)/sockfilter.o := SMOFF += check_leaks
+
 #
 #	Default build targets.
 #
