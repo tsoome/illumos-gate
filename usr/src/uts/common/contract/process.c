@@ -699,7 +699,9 @@ contract_process_status(contract_t *ct, zone_t *zone, int detail, nvlist_t *nvl,
 				break;
 
 			kmem_free(pids, spids * sizeof (uint32_t));
+			pids = NULL;
 			kmem_free(ctids, sctids * sizeof (uint32_t));
+			ctids = NULL;
 		}
 		contract_status_common(ct, zone, status, model);
 		for (loc = 0, cnext = list_head(&ctp->conp_inherited); cnext;
@@ -731,6 +733,11 @@ contract_process_status(contract_t *ct, zone_t *zone, int detail, nvlist_t *nvl,
 		    refstr_value(ctp->conp_svc_creator)) == 0);
 		kmem_free(pids, spids * sizeof (uint32_t));
 		kmem_free(ctids, sctids * sizeof (uint32_t));
+	} else {
+		if (ctids != NULL)
+			kmem_free(ctids, sctids * sizeof (uint32_t));
+		if (pids != NULL)
+			kmem_free(pids, spids * sizeof (uint32_t));
 	}
 
 	/*
