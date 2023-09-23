@@ -56,6 +56,8 @@ LDFLAGS += -N misc/mac -N drv/ip
 # needs work
 SMOFF += all_func_returns,snprintf_overflow
 
+$(OBJS_DIR)/cudbg_lib.o := SMOFF += check_index_overflow
+
 #
 # Default build targets.
 #
