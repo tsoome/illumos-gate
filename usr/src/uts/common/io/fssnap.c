@@ -2031,7 +2031,7 @@ fssnap_delete_impl(void *snapshot_id)
 	 * sidp is guaranteed to be valid if sidpp is valid because
 	 * the snapshot list is append-only.
 	 */
-	if (sidpp == NULL) {
+	if (sidpp == NULL || *sidpp == NULL) {
 		return (-1);
 	}
 
@@ -2039,14 +2039,6 @@ fssnap_delete_impl(void *snapshot_id)
 	rw_enter(&sidp->sid_rwlock, RW_WRITER);
 
 	ASSERT(RW_WRITE_HELD(&sidp->sid_rwlock));
-
-	/*
-	 * double check that the snapshot is still valid for THIS file system
-	 */
-	if (*sidpp == NULL) {
-		rw_exit(&sidp->sid_rwlock);
-		return (-1);
-	}
 
 	/*
 	 * Now we know the snapshot is still valid and will not go away
