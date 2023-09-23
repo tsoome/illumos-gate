@@ -78,6 +78,8 @@ CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
 
+$(OBJS_DIR)/sockfilter.o := SMOFF += check_leaks
+
 #
 #	Default build targets.
 #
