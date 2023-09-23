@@ -2865,7 +2865,6 @@ update_ports:
 	if (avp != NULL)
 		list_insert_tail(&rx_group->arg_vlans, avp);
 
-done:
 	mac_perim_exit(mph);
 	return (err);
 }

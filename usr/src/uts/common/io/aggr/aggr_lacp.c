@@ -1658,7 +1658,7 @@ lacp_on(aggr_port_t *portp)
 		/* periodic_sm is started up from the receive machine */
 		lacp_selection_logic(portp);
 	}
-done:
+
 	mac_perim_exit(mph);
 } /* lacp_on */
 
