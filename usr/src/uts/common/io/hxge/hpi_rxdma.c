@@ -139,7 +139,7 @@ hpi_rxdma_cfg_rdc_ctl(hpi_handle_t handle, uint8_t rdc, uint8_t op)
 			HXGE_DELAY(delay_time);
 			RXDMA_REG_READ64(handle, RDC_RX_CFG1, rdc, &cfg.value);
 		}
-		if (count == 0) {
+		if (count == -1) {
 			HPI_ERROR_MSG((handle.function, HPI_ERR_CTL,
 			    " hpi_rxdma_cfg_rdc_ctl"
 			    " Reset Failed for RDC %d \n", rdc));
