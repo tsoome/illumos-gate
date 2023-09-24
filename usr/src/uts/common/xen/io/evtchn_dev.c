@@ -237,8 +237,9 @@ done:
 static int
 evtchndrv_write(dev_t dev, struct uio *uio, cred_t *cr)
 {
-	int  rc, i;
+	int  rc;
 	ssize_t count;
+	size_t i, size;
 	evtchn_port_t *kbuf;
 	struct evtsoftdata *ep;
 	ulong_t flags;
@@ -255,21 +256,23 @@ evtchndrv_write(dev_t dev, struct uio *uio, cred_t *cr)
 	count = uio->uio_resid;
 	count &= ~(sizeof (evtchn_port_t) - 1);
 
-	if (count == 0)
+	size = count;
+	if (size == 0)
 		return (0);
 
-	if (count > PAGESIZE)
-		count = PAGESIZE;
+	if (size > PAGESIZE)
+		size = PAGESIZE;
 
-	if (count <= sizeof (sbuf))
+	if (size <= sizeof (sbuf))
 		kbuf = sbuf;
 	else
 		kbuf = kmem_alloc(PAGESIZE, KM_SLEEP);
-	if ((rc = uiomove(kbuf, count, UIO_WRITE, uio)) != 0)
+	if ((rc = uiomove(kbuf, size, UIO_WRITE, uio)) != 0)
 		goto out;
 
+	size /= sizeof (evtchn_port_t);
 	mutex_enter(&port_user_lock);
-	for (i = 0; i < (count / sizeof (evtchn_port_t)); i++)
+	for (i = 0; i < size; i++)
 		if ((kbuf[i] < NR_EVENT_CHANNELS) &&
 		    (port_user[kbuf[i]] == ep)) {
 			flags = intr_clear();
