@@ -64,6 +64,7 @@ LDFLAGS		+= -N misc/acpica
 
 # needs work
 $(OBJS_DIR)/psm_common.o := SMOFF += deref_check
+$(OBJS_DIR)/apix.o := SMOFF += check_leaks
 
 #
 #	Default build targets.
