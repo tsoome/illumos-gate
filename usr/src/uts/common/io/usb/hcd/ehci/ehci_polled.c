@@ -1823,7 +1823,7 @@ ehci_polled_create_done_qtd_list(
 
 			Set_QTD(curr_qtd->qtd_active_qtd_next, 0);
 
-			if (done_qtd_list) {
+			if (last_done_qtd) {
 				Set_QTD(last_done_qtd->qtd_active_qtd_next,
 				    ehci_qtd_cpu_to_iommu(ehcip, curr_qtd));
 
