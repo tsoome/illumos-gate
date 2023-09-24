@@ -328,6 +328,7 @@ safte_rdstat(ses_softc_t *ssc, int slpflg)
 
 	if (buflen > 0xffff) {
 		cmn_err(CE_WARN, "Illogical SCSI data");
+		kmem_free(driveids, id_size);
 		return (EIO);
 	}
 
