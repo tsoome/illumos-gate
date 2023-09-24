@@ -583,7 +583,7 @@ umad_init_driver_info(umad_info_t *info)
 
 	hca_count = info->info_hca_count = ibt_get_hca_list(&hca_guids);
 
-	if (hca_count == 0) {
+	if (hca_count == 0 || hca_guids == NULL) {
 		rc = IBT_HCA_INVALID;
 		goto err2;
 	}
