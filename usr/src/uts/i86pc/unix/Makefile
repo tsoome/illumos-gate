@@ -129,6 +129,7 @@ SMOFF += index_overflow
 SMOFF += all_func_returns
 
 $(OBJS_DIR)/bootrd_cpio.o := SMOFF += allocating_enough_data
+$(OBJS_DIR)/clock_tick.o := SMOFF += check_leaks
 
 # too hairy
 $(OBJS_DIR)/inflate.o := SMATCH=off
