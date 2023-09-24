@@ -762,9 +762,9 @@ minor_64(uint64_t dev)
 static int32_t
 major_64(uint64_t dev)
 {
-	uint32_t maj;
+	uint64_t maj;
 
-	maj = (uint32_t)(dev >> NBITSMINOR64);
+	maj = dev >> NBITSMINOR64;
 
 	if (dev == NODEV || maj > MAXMAJ64) {
 		errno = EINVAL;
