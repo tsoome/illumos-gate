@@ -2119,11 +2119,11 @@ mxfe_freerxring(mxfe_t *mxfep)
 {
 	int		i;
 
-	for (i = 0; i < MXFE_RXRING; i++) {
-		mxfe_destroyrxbuf(mxfep->mxfe_rxbufs[i]);
-	}
-
 	if (mxfep->mxfe_rxbufs) {
+		for (i = 0; i < MXFE_RXRING; i++) {
+			mxfe_destroyrxbuf(mxfep->mxfe_rxbufs[i]);
+		}
+
 		kmem_free(mxfep->mxfe_rxbufs,
 		    MXFE_RXRING * sizeof (mxfe_rxbuf_t *));
 	}
@@ -2141,11 +2141,11 @@ mxfe_freetxring(mxfe_t *mxfep)
 {
 	int			i;
 
-	for (i = 0; i < MXFE_TXRING; i++) {
-		mxfe_destroytxbuf(mxfep->mxfe_txbufs[i]);
-	}
-
 	if (mxfep->mxfe_txbufs) {
+		for (i = 0; i < MXFE_TXRING; i++) {
+			mxfe_destroytxbuf(mxfep->mxfe_txbufs[i]);
+		}
+
 		kmem_free(mxfep->mxfe_txbufs,
 		    MXFE_TXRING * sizeof (mxfe_txbuf_t *));
 	}
