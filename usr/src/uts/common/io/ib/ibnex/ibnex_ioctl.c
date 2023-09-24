@@ -2294,6 +2294,7 @@ ibnex_vppa_conf_entry_add(char *service)
 {
 	int	i, nsvcs;
 	char	**service_name;
+	size_t	len;
 
 	ASSERT(MUTEX_HELD(&ibnex.ibnex_mutex));
 	nsvcs = ibnex.ibnex_nvppa_comm_svcs;
@@ -2306,8 +2307,9 @@ ibnex_vppa_conf_entry_add(char *service)
 	 */
 	for (i = 0; i < nsvcs; i++)
 		service_name[i] = ibnex.ibnex_vppa_comm_svc_names[i];
-	service_name[i] = kmem_alloc(strlen(service) + 1, KM_SLEEP);
-	(void) snprintf(service_name[i], 5, "%s", service);
+	len = strlen(service) + 1;
+	service_name[i] = kmem_alloc(len, KM_SLEEP);
+	(void) snprintf(service_name[i], len, "%s", service);
 
 	/* Replace existing pointer to VPPA services w/ newly allocated one */
 	if (ibnex.ibnex_vppa_comm_svc_names) {
@@ -2328,6 +2330,7 @@ ibnex_port_conf_entry_add(char *service)
 {
 	int	i, nsvcs;
 	char	**service_name;
+	size_t	len;
 
 	ASSERT(MUTEX_HELD(&ibnex.ibnex_mutex));
 	nsvcs = ibnex.ibnex_num_comm_svcs;
@@ -2340,8 +2343,9 @@ ibnex_port_conf_entry_add(char *service)
 	 */
 	for (i = 0; i < nsvcs; i++)
 		service_name[i] = ibnex.ibnex_comm_svc_names[i];
-	service_name[i] = kmem_alloc(strlen(service) + 1, KM_SLEEP);
-	(void) snprintf(service_name[i], 5, "%s", service);
+	len = strlen(service) + 1;
+	service_name[i] = kmem_alloc(len, KM_SLEEP);
+	(void) snprintf(service_name[i], len, "%s", service);
 
 	/* Replace existing pointer to Port services w/ newly allocated one */
 	if (ibnex.ibnex_comm_svc_names) {
@@ -2361,6 +2365,7 @@ ibnex_hcasvc_conf_entry_add(char *service)
 {
 	int	i, nsvcs;
 	char	**service_name;
+	size_t	len;
 
 	ASSERT(MUTEX_HELD(&ibnex.ibnex_mutex));
 	nsvcs = ibnex.ibnex_nhcasvc_comm_svcs;
@@ -2373,8 +2378,9 @@ ibnex_hcasvc_conf_entry_add(char *service)
 	 */
 	for (i = 0; i < nsvcs; i++)
 		service_name[i] = ibnex.ibnex_hcasvc_comm_svc_names[i];
-	service_name[i] = kmem_alloc(strlen(service) + 1, KM_SLEEP);
-	(void) snprintf(service_name[i], 5, "%s", service);
+	len = strlen(service) + 1;
+	service_name[i] = kmem_alloc(len, KM_SLEEP);
+	(void) snprintf(service_name[i], len, "%s", service);
 
 	/*
 	 * Replace existing pointer to HCA_SVC services w/ newly
