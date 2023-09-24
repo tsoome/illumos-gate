@@ -70,6 +70,7 @@ LDFLAGS	+= -Nmisc/ibdm -Nmisc/ibtl
 # Please do not carry these forward to new Makefiles.
 #
 CFLAGS		+= $(CCVERBOSE)
+$(OBJS_DIR)/ibnex.o := SMOFF += check_leaks
 
 #
 #	Default build targets.
