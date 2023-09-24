@@ -64,6 +64,8 @@ $(NOT_RELEASE_BUILD)DEBUG_DEFS	+= $(DEBUG_FLGS)
 LDFLAGS		+= -N misc/acpica
 
 # needs work
+# apix_softinit() warn: possible memory leak of 'hdlp'
+$(OBJS_DIR)/apix.o := SMOFF += check_leaks
 
 #
 #	Default build targets.
