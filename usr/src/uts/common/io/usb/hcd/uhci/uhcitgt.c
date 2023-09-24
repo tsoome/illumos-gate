@@ -201,7 +201,7 @@ uhci_hcdi_pipe_open(usba_pipe_handle_data_t *ph, usb_flags_t flags)
 	rval = uhci_state_is_operational(uhcip);
 
 	if (rval != USB_SUCCESS) {
-		kmem_free(ph, sizeof (uhci_pipe_private_t));
+		kmem_free(pp, sizeof (uhci_pipe_private_t));
 		mutex_exit(&uhcip->uhci_int_mutex);
 		sema_v(&uhcip->uhci_ocsem);
 
