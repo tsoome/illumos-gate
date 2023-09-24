@@ -61,6 +61,7 @@ CERRWARN	+= -_gcc=-Wno-unused-value
 
 # 3rd party code
 SMOFF += all_func_returns
+$(OBJS_DIR)/ixgbe_x550.o := SMOFF += check_missing_error_code2
 
 #
 #	Define targets
