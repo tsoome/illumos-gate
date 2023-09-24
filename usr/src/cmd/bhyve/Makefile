@@ -130,6 +130,7 @@ CPPFLAGS =	-I$(COMPAT)/bhyve -I$(CONTRIB)/bhyve \
 
 SMOFF += all_func_returns
 rfb.o := SMOFF=
+pci_emul.o := SMOFF += check_index_overflow
 
 # Force c99 for everything
 CSTD=		$(CSTD_GNU99)
