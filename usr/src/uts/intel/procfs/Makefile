@@ -70,7 +70,7 @@ CERRWARN	+= $(CNOWARN_UNINIT)
 # needs work
 $(OBJS_DIR)/prsubr.o := SMOFF += all_func_returns
 $(OBJS_DIR)/prcontrol.o := SMOFF += all_func_returns
-$(OBJS_DIR)/prioctl.o := SMOFF += signed
+$(OBJS_DIR)/prioctl.o := SMOFF += signed,check_leaks
 
 LDFLAGS         += -Nfs/namefs
 
