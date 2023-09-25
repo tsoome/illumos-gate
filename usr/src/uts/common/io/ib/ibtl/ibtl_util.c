@@ -486,10 +486,6 @@ ibtl_dprintf0(char *name, char *fmt, ...)
 {
 	va_list ap;
 
-	/* check if global errlevel matches or not */
-	if (ibtf_errlevel < IBTF_LOG_L0)
-		return;
-
 	va_start(ap, fmt);
 	ibtf_vlog(name, IBTF_LOG_L0, fmt, ap);
 	va_end(ap);
