@@ -1330,7 +1330,7 @@ out:
 	if (suword32(pnids, (uint32_t)numids) ||
 	    (nids != 0 && copyout(ids, buf, numids * sizeof (int))))
 		error = EFAULT;
-	if (idsize != 0)
+	if (ids != NULL)
 		kmem_free(ids, idsize);
 	return (error);
 }
