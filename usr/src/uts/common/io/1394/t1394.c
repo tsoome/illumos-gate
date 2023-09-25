@@ -1844,6 +1844,7 @@ t1394_join_isoch_cec(t1394_handle_t t1394_hdl,
 	    (join_isoch_info->isoch_cec_evts.stop_target	== NULL) ||
 	    (join_isoch_info->isoch_cec_evts.rsrc_fail_target	== NULL) ||
 	    (join_isoch_info->isoch_cec_evts.teardown_target	== NULL))) {
+		kmem_free(member_new, sizeof (s1394_isoch_cec_member_t));
 		/* Unlock the Isoch CEC member list */
 		mutex_exit(&cec_curr->isoch_cec_mutex);
 		return (DDI_FAILURE);
