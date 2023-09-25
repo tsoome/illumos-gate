@@ -826,7 +826,11 @@ z_decompress(void *arg, mblk_t **mop)
 	ADJRPTR();
 	seq = rptr == NULL ? 0 : (*rptr++ << 8);
 	ADJRPTR();
-	if (rptr == NULL) {
+	/*
+	 * we can check there rptr or mi, but checking mi makes smatch
+	 * happier.
+	 */
+	if (mi == NULL) {
 		if (state->flags & DS_DEBUG) {
 			cmn_err(CE_CONT, "z_decompress%d: bad buffer\n",
 			    state->unit);
