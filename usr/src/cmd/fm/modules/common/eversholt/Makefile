@@ -44,11 +44,12 @@ DMOD_SRCS = eft_mdb.c
 include ../../Makefile.plugin
 
 CPPFLAGS += -DFMAPLUGIN -I$(EVERSRCDIR) -I.
-CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-switch
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += -_gcc=-Wno-implicit-function-declaration
+
+escparse.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # not linted
 SMATCH=off

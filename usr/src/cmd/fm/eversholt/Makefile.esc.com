@@ -44,9 +44,11 @@ $(NOT_RELEASE_BUILD)BASECPPFLAGS += -DDEBUG
 CPPFLAGS += $(BASECPPFLAGS)
 CFLAGS += $(CCVERBOSE)
 CERRWARN += $(CNOWARN_UNINIT)
-CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += -_gcc=-Wno-switch
+
+escparse.o := CERRWARN += -_gcc=-Wno-unused-label
+escparse.o := SMATCH=off
 
 SMOFF += all_func_returns
 
