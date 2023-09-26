@@ -225,6 +225,7 @@ visited_find_or_add(const char *str, struct ht_elt **hep)
 	uint32_t h;
 	uint_t i;
 	struct ht_elt *he;
+	size_t len;
 
 	h = hash_fmri(str);
 	i = h & (HT_BUCKETS - 1);
@@ -237,11 +238,12 @@ visited_find_or_add(const char *str, struct ht_elt **hep)
 		}
 	}
 
-	he = malloc(offsetof(struct ht_elt, str) + strlen(str) + 1);
+	len = strlen(str);
+	he = malloc(offsetof(struct ht_elt, str) + len + 1);
 	if (he == NULL)
 		return (-1);
 
-	(void) strcpy(he->str, str);
+	(void) strlcpy(he->str, str, len + 1);
 
 	he->next = visited[i];
 	visited[i] = he;
