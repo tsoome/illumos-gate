@@ -48,8 +48,9 @@ LDLIBS += -lc -lavl -lidmap
 
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	$(CNOWARN_UNINIT)
-CERRWARN +=	-_gcc=-Wno-unused-label
 CERRWARN +=	-_gcc=-Wno-unused-variable
+
+pics/acl.tab.o pics/acl_lex.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # not linted
 SMATCH=off
