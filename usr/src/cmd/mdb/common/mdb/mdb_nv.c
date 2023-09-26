@@ -38,8 +38,8 @@
 	(((v)->v_flags & MDB_NV_EXTNAME) ? (v)->v_ename : (v)->v_lname)
 
 #define	NV_SIZE(v) \
-	(((v)->v_flags & MDB_NV_EXTNAME) ? sizeof (mdb_var_t) : \
-	sizeof (mdb_var_t) + strlen((v)->v_lname))
+	(((v)->v_flags & MDB_NV_EXTNAME) ? sizeof (mdb_var_t) + 1 : \
+	sizeof (mdb_var_t) + strlen((v)->v_lname) + 1)
 
 #define	NV_HASHSZ	211
 
@@ -71,9 +71,9 @@ nv_var_alloc(const char *name, const mdb_nv_disc_t *disc,
 	mdb_var_t *v;
 
 	if (flags & MDB_NV_EXTNAME)
-		nbytes = sizeof (mdb_var_t);
+		nbytes = sizeof (mdb_var_t) + 1;
 	else
-		nbytes = sizeof (mdb_var_t) + strlen(name);
+		nbytes = sizeof (mdb_var_t) + strlen(name) + 1;
 
 	v = mdb_alloc(nbytes, um_flags);
 
@@ -85,8 +85,8 @@ nv_var_alloc(const char *name, const mdb_nv_disc_t *disc,
 		v->v_lname[0] = '\0';
 	} else {
 		/*
-		 * We don't overflow here since the mdb_var_t itself has
-		 * room for the trailing \0.
+		 * We don't overflow here since we did add
+		 * room for the trailing \0 above.
 		 */
 		(void) strcpy(v->v_lname, name);
 		v->v_ename = NULL;

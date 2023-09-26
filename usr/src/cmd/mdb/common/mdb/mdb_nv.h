@@ -95,7 +95,7 @@ typedef struct mdb_var {
 	const mdb_nv_disc_t *v_disc;	/* Link to variable discipline */
 	struct mdb_var *v_next;		/* Link to next var in hash chain */
 	uchar_t v_flags;		/* Variable flags (see above) */
-	char v_lname[1];		/* Variable name if stored locally */
+	char v_lname[];			/* Variable name if stored locally */
 } mdb_var_t;
 
 #define	MDB_NV_VALUE(v)		((v)->v_uvalue)
