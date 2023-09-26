@@ -84,13 +84,12 @@ main(int argc, char **argv)
 
 	if (argc > 0) {
 		long interval;
-		char *endptr;
+		const char *errstr;
 
 		errno = 0;
-		interval = strtol(argv[0], &endptr, 10);
+		interval = strtonum(argv[0], 1, MAXLONG, &errstr);
 
-		if (errno > 0 || *endptr != '\0' || interval <= 0 ||
-		    interval > MAXLONG) {
+		if (errstr != NULL) {
 			usage();
 			return (1);
 		}
@@ -101,8 +100,8 @@ main(int argc, char **argv)
 		}
 		iter = MAXLONG;
 		if (argc > 1) {
-			iter = strtol(argv[1], NULL, 10);
-			if (errno > 0 || *endptr != '\0' || iter <= 0) {
+			iter = strtonum(argv[1], 1, MAXLONG, &errstr);
+			if (errstr != NULL) {
 				usage();
 				return (1);
 			}
