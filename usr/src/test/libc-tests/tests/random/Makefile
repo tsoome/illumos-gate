@@ -47,11 +47,12 @@ include $(SRC)/test/Makefile.com
 CMDS = $(PROGS:%=$(TESTDIR)/%) $(SCRIPTS:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
 
+# parse error: OOM
+inz_inval := SMATCH=off
+
 all: $(PROGS)
 
 install: all $(CMDS)
-
-lint:
 
 clobber: clean
 	-$(RM) $(PROGS)
