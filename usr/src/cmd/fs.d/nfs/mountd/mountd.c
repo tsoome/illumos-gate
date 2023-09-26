@@ -1838,7 +1838,7 @@ find_lofsentry(char *rpath, int *done_flag)
 				}
 				goto done;
 			}
-			(void) strcpy(tmp_path, rpath);
+			(void) strlcpy(tmp_path, rpath, MAXPATHLEN);
 			(void) strcat(tmp_path, "/.");
 
 			if (stat(tmp_path, &r_stbuf) < 0) {
@@ -1889,7 +1889,8 @@ find_lofsentry(char *rpath, int *done_flag)
 				goto done;
 			}
 
-			(void) strcpy(tmp_path, ml->mntl_mnt->mnt_special);
+			(void) strlcpy(tmp_path, ml->mntl_mnt->mnt_special,
+			    MAXPATHLEN);
 			(void) strcat(tmp_path, p2);
 			if (retcode)
 				sharefree(retcode);
