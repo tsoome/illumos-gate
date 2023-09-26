@@ -29,11 +29,13 @@
 PROG = eftinfo
 LOCALOBJS = eftinfo.o
 OBJS = $(LOCALOBJS) $(COMMONOBJS)
-SRCS = $(LOCALOBJS:.o=.c) $(COMMONSRCS)
 
 CPPFLAGS += -I../common
 CFLAGS += $(CTF_FLAGS)
 LDLIBS += -lumem
+
+# too hairy
+ptree.o := SMATCH=off
 
 all: $(PROG)
 
@@ -42,9 +44,6 @@ debug: $(PROG)
 include $(SRC)/cmd/fm/eversholt/Makefile.esc.com
 
 install: all $(ROOTPROG)
-
-LINTSRCS += $(LOCALOBJS:%.o=../common/%.c)
-LINTFLAGS = -mnux
 
 $(PROG): $(OBJS)
 	$(LINK.c) -o $@ $(OBJS) $(LDLIBS)
