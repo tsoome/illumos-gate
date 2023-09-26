@@ -53,7 +53,6 @@ LIBPROG= gmsgfmt
 PROG=  $(BINPROG) $(LIBPROG)
 
 YFLAGS += -d
-LINTFLAGS +=	-um
 
 POFILE= msgfmt_all.po
 POFILES= $(SOBJS:%.o=%.po) $(GOBJS:%.o=%.po) $(COBJS:%.o=%.po) \
@@ -65,9 +64,13 @@ ROOTBINPROG= $(BINPROG:%=$(ROOTBIN)/%)
 ROOTLIBPROG= $(LIBPROG:%=$(ROOTLIB)/%)
 
 CERRWARN += -_gcc=-Wno-parentheses
-CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-unused-variable
+
+gnu_po.o := CERRWARN += -_gcc=-Wno-unused-label
+gnu_po.o := SMATCH=off
+xgettext.lx.o := CERRWARN += -_gcc=-Wno-unused-label
+xgettext.lx.o := SMATCH=off
 
 .KEEP_STATE:
 
@@ -104,12 +107,6 @@ clean:
 	$(RM) $(SOBJS) $(GOBJS) $(YOBJS) $(COBJS) \
 		$(XOBJS) $(LXOBJS) $(BOBJS) $(LOBJS) \
 		$(POFILE) $(POFILES) gnu_po.c y.tab.h xgettext.lx.c
-
-lint:	gnu_po.c y.tab.h
-	$(LINT.c) $(SOBJS:%.o=%.c) $(COBJS:%.o=%.c) $(LDLIBS)
-	$(LINT.c) $(GOBJS:%.o=%.c) $(BOBJS:%.o=%.c) $(COBJS:%.o=%.c) $(LDLIBS)
-	$(LINT.c) $(GOBJS:%.o=%.c) $(LOBJS:%.o=%.c) $(COBJS:%.o=%.c) $(LDLIBS)
-	$(LINT.c) $(XOBJS:%.o=%.c) $(LDLIBS)
 
 gnu_po.c + y.tab.h:	gnu_po.y
 	$(RM) gnu_po.c y.tab.h
