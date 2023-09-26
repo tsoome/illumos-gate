@@ -814,11 +814,12 @@ static int
 scan_int(char *src, int *dst)
 {
 	long lval;
+	const char *errstr;
 
 	errno = 0;
 
-	lval = strtol(LINEARG(1), NULL, 0);
-	if (errno || lval > INT_MAX || lval < 0) {
+	lval = strtonum(LINEARG(1), 0, INT_MAX, &errstr);
+	if (errstr != NULL) {
 		mesg(MERR, nerr_fmt, src);
 		return (NOUP);
 	}
