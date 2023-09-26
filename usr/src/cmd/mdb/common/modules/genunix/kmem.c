@@ -1304,7 +1304,6 @@ kmem_walk_init_common(mdb_walk_state_t *wsp, int type)
 		status = WALK_ERR;
 	}
 
-out1:
 	if (status == WALK_ERR) {
 		if (kmw->kmw_valid)
 			mdb_free(kmw->kmw_valid, slabsize / chunksize);
