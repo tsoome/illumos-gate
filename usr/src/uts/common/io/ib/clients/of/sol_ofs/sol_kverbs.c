@@ -823,6 +823,7 @@ ib_alloc_pd(struct ib_device *device)
 		SOL_OFS_DPRINTF_L2(sol_kverbs_dbg_str,
 		    "ib_alloc_pd: device: 0x%p => invalid device state (%d)",
 		    device, device->reg_state);
+		kmem_free(pd, sizeof (struct ib_pd));
 		return ((struct ib_pd *)-ENXIO);
 	}
 
@@ -963,6 +964,7 @@ ib_create_cq(struct ib_device *device, ib_comp_handler comp_handler,
 		    "comp_vector: %p => invalid device state (%d)", device,
 		    comp_handler, event_handler, cq_context, cqe, comp_vector,
 		    device->reg_state);
+		kmem_free(cq, sizeof (struct ib_cq));
 		return ((struct ib_cq *)-ENXIO);
 	}
 
