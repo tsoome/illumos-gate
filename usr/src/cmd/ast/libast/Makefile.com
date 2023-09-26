@@ -88,7 +88,6 @@ CERRWARN += -_gcc=-Wno-unused-but-set-variable
 CERRWARN += -_gcc=-Wno-unused-but-set-parameter
 CERRWARN += -_gcc=-Wno-unused-value
 CERRWARN += -_gcc=-Wno-unused-function
-CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-implicit-function-declaration
 CERRWARN += -_gcc=-Wno-empty-body
 CERRWARN += -_gcc=-Wno-type-limits
