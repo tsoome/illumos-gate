@@ -33,11 +33,13 @@ include $(SRC)/cmd/fm/eversholt/Makefile.esc.com
 EFTCLASS = writer
 LOCALOBJS = escmain.o
 OBJS = $(LOCALOBJS) $(COMMONOBJS)
-SRCS = $(LOCALOBJS:.o=.c) $(COMMONSRCS)
 
 CPPFLAGS += -I../common
 CFLAGS += -DESC $(CTF_FLAGS)
 LDLIBS += -lumem
+
+# too hairy
+ptree.o := SMATCH=off
 
 all debug: $(PROG)
 
