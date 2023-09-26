@@ -147,6 +147,7 @@ main(int argc, char *argv[])
 	int			syntaxerr;	/* Flag, TRUE if syntax error */
 	int			exitcd;		/* Value for exit() */
 	int			c;		/* Option character */
+	const char		*errstr;
 
 
 	/*
@@ -196,8 +197,8 @@ main(int argc, char *argv[])
 	if (argcount == 1) {
 
 	    /* Extract the key from the command */
-	    lkey = strtol(*argp, &p, 10);
-	    if (*p || (lkey <= 0) || (lkey > MAXINT)) {
+	    lkey = strtonum(*argp, 1, MAXINT, &errstr);
+	    if (errstr != NULL) {
 		(void) snprintf(msg, sizeof (msg), M_INVKEY, *argp);
 		stdmsg(MM_NRECOV, lbl, MM_ERROR, msg);
 		exit(EX_ERROR);
@@ -252,8 +253,8 @@ main(int argc, char *argv[])
 	}
 
 	/* Extract the key from the command */
-	lkey = strtol(*argp, &p, 10);
-	if (*p || (lkey <= 0) || (lkey > MAXINT)) {
+	lkey = strtonum(*argp, 1, MAXINT, &errstr);
+	if (errstr != NULL) {
 	    (void) snprintf(msg, sizeof(msg), M_INVKEY, *argp);
 	    stdmsg(MM_NRECOV, lbl, MM_ERROR, msg);
 	    exit(EX_ERROR);
