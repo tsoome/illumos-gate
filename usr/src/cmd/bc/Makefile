@@ -38,7 +38,8 @@ include ../Makefile.cmd
 
 CERRWARN += -_gcc=-Wno-implicit-function-declaration
 CERRWARN += -_gcc=-Wno-parentheses
-CERRWARN += -_gcc=-Wno-unused-label
+
+$(XD)/bc.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # nothing lintable
 SMATCH=off
@@ -69,8 +70,6 @@ install: all $(ROOTPROG) $(ROOTXPG6PROG) $(ROOTLIBB)
 
 clean:
 	-@rm -rf $(PROG).c $(PROG).x $(EXOBJS) $(XD) $(PROG) $(XPG6)
-
-lint:
 
 $(XPG6EXOBJS): $(XD)
 
