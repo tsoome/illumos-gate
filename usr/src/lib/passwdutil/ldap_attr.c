@@ -384,7 +384,6 @@ ldap_getattr(char *name, attrlist *items, pwu_repository_t *rep)
 		}
 	}
 
-out:
 	free_ldapbuf(ldapbuf);
 	free(ldapbuf);
 	return (res);
