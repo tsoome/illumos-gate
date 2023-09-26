@@ -1417,8 +1417,10 @@ pc_add(permcheck_t *pcp, const char *auth, pc_auth_type_t auth_type)
 {
 	struct pc_elt *ep;
 	uint_t i;
+	size_t len;
 
-	ep = uu_zalloc(offsetof(struct pc_elt, pce_auth) + strlen(auth) + 1);
+	len = strlen(auth);
+	ep = uu_zalloc(offsetof(struct pc_elt, pce_auth) + len + 1);
 	if (ep == NULL)
 		return (-1);
 
@@ -1427,7 +1429,7 @@ pc_add(permcheck_t *pcp, const char *auth, pc_auth_type_t auth_type)
 		/* Failure is not a stopper; we'll try again next time. */
 		(void) pc_grow(pcp);
 
-	(void) strcpy(ep->pce_auth, auth);
+	(void) strlcpy(ep->pce_auth, auth, len + 1);
 
 	i = pc_hash(auth) & (pcp->pc_bnum - 1);
 	ep->pce_next = pcp->pc_buckets[i];
