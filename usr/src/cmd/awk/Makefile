@@ -40,10 +40,11 @@ include ../Makefile.cmd
 
 ROOTLINK =	$(LINKPROG:%=$(ROOTBIN)/%)
 
-CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += -_gcc=-Wno-unused-variable
 CERRWARN += $(CNOWARN_UNINIT)
+
+awk.g.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # not linted
 SMATCH=off
@@ -59,7 +60,6 @@ XGETFLAGS += -a -x awk.xcl
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
 YFLAGS += -d
 LDLIBS += -lm -lumem
-LINTFLAGS += -u
 CLEANFILES= maketab proctab.c awk.g.c y.tab.h
 
 .KEEP_STATE:
