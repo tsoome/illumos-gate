@@ -226,14 +226,14 @@ tabify(wchar_t *ibuf, int all)
 static void
 getstops(const char *cp)
 {
-	register int i;
+	unsigned i;
 
 	for (;;) {
 		i = 0;
 		while (*cp >= '0' && *cp <= '9')
 			i = i * 10 + *cp++ - '0';
 
-		if (i <= 0 || i > INT_MAX) {
+		if (i == 0 || i > INT_MAX) {
 			(void) fprintf(stderr, gettext(
 			    "unexpand: invalid tablist item\n"));
 			usage();

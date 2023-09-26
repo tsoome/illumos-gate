@@ -237,14 +237,14 @@ char *argv[];
 static void
 getstops(const char *cp)
 {
-	register int i;
+	unsigned i;
 
 	for (;;) {
 		i = 0;
 		while (*cp >= '0' && *cp <= '9')
 			i = i * 10 + *cp++ - '0';
 
-		if (i <= 0 || i > INT_MAX) {
+		if (i == 0 || i > INT_MAX) {
 			(void) fprintf(stderr, gettext(
 				"expand: invalid tablist\n"));
 			usage();
