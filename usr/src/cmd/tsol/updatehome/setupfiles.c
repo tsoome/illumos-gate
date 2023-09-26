@@ -288,7 +288,7 @@ mkdirs(const char *home, const char *file, int flags)
 		return (errno);
 	}
 
-	(void) strcpy(dir, file);
+	(void) strlcpy(dir, file, MAXPATHLEN);
 
 	if ((tok = strrchr(dir, '/')) == NULL) {
 
@@ -298,7 +298,7 @@ mkdirs(const char *home, const char *file, int flags)
 
 	*tok = '\000';		/* drop last component, it's the target */
 
-	(void) strcpy(path, home);
+	(void) strlcpy(path, home, MAXPATHLEN);
 
 	for (tok = dir; tok = strtok(tok, "/"); tok = NULL) {
 
