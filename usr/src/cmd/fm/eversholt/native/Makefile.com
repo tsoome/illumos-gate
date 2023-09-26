@@ -40,12 +40,14 @@ LD = $(NATIVELD)
 EFTCLASS = writer
 LOCALOBJS = escmain.o
 OBJS = $(LOCALOBJS) $(COMMONOBJS)
-SRCS = $(LOCALOBJS:.o=.c) $(COMMONSRCS)
 
 CPPFLAGS = $(NATIVE_CPPFLAGS) $(BASECPPFLAGS) -I../../esc/common
 CFLAGS = $(NATIVE_CFLAGS) -DESC $(CTF_FLAGS)
 LDLIBS = -lumem
 NATIVE_LIBS = libumem.so libc.so
+
+# too hairy
+ptree.o := SMATCH=off
 
 all: $(PROG)
 
