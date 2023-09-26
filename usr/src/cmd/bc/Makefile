@@ -39,7 +39,7 @@ include ../Makefile.cmd
 CERRWARN += -_gcc=-Wno-implicit-function-declaration
 CERRWARN += -_gcc=-Wno-parentheses
 
-$(XD)/bc.o := CERRWARN += -_gcc=-Wno-unused-label
+bc.o $(XD)/bc.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # nothing lintable
 SMATCH=off
