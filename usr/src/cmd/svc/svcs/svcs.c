@@ -3428,10 +3428,6 @@ add_restarter(const char *fmri)
 	rest->next = restarters;
 	restarters = rest;
 	return;
-
-err:
-	free(cfmri);
-	free(rest);
 }
 
 /* ARGSUSED */

@@ -72,7 +72,6 @@ $(NATIVE_BUILD)MYCPPFLAGS =	-I ../common -I$(NATIVE_ADJUNCT)/include/libxml2
 CPPFLAGS +=	$(MYCPPFLAGS)
 LDFLAGS +=	$(MAPOPTS)
 
-CERRWARN +=	-_gcc=-Wno-unused-label
 CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 CERRWARN +=	-_gcc=-Wno-switch
 CERRWARN +=	$(CNOWARN_UNINIT)
@@ -118,6 +117,9 @@ $(NATIVE_BUILD)LDLIBS = \
 	$(SVCCFG_EXTRA_LIBS)
 
 svccfg_lex.o svccfg_grammar.o := CCVERBOSE =
+svccfg_lex.o svccfg_grammar.o := CERRWARN += -_gcc=-Wno-unused-label
+svccfg_lex-native.o := CERRWARN += -_gcc=-Wno-unused-label
+svccfg_grammar-native.o := CERRWARN += -_gcc=-Wno-unused-label
 
 svccfg_help.po := XGETFLAGS =	-a
 
