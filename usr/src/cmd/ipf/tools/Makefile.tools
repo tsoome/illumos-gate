@@ -52,8 +52,6 @@ OBJS=		$(IPF_OBJS) $(IPFS_OBJS) $(IPFSTAT_OBJS) \
 OBJSL=		$(IPF_OBJS) $(IPFS_OBJS) $(IPFSTAT_OBJS) \
 		$(IPMON_OBJS) $(IPNAT_OBJS)
 
-SRCS=		$(OBJSL:%.o=../%.c)
-
 include ../../../Makefile.cmd
 include ../../Makefile.ipf
 
@@ -61,6 +59,11 @@ LDLIBS		+= $(LIBBPF)
 LDFLAGS		+= $(MAPFILE.NGB:%=-Wl,-M%)
 
 CPPFLAGS	+= -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG
+
+ippool_y.o	:=	CERRWARN += -_gcc=-Wno-unused-label
+ipnat_y.o	:=	CERRWARN += -_gcc=-Wno-unused-label
+ipmon_y.o	:=	CERRWARN += -_gcc=-Wno-unused-label
+ipf_y.o		:=	CERRWARN += -_gcc=-Wno-unused-label
 
 ipfstat.o	:=	CPPFLAGS += -DSTATETOP
 ipfstat		:=	LDLIBS += -lcurses
