@@ -128,6 +128,9 @@ SMOFF += index_overflow
 # needs work
 SMOFF += all_func_returns
 
+# we use VERIFY there to blow ourselves off
+$(OBJS_DIR)/htable.o := SMOFF += check_deref
+
 # too hairy
 $(OBJS_DIR)/inflate.o := SMATCH=off
 

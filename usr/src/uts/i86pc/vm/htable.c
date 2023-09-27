@@ -398,7 +398,7 @@ htable_initial_reserve(uint_t count)
 	count += HTABLE_RESERVE_AMOUNT;
 	while (count > 0) {
 		ht = kmem_cache_alloc(htable_cache, KM_NOSLEEP);
-		ASSERT(ht != NULL);
+		VERIFY(ht != NULL);
 
 		ASSERT(use_boot_reserve);
 		ht->ht_pfn = PFN_INVALID;
