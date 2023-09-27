@@ -73,6 +73,7 @@ poolcfg_grammar.h poolcfg_grammar.c: poolcfg.y
 	@$(MV) y.tab.c poolcfg_grammar.c
 
 poolcfg_lex.o poolcfg_grammar.o := CCVERBOSE =
+poolcfg_lex.o poolcfg_grammar.o := CERRWARN += -_gcc=-Wno-unused-label
 
 clean:
 	$(RM) $(OBJS) $(COMMON_OBJS) $(POFILES)
