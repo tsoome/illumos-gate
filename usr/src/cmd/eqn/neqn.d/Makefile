@@ -29,7 +29,8 @@ LDFLAGS +=	$(MAPFILE.NGB:%=-Wl,-M%)
 
 CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 CERRWARN +=	$(CNOWARN_UNINIT)
-CERRWARN +=	-_gcc=-Wno-unused-label
+
+e.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # not linted
 SMATCH=off
