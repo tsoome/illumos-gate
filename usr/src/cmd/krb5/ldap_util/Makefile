@@ -31,11 +31,8 @@ OBJS	= \
 	kdb5_ldap_policy.o \
 	kdb5_ldap_realm.o \
 	kdb5_ldap_services.o \
-	kdb5_ldap_util.o
-
-GETDATE	= $(SRC)/cmd/krb5/kadmin/cli/getdate.o
-
-SRCS	= $(OBJS:.o=.c)
+	kdb5_ldap_util.o \
+	getdate.o
 
 DEFS =  -DHAVE_LIBSOCKET=1 -DHAVE_LIBNSL=1 -DHAVE_PWD_H=1 -DHAVE_COMPILE=1 -DHAVE_STEP=1
 
@@ -62,9 +59,10 @@ CPPFLAGS += \
 		$(DEFS)
 
 CERRWARN +=	-_gcc=-Wno-unused-variable
-CERRWARN +=	-_gcc=-Wno-unused-label
 CERRWARN +=	-_gcc=-Wno-unused-function
 CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
+
+getdate.o := CERRWARN += -_gcc=-Wno-unused-label
 
 # not linted
 SMATCH=off
@@ -77,8 +75,8 @@ LDLIBS += -L $(ROOT_KLIBDIR) -L $(KRB5LIB) -lkadm5srv -lkdb -lkdb_ldap \
 
 all: $(PROG)
 
-$(PROG):       $(OBJS) $(GETDATE)
-	$(LINK.c) $(OBJS) $(GETDATE) -o $@ $(LDLIBS)
+$(PROG):       $(OBJS)
+	$(LINK.c) $(OBJS) -o $@ $(LDLIBS)
 	$(POST_PROCESS)
 
 install: $(KRB5SBINPROG)
@@ -87,6 +85,12 @@ clean:
 	$(RM) $(OBJS)
 
 include $(SRC)/cmd/Makefile.targ
+
+%.o:	$(SRC)/cmd/krb5/kadmin/cli/%.y
+	$(YACC.y) $<
+	$(COMPILE.c) -o $@ y.tab.c $(CTFCONVERT_HOOK)
+	$(POST_PROCESS_O)
+	$(RM) y.tab.c
 
 $(POFILE): $(DERIVED_FILES) .WAIT $(POFILES)
 	$(RM) $@
