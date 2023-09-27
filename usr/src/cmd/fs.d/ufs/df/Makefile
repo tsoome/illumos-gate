@@ -38,7 +38,6 @@ LDLIBS += -ladm
 
 CERRWARN +=	-_gcc=-Wno-implicit-function-declaration
 CERRWARN +=	-_gcc=-Wno-parentheses
-CERRWARN +=	-_gcc=-Wno-unused-label
 CERRWARN +=	-_gcc=-Wno-unused-function
 
 # not linted
@@ -59,5 +58,3 @@ $(LIBPROG):	$(OBJS)
 
 clean:
 		$(RM) $(LIBPROG).o
-
-lint:		lint_SRCS
