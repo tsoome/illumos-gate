@@ -4339,7 +4339,7 @@ page_get_replacement_page(page_t *orig_like_pp, struct lgrp *lgrp_target,
 				like_pp = like_pp + 1;
 				REPL_STAT_INCR(nnext_pp);
 			}
-			ASSERT(pg_cnt == 0);
+			ASSERT(pg_cnt == -1);
 		} else {
 			break;
 		}
