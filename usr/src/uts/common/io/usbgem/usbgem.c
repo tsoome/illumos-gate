@@ -4604,7 +4604,6 @@ err_destroy_locks:
 	sema_destroy(&dp->hal_op_lock);
 	sema_destroy(&dp->rxfilter_lock);
 
-err_close_pipes:
 	(void) usbgem_close_pipes(dp);
 
 err_unregister_client:

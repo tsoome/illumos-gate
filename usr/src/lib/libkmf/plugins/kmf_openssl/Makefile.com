@@ -48,7 +48,6 @@ CFLAGS		+=	$(CCVERBOSE)
 CPPFLAGS	+=	-D_REENTRANT $(KMFINC) \
 			-I$(INCDIR) -I$(ADJUNCT_PROTO)/usr/include/libxml2
 
-CERRWARN	+=	-_gcc=-Wno-unused-label
 CERRWARN	+=	-_gcc=-Wno-unused-value
 CERRWARN	+=	$(CNOWARN_UNINIT)
 
