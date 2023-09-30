@@ -612,8 +612,10 @@ netstat_tcp_cb(uintptr_t kaddr, const void *walk_data, void *cb_data)
 	if (!((opts & NETSTAT_ALL) || net_tcp_active(tcp)) ||
 	    (af == AF_INET && !net_tcp_ipv4(tcp)) ||
 	    (af == AF_INET6 && !net_tcp_ipv6(tcp))) {
+		connp->conn_tcp = NULL;
 		return (WALK_NEXT);
 	}
+	connp->conn_tcp = NULL;
 
 	mdb_printf("%0?p %2i ", tcp_kaddr, tcp->tcp_state);
 	if (af == AF_INET) {
@@ -663,8 +665,10 @@ netstat_udp_cb(uintptr_t kaddr, const void *walk_data, void *cb_data)
 	if (!((opts & NETSTAT_ALL) || net_udp_active(&udp)) ||
 	    (af == AF_INET && !net_udp_ipv4(&udp)) ||
 	    (af == AF_INET6 && !net_udp_ipv6(&udp))) {
+		connp->conn_udp = NULL;
 		return (WALK_NEXT);
 	}
+	connp->conn_udp = NULL;
 
 	if (udp.udp_state == TS_UNBND)
 		state = "UNBOUND";
