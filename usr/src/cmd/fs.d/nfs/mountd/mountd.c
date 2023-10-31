@@ -488,8 +488,10 @@ main(int argc, char *argv[])
 
 	(void) enable_extended_FILE_stdio(-1, -1);
 
+#ifndef BRICKSTOR
 	/* Upgrade SMF settings, if necessary. */
 	nfs_config_upgrade(NFSD);
+#endif
 
 	ret = nfs_smf_get_iprop("mountd_max_threads", &max_threads,
 	    DEFAULT_INSTANCE, SCF_TYPE_INTEGER, NFSD);

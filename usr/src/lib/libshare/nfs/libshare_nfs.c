@@ -2681,7 +2681,7 @@ struct proto_option_defs {
  * Check the range of value as int range.
  */
 static int
-range_check_validator_value(uint_t index, int type, char *value, int *intval)
+range_check_validator_value(uint_t index, char *value, int *intval)
 {
 	int val;
 	const char *errstr;
@@ -2711,8 +2711,7 @@ range_check_validator_value(uint_t index, int type, char *value, int *intval)
 static int
 range_check_validator(uint_t index, char *value)
 {
-	return (range_check_validator_value(index, OPT_TYPE_NUMBER,
-	    value, NULL));
+	return (range_check_validator_value(index, value, NULL));
 }
 
 /*
@@ -2725,24 +2724,27 @@ nfs_get_vers_minmax(uint_t index)
 	char *pvalue;
 	sa_property_t prop;
 	sa_optionset_t opts;
-	int rval;
+	struct proto_option_defs *po;
+	int rval = 0;		/* Impossible value */
 	const char *errstr;
 
+	po = &proto_options[index];
 	opts = nfs_get_proto_set();
-	prop = sa_get_property(opts, proto_options[index].name);
+	prop = sa_get_property(opts, po->name);
+
+	if (prop != NULL) {
+		pvalue = sa_get_property_attr(prop, "value");
+		rval = strtonumx(pvalue, po->minval, po->maxval, &errstr, 0);
+		sa_free_attr_string(pvalue);
+	}
 
 	/* in case of failure, return default */
-	if (prop == NULL) {
-		rval = proto_options[index].defvalue.intval;
-	} else {
-		pvalue = sa_get_property_attr(prop, "value");
-		rval = strtonumx(pvalue,
-		    proto_options[index].minval,
-		    proto_options[index].maxval,
-		    &errstr, 0);
-		sa_free_attr_string(pvalue);
-		if (errstr != NULL)
-			rval = proto_options[index].defvalue.intval;
+	if (rval == 0) {
+		if (po->type == OPT_TYPE_STRING) {
+			rval = strtoul(po->defvalue.string, NULL, 0);
+		} else {
+			rval = po->defvalue.intval;
+		}
 	}
 	return (rval);
 }
@@ -2759,7 +2761,7 @@ range_check_validator_client(uint_t index, char *value)
 	if (value == NULL)
 		return (SA_BAD_VALUE);
 
-	ret = range_check_validator_value(index, OPT_TYPE_NUMBER, value, &val);
+	ret = range_check_validator_value(index, value, &val);
 	if (ret != SA_OK)
 		return (ret);
 
@@ -2798,7 +2800,7 @@ range_check_validator_server(uint_t index, char *value)
 	if (value == NULL)
 		return (SA_BAD_VALUE);
 
-	ret = range_check_validator_value(index, OPT_TYPE_STRING, value, &val);
+	ret = range_check_validator_value(index, value, &val);
 	if (ret != SA_OK)
 		return (ret);
 
@@ -3172,6 +3174,42 @@ free_protoprops(void)
 }
 
 /*
+ * If the SMF db is still using integer data type for server_versmin and
+ * server_versmax, then update property template accordingly.
+ *
+ * Try reading server_versmin and server_versmax as strings, and
+ * if that fails, switch those table entries to type number.
+ *
+ * This workaround can be removed when data type is changed to string.
+ */
+static void
+version_type_check(void)
+{
+	int opt, bufsz, ret;
+	char value[PATH_MAX];
+
+	opt = PROTO_OPT_NFS_SERVER_VERSMIN;
+	bufsz = PATH_MAX;
+	ret = nfs_smf_get_prop(proto_options[opt].name, value,
+	(char *)DEFAULT_INSTANCE, getscftype(proto_options[opt].type),
+	    getsvcname(proto_options[opt].svcs), &bufsz);
+	if (ret == SCF_ERROR_TYPE_MISMATCH) {
+		proto_options[opt].type = OPT_TYPE_NUMBER;
+		proto_options[opt].defvalue.intval = NFS_VERSMIN_DEFAULT;
+	}
+
+	opt = PROTO_OPT_NFS_SERVER_VERSMAX;
+	bufsz = PATH_MAX;
+	ret = nfs_smf_get_prop(proto_options[opt].name, value,
+	(char *)DEFAULT_INSTANCE, getscftype(proto_options[opt].type),
+	    getsvcname(proto_options[opt].svcs), &bufsz);
+	if (ret == SCF_ERROR_TYPE_MISMATCH) {
+		proto_options[opt].type = OPT_TYPE_NUMBER;
+		proto_options[opt].defvalue.intval = NFS_VERSMAX_DEFAULT;
+	}
+}
+
+/*
  * nfs_init()
  *
  * Initialize the NFS plugin.
@@ -3188,6 +3226,7 @@ nfs_init(void)
 		return (SA_CONFIG_ERR);
 	}
 
+	version_type_check();
 	ret = initprotofromsmf();
 	if (ret != SA_OK) {
 		(void) printf(dgettext(TEXT_DOMAIN,
