@@ -2635,8 +2635,6 @@ __ns_ldap_setParamValue(ns_config_t *ptr, const ParamIndexType type,
 		if ((*def->ns_verify)(type, def, &conf, errstr) != NS_SUCCESS) {
 			ns_param_t sav_conf;
 
-			(void) snprintf(errstr, sizeof (errstr),
-			    gettext("%s"), errstr);
 			MKERROR(LOG_WARNING, *error, NS_CONFIG_SYNTAX,
 			    strdup(errstr), NS_LDAP_MEMORY);
 
