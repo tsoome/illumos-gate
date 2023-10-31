@@ -20,7 +20,6 @@ SOFTCORE=	$(SRC)/common/ficl/softcore
 LZ4=		$(SRC)/common/lz4
 PROG=		makesoftcore
 
-CSTD=		$(CSTD_GNU99)
 CPPFLAGS +=	-I$(SRC)/lib/libficl -I$(SRC)/common/ficl -I$(LZ4)
 CPPFLAGS +=	-I../../uts/common
 OBJS=		makesoftcore.o lz4.o

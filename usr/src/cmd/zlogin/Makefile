@@ -37,8 +37,6 @@ CERRWARN += $(CNOWARN_UNINIT)
 # not linted
 SMATCH=off
 
-CSTD = $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

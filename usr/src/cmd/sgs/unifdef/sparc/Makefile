@@ -38,7 +38,6 @@ CPPFLAGS=	$(INCLIST) $(DEFLIST) $(CPPFLAGS.master)
 CFLAGS +=	$(CCVERBOSE)
 CERRWARN +=	-_gcc=-Wno-char-subscripts
 CERRWARN +=	-_gcc=-Wno-parentheses
-CSTD=	$(CSTD_GNU99)
 
 %.o:		../common/%.c
 		$(COMPILE.c) $<

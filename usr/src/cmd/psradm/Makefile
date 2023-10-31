@@ -30,14 +30,10 @@ include	../Makefile.cmd
 
 .KEEP_STATE:
 
-CSTD = $(CSTD_GNU99)
-
 all: $(PROG)
 
 install: all $(ROOTUSRSBINPROG)
 
 clean:
-
-lint: lint_PROG
 
 include	../Makefile.targ

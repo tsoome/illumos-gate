@@ -135,6 +135,12 @@ $(ROOTXPG6BIN)/crontab :=	FILEMODE = 04555
 $(ROOTXPG4BIN)/crontab :=	FILEMODE = 04555
 $(ROOTUSRSBIN)/cron :=		FILEMODE = 0555
 
+at := CSTD = $(CSTD_GNU89)
+at.xpg4 := CSTD = $(CSTD_GNU89)
+crontab := CSTD = $(CSTD_GNU89)
+crontab.xpg4 := CSTD = $(CSTD_GNU89)
+crontab.xpg6 := CSTD = $(CSTD_GNU99)
+
 at :=		LDLIBS += -lbsm -lproject -lsecdb
 at.xpg4 :=	LDLIBS += -lbsm -lproject -lsecdb
 atq :=		LDLIBS += -lbsm -lsecdb

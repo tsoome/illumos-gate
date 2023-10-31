@@ -31,8 +31,6 @@ TESTDIR = $(ROOTOPTPKG)/tests/smb_sid
 CMDS = $(PROG:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
 
-CSTD = $(CSTD_GNU99)
-
 all: $(PROG)
 
 $(TESTDIR):

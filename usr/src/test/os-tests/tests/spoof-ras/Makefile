@@ -21,7 +21,6 @@ OBJS = $(PROG:%=%.o)
 SRCS = $(OBJS:%.o=%.c)
 
 LDLIBS += -lsocket -lnsl
-CSTD = $(CSTD_GNU99)
 
 ROOTOPTPKG = $(ROOT)/opt/os-tests
 TESTDIR = $(ROOTOPTPKG)/tests
@@ -39,8 +38,6 @@ $(PROG): $(OBJS)
 	$(COMPILE.c) $<
 
 install: all $(CMDS)
-
-lint: lint_SRCS
 
 clobber: clean
 	-$(RM) $(PROG)

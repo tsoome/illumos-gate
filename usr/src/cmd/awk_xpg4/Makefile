@@ -40,6 +40,8 @@ SRCS= $(OBJ1:%.o=%.c)
 
 include ../Makefile.cmd
 
+$(XPG4) := CSTD = $(CSTD_GNU89)
+
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
 CFLAGS += $(CCVERBOSE)
 CERRWARN += -_gcc=-Wno-unused-label
@@ -79,8 +81,6 @@ values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 
 clean:
 	$(RM) $(OBJS) $(XPG4) $(CLEANFILES)
-
-lint: lint_SRCS
 
 awk.c + y.tab.h: awk.y
 

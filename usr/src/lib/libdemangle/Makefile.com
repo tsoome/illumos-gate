@@ -35,7 +35,6 @@ LDLIBS +=	-lc -lcustr
 
 SRCDIR =	../common
 
-CSTD =		$(CSTD_GNU99)
 CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-I$(SRCDIR) -D_REENTRANT -D__EXTENSIONS__
 

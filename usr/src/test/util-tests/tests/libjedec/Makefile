@@ -36,7 +36,6 @@ LDLIBS += -ljedec
 LDLIBS64 += -ljedec
 libjedec_spd.32	:= LDLIBS += -lnvpair
 libjedec_spd.64	:= LDLIBS64 += -lnvpair
-CSTD = $(GNU_C99)
 
 all: $(PROGS32) $(PROGS64)
 

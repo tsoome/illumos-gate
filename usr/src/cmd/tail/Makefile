@@ -26,8 +26,6 @@ include ../Makefile.cmd
 CLOBBERFILES=	$(PROG)
 CPPFLAGS +=        -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
-CSTD=	$(CSTD_GNU99)
-
 SMOFF += leaks
 
 # install rules

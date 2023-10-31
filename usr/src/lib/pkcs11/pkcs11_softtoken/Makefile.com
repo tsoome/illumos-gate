@@ -122,8 +122,6 @@ SRCS =	\
 LIBS    =       $(DYNLIB)
 LDLIBS  +=      -lc -lmd -lcryptoutil -lsoftcrypto -lgen -lavl
 
-CSTD =	$(CSTD_GNU99)
-
 CFLAGS	+=      $(CCVERBOSE)
 
 CERRWARN +=	-_gcc=-Wno-unused-label

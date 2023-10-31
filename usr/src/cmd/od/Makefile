@@ -23,8 +23,6 @@ include ../Makefile.cmd
 
 CLOBBERFILES=	$(PROG)
 
-CSTD=	$(CSTD_GNU99)
-
 CPPFLAGS +=	-D__EXTENSIONS__ -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 # install rules

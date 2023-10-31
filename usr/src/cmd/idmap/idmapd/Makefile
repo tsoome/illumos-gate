@@ -75,7 +75,6 @@ XGETFLAGS =	--foreign-user --strict -n -E --width=72 \
 		--omit-header --keyword=directoryError:2 \
 		--language=C --force-po
 
-CSTD = $(CSTD_GNU99)
 POFILE =	$(PROG)_all.po
 
 RPC_MSGOUT_OPT = -DRPC_MSGOUT=idmap_rpc_msgout

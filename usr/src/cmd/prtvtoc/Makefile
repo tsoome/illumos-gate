@@ -31,8 +31,6 @@ RELUSRSBIN=     ../usr/sbin
 ROOTSYMLINK=    $(ROOTETC)/$(PROG)
 LDLIBS +=	-ladm -lefi
 
-CSTD =		$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)
@@ -43,8 +41,6 @@ $(ROOTSYMLINK):
 	-$(RM) $@; $(SYMLINK) $(RELUSRSBIN)/$(PROG) $@
 
 clean:
-
-lint:   lint_PROG
 
 include ../Makefile.targ
 

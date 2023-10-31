@@ -98,8 +98,6 @@ SRCS += \
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 CPPFLAGS += -D_MDB -I. -I../.. -I../../../common
 
-CSTD=	$(CSTD_GNU99)
-
 LDLIBS += -lcurses -lkvm -lproc -lrtld_db -lctf -lumem -ldisasm -lscf
 LDLIBS += -ldemangle-sys
 

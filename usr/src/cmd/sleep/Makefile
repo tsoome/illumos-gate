@@ -17,7 +17,6 @@ PROG =  sleep
 
 include ../Makefile.cmd
 
-CSTD = $(CSTD_GNU99)
 LDLIBS += -lm
 
 all: $(PROG)

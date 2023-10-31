@@ -28,7 +28,6 @@ OBJECTS= dictionary.o system.o fileaccess.o float.o double.o prefix.o search.o \
 include $(SRC)/lib/Makefile.lib
 
 LIBS=	$(DYNLIB)
-CSTD=	$(CSTD_GNU99)
 
 FICLDIR=	$(SRC)/common/ficl
 LZ4=		$(SRC)/common/lz4

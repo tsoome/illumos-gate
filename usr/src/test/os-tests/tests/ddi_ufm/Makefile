@@ -25,7 +25,6 @@ include $(SRC)/test/Makefile.com
 
 LDLIBS += -lnvpair
 CFLAGS += -I$(SRC)/uts/common/io/
-CSTD= $(CSTD_GNU99)
 
 CMDS = $(PROGS:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
@@ -33,8 +32,6 @@ $(CMDS) := FILEMODE = 0555
 all: $(PROGS)
 
 install: all $(CMDS)
-
-lint:
 
 clobber: clean
 	-$(RM) $(PROGS)

@@ -112,10 +112,6 @@ ldaplist :=	LDLIBS += -lsldap
 ldapaddent :=	LDLIBS += -lsldap -lnsl -lsecdb
 ldapclient :=	LDLIBS += -lsldap -lscf
 
-ldaplist :=	CSTD = $(CSTD_GNU99)
-ldapaddent :=	CSTD = $(CSTD_GNU99)
-ldapclient :=	CSTD = $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all:	$(PROG) $(LDAPCLIENTPROG) $(LDAPADDENTPROG) $(IDSCONFIGPROG)
@@ -171,28 +167,5 @@ FRC:
 
 clean:
 	$(RM) $(OBJS)
-
-# Not linted Mozilla upstream commands
-lint: lintns_ldaplist lintns_ldapaddent lintns_ldapclient
-
-lintns_ldaplist := CSTD = $(CSTD_GNU99)
-
-lintns_ldaplist:
-	$(LINT.c) $(LDAPLISTSRCS:%=../ns_ldap/%) $(LDLIBS) -lsldap
-
-lintns_ldapaddent := CSTD = $(CSTD_GNU99)
-
-lintns_ldapaddent:
-	$(LINT.c) $(LDAPADDENTSRCS:%=../ns_ldap/%) $(LDLIBS) -lsldap -lnsl \
-		-lsecdb
-
-lintns_ldapclient := CSTD = $(CSTD_GNU99)
-
-lintns_ldapclient:
-	$(LINT.c) $(LDAPCLIENTSRCS:%=../ns_ldap/%) $(LDLIBS) -lsldap -lscf
-
-lintc_%:
-	$(LINT.c) $(@:lintc_%=../common/%.c) $(LDAPCOMMSRC:%=../common/%) \
-		 $(LDLIBS)
 
 include $(SRC)/cmd/Makefile.targ

@@ -29,7 +29,6 @@ include ../Makefile.com
 ROOTOPTPROGS = $(PROG:%=$(ROOTOPTCORE)/%)
 
 LDLIBS += -lproc -lelf
-CSTD = $(GNU_C99)
 
 .KEEP_STATE:
 

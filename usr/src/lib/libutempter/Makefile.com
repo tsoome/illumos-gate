@@ -21,8 +21,6 @@ SRCDIR=		../common
 LDLIBS +=	-lc
 LIBS=		$(DYNLIB)
 
-CSTD=		$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all:		$(LIBS)

@@ -38,6 +38,4 @@ CPPFLAGS += -I$(SRC)/uts/common/sys/fibre-channel
 CPPFLAGS += -I$(SRC)/uts/common/sys/fibre-channel/fca/qlc
 CPPFLAGS += -I$(SRC)/uts/common/sys/fibre-channel/impl
 
-CSTD=	$(CSTD_GNU99)
-
 CERRWARN +=	-_gcc=-Wno-address

@@ -30,7 +30,6 @@ include ../Makefile.cmd
 
 CFLAGS += -I$(SRC)/uts/common
 LINTFLAGS += -I$(SRC)/uts/common
-CSTD= $(CSTD_GNU99)
 CFLAGS += $(CCVERBOSE)
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
@@ -59,9 +58,5 @@ install: all $(ROOTUSRSBINPROG) $(ROOTLIBSHFILES)
 
 clean:
 	$(RM) $(OBJECTS)
-
-lint:
-	$(LINT.c) th_define.c $(LDLIBS)
-	$(LINT.c) th_manage.c $(LDLIBS) -ldevice
 
 include ../Makefile.targ

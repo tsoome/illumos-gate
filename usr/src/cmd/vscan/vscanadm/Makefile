@@ -33,8 +33,6 @@ LDLIBS += -L$(ROOT)/usr/lib/vscan -lvscan
 LDFLAGS += -R/usr/lib/vscan
 CFLAGS += $(CCVERBOSE)
 
-CSTD =       $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

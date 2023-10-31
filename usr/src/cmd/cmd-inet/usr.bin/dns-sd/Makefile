@@ -23,7 +23,6 @@ OBJS=		ClientCommon.o dns-sd.o
 SRCS=		ClientCommon.c dns-sd.c
 
 SRCDIR=		$(SRC)/contrib/mDNSResponder
-CFLAGS += $(CSTD_GNU99)
 CPPFLAGS += -I$(SRCDIR)/mDNSShared
 CPPFLAGS += -DmDNSResponderVersion=1310.80.1
 CPPFLAGS += -DMDNS_VERSIONSTR_NODTS

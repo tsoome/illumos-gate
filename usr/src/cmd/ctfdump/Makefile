@@ -20,8 +20,6 @@ include ../Makefile.cmd
 CFLAGS += $(CCVERBOSE)
 LDLIBS += -lctf
 
-CSTD = $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

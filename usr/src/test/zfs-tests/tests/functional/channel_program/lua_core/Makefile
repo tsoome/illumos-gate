@@ -26,7 +26,6 @@ PROGS = $(KSHPROGS) $(CPROGS)
 FILES :sh= ls *.zcp *.out *.err
 LDLIBS =	$(LDLIBS.cmd)
 LDLIBS += -lzfs_core -lnvpair
-CSTD = $(CSTD_GNU99)
 
 INSTPROGS = $(PROGS:%=$(TESTDIR)/%)
 INSTFILES = $(FILES:%=$(TESTDIR)/%)

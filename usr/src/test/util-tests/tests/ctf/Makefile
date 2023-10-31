@@ -98,8 +98,6 @@ ROOTSCRIPTS	:= FILEMODE =	0555
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 
-CSTD = $(CSTD_GNU99)
-
 LDLIBS +=	-lctf
 
 check-merge-static :=	LDLIBS += -lelf

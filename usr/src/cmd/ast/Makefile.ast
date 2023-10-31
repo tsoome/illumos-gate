@@ -34,9 +34,6 @@ AST_LCGEN =	$(AST_TOOLS)/lcgen
 AST_PROTO =	$(AST_TOOLS)/proto -p -s -l $(C_AST)/lib/package/ast.lic \
 		-o '$(AST_LICENSE)'
 
-# Override this top level flag so the compiler builds in its native C99 mode.
-CSTD= $(CSTD_GNU99)
-
 #
 # Shell feature flags.
 # * - the upstream build configuration can be viewed at

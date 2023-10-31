@@ -33,7 +33,6 @@ include ../Makefile.cmd
 include ../Makefile.cmd.64
 include ../Makefile.ctf
 
-CSTD = $(GNU_C99)
 CPPFLAGS += -DSOLARIS_PRIVS
 
 LDLIBS += -lsec -lcmdutils -lnvpair

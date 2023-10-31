@@ -22,8 +22,6 @@ OBJS = $(PROG:%=%.o)
 SRCS = $(OBJS:%.o=%.c)
 
 poll_test := LDLIBS += -lsocket
-poll_test.ln := LDLIBS += -lsocket
-CSTD = $(CSTD_GNU99)
 
 ROOTOPTPKG = $(ROOT)/opt/os-tests
 TESTDIR = $(ROOTOPTPKG)/tests
@@ -31,22 +29,15 @@ TESTDIR = $(ROOTOPTPKG)/tests
 CMDS = $(PROG:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
 
-LINTS = $(PROG:%=%.ln)
-
 all: $(PROG)
 
 install: all $(CMDS)
-
-lint: $(LINTS)
 
 clobber: clean
 	-$(RM) $(PROG)
 
 clean:
 	-$(RM) $(OBJS)
-
-%.ln: %.c
-	$(LINT.c) $< $(UTILS) $(LDLIBS)
 
 $(CMDS): $(TESTDIR) $(PROG)
 

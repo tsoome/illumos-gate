@@ -40,7 +40,6 @@ LIBSRCS = $(LIBOBJS:%.o=$(SRCDIR)/%.c)
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lc -lnsl
 
-CSTD =		$(CSTD_GNU99)
 CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-D_REENTRANT -I$(SRC)/cmd/fs.d/nfs/lib
 

@@ -41,8 +41,6 @@ ROOTLIBDIR64 =	$(ROOT)/usr/lib/smbfs/$(MACH64)
 SRCDIR=		../common
 LIBS=		$(DYNLIB)
 
-CSTD =		$(CSTD_GNU99)
-
 CPPFLAGS +=	-I$(SRCDIR) -I.
 LDLIBS32 +=	-L$(ROOT)/usr/lib/smbfs
 LDLIBS64 +=	-L$(ROOT)/usr/lib/smbfs/$(MACH64)

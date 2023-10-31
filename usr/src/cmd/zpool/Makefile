@@ -44,8 +44,6 @@ LDLIBS += -lzfs -lnvpair -ldevid -lefi -ldiskmgt -luutil -lumem -lzutil \
 INCS += -I../../common/zfs -I../../uts/common/fs/zfs -I$(STATCOMMONDIR)
 INCS += -I../../lib/libzutil/common
 
-CSTD=	$(CSTD_GNU99)
-
 CPPFLAGS += $(INCS)
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 

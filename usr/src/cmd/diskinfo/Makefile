@@ -20,8 +20,6 @@ SRCS=		$(OBJS:%.o=%.c)
 include		$(SRC)/cmd/Makefile.cmd
 include		$(SRC)/cmd/Makefile.ctf
 
-CSTD=	$(CSTD_GNU99)
-
 CPPFLAGS +=	-I$(SRC)/lib/fm/topo
 
 LDLIBS +=	-L$(ROOT)/usr/lib/fm -R/usr/lib/fm -ldiskmgt -lnvpair -ltopo

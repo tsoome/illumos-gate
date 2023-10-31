@@ -29,7 +29,6 @@ include ../Makefile.com
 CPPFLAGS += -I../../../../lib/libc/inc
 LDLIBS += -lzfs -ldevid -lcmdutils -lnvpair
 
-CSTD= $(CSTD_GNU99)
 CERRWARN += $(CNOWARN_UNINIT)
 
 .KEEP_STATE:

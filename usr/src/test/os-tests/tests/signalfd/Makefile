@@ -21,8 +21,6 @@ PROGS = basic_args basic_read multipoll
 COMMON_OBJS = common.o
 
 poll_test := LDLIBS += -lsocket
-poll_test.ln := LDLIBS += -lsocket
-CSTD = $(CSTD_GNU99)
 
 ROOTOPTDIR = $(ROOT)/opt/os-tests/tests
 ROOTOPTSIGFD = $(ROOTOPTDIR)/signalfd

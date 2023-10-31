@@ -20,7 +20,6 @@ include	$(SRC)/Makefile.master
 include	$(SRC)/Makefile.master.64
 include ../Makefile.com
 
-CSTD =		$(GNU_C99)
 NATIVE_LIBS +=	libc.so
 #
 # We reach into the tools include area which provides us with a snapshot

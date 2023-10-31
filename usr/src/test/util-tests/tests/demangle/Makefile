@@ -31,8 +31,6 @@ $(CMDS) := FILEMODE = 0555
 OBJS = $(PROG:%=%.o)
 SRCS = $(OBJS:%.o=%.c)
 
-CSTD = $(CSTD_GNU99)
-
 LDLIBS += -ldemangle-sys
 rust := LDLIBS += -lumem
 

@@ -20,8 +20,6 @@ SRCS=		$(OBJS:%.o=%.c)
 include		$(SRC)/cmd/Makefile.cmd
 include		$(SRC)/cmd/Makefile.ctf
 
-CSTD=	$(CSTD_GNU99)
-
 LDLIBS +=	-ldemangle-sys -lcustr
 
 .KEEP_STATE:

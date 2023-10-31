@@ -55,8 +55,6 @@ LDLIBS64 += -lumem
 #
 memstream_reopen.32 := CPPFLAGS += -D_XOPEN_SOURCE=700
 memstream_reopen.64 := CPPFLAGS += -D_XOPEN_SOURCE=700
-memstream_reopen.32 := CSTD = $(CSTD_GNU99)
-memstream_reopen.64 := CSTD = $(CSTD_GNU99)
 
 # Third-party code
 orientation_test.32 := SMOFF += all_func_returns

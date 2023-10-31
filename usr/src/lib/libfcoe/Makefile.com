@@ -38,7 +38,6 @@ INCS +=		-I$(SRCDIR)
 INCS +=		-I$(SRC)/uts/common/sys/fcoe
 
 LDLIBS +=	-lc -ldladm -lscf
-CSTD=	$(CSTD_GNU99)
 CPPFLAGS +=	$(INCS) -D_REENTRANT
 
 .KEEP_STATE:

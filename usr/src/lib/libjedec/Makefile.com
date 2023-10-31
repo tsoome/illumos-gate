@@ -24,7 +24,6 @@ include ../../Makefile.lib
 LIBS =		$(DYNLIB)
 CPPFLAGS +=	-I../common
 LDLIBS +=	-lc -lnvpair
-CSTD =		$(CSTD_GNU99)
 
 SRCDIR =	../common
 

@@ -91,7 +91,6 @@ TSSINC=-I$(TSPIINCDIR)
 LDLIBS += $(TSSLIB) -L$(ADJUNCT_PROTO)/lib -lc -luuid -lmd -ltspi -lsoftcrypto
 CPPFLAGS += -D_POSIX_PTHREAD_SEMANTICS $(TSSINC) $(SOFTCRYPTOFLAGS)
 CPPFLAGS64 += $(CPPFLAGS)
-CSTD=        $(CSTD_GNU99)
 
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	-_gcc=-Wno-unused-label

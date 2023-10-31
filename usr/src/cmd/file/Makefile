@@ -38,8 +38,6 @@ SRCS=	file.c elf_read.c magicutils.c $(ELFCAP)/elfcap.c
 
 include ../Makefile.cmd
 
-CSTD=	$(CSTD_GNU99)
-
 CERRWARN += $(CNOWARN_UNINIT)
 CERRWARN += -_gcc=-Wno-type-limits
 

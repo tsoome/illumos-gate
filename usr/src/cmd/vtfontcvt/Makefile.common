@@ -30,5 +30,3 @@ LDLIBS += -lumem
 %.o:	$(LZ4)/%.c
 	$(COMPILE.c) $<
 	$(POST_PROCESS_O)
-
-CSTD =	$(CSTD_GNU99)

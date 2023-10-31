@@ -86,8 +86,6 @@ $(AUTO) :=	LDLIBS += -lnsl -lsldap -lscf
 $(MOUNT):=	LDLIBS += -lscf
 $(TYPEPROG) :=	LDLIBS += -lrpcsvc -lsocket -lnsl -lsldap -lkstat -lscf
 
-CSTD=		$(CSTD_GNU99)
-
 CFLAGS +=	$(CCVERBOSE) -D_FILE_OFFSET_BITS=64
 CPPFLAGS=	-I. -I.. -I../nfs/lib $(CPPFLAGS.master) -D_REENTRANT  \
 			$(MALLOC_DEBUG)

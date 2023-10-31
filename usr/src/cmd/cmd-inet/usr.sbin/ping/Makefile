@@ -40,8 +40,6 @@ LDLIBS +=	-lxnet -lsocket -lm -linetutil
 # These #defines are required to use SUSv3 interfaces
 CPPFLAGS += -D_XOPEN_SOURCE=600 -D__EXTENSIONS__
 
-CSTD=	$(CSTD_GNU99)
-
 .KEEP_STATE:
 .PARALLEL:
 

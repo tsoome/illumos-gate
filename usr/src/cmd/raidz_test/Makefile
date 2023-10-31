@@ -33,8 +33,6 @@ CPPFLAGS.first = -I$(SRC)/lib/libfakekernel/common -D_FAKE_KERNEL
 CPPFLAGS += -D_LARGEFILE64_SOURCE=1
 CPPFLAGS += $(INCS)
 
-CSTD =   $(CSTD_GNU99)
-
 CERRWARN += -_gcc=-Wno-type-limits
 
 SMATCH=off

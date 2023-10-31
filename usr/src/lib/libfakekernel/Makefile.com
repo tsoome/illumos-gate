@@ -52,8 +52,6 @@ SRCDIR=		../common
 LIBS =		$(DYNLIB)
 SRCS=   $(COBJS:%.o=$(SRCDIR)/%.c)
 
-CSTD =       $(CSTD_GNU99)
-
 CFLAGS +=	$(CCVERBOSE)
 
 # Note: need our sys includes _before_ ENVCPPFLAGS, proto etc.

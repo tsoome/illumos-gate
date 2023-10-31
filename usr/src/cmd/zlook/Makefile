@@ -30,7 +30,6 @@ include ../Makefile.cmd
 include ../Makefile.cmd.64
 include ../Makefile.ctf
 
-CSTD= $(CSTD_GNU99)
 CFLAGS += $(CCGDEBUG) $(CCVERBOSE)
 CFLAGS64 += $(CCGDEBUG) $(CCVERBOSE)
 CPPFLAGS += -D_LARGEFILE64_SOURCE=1 -D_REENTRANT $(INCS)

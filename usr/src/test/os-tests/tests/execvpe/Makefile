@@ -34,7 +34,6 @@ $(ROOTOPTEXECVPE)/execvpe-noperm := FILEMODE = 0444
 
 include $(SRC)/cmd/Makefile.cmd
 
-CSTD = $(GNU_C99)
 .KEEP_STATE:
 
 all: $(PROGS32) $(PROGS64)

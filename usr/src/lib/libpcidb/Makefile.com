@@ -33,8 +33,6 @@ LIBS = $(DYNLIB)
 SRCDIR = ../common
 
 LDLIBS += -lc
-CSTD = $(CSTD_GNU99)
-
 
 .KEEP_STATE:
 

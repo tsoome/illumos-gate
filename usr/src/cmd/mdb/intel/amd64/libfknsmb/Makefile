@@ -45,5 +45,3 @@ CPPFLAGS.first += -I$(SRC)/lib/libfakekernel/common
 CPPFLAGS += -I$(SRC)/uts/common/fs/smbclnt/
 CPPFLAGS += -I$(SRC)/uts/common
 CPPFLAGS += -D_FAKE_KERNEL
-
-CSTD=		$(CSTD_GNU99)

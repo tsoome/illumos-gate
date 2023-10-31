@@ -36,10 +36,8 @@ SRCDIR =	../common
 
 INCS += -I$(SRCDIR)
 
-CSTD=	$(CSTD_GNU99)
 LDLIBS +=	-lc -lsocket -lnsl
 CPPFLAGS +=	$(INCS) -D_REENTRANT
-
 
 .KEEP_STATE:
 

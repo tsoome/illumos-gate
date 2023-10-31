@@ -23,8 +23,6 @@ ROOTBINDIR = $(ROOTOPTPKG)/bin
 
 PROGS= select_test
 
-CSTD= $(CSTD_GNU99)
-
 select_test: select_test.c
 	$(LINK64.c) -o $@ select_test.c $(LDLIBS64)
 	$(POST_PROCESS)
@@ -44,8 +42,6 @@ clobber: clean
 	-$(RM) $(PROGS)
 
 install: all $(CMDS)
-
-lint:
 
 $(ROOTBINDIR):
 	$(INS.dir)

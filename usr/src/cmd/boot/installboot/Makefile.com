@@ -36,8 +36,6 @@ CPPFLAGS += -I$(SRC)/uts/common
 
 LDLIBS += -lmd5
 
-CSTD=	$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

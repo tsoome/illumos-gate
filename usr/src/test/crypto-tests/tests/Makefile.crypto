@@ -51,8 +51,6 @@ $(CRYPTO_kcf)$(BASEPROG)_64_kcf	:= OBJS += $(COMMONDIR)/cryptotest_kcf.64.o
 
 $(CRYPTO_pkcs)$(PROGS_pkcs)	:= LDLIBS += -lpkcs11 -lcryptoutil
 
-CSTD = $(CSTD_GNU99)
-
 $(CRYPTO_pkcs)CMDS_pkcs = $(PROGS_pkcs:%_pkcs=$(TESTDIR_pkcs)/%)
 $(CRYPTO_kcf)CMDS_kcf = $(PROGS_kcf:%_kcf=$(TESTDIR_kcf)/%)
 CMDS = $(CMDS_pkcs) $(CMDS_kcf)

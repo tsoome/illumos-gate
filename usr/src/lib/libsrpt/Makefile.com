@@ -36,13 +36,11 @@ SRPTMODDIR =	../../../uts/common/io/comstar/port/srpt
 
 INCS +=		-I$(SRCDIR) -I$(SRPTMODDIR)
 
-CSTD =	$(CSTD_GNU99)
 LDLIBS +=	-lc -lnvpair -lstmf
 CPPFLAGS +=	$(INCS) -D_REENTRANT
 
 .KEEP_STATE:
 
 all: $(LIBS)
-
 
 include ../../Makefile.targ

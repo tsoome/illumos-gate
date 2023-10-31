@@ -20,8 +20,6 @@ include ../Makefile.cmd
 CFLAGS +=	$(CCVERBOSE)
 LDLIBS += -luuid
 
-CSTD = $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)
@@ -29,7 +27,5 @@ all: $(PROG)
 install: all $(ROOTPROG)
 
 clean:
-
-lint:	lint_PROG
 
 include ../Makefile.targ

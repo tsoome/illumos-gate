@@ -53,7 +53,6 @@ ROOTPROG64 = $(ROOTPLUGINLIBDIR)/scsi/engines/$(MACH64)/$(PROG)
 
 APIMAP = ../../../../../libscsi/libscsi_api.map
 
-CSTD = $(CSTD_GNU99)
 CFLAGS += $(CTF_FLAGS) $(CCVERBOSE) $(CC_PICFLAGS)
 CFLAGS += $(GSHARED)
 CFLAGS64 += $(CTF_FLAGS) $(CCVERBOSE) $(CC_PICFLAGS)

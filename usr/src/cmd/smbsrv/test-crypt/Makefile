@@ -45,7 +45,6 @@ INCS +=	-I../../../uts/common
 INCS +=	-I../../../uts/common/smbsrv
 INCS +=	-I../../../common/smbsrv
 
-CSTD=		$(CSTD_GNU99)
 C99LMODE=	-Xc99=%all
 
 CFLAGS += $(CCVERBOSE)
@@ -80,8 +79,6 @@ install: all $(ROOTSMBDFILE)
 
 clean:
 	-$(RM) *.o
-
-lint:
 
 TEOBJS= test_encrypt.o utils.o fksmb_encrypt_pkcs.o
 test-encrypt := OBJS = $(TEOBJS)

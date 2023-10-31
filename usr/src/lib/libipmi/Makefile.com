@@ -54,7 +54,6 @@ CLEANFILES +=	$(SRCDIR)/ipmi_tables.c
 INCS +=		-I$(SRCDIR)
 LDLIBS +=	-lc -lm -lnvpair -lsocket -lnsl
 CPPFLAGS +=	$(INCS)
-CSTD = $(CSTD_GNU99)
 
 CERRWARN +=	$(CNOWARN_UNINIT)
 

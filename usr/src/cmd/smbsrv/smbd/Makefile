@@ -71,8 +71,6 @@ CPPFLAGS += -I $(ROOT)/usr/include/kerberosv5
 # needs work
 SMOFF += all_func_returns,deref_check
 
-CSTD =       $(CSTD_GNU99)
-
 LDFLAGS += -R/usr/lib/smbsrv
 LDLIBS += -L$(ROOT)/usr/lib/smbsrv
 # prefer to keep libs ordered by dependence

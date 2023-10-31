@@ -24,7 +24,6 @@ OBJS64 = $(OBJS:.o=.64.o)
 
 DATAFILES = init.data init.expected
 
-CSTD = $(CSTD_GNU99)
 CPPFLAGS += -I$(SRC)/common/definit
 
 ROOTOPTPKG = $(ROOT)/opt/os-tests
@@ -78,5 +77,3 @@ definit_test.64: $(OBJS64)
 definit_test.32: $(OBJS32)
 	$(LINK.c) -o $@ $(OBJS32) $(LDLIBS)
 	$(POST_PROCESS)
-
-

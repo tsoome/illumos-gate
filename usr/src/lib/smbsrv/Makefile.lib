@@ -39,7 +39,6 @@ ROOTLIBDIR64 =	$(ROOT)/usr/lib/smbsrv/$(MACH64)
 SRCDIR=		../common
 NDLDIR=		$(ROOT)/usr/include/smbsrv/ndl
 LIBS=		$(DYNLIB)
-CSTD =       $(CSTD_GNU99)
 CPPFLAGS +=	-I$(SRCDIR) -I.
 LDLIBS32 +=	-L$(ROOT)/usr/lib/smbsrv
 LDLIBS64 +=	-L$(ROOT)/usr/lib/smbsrv/$(MACH64)

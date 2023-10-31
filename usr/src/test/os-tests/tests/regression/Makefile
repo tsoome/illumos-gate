@@ -23,8 +23,6 @@ ROOTOPTPROGS = $(PROGS:%=$(ROOTOPTREGRESSION)/%)
 
 include $(SRC)/cmd/Makefile.cmd
 
-CSTD=$(GNU_C99)
-
 .KEEP_STATE:
 
 all: $(PROGS)

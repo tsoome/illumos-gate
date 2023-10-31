@@ -34,10 +34,7 @@ CPPFLAGS =	$(POLICYKIT_DBUS_CPPFLAGS) $(POLICYKIT_GLIB_CPPFLAGS) $(CPPFLAGS.mast
 CERRWARN +=	-_gcc=-Wno-unused-variable
 CERRWARN +=	-_gcc=-Wno-unused-function
 
-CSTD =	$(CSTD_GNU99)
-
 #
 # Ensure `all' is the default target.
 #
 all:
-

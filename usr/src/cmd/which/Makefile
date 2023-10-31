@@ -22,8 +22,6 @@ include ../Makefile.ctf
 
 OBJS= which.o
 
-CSTD= $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 $(PROG): $(OBJS)

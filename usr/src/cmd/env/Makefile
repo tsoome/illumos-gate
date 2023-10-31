@@ -32,6 +32,9 @@ include ../Makefile.cmd
 
 clean $(XPG4) := OBJS += values-xpg4.o
 
+$(PROG) := CSTD = $(CSTD_GNU89)
+$(XPG4) := CSTD = $(CSTD_GNU89)
+
 .KEEP_STATE:
 
 all: $(PROG) $(XPG4)
@@ -47,7 +50,5 @@ values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 
 clean:
 	$(RM) $(OBJS)
-
-lint:	lint_PROG
 
 include ../Makefile.targ

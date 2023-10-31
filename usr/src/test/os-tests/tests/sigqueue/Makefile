@@ -21,8 +21,6 @@ PROG = sigqueue_queue_size
 OBJS = $(PROG:%=%.o)
 SRCS = $(OBJS:%.o=%.c)
 
-CSTD = $(CSTD_GNU99)
-
 ROOTOPTPKG = $(ROOT)/opt/os-tests
 TESTDIR = $(ROOTOPTPKG)/tests/sigqueue
 
@@ -39,8 +37,6 @@ $(PROG): $(OBJS)
 	$(COMPILE.c) $<
 
 install: all $(CMDS)
-
-lint: lint_SRCS
 
 clobber: clean
 	-$(RM) $(PROG)

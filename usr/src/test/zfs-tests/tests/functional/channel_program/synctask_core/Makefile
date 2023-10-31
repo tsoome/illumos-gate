@@ -28,7 +28,6 @@ SRCS :sh= ls *.c
 CPROGS = $(SRCS:%.c=%.exe)
 LDLIBS = $(LDLIBS.cmd)
 LDLIBS += -lzfs_core -lnvpair
-CSTD = $(CSTD_GNU99)
 OBJS = $(SRCS:%.c=%.o)
 
 PROGS = $(KSHPROGS) $(CPROGS)

@@ -27,6 +27,7 @@
 
 include		$(SRC)/Makefile.master
 
+CSTD = $(CSTD_GNU89)
 
 FILES=	$(MACH)_gcc_map.noexeglobs
 

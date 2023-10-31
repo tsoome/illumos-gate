@@ -83,8 +83,6 @@ $(ROOTOPTDATA) := FILEMODE = 0444
 LDLIBS += -lproc
 LDLIBS64 += -lproc
 
-CSTD = $(GNU_C99)
-
 .KEEP_STATE:
 
 all: $(PROGS32) $(PROGS64)

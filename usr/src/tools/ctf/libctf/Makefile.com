@@ -16,8 +16,6 @@
 include $(SRC)/lib/libctf/Makefile.shared.com
 include ../../Makefile.ctf
 
-CSTD = $(CSTD_GNU99)
-
 CPPFLAGS +=	-I$(SRC)/lib/libctf/common/ \
 		-I$(SRC)/lib/libdwarf/common/ \
 		-I$(SRC)/lib/mergeq \

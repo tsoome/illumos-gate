@@ -40,8 +40,6 @@ include ../../../Makefile.module
 CPPFLAGS	+= -I$(SRC)/uts/common/fs/smbclnt
 CPPFLAGS	+= -I$(SRC)/uts/common
 
-CSTD=	$(CSTD_GNU99)
-
 # maybe not the best place for this, but
 # we need to create this directory.
 $(ROOTKMOD):

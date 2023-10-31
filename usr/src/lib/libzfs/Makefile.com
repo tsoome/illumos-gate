@@ -71,7 +71,6 @@ INCS += -I../../../common/zfs
 INCS += -I../../libc/inc
 INCS += -I../../libzutil/common
 
-CSTD=	$(CSTD_GNU99)
 LDLIBS +=	-lc -lm -ldevid -lgen -lnvpair -luutil -lavl -lefi \
 	-lidmap -ltsol -lcryptoutil -lpkcs11 -lmd -lumem -lzfs_core \
 	-ldevinfo -lzutil

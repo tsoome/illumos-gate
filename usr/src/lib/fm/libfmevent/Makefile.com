@@ -51,8 +51,6 @@ LIBS = $(DYNLIB)
 
 SRCDIR =	../common
 
-CSTD = $(CSTD_GNU99)
-
 CPPFLAGS += -I../common -I.
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 

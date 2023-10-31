@@ -21,6 +21,3 @@ include ../../Makefile.amd64
 include ../../../Makefile.module
 
 CPPFLAGS	+= -I$(SRC)/uts/common
-
-CSTD=   $(CSTD_GNU99)
-

@@ -51,8 +51,6 @@ CPPFLAGS +=	-I$(SRC)/uts/common -I$(SRC)/common -I$(SRC)/common/ficl
 
 SMOFF +=	all_func_returns
 
-CSTD=	$(CSTD_GNU99)
-
 all: $(PROG)
 
 $(PROG): $(OBJS) bootadm.h

@@ -35,6 +35,9 @@ CFLAGS += $(CCVERBOSE)
 clean $(XPG4) := OBJS += values-xpg4.o
 XGETFLAGS += -a -x $(PROG).xcl
 
+$(PROG) := CSTD = $(CSTD_GNU89)
+$(XPG4) := CSTD = $(CSTD_GNU89)
+
 .KEEP_STATE:
 
 all: $(PROG) $(XPG4)
@@ -51,8 +54,5 @@ values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 
 clean:
 	$(RM) $(OBJS)
-
-# do not lint date.xpg4
-lint:	lint_PROG
 
 include ../Makefile.targ

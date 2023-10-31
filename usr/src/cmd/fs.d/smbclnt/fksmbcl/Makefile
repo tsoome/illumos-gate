@@ -72,8 +72,6 @@ CPPFLAGS += -DDEBUG
 # needs work
 SMOFF += all_func_returns
 
-CSTD=		$(CSTD_GNU99)
-
 CFLAGS += $(CCVERBOSE)
 CFLAGS64 += $(CCVERBOSE)
 

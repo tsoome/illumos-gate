@@ -28,7 +28,6 @@ PROG =	conn dgram drop_priv nosignal sockpair \
 LDLIBS += -lsocket
 LDLIBS64 += -lsocket
 
-CSTD = $(CSTD_GNU99)
 CPPFLAGS += -D_XOPEN_SOURCE=600 -D__EXTENSIONS__
 
 # needs work

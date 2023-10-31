@@ -39,8 +39,6 @@ LDLIBS +=	-lc -lcustr -lsocket -lsec -lnvpair
 
 SRCDIR =	..
 
-CSTD =		$(CSTD_GNU99)
-
 CFLAGS +=	$(CCVERBOSE)
 
 CPPFLAGS +=	-D__illumos__

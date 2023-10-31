@@ -34,8 +34,6 @@ LDLIBS += -lkstat -ldevinfo
 
 $(PROG).po := CPPFLAGS += -DXGETTEXT
 
-CSTD=	$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

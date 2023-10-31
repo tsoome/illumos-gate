@@ -46,7 +46,6 @@ ZGUIDANCE = -Wl,-zguidance
 LDFLAGS += -Wl,$(ZDIRECT)
 
 $(ROOTONBLDMAN1ONBLDFILES) := FILEMODE=      644
-CSTD=	$(CSTD_GNU99)
 
 # Assume we don't have the install.bin available yet
 INS.file=	$(RM) $@; $(CP) $< $(@D); $(CHMOD) $(FILEMODE) $@

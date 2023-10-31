@@ -44,7 +44,6 @@ INCS += -I../../lib/libzutil/common
 
 LDLIBS += -lumem -lzpool -lcmdutils -lm -lnvpair -lfakekernel -lzutil
 
-CSTD= $(CSTD_GNU99)
 CFLAGS += -g $(CCVERBOSE)
 CFLAGS64 += -g $(CCVERBOSE)
 CPPFLAGS.first = -I$(SRC)/lib/libfakekernel/common -D_FAKE_KERNEL

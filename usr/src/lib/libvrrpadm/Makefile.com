@@ -40,11 +40,8 @@ SRCDIR =	../common
 CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-I$(SRCDIR) -D_REENTRANT
 
-CSTD =	$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all:		$(LIBS)
-
 
 include $(SRC)/lib/Makefile.targ

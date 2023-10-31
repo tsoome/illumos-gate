@@ -25,7 +25,6 @@ POFILE=	connstat.po
 include ../Makefile.cmd
 include ../Makefile.ctf
 
-CSTD= $(CSTD_GNU99)
 LDLIBS += -lsocket -lnsl -lumem -lofmt
 XGETFLAGS += -a -x $(PROG).xcl
 

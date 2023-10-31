@@ -20,7 +20,6 @@ include ../Makefile.cmd.64
 include ../Makefile.ctf
 
 CFLAGS += $(CCVERBOSE)
-CSTD = $(CSTD_GNU99)
 LDLIBS += -lpcidb -lofmt
 OBJS = pcidb.o
 ROOTCMDDIR = $(ROOTLIB)/pci

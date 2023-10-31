@@ -39,7 +39,6 @@ NATIVE_LIBS +=	libdbus-1.so libnetsnmp.so
 
 CPPFLAGS +=	$(HAL_DBUS_CPPFLAGS) $(HAL_CONFIG_CPPFLAGS)
 CPPFLAGS +=	-I$(ROOT)/usr/include/hal -I../../utils -I../../hald
-CSTD =	$(CSTD_GNU99)
 
 .KEEP_STATE:
 

@@ -25,8 +25,6 @@ SRCDIR = ../common
 LIBS = $(DYNLIB)
 SRCS =	$(SRCDIR)/libppt.c
 
-CSTD=	$(CSTD_GNU99)
-
 LDLIBS += -lpcidb -ldevinfo -lcmdutils -lnvpair -lc
 
 .KEEP_STATE:

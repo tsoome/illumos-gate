@@ -141,9 +141,6 @@ CPPFLAGS =	-I$(COMPAT)/bhyve -I$(CONTRIB)/bhyve \
 SMOFF += all_func_returns
 rfb.o := SMOFF=
 
-# Force c99 for everything
-CSTD=		$(CSTD_GNU99)
-
 $(PROG) := LDLIBS += \
 	-l9p \
 	-lcmdutils \

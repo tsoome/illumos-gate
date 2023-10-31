@@ -31,6 +31,9 @@ OBJS= nice.o
 include ../Makefile.cmd
 CFLAGS += $(CCVERBOSE)
 
+$(PROG) := CSTD = $(CSTD_GNU89)
+$(XPG4) := CSTD = $(CSTD_GNU89)
+
 clean $(XPG4) := OBJS += values-xpg4.o
 
 .KEEP_STATE:
@@ -48,7 +51,5 @@ values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 
 clean:
 	$(RM) $(OBJS)
-
-lint:	lint_PROG
 
 include ../Makefile.targ

@@ -42,7 +42,7 @@ EXOBJS=	bcopy.o ex.o ex_addr.o ex_cmds.o ex_cmds2.o \
 	ex_vops2.o ex_vops3.o ex_vput.o ex_vwind.o \
 	printf.o
 EXOBJS_XPG4= $(EXOBJS) compile.o values-xpg4.o
-EXOBJS_XPG6= $(EXOBJS) compile.o values-xpg6.o
+EXOBJS_XPG6= $(EXOBJS) compile.o
 XPG4EXOBJS= ${EXOBJS_XPG4:%=$(XD4)/%}
 XPG6EXOBJS= ${EXOBJS_XPG6:%=$(XD6)/%}
 EXRECOVEROBJS=	exrecover.o ex_extern.o
@@ -69,6 +69,10 @@ SMATCH=off
 #
 POFILES= $(EXOBJS:%.o=%.po) expreserve.po exrecover.po
 POFILE= port.po
+
+$(PROG) := CSTD = $(CSTD_GNU89)
+$(XPG4) := CSTD = $(CSTD_GNU89)
+$(XPG6) := CSTD = $(CSTD_GNU99)
 
 # Include all XPG4 and XPG4ONLY changes in the XPG4 version
 $(XPG4) := CFLAGS += -DXPG4 -DXPG4ONLY

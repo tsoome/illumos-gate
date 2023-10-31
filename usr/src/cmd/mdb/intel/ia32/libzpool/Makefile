@@ -45,8 +45,6 @@ CPPFLAGS += -I../../../../../lib/libzpool/common \
 	-I../../../../../uts/common/fs/zfs/lua \
 	-I../../../../../common/zfs
 
-CSTD=	$(CSTD_GNU99)
-
 CERRWARN	+= -_gcc=-Wno-type-limits
 
 dmod/%.o: $(GENUNIX_DIR)/%.c

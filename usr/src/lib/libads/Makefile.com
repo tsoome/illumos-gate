@@ -31,8 +31,6 @@ OBJECTS =	dsgetdc.o poke.o adspriv_xdr.o
 
 include ../../Makefile.lib
 
-CSTD=	$(CSTD_GNU99)
-
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lnsl -lc
 SRCDIR =	../common

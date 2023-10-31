@@ -51,8 +51,6 @@ INCS +=	-I../../../uts/common
 INCS +=	-I../../../uts/common/smbsrv
 INCS +=	-I../../../common/smbsrv
 
-CSTD=		$(CSTD_GNU99)
-
 CFLAGS += $(CCVERBOSE)
 CFLAGS64 += $(CCVERBOSE)
 

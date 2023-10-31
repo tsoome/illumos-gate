@@ -68,7 +68,6 @@ $(PROG): $(OBJS)
 
 include ../Makefile.lib
 
-CSTD= $(CSTD_GNU99)
 CPPFLAGS += -D_REENTRANT $(MDNSFLAGS)
 CPPFLAGS += -I$(SRCDIR)/mDNSShared -I$(SRCDIR)/mDNSPosix
 CPPFLAGS += -I$(SRCDIR)/mDNSCore

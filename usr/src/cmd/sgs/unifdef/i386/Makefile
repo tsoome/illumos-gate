@@ -36,7 +36,6 @@ SRCS=		$(OBJS:%.o=../common/%.c)
 DEFLIST=	-DELF_OBJ -DELF
 CPPFLAGS=	$(INCLIST) $(DEFLIST) $(CPPFLAGS.master)
 CFLAGS +=	$(CCVERBOSE)
-CSTD=	$(CSTD_GNU99)
 
 CERRWARN +=	-_gcc=-Wno-char-subscripts
 CERRWARN +=	-_gcc=-Wno-parentheses

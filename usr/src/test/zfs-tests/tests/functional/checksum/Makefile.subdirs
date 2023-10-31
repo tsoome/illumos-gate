@@ -26,15 +26,12 @@ CMD64 = $(PROG:%=$(TESTDIR)/%.$(MACH64))
 CMDS = $(CMD32) $(CMD64)
 $(CMDS) := FILEMODE = 0555
 
-CSTD = $(CSTD_GNU99)
 CFLAGS += -I $(SRC)/uts/common -D_KERNEL
 LDLIBS += -lmd
 LINTFLAGS += -u
 LINTFLAGS64 += -u
 
 all: $(PROG) $(TESTDIR)
-
-lint: lint_SRCS
 
 clobber: clean
 

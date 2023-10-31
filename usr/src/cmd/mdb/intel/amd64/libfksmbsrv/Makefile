@@ -45,8 +45,6 @@ CPPFLAGS.first += -I../../../../../lib/libfakekernel/common
 
 CPPFLAGS += -I../../../../../uts/common
 
-CSTD=	$(CSTD_GNU99)
-
 dmod/%.o: $(GENUNIX_DIR)/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)

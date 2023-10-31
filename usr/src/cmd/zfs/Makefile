@@ -49,8 +49,6 @@ INCS += -I../../common/zfs
 INCS += -I$(SRC)/uts/common/fs/zfs
 INCS += -I../../lib/libzutil/common
 
-CSTD=	$(CSTD_GNU99)
-
 CPPFLAGS += -D_REENTRANT $(INCS)
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 

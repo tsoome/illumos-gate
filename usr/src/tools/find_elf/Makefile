@@ -39,8 +39,6 @@ LDFLAGS = \
 	'-R$$ORIGIN/../../lib/$(MACH)' \
 	$(BDIRECT) $(ZLAZYLOAD)
 
-CSTD = $(CSTD_GNU99)
-
 .KEEP_STATE:
 
 .PARALLEL: $(OBJS)

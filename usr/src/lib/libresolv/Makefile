@@ -48,8 +48,6 @@ include ../Makefile.rootfs
 
 SRCDIR =	.
 
-CSTD=	$(CSTD_GNU89)
-
 # We really want to say this:
 #	CPPFLAGS += -DDEBUG -DSYSV -D_REENTRANT -I. -I../common/inc
 # but some system header files are replaced by local versions

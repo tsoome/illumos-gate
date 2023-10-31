@@ -48,7 +48,6 @@ NATIVE_LIBS +=	libdbus-1.so libdbus-glib-1.so libglib-2.0.so \
 all install $(PROG) :=	LDLIBS += -lexpat
 
 CPPFLAGS +=	$(HAL_DBUS_CPPFLAGS) $(HAL_GLIB_CPPFLAGS) $(HAL_CONFIG_CPPFLAGS)
-CSTD =	$(CSTD_GNU99)
 
 CLOBBERFILES += hald_marshal.c hald_marshal.h
 

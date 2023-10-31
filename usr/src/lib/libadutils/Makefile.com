@@ -33,8 +33,6 @@ OBJECTS =	adutils.o addisc.o adutils_threadfuncs.o \
 
 include ../../Makefile.lib
 
-CSTD=	$(CSTD_GNU99)
-
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lldap -lresolv -lsocket -lnsl -lc
 SRCDIR =	../common

@@ -50,8 +50,6 @@ CERRWARN += -_gcc=-Wno-switch
 # not linted
 SMATCH=off
 
-CSTD =       $(CSTD_GNU99)
-
 MANIFEST = vscan.xml
 ROOTMANIFESTDIR= $(ROOTSVCSYSTEM)/filesystem
 ROOTVSCANDIR=   $(ROOTLIB)/vscan

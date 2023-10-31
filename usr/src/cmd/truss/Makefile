@@ -62,8 +62,6 @@ CERRWARN	+= -_gcc=-Wno-switch
 # not linted
 SMATCH=off
 
-CSTD=	$(CSTD_GNU99)
-
 LDLIBS	+= -lproc -lrtld_db -lc_db -lnsl -lsocket -ltsol -lnvpair
 CPPFLAGS += -D_REENTRANT
 CPPFLAGS += -I$(SRC)/uts/common/fs/zfs

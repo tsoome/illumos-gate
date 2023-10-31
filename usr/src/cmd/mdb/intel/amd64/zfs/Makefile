@@ -40,6 +40,4 @@ CPPFLAGS += -I../../../../../uts/common/fs/zfs
 CPPFLAGS += -I../../../../../uts/common/fs/zfs/lua
 CPPFLAGS += -I../../../../../common/zfs
 
-CSTD=	$(CSTD_GNU99)
-
 CERRWARN	+= -_gcc=-Wno-type-limits

@@ -40,5 +40,3 @@ MODSRCS_DIR = ../../../common/modules/libmlsvc
 
 # CPPFLAGS += -I$(SRC)/lib/smbsrv/libmlsvc
 CPPFLAGS += -I$(SRC)/uts/common
-
-CSTD=	$(CSTD_GNU99)

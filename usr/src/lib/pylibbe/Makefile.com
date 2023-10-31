@@ -38,8 +38,6 @@ ROOTLIBDIR64=	$(ROOT)/usr/lib/python$(PYVER)/vendor-packages/64
 PYFILES=	$(PYSRCS)
 ROOTPYBEFILES=  $(PYFILES:%=$(ROOTLIBDIR)/%)
 
-CSTD=        $(CSTD_GNU99)
-
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lbe -lnvpair -lc
 CFLAGS +=	$(CCVERBOSE)

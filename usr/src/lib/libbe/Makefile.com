@@ -49,8 +49,6 @@ SRCDIR=		../common
 
 INCS += -I$(SRCDIR) -I$(SRC)/cmd/boot/common -I$(SRC)/common/ficl
 
-CSTD=	$(CSTD_GNU99)
-
 LDLIBS +=	-lficl-sys -lzfs -linstzones -luuid -lnvpair -lc -lgen
 LDLIBS +=	-ldevinfo -lefi -lzfsbootenv
 CPPFLAGS +=	$(INCS)
@@ -60,6 +58,5 @@ CLOBBERFILES += $(LIBRARY)
 .KEEP_STATE:
 
 all: $(LIBS) $(LIBRARY)
-
 
 include ../../Makefile.targ

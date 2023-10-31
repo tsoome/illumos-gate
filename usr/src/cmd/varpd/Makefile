@@ -32,8 +32,6 @@ CFLAGS += $(CCVERBOSE)
 LDLIBS += -lvarpd -lumem -lscf
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 
-CSTD=		$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

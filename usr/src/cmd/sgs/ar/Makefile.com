@@ -41,7 +41,6 @@ LLDFLAGS =	'-R$$ORIGIN/../../lib'
 LLDFLAGS64 =	'-R$$ORIGIN/../../../lib/$(MACH64)'
 CPPFLAGS=	-I. -I../../include $(CPPFLAGS.master) -I$(ELFCAP)
 CFLAGS +=	$(CCVERBOSE)
-CSTD=	$(CSTD_GNU99)
 
 CERRWARN +=	$(CNOWARN_UNINIT)
 

@@ -25,7 +25,6 @@ include $(SRC)/test/Makefile.com
 OBJS = $(PROG).o util_common.o
 SRCS = $(PROG).c $(TESTCOMMONDIR)/util_common.c
 
-CSTD = $(CSTD_GNU99)
 CPPFLAGS += -I$(TESTCOMMONDIR)
 
 ROOTOPTPKG = $(ROOT)/opt/libmlrpc-tests

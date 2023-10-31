@@ -25,7 +25,6 @@ TESTDIR = $(ROOTOPTPKG)/tests/viona
 CMDS = $(PROG:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
 
-CSTD=		$(CSTD_GNU99)
 CPPFLAGS =	$(CPPFLAGS.master) \
 		-I$(SRC)/uts/intel
 

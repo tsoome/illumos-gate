@@ -86,9 +86,6 @@ CMNDIR=		$(SRC)/common/smbclnt
 SRCS=		$(OBJ_LIB:%.o=$(SRCDIR)/%.c) \
 		$(OBJ_CMN:%.o=$(CMNDIR)/%.c)
 
-
-CSTD=	$(CSTD_GNU99)
-
 LDLIBS += -lsocket -lnsl -lc -lmd -lpkcs11 -lkrb5 -lsec -lidmap -lscf -luuid
 
 # normal warnings...

@@ -40,8 +40,6 @@ OBJS += $(CMNOBJS)
 
 include ../Makefile.com
 
-CSTD =	$(CSTD_GNU99)
-
 LDLIBS += -luuid -lc
 
 CPPFLAGS += -I. -I$(SRC)/lib/libds/common -I$(SRC)/cmd/ldmad

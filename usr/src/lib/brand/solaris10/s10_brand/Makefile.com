@@ -79,7 +79,6 @@ CPPFLAGS +=	-D_REENTRANT -U_ASM \
 		-I$(SRC)/uts/common/fs/zfs
 CFLAGS +=	$(CCVERBOSE)
 # Needed to handle zfs include files
-CSTD=	$(CSTD_GNU99)
 DYNFLAGS +=	$(DYNFLAGS_$(CLASS))
 DYNFLAGS +=	$(BLOCAL) $(ZNOVERSION) -Wl,-e_start
 LDLIBS +=	-lmapmalloc -lc

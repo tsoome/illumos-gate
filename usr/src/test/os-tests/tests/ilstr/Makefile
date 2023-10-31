@@ -35,8 +35,6 @@ LDLIBS64 += -lumem
 
 CTF_MODE = link
 
-CSTD = $(GNU_C99)
-
 .KEEP_STATE:
 
 all: $(PROGS32) $(PROGS64)

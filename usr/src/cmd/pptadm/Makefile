@@ -20,8 +20,6 @@ include ../Makefile.ctf
 
 LDLIBS += -lofmt -lppt -lnvpair
 
-CSTD = $(CSTD_GNU99)
-
 CLEANFILES += $(OBJS)
 
 .KEEP_STATE:

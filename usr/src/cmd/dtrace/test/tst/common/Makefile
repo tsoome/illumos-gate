@@ -58,8 +58,6 @@ sysevent/tst.post_chan.exe := LDLIBS += -lsysevent
 
 ustack/tst.bigstack.exe := COPTFLAG += -xO1
 
-CSTD = $(CSTD_GNU99)
-
 nfs/%.o: $(SNOOPDIR)/%.c
 	$(COMPILE.c) -o $@ $< -I$(SNOOPDIR)
 	$(POST_PROCESS_O)

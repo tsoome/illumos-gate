@@ -37,7 +37,6 @@ include ../../../Makefile.lib
 include ../../Makefile.defs
 
 SRCS = $(OBJECTS:%.o=../common/%.c)
-CSTD = $(CSTD_GNU99)
 CPPFLAGS += -I../common -I. -D_REENTRANT
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG
 CFLAGS += $(CCVERBOSE)

@@ -42,8 +42,6 @@
 # SRC is needed until RFE 1026993 is implemented.
 include		$(SRC)/cmd/Makefile.cmd
 
-CSTD=		$(CSTD_GNU99)
-
 FSCOMMONDIR=	$(SRC)/cmd/fs.d
 FSLIB=		fslib.o
 FSLIBSRC=	$(FSCOMMONDIR)/fslib.c

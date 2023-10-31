@@ -44,7 +44,5 @@ ROOTKMOD = $(ROOT)/usr/kernel/kmdb$(MACHMODDIR)
 
 include ../../../Makefile.module
 
-CSTD=	$(CSTD_GNU99)
-
 $(ROOTKMOD):
 	$(INS.dir)

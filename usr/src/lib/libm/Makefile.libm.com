@@ -20,20 +20,6 @@ LIBMSRC		= $(LIBMDIR)/common
 
 CPP_CMD		= $(CC) -E -Xs
 
-# With studio CSTD of neither enabled nor disabled is "no_lib", whereby we
-# expect C99-the-language, but don't modify the behaviour of library routines.
-# This is VERY IMPORTANT, as $(CSTD_GNU99), for instance, would link us with
-# values-xpg6, which would introduce an __xpg6 to our object with the C99
-# flags set, causing us to default C99 libm behaviour on, breaking
-# compatibility.
-#
-# We must then, unfortunately, defeat the GNU compiler _defaulting_ to C99, by
-# in that case setting it back to gnu89, which _also_ accepts C99 syntax as
-# far as is important.
-CSTD		=
-CFLAGS		+= -_gcc=-std=gnu89
-CFLAGS64	+= -_gcc=-std=gnu89
-
 M4FLAGS		= -D__STDC__ -DPIC
 
 LDBLDIR_sparc	= Q
@@ -47,13 +33,6 @@ sparc_CFLAGS	+= -Wa,-xarch=v8plus
 CPPFLAGS	+= -I$(LIBMSRC)/C \
 		-I$(LIBMSRC)/$(LDBLDIR) -I$(LIBMDIR)/$(TARGET_ARCH)/src
 $(RELEASE_BUILD)CPPFLAGS += -DNDEBUG
-
-# GCC needs __C99FEATURES__ such that the implementations of isunordered,
-# isgreaterequal, islessequal, etc, exist.  This is basically equivalent to
-# providing no -xc99 to Studio, in that it gets us the C99 language features,
-# but not values-xpg6, the reason for which is outlined with CSTD.
-CFLAGS		+= -_gcc=-D__C99FEATURES__
-CFLAGS64	+= -_gcc=-D__C99FEATURES__
 
 # libm depends on integer overflow characteristics
 CFLAGS		+= -_gcc=-fno-strict-overflow

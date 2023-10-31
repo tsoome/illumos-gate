@@ -83,19 +83,10 @@ aligned_alloc.64 :=	LDLIBS64 += -lproc
 posix_memalign.32 :=	LDLIBS += -lproc
 posix_memalign.64 :=	LDLIBS64 += -lproc
 
-asprintf-14933.32 :=	CSTD=$(GNU_C99)
-asprintf-14933.64 :=	CSTD=$(GNU_C99)
-
 memset_s.32 :=	CPPFLAGS += -D__STDC_WANT_LIB_EXT1__=1
 memset_s.64 :=	CPPFLAGS += -D__STDC_WANT_LIB_EXT1__=1
 set_constraint_handler_s.32 := CPPFLAGS += -D__STDC_WANT_LIB_EXT1__=1
 set_constraint_handler_s.64 := CPPFLAGS += -D__STDC_WANT_LIB_EXT1__=1
-
-isatty.32 :=	CSTD=$(GNU_C99)
-isatty.64 :=	CSTD=$(GNU_C99)
-
-strtonum.32 :=		CSTD=$(GNU_C99)
-strtonum.64 :=		CSTD=$(GNU_C99)
 
 ROOTOPTDIR = $(ROOT)/opt/libc-tests/tests
 ROOTOPTPROGS = $(PROGS32:%=$(ROOTOPTDIR)/%) \
@@ -108,7 +99,6 @@ all     :=      TARGET = all
 install :=      TARGET = install
 clean   :=      TARGET = clean
 clobber :=      TARGET = clobber
-lint    :=      TARGET = lint
 
 .KEEP_STATE:
 
@@ -116,7 +106,7 @@ install: $(SUBDIRS) $(ROOTOPTPROGS)
 
 all: $(SUBDIRS) $(PROGS32) $(PROGS64)
 
-clean lint: $(SUBDIRS)
+clean: $(SUBDIRS)
 
 $(ROOTOPTPROGS): $(PROGS32) $(PROGS64) $(ROOTOPTDIR)
 

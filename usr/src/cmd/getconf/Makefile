@@ -37,8 +37,12 @@ include ../Makefile.cmd
 
 XPG4EXOBJS += values-xpg4.o
 CFLAGS += $(CCVERBOSE)
+
+$(PROG) := CSTD = $(CSTD_GNU89)
+
 # XPG4
-$(XPG4) := CFLAGS += -D_XOPEN_SOURCE -I$(SRC)/lib/libc/inc
+$(XPG4) := CSTD = $(CSTD_GNU89)
+$(XPG4) := CFLAGS += -D_XOPEN_SOURCE=400 -I$(SRC)/lib/libc/inc
 
 # XPG6MODE:  Depending on the version of the compiler, the value of
 # __STDC_VERSION__ may differ even in the presence of the same compilation
@@ -66,8 +70,7 @@ $(XPG4) := CFLAGS += -D_XOPEN_SOURCE -I$(SRC)/lib/libc/inc
 # the compiler only imports this by default (from /usr/lib/values-xpg4.o)
 # if we use the c89 utility as opposed to cc.
 
-XPG6MODE = $(CSTD_GNU99)
-$(XPG6) := CSTD = $(XPG6MODE)
+$(XPG6) := CSTD = $(CSTD_GNU99)
 $(XPG6) := CFLAGS += -D_XOPEN_SOURCE=600 -I$(SRC)/lib/libc/inc
 
 .KEEP_STATE:
@@ -117,7 +120,5 @@ values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 clean:
 	-@rm -rf $(OBJS) $(XPG4EXOBJS) $(XPG6EXOBJS) $(X4) $(X6) \
 		$(PROG) $(XPG4) $(XPG6)
-
-lint:	lint_PROG
 
 include ../Makefile.targ

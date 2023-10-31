@@ -57,8 +57,6 @@ CERRWARN +=	-_gcc=-Wno-unused-label
 # not linted
 SMATCH=off
 
-CSTD =      $(CSTD_GNU99)
-
 # I18n
 POFILE =        $(ILBD).po
 POFILES =       $(ILBD_SRCS:%.c=%.po)

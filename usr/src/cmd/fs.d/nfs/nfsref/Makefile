@@ -34,8 +34,6 @@ CFLAGS +=	$(CCVERBOSE) -I../lib
 OBJS=	nfsref.o ref_subr.o
 SRCS=	nfsref.c
 
-CSTD= $(CSTD_GNU99)
-
 CERRWARN += -_gcc=-Wno-unused-variable
 
 # not linted

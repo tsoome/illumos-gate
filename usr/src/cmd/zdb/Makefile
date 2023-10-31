@@ -41,8 +41,6 @@ INCS += -I../../lib/libzutil/common
 
 LDLIBS += -lzpool -lumem -lnvpair -lzutil -lavl -lfakekernel
 
-CSTD=	$(CSTD_GNU99)
-
 CPPFLAGS.first = -I$(SRC)/lib/libfakekernel/common -D_FAKE_KERNEL
 CPPFLAGS += $(INCS)
 $(NOT_RELEASE_BUILD)CPPFLAGS += -DDEBUG

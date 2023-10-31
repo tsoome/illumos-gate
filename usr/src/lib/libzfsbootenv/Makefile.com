@@ -27,8 +27,6 @@ LIBS=		$(DYNLIB)
 
 SRCDIR=		../common
 
-CSTD=		$(CSTD_GNU99)
-
 LDLIBS +=	-lzfs -lnvpair -lc
 CPPFLAGS +=	-I$(SRC)/uts/common/fs/zfs
 

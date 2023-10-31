@@ -45,11 +45,6 @@ CPPFLAGS.first += -I$(SRC)/lib/libfakekernel/common
 CPPFLAGS += -I$(SRC)/uts/common/fs/smbclnt/
 CPPFLAGS += -I$(SRC)/uts/common
 
-CSTD=		$(CSTD_GNU99)
-
 dmod/%.o: $(GENUNIX_DIR)/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
-
-dmod/%.ln: $(GENUNIX_DIR)/%.c
-	$(LINT.c) -c $<

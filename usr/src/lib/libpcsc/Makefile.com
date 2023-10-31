@@ -25,8 +25,6 @@ CPPFLAGS +=	-I../common
 
 SRCDIR =	../common
 
-CSTD =		$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all:	$(LIBS)

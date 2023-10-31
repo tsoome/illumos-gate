@@ -25,8 +25,6 @@ CFLAGS += -m64
 
 LDLIBS64 += -lctf -lelf -lsaveargs
 
-CSTD = $(CSTD_GNU99)
-
 $(PROG): $(OBJECTS)
 	$(LINK.c) -o $@ $(OBJECTS) $(LDLIBS64)
 clean:

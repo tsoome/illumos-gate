@@ -64,8 +64,6 @@ CLEANFILES += $(EXTPICS)
 
 $(LIBS): ../common/zfs.h
 
-CSTD=	$(CSTD_GNU99)
-
 CFLAGS +=	$(CCGDEBUG) $(CCVERBOSE)
 CFLAGS64 +=	$(CCGDEBUG) $(CCVERBOSE)
 LDLIBS +=	-lcmdutils -lumem -lavl -lnvpair -lz -lc -lmd \

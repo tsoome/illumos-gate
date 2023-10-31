@@ -25,8 +25,6 @@ include ../Makefile.cmd
 
 CLOBBERFILES=	$(PROG)
 
-
-CSTD=	$(CSTD_GNU99)
 CPPFLAGS +=	-D_ILLUMOS_PRIVATE -I.
 
 # install rules

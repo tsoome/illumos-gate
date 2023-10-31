@@ -22,8 +22,6 @@ ROOTOPTPKG = $(ROOT)/opt/os-tests
 TESTDIR = $(ROOTOPTPKG)/tests/i386
 ROOTOPTPROGS = $(PROGS:%=$(TESTDIR)/%)
 
-CSTD = $(CSTD_GNU99)
-
 # for badseg_exec
 COPTFLAG =
 

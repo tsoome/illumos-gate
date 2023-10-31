@@ -33,8 +33,6 @@ include $(SRC)/cmd/Makefile.cmd.64
 include $(SRC)/cmd/mdb/intel/Makefile.amd64
 include $(SRC)/cmd/mdb/Makefile.module
 
-CSTD = $(CSTD_GNU99)
-
 CPPFLAGS += -I$(SRC)/uts/common
 
 CERRWARN += -_gcc=-Wno-switch

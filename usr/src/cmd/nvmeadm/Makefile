@@ -28,7 +28,6 @@ include ../Makefile.ctf
 
 CFLAGS +=	$(CCVERBOSE) -I$(SRC)/uts/common/io/nvme
 LDLIBS +=	-ldevinfo -lofmt -lcmdutils
-CSTD=	$(CSTD_GNU99)
 
 #
 # nvme_print_uint128() uses VLAs which understandably confuses smatch.
@@ -50,7 +49,5 @@ install: all $(ROOTUSRSBINPROG)
 
 clean:
 	$(RM) $(OBJS) $(PROG)
-
-lint:	lint_SRCS
 
 include ../Makefile.targ

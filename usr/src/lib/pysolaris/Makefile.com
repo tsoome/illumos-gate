@@ -39,8 +39,6 @@ PYOBJS=		$(PYSRCS:%.py=$(SRCDIR)/%.pyc)
 PYFILES=	$(PYSRCS) $(PYSRCS:%.py=%.pyc)
 ROOTPYSOLFILES=	$(PYFILES:%=$(ROOTLIBDIR)/%)
 
-CSTD=		$(CSTD_GNU99)
-
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lc -lsec -lidmap -lpython$(PYVER)$(PYSUFFIX)
 NATIVE_LIBS +=	libpython$(PYVER)$(PYSUFFIX).so

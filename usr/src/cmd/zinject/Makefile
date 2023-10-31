@@ -40,8 +40,6 @@ INCS +=	-I../../uts/common/fs/zfs/lua
 
 LDLIBS += -lzfs -lnvpair
 
-CSTD=	$(CSTD_GNU99)
-
 CPPFLAGS.first = -I$(SRC)/lib/libfakekernel/common -D_FAKE_KERNEL
 CPPFLAGS += -D_LARGEFILE64_SOURCE=1 -D_REENTRANT $(INCS)
 

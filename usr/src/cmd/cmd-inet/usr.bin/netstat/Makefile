@@ -54,8 +54,6 @@ SRCS=		$(LOCALSRCS) $(COMMONSRCS) $(STAT_COMMON_SRCS)
 CPPFLAGS += -DNDEBUG -I$(CMDINETCOMMONDIR) -I$(STATCOMMONDIR)
 LDLIBS += -ldhcpagent -lsocket -lnsl -lkstat -ltsnet -ltsol -lproc
 
-CSTD=		$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG) $(NPROG)

@@ -33,7 +33,6 @@ all:=		TARGET= all
 install:=	TARGET= install
 clean:=		TARGET= clean
 clobber:=	TARGET= clobber
-lint:=		TARGET= lint
 package:=	TARGET= package
 
 .KEEP_STATE:
@@ -42,7 +41,7 @@ all:		gen
 
 install:	$(SUBDIRS)
 
-clean lint package:
+clean package:
 
 clobber:	gen
 

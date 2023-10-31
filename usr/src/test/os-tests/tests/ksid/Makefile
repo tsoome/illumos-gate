@@ -25,7 +25,6 @@ PROG =	ksid.32 ksid.64
 LDLIBS += -lfakekernel
 LDLIBS64 += -lfakekernel
 
-CSTD = $(CSTD_GNU99)
 CPPFLAGS.first += -I$(SRC)/lib/libfakekernel/common -D_FAKE_KERNEL
 
 ROOTOPTPKG = $(ROOT)/opt/os-tests

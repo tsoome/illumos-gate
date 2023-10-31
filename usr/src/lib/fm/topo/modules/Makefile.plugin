@@ -58,7 +58,6 @@ ROOTCONF = $($(CLASS)_ROOTCONF)
 APIMAP = ../../../libtopo/common/topo_mod.map
 MAPFILES =		# use APIMAP instead
 
-CSTD  = $(CSTD_GNU99)
 CFLAGS += $(CTF_FLAGS) $(CCVERBOSE) $(CC_PICFLAGS)
 CFLAGS += $(GSHARED)
 

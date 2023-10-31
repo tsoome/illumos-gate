@@ -29,8 +29,8 @@ XPG4PROG= ed
 XPG6PROG= ed
 
 EDOBJ= ed.o compile.o
-XPG4EDOBJ= edobjs.xpg4/ed.o edobjs.xpg4/compile.o  values-xpg4.o
-XPG6EDOBJ= edobjs.xpg6/ed.o edobjs.xpg6/compile.o  values-xpg6.o
+XPG4EDOBJ= edobjs.xpg4/ed.o edobjs.xpg4/compile.o values-xpg4.o
+XPG6EDOBJ= edobjs.xpg6/ed.o edobjs.xpg6/compile.o
 OBJS= $(EDOBJ) $(XPG4EDOBJ) $(XPG6EDOBJ)
 SRCS= ./ed.c ../expr/compile.c
 
@@ -46,6 +46,10 @@ CERRWARN += $(CNOWARN_UNINIT)
 
 # not linted
 SMATCH=off
+
+$(PROG) := CSTD = $(CSTD_GNU89)
+$(XPG4) := CSTD = $(CSTD_GNU89)
+$(XPG6) := CSTD = $(CSTD_GNU99)
 
 $(XPG4) := CFLAGS += -DXPG4
 $(XPG6) := CFLAGS += -DXPG6 -I$(SRC)/lib/libc/inc
@@ -109,9 +113,6 @@ install: all $(ROOTPROG) $(ROOTXPG4PROG) $(ROOTXPG6PROG)
 
 values-xpg4.o: ../../lib/crt/common/values-xpg4.c
 	$(COMPILE.c) -o $@ ../../lib/crt/common/values-xpg4.c
-
-values-xpg6.o: ../../lib/crt/common/values-xpg6.c
-	$(COMPILE.c) -o $@ ../../lib/crt/common/values-xpg6.c
 
 clean:
 	-@rm -rf $(OBJS) $(XPG4) $(XPG6) edobjs.xpg4 edobjs.xpg6 \

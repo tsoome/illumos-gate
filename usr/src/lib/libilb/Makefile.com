@@ -39,8 +39,6 @@ LDLIBS +=	-lc
 
 SRCDIR =	../common
 
-CSTD =	$(CSTD_GNU99)
-
 CFLAGS +=	-mt $(CCVERBOSE)
 CPPFLAGS +=	$(INCS)
 LDLIBS +=	-lsocket

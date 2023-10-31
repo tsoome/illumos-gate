@@ -23,8 +23,6 @@ PROGS = timer_limit
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 
-CSTD = $(CSTD_GNU99)
-
 CMDS = $(PROGS:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
 

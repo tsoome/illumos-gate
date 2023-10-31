@@ -73,8 +73,6 @@ SRCS = \
 LIBS = $(DYNLIB)
 LDLIBS += -lc -lelf -ldwarf -lavl
 
-CSTD = $(CSTD_GNU99)
-
 SRCDIR = $(SRC)/lib/libctf/common
 
 CPPFLAGS +=	-I$(SRC)/lib/libctf/common	\

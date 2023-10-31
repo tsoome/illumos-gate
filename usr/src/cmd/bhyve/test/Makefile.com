@@ -18,11 +18,6 @@ include $(SRC)/Makefile.master
 include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/cmd/Makefile.cmd.64
 
-#
-# Force c99 for everything
-#
-CSTD=		$(CSTD_GNU99)
-
 CPPFLAGS =	-I$(COMPAT)/bhyve -I$(CONTRIB)/bhyve \
 		-I$(COMPAT)/bhyve/amd64 -I$(CONTRIB)/bhyve/amd64 \
 		$(CPPFLAGS.master) \

@@ -22,8 +22,6 @@ PROGS = \
 	runtests \
 	acquire-lock
 
-CSTD = $(CSTD_GNU99)
-
 SRCS = $(PROGS:%=%.c) $(UTILS:%.o=%.c)
 PROGS32 = $(PROGS:%=%.32)
 PROGS64 = $(PROGS:%=%.64)

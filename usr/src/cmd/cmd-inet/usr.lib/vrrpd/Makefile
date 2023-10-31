@@ -36,8 +36,6 @@ $(ROOTETC)/inet/$(CFGFILES):= FILEMODE= 644
 $(ROOTETC)/inet/$(CFGFILES):= OWNER= root
 $(ROOTETC)/inet/$(CFGFILES):= GROUP= sys
 
-CSTD=		$(CSTD_GNU99)
-
 #
 # We need access to the ancillary data features which are only available
 # via the SUS standards.  Further, C99 support requires SUSv3 or higher.

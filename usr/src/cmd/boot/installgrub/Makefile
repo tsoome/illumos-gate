@@ -48,8 +48,6 @@ i386_CFLAGS += -D_FILE_OFFSET_BITS=64
 
 LDLIBS += -lfdisk -lefi -lfstyp
 
-CSTD=	$(CSTD_GNU99)
-
 .KEEP_STATE:
 
 all: $(PROG)

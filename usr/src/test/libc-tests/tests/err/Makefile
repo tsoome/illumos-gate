@@ -32,8 +32,6 @@ TESTDATA=	$(DATA:%=$(DATADIR)/%)
 $(CMDS) := FILEMODE = 0555
 $(TESTDATA) := FILEMODE = 0444
 
-CSTD = $(CSTD_GNU99)
-
 all: $(PROGS)
 
 install: all $(CMDS) $(TESTDATA)
@@ -56,4 +54,3 @@ $(TESTDIR)/%: %
 
 $(DATADIR)/%:	data/%
 	$(INS.file)
-

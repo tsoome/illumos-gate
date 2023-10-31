@@ -44,8 +44,6 @@ POFILES= $(OBJS:%.o=%.po)
 CLEANFILES +=  srvsvc1_ndr.c
 CLOBBERFILES+=  $(POFILE) $(POFILES)
 
-CSTD= $(CSTD_GNU99)
-
 LDLIBS += -lmlrpc -lsmbfs -lnsl
 
 CPPFLAGS += -I$(SRC)/lib/libsmbfs \

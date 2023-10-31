@@ -30,8 +30,6 @@ OBJS= savecore.o compress.o
 include ../Makefile.cmd
 include ../Makefile.cmd.64
 
-CSTD = $(CSTD_GNU99)
-
 CFLAGS += $(CCVERBOSE)
 CPPFLAGS += -DBZ_NO_STDIO -I$(SRC)/common -I$(SRC)/uts/common
 

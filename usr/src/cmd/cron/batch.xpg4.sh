@@ -27,8 +27,6 @@
 # Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-#ident	"%Z%%M%	%I%	%E% SMI"
-
 set -- `getopt p: $*`
 if [ $? != 0 ]; then
     TEXTDOMAIN=SUNW_OST_OSCMD

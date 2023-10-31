@@ -39,7 +39,6 @@ SRCDIR =	../common
 
 INCS += -I$(SRCDIR)
 
-CSTD=	$(CSTD_GNU99)
 LDLIBS +=	-lc -lnvpair -lstmf -luuid -lscf
 CPPFLAGS +=	$(INCS) -D_REENTRANT
 CERRWARN +=	-_gcc=-Wno-parentheses

@@ -40,7 +40,6 @@ ROOTLINK = $(PROG:%=$(ROOTBIN64)/%)
 
 CLOBBERFILES += $(POFILE) $(POFILES)
 
-CSTD = $(CSTD_GNU99)
 CFLAGS += $(CCVERBOSE)
 CERRWARN += -_gcc=-Wno-parentheses
 LDLIBS += -lcurses -lproject

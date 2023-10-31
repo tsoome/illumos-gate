@@ -48,9 +48,6 @@ $(POFILE):      clear_locks.c
 	sed "/^domain/d"        messages.po     > $@
 	$(RM) messages.po $(POFILE).i
 
-
-CSTD= $(CSTD_GNU99)
-
 CFLAGS += $(CCVERBOSE)
 
 # not linted

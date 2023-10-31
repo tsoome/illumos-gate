@@ -53,8 +53,6 @@ $(ROOT)/usr/ccs/lib/$(MACH64)/libl.so:= \
 
 SRCDIR =	../common
 
-CSTD=	$(CSTD_GNU99)
-
 # unused labels in yaccpar
 CERRWARN +=	-_gcc=-Wno-unused-label
 

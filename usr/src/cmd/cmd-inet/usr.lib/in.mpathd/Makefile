@@ -40,8 +40,6 @@ ROOTMANIFESTDIR	= $(ROOTSVCNETWORK)
 POFILE		= $(PROG).po
 POFILES		= $(OBJS:%.o=%.po)
 
-CSTD		= $(CSTD_GNU99)
-
 #
 # We need access to the ancillary data features which are only available
 # via the SUS standards.  Further, C99 support requires SUSv3 or higher.

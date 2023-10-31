@@ -39,7 +39,6 @@ OBJECTS =			\
 	utils.o
 
 include ../../Makefile.lib
-CSTD = $(CSTD_GNU99)
 
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lc -lavl -lnsl -lnvpair -luutil

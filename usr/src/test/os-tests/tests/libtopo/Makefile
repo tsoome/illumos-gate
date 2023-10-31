@@ -31,7 +31,6 @@ include $(SRC)/test/Makefile.com
 
 LDLIBS += -L$(ROOT)/usr/lib/fm -ltopo -R/usr/lib/fm
 CFLAGS += -I$(SRC)/lib/fm/topo/libtopo/
-CSTD= $(CSTD_GNU99)
 
 CMDS = $(PROGS:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555

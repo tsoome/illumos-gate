@@ -43,8 +43,6 @@ CERRWARN +=	$(CNOWARN_UNINIT)
 # not linted
 SMATCH=off
 
-CSTD =	$(CSTD_GNU99)
-
 POFILES =	$(OBJS:%.o=%.po)
 POFILE =	$(PROG)_all.po
 

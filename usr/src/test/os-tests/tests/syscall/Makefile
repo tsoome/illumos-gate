@@ -18,8 +18,6 @@ include $(SRC)/test/Makefile.com
 
 PROGS = fchmodat open
 
-CSTD = $(CSTD_GNU99)
-
 ROOTOPTPKG = $(ROOT)/opt/os-tests
 TESTDIR = $(ROOTOPTPKG)/tests/syscall
 

@@ -37,7 +37,6 @@ include $(SRC)/test/Makefile.com
 
 CMDS = $(PROGS:%=$(TESTDIR)/%)
 $(CMDS) := FILEMODE = 0555
-CSTD = $(GNU_C99)
 
 #
 # Since this program uses quite a number of variables declared on the

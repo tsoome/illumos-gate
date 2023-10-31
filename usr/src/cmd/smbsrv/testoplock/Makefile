@@ -46,8 +46,6 @@ CPPFLAGS.first += -I../../../lib/smbsrv/libfksmbsrv/common
 
 INCS +=	-I../../../uts/common
 
-CSTD=		$(CSTD_GNU99)
-
 CFLAGS += $(CCVERBOSE)
 CFLAGS64 += $(CCVERBOSE)
 
@@ -86,8 +84,6 @@ $(PROG): $(OBJS)
 
 clean:
 	-$(RM) $(OBJS)
-
-lint:	# lint_SRCS
 
 include ../../Makefile.targ
 

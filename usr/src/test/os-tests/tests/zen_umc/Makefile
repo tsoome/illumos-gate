@@ -42,7 +42,6 @@ include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/test/Makefile.com
 include $(SRC)/cmd/Makefile.ctf
 
-CSTD = $(CSTD_GNU99)
 #
 # Ensure we always build with asserts. The first -I gives us access to
 # the zen_umc.h pieces while the second gives us the registers that are

@@ -453,7 +453,7 @@ CCERRWARN += -_gcc=-Wno-missing-field-initializers
 # C standard
 CSTD_GNU89=	-xc99=%none
 CSTD_GNU99=	-xc99=%all
-CSTD=		$(CSTD_GNU89)
+CSTD=		$(CSTD_GNU99)
 
 # In most places, assignments to these macros should be appended with +=
 # (CPPFLAGS.first allows values to be prepended to CPPFLAGS).

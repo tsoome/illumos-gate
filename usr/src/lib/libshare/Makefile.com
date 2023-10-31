@@ -42,7 +42,6 @@ NATIVE_LIBS +=	libxml2.so
 
 #add nfs/lib directory as part of the include path
 CFLAGS +=	$(CCVERBOSE)
-CSTD +=		$(CSTD_GNU99)
 
 CPPFLAGS +=	-D_REENTRANT -I$(NFSLIB_DIR) \
 		-I$(ADJUNCT_PROTO)/usr/include/libxml2

@@ -32,8 +32,6 @@ CPPFLAGS += -I$(SRC)/uts/intel/io/imc
 CPPFLAGS += -I$(SRC)/uts/intel/io/amdzen -I$(SRC)/uts/intel
 LDLIBS += -lnvpair
 
-CSTD = $(CSTD_GNU99)
-
 all: $(PROG)
 
 $(PROG): $(OBJS)
