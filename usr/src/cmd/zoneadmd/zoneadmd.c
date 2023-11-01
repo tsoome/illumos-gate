@@ -276,6 +276,7 @@ static int
 filter_bootargs(zlog_t *zlogp, const char *inargs, char *outargs,
     char *init_file, char *badarg)
 {
+	size_t len;
 	int argc = 0, argc_save;
 	int i;
 	int err;
@@ -386,8 +387,9 @@ filter_bootargs(zlog_t *zlogp, const char *inargs, char *outargs,
 		case 'm':
 		case 's':
 			/* These pass through unmolested */
-			(void) snprintf(outargs, BOOTARGS_MAX,
-			    "%s -%c %s ", outargs, c, optarg ? optarg : "");
+			len = strlen(outargs);
+			(void) snprintf(outargs + len, BOOTARGS_MAX - len,
+			    " -%c %s", c, optarg ? optarg : "");
 			break;
 		case '?':
 			/*
@@ -397,10 +399,12 @@ filter_bootargs(zlog_t *zlogp, const char *inargs, char *outargs,
 			 * args they want.
 			 */
 			err = Z_INVAL;
-			(void) snprintf(outargs, BOOTARGS_MAX,
-			    "%s -%c", outargs, optopt);
-			(void) snprintf(badarg, BOOTARGS_MAX,
-			    "%s -%c", badarg, optopt);
+			len = strlen(outargs);
+			(void) snprintf(outargs - len, BOOTARGS_MAX - len,
+			    " -%c", optopt);
+			len = strlen(badarg);
+			(void) snprintf(badarg + len, BOOTARGS_MAX - len,
+			    " -%c", optopt);
 			break;
 		}
 	}
@@ -414,8 +418,10 @@ filter_bootargs(zlog_t *zlogp, const char *inargs, char *outargs,
 	if (optind < argc) {
 		err = Z_INVAL;
 		while (optind < argc) {
-			(void) snprintf(badarg, BOOTARGS_MAX, "%s%s%s",
-			    badarg, strlen(badarg) > 0 ? " " : "",
+			len = strlen(badarg);
+			(void) snprintf(badarg + len, BOOTARGS_MAX - len,
+			    "%s%s",
+			    strlen(badarg) > 0 ? " " : "",
 			    argv[optind]);
 			optind++;
 		}
