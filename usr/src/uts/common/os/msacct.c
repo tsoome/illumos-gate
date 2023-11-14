@@ -354,35 +354,35 @@ mstate_aggr_state(proc_t *p, int a_state)
 	struct mstate *ms;
 	kthread_t *t;
 	klwp_t *lwp;
-	hrtime_t aggr_time;
+	hrtime_t aggr_time = 0;
 	hrtime_t scaledtime;
 
 	ASSERT(MUTEX_HELD(&p->p_lock));
-	ASSERT((unsigned)a_state < NMSTATES);
+	if ((unsigned)a_state < NMSTATES) {
+		aggr_time = p->p_acct[a_state];
+		if (a_state == LMS_SYSTEM)
+			aggr_time += p->p_acct[LMS_TRAP];
 
-	aggr_time = p->p_acct[a_state];
-	if (a_state == LMS_SYSTEM)
-		aggr_time += p->p_acct[LMS_TRAP];
+		t = p->p_tlist;
+		if (t == NULL)
+			return (aggr_time);
 
-	t = p->p_tlist;
-	if (t == NULL)
-		return (aggr_time);
+		do {
+			if (t->t_proc_flag & TP_LWPEXIT)
+				continue;
 
-	do {
-		if (t->t_proc_flag & TP_LWPEXIT)
-			continue;
-
-		lwp = ttolwp(t);
-		ms = &lwp->lwp_mstate;
-		scaledtime = ms->ms_acct[a_state];
-		scalehrtime(&scaledtime);
-		aggr_time += scaledtime;
-		if (a_state == LMS_SYSTEM) {
-			scaledtime = ms->ms_acct[LMS_TRAP];
+			lwp = ttolwp(t);
+			ms = &lwp->lwp_mstate;
+			scaledtime = ms->ms_acct[a_state];
 			scalehrtime(&scaledtime);
 			aggr_time += scaledtime;
-		}
-	} while ((t = t->t_forw) != p->p_tlist);
+			if (a_state == LMS_SYSTEM) {
+				scaledtime = ms->ms_acct[LMS_TRAP];
+				scalehrtime(&scaledtime);
+				aggr_time += scaledtime;
+			}
+		} while ((t = t->t_forw) != p->p_tlist);
+	}
 
 	return (aggr_time);
 }
