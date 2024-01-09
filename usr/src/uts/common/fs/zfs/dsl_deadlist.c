@@ -185,7 +185,7 @@ dsl_deadlist_load_tree(dsl_deadlist_t *dl)
 	for (dsl_deadlist_entry_t *dle = avl_first(&dl->dl_tree);
 	    dle != NULL; dle = AVL_NEXT(&dl->dl_tree, dle)) {
 		VERIFY0(bpobj_open(&dle->dle_bpobj, dl->dl_os,
-		dle->dle_bpobj.bpo_object));
+		    dle->dle_bpobj.bpo_object));
 	}
 	dl->dl_havetree = B_TRUE;
 }
@@ -238,7 +238,7 @@ dsl_deadlist_load_cache(dsl_deadlist_t *dl)
 		dlce->dlce_bpobj = za.za_first_integer;
 		dmu_prefetch(dl->dl_os, dlce->dlce_bpobj,
 		    0, 0, 0, ZIO_PRIORITY_SYNC_READ);
-		    avl_add(&dl->dl_cache, dlce);
+		avl_add(&dl->dl_cache, dlce);
 	}
 	VERIFY3U(error, ==, ENOENT);
 	zap_cursor_fini(&zc);
@@ -922,8 +922,6 @@ livelist_compare(const void *larg, const void *rarg)
 	/* if vdevs are equal, sort by offsets. */
 	uint64_t l_dva0_offset = DVA_GET_OFFSET(&l->blk_dva[0]);
 	uint64_t r_dva0_offset = DVA_GET_OFFSET(&r->blk_dva[0]);
-	if (l_dva0_offset == r_dva0_offset)
-		ASSERT3U(l->blk_birth, ==, r->blk_birth);
 	return (TREE_CMP(l_dva0_offset, r_dva0_offset));
 }
 
@@ -938,9 +936,9 @@ struct livelist_iter_arg {
  * and used to match up ALLOC/FREE pairs. ALLOC'd blkptrs without a
  * corresponding FREE are stored in the supplied bplist.
  *
- * Note that multiple FREE and ALLOC entries for the same blkptr may
- * be encountered when dedup is involved. For this reason we keep a
- * refcount for all the FREE entries of each blkptr and ensure that
+ * Note that multiple FREE and ALLOC entries for the same blkptr may be
+ * encountered when dedup or block cloning is involved.  For this reason we
+ * keep a refcount for all the FREE entries of each blkptr and ensure that
  * each of those FREE entries has a corresponding ALLOC preceding it.
  */
 static int
@@ -959,6 +957,13 @@ dsl_livelist_iterate(void *arg, const blkptr_t *bp, boolean_t bp_freed,
 	livelist_entry_t node;
 	node.le_bp = *bp;
 	livelist_entry_t *found = avl_find(avl, &node, NULL);
+	if (found) {
+		ASSERT3U(BP_GET_PSIZE(bp), ==, BP_GET_PSIZE(&found->le_bp));
+		ASSERT3U(BP_GET_CHECKSUM(bp), ==,
+		    BP_GET_CHECKSUM(&found->le_bp));
+		ASSERT3U(BP_PHYSICAL_BIRTH(bp), ==,
+		    BP_PHYSICAL_BIRTH(&found->le_bp));
+	}
 	if (bp_freed) {
 		if (found == NULL) {
 			/* first free entry for this blkptr */
@@ -968,10 +973,10 @@ dsl_livelist_iterate(void *arg, const blkptr_t *bp, boolean_t bp_freed,
 			e->le_refcnt = 1;
 			avl_add(avl, e);
 		} else {
-			/* dedup block free */
-			ASSERT(BP_GET_DEDUP(bp));
-			ASSERT3U(BP_GET_CHECKSUM(bp), ==,
-			    BP_GET_CHECKSUM(&found->le_bp));
+			/*
+			 * Deduped or cloned block free.  We could assert D bit
+			 * for dedup, but there is no such one for cloning.
+			 */
 			ASSERT3U(found->le_refcnt + 1, >, found->le_refcnt);
 			found->le_refcnt++;
 		}
@@ -987,14 +992,6 @@ dsl_livelist_iterate(void *arg, const blkptr_t *bp, boolean_t bp_freed,
 				/* all tracked free pairs have been matched */
 				avl_remove(avl, found);
 				kmem_free(found, sizeof (livelist_entry_t));
-			} else {
-				/*
-				 * This is definitely a deduped blkptr so
-				 * let's validate it.
-				 */
-				ASSERT(BP_GET_DEDUP(bp));
-				ASSERT3U(BP_GET_CHECKSUM(bp), ==,
-				    BP_GET_CHECKSUM(&found->le_bp));
 			}
 		}
 	}
