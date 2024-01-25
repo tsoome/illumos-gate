@@ -1538,6 +1538,16 @@ build_boot_properties(struct xboot_info *xbp)
 			    bm[i].bm_name == NULL)
 				continue;
 
+			if (bm[i].bm_type == BMT_SECRETS) {
+				(void) snprintf(modid, sizeof (modid),
+				    "boot-secrets");
+				bsetprop(DDI_PROP_TYPE_BYTE, modid,
+				    strlen(modid), bm[i].bm_addr,
+				    bm[i].bm_size);
+				bzero(bm[i].bm_addr, bm[i].bm_size);
+				continue;
+			}
+
 			if (bm[i].bm_type == BMT_ENV) {
 				if (benv == NULL)
 					benv = &bm[i];

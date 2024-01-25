@@ -1216,6 +1216,8 @@ type_to_str(boot_module_type_t type)
 		return ("environment");
 	case BMT_FONT:
 		return ("console-font");
+	case BMT_SECRETS:
+		return ("secrets");
 	default:
 		return ("unknown");
 	}
@@ -1338,6 +1340,8 @@ process_module(int midx)
 				modules[midx].bm_type = BMT_ENV;
 			} else if (strcmp(q, "console-font") == 0) {
 				modules[midx].bm_type = BMT_FONT;
+			} else if (strcmp(q, "secrets") == 0) {
+				modules[midx].bm_type = BMT_SECRETS;
 			} else if (strcmp(q, "file") != 0) {
 				dboot_printf("\tmodule #%d: unknown module "
 				    "type '%s'; defaulting to 'file'\n",

@@ -26,7 +26,6 @@
  * Copyright (c) 2014 Spectra Logic Corporation, All rights reserved.
  * Copyright 2013 Saso Kiselkov. All rights reserved.
  * Copyright (c) 2014 Integros [integros.com]
- * Copyright 2016 Toomas Soome <tsoome@me.com>
  * Copyright (c) 2017, 2019, Datto Inc. All rights reserved.
  * Copyright 2019 Joyent, Inc.
  * Copyright (c) 2017, Intel Corporation.
@@ -34,6 +33,7 @@
  * Copyright 2021 OmniOS Community Edition (OmniOSce) Association.
  * Copyright 2022 Oxide Computer Company
  * Copyright 2023 MNX Cloud, Inc.
+ * Copyright 2024 Toomas Soome <tsoome@me.com>
  */
 
 /*
@@ -93,6 +93,7 @@
 #include <sys/pool.h>
 #include <sys/sysdc.h>
 #include <sys/zone.h>
+#include <sys/esunddi.h>
 #endif	/* _KERNEL */
 
 #include "zfs_prop.h"
@@ -4640,10 +4641,102 @@ spa_open_rewind(const char *name, spa_t **spapp, void *tag, nvlist_t *policy,
 	return (spa_open_common(name, spapp, tag, policy, config));
 }
 
+/*
+ * Install wrapping keys to spa keystore.
+ *
+ * Boot loader did prepare key data in nvlist, indexed by ddobj.
+ */
+static void
+spa_install_boot_wkeys(spa_t *spa, nvlist_t *secrets)
+{
+	dsl_crypto_params_t *dcp;
+	nvpair_t *nvp = NULL;
+	char *ddname;
+	uint64_t ddobj;
+	nvlist_t *data;
+
+	/* wrapping keys are indexed by ddobj. */
+	while ((nvp = nvlist_next_nvpair(secrets, nvp)) != NULL) {
+		char *errstr;
+
+		/*
+		 * We are expecting at least one <ddobj, nvlist> pair.
+		 * In case of anything else stop processing.
+		 */
+
+		ddname = nvpair_name(nvp);
+		ddobj = zfs_strtonum(ddname, &errstr);
+		if (*errstr != '\0')
+			break;
+
+		if (nvpair_type(nvp) != DATA_TYPE_NVLIST)
+			break;
+
+		if (nvpair_value_nvlist(nvp, &data) != 0)
+			break;
+
+		if (dsl_crypto_params_create_nvlist(DCP_CMD_NONE,
+		    data, data, &dcp) == 0) {
+			dcp->cp_wkey->wk_ddobj = ddobj;
+			spa_keystore_load_wkey_impl(spa, dcp->cp_wkey);
+			dsl_crypto_params_free(dcp, B_FALSE);
+		}
+	}
+}
+
+/*
+ * Read wrapping key(s) from "boot-secrets" property.
+ * Remove property if it was present.
+ */
+static nvlist_t *
+spa_get_boot_secrets(void)
+{
+#ifdef _KERNEL
+        uchar_t *buf;
+        uint_t nelements;
+        dev_info_t *root;
+        nvlist_t *nv = NULL;
+        char *name = "boot-secrets";
+
+        root = ddi_root_node();
+
+        if (ddi_prop_lookup_byte_array(DDI_DEV_T_ANY, root,
+            DDI_PROP_DONTPASS, name, &buf, &nelements) != DDI_PROP_SUCCESS)
+		return (nv);
+
+        (void) nvlist_unpack((char *)buf, nelements, &nv, KM_SLEEP);
+
+        /*
+         * bzero buf, update property and remove property.
+         */
+        bzero(buf, nelements);
+        (void) e_ddi_prop_update_byte_array(DDI_DEV_T_NONE, root, name,
+            buf, nelements);
+        ddi_prop_free(buf);
+        (void) e_ddi_prop_remove(DDI_DEV_T_NONE, root, name);
+        return (nv);
+#else
+	return (NULL);
+#endif
+}
+
 int
 spa_open(const char *name, spa_t **spapp, void *tag)
 {
-	return (spa_open_common(name, spapp, tag, NULL, NULL));
+	int rv;
+
+	rv = spa_open_common(name, spapp, tag, NULL, NULL);
+	if (rv == 0) {
+		nvlist_t *secrets;
+
+		secrets = spa_get_boot_secrets();
+		if (secrets != NULL) {
+			spa_install_boot_wkeys(*spapp, secrets);
+			nvlist_free(secrets);
+		}
+	}
+
+	return (rv);
 }
 
 /*
