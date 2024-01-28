@@ -762,8 +762,12 @@ zfs_get_bootonce(void *vdev, const char *key, char *buf, size_t size)
 			size = MIN((size_t)result_size + 1, size);
 			strlcpy(buf, result, size);
 		}
-		(void) nvlist_remove(benv, key, DATA_TYPE_STRING);
-		(void) zfs_set_bootenv(vdev, benv);
+		/*
+		 * Remove bootonce "command" and store bootenv.
+		 */
+		rv = nvlist_remove(benv, key, DATA_TYPE_STRING);
+		if (rv == 0)
+			rv = zfs_set_bootenv(vdev, benv);
 	}
 
 	return (rv);
