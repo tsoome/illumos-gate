@@ -24,8 +24,6 @@
 
 #pragma dictionary "PCIEX"
 
-#include <px_err.h>
-
 /*
  * generic root complex/root port diagnosis rules
  */
@@ -123,14 +121,14 @@ prop fault.io.pciex.rc.generic-fw@hostbridge ->
     };
 
 /* Generic Root Complex CE faults */
-prop fault.io.pciex.rc.generic-ce@hostbridge { IS_CE } -> 
+prop fault.io.pciex.rc.generic-ce@hostbridge { IS_CE } ->
     ereport.io.pciex.rc.epkt@hostbridge;
 
 /* Generic Root Complex UE faults from propagations */
 event error.io.pciex.rc.generic-ue1@hostbridge;
 event error.io.pciex.rc.generic-ue2@hostbridge;
 
-prop fault.io.pciex.rc.generic-ue@hostbridge -> 
+prop fault.io.pciex.rc.generic-ue@hostbridge ->
     error.io.pciex.rc.generic-ue1@hostbridge,
     error.io.pciex.rc.generic-ue2@hostbridge,
     error.io.pciex.rc.stall@hostbridge,
@@ -166,9 +164,9 @@ prop error.io.pciex.rc.generic-ue2@hostbridge { IS_UE && !IS_BLOCKED } ->
     };
 
 /* Errors that will cause a pipe stall and thus a CTO in the fabric */
-prop error.io.pciex.rc.stall@hostbridge (0) -> 
+prop error.io.pciex.rc.stall@hostbridge (0) ->
     error.io.pciex.nr-d@hostbridge/pciexrc<>/PCIEXFNHZ;
-prop error.io.pciex.rc.stall@hostbridge { IS_UE && IS_BLOCKED } -> 
+prop error.io.pciex.rc.stall@hostbridge { IS_UE && IS_BLOCKED } ->
     ereport.io.pciex.rc.epkt@hostbridge { !DIAG_BY_FAB };
 
 /*
@@ -182,12 +180,12 @@ prop error.io.pciex.rc.poiscomp@hostbridge (0) ->
     error.io.pciex.lost-d@hostbridge/pciexrc<>/PCIEXFNHZ,
     error.io.pciex.degraded-d@hostbridge/pciexrc<>/PCIEXFNHZ;
 
-prop error.io.pciex.rc.poiscomp@hostbridge { IS_UE && !IS_BLOCKED } -> 
+prop error.io.pciex.rc.poiscomp@hostbridge { IS_UE && !IS_BLOCKED } ->
     ereport.io.pciex.rc.epkt@hostbridge {
 	MATCHES_DESC(BLOCK_HOSTBUS,OP_DMA,PH_DATA,CND_INT,DIR_READ)
     };
 
-prop error.io.pciex.badreq-u@hostbridge/pciexrc/PCIEXFN { IS_UE && !IS_BLOCKED } (0) -> 
+prop error.io.pciex.badreq-u@hostbridge/pciexrc/PCIEXFN { IS_UE && !IS_BLOCKED } (0) ->
     ereport.io.pciex.rc.epkt@hostbridge {
 	MATCHES_DESC(BLOCK_MMU,OP_XLAT,PH_ADDR,CND_UNMAP,DIR_RDWR) ||
 	MATCHES_DESC(BLOCK_MMU,OP_XLAT,PH_DATA,CND_INV,DIR_RDWR) ||
@@ -214,20 +212,20 @@ prop upset.io.pciex.rc.discard@hostbridge ->
 #define GET_PCI_FRU (confprop(asru(pcibus[b]/pcidev[d]/pcifn[0]), PROP_PLAT_FRU))
 
 prop fault.io.fire.pciex.device@pciexbus[b]/pciexdev[d]/pciexfn[0]
-    {  
+    {
         /*
-         * Indict PCI-E FRU(s) under this root complex excluding the 
-         * one that the Fire ASIC resides on. 
+         * Indict PCI-E FRU(s) under this root complex excluding the
+         * one that the Fire ASIC resides on.
          */
         is_under(hostbridge, pciexbus[b]/pciexdev[d]/pciexfn[0]) &&
 	(GET_HB_FRU != GET_PCIE_FRU)
     } (0) -> EPKT(BLOCK_INTR,OP_MSIQ,PH_UNKNOWN,CND_OV,DIR_IRR);
 
 prop fault.io.fire.pci.device@pcibus[b]/pcidev[d]/pcifn[0]
-    {  
+    {
         /*
-         * Indict PCI FRU(s) under this root complex excluding the 
-         * one that the Fire ASIC resides on. 
+         * Indict PCI FRU(s) under this root complex excluding the
+         * one that the Fire ASIC resides on.
          */
         is_under(hostbridge, pcibus[b]/pcidev[d]/pcifn[0]) &&
 	    (GET_HB_FRU != GET_PCI_FRU)

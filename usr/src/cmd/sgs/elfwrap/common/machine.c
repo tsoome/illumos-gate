@@ -26,24 +26,12 @@
 
 #include	<_elfwrap.h>
 
-#if	defined(lint)
-#include	<machdep.h>
-#else
 #if	defined(ELFWRAP_X86)
 #include	<i386/machdep_x86.h>
 #if	defined(_ELF64)
 #define	target_init	target_init_amd64
 #else
 #define	target_init	target_init_i386
-#endif
-#endif
-#if	defined(ELFWRAP_SPARC)
-#include	<sparc/machdep_sparc.h>
-#if	defined(_ELF64)
-#define	target_init	target_init_sparcv9
-#else
-#define	target_init	target_init_sparc
-#endif
 #endif
 #endif
 

@@ -41,7 +41,6 @@
 #include <sys/ndi_impldefs.h>
 
 #include <sys/pci.h>
-#include <sys/ebus.h>
 #include <sys/hotplug/hpctrl.h>
 #include <sys/hotplug/pci/pcicfg.h>
 
@@ -64,6 +63,16 @@
  * *** Implementation specific local data structures/definitions.       ***
  * ************************************************************************
  */
+
+/* Range entry for 3-cell parent address */
+struct pci_rangespec {
+	uint32_t phys_hi;			/* Child hi range address */
+	uint32_t phys_low;			/* Child low range address */
+	uint32_t par_phys_hi;			/* Parent hi rng addr */
+	uint32_t par_phys_mid;			/* Parent mid rng addr */
+	uint32_t par_phys_low;			/* Parent low rng addr */
+	uint32_t rng_size;			/* Range size */
+};
 
 #define	PCICFG_MAX_DEVICE 32
 #define	PCICFG_MAX_FUNCTION 8
@@ -997,7 +1006,7 @@ static int
 cardbus_isa_bridge_ranges(dev_info_t *dip, cardbus_phdl_t *entry,
     ddi_acc_handle_t handle)
 {
-	struct ebus_pci_rangespec range;
+	struct pci_rangespec range;
 	pci_regspec_t *reg;
 	int length;
 	int rcount;

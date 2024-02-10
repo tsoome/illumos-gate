@@ -42,8 +42,6 @@ i386_CORE_OBJS += \
 		avintr.o	\
 		pic.o
 
-sparc_CORE_OBJS +=
-
 COMMON_CORE_OBJS +=		\
 		beep.o		\
 		bitset.o	\
@@ -426,9 +424,6 @@ GENUNIX_OBJS +=	\
 #
 #	Stubs for the stand-alone linker/loader
 #
-sparc_GENSTUBS_OBJS =	\
-	kobj_stubs.o
-
 i386_GENSTUBS_OBJS =
 
 COMMON_GENSTUBS_OBJS =
@@ -1353,8 +1348,6 @@ amd64_ZFS_OBJS +=		\
 	vdev_raidz_math_sse2.o	\
 	vdev_raidz_math_ssse3.o
 
-sparcv9_ZFS_OBJS +=
-
 ZFS_COMMON_OBJS +=		\
 	$($(MACH64)_ZFS_OBJS)	\
 	abd.o			\
@@ -1679,8 +1672,6 @@ TEM_OBJS += tem.o tem_safe.o
 #
 i386_FONT	= 8x16
 i386_FONT_SRC= ter-u16b
-sparc_FONT	= 12x22
-sparc_FONT_SRC= Gallant19
 FONT=$($(MACH)_FONT)
 FONT_SRC=$($(MACH)_FONT_SRC)
 FONT_DIR= $(SRC)/data/consfonts

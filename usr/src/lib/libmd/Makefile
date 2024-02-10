@@ -26,8 +26,6 @@
 
 include		$(SRC)/lib/Makefile.lib
 
-$(SPARC_BLD)CAPDIR = capabilities
-
 SUBDIRS=	$(MACH) $(BUILD64) $(MACH64)
 
 HDRS =		md4.h md5.h sha1.h sha2.h skein.h
@@ -42,14 +40,12 @@ install :=	TARGET= install
 
 .PARALLEL:	$(SUBDIRS)
 
-all clean clobber install: \
-		$(CAPDIR) .WAIT $(SUBDIRS)
+all clean clobber install: $(SUBDIRS)
 
 install_h:	$(ROOTHDRS)
 
 check:		$(CHECKHDRS)
 
-$(CAPDIR) \
 $(SUBDIRS):	FRC
 		@cd $@; pwd; $(MAKE) $(TARGET)
 

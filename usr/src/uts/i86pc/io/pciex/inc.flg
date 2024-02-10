@@ -32,11 +32,6 @@
 # header files
 find_files "s.*.h"	\
 	usr/src/uts/common/sys		\
-	usr/src/uts/sparc/sys		\
-	usr/src/uts/sparc/v7/sys	\
-	usr/src/uts/sparc/v9/sys	\
-	usr/src/uts/sun/sys		\
-	usr/src/uts/sun4/sys		\
 	usr/src/uts/intel/sys		\
 	usr/src/uts/intel/ia32/sys	\
 	usr/src/uts/common/rpc		\

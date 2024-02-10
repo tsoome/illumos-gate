@@ -40,7 +40,6 @@ MANIFEST_TOPDIRS=			\
 	coreadm				\
 	cron				\
 	dispadmin			\
-	drd				\
 	dumpadm				\
 	fcinfo				\
 	fcoesvc				\
@@ -52,11 +51,9 @@ MANIFEST_TOPDIRS=			\
 	kbd				\
 	keyserv				\
 	ldapcachemgr			\
-	ldmad				\
 	dlmgmtd				\
 	ndmpd				\
 	nscd				\
-	oplhpd				\
 	pools				\
 	power				\
 	rmvolmgr			\
@@ -64,8 +61,6 @@ MANIFEST_TOPDIRS=			\
 	rpcsvc				\
 	sa				\
 	saf				\
-	sckmd				\
-	sf880drd			\
 	smserverd			\
 	stmfproxy			\
 	stmfsvc				\
@@ -73,7 +68,6 @@ MANIFEST_TOPDIRS=			\
 	syseventd			\
 	syslogd				\
 	utmpd				\
-	vntsd				\
 	ypcmd				\
 	zoneadm				\
 	zoneadmd
@@ -101,7 +95,6 @@ MANIFEST_SUBDIRS=			\
 	cmd-inet/usr.sbin/in.talkd	\
 	cmd-inet/usr.sbin/ipsecutils	\
 	cmd-inet/usr.sbin/routeadm	\
-	dcs/sparc/sun4u			\
 	dfs.cmds/sharemgr		\
 	fs.d/autofs			\
 	fs.d/nfs/svc			\

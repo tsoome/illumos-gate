@@ -20,9 +20,6 @@
 #
 # CDDL HEADER END
 #
-#
-#ident	"%Z%%M%	%I%	%E% SMI" 
-#
 # Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
@@ -31,8 +28,6 @@
 # Get required header files
 #
 find_files "s.*.h"\
-        usr/src/uts/sparc\
-        usr/src/uts/sun\
         usr/src/uts/common/sys\
         usr/src/uts/common/vm\
         usr/src/uts/common/rpc\

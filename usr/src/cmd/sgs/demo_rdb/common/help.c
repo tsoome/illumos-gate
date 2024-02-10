@@ -112,12 +112,6 @@ varname_help()
 	    "\tare:\n"
 	    "\t\tcommon:\n"
 	    "\t\t\t$regs - display all registers\n"
-	    "\t\tsparc:\n"
-	    "\t\t\t$ins -   display IN registers\n"
-	    "\t\t\t$globs - display GLOBAL registers\n"
-	    "\t\t\t$outs -  display OUT registers\n"
-	    "\t\t\t$locs -  display LOCAL registers\n"
-	    "\t\t\t$specs -  display SPECIAL registers\n"
 	    "\t\ti86pc:\n");
 }
 

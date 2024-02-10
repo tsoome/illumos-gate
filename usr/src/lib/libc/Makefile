@@ -54,10 +54,10 @@ VAR1 =		hwcap1
 VAR2 =		hwcap2
 VAR3 =		hwcap3
 
-VARBLD_1=	$(MACH:sparc=sparc)
+VARBLD_1=	$(MACH)
 VARBLD=		$(VARBLD_1:i386=)
 
-VARBLD64_1=	$(MACH:sparc=sparcv9)
+VARBLD64_1=	$(MACH)
 VARBLD64=	$(VARBLD64_1:i386=)
 
 VAR1_DYNLIB =	$(LIBRARY:%.a=%_$(VAR1).so$(VERS))
@@ -71,16 +71,12 @@ VAR1_DYNLIB64 =	$(LIBRARY:%.a=%_$(VAR1).so$(VERS))
 VAR1_BLDDIR64 =	$(MACH)_$(VAR1)/$(VARBLD64)
 
 i386_VARIANTS=	$(VAR1) $(VAR2) $(VAR3)
-sparc_VARIANTS=
-sparcv9_VARIANTS=
 
 i386_COMP=
-sparc_COMP=	capabilities
 
 MACH_COMP=	$($(MACH)_COMP)
 
 i386_ETC=	$(MACH)/etc
-sparc_ETC=
 
 VARIANTS=	$($(MACH)_VARIANTS)
 VARIANT_SUBDIRS	= $(VARIANTS:%=$(MACH)_%/$(VARBLD))

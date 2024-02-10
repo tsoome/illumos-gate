@@ -100,26 +100,17 @@ OBJS_DIR_	= debug64
 #
 #	Build tools
 #
-CC_sparc_32	= $(sparc_CC)
-CC_sparc_64	= $(sparcv9_CC)
-
 CC_i386_32	= $(i386_CC)
 CC_i386_64	= $(amd64_CC)
 CC_amd64_64	= $(amd64_CC)
 
 CC		= $(CC_$(MACH)_$(CLASS))
 
-AS_sparc_32	= $(sparc_AS)
-AS_sparc_64	= $(sparcv9_AS)
-
 AS_i386_32	= $(i386_AS)
 AS_i386_64	= $(amd64_AS)
 AS_amd64_64	= $(amd64_AS)
 
 AS		= $(AS_$(MACH)_$(CLASS))
-
-LD_sparc_32	= $(sparc_LD)
-LD_sparc_64	= $(sparcv9_LD)
 
 LD_i386_32	= $(i386_LD)
 LD_i386_64	= $(amd64_LD)
@@ -298,7 +289,6 @@ CTFMRGFLAGS += -l "$(UTS_LABEL)"
 # the common case.  We also merge against the ip driver since networking is
 # typically loaded and types defined therein are shared between many modules.
 #
-CTFMERGE_GUDIR_sparc	= sun4u
 CTFMERGE_GUDIR_i386	= intel
 CTFMERGE_GUDIR		= $(CTFMERGE_GUDIR_$(MACH))
 
@@ -360,7 +350,6 @@ $(DTRACESTUBS)		:= SONAME = dtracestubs
 #	For now, 64b modules install into a subdirectory
 #	of their 32b brethren.
 #
-SUBDIR64_sparc		= sparcv9
 SUBDIR64_i386		= amd64
 SUBDIR64		= $(SUBDIR64_$(MACH))
 

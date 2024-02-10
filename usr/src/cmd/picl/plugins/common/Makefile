@@ -19,27 +19,23 @@
 #
 # CDDL HEADER END
 #
-#
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 1999-2000 by Sun Microsystems, Inc.
 # All rights reserved.
 #
 # cmd/picl/plugins/common/Makefile
 #
 
-SUBDIRS=	piclevent .WAIT devtree .WAIT memcfg .WAIT frutree .WAIT
+SUBDIRS=	piclevent .WAIT devtree .WAIT frutree .WAIT
 
 all :=		TARGET= all
 install :=	TARGET= install
 clean :=	TARGET= clean
 clobber :=	TARGET= clobber
-lint :=		TARGET= lint
 _msg :=		TARGET= _msg
 
 .KEEP_STATE:
 
-all install clean clobber lint _msg : $(SUBDIRS)
+all install clean clobber _msg : $(SUBDIRS)
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

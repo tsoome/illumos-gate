@@ -26,7 +26,6 @@
 include		$(SRC)/lib/Makefile.lib
 
 # Each target directory is responsible for making a symbol capabilities object.
-$(SPARC_BLD)SUBDIRS =	sun4u sun4v
 $(INTEL_BLD)SUBDIRS =	intel
 
 all :=		TARGET= all

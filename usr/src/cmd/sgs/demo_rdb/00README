@@ -38,12 +38,8 @@ Makefile.targ	- common Makefiles included by ${MACH)/Makefile
 common/*	- common source code used for all architectures
 amd64/		- build directory contains architecture specific source files
 i386/		 	"	"	"	"
-sparc/			"	"	"	"
-sparcv9/		"	"	"	"
 amd64/Makefile	- makefiles to build rdb for each architecture
 i386/Makefile		"	"	"	"
-sparc/Makefil		"	"	"	"
-sparcv9/Makefil		"	"	"	"
 test/*		- sample command files which can be used to test rdb
 
 
@@ -52,8 +48,8 @@ Building rdb
 
 To build rdb:
 
- % cd {amd64,i386,sparc,sparcv9}	- depending on which architecture
-					  you are building for
+ % cd {amd64,i386}	- depending on which architecture
+			  you are building for
  % make all
 
 To test the demo:

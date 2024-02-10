@@ -58,9 +58,7 @@ get_frame(struct ps_prochandle *ph, psaddr_t fp, struct frame *frm)
 		}
 
 		frm->fr_savpc = (long)frm32.fr_savpc;
-#if	defined(__sparcv9)
-		frm->fr_savfp = (struct frame *)(uintptr_t)frm32.fr_savfp;
-#elif	defined(__amd64)
+#if	defined(__amd64)
 		frm->fr_savfp = (long)frm32.fr_savfp;
 #endif
 		return (0);

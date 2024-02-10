@@ -117,12 +117,6 @@ ld_init_target(Lm_list *lml, Half mach)
 		ld_targ = *ld_targ_init_x86();
 		break;
 
-	case EM_SPARC:
-	case EM_SPARC32PLUS:
-	case EM_SPARCV9:
-		ld_targ = *ld_targ_init_sparc();
-		break;
-
 	default:
 		{
 			Conv_inv_buf_t	inv_buf;

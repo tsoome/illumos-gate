@@ -30,8 +30,7 @@ SRCS = fabric-xlate.c fx_epkt.c fx_fabric.c fx_fire.c fx_subr.c
 
 include ../../Makefile.plugin
 
-CPPFLAGS += -I$(ADJUNCT_PROTO)/usr/include/libxml2 -I$(KMFDIR)/include -I.
-CPPFLAGS += -I$(SRC)/uts/sun4v/io/px
+CPPFLAGS += -I$(ADJUNCT_PROTO)/usr/include/libxml2 -I.
 INCDIRS = $(SRC)/uts/common
 CFLAGS += -I$(INCDIRS)
 

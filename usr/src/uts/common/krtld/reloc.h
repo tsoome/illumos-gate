@@ -201,12 +201,9 @@ extern	int	do_reloc_rtld(uchar_t, uchar_t *, Xword *, const char *,
 #define	MSG_REL_FILE		"file %s: "
 #define	MSG_REL_SYM		"symbol %s: "
 #define	MSG_REL_VALUE		"value 0x%llx "
-#define	MSG_REL_LOSEBITS	"loses %d bits at "
 
-#define	MSG_REL_UNIMPL		"unimplemented relocation type: %d"
 #define	MSG_REL_UNSUPSZ		"offset size (%d bytes) is not supported"
 #define	MSG_REL_NONALIGN	"offset 0x%llx is non-aligned"
-#define	MSG_REL_UNNOBITS	"unsupported number of bits: %d"
 #define	MSG_REL_OFFSET		"offset 0x%llx"
 #define	MSG_REL_NOFIT		"value 0x%llx does not fit"
 
@@ -224,11 +221,6 @@ extern const char	*conv_reloc_amd64_type(Word);
 extern const char	*conv_reloc_386_type(Word);
 #define	CONV_RELOC_TYPE	conv_reloc_386_type
 
-#elif defined(__sparc)
-
-extern const char	*conv_reloc_SPARC_type(Word);
-#define	CONV_RELOC_TYPE	conv_reloc_SPARC_type
-
 #else
 #error platform not defined!
 #endif
@@ -241,11 +233,6 @@ extern const char	*conv_reloc_SPARC_type(Word);
  * one argument to the format string.  The following macros account for these
  * differences, as krtld and rtld share the same do_reloc() source.
  */
-#define	REL_ERR_UNIMPL(lml, file, sym, rtype) \
-	_kobj_printf(ops, MSG_REL_PREFIL, (file)); \
-	_kobj_printf(ops, MSG_REL_SYM, ((sym) ? (sym) : MSG_STR_UNKNOWN)); \
-	_kobj_printf(ops, MSG_REL_UNIMPL, (int)(rtype))
-
 #define	REL_ERR_UNSUPSZ(lml, file, sym, rtype, size) \
 	_kobj_printf(ops, MSG_REL_PREGEN, CONV_RELOC_TYPE((rtype))); \
 	_kobj_printf(ops, MSG_REL_FILE, (file)); \
@@ -258,20 +245,6 @@ extern const char	*conv_reloc_SPARC_type(Word);
 	_kobj_printf(ops, MSG_REL_SYM, ((sym) ? (sym) : MSG_STR_UNKNOWN)); \
 	_kobj_printf(ops, MSG_REL_NONALIGN, (u_longlong_t)EC_OFF((off)))
 
-#define	REL_ERR_UNNOBITS(lml, file, sym, rtype, nbits) \
-	_kobj_printf(ops, MSG_REL_PREGEN, CONV_RELOC_TYPE((rtype))); \
-	_kobj_printf(ops, MSG_REL_FILE, (file)); \
-	_kobj_printf(ops, MSG_REL_SYM, ((sym) ? (sym) : MSG_STR_UNKNOWN)); \
-	_kobj_printf(ops, MSG_REL_UNNOBITS, (nbits))
-
-#define	REL_ERR_LOSEBITS(lml, file, sym, rtype, uvalue, nbits, off) \
-	_kobj_printf(ops, MSG_REL_PREGEN, CONV_RELOC_TYPE((rtype))); \
-	_kobj_printf(ops, MSG_REL_FILE, (file)); \
-	_kobj_printf(ops, MSG_REL_SYM, ((sym) ? (sym) : MSG_STR_UNKNOWN)); \
-	_kobj_printf(ops, MSG_REL_VALUE, (u_longlong_t)EC_XWORD((uvalue))); \
-	_kobj_printf(ops, MSG_REL_LOSEBITS, (int)(nbits)); \
-	_kobj_printf(ops, MSG_REL_OFFSET, (u_longlong_t)EC_NATPTR((off)))
-
 #define	REL_ERR_NOFIT(lml, file, sym, rtype, uvalue) \
 	_kobj_printf(ops, MSG_REL_PREGEN, CONV_RELOC_TYPE((rtype))); \
 	_kobj_printf(ops, MSG_REL_FILE, (file)); \
@@ -283,10 +256,6 @@ extern const char	*conv_reloc_SPARC_type(Word);
 
 extern	const char *demangle(const char *);
 
-#define	REL_ERR_UNIMPL(lml, file, sym, rtype) \
-	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_UNIMPL), (file), \
-	    ((sym) ? demangle(sym) : MSG_INTL(MSG_STR_UNKNOWN)), (int)(rtype)))
-
 #define	REL_ERR_UNSUPSZ(lml, file, sym, rtype, size) \
 	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_UNSUPSZ), \
 	    conv_reloc_type_static(M_MACH, (rtype), 0), (file), \
@@ -296,17 +265,6 @@ extern	const char *demangle(const char *);
 	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_NONALIGN), \
 	    conv_reloc_type_static(M_MACH, (rtype), 0), (file), \
 	    ((sym) ? demangle(sym) : MSG_INTL(MSG_STR_UNKNOWN)), EC_OFF((off))))
-
-#define	REL_ERR_UNNOBITS(lml, file, sym, rtype, nbits) \
-	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_UNNOBITS), \
-	    conv_reloc_type_static(M_MACH, (rtype), 0), (file), \
-	    ((sym) ? demangle(sym) : MSG_INTL(MSG_STR_UNKNOWN)), (nbits)))
-
-#define	REL_ERR_LOSEBITS(lml, file, sym, rtype, uvalue, nbits, off) \
-	(eprintf(lml, ERR_FATAL,  MSG_INTL(MSG_REL_LOSEBITS), \
-	    conv_reloc_type_static(M_MACH, (rtype), 0), (file), \
-	    ((sym) ? demangle(sym) : MSG_INTL(MSG_STR_UNKNOWN)), \
-	    EC_XWORD((uvalue)), (nbits), EC_NATPTR((off))))
 
 #define	REL_ERR_NOFIT(lml, file, sym, rtype, uvalue) \
 	(eprintf(lml, ERR_FATAL, MSG_INTL(MSG_REL_NOFIT), \

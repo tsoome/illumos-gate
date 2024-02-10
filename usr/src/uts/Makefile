@@ -30,13 +30,12 @@ include ../Makefile.master
 #
 # List of architectures to build as part of the standard build.
 #
-# Some of these architectures are built in parallel (see i386_PARALLEL and
-# sparc_PARALLEL). This requires building some parts first before parallel build
+# Some of these architectures are built in parallel (see i386_PARALLEL).
+# This requires building some parts first before parallel build
 # can start. Platform make files know what should be built as a prerequisite for
-# the parallel build to work. The i386_PREREQ and sparc_PREREQ variables tell
+# the parallel build to work. The i386_PREREQ variable tell
 # which platform directory to enter to start making prerequisite dependencies.
 #
-sparc_ARCHITECTURES = sun4v sun4u sparc
 
 i386_ARCHITECTURES = i86pc i86xpv intel
 
@@ -47,15 +46,6 @@ i386_ARCHITECTURES = i86pc i86xpv intel
 #
 i386_PREREQ = intel
 i386_PARALLEL = $(i386_ARCHITECTURES)
-
-#
-# For sparc all architectures can be compiled in parallel.
-#
-# sun4/Makefile knows how to build prerequisites needed for parallel build.
-# can start.
-#
-sparc_PREREQ = sun4
-sparc_PARALLEL = $(sparc_ARCHITECTURES)
 
 #
 # Platforms defined in $(MACH)_PARALLEL are built in parallel. DUMMY is placed
@@ -159,7 +149,6 @@ DYNHDRDIRS =	common/gssapi \
 		common/rpcsvc \
 		common/sys
 
-sparc_HDRDIRS= sun/sys
 i386_HDRDIRS= i86pc/vm i86xpv/vm
 
 HDRDIRS= $(COMMON_HDRDIRS) $($(MACH)_HDRDIRS)
@@ -193,8 +182,7 @@ clobber_h: $(DYNHDRDIRS)
 # the user will be interested in), it's historically been set to
 # mirror the $(XRDIRS) list, and that works kinda sorta okay.
 #
-XRDIRS = $(sparc_ARCHITECTURES) $(i386_ARCHITECTURES) sun4 sfmmu	\
-	sun common
+XRDIRS = $(i386_ARCHITECTURES) common
 
 XRINCDIRS = $(XRDIRS)
 

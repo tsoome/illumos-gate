@@ -30,7 +30,6 @@
 
 
 i386_ARCH =	intel
-sparc_ARCH =	sparc
 
 ARCH =		$($(MACH)_ARCH)
 
@@ -63,8 +62,6 @@ CPPFLAGS =	-I. -I../common -I$(SGSHOME)/include -I$(SGSHOME)/include/$(MACH) \
 		$(CPPFLAGS.master) -I$(ELFCAP)
 
 # PICS64 is unique to our environment
-$(PICS64) :=	sparc_CFLAGS += $(C_PICFLAGS)
-$(PICS64) :=	sparcv9_CFLAGS += $(C_PICFLAGS)
 $(PICS64) :=	CPPFLAGS += -DPIC -D_REENTRANT
 
 LDFLAGS +=	$(ZIGNORE)

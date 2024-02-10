@@ -502,21 +502,6 @@ i386_SUBDIRS=		\
 	xhci		\
 	xvm
 
-sparc_SUBDIRS=		\
-	dcs		\
-	device_remap	\
-	drd		\
-	fruadm		\
-	ldmad		\
-	oplhpd		\
-	prtdscp		\
-	prtfru		\
-	scadm		\
-	sckmd		\
-	sf880drd	\
-	virtinfo	\
-	vntsd
-
 #
 # Commands that are messaged.  Note that 'lp' comes first
 # (see previous comment about 'lp'.)
@@ -572,7 +557,6 @@ MSGSUBDIRS=		\
 	datadm		\
 	date		\
 	dc		\
-	dcs		\
 	dd		\
 	deroff		\
 	devfsadm	\
@@ -689,7 +673,6 @@ MSGSUBDIRS=		\
 	rmvolmgr	\
 	sasinfo		\
 	sbdadm		\
-	scadm		\
 	script		\
 	scsi		\
 	sdiff		\
@@ -751,13 +734,6 @@ MSGSUBDIRS=		\
 	zonename	\
 	zpool		\
 	zonestat
-
-sparc_MSGSUBDIRS=	\
-	fruadm		\
-	prtdscp		\
-	prtfru		\
-	virtinfo	\
-	vntsd
 
 i386_MSGSUBDIRS=	\
 	rdmsr		\

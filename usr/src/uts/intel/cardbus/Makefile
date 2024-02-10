@@ -56,7 +56,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 #
 #	Include sun4u specific header files
 #
-INC_PATH        += -I$(UTSBASE)/sun4u -I$(UTSBASE)/sun4 -I$(UTSBASE)/i86pc
+INC_PATH        += -I$(UTSBASE)/i86pc
 
 CPPFLAGS        +=      -DHOTPLUG
 

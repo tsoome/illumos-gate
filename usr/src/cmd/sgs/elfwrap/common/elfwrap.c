@@ -230,24 +230,12 @@ output(const char *prog, int fd, const char *ofile, ushort_t mach,
 		mach = M_MACH;
 
 	switch (mach) {
-#if	!defined(lint)
-		case EM_SPARC:
-			target_init_sparc(&tdesc);
-			break;
-		case EM_SPARCV9:
-			target_init_sparcv9(&tdesc);
-			break;
 		case EM_386:
 			target_init_i386(&tdesc);
 			break;
 		case EM_AMD64:
 			target_init_amd64(&tdesc);
 			break;
-#else
-		default:
-			target_init(&tdesc);
-			break;
-#endif
 	}
 	/*
 	 * Create a new ELF descriptor for the new output file.

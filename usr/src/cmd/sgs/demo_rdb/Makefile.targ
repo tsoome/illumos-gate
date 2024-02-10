@@ -84,9 +84,6 @@ test-steps: simp FRC
 test-plt_skip: simp FRC
 		./rdb -f ../tests/plt_skip ./simp
 
-test-sparc-regs: simp FRC
-		./rdb -f ../tests/test-sparc-regs simp
-
 test-object-padding: simp FRC
 		./rdb -f ../tests/object_padding_maps simp
 

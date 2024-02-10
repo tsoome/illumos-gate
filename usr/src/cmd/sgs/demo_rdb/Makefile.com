@@ -65,7 +65,6 @@ CERRWARN +=	-_gcc=-Wno-unused-variable
 SMOFF +=	buffer_too_small_for_struct
 # DEMO DELETE END
 
-test-sparc=	test-sparc-regs
 test-i386=
 TESTS=		test-maps test-breaks test-steps test-plt_skip \
 		    test-object-padding $(test-$(MACH))
