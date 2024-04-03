@@ -1196,17 +1196,14 @@ dbuf_read_verify_dnode_crypt(dmu_buf_impl_t *db, uint32_t flags)
  * returning.
  */
 static int
-dbuf_read_impl(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags,
+dbuf_read_impl(dmu_buf_impl_t *db, dnode_t *dn, zio_t *zio, uint32_t flags,
     db_lock_type_t dblt, void *tag)
 {
-	dnode_t *dn;
 	zbookmark_phys_t zb;
 	arc_flags_t aflags = ARC_FLAG_NOWAIT;
 	int err, zio_flags;
 
 	err = zio_flags = 0;
-	DB_DNODE_ENTER(db);
-	dn = DB_DNODE(db);
 	ASSERT(!zfs_refcount_is_zero(&db->db_holds));
 	ASSERT(MUTEX_HELD(&db->db_mtx));
 	ASSERT(db->db_state == DB_UNCACHED);
@@ -1242,8 +1239,6 @@ dbuf_read_impl(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags,
 	if (err != 0)
 		goto early_unlock;
 
-	DB_DNODE_EXIT(db);
-
 	db->db_state = DB_READ;
 	DTRACE_SET_STATE(db, "read issued");
 	mutex_exit(&db->db_mtx);
@@ -1267,12 +1262,11 @@ dbuf_read_impl(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags,
 	 */
 	blkptr_t bp = *db->db_blkptr;
 	dmu_buf_unlock_parent(db, dblt, tag);
-	(void) arc_read(zio, db->db_objset->os_spa, &bp,
+	return (arc_read(zio, db->db_objset->os_spa, &bp,
 	    dbuf_read_done, db, ZIO_PRIORITY_SYNC_READ, zio_flags,
-	    &aflags, &zb);
-	return (err);
+	    &aflags, &zb));
+
 early_unlock:
-	DB_DNODE_EXIT(db);
 	mutex_exit(&db->db_mtx);
 	dmu_buf_unlock_parent(db, dblt, tag);
 	return (err);
@@ -1356,7 +1350,7 @@ dbuf_fix_old_data(dmu_buf_impl_t *db, uint64_t txg)
 }
 
 int
-dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
+dbuf_read(dmu_buf_impl_t *db, zio_t *pio, uint32_t flags)
 {
 	int err = 0;
 	boolean_t prefetch;
@@ -1375,8 +1369,8 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 	dn = DB_DNODE(db);
 
 	prefetch = db->db_level == 0 && db->db_blkid != DMU_BONUS_BLKID &&
-	    (flags & DB_RF_NOPREFETCH) == 0 && dn != NULL &&
-	    DBUF_IS_CACHEABLE(db);
+	    (flags & DB_RF_NOPREFETCH) == 0 &&
+	    DBUF_IS_CACHEABLE(db);	/* XXX */
 
 	mutex_enter(&db->db_mtx);
 	if (db->db_state == DB_CACHED) {
@@ -1418,13 +1412,13 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 
 		db_lock_type_t dblt = dmu_buf_lock_parent(db, RW_READER, FTAG);
 
-		if (zio == NULL &&
+		if (pio == NULL &&	/* XXX */
 		    db->db_blkptr != NULL && !BP_IS_HOLE(db->db_blkptr)) {
 			spa_t *spa = dn->dn_objset->os_spa;
-			zio = zio_root(spa, NULL, NULL, ZIO_FLAG_CANFAIL);
+			pio = zio_root(spa, NULL, NULL, ZIO_FLAG_CANFAIL);
 			need_wait = B_TRUE;
 		}
-		err = dbuf_read_impl(db, zio, flags, dblt, FTAG);
+		err = dbuf_read_impl(db, dn, pio, flags, dblt, FTAG);
 		/*
 		 * dbuf_read_impl has dropped db_mtx and our parent's rwlock
 		 * for us
@@ -1437,8 +1431,10 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 
 		DB_DNODE_EXIT(db);
 
-		if (!err && need_wait)
-			err = zio_wait(zio);
+		if (!err && need_wait) { /* XXX */
+			err = zio_wait(pio);
+			pio = NULL;
+		}
 	} else {
 		/*
 		 * Another reader came in while the dbuf was in flight
@@ -1463,13 +1459,20 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *zio, uint32_t flags)
 				ASSERT(db->db_state == DB_READ ||
 				    (flags & DB_RF_HAVESTRUCT) == 0);
 				DTRACE_PROBE2(blocked__read, dmu_buf_impl_t *,
-				    db, zio_t *, zio);
+				    db, zio_t *, pio);
 				cv_wait(&db->db_changed, &db->db_mtx);
 			}
 			if (db->db_state == DB_UNCACHED)
 				err = SET_ERROR(EIO);
 		}
 		mutex_exit(&db->db_mtx);
+	}
+
+	if (pio && err != 0) {
+		zio_t *zio = zio_null(pio, pio->io_spa, NULL, NULL, NULL,
+		    ZIO_FLAG_CANFAIL);
+		zio->io_error = err;
+		zio_nowait(zio);
 	}
 
 	return (err);
