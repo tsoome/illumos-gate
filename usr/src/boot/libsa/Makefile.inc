@@ -277,3 +277,22 @@ SRCS += $(SRC)/common/util/explicit_bzero.c
 SRCS += $(SRC)/common/util/memmem.c
 OBJECTS += explicit_bzero.o
 OBJECTS += memmem.o
+
+# nvlist
+OBJECTS += nvpair.o
+OBJECTS += nvpair_alloc_stand.o
+objs/nvpair.o := CPPFLAGS += -I$(SRC)/uts/common
+pics/nvpair.o := CPPFLAGS += -I$(SRC)/uts/common
+objs/nvpair_alloc_stand.o := CPPFLAGS += -I$(SRC)/uts/common
+pics/nvpair_alloc_stand.o := CPPFLAGS += -I$(SRC)/uts/common
+
+# xdr
+OBJECTS += xdr.o
+OBJECTS += xdr_mem.o
+OBJECTS += xdr_array.o
+objs/xdr.o := CPPFLAGS += -I$(SRC)/uts/common
+pics/xdr.o := CPPFLAGS += -I$(SRC)/uts/common
+objs/xdr_mem.o := CPPFLAGS += -I$(SRC)/uts/common
+pics/xdr_mem.o := CPPFLAGS += -I$(SRC)/uts/common
+objs/xdr_array.o := CPPFLAGS += -I$(SRC)/uts/common
+pics/xdr_array.o := CPPFLAGS += -I$(SRC)/uts/common

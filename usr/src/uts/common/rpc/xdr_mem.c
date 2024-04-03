@@ -40,6 +40,11 @@
  * then this is the package for you.
  */
 
+#if defined(_STANDALONE)
+#include <sys/cdefs.h>
+#include <stand.h>
+#include <sys/stddef.h>
+#endif
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/systm.h>

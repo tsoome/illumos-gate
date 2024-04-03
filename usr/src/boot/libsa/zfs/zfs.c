@@ -748,22 +748,22 @@ zfs_get_bootonce(void *vdev, const char *key, char *buf, size_t size)
 {
 	nvlist_t *benv;
 	char *result = NULL;
-	int result_size, rv;
+	int rv;
 
 	if ((rv = zfs_get_bootenv(vdev, &benv)) != 0)
 		return (rv);
 
-	if ((rv = nvlist_find(benv, key, DATA_TYPE_STRING, NULL,
-	    &result, &result_size)) == 0) {
-		if (result_size == 0) {
+	if ((rv = nvlist_lookup_string(benv, key, &result)) == 0) {
+		if (result[0] == '\0') {
 			/* ignore empty string */
 			rv = ENOENT;
 		} else {
-			size = MIN((size_t)result_size + 1, size);
+			size = MIN(strlen(result) + 1, size);
 			strlcpy(buf, result, size);
 		}
-		(void) nvlist_remove(benv, key, DATA_TYPE_STRING);
-		(void) zfs_set_bootenv(vdev, benv);
+		rv = nvlist_remove(benv, key, DATA_TYPE_STRING);
+		if (rv == 0)
+			rv = zfs_set_bootenv(vdev, benv);
 	}
 
 	return (rv);
@@ -825,7 +825,6 @@ zfs_nvstore_getter(void *vdev, const char *name, void **data)
 	spa_t *spa;
 	nvlist_t *nv;
 	char *str, **ptr;
-	int size;
 	int rv;
 
 	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
@@ -837,18 +836,17 @@ zfs_nvstore_getter(void *vdev, const char *name, void **data)
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0)
-		return (ENOENT);
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0)
+		return (rv);
 
-	rv = nvlist_find(nv, name, DATA_TYPE_STRING, NULL, &str, &size);
+	rv = nvlist_lookup_string(nv, name, &str);
 	if (rv == 0) {
 		ptr = (char **)data;
-		asprintf(ptr, "%.*s", size, str);
+		asprintf(ptr, "%s", str);
 		if (*data == NULL)
 			rv = ENOMEM;
 	}
-	nvlist_destroy(nv);
 	return (rv);
 }
 
@@ -871,11 +869,16 @@ zfs_nvstore_setter(void *vdev, int type, const char *name,
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0) {
-		nv = nvlist_create(NV_UNIQUE_NAME);
-		if (nv == NULL)
-			return (ENOMEM);
+	if (nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv) != 0) {
+		rv = nvlist_alloc(&nv, NV_UNIQUE_NAME, 0);
+		if (rv != 0)
+			return (rv);
+	} else {
+		nvlist_t *tmp;
+		rv = nvlist_dup(nv, &tmp, 0);
+		if (rv != 0)
+			return (rv);
+		nv = tmp;
 	}
 
 	rv = 0;
@@ -975,17 +978,60 @@ zfs_nvstore_setter(void *vdev, int type, const char *name,
 		}
 		if (rv == 0) {
 			if (env_set) {
-				rv = zfs_nvstore_setenv(vdev,
-				    nvpair_find(nv, name));
-			} else {
-				env_discard(env_getenv(name));
-				rv = 0;
+				nvpair_t *nvp;
+
+				rv = nvlist_lookup_nvpair(nv, name, &nvp);
+				if (rv == 0) {
+					rv = zfs_nvstore_setenv(vdev, nvp);
+				}
 			}
 		}
 	}
 
-	nvlist_destroy(nv);
+	nvlist_free(nv);
 	return (rv);
+}
+
+static const char *typenames[] = {
+	"DATA_TYPE_UNKNOWN",
+	"DATA_TYPE_BOOLEAN",
+	"DATA_TYPE_BYTE",
+	"DATA_TYPE_INT16",
+	"DATA_TYPE_UINT16",
+	"DATA_TYPE_INT32",
+	"DATA_TYPE_UINT32",
+	"DATA_TYPE_INT64",
+	"DATA_TYPE_UINT64",
+	"DATA_TYPE_STRING",
+	"DATA_TYPE_BYTE_ARRAY",
+	"DATA_TYPE_INT16_ARRAY",
+	"DATA_TYPE_UINT16_ARRAY",
+	"DATA_TYPE_INT32_ARRAY",
+	"DATA_TYPE_UINT32_ARRAY",
+	"DATA_TYPE_INT64_ARRAY",
+	"DATA_TYPE_UINT64_ARRAY",
+	"DATA_TYPE_STRING_ARRAY",
+	"DATA_TYPE_HRTIME",
+	"DATA_TYPE_NVLIST",
+	"DATA_TYPE_NVLIST_ARRAY",
+	"DATA_TYPE_BOOLEAN_VALUE",
+	"DATA_TYPE_INT8",
+	"DATA_TYPE_UINT8",
+	"DATA_TYPE_BOOLEAN_ARRAY",
+	"DATA_TYPE_INT8_ARRAY",
+	"DATA_TYPE_UINT8_ARRAY"
+};
+
+static int
+nvpair_type_from_name(const char *name)
+{
+	unsigned i;
+
+	for (i = 0; i < nitems(typenames); i++) {
+		if (strcmp(name, typenames[i]) == 0)
+			return (i);
+	}
+	return (0);
 }
 
 static int
@@ -1043,34 +1089,27 @@ zfs_nvstore_setter_str(void *vdev, const char *type, const char *name,
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0) {
-		nv = NULL;
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0) {
+		return (rv);
 	}
 
 	if (type == NULL) {
-		nvp_header_t *nvh;
+		nvpair_t *nvp;
 
 		/*
 		 * if there is no existing pair, default to string.
 		 * Otherwise, use type from existing pair.
 		 */
-		nvh = nvpair_find(nv, name);
-		if (nvh == NULL) {
+		rv = nvlist_lookup_nvpair(nv, name, &nvp);
+		if (rv != 0) {
 			dt = DATA_TYPE_STRING;
 		} else {
-			nv_string_t *nvp_name;
-			nv_pair_data_t *nvp_data;
-
-			nvp_name = (nv_string_t *)(nvh + 1);
-			nvp_data = (nv_pair_data_t *)(&nvp_name->nv_data[0] +
-			    NV_ALIGN4(nvp_name->nv_size));
-			dt = nvp_data->nv_type;
+			dt = nvpair_type(nvp);
 		}
 	} else {
 		dt = nvpair_type_from_name(type);
 	}
-	nvlist_destroy(nv);
 
 	rv = 0;
 	switch (dt) {
@@ -1186,19 +1225,13 @@ zfs_nvstore_unset_impl(void *vdev, const char *name, bool unset_env)
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0)
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0)
 		return (ENOENT);
 
-	rv = nvlist_remove(nv, name, DATA_TYPE_UNKNOWN);
+	rv = nvlist_remove_all(nv, name);
 	if (rv == 0) {
-		if (nvlist_next_nvpair(nv, NULL) == NULL) {
-			rv = nvlist_remove(spa->spa_bootenv, OS_NVSTORE,
-			    DATA_TYPE_NVLIST);
-		} else {
-			rv = nvlist_add_nvlist(spa->spa_bootenv,
-			    OS_NVSTORE, nv);
-		}
+		rv = nvlist_add_nvlist(spa->spa_bootenv, OS_NVSTORE, nv);
 		if (rv == 0)
 			rv = zfs_set_bootenv(vdev, spa->spa_bootenv);
 	}
@@ -1218,6 +1251,299 @@ zfs_nvstore_unset(void *vdev, const char *name)
 	return (zfs_nvstore_unset_impl(vdev, name, true));
 }
 
+static uint_t
+nvpair_nelem(nvpair_t *nvp)
+{
+	uint_t nelem;
+	data_type_t type;
+	void *val, **valp;
+
+	type = nvpair_type(nvp);
+	switch (type) {
+	case DATA_TYPE_BOOLEAN:
+	case DATA_TYPE_BOOLEAN_VALUE:
+	case DATA_TYPE_BYTE:
+	case DATA_TYPE_INT8:
+	case DATA_TYPE_UINT8:
+	case DATA_TYPE_INT16:
+	case DATA_TYPE_UINT16:
+	case DATA_TYPE_INT32:
+	case DATA_TYPE_UINT32:
+	case DATA_TYPE_INT64:
+	case DATA_TYPE_UINT64:
+	case DATA_TYPE_STRING:
+	case DATA_TYPE_NVLIST:
+	default:
+		nelem = 1;
+		break;
+
+	case DATA_TYPE_BOOLEAN_ARRAY:
+		(void) nvpair_value_boolean_array(nvp,
+		    (boolean_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_BYTE_ARRAY:
+		(void) nvpair_value_byte_array(nvp, (uchar_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_INT8_ARRAY:
+		(void) nvpair_value_int8_array(nvp, (int8_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_UINT8_ARRAY:
+		(void) nvpair_value_uint8_array(nvp, (uint8_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_INT16_ARRAY:
+		(void) nvpair_value_int16_array(nvp, (int16_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_UINT16_ARRAY:
+		(void) nvpair_value_uint16_array(nvp,
+		    (uint16_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_INT32_ARRAY:
+		(void) nvpair_value_int32_array(nvp, (int32_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_UINT32_ARRAY:
+		(void) nvpair_value_uint32_array(nvp,
+		    (uint32_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_INT64_ARRAY:
+		(void) nvpair_value_int64_array(nvp, (int64_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_UINT64_ARRAY:
+		(void) nvpair_value_uint64_array(nvp,
+		    (uint64_t **)&val, &nelem);
+		break;
+	case DATA_TYPE_STRING_ARRAY:
+		(void) nvpair_value_string_array(nvp, (char ***)&valp, &nelem);
+		break;
+	case DATA_TYPE_NVLIST_ARRAY:
+		(void) nvpair_value_nvlist_array(nvp,
+		    (nvlist_t ***)&valp, &nelem);
+		break;
+	}
+	return (nelem);
+}
+
+static void nvlist_print(nvlist_t *, uint_t);
+
+static void
+nvpair_print(nvpair_t *nvp, uint_t indent)
+{
+	uint_t i, nelem;
+	data_type_t type;
+
+	for (i = 0; i < indent; i++)
+		printf(" ");
+
+	type = nvpair_type(nvp);
+	nelem = nvpair_nelem(nvp);
+	printf("%s [%d] %s = ", typenames[nvpair_type(nvp)],
+	    nelem, nvpair_name(nvp));
+
+	switch (type) {
+	case DATA_TYPE_BOOLEAN:
+		printf("TRUE");
+		break;
+	case DATA_TYPE_BOOLEAN_VALUE: {
+		boolean_t val;
+		if (nvpair_value_boolean_value(nvp, &val) == 0)
+			printf("%s", val? "B_TRUE" : "B_FALSE");
+		break;
+	}
+	case DATA_TYPE_BYTE: {
+		uchar_t val;
+		if (nvpair_value_byte(nvp, &val) == 0)
+			printf("0x%x", val);
+		break;
+	}
+	case DATA_TYPE_INT8: {
+		int8_t val;
+		if (nvpair_value_int8(nvp, &val) == 0)
+			printf("0x%x", val);
+		break;
+	}
+	case DATA_TYPE_UINT8: {
+		uint8_t val;
+		if (nvpair_value_uint8(nvp, &val) == 0)
+			printf("0x%x", val);
+		break;
+	}
+	case DATA_TYPE_INT16: {
+		int16_t val;
+		if (nvpair_value_int16(nvp, &val) == 0)
+			printf("0x%hx", val);
+		break;
+	}
+	case DATA_TYPE_UINT16: {
+		uint16_t val;
+		if (nvpair_value_uint16(nvp, &val) == 0)
+			printf("0x%hx", val);
+		break;
+	}
+	case DATA_TYPE_INT32: {
+		int32_t val;
+		if (nvpair_value_int32(nvp, &val) == 0)
+			printf("0x%x", val);
+		break;
+	}
+	case DATA_TYPE_UINT32: {
+		uint32_t val;
+		if (nvpair_value_uint32(nvp, &val) == 0)
+			printf("0x%x", val);
+		break;
+	}
+	case DATA_TYPE_INT64: {
+		int64_t val;
+		if (nvpair_value_int64(nvp, &val) == 0)
+			printf("0x%jx", (intmax_t)val);
+		break;
+	}
+	case DATA_TYPE_UINT64: {
+		uint64_t val;
+		if (nvpair_value_uint64(nvp, &val) == 0)
+			printf("0x%jx", (uintmax_t)val);
+		break;
+	}
+	case DATA_TYPE_STRING: {
+		char *val;
+		if (nvpair_value_string(nvp, &val) == 0)
+			printf("\"%s\"", val);
+		break;
+	}
+	case DATA_TYPE_NVLIST: {
+		nvlist_t *val;
+		if (nvpair_value_nvlist(nvp, &val) == 0) {
+			printf("\n");
+			nvlist_print(val, indent + 2);
+		}
+		break;
+	}
+	case DATA_TYPE_BOOLEAN_ARRAY: {
+		boolean_t *val;
+		if (nvpair_value_boolean_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = %s", i,
+				    val[i]? "B_TRUE" : "B_FALSE");
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_BYTE_ARRAY: {
+		uchar_t *val;
+		if (nvpair_value_byte_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%x", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_INT8_ARRAY: {
+		int8_t *val;
+		if (nvpair_value_int8_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%x", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_UINT8_ARRAY: {
+		uint8_t *val;
+		if (nvpair_value_uint8_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%x", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_INT16_ARRAY: {
+		int16_t *val;
+		if (nvpair_value_int16_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%hx", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_UINT16_ARRAY: {
+		uint16_t *val;
+		if (nvpair_value_uint16_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%hx", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_INT32_ARRAY: {
+		int32_t *val;
+		if (nvpair_value_int32_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%x", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_UINT32_ARRAY: {
+		uint32_t *val;
+		if (nvpair_value_uint32_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%x", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_INT64_ARRAY: {
+		int64_t *val;
+		if (nvpair_value_int64_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%jx", i, (intmax_t)val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_UINT64_ARRAY: {
+		uint64_t *val;
+		if (nvpair_value_uint64_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = 0x%jx", i, (uintmax_t)val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_STRING_ARRAY: {
+		char **val;
+		if (nvpair_value_string_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				printf(" [%u] = \"%s\"", i, val[i]);
+			}
+		}
+		break;
+	}
+	case DATA_TYPE_NVLIST_ARRAY: {
+		nvlist_t **val;
+		if (nvpair_value_nvlist_array(nvp, &val, &nelem) == 0) {
+			for (i = 0; i < nelem; i++) {
+				nvlist_print(val[i], indent + 2);
+			}
+		}
+		break;
+	}
+	default:
+		printf("unknown type");
+	}
+	printf("\n");
+}
+
+static void
+nvlist_print(nvlist_t *nvl, unsigned int indent)
+{
+	nvpair_t *nvp;
+
+	for (nvp = nvlist_next_nvpair(nvl, NULL); nvp != NULL;
+	    nvp = nvlist_next_nvpair(nvl, nvp)) {
+		nvpair_print(nvp, indent);
+	}
+
+	printf("%*s\n", indent + 13, "End of nvlist");
+}
+
 static int
 zfs_nvstore_print(void *vdev __unused, void *ptr)
 {
@@ -1234,86 +1560,138 @@ zfs_nvstore_print(void *vdev __unused, void *ptr)
 static int
 zfs_nvstore_setenv(void *vdev __unused, void *ptr)
 {
-	nvp_header_t *nvh = ptr;
-	nv_string_t *nvp_name, *nvp_value;
-	nv_pair_data_t *nvp_data;
+	nvpair_t *nvp = ptr;
 	char *name, *value;
 	int rv = 0;
 
-	if (nvh == NULL)
+	if (nvp == NULL)
 		return (ENOENT);
 
-	nvp_name = (nv_string_t *)(nvh + 1);
-	nvp_data = (nv_pair_data_t *)(&nvp_name->nv_data[0] +
-	    NV_ALIGN4(nvp_name->nv_size));
-
-	if ((name = nvstring_get(nvp_name)) == NULL)
-		return (ENOMEM);
+	name = nvpair_name(nvp);
 
 	value = NULL;
-	switch (nvp_data->nv_type) {
-	case DATA_TYPE_BYTE:
-	case DATA_TYPE_UINT8:
-		(void) asprintf(&value, "%uc",
-		    *(unsigned *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	switch (nvpair_type(nvp)) {
+	case DATA_TYPE_BYTE: {
+		uchar_t val;
+		rv = nvpair_value_byte(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%uc", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_INT8:
-		(void) asprintf(&value, "%c", *(int *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_INT8: {
+		int8_t val;
+		rv = nvpair_value_int8(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%c", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_INT16:
-		(void) asprintf(&value, "%hd", *(short *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_UINT8: {
+		uint8_t val;
+		rv = nvpair_value_uint8(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%uc", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_UINT16:
-		(void) asprintf(&value, "%hu",
-		    *(unsigned short *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_INT16: {
+		int16_t val;
+		rv = nvpair_value_int16(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%hd", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_BOOLEAN_VALUE:
-	case DATA_TYPE_INT32:
-		(void) asprintf(&value, "%d", *(int *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_UINT16: {
+		uint16_t val;
+		rv = nvpair_value_uint16(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%hu", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_UINT32:
-		(void) asprintf(&value, "%u",
-		    *(unsigned *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_BOOLEAN_VALUE: {
+		boolean_t val;
+		rv = nvpair_value_boolean_value(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%d", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_INT64:
-		(void) asprintf(&value, "%jd",
-		    (intmax_t)*(int64_t *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_INT32: {
+		int32_t val;
+		rv = nvpair_value_int32(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%d", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_UINT64:
-		(void) asprintf(&value, "%ju",
-		    (uintmax_t)*(uint64_t *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
+	case DATA_TYPE_UINT32: {
+		uint32_t val;
+		rv = nvpair_value_uint32(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%u", val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
 		break;
+	}
 
-	case DATA_TYPE_STRING:
-		nvp_value = (nv_string_t *)&nvp_data->nv_data[0];
-		if ((value = nvstring_get(nvp_value)) == NULL) {
-			rv = ENOMEM;
+	case DATA_TYPE_INT64: {
+		int64_t val;
+		rv = nvpair_value_int64(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%jd", (intmax_t)val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
+		break;
+	}
+
+	case DATA_TYPE_UINT64: {
+		uint64_t val;
+		rv = nvpair_value_uint64(nvp, &val);
+		if (rv == 0) {
+			(void) asprintf(&value, "%ju", (uintmax_t)val);
+			if (value == NULL)
+				rv = ENOMEM;
+		}
+		break;
+	}
+
+	case DATA_TYPE_STRING: {
+		char *val;
+		rv = nvpair_value_string(nvp, &val);
+		if (rv == 0) {
+			value = strdup(val);
+			if (value == NULL)
+				rv = ENOMEM;
 			break;
 		}
 		break;
+	}
 
 	default:
 		rv = EINVAL;
@@ -1321,11 +1699,9 @@ zfs_nvstore_setenv(void *vdev __unused, void *ptr)
 	}
 
 	if (value != NULL) {
-		rv = env_setenv(name, EV_VOLATILE | EV_NOHOOK, value,
+		rv = env_setenv(name, EV_NOHOOK, value,
 		    zfs_nvstore_sethook, zfs_nvstore_unsethook);
-		free(value);
 	}
-	free(name);
 	return (rv);
 }
 
@@ -1335,7 +1711,7 @@ zfs_nvstore_iterate(void *vdev, int (*cb)(void *, void *))
 	struct zfs_devdesc *dev = (struct zfs_devdesc *)vdev;
 	spa_t *spa;
 	nvlist_t *nv;
-	nvp_header_t *nvh;
+	nvpair_t *nvp;
 	int rv;
 
 	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
@@ -1347,14 +1723,13 @@ zfs_nvstore_iterate(void *vdev, int (*cb)(void *, void *))
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0)
-		return (ENOENT);
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0)
+		return (rv);
 
-	rv = 0;
-	nvh = NULL;
-	while ((nvh = nvlist_next_nvpair(nv, nvh)) != NULL) {
-		rv = cb(vdev, nvh);
+	nvp = NULL;
+	while ((nvp = nvlist_next_nvpair(nv, nvp)) != NULL) {
+		rv = cb(vdev, nvp);
 		if (rv != 0)
 			break;
 	}
@@ -1384,9 +1759,7 @@ zfs_attach_nvstore(void *vdev)
 	if ((spa = spa_find_by_dev(dev)) == NULL)
 		return (ENXIO);
 
-	rv = nvlist_find(spa->spa_bootenv, BOOTENV_VERSION, DATA_TYPE_UINT64,
-	    NULL, &version, NULL);
-
+	rv = nvlist_lookup_uint64(spa->spa_bootenv, BOOTENV_VERSION, &version);
 	if (rv != 0 || version != VB_NVLIST) {
 		return (ENXIO);
 	}

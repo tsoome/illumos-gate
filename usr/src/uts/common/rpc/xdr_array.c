@@ -37,10 +37,15 @@
  * arrays.  See xdr.h for more info on the interface to xdr.
  */
 
+#if defined(_STANDALONE)
+#include <sys/cdefs.h>
+#include <stand.h>
+#else
 #include <sys/param.h>
 #include <sys/cmn_err.h>
 #include <sys/types.h>
 #include <sys/systm.h>
+#endif
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>

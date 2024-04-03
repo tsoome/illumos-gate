@@ -53,6 +53,10 @@ typedef int enum_t;
  * that has been fixed, this next typedef will be removed in a future release.
  * Do *NOT* use!
  */
+#if defined(_STANDALONE)
+typedef int64_t longlong_t;
+typedef uint64_t u_longlong_t;
+#endif
 typedef u_longlong_t ulonglong_t;
 
 #if defined(_LP64) || defined(_I32LPx)

@@ -25,10 +25,12 @@
  * Copyright 2018 RackTop Systems.
  */
 
+#if !defined(_STANDALONE)
 #include <sys/stropts.h>
 #include <sys/debug.h>
 #include <sys/isa_defs.h>
 #include <sys/int_limits.h>
+#endif
 #include <sys/nvpair.h>
 #include <sys/nvpair_impl.h>
 #include <rpc/types.h>
@@ -3308,7 +3310,7 @@ nvs_xdr_nvp_op(nvstream_t *nvs, nvpair_t *nvp)
 		 */
 		ret = xdr_longlong_t(xdr, (void *)buf);
 		break;
-#if !defined(_KERNEL)
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 	case DATA_TYPE_DOUBLE:
 		ret = xdr_double(xdr, (void *)buf);
 		break;

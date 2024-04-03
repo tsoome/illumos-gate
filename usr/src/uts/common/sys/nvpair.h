@@ -29,10 +29,22 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/errno.h>
+#if defined(_STANDALONE)
+#include <sys/param.h>
+#include <sys/stdint.h>
+#include <sys/debug.h>
+#else
 #include <sys/va_list.h>
+#endif
 
 #if defined(_KERNEL) && !defined(_BOOT)
 #include <sys/kmem.h>
+#endif
+
+#if defined(_STANDALONE)
+typedef int64_t hrtime_t;
+typedef int64_t longlong_t;
+typedef uint64_t u_longlong_t;
 #endif
 
 #ifdef	__cplusplus
