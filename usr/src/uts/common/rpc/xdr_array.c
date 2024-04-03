@@ -24,7 +24,7 @@
  */
 
 /*	Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * Portions of this source code were derived from Berkeley 4.3 BSD
@@ -37,10 +37,15 @@
  * arrays.  See xdr.h for more info on the interface to xdr.
  */
 
+#if defined(_STANDALONE)
+#include <sys/cdefs.h>
+#include <stand.h>
+#else
 #include <sys/param.h>
 #include <sys/cmn_err.h>
 #include <sys/types.h>
 #include <sys/systm.h>
+#endif
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
@@ -56,7 +61,7 @@
  */
 bool_t
 xdr_array(XDR *xdrs, caddr_t *addrp, uint_t *sizep, const uint_t maxsize,
-	const uint_t elsize, const xdrproc_t elproc)
+    const uint_t elsize, const xdrproc_t elproc)
 {
 	uint_t i;
 	caddr_t target = *addrp;

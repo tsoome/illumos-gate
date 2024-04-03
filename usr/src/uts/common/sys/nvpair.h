@@ -29,7 +29,9 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/errno.h>
+#if !defined(_STANDALONE)
 #include <sys/va_list.h>
+#endif
 
 #if defined(_KERNEL) && !defined(_BOOT)
 #include <sys/kmem.h>

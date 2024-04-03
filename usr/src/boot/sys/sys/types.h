@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1982, 1986, 1991, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -32,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)types.h	8.6 (Berkeley) 2/19/95
- * $FreeBSD$
  */
 
 #ifndef _SYS_TYPES_H_
@@ -74,6 +73,10 @@ typedef __uint8_t	u_int8_t;	/* unsigned integrals (deprecated) */
 typedef __uint16_t	u_int16_t;
 typedef __uint32_t	u_int32_t;
 typedef __uint64_t	u_int64_t;
+
+typedef __int64_t	longlong_t;	/* illumos nvpair and xdr support */
+typedef __uint64_t	u_longlong_t;
+typedef __int64_t	hrtime_t;
 
 typedef	__uint64_t	u_quad_t;	/* quads (deprecated) */
 typedef	__int64_t	quad_t;

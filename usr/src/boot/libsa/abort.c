@@ -32,3 +32,11 @@ abort(void)
 {
 	panic("Bootloader aborted by abort");
 }
+
+void
+assfail3(const char *a, uintmax_t lv, const char *op, uintmax_t rv,
+    const char *f, int l)
+{
+	panic("assertion failed: %s (0x%jx %s 0x%jx), file: %s, "
+	    "line: %d", a, (uintmax_t)lv, op, (uintmax_t)rv, f, l);
+}

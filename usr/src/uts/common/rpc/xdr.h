@@ -43,10 +43,15 @@
 #ifndef _RPC_XDR_H
 #define	_RPC_XDR_H
 
+#if !defined(_STANDALONE)
 #include <sys/byteorder.h>	/* For all ntoh* and hton*() kind of macros */
+#endif
+
 #include <rpc/types.h>	/* For all ntoh* and hton*() kind of macros */
 #if !defined(_KERNEL) && !defined(_FAKE_KERNEL)
+#if !defined(_STANDALONE)
 #include <stdio.h> /* defines FILE *, used in ANSI C function prototypes */
+#endif
 #else	/* _KERNEL */
 #include <sys/stream.h>
 #endif	/* _KERNEL */
@@ -131,12 +136,12 @@ typedef struct XDR {
  */
 struct xdr_ops {
 #ifdef __STDC__
-#if !defined(_KERNEL)
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 		bool_t	(*x_getlong)(struct XDR *, long *);
 		/* get a long from underlying stream */
 		bool_t	(*x_putlong)(struct XDR *, long *);
 		/* put a long to " */
-#endif /* KERNEL */
+#endif /* KERNEL && _STANDALONE */
 		bool_t	(*x_getbytes)(struct XDR *, caddr_t, int);
 		/* get some bytes from " */
 		bool_t	(*x_putbytes)(struct XDR *, caddr_t, int);
@@ -150,12 +155,12 @@ struct xdr_ops {
 		void	(*x_destroy)(struct XDR *);
 		/* free privates of this xdr_stream */
 		bool_t	(*x_control)(struct XDR *, int, void *);
-#if defined(_LP64) || defined(_KERNEL)
+#if defined(_LP64) || defined(_KERNEL) || defined(_STANDALONE)
 		bool_t	(*x_getint32)(struct XDR *, int32_t *);
 		/* get a int from underlying stream */
 		bool_t	(*x_putint32)(struct XDR *, int32_t *);
 		/* put an int to " */
-#endif /* _LP64 || _KERNEL */
+#endif /* _LP64 || _KERNEL || _STANDALONE */
 #else
 #if !defined(_KERNEL)
 		bool_t	(*x_getlong)();	/* get a long from underlying stream */
@@ -185,7 +190,7 @@ struct xdr_ops {
  * uint_t	 len;
  * uint_t	 pos;
  */
-#if !defined(_KERNEL)
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #define	XDR_GETLONG(xdrs, longp)			\
 	(*(xdrs)->x_ops->x_getlong)(xdrs, longp)
 #define	xdr_getlong(xdrs, longp)			\
@@ -195,10 +200,10 @@ struct xdr_ops {
 	(*(xdrs)->x_ops->x_putlong)(xdrs, longp)
 #define	xdr_putlong(xdrs, longp)			\
 	(*(xdrs)->x_ops->x_putlong)(xdrs, longp)
-#endif /* KERNEL */
+#endif /* KERNEL && _STANDALONE */
 
 
-#if !defined(_LP64) && !defined(_KERNEL)
+#if !defined(_LP64) && !defined(_KERNEL) && !defined(_STANDALONE)
 
 /*
  * For binary compatability on ILP32 we do not change the shape
@@ -217,7 +222,7 @@ struct xdr_ops {
 #define	xdr_putint32(xdrs, int32p)			\
 	(*(xdrs)->x_ops->x_putlong)(xdrs, (long *)int32p)
 
-#else /* !_LP64 && !_KERNEL */
+#else /* !_LP64 && !_KERNEL && !_STANDALONE */
 
 #define	XDR_GETINT32(xdrs, int32p)			\
 	(*(xdrs)->x_ops->x_getint32)(xdrs, int32p)
@@ -339,7 +344,7 @@ struct xdr_discrim {
 #define	IXDR_GET_U_INT32(buf)		((uint32_t)IXDR_GET_INT32(buf))
 #define	IXDR_PUT_U_INT32(buf, v)	IXDR_PUT_INT32((buf), ((int32_t)(v)))
 
-#if !defined(_KERNEL) && !defined(_LP64)
+#if !defined(_KERNEL) && !defined(_LP64) && !defined(_STANDALONE)
 
 #define	IXDR_GET_LONG(buf)		((long)ntohl((ulong_t)*(buf)++))
 #define	IXDR_PUT_LONG(buf, v)		(*(buf)++ = (long)htonl((ulong_t)v))
@@ -370,7 +375,7 @@ struct xdr_discrim {
 
 #endif
 
-#ifndef _LITTLE_ENDIAN
+#if defined(_BIG_ENDIAN)
 #define	IXDR_GET_HYPER(buf, v)	{ \
 			*((int32_t *)(&v)) = ntohl(*(uint32_t *)buf++); \
 			*((int32_t *)(((char *)&v) + BYTES_PER_XDR_UNIT)) \
@@ -453,11 +458,11 @@ extern bool_t	xdr_int64_t(XDR *, int64_t *);
 extern bool_t	xdr_uint64_t(XDR *, uint64_t *);
 #endif
 
-#ifndef _KERNEL
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 extern bool_t	xdr_float(XDR *, float *);
 extern bool_t	xdr_double(XDR *, double *);
 extern bool_t	xdr_quadruple(XDR *, long double *);
-#endif /* !_KERNEL */
+#endif /* !_KERNEL && !_STANDALONE */
 #else
 extern bool_t	xdr_void();
 extern bool_t	xdr_int();
@@ -545,7 +550,7 @@ typedef struct xdr_bytesrec xdr_bytesrec;
  * XDR_RDMANOCHUNK - for xdr implementaion over RDMA, sets private flags in
  *                   the XDR stream moving over RDMA.
  */
-#ifdef _KERNEL
+#if defined(_KERNEL) || defined(_STANDALONE)
 #define	XDR_PEEK		2
 #define	XDR_SKIPBYTES		3
 #define	XDR_RDMA_GET_FLAGS	4
@@ -562,7 +567,7 @@ typedef struct xdr_bytesrec xdr_bytesrec;
  * These are the public routines for the various implementations of
  * xdr streams.
  */
-#if !defined(_KERNEL) && !defined(_FAKE_KERNEL)
+#if !defined(_KERNEL) && !defined(_FAKE_KERNEL) && !defined(_STANDALONE)
 #ifdef __STDC__
 extern void   xdrmem_create(XDR *, const caddr_t, const uint_t, const enum
 xdr_op);
@@ -590,9 +595,10 @@ extern uint_t xdrrec_readbytes();
 #endif
 #else
 
+extern void	xdrmem_create(XDR *, caddr_t, uint_t, enum xdr_op);
+#if defined(_KERNEL) || defined(_FAKE_KERNEL)
 #define	DLEN(mp) (mp->b_cont ? msgdsize(mp) : (mp->b_wptr - mp->b_rptr))
 
-extern void	xdrmem_create(XDR *, caddr_t, uint_t, enum xdr_op);
 extern void	xdrmblk_init(XDR *, mblk_t *, enum xdr_op, int);
 extern bool_t	xdrmblk_getmblk(XDR *, mblk_t **, uint_t *);
 extern bool_t	xdrmblk_putmblk(XDR *, mblk_t *, uint_t);
@@ -605,8 +611,9 @@ struct rpc_msg;
 extern bool_t	xdr_callmsg(XDR *, struct rpc_msg *);
 extern bool_t	xdr_replymsg_body(XDR *, struct rpc_msg *);
 extern bool_t	xdr_replymsg_hdr(XDR *, struct rpc_msg *);
+#endif /* _KERNEL || _FAKE_KERNEL */
 
-#endif /* !_KERNEL */
+#endif /* !_KERNEL && !_FAKE_KERNEL && _STANDALONE */
 
 #ifdef __cplusplus
 }

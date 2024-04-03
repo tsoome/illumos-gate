@@ -748,22 +748,24 @@ zfs_get_bootonce(void *vdev, const char *key, char *buf, size_t size)
 {
 	nvlist_t *benv;
 	char *result = NULL;
-	int result_size, rv;
+	int rv;
 
 	if ((rv = zfs_get_bootenv(vdev, &benv)) != 0)
 		return (rv);
 
-	if ((rv = nvlist_find(benv, key, DATA_TYPE_STRING, NULL,
-	    &result, &result_size)) == 0) {
-		if (result_size == 0) {
+	if ((rv = nvlist_lookup_string(benv, key, &result)) == 0) {
+		if (result[0] == '\0') {
 			/* ignore empty string */
 			rv = ENOENT;
 		} else {
-			size = MIN((size_t)result_size + 1, size);
+			size = MIN(strlen(result) + 1, size);
 			strlcpy(buf, result, size);
 		}
-		(void) nvlist_remove(benv, key, DATA_TYPE_STRING);
-		(void) zfs_set_bootenv(vdev, benv);
+		rv = nvlist_remove(benv, key, DATA_TYPE_STRING);
+		if (rv == 0)
+			rv = zfs_set_bootenv(vdev, benv);
+		if (rv != 0)
+			printf("Failed to unset bootonce command.\n");
 	}
 
 	return (rv);
@@ -825,7 +827,6 @@ zfs_nvstore_getter(void *vdev, const char *name, void **data)
 	spa_t *spa;
 	nvlist_t *nv;
 	char *str, **ptr;
-	int size;
 	int rv;
 
 	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
@@ -837,18 +838,17 @@ zfs_nvstore_getter(void *vdev, const char *name, void **data)
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0)
-		return (ENOENT);
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0)
+		return (rv);
 
-	rv = nvlist_find(nv, name, DATA_TYPE_STRING, NULL, &str, &size);
+	rv = nvlist_lookup_string(nv, name, &str);
 	if (rv == 0) {
 		ptr = (char **)data;
-		asprintf(ptr, "%.*s", size, str);
+		asprintf(ptr, "%s", str);
 		if (*data == NULL)
 			rv = ENOMEM;
 	}
-	nvlist_destroy(nv);
 	return (rv);
 }
 
@@ -871,11 +871,16 @@ zfs_nvstore_setter(void *vdev, int type, const char *name,
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0) {
-		nv = nvlist_create(NV_UNIQUE_NAME);
-		if (nv == NULL)
-			return (ENOMEM);
+	if (nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv) != 0) {
+		rv = nvlist_alloc(&nv, NV_UNIQUE_NAME, 0);
+		if (rv != 0)
+			return (rv);
+	} else {
+		nvlist_t *tmp;
+		rv = nvlist_dup(nv, &tmp, 0);
+		if (rv != 0)
+			return (rv);
+		nv = tmp;
 	}
 
 	rv = 0;
@@ -975,16 +980,17 @@ zfs_nvstore_setter(void *vdev, int type, const char *name,
 		}
 		if (rv == 0) {
 			if (env_set) {
-				rv = zfs_nvstore_setenv(vdev,
-				    nvpair_find(nv, name));
-			} else {
-				env_discard(env_getenv(name));
-				rv = 0;
+				nvpair_t *nvp;
+
+				rv = nvlist_lookup_nvpair(nv, name, &nvp);
+				if (rv == 0) {
+					rv = zfs_nvstore_setenv(vdev, nvp);
+				}
 			}
 		}
 	}
 
-	nvlist_destroy(nv);
+	nvlist_free(nv);
 	return (rv);
 }
 
@@ -1043,34 +1049,27 @@ zfs_nvstore_setter_str(void *vdev, const char *type, const char *name,
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0) {
-		nv = NULL;
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0) {
+		return (rv);
 	}
 
 	if (type == NULL) {
-		nvp_header_t *nvh;
+		nvpair_t *nvp;
 
 		/*
 		 * if there is no existing pair, default to string.
 		 * Otherwise, use type from existing pair.
 		 */
-		nvh = nvpair_find(nv, name);
-		if (nvh == NULL) {
+		rv = nvlist_lookup_nvpair(nv, name, &nvp);
+		if (rv != 0) {
 			dt = DATA_TYPE_STRING;
 		} else {
-			nv_string_t *nvp_name;
-			nv_pair_data_t *nvp_data;
-
-			nvp_name = (nv_string_t *)(nvh + 1);
-			nvp_data = (nv_pair_data_t *)(&nvp_name->nv_data[0] +
-			    NV_ALIGN4(nvp_name->nv_size));
-			dt = nvp_data->nv_type;
+			dt = nvpair_type(nvp);
 		}
 	} else {
 		dt = nvpair_type_from_name(type);
 	}
-	nvlist_destroy(nv);
 
 	rv = 0;
 	switch (dt) {
@@ -1186,19 +1185,13 @@ zfs_nvstore_unset_impl(void *vdev, const char *name, bool unset_env)
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0)
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0)
 		return (ENOENT);
 
-	rv = nvlist_remove(nv, name, DATA_TYPE_UNKNOWN);
+	rv = nvlist_remove_all(nv, name);
 	if (rv == 0) {
-		if (nvlist_next_nvpair(nv, NULL) == NULL) {
-			rv = nvlist_remove(spa->spa_bootenv, OS_NVSTORE,
-			    DATA_TYPE_NVLIST);
-		} else {
-			rv = nvlist_add_nvlist(spa->spa_bootenv,
-			    OS_NVSTORE, nv);
-		}
+		rv = nvlist_add_nvlist(spa->spa_bootenv, OS_NVSTORE, nv);
 		if (rv == 0)
 			rv = zfs_set_bootenv(vdev, spa->spa_bootenv);
 	}
@@ -1234,98 +1227,21 @@ zfs_nvstore_print(void *vdev __unused, void *ptr)
 static int
 zfs_nvstore_setenv(void *vdev __unused, void *ptr)
 {
-	nvp_header_t *nvh = ptr;
-	nv_string_t *nvp_name, *nvp_value;
-	nv_pair_data_t *nvp_data;
+	nvpair_t *nvp = ptr;
 	char *name, *value;
 	int rv = 0;
 
-	if (nvh == NULL)
+	if (nvp == NULL)
 		return (ENOENT);
 
-	nvp_name = (nv_string_t *)(nvh + 1);
-	nvp_data = (nv_pair_data_t *)(&nvp_name->nv_data[0] +
-	    NV_ALIGN4(nvp_name->nv_size));
-
-	if ((name = nvstring_get(nvp_name)) == NULL)
-		return (ENOMEM);
+	name = nvpair_name(nvp);
 
 	value = NULL;
-	switch (nvp_data->nv_type) {
-	case DATA_TYPE_BYTE:
-	case DATA_TYPE_UINT8:
-		(void) asprintf(&value, "%uc",
-		    *(unsigned *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_INT8:
-		(void) asprintf(&value, "%c", *(int *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_INT16:
-		(void) asprintf(&value, "%hd", *(short *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_UINT16:
-		(void) asprintf(&value, "%hu",
-		    *(unsigned short *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_BOOLEAN_VALUE:
-	case DATA_TYPE_INT32:
-		(void) asprintf(&value, "%d", *(int *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_UINT32:
-		(void) asprintf(&value, "%u",
-		    *(unsigned *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_INT64:
-		(void) asprintf(&value, "%jd",
-		    (intmax_t)*(int64_t *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_UINT64:
-		(void) asprintf(&value, "%ju",
-		    (uintmax_t)*(uint64_t *)&nvp_data->nv_data[0]);
-		if (value == NULL)
-			rv = ENOMEM;
-		break;
-
-	case DATA_TYPE_STRING:
-		nvp_value = (nv_string_t *)&nvp_data->nv_data[0];
-		if ((value = nvstring_get(nvp_value)) == NULL) {
-			rv = ENOMEM;
-			break;
-		}
-		break;
-
-	default:
-		rv = EINVAL;
-		break;
-	}
-
+	rv = nvpair_sprintf(&value, nvp);
 	if (value != NULL) {
-		rv = env_setenv(name, EV_VOLATILE | EV_NOHOOK, value,
+		rv = env_setenv(name, EV_NOHOOK, value,
 		    zfs_nvstore_sethook, zfs_nvstore_unsethook);
-		free(value);
 	}
-	free(name);
 	return (rv);
 }
 
@@ -1335,7 +1251,7 @@ zfs_nvstore_iterate(void *vdev, int (*cb)(void *, void *))
 	struct zfs_devdesc *dev = (struct zfs_devdesc *)vdev;
 	spa_t *spa;
 	nvlist_t *nv;
-	nvp_header_t *nvh;
+	nvpair_t *nvp;
 	int rv;
 
 	if (dev->dd.d_dev->dv_type != DEVT_ZFS)
@@ -1347,14 +1263,13 @@ zfs_nvstore_iterate(void *vdev, int (*cb)(void *, void *))
 	if (spa->spa_bootenv == NULL)
 		return (ENXIO);
 
-	if (nvlist_find(spa->spa_bootenv, OS_NVSTORE, DATA_TYPE_NVLIST,
-	    NULL, &nv, NULL) != 0)
-		return (ENOENT);
+	rv = nvlist_lookup_nvlist(spa->spa_bootenv, OS_NVSTORE, &nv);
+	if (rv != 0)
+		return (rv);
 
-	rv = 0;
-	nvh = NULL;
-	while ((nvh = nvlist_next_nvpair(nv, nvh)) != NULL) {
-		rv = cb(vdev, nvh);
+	nvp = NULL;
+	while ((nvp = nvlist_next_nvpair(nv, nvp)) != NULL) {
+		rv = cb(vdev, nvp);
 		if (rv != 0)
 			break;
 	}
@@ -1384,9 +1299,7 @@ zfs_attach_nvstore(void *vdev)
 	if ((spa = spa_find_by_dev(dev)) == NULL)
 		return (ENXIO);
 
-	rv = nvlist_find(spa->spa_bootenv, BOOTENV_VERSION, DATA_TYPE_UINT64,
-	    NULL, &version, NULL);
-
+	rv = nvlist_lookup_uint64(spa->spa_bootenv, BOOTENV_VERSION, &version);
 	if (rv != 0 || version != VB_NVLIST) {
 		return (ENXIO);
 	}

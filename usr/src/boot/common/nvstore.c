@@ -192,6 +192,11 @@ command_nvstore(int argc, char *argv[])
 	optind = 1;
 	optreset = 1;
 
+	if (STAILQ_EMPTY(&stores)) {
+		printf("No configured nvstores\n");
+		return (CMD_OK);
+	}
+
 	list = false;
 	while ((c = getopt(argc, argv, "l")) != -1) {
 		switch (c) {
@@ -209,10 +214,6 @@ command_nvstore(int argc, char *argv[])
 
 	if (argc == 0) {
 		if (list) {
-			if (STAILQ_EMPTY(&stores)) {
-				printf("No configured nvstores\n");
-				return (CMD_OK);
-			}
 			printf("List of configured nvstores:\n");
 			STAILQ_FOREACH(st, &stores, nvs_next) {
 				printf("\t%s\n", st->nvs_name);

@@ -24,7 +24,7 @@
  */
 
 /*	Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * Portions of this source code were derived from Berkeley 4.3 BSD
@@ -38,25 +38,39 @@
  * xdr.
  */
 
+#if defined(_STANDALONE)
+#include <sys/cdefs.h>
+#include <stand.h>
+/*
+ * BSD sys/endian.h does define both _BIG_ENDIAN and _LITTLE_ENDIAN,
+ * undefine other to allow ifdefs below to work.
+ */
+#if (_BYTE_ORDER == _BIG_ENDIAN)
+#undef _LITTLE_ENDIAN
+#else
+#undef _BIG_ENDIAN
+#endif
+#else
 #include <sys/param.h>
 #include <sys/cmn_err.h>
 #include <sys/types.h>
 #include <sys/systm.h>
-
-#include <rpc/types.h>
-#include <rpc/xdr.h>
 #include <sys/isa_defs.h>
-
-#pragma weak xdr_int32_t = xdr_int
-#pragma weak xdr_uint32_t = xdr_u_int
-#pragma weak xdr_int64_t = xdr_longlong_t
-#pragma weak xdr_uint64_t = xdr_u_longlong_t
 
 #if !defined(_BIG_ENDIAN) && !defined(_LITTLE_ENDIAN)
 #error "Exactly one of _BIG_ENDIAN or _LITTLE_ENDIAN must be defined"
 #elif defined(_BIG_ENDIAN) && defined(_LITTLE_ENDIAN)
 #error "Only one of _BIG_ENDIAN or _LITTLE_ENDIAN may be defined"
 #endif
+#endif
+
+#include <rpc/types.h>
+#include <rpc/xdr.h>
+
+#pragma weak xdr_int32_t = xdr_int
+#pragma weak xdr_uint32_t = xdr_u_int
+#pragma weak xdr_int64_t = xdr_longlong_t
+#pragma weak xdr_uint64_t = xdr_u_longlong_t
 
 /*
  * constants specific to the xdr "protocol"
@@ -519,7 +533,7 @@ xdr_netobj(XDR *xdrs, struct netobj *np)
  */
 bool_t
 xdr_union(XDR *xdrs, enum_t *dscmp, char *unp,
-	const struct xdr_discrim *choices, const xdrproc_t dfault)
+    const struct xdr_discrim *choices, const xdrproc_t dfault)
 {
 	enum_t dscm;
 
@@ -642,7 +656,7 @@ xdr_string(XDR *xdrs, char **cpp, const uint_t maxsize)
  */
 bool_t
 xdr_vector(XDR *xdrs, char *basep, const uint_t nelem,
-	const uint_t elemsize, const xdrproc_t xdr_elem)
+    const uint_t elemsize, const xdrproc_t xdr_elem)
 {
 	uint_t i;
 	char *elptr;

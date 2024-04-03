@@ -16,9 +16,9 @@
 #ifndef _SYS_NULL_H
 #define	_SYS_NULL_H
 
-#include <sys/feature_tests.h>
-
 #ifndef	NULL
+
+#include <sys/feature_tests.h>
 
 /*
  * POSIX.1-2008 requires that the NULL macro be cast to type void *.

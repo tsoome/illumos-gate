@@ -41,8 +41,6 @@
 #include <sys/cdefs.h>
 #include <stand.h>
 #include <limits.h>
-
-typedef long long longlong_t;
 #else
 #include <errno.h>
 #include <ctype.h>
@@ -57,7 +55,7 @@ typedef long long longlong_t;
 int
 ddi_strtoll(const char *str, char **nptr, int base, longlong_t *result)
 #else	/* _KERNEL && !_BOOT */
-longlong_t
+long long
 strtoll(const char *str, char **nptr, int base)
 #endif	/* _KERNEL && !_BOOT */
 {
