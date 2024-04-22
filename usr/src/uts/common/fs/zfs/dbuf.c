@@ -54,7 +54,6 @@
 static boolean_t dbuf_undirty(dmu_buf_impl_t *db, dmu_tx_t *tx);
 static void dbuf_write(dbuf_dirty_record_t *dr, arc_buf_t *data, dmu_tx_t *tx);
 static void dbuf_sync_leaf_verify_bonus_dnode(dbuf_dirty_record_t *dr);
-static int dbuf_read_verify_dnode_crypt(dmu_buf_impl_t *db, uint32_t flags);
 
 extern inline void dmu_buf_init_user(dmu_buf_user_t *dbu,
     dmu_buf_evict_func_t *evict_func_sync,
@@ -1054,13 +1053,9 @@ dbuf_read_done(zio_t *zio, const zbookmark_phys_t *zb, const blkptr_t *bp,
  * a decrypted block. Otherwise success.
  */
 static int
-dbuf_read_bonus(dmu_buf_impl_t *db, dnode_t *dn, uint32_t flags)
+dbuf_read_bonus(dmu_buf_impl_t *db, dnode_t *dn)
 {
-	int bonuslen, max_bonuslen, err;
-
-	err = dbuf_read_verify_dnode_crypt(db, flags);
-	if (err)
-		return (err);
+	int bonuslen, max_bonuslen;
 
 	bonuslen = MIN(dn->dn_bonuslen, dn->dn_phys->dn_bonuslen);
 	max_bonuslen = DN_SLOTS_TO_BONUSLEN(dn->dn_num_slots);
@@ -1148,32 +1143,46 @@ dbuf_read_hole(dmu_buf_impl_t *db, dnode_t *dn, uint32_t flags)
  * decrypt / authenticate them when we need to read an encrypted bonus buffer.
  */
 static int
-dbuf_read_verify_dnode_crypt(dmu_buf_impl_t *db, uint32_t flags)
+dbuf_read_verify_dnode_crypt(dmu_buf_impl_t *db, dnode_t *dn, uint32_t flags)
 {
-	int err = 0;
 	objset_t *os = db->db_objset;
-	arc_buf_t *dnode_abuf;
-	dnode_t *dn;
+	dmu_buf_impl_t *dndb;
+	arc_buf_t *dnbuf;
 	zbookmark_phys_t zb;
-
-	ASSERT(MUTEX_HELD(&db->db_mtx));
+	int err;
 
 	if ((flags & DB_RF_NO_DECRYPT) != 0 ||
-	   !os->os_encrypted || os->os_raw_receive)
+	   !os->os_encrypted || os->os_raw_receive ||
+	    (dndb = dn->dn_dbuf) == NULL)
 		return (0);
 
-	DB_DNODE_ENTER(db);
-	dn = DB_DNODE(db);
-	dnode_abuf = (dn->dn_dbuf != NULL) ? dn->dn_dbuf->db_buf : NULL;
-
-	if (dnode_abuf == NULL || !arc_is_encrypted(dnode_abuf)) {
-		DB_DNODE_EXIT(db);
+	dnbuf = dndb->db_buf;
+	if (!arc_is_encrypted(dnbuf))
 		return (0);
+
+	mutex_enter(&dndb->db_mtx);
+
+	/*
+	 * Since dnode buffer is modified by sync process, there can be only
+	 * one copy of it.  It means we can not modify (decrypt) it while it
+	 * is being written.  I don't see how this may happen now, since
+	 * encrypted dnode writes by receive should be completed before any
+	 * plain-text reads due to txg wait, but better be safe than sorry.
+	 */
+	while (1) {
+		if (!arc_is_encrypted(dnbuf)) {
+			mutex_exit(&dndb->db_mtx);
+			return (0);
+		}
+		dbuf_dirty_record_t *dr = dndb->db_data_pending;
+		if (dr == NULL || dr->dt.dl.dr_data != dnbuf)
+			break;
+		cv_wait(&dndb->db_changed, &dndb->db_mtx);
 	}
 
 	SET_BOOKMARK(&zb, dmu_objset_id(os),
-	    DMU_META_DNODE_OBJECT, 0, dn->dn_dbuf->db_blkid);
-	err = arc_untransform(dnode_abuf, os->os_spa, &zb, B_TRUE);
+	    DMU_META_DNODE_OBJECT, 0, dndb->db_blkid);
+	err = arc_untransform(dnbuf, os->os_spa, &zb, B_TRUE);
 
 	/*
 	 * An error code of EACCES tells us that the key is still not
@@ -1186,7 +1195,7 @@ dbuf_read_verify_dnode_crypt(dmu_buf_impl_t *db, uint32_t flags)
 	    !DMU_OT_IS_ENCRYPTED(dn->dn_bonustype))))
 		err = 0;
 
-	DB_DNODE_EXIT(db);
+	mutex_exit(&dndb->db_mtx);
 
 	return (err);
 }
@@ -1212,7 +1221,7 @@ dbuf_read_impl(dmu_buf_impl_t *db, dnode_t *dn, zio_t *zio, uint32_t flags,
 	    RW_LOCK_HELD(&db->db_parent->db_rwlock));
 
 	if (db->db_blkid == DMU_BONUS_BLKID) {
-		err = dbuf_read_bonus(db, dn, flags);
+		err = dbuf_read_bonus(db, dn);
 		goto early_unlock;
 	}
 
@@ -1234,10 +1243,6 @@ dbuf_read_impl(dmu_buf_impl_t *db, dnode_t *dn, zio_t *zio, uint32_t flags,
 		err = SET_ERROR(EIO);
 		goto early_unlock;
 	}
-
-	err = dbuf_read_verify_dnode_crypt(db, flags);
-	if (err != 0)
-		goto early_unlock;
 
 	db->db_state = DB_READ;
 	DTRACE_SET_STATE(db, "read issued");
@@ -1352,14 +1357,10 @@ dbuf_fix_old_data(dmu_buf_impl_t *db, uint64_t txg)
 int
 dbuf_read(dmu_buf_impl_t *db, zio_t *pio, uint32_t flags)
 {
-	int err = 0;
-	boolean_t prefetch;
 	dnode_t *dn;
+	boolean_t miss = B_TRUE, need_wait = B_FALSE, prefetch;
+	int err;
 
-	/*
-	 * We don't have to hold the mutex to check db_state because it
-	 * can't be freed while we have a hold on the buffer.
-	 */
 	ASSERT(!zfs_refcount_is_zero(&db->db_holds));
 
 	if (db->db_state == DB_NOFILL)
@@ -1368,18 +1369,51 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *pio, uint32_t flags)
 	DB_DNODE_ENTER(db);
 	dn = DB_DNODE(db);
 
+	/*
+	 * Ensure that this block's dnode has been decrypted if the caller
+	 * has requested decrypted data.
+	 */
+	err = dbuf_read_verify_dnode_crypt(db, dn, flags);
+	if (err != 0)
+		goto done;
+
 	prefetch = db->db_level == 0 && db->db_blkid != DMU_BONUS_BLKID &&
 	    (flags & DB_RF_NOPREFETCH) == 0 &&
 	    DBUF_IS_CACHEABLE(db);	/* XXX */
 
 	mutex_enter(&db->db_mtx);
-	if (db->db_state == DB_CACHED) {
-		/*
-		 * Ensure that this block's dnode has been decrypted if
-		 * the caller has requested decrypted data.
-		 */
-		err = dbuf_read_verify_dnode_crypt(db, flags);
+	miss = (db->db_state != DB_CACHED);
 
+	if (db->db_state == DB_READ || db->db_state == DB_FILL) {
+		/*
+		 * Another reader came in while the dbuf was in flight between
+		 * UNCACHED and CACHED.  Either a writer will finish filling
+		 * the buffer, sending the dbuf to CACHED, or the first reader's
+		 * request will reach the read_done callback and send the dbuf
+		 * to CACHED.  Otherwise, a failure occurred and the dbuf will
+		 * be sent to UNCACHED.
+		 */
+		if (flags & DB_RF_NEVERWAIT) {
+			mutex_exit(&db->db_mtx);
+			DB_DNODE_EXIT(db);
+			goto done;
+		}
+		do {
+			ASSERT(db->db_state == DB_READ ||
+			    (flags & DB_RF_HAVESTRUCT) == 0);
+			DTRACE_PROBE2(blocked__read, dmu_buf_impl_t *, db,
+			    zio_t *, pio);
+			cv_wait(&db->db_changed, &db->db_mtx);
+		} while (db->db_state == DB_READ || db->db_state == DB_FILL);
+		if (db->db_state == DB_UNCACHED) {
+			err = SET_ERROR(EIO);
+			mutex_exit(&db->db_mtx);
+			DB_DNODE_EXIT(db);
+			goto done;
+		}
+	}
+
+	if (db->db_state == DB_CACHED) {
 		/*
 		 * If the arc buf is compressed or encrypted and the caller
 		 * requested uncompressed data, we need to untransform it
@@ -1387,8 +1421,7 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *pio, uint32_t flags)
 		 * unauthenticated blocks, which will verify their MAC if
 		 * the key is now available.
 		 */
-		if (err == 0 && db->db_buf != NULL &&
-		    (flags & DB_RF_NO_DECRYPT) == 0 &&
+		if ((flags & DB_RF_NO_DECRYPT) == 0 && db->db_buf != NULL &&
 		    (arc_is_encrypted(db->db_buf) ||
 		    arc_is_unauthenticated(db->db_buf) ||
 		    arc_get_compression(db->db_buf) != ZIO_COMPRESS_OFF)) {
@@ -1402,16 +1435,10 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *pio, uint32_t flags)
 			dbuf_set_data(db, db->db_buf);
 		}
 		mutex_exit(&db->db_mtx);
-		if (err == 0 && prefetch) {
-			dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE,
-			    B_FALSE, flags & DB_RF_HAVESTRUCT);
-		}
-		DB_DNODE_EXIT(db);
-	} else if (db->db_state == DB_UNCACHED) {
-		boolean_t need_wait = B_FALSE;
-
+	} else {
+		ASSERT(db->db_state == DB_UNCACHED ||
+		    db->db_state == DB_NOFILL);
 		db_lock_type_t dblt = dmu_buf_lock_parent(db, RW_READER, FTAG);
-
 		if (pio == NULL &&	/* XXX */
 		    db->db_blkptr != NULL && !BP_IS_HOLE(db->db_blkptr)) {
 			spa_t *spa = dn->dn_objset->os_spa;
@@ -1419,55 +1446,29 @@ dbuf_read(dmu_buf_impl_t *db, zio_t *pio, uint32_t flags)
 			need_wait = B_TRUE;
 		}
 		err = dbuf_read_impl(db, dn, pio, flags, dblt, FTAG);
-		/*
-		 * dbuf_read_impl has dropped db_mtx and our parent's rwlock
-		 * for us
-		 */
-		if (!err && prefetch) {
-			dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE,
-			    db->db_state != DB_CACHED,
-			    flags & DB_RF_HAVESTRUCT);
-		}
-
-		DB_DNODE_EXIT(db);
-
-		if (!err && need_wait) { /* XXX */
-			err = zio_wait(pio);
-			pio = NULL;
-		}
-	} else {
-		/*
-		 * Another reader came in while the dbuf was in flight
-		 * between UNCACHED and CACHED.  Either a writer will finish
-		 * writing the buffer (sending the dbuf to CACHED) or the
-		 * first reader's request will reach the read_done callback
-		 * and send the dbuf to CACHED.  Otherwise, a failure
-		 * occurred and the dbuf went to UNCACHED.
-		 */
-		mutex_exit(&db->db_mtx);
-		if (prefetch) {
-			dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE,
-			    B_TRUE, flags & DB_RF_HAVESTRUCT);
-		}
-		DB_DNODE_EXIT(db);
-
-		/* Skip the wait per the caller's request. */
-		mutex_enter(&db->db_mtx);
-		if ((flags & DB_RF_NEVERWAIT) == 0) {
-			while (db->db_state == DB_READ ||
-			    db->db_state == DB_FILL) {
-				ASSERT(db->db_state == DB_READ ||
-				    (flags & DB_RF_HAVESTRUCT) == 0);
-				DTRACE_PROBE2(blocked__read, dmu_buf_impl_t *,
-				    db, zio_t *, pio);
-				cv_wait(&db->db_changed, &db->db_mtx);
-			}
-			if (db->db_state == DB_UNCACHED)
-				err = SET_ERROR(EIO);
-		}
-		mutex_exit(&db->db_mtx);
+		/* dbuf_read_impl drops db_mtx and parent's rwlock. */
+		miss = (db->db_state != DB_CACHED);
 	}
 
+	if (err == 0 && prefetch) {
+		dmu_zfetch(&dn->dn_zfetch, db->db_blkid, 1, B_TRUE, miss,
+		flags & DB_RF_HAVESTRUCT);
+	}
+	DB_DNODE_EXIT(db);
+
+	/*
+	 * If we created a zio we must execute it to avoid leaking it, even if
+	 * it isn't attached to any work due to an error in dbuf_read_impl().
+	 */
+	if (need_wait) {
+		if (err == 0)
+			err = zio_wait(pio);
+		else
+			(void) zio_wait(pio);
+		pio = NULL;
+	}
+
+done:
 	if (pio && err != 0) {
 		zio_t *zio = zio_null(pio, pio->io_spa, NULL, NULL, NULL,
 		    ZIO_FLAG_CANFAIL);
