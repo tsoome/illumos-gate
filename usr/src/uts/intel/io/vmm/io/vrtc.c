@@ -1174,7 +1174,9 @@ vrtc_write(struct vrtc *vrtc, uint8_t offset, uint8_t val)
 		rtc_raw[offset] = val & 0x7f;
 		break;
 	default:
-		rtc_raw[offset] = val;
+		/* Just play safe there */
+		if (offset < sizeof (struct rtcdev))
+			rtc_raw[offset] = val;
 		break;
 	}
 
