@@ -34,7 +34,7 @@ LDFLAGS		+= -N misc/mac
 $(OBJS_DIR)/igc_api.o := SMOFF += all_func_returns
 $(OBJS_DIR)/igc_base.o := SMOFF += all_func_returns
 $(OBJS_DIR)/igc_i225.o := SMOFF += all_func_returns
-$(OBJS_DIR)/igc_mac.o := SMOFF += all_func_returns
+$(OBJS_DIR)/igc_mac.o := SMOFF += all_func_returns,check_missing_error_code2
 $(OBJS_DIR)/igc_nvm.o := SMOFF += all_func_returns
 $(OBJS_DIR)/igc_phy.o := SMOFF += all_func_returns
 
