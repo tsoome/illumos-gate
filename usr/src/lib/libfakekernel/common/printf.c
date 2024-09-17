@@ -24,6 +24,7 @@
  * Copyright 2021 Tintri by DDN, Inc. All rights reserved.
  * Copyright 2022 RackTop Systems, Inc.
  * Copyright (c) 2018, Joyent, Inc.
+ * Copyright 2024 MNX Cloud, Inc.
  */
 
 #include <sys/param.h>
@@ -41,8 +42,6 @@ void	debug_enter(char *);
 char *volatile panicstr;
 va_list  panicargs;
 char panicbuf[512];
-
-int aok;
 
 static const int
 ce_flags[CE_IGNORE] = { SL_NOTE, SL_NOTE, SL_WARN, SL_FATAL };
@@ -194,23 +193,13 @@ debug_enter(char *str)
 void
 assfail(const char *a, const char *f, int l)
 {
-	if (!aok)
-		panic("assertion failed: %s, file: %s, line: %d", a, f, l);
-
-	fprintf(stderr, "ASSERTION CAUGHT: %s, file: %s, line: %d\n", a, f, l);
+	panic("assertion failed: %s, file: %s, line: %d", a, f, l);
 }
 
 void
 assfail3(const char *a, uintmax_t lv, const char *op, uintmax_t rv,
     const char *f, int l)
 {
-	if (!aok) {
-		panic("assertion failed: %s (0x%llx %s 0x%llx), file: %s, "
-		    "line: %d", a, (u_longlong_t)lv, op, (u_longlong_t)rv,
-		    f, l);
-	}
-
-	fprintf(stderr, "ASSERTION CAUGHT: %s (0x%llx %s 0x%llx), file: %s, "
-	    "line: %d\n", a, (u_longlong_t)lv, op, (u_longlong_t)rv,
-	    f, l);
+	panic("assertion failed: %s (0x%llx %s 0x%llx), file: %s, "
+	    "line: %d", a, (u_longlong_t)lv, op, (u_longlong_t)rv, f, l);
 }

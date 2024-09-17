@@ -25,6 +25,7 @@
  *
  * Copyright 2015 Nexenta Systems, Inc.  All rights reserved.
  * Copyright 2016 Joyent, Inc.
+ * Copyright 2024 MNX Cloud, Inc.
  */
 
 #include <sys/param.h>
@@ -65,7 +66,6 @@
 uint32_t panicbuf_log = PANICBUFSIZE;
 uint32_t panicbuf_index = PANICBUFSIZE;
 
-int aask, aok;
 static int ce_to_sl[CE_IGNORE] = { SL_NOTE, SL_NOTE, SL_WARN, SL_FATAL };
 static char ce_prefix[CE_IGNORE][10] = { "", "NOTICE: ", "WARNING: ", "" };
 static char ce_suffix[CE_IGNORE][2] = { "", "\n", "\n", "" };
@@ -315,30 +315,15 @@ dev_err(dev_info_t *dip, int ce, char *fmt, ...)
 void
 assfail(const char *a, const char *f, int l)
 {
-	if (aask)  {
-		printf("ASSERTION CAUGHT: %s, file: %s, line: %d", a, f, l);
-		debug_enter(NULL);
-	}
-
-	if (!aok && !panicstr)
-		panic("assertion failed: %s, file: %s, line: %d", a, f, l);
+	panic("assertion failed: %s, file: %s, line: %d", a, f, l);
 }
 
 void
 assfail3(const char *a, uintmax_t lv, const char *op, uintmax_t rv,
     const char *f, int l)
 {
-	if (aask)  {
-		printf("ASSERTION CAUGHT: %s (0x%llx %s 0x%llx), file: %s, "
-		    "line: %d", a, (u_longlong_t)lv, op, (u_longlong_t)rv,
-		    f, l);
-		debug_enter(NULL);
-	}
-
-	if (!aok && !panicstr)
-		panic("assertion failed: %s (0x%llx %s 0x%llx), file: %s, "
-		    "line: %d", a, (u_longlong_t)lv, op, (u_longlong_t)rv,
-		    f, l);
+	panic("assertion failed: %s (0x%llx %s 0x%llx), file: %s, "
+	    "line: %d", a, (u_longlong_t)lv, op, (u_longlong_t)rv, f, l);
 }
 
 int

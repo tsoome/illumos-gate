@@ -39,7 +39,6 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 	_curthread;
 	_curzone;
 
-	aok		{ FLAGS = NODIRECT };
 	assfail;
 	assfail3;
 	boot_time;

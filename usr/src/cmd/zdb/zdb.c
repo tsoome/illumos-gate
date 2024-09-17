@@ -95,7 +95,12 @@ extern int reference_tracking_enable;
 extern boolean_t zfs_recover;
 extern uint64_t zfs_arc_max, zfs_arc_meta_limit;
 extern int zfs_vdev_async_read_max_active;
-extern int aok;
+/*
+ * aok was used to make assfail() not to panic(), currently
+ * not used and we need to investigate an alternate mechanism for
+ * zdb.
+ */
+static int aok;
 extern boolean_t spa_load_verify_dryrun;
 extern int zfs_btree_verify_intensity;
 

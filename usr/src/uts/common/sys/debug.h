@@ -19,15 +19,15 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2014 Garrett D'Amore <garrett@damore.org>
- *
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 /*
- * Copyright (c) 2012, 2017 by Delphix. All rights reserved.
  * Copyright 2013 Saso Kiselkov. All rights reserved.
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
+ * Copyright (c) 2012, 2017 by Delphix. All rights reserved.
+ * Copyright 2024 MNX Cloud, Inc.
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
@@ -38,6 +38,8 @@
 
 #if !defined(_STANDALONE)
 #include <sys/isa_defs.h>
+#else
+#define	__NORETURN	__dead2
 #endif
 #include <sys/types.h>
 #include <sys/note.h>
@@ -53,7 +55,7 @@ extern "C" {
  * ASSERT and is evaluated on both debug and non-debug kernels.
  */
 
-extern void assfail(const char *, const char *, int);
+extern void assfail(const char *, const char *, int) __NORETURN;
 #define	VERIFY(EX) ((void)((EX) || (assfail(#EX, __FILE__, __LINE__), 0)))
 #if DEBUG
 #define	ASSERT(EX) ((void)((EX) || (assfail(#EX, __FILE__, __LINE__), 0)))
@@ -101,7 +103,7 @@ extern void assfail(const char *, const char *, int);
  * have the same relationship as above.
  */
 extern void assfail3(const char *, uintmax_t, const char *, uintmax_t,
-    const char *, int);
+    const char *, int) __NORETURN;
 #define	VERIFY3_IMPL(LEFT, OP, RIGHT, TYPE) do { \
 	const TYPE __left = (TYPE)(LEFT); \
 	const TYPE __right = (TYPE)(RIGHT); \
