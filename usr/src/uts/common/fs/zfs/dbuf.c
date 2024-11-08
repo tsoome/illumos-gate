@@ -1317,7 +1317,7 @@ dbuf_fix_old_data(dmu_buf_impl_t *db, uint64_t txg)
 		/* Note that the data bufs here are zio_bufs */
 		dnode_t *dn = DB_DNODE(db);
 		int bonuslen = DN_SLOTS_TO_BONUSLEN(dn->dn_num_slots);
-		dr->dt.dl.dr_data = zio_buf_alloc(bonuslen);
+		dr->dt.dl.dr_data = kmem_alloc(bonuslen, KM_SLEEP);
 		arc_space_consume(bonuslen, ARC_SPACE_BONUS);
 		bcopy(db->db.db_data, dr->dt.dl.dr_data, bonuslen);
 	} else if (zfs_refcount_count(&db->db_holds) > db->db_dirtycnt) {
