@@ -2317,6 +2317,10 @@ pci_cfgrw(int in, int bus, int slot, int func, int coff, int bytes,
 				errx(4, "%s: invalid BAR offset %d", __func__,
 				    coff);
 			}
+			if (idx > PCI_BARMAX_WITH_ROM) {
+				errx(4, "%s: invalid BAR offset %d", __func__,
+				    idx);
+			}
 
 			mask = ~(pi->pi_bar[idx].size - 1);
 			switch (pi->pi_bar[idx].type) {
