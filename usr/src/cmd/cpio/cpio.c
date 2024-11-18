@@ -522,7 +522,7 @@ ushort_t	Ftype = S_IFMT;	/* File type mask */
 static struct sec_attr {
 	char	attr_type;
 	char	attr_len[7];
-	char	attr_info[1];
+	char	attr_info[0];
 } *attr;
 
 static int	Pflag = 0;	/* flag indicates that acl is preserved */
@@ -5986,7 +5986,7 @@ read_hdr(int hdr)
 			(void) strncpy(Gen.g_nam_p,
 			    Thdr_p->tbuf.t_name, NAMSIZ);
 			Gen.g_namesz = strlen(Gen.g_nam_p) + 1;
-			(void) strcpy(nambuf, Gen.g_nam_p);
+			(void) strncpy(nambuf, Gen.g_nam_p, NAMSIZ);
 		}
 		rv = TAR;
 		break;
@@ -7696,7 +7696,7 @@ read_bar_file_hdr(void)
 		(void) strcpy(bar_linkname, start_of_name);
 
 	Gen.g_namesz = strlen(Gen.g_nam_p) + 1;
-	(void) strcpy(nambuf, Gen.g_nam_p);
+	(void) strncpy(nambuf, Gen.g_nam_p, NAMSIZ);
 }
 
 /*
@@ -8666,7 +8666,11 @@ prepare_xattr_hdr(
 	tptr = (struct xattr_buf *)(bufhead + sizeof (struct xattr_hdr));
 	(void) sprintf(tptr->h_namesz, "%0*d", sizeof (tptr->h_namesz) - 1,
 	    stringlen);
-	(void) strcpy(tptr->h_names, filename);
+	/*
+	 * xattr_buf h_names[1] should really be h_names[0].
+	 */
+	aptr = bufhead + sizeof (struct xattr_hdr) + sizeof (struct xattr_buf) - 1;
+	(void) strcpy(aptr, filename);
 	attrnames_index = strlen(filename) + 1;
 	(void) strcpy(&tptr->h_names[attrnames_index], attrpath);
 	tptr->h_typeflag = typeflag;
@@ -8691,9 +8695,10 @@ prepare_xattr_hdr(
 
 		(void) sprintf(tptr->h_namesz, "%0*d",
 		    sizeof (tptr->h_namesz) - 1, linkstringlen);
-		(void) strcpy(tptr->h_names, linkinfo->L_gen.g_attrfnam_p);
+		aptr = bufhead + sizeof (struct xattr_hdr) + complen + sizeof (struct xattr_buf) - 1;
+		(void) strcpy(aptr, linkinfo->L_gen.g_attrfnam_p);
 		(void) strcpy(
-		    &tptr->h_names[strlen(linkinfo->L_gen.g_attrfnam_p) + 1],
+		    &aptr[strlen(linkinfo->L_gen.g_attrfnam_p) + 1],
 		    linkinfo->L_gen.g_attrnam_p);
 		tptr->h_typeflag = typeflag;
 	}
