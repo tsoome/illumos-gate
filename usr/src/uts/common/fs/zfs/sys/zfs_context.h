@@ -27,6 +27,7 @@
  * Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
  * Copyright (c) 2013 by Delphix. All rights reserved.
  * Copyright 2019 Joyent, Inc.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 #ifndef _SYS_ZFS_CONTEXT_H
@@ -80,6 +81,11 @@ extern "C" {
 #define	_zfs_expect(expr, value)    (expr)
 #endif
 
+/*
+ * Stack
+ */
+
+#define	noinline	__attribute__((noinline))
 #define	likely(x)	_zfs_expect((x) != 0, 1)
 #define	unlikely(x)	_zfs_expect((x) != 0, 0)
 

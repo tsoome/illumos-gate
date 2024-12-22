@@ -24,6 +24,7 @@
  * Copyright (c) 2012, 2016 by Delphix. All rights reserved.
  * Copyright 2019 Joyent, Inc.
  * Copyright 2017 RackTop Systems.
+ * Copyright 2025 MNX Cloud, Inc.
  */
 
 #ifndef _SYS_ZFS_CONTEXT_H
@@ -292,6 +293,7 @@ extern vnode_t *rootdir;
 #define	_zfs_expect(expr, value)    (expr)
 #endif
 
+#define	noinline	__attribute__((noinline))
 #define	likely(x)	_zfs_expect((x) != 0, 1)
 #define	unlikely(x)	_zfs_expect((x) != 0, 0)
 
