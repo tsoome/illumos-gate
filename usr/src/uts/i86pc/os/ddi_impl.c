@@ -25,6 +25,7 @@
  * Copyright 2014 Pluribus Networks, Inc.
  * Copyright 2016 Nexenta Systems, Inc.
  * Copyright 2018 Joyent, Inc.
+ * Copyright 2025 MNX Cloud, Inc.
  * Copyright 2026 Oxide Computer Company
  */
 
@@ -1851,6 +1852,11 @@ get_boot_properties(void)
 		/* copy string to memory above kernelbase */
 		copy_boot_str(name, property_name, 50);
 
+		/* Skip undefined property. */
+		flags = do_bsys_getproptype(bootops, property_name);
+		if (flags == DDI_PROP_UNDEF_IT)
+			continue;
+
 		/*
 		 * Skip vga properties. They will be picked up later
 		 * by get_vga_properties.
@@ -1870,7 +1876,6 @@ get_boot_properties(void)
 			continue;
 		}
 		BOP_GETPROP(bootops, property_name, bop_staging_area);
-		flags = do_bsys_getproptype(bootops, property_name);
 
 		/*
 		 * special properties:
