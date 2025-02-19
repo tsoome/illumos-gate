@@ -32,8 +32,10 @@ VERS= .1
 include ../../../uts/common/Makefile.files
 KERNEL_OBJS = kernel.o util.o
 DTRACE_OBJS = zfs.o
+COMPRESS_OBJS = $(GZIP_OBJS) $(LZ4_OBJS) $(LZJB_OBJS) $(ZLE_OBJS)
 
 OBJECTS=$(LUA_OBJS) $(ZFS_COMMON_OBJS) $(ZFS_SHARED_OBJS) $(KERNEL_OBJS)
+OBJECTS += $(COMPRESS_OBJS)
 
 # include library definitions
 include ../../Makefile.lib
@@ -74,7 +76,7 @@ NATIVE_LIBS +=	libz.so
 CPPFLAGS.first =	-I$(SRC)/lib/libfakekernel/common
 # The in-gate lz4 headers must take precedence over any that may appear in an
 # adjunct.
-CPPFLAGS.first +=	-I$(SRC)/common/lz4
+CPPFLAGS.first +=	-I$(SRC)/common/compression/lz4
 CPPFLAGS +=	$(INCS)	-DDEBUG -D_FAKE_KERNEL
 
 CERRWARN +=	-_gcc=-Wno-parentheses
@@ -107,7 +109,19 @@ pics/%.o: ../../../common/zfs/%.c ../common/zfs.h
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: ../../../common/lz4/%.c ../common/zfs.h
+pics/%.o: ../../../common/compression/gzip/%.c
+	$(COMPILE.c) -o $@ $<
+	$(POST_PROCESS_O)
+
+pics/%.o: ../../../common/compression/lz4/%.c ../common/zfs.h
+	$(COMPILE.c) -o $@ $<
+	$(POST_PROCESS_O)
+
+pics/%.o: ../../../common/compression/lzjb/%.c
+	$(COMPILE.c) -o $@ $<
+	$(POST_PROCESS_O)
+
+pics/%.o: ../../../common/compression/zle/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
