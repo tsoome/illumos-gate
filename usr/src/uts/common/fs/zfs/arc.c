@@ -581,6 +581,25 @@ arc_stats_t arc_stats = {
 	} while (0)
 
 kstat_t			*arc_ksp;
+
+/*
+ * Controls the number of ARC eviction threads.
+ * Possible values:
+ * 0  (auto) compute the number of threads using a logarithmic formula.
+ * 1  (disabled) one thread - parallel eviction is disabled.
+ * 2+ (manual) set the number manually, limited by zfs_arc_evict_threads_max.
+ */
+static uint_t zfs_arc_evict_threads = 0;
+
+/*
+ * The number of allocated ARC eviction threads. This limits the maximum value
+ * of zfs_arc_evict_threads.
+ * The number is set up at module load time and depends on the initial value of
+ * zfs_arc_evict_threads. If zfs_arc_evict_threads is set to auto, a logarithmic
+ * function is used to compute this value. Otherwise, it is set to max_ncpus.
+ */
+static uint_t zfs_arc_evict_threads_max;
+
 static arc_state_t	*arc_anon;
 static arc_state_t	*arc_mru;
 static arc_state_t	*arc_mru_ghost;
@@ -4016,6 +4035,33 @@ arc_evict_state_impl(multilist_t *ml, int idx, arc_buf_hdr_t *marker,
 	return (bytes_evicted);
 }
 
+static taskq_t *arc_evict_taskq;
+
+typedef struct evict_arg {
+	taskq_ent_t		tqe;
+	multilist_t		*ml;
+	arc_buf_hdr_t		*marker;
+	int			idx;
+	uint64_t		spa;
+	uint64_t		bytes;
+	uint64_t		evicted;
+} evict_arg_t;
+
+static void
+arc_evict_task(void *arg)
+{
+	evict_arg_t *eva = arg;
+	eva->evicted = arc_evict_state_impl(eva->ml, eva->idx, eva->marker,
+	    eva->spa, eva->bytes);
+}
+
+/*
+ * The minimum number of bytes we can evict at once is a block size.
+ * So, SPA_MAXBLOCKSIZE is a reasonable minimal value per an eviction task.
+ * We use this value to compute a scaling factor for the eviction tasks.
+ */
+#define	MIN_EVICT_SIZE	(SPA_MAXBLOCKSIZE)
+
 /*
  * Evict buffers from the given arc state, until we've removed the
  * specified number of bytes. Move the removed buffers to the
@@ -4037,10 +4083,17 @@ arc_evict_state(arc_state_t *state, uint64_t spa, int64_t bytes,
 	multilist_t *ml = state->arcs_list[type];
 	int num_sublists;
 	arc_buf_hdr_t **markers;
+	evict_arg_t *evarg = NULL;
 
 	IMPLY(bytes < 0, bytes == ARC_EVICT_ALL);
 
 	num_sublists = multilist_get_num_sublists(ml);
+
+	uint_t nthreads = (arc_evict_taskq == NULL ? 1 : MIN(num_sublists,
+	    (zfs_arc_evict_threads == 0 ? zfs_arc_evict_threads_max :
+	    MIN(zfs_arc_evict_threads, zfs_arc_evict_threads_max))));
+
+	boolean_t use_evcttq =  nthreads > 1;
 
 	/*
 	 * If we've tried to evict from each sublist, made some
@@ -4065,6 +4118,23 @@ arc_evict_state(arc_state_t *state, uint64_t spa, int64_t bytes,
 		multilist_sublist_unlock(mls);
 	}
 
+	if (use_evcttq) {
+		evarg = kmem_alloc(sizeof (*evarg) * nthreads, KM_NOSLEEP);
+		if (evarg) {
+			for (int i = 0; i < nthreads; i++) {
+				taskq_init_ent(&evarg[i].tqe);
+				evarg[i].ml = ml;
+				evarg[i].spa = spa;
+			}
+		} else {
+			/*
+			 * Fall back to the regular single evict if it is not
+			 * possible to allocate memory for the taskq entries.
+			 */
+			use_evcttq = B_FALSE;
+		}
+	}
+
 	/*
 	 * While we haven't hit our target number of bytes to evict, or
 	 * we're evicting all available buffers.
@@ -4079,10 +4149,44 @@ arc_evict_state(arc_state_t *state, uint64_t spa, int64_t bytes,
 		 */
 		int sublist_idx = multilist_get_random_index(ml);
 		uint64_t scan_evicted = 0;
+		uint64_t evict = MIN_EVICT_SIZE;
+		uint_t ntasks = nthreads;
 
-		for (int i = 0; i < num_sublists; i++) {
+		if (use_evcttq) {
+			uint64_t left = bytes - total_evicted;
+
+			if (bytes == ARC_EVICT_ALL) {
+				evict = bytes;
+			} else if (left > nthreads * MIN_EVICT_SIZE) {
+				evict = DIV_ROUND_UP(left, nthreads);
+			} else {
+				ntasks = DIV_ROUND_UP(left, MIN_EVICT_SIZE);
+				if (ntasks == 1)
+					use_evcttq = B_FALSE;
+				/* XXX Comment in review */
+			}
+		}
+
+
+		for (int i = 0; i < ntasks; i++, sublist_idx++) {
 			uint64_t bytes_remaining;
 			uint64_t bytes_evicted;
+
+			/* we've reached the end, wrap to the beginning */
+			if (sublist_idx >= num_sublists)
+				sublist_idx = 0;
+
+			if (use_evcttq) {
+				evarg[i].marker = markers[sublist_idx];
+				evarg[i].idx = sublist_idx;
+				evarg[i].bytes = evict;
+
+				taskq_dispatch_ent(arc_evict_taskq,
+				    arc_evict_task, &evarg[i], 0,
+				    &evarg[i].tqe);
+
+				continue;
+			}
 
 			if (bytes == ARC_EVICT_ALL)
 				bytes_remaining = ARC_EVICT_ALL;
@@ -4096,10 +4200,15 @@ arc_evict_state(arc_state_t *state, uint64_t spa, int64_t bytes,
 
 			scan_evicted += bytes_evicted;
 			total_evicted += bytes_evicted;
+		}
 
-			/* we've reached the end, wrap to the beginning */
-			if (++sublist_idx >= num_sublists)
-				sublist_idx = 0;
+		if (use_evcttq) {
+			taskq_wait(arc_evict_taskq);
+
+			for (int i = 0; i < ntasks; i++) {
+				scan_evicted += evarg[i].evicted;
+				total_evicted += evarg[i].evicted;
+			}
 		}
 
 		/*
@@ -4126,6 +4235,9 @@ arc_evict_state(arc_state_t *state, uint64_t spa, int64_t bytes,
 		}
 	}
 
+	if (evarg)
+		kmem_free(evarg, sizeof (*evarg) * nthreads);
+
 	for (int i = 0; i < num_sublists; i++) {
 		multilist_sublist_t *mls = multilist_sublist_lock(ml, i);
 		multilist_sublist_remove(mls, markers[i]);
@@ -4133,6 +4245,7 @@ arc_evict_state(arc_state_t *state, uint64_t spa, int64_t bytes,
 
 		kmem_cache_free(hdr_full_cache, markers[i]);
 	}
+
 	kmem_free(markers, sizeof (*markers) * num_sublists);
 
 	return (total_evicted);
@@ -7209,6 +7322,27 @@ arc_init(void)
 	ASSERT(!arc_initialized);
 	buf_init();
 
+	if (max_ncpus > 1) {
+		if (zfs_arc_evict_threads == 0) {
+			/*
+			 * Limit the maximum number of threads by 16.
+			 * We reach the limit when max_ncpu == 256.
+			 */
+			uint_t nthreads = MIN((highbit64(max_ncpus) - 1) +
+			    max_ncpus / 32, 16);
+			zfs_arc_evict_threads_max = max_ncpus < 4 ? 1 :
+			    nthreads;
+		} else {
+			zfs_arc_evict_threads_max = max_ncpus / 2;
+		}
+
+		if (zfs_arc_evict_threads_max > 1) {
+			arc_evict_taskq = taskq_create("arc_evict",
+			    zfs_arc_evict_threads_max,
+			    defclsyspri, 0, INT_MAX, TASKQ_PREPOPULATE);
+		}
+	}
+
 	arc_ksp = kstat_create("zfs", 0, "arcstats", "misc", KSTAT_TYPE_NAMED,
 	    sizeof (arc_stats) / sizeof (kstat_named_t), KSTAT_FLAG_VIRTUAL);
 
@@ -7253,6 +7387,11 @@ arc_fini(void)
 	if (arc_ksp != NULL) {
 		kstat_delete(arc_ksp);
 		arc_ksp = NULL;
+	}
+
+	if (arc_evict_taskq != NULL) {
+		taskq_wait(arc_evict_taskq);
+		taskq_destroy(arc_evict_taskq);
 	}
 
 	(void) zthr_cancel(arc_adjust_zthr);
