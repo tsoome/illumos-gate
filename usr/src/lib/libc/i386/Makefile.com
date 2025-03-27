@@ -1104,9 +1104,6 @@ CERRWARN += -_gcc=-Wno-address
 
 $(RELEASE_BUILD)CERRWARN += -_gcc=-Wno-unused
 
-# not linted
-SMATCH=off
-
 # Setting THREAD_DEBUG = -DDEBUG (make THREAD_DEBUG=-DDEBUG ...)
 # enables ASSERT() checking in the library.
 # This is automatically enabled for DEBUG builds, not for non-debug builds.
