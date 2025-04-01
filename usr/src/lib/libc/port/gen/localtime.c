@@ -20,6 +20,7 @@
  */
 
 /*
+ * Copyright 2025 MNX Cloud, Inc.
  * Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
  * Copyright 2025 Oxide Computer Company
  * Copyright 2025 MNX Cloud, Inc.
