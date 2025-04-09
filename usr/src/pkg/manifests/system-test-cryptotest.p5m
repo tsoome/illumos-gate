@@ -250,6 +250,11 @@ file opt/crypto-tests/tests/digest/pkcs/sha512_32 \
 file opt/crypto-tests/tests/digest/pkcs/sha512_64 \
     path=opt/crypto-tests/tests/digest/pkcs/sha512_64 owner=root group=root \
     mode=0555
+dir  path=opt/crypto-tests/tests/ecc
+file opt/crypto-tests/tests/ecc/modtest_32 \
+    path=opt/crypto-tests/tests/ecc/modtest_32 owner=root group=root mode=0555
+file opt/crypto-tests/tests/ecc/modtest_64 \
+    path=opt/crypto-tests/tests/ecc/modtest_64 owner=root group=root mode=0555
 dir  path=opt/crypto-tests/tests/hmac
 dir  path=opt/crypto-tests/tests/hmac/kcf
 file path=opt/crypto-tests/tests/hmac/kcf/cleanup mode=0555

@@ -14,5 +14,6 @@
 #
 
 TESTROOT = $(ROOT)/opt/crypto-tests/tests/aes
+CRYPTO_ecc = $(POUND_SIGN)
 
 include $(SRC)/test/crypto-tests/tests/Makefile.crypto

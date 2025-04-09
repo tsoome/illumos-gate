@@ -18,6 +18,8 @@
 
 [DEFAULT]
 pre =
+pre_user = root
+post_user = root
 verbose = False
 quiet = False
 #
@@ -51,6 +53,9 @@ tests = ['aes_cbc_32', 'aes_ccm_32', 'aes_cmac_32',
          'aes_gmac_64', 'aes_gmac_enc_64']
 post = cleanup
 post_user = root
+
+[/opt/crypto-tests/tests/ecc]
+tests = ['modtest_32', 'modtest_64']
 
 [/opt/crypto-tests/tests/digest/pkcs]
 tests = ['sha1_32', 'sha256_32', 'sha384_32', 'sha512_32', 'sha512_224_32',

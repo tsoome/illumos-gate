@@ -17,5 +17,6 @@ CRYPTO		= pkcs kcf
 COMMON_OBJS	= main.o
 
 TESTROOT	= $(ROOT)/opt/crypto-tests/tests/hmac
+CRYPTO_ecc	= $(POUND_SIGN)
 
 include $(SRC)/test/crypto-tests/tests/Makefile.crypto

@@ -16,8 +16,14 @@
 # Copyright 2025 RackTop Systems, Inc.
 #
 
+# if dprov is not installed, skip tests depending on it
+if [[ -z $(find /kernel/crypto -name dprov) ]]; then
+	exit 3
+fi
+
 # Skip if the driver is already loaded
 modinfo |grep ' dprov ' >/dev/null
 if [ "$?" != 0 ]; then
   add_drv dprov
 fi
+exit 0
