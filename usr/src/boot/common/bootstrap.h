@@ -430,6 +430,4 @@ int nvstore_set_var_from_string(void *, const char *, const char *,
     const char *);
 int nvstore_unset_var(void *, const char *);
 
-#define	CTASSERT(x)	_Static_assert(x, "compile-time assertion failed")
-
 #endif /* !_BOOTSTRAP_H_ */

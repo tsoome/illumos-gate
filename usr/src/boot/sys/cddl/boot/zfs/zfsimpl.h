@@ -64,7 +64,6 @@
 
 #include <sys/queue.h>
 #include <sys/list.h>
-#include <bootstrap.h>
 
 #define	MAXNAMELEN	256
 
@@ -545,7 +544,8 @@ typedef struct vdev_boot_envblock {
 	zio_eck_t	vbe_zbt;
 } vdev_boot_envblock_t;
 
-CTASSERT(sizeof (vdev_boot_envblock_t) == VDEV_PAD_SIZE);
+_Static_assert(sizeof (vdev_boot_envblock_t) == VDEV_PAD_SIZE,
+    "bad size for vdev_boot_envblock_t");
 
 typedef struct vdev_label {
 	char		vl_pad1[VDEV_PAD_SIZE];			/*  8K  */
