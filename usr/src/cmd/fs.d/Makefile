@@ -32,7 +32,7 @@
 # In a similar manner, ncheck is linked to ff.
 
 DFPROG=		df
-PROG=		$(DFPROG) fsck volcopy ff
+PROG=		$(DFPROG) fsck volcopy ff makefs
 ROOTFS_PROG=	mount umount
 SPPROG=		clri
 MNTTAB=		mnttab
@@ -40,7 +40,7 @@ DEFAULTFILES=	fs.dfl
 
 include ../Makefile.cmd
 
-SUBDIR1= bootfs lofs zfs
+SUBDIR1= bootfs lofs zfs makefs
 SUBDIR2= dev fd pcfs nfs hsfs proc ctfs udfs ufs tmpfs \
 		autofs mntfs objfs sharefs smbclnt reparsed
 SUBDIRS= $(SUBDIR1) $(SUBDIR2)
