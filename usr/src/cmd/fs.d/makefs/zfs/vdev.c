@@ -46,18 +46,17 @@
 #pragma GCC diagnostic pop
 
 static void
-blkptr_set(blkptr_t *bp, off_t off, off_t size, uint8_t dntype, uint8_t level,
-    uint64_t fill, enum zio_checksum cksumt, zio_cksum_t *cksum)
+blkptr_set(blkptr_t *bp, off_t off, off_t lsize, off_t psize, uint8_t dntype,
+    uint8_t level, uint64_t fill, enum zio_compress comp,
+    enum zio_checksum cksumt, zio_cksum_t *cksum)
 {
 	dva_t *dva;
 
-	assert(powerof2(size));
-
 	BP_ZERO(bp);
-	BP_SET_LSIZE(bp, size);
-	BP_SET_PSIZE(bp, size);
+	BP_SET_LSIZE(bp, lsize);
+	BP_SET_PSIZE(bp, psize);
 	BP_SET_CHECKSUM(bp, cksumt);
-	BP_SET_COMPRESS(bp, ZIO_COMPRESS_OFF);
+	BP_SET_COMPRESS(bp, comp);
 	BP_SET_BYTEORDER(bp, ZFS_HOST_BYTEORDER);
 	BP_SET_BIRTH(bp, TXG, TXG);
 	BP_SET_LEVEL(bp, level);
@@ -67,8 +66,50 @@ blkptr_set(blkptr_t *bp, off_t off, off_t size, uint8_t dntype, uint8_t level,
 	dva = BP_IDENTITY(bp);
 	DVA_SET_VDEV(dva, 0);
 	DVA_SET_OFFSET(dva, off);
-	DVA_SET_ASIZE(dva, size);
+	DVA_SET_ASIZE(dva, psize);
 	memcpy(&bp->blk_cksum, cksum, sizeof(*cksum));
+}
+
+static void
+encode_embedded_bp_compressed(blkptr_t *bp, void *data,
+    enum zio_compress comp, int uncompressed_size, int compressed_size)
+{
+        uint64_t *bp64 = (uint64_t *)bp;
+        uint64_t w = 0;
+        uint8_t *data8 = data;
+
+        ASSERT(compressed_size <= BPE_PAYLOAD_SIZE);
+        ASSERT(uncompressed_size == compressed_size ||
+            comp != ZIO_COMPRESS_OFF);
+        ASSERT(comp >= ZIO_COMPRESS_OFF);
+        ASSERT(comp < ZIO_COMPRESS_FUNCTIONS);
+
+        bzero(bp, sizeof (*bp));
+        BP_SET_EMBEDDED(bp, B_TRUE);
+        BP_SET_COMPRESS(bp, comp);
+        BP_SET_BYTEORDER(bp, ZFS_HOST_BYTEORDER);
+        BPE_SET_LSIZE(bp, uncompressed_size);
+        BPE_SET_PSIZE(bp, compressed_size);
+
+        /*
+         * Encode the byte array into the words of the block pointer.
+         * First byte goes into low bits of first word (little endian).
+         */
+        for (int i = 0; i < compressed_size; i++) {
+                BF64_SET(w, (i % sizeof (w)) * NBBY, NBBY, data8[i]);
+                if (i % sizeof (w) == sizeof (w) - 1) {
+                        /* we've reached the end of a word */
+                        ASSERT((uintptr_t)bp64 < (uintptr_t)(bp + 1));
+                        *bp64 = w;
+                        bp64++;
+                        if (!BPE_IS_PAYLOADWORD(bp, bp64))
+                                bp64++;
+                        w = 0;
+                }
+        }
+        /* write last partial word */
+        if (bp64 < (uint64_t *)(bp + 1))
+                *bp64 = w;
 }
 
 /*
@@ -85,7 +126,10 @@ vdev_pwrite(const zfs_opt_t *zfs, const void *buf, size_t len, off_t off)
 	ssize_t n;
 
 	assert(off >= 0 && off < zfs->asize);
-	assert(powerof2(len));
+	if (!((off_t)len > 0 && off + (off_t)len > off &&
+            off + (off_t)len < zfs->asize)) {
+		printf("len %zu, off %u asize: %lu\n", len, off, zfs->asize);
+	}
 	assert((off_t)len > 0 && off + (off_t)len > off &&
 	    off + (off_t)len < zfs->asize);
 	if (zfs->spacemap != NULL) {
@@ -110,28 +154,103 @@ vdev_pwrite(const zfs_opt_t *zfs, const void *buf, size_t len, off_t off)
 }
 
 void
-vdev_pwrite_data(zfs_opt_t *zfs, uint8_t datatype, uint8_t cksumtype,
-    uint8_t level, uint64_t fill, const void *data, off_t sz, off_t loc,
-    blkptr_t *bp)
+vdev_pwrite_data(mkzio_t *zio)
 {
+	off_t psz, lsz;
 	zio_cksum_t cksum;
+	void *data, *cbuf = NULL;
+	enum zio_compress comp;
+	enum zio_checksum cksumtype;
+	uint8_t level;
+	uint64_t fill;
+	off_t loc;
 
+	comp = zio->io_prop.zp_compress;
+	cksumtype = zio->io_prop.zp_checksum;
+	psz = zio->io_size;
+	lsz = zio->io_lsize;
+	data = zio->io_buf;
+	level = zio->io_prop.zp_level;
+	fill = zio->io_prop.zp_fill;
+	loc = zio->io_loc;
+
+	if (comp == ZIO_COMPRESS_INHERIT)
+		comp = zio->io_zfs->compress;
+	if (comp == ZIO_COMPRESS_ON)
+		comp = ZIO_COMPRESS_ON_VALUE;
+
+	if (comp != ZIO_COMPRESS_OFF) {
+		cbuf = emalloc(lsz);
+		psz = zio_compress_data(comp, data, cbuf, lsz);
+		if (psz == 0 || psz == lsz) {
+                        comp = ZIO_COMPRESS_OFF;
+                        free(cbuf);
+			cbuf = NULL;
+			psz = lsz;
+		} else if (psz <= BPE_PAYLOAD_SIZE && level == 0 &&
+		    !DMU_OT_HAS_FILL(zio->io_prop.zp_type)) {
+			encode_embedded_bp_compressed(zio->io_bp,
+			    cbuf, comp, lsz, psz);
+			BPE_SET_ETYPE(zio->io_bp, BP_EMBEDDED_TYPE_DATA);
+			BP_SET_TYPE(zio->io_bp, zio->io_prop.zp_type);
+			BP_SET_LEVEL(zio->io_bp,zio->io_prop.zp_level);
+			zio->io_bp->blk_birth = TXG;
+			zio->io_size = 0;
+                        free(cbuf);
+			return;
+		} else {
+			size_t rounded = (size_t)P2ROUNDUP(psz,
+			    1 << zio->io_zfs->ashift);
+			if (rounded >= lsz) {
+				comp = ZIO_COMPRESS_OFF;
+				free(cbuf);
+				cbuf = NULL;
+				psz = lsz;
+			} else {
+				cbuf = erealloc(cbuf, rounded);
+				bzero((char *)cbuf + psz, rounded - psz);
+				psz = rounded;
+			}
+		}
+		if (cbuf != NULL)
+			data = cbuf;
+	}
+
+	if (cksumtype == ZIO_CHECKSUM_INHERIT)
+		cksumtype = zio->io_zfs->cksum;
+	else if (cksumtype == ZIO_CHECKSUM_ON)
+		cksumtype = ZIO_CHECKSUM_FLETCHER_4;
 	assert(cksumtype == ZIO_CHECKSUM_FLETCHER_4);
 
-	fletcher_4_native(data, sz, NULL, &cksum);
-	blkptr_set(bp, loc, sz, datatype, level, fill, cksumtype, &cksum);
-	vdev_pwrite(zfs, data, sz, loc);
+	fletcher_4_native(data, psz, NULL, &cksum);
+	blkptr_set(zio->io_bp, loc, lsz, psz, zio->io_prop.zp_type,
+	    level, fill, comp, cksumtype, &cksum);
+	vdev_pwrite(zio->io_zfs, data, psz, loc);
+	zio->io_size = psz;
+	free(cbuf);
 }
 
 void
 vdev_pwrite_dnode_indir(zfs_opt_t *zfs, dnode_phys_t *dnode, uint8_t level,
     uint64_t fill, const void *data, off_t sz, off_t loc, blkptr_t *bp)
 {
-	vdev_pwrite_data(zfs, dnode->dn_type, dnode->dn_checksum, level, fill,
-	    data, sz, loc, bp);
+	mkzio_t zio;
+
+	zio.io_zfs = zfs;
+	zio.io_prop.zp_checksum = dnode->dn_checksum;
+	zio.io_prop.zp_compress = dnode->dn_compress;
+	zio.io_prop.zp_type = dnode->dn_type;
+	zio.io_prop.zp_level = level;
+	zio.io_prop.zp_fill = fill;
+	zio.io_bp = bp;
+	zio.io_size = sz;
+	zio.io_lsize = sz;
+	zio.io_buf = (void *)data;
+	zio.io_loc = loc;
+	vdev_pwrite_data(&zio);
 
 	assert((dnode->dn_flags & DNODE_FLAG_USED_BYTES) != 0);
-	dnode->dn_used += sz;
+	dnode->dn_used += zio.io_size;
 }
 
 void
@@ -200,7 +319,7 @@ vdev_label_write(zfs_opt_t *zfs, int ind, const vdev_label_t *labelp)
 	 * per sector; for example, with an ashift of 12 we end up with
 	 * 128KB/4KB=32 copies of the uberblock in the ring.
 	 */
-	blksz = 1 << zfs->ashift;
+	blksz = ASHIFT_UBERBLOCK_SIZE(zfs->ashift);
 	assert(sizeof(label->vl_uberblock) % blksz == 0);
 	for (size_t roff = 0; roff < sizeof(label->vl_uberblock);
 	    roff += blksz) {

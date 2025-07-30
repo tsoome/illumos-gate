@@ -57,6 +57,31 @@ _Static_assert(MINBLOCKSIZE == SPA_MINBLOCKSIZE, "");
 #define	TXG			4
 #define	TXG_SIZE		4
 
+/* Common signature for all zio compress functions. */
+typedef size_t zio_compress_func_t(void *src, void *dst,
+    size_t s_len, size_t d_len, int);
+
+/*
+ * Information about each compression function.
+ */
+typedef struct zio_compress_info {
+	char			*ci_name;
+	int			ci_level;
+	zio_compress_func_t	*ci_compress;
+} zio_compress_info_t;
+
+extern const zio_compress_info_t zio_compress_table[ZIO_COMPRESS_FUNCTIONS];
+
+/*
+ * Compression routines.
+ */
+extern size_t lzjb_compress(void *, void *, size_t, size_t, int);
+extern size_t gzip_compress(void *, void *, size_t, size_t, int);
+extern size_t zle_compress(void *, void *, size_t, size_t, int);
+extern size_t lz4_compress(void *, void *, size_t, size_t, int);
+
+extern size_t zio_compress_data(enum zio_compress, void *, void *, size_t);
+
 typedef struct zfs_dsl_dataset zfs_dsl_dataset_t;
 typedef struct zfs_dsl_dir zfs_dsl_dir_t;
 typedef struct zfs_objset zfs_objset_t;
@@ -88,6 +113,8 @@ typedef struct {
 	/* Pool state. */
 	uint64_t	poolguid;	/* pool and root vdev GUID */
 	zfs_zap_t	*poolprops;
+	enum zio_compress compress;
+	enum zio_checksum cksum;
 
 	/* MOS state. */
 	zfs_objset_t	*mos;		/* meta object set */
@@ -113,6 +140,25 @@ typedef struct {
 	uint64_t	msshift;	/* log2(metaslab size) */
 	uint64_t	mscount;	/* number of metaslabs for this vdev */
 } zfs_opt_t;
+
+typedef struct zio_prop {
+	enum zio_checksum	zp_checksum;
+	enum zio_compress	zp_compress;
+	dmu_object_type_t	zp_type;
+	uint8_t			zp_level;
+	uint64_t		zp_fill;
+	boolean_t		zp_byteorder;
+} zio_prop_t;
+
+typedef struct {
+	zfs_opt_t	*io_zfs;
+	zio_prop_t	io_prop;
+	blkptr_t	*io_bp;
+	uint64_t	io_size;
+	uint64_t	io_lsize;
+	void		*io_buf;
+	off_t		io_loc;
+} mkzio_t;
 
 /* dsl.c */
 void dsl_init(zfs_opt_t *);
@@ -146,9 +192,7 @@ void objset_write(zfs_opt_t *zfs, zfs_objset_t *os);
 /* vdev.c */
 void vdev_init(zfs_opt_t *, const char *);
 off_t vdev_space_alloc(zfs_opt_t *zfs, off_t *lenp);
-void vdev_pwrite_data(zfs_opt_t *zfs, uint8_t datatype, uint8_t cksumtype,
-    uint8_t level, uint64_t fill, const void *data, off_t sz, off_t loc,
-    blkptr_t *bp);
+void vdev_pwrite_data(mkzio_t *);
 void vdev_pwrite_dnode_indir(zfs_opt_t *zfs, dnode_phys_t *dnode, uint8_t level,
     uint64_t fill, const void *data, off_t sz, off_t loc, blkptr_t *bp);
 void vdev_pwrite_dnode_data(zfs_opt_t *zfs, dnode_phys_t *dnode, const void *data,

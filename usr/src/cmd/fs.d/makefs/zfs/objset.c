@@ -68,7 +68,8 @@ dnode_init(dnode_phys_t *dnode, uint8_t type, uint8_t bonustype,
 	dnode->dn_type = type;
 	dnode->dn_bonustype = bonustype;
 	dnode->dn_bonuslen = bonuslen;
-	dnode->dn_checksum = ZIO_CHECKSUM_FLETCHER_4;
+	dnode->dn_checksum = ZIO_CHECKSUM_INHERIT;
+	dnode->dn_compress = ZIO_COMPRESS_INHERIT;
 	dnode->dn_nlevels = 1;
 	dnode->dn_nblkptr = 1;
 	dnode->dn_flags = DNODE_FLAG_USED_BYTES;
@@ -100,6 +101,10 @@ objset_alloc(zfs_opt_t *zfs, uint64_t type)
 	dnode_init(&os->phys->os_meta_dnode, DMU_OT_DNODE, DMU_OT_NONE, 0);
 	os->phys->os_meta_dnode.dn_datablkszsec =
 	    DNODE_BLOCK_SIZE >> MINBLOCKSHIFT;
+	if (type == DMU_OST_META) {
+		os->phys->os_meta_dnode.dn_checksum = ZIO_CHECKSUM_FLETCHER_4;
+		os->phys->os_meta_dnode.dn_compress = ZIO_COMPRESS_ON;
+	}
 
 	return (os);
 }
@@ -113,6 +118,7 @@ _objset_write(zfs_opt_t *zfs, zfs_objset_t *os, struct dnode_cursor *c,
 {
 	struct objset_dnode_chunk *chunk, *tmp;
 	unsigned int total;
+	mkzio_t zio;
 
 	/*
 	 * Write out the dnode array, i.e., the meta-dnode.  For some reason its
@@ -151,8 +157,17 @@ _objset_write(zfs_opt_t *zfs, zfs_objset_t *os, struct dnode_cursor *c,
 	 * Write the object set itself.  The saved block pointer will be copied
 	 * into the referencing DSL dataset or the uberblocks.
 	 */
-	vdev_pwrite_data(zfs, DMU_OT_OBJSET, ZIO_CHECKSUM_FLETCHER_4, 0,
-	    os->dnodecount - 1, os->phys, os->osblksz, os->osloc, &os->osbp);
+	zio.io_zfs = zfs;
+	zio.io_prop.zp_type = DMU_OT_OBJSET;
+	zio.io_prop.zp_compress = os->phys->os_meta_dnode.dn_compress;
+	zio.io_prop.zp_checksum = os->phys->os_meta_dnode.dn_checksum;
+	zio.io_prop.zp_level = 0;
+	zio.io_prop.zp_fill = os->dnodecount - 1;
+	zio.io_buf = os->phys;
+	zio.io_size = zio.io_lsize = os->osblksz;
+	zio.io_loc = os->osloc;
+	zio.io_bp = &os->osbp;
+	vdev_pwrite_data(&zio);
 }
 
 void

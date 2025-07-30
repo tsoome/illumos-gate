@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <util.h>
 
@@ -223,6 +224,7 @@ dsl_dir_set_prop(zfs_opt_t *zfs, zfs_dsl_dir_t *dir, const char *key,
 			if (strcmp(val, compression_algorithms[i].name) == 0) {
 				(void) nvlist_add_uint64(nvl, key,
 				    compression_algorithms[i].alg);
+				zfs->compress = compression_algorithms[i].alg;
 				break;
 			}
 		}
@@ -325,7 +327,7 @@ dsl_init(zfs_opt_t *zfs)
 	 */
 	if (nvpair_find(zfs->rootdsldir->propsnv, "compression") == NULL) {
 		(void) nvlist_add_uint64(zfs->rootdsldir->propsnv,
-		    "compression", ZIO_COMPRESS_OFF);
+		    "compression", zfs->compress);
 	}
 	if (nvpair_find(zfs->rootdsldir->propsnv, "mountpoint") == NULL) {
 		(void) nvlist_add_string(zfs->rootdsldir->propsnv, "mountpoint",
@@ -408,6 +410,7 @@ dsl_dir_alloc(zfs_opt_t *zfs, const char *name)
 	dir->propsnv = nvlist_create(NV_UNIQUE_NAME);
 	STAILQ_INIT(&dir->children);
 
+	dir->phys->dd_creation_time = time(NULL);
 	dir->phys->dd_child_dir_zapobj = childid;
 	dir->phys->dd_props_zapobj = propsid;
 
@@ -557,10 +560,13 @@ dsl_dir_finalize(zfs_opt_t *zfs, zfs_dsl_dir_t *dir, void *arg __unused)
 	zfs->snapds->phys->ds_num_children++;
 	zap_add_uint64_self(zfs->cloneszap, headds->dsid);
 
+	/* XXX */
 	bytes = objset_space(os);
 	headds->phys->ds_used_bytes = bytes;
 	headds->phys->ds_uncompressed_bytes = bytes;
 	headds->phys->ds_compressed_bytes = bytes;
+
+	headds->phys->ds_creation_time = time(NULL);
 
 	childbytes = 0;
 	STAILQ_FOREACH(cdir, &dir->children, next) {
@@ -654,6 +660,7 @@ dsl_dataset_alloc(zfs_opt_t *zfs, zfs_dsl_dir_t *dir)
 	ds->phys->ds_dir_obj = dir->dirid;
 	ds->phys->ds_deadlist_obj = deadlistid;
 	ds->phys->ds_creation_txg = TXG - 1;
+	ds->phys->ds_creation_time = time(NULL);
 	if (ds != zfs->snapds)
 		ds->phys->ds_prev_snap_txg = TXG - 1;
 	ds->phys->ds_guid = randomguid();

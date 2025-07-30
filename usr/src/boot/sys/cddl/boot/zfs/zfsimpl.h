@@ -388,6 +388,7 @@ _NOTE(CONSTCOND) } while (0)
 #define	BP_SET_LEVEL(bp, x)	BF64_SET((bp)->blk_prop, 56, 5, x)
 
 #define	BP_IS_EMBEDDED(bp)	BF64_GET((bp)->blk_prop, 39, 1)
+#define	BP_SET_EMBEDDED(bp, x)	BF64_SET((bp)->blk_prop, 39, 1, x)
 
 #define	BP_GET_DEDUP(bp)	BF64_GET((bp)->blk_prop, 62, 1)
 #define	BP_SET_DEDUP(bp, x)	BF64_SET((bp)->blk_prop, 62, 1, x)
@@ -535,6 +536,12 @@ typedef struct zio_gbh {
 	offsetof(vdev_label_t, vl_uberblock[(n) << VDEV_UBERBLOCK_SHIFT(vd)])
 #define	VDEV_UBERBLOCK_SIZE(vd)		(1ULL << VDEV_UBERBLOCK_SHIFT(vd))
 
+#define	ASHIFT_UBERBLOCK_SHIFT(ashift)  \
+	MIN(MAX(ashift, UBERBLOCK_SHIFT), \
+	MAX_UBERBLOCK_SHIFT)
+#define	ASHIFT_UBERBLOCK_SIZE(ashift) \
+	(1ULL << ASHIFT_UBERBLOCK_SHIFT(ashift))
+
 typedef struct vdev_phys {
 	char		vp_nvlist[VDEV_PHYS_SIZE - sizeof (zio_eck_t)];
 	zio_eck_t	vp_zbt;
@@ -629,7 +636,7 @@ enum zio_compress {
 	ZIO_COMPRESS_FUNCTIONS
 };
 
-#define	ZIO_COMPRESS_ON_VALUE	ZIO_COMPRESS_LZJB
+#define	ZIO_COMPRESS_ON_VALUE	ZIO_COMPRESS_LZ4
 #define	ZIO_COMPRESS_DEFAULT	ZIO_COMPRESS_OFF
 
 /*
@@ -1099,6 +1106,14 @@ typedef enum dmu_object_byteswap {
 	((metadata) ? DMU_OT_METADATA : 0) | \
 	((byteswap) & DMU_OT_BYTESWAP_MASK))
 
+/*
+ * These object types use bp_fill != 1 for their L0 bp's. Therefore they can't
+ * have their data embedded (i.e. use a BP_IS_EMBEDDED() bp), because bp_fill
+ * is repurposed for embedded BPs.
+ */
+#define	DMU_OT_HAS_FILL(ot) \
+	((ot) == DMU_OT_DNODE || (ot) == DMU_OT_OBJSET)
+
 typedef enum dmu_object_type {
 	DMU_OT_NONE,
 	/* general: */
@@ -1447,6 +1462,7 @@ typedef struct bpobj_phys {
 #define	DMU_POOL_FEATURES_FOR_READ	"features_for_read"
 #define	DMU_POOL_FEATURES_FOR_WRITE	"features_for_write"
 #define	DMU_POOL_FEATURE_DESCRIPTIONS	"feature_descriptions"
+#define	DMU_POOL_FEATURE_ENABLED_TXG	"feature_enabled_txg"
 #define	DMU_POOL_ROOT_DATASET		"root_dataset"
 #define	DMU_POOL_SYNC_BPLIST		"sync_bplist"
 #define	DMU_POOL_ERRLOG_SCRUB		"errlog_scrub"

@@ -106,8 +106,10 @@ zfs_prep_opts(fsinfo_t *fsopts)
 
 	STAILQ_INIT(&zfs->datasetdescs);
 
+	zfs->compress = ZIO_COMPRESS_LZ4;
 	fsopts->fs_specific = zfs;
 	fsopts->fs_options = copy_opts(zfs_options);
+	zfs->cksum = ZIO_CHECKSUM_FLETCHER_4;
 }
 
 int
@@ -315,6 +317,7 @@ pool_config_nvcreate(zfs_opt_t *zfs)
 	(void) nvlist_add_uint64(poolnv, ZPOOL_CONFIG_VDEV_CHILDREN, 1);
 
 	featuresnv = nvlist_create(NV_UNIQUE_NAME);
+	(void) nvlist_add_uint64(featuresnv, "com.delphix:embedded_data", 1);
 	(void) nvlist_add_nvlist(poolnv, ZPOOL_CONFIG_FEATURES_FOR_READ,
 	    featuresnv);
 	nvlist_destroy(featuresnv);
@@ -433,18 +436,21 @@ pool_init_objdir_bplists(zfs_opt_t *zfs __unused, zfs_zap_t *objdir)
 }
 
 /*
- * Add required feature metadata objects.  We don't know anything about ZFS
- * features, so the objects are just empty ZAPs.
+ * Add required feature metadata objects.
  */
 static void
 pool_init_objdir_feature_maps(zfs_opt_t *zfs, zfs_zap_t *objdir)
 {
 	dnode_phys_t *dnode;
 	uint64_t dnid;
+	zfs_zap_t *zap;
 
 	dnode = objset_dnode_alloc(zfs->mos, DMU_OTN_ZAP_METADATA, &dnid);
 	zap_add_uint64(objdir, DMU_POOL_FEATURES_FOR_READ, dnid);
-	zap_write(zfs, zap_alloc(zfs->mos, dnode));
+	zap = zap_alloc(zfs->mos, dnode);
+	zap_add_uint64(zap, "org.illumos:lz4_compress", 1);
+	zap_add_uint64(zap, "com.delphix:embedded_data", 1);
+	zap_write(zfs, zap);
 
 	dnode = objset_dnode_alloc(zfs->mos, DMU_OTN_ZAP_METADATA, &dnid);
 	zap_add_uint64(objdir, DMU_POOL_FEATURES_FOR_WRITE, dnid);
@@ -452,7 +458,12 @@ pool_init_objdir_feature_maps(zfs_opt_t *zfs, zfs_zap_t *objdir)
 
 	dnode = objset_dnode_alloc(zfs->mos, DMU_OTN_ZAP_METADATA, &dnid);
 	zap_add_uint64(objdir, DMU_POOL_FEATURE_DESCRIPTIONS, dnid);
-	zap_write(zfs, zap_alloc(zfs->mos, dnode));
+	zap = zap_alloc(zfs->mos, dnode);
+	zap_add_string(zap, "org.illumos:lz4_compress",
+	    "LZ4 compression algorithm support.");
+	zap_add_string(zap, "com.delphix:embedded_data",
+	    "Blocks which compress very well use even less space.");
+	zap_write(zfs, zap);
 }
 
 static void
@@ -603,7 +614,7 @@ pool_labels_write(zfs_opt_t *zfs)
 	 * checksum is calculated in vdev_label_write().
 	 */
 	for (size_t uoff = 0; uoff < sizeof(label->vl_uberblock);
-	    uoff += (1 << zfs->ashift)) {
+	    uoff += ASHIFT_UBERBLOCK_SIZE(zfs->ashift)) {
 		ub = (uberblock_t *)(&label->vl_uberblock[0] + uoff);
 		ub->ub_magic = UBERBLOCK_MAGIC;
 		ub->ub_version = SPA_VERSION;

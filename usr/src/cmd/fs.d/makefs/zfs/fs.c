@@ -36,6 +36,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <util.h>
@@ -977,6 +978,9 @@ fs_build_one(zfs_opt_t *zfs, zfs_dsl_dir_t *dsldir, fsnode *root, int dirfd)
 	fakedroot = root == NULL;
 	if (fakedroot) {
 		struct stat *stp;
+		timestruc_t tm = { 0 };
+
+		tm.tv_sec = time(NULL);
 
 		assert(dirfd == -1);
 
@@ -989,6 +993,9 @@ fs_build_one(zfs_opt_t *zfs, zfs_dsl_dir_t *dsldir, fsnode *root, int dirfd)
 		stp->st_uid = 0;
 		stp->st_gid = 0;
 		stp->st_mode = S_IFDIR | 0755;
+		stp->st_atim = tm;
+		stp->st_mtim = tm;
+		stp->st_ctim = tm;
 	}
 	assert(root->type == S_IFDIR);
 	assert(fsnode_isroot(root));

@@ -22,6 +22,9 @@ ZFSOBJS = \
 	zfs/vdev.o \
 	zfs/zap.o \
 	zfs/nvlist.o \
+	zfs/zio_compress.o \
+	zfs/lzjb.o \
+	zfs/zle.o \
 	zfs.o
 
 OBJS =	\
@@ -30,6 +33,7 @@ OBJS =	\
 	libnetbsd/strsuftoll.o \
 	makefs.o \
 	walk.o \
+	lz4.o \
 	bsd.o
 
 include ../../Makefile.cmd
@@ -47,9 +51,12 @@ CPPFLAGS += -DDEFAULT_FSTYPE=\"zfs\" -Ilibutil -I.
 
 $(ZFSOBJS) := CPPFLAGS += -Izfs -I$(SRC)/boot/libsa -I$(SRC)/boot/sys/cddl/boot
 
+lz4.o := CPPFLAGS.first =
+lz4.o := CPPFLAGS += -I$(SRC)/common/lz4
 bsd.o := CPPFLAGS.first =
 
-LDLIBS += -lc
+LDLIBS += -lz -lc
+NATIVE_LIBS +=  libz.so
 
 $(OBJS):	machine x86
 CLOBBERFILES += machine x86
@@ -59,6 +66,14 @@ $(PROG): $(OBJS)
 	$(POST_PROCESS)
 
 zfs/%.o:	zfs/%.c
+	$(COMPILE.c) $< -o $@
+	$(POST_PROCESS_O)
+
+zfs/%.o:	$(SRC)/uts/common/fs/zfs/%.c
+	$(COMPILE.c) $< -o $@
+	$(POST_PROCESS_O)
+
+%.o:	$(SRC)/common/lz4/%.c
 	$(COMPILE.c) $< -o $@
 	$(POST_PROCESS_O)
 
