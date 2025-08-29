@@ -24,12 +24,11 @@
  * SUCH DAMAGE.
  */
 
-#include <stand.h>
-#include <btxv86.h>
+#include <efi.h>
+#include <efilib.h>
+
 #include <x86/specialreg.h>
 #include <machine/cpufunc.h>
-#include "bootstrap.h"
-#include "libi386.h"
 
 #include "platform/acfreebsd.h"
 #include "acconfig.h"
@@ -61,40 +60,6 @@ uint64_t
 get_time_ms(void)
 {
 	return (get_time_ms_func());
-}
-
-time_t
-time(time_t *t)
-{
-	time_t now;
-
-	now = get_time_ms_func() / 1000;
-	if (t != NULL)
-		*t = now;
-	return (now);
-}
-
-time_t
-getsecs(void)
-{
-	return (time(NULL));
-}
-
-/*
- * Use the BIOS Wait function to pause for (period) microseconds.
- *
- * Resolution of this function is variable, but typically around
- * 1ms.
- */
-void
-delay(int period)
-{
-	v86.ctl = 0;
-	v86.addr = 0x15;		/* int 0x15, function 0x86 */
-	v86.eax = 0x8600;
-	v86.ecx = period >> 16;
-	v86.edx = period & 0xffff;
-	v86int();
 }
 
 static uint64_t
@@ -144,6 +109,55 @@ tsc_freq_cpuid(uint64_t *res)
 	return (false);
 }
 
+static bool
+pit_wait(void)
+{
+	bool ret = false;
+
+	/* Disable timer2 gate and speaker.  */
+	outb(PITAUX_PORT, inb(PITAUX_PORT) & ~(PITAUX_GATE2 | PITAUX_OUT2));
+
+	/* Set tics.  */
+	outb(PITCTL_PORT, PIT_CTRL_SELECT_2 | PIT_CTRL_READLOAD_WORD);
+	/* 0xffff ticks: 55ms. */
+	outb(PITCTR2_PORT, 0xff);
+	outb(PITCTR2_PORT, 0xff);
+
+	/* Enable timer2 gate, keep speaker disabled. */
+	outb(PITAUX_PORT, (inb(PITAUX_PORT) & ~PITAUX_OUT2) | PITAUX_GATE2);
+
+	if ((inb(PITAUX_PORT) & 0x20) == 0x00) {
+		ret = true;
+		/* Wait. */
+		while ((inb(PITAUX_PORT) & 0x20) == 0x00)
+			;
+	}
+
+	/* Disable timer2 gate and speaker.  */
+	outb(PITAUX_PORT, inb(PITAUX_PORT) & ~(PITAUX_GATE2 | PITAUX_OUT2));
+
+	return (ret);
+}
+
+static bool
+tsc_freq_pit(uint64_t *res)
+{
+	uint64_t start_tsc, end_tsc, rate;
+
+	start_tsc = get_tsc();
+	if (!pit_wait())
+		return (false);
+	end_tsc = get_tsc();
+	rate = 0;
+	if (end_tsc > start_tsc)
+		rate = (55ULL << 32) / (end_tsc - start_tsc);
+	if (rate == 0)
+		return (false);
+
+	*res = rate;
+	return (true);
+}
+
 static uint64_t
 pmtimer_wait(uint32_t port, uint16_t tics)
 {
@@ -153,7 +167,7 @@ pmtimer_wait(uint32_t port, uint16_t tics)
 	int failed = 0;
 
 	/*
-	 * We do need high bits.
+	 * We do not need high bits.
 	 */
 	cur = start = inl(port) & 0x00ffffffffUL;
 	end = start + tics;
@@ -213,51 +227,15 @@ tsc_freq_acpi(uint64_t *res)
 }
 
 static bool
-pit_wait(void)
+tsc_freq_efi(uint64_t *res)
 {
-	bool ret = false;
+	uint64_t start_tsc, end_tsc;
 
-	/* Disable timer2 gate and speaker.  */
-	outb(PITAUX_PORT, inb(PITAUX_PORT) & ~(PITAUX_GATE2 | PITAUX_OUT2));
-
-	/* Set tics.  */
-	outb(PITCTL_PORT, PIT_CTRL_SELECT_2 | PIT_CTRL_READLOAD_WORD);
-	/* 0xffff ticks: 55ms. */
-	outb(PITCTR2_PORT, 0xff);
-	outb(PITCTR2_PORT, 0xff);
-
-	/* Enable timer2 gate, keep speaker disabled. */
-	outb(PITAUX_PORT, (inb(PITAUX_PORT) & ~PITAUX_OUT2) | PITAUX_GATE2);
-
-	if ((inb(PITAUX_PORT) & 0x20) == 0x00) {
-		ret = true;
-		/* Wait. */
-		while ((inb(PITAUX_PORT) & 0x20) == 0x00)
-			;
-	}
-
-	/* Disable timer2 gate and speaker.  */
-	outb(PITAUX_PORT, inb(PITAUX_PORT) & ~(PITAUX_GATE2 | PITAUX_OUT2));
-
-	return (ret);
-}
-
-static bool
-tsc_freq_pit(uint64_t *res)
-{
-	uint64_t start_tsc, end_tsc, rate;
-
+	/* Use EFI Time Service to calibrate TSC */
 	start_tsc = get_tsc();
-	if (!pit_wait())
-		return (false);
+	BS->Stall(1000);
 	end_tsc = get_tsc();
-	rate = 0;
-	if (end_tsc > start_tsc)
-		rate = (55ULL << 32) / (end_tsc - start_tsc);
-	if (rate == 0)
-		return (false);
-
-	*res = rate;
+	*res = (1ULL << 32) / (end_tsc - start_tsc);
 	return (true);
 }
 
@@ -272,12 +250,19 @@ tsc_get_time_ms(void)
 }
 
 void
-tsc_init(void)
+efi_time_init(void)
 {
 	boot_time = get_tsc();
+
 	if (!tsc_freq_cpuid(&tsc_rate) &&
-	    !tsc_freq_acpi(&tsc_rate))
-		(void) tsc_freq_pit(&tsc_rate);
+	    !tsc_freq_acpi(&tsc_rate) &&
+	    !tsc_freq_pit(&tsc_rate))
+		(void) tsc_freq_efi(&tsc_rate);
 
 	get_time_ms_func = tsc_get_time_ms;
+}
+
+void
+efi_time_fini(void)
+{
 }

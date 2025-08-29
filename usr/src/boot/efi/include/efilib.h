@@ -132,6 +132,7 @@ void *acpi_find_table(const char *);
 
 void efi_time_init(void);
 void efi_time_fini(void);
+uint64_t get_time_ms(void);
 
 void efi_serial_ini(void);
 void efi_isa_ini(void);

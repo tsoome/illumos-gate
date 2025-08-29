@@ -38,6 +38,7 @@ OBJS +=	\
 	handles.o \
 	libefi.o \
 	pnglite.o \
+	time.o \
 	wchar.o
 
 CPPFLAGS += -DEFI

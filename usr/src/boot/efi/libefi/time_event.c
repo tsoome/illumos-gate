@@ -39,7 +39,13 @@ static void
 time_update(EFI_EVENT event, void *context)
 {
 
-	curtime++;
+	curtime += 10;
+}
+
+uint64_t
+get_time_ms(void)
+{
+	return (curtime);
 }
 
 void
@@ -49,8 +55,8 @@ efi_time_init(void)
 	/* Create a timer event */
 	BS->CreateEvent(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_CALLBACK,
 	    time_update, 0, &time_event);
-	/* Use a 1s timer */
-	BS->SetTimer(time_event, TimerPeriodic, 10000000);
+	/* Use a 10ms timer */
+	BS->SetTimer(time_event, TimerPeriodic, 100000);
 }
 
 void
@@ -60,22 +66,4 @@ efi_time_fini(void)
 	/* Cancel the timer */
 	BS->SetTimer(time_event, TimerCancel, 0);
 	BS->CloseEvent(time_event);
-}
-
-time_t
-time(time_t *tloc)
-{
-	time_t t;
-
-	t = curtime;
-	if (tloc != NULL)
-		*tloc = t;
-
-	return (t);
-}
-
-time_t
-getsecs(void)
-{
-	return (time(0));
 }

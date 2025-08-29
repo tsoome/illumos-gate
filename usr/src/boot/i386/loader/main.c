@@ -117,6 +117,7 @@ main(void)
 
 	/* detect ACPI for future reference */
 	biosacpi_detect();
+	tsc_init();
 
 	/*
 	 * XXX Chicken-and-egg problem; we want to have console output early,

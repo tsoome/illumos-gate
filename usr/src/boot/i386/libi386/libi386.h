@@ -149,5 +149,6 @@ void	bi_isadir(void);
 int	mb_kernel_cmdline(struct preloaded_file *, struct devdesc *, char **);
 void	multiboot_tramp(uint32_t, vm_offset_t, vm_offset_t);
 void	pxe_enable(void *pxeinfo);
+void	tsc_init(void);
 
 #endif /* _LIBI386_H */

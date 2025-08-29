@@ -727,6 +727,8 @@ main(int argc, CHAR16 *argv[])
 		(void) unsetenv("efi_com_speed");
 	}
 
+	acpi_detect();
+
 	/* Init the time source */
 	efi_time_init();
 
@@ -932,7 +934,6 @@ main(int argc, CHAR16 *argv[])
 	autoload_font(false);		/* Set up the font list for console. */
 	efi_init_environment();
 	bi_isadir();			/* set ISADIR */
-	acpi_detect();
 
 	if ((ptr = efi_get_table(&gEfiSmbios3TableGuid)) == NULL)
 		ptr = efi_get_table(&gEfiSmbiosTableGuid);

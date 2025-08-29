@@ -18,10 +18,12 @@ MACHINE=	$(MACH64)
 
 all:		libefi.a
 
-OBJS=	time.o
+OBJS=	time_amd64.o
 include ../Makefile.com
 
 CFLAGS +=	-m64 $(CFLAGS64)
+
+time_amd64.o := CPPFLAGS += -I$(SRC)/uts/intel/sys/acpi
 
 CLEANFILES +=	machine x86
 
