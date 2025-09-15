@@ -38,6 +38,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/avl.h>
+#include <sys/sysmacros.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <limits.h>
@@ -74,10 +75,10 @@ static size_t		name_len = PATH_MAX + 1;    /* # of chars for name */
  */
 #ifdef XPG4
 #define	FORMAT1	"%s %s\n"
-#define	FORMAT2	"%lld %s\n"
+#define	FORMAT2	"%llu %s\n"
 #else
 #define	FORMAT1	"%s\t%s\n"
-#define	FORMAT2	"%lld\t%s\n"
+#define	FORMAT2	"%llu\t%s\n"
 #endif
 
 /*
@@ -86,8 +87,6 @@ static size_t		name_len = PATH_MAX + 1;    /* # of chars for name */
 #define	DEV_BSIZE	512
 #define	DEV_KSHIFT	1
 #define	DEV_MSHIFT	11
-#define	kb(n)		(((u_longlong_t)(n)) >> DEV_KSHIFT)
-#define	mb(n)		(((u_longlong_t)(n)) >> DEV_MSHIFT)
 
 static u_longlong_t	descend(char *curname, int curfd, int *retcode,
 			    dev_t device);
@@ -529,6 +528,20 @@ descend(char *curname, int curfd, int *retcode, dev_t device)
 		return (blocks);
 }
 
+static u_longlong_t
+kb(blkcnt_t n)
+{
+	u_longlong_t v = ((u_longlong_t)(n)) >> DEV_KSHIFT;
+	return (v == 0 ? 1 : v);
+}
+
+static u_longlong_t
+mb(blkcnt_t n)
+{
+	u_longlong_t v = ((u_longlong_t)(n)) >> DEV_MSHIFT;
+	return (v == 0 ? 1 : v);
+}
+
 static void
 printsize(blkcnt_t blocks, char *path)
 {
@@ -537,16 +550,26 @@ printsize(blkcnt_t blocks, char *path)
 	bsize = Aflg ? 1 : DEV_BSIZE;
 
 	if (hflg) {
-	char buf[NN_NUMBUF_SZ] = { 0 };
+		char buf[NN_NUMBUF_SZ] = { 0 };
 
-	nicenum_scale(blocks, bsize, buf, sizeof (buf), 0);
-	(void) printf(FORMAT1, buf, path);
-	} else if (kflg) {
-		(void) printf(FORMAT2, (long long)kb(blocks), path);
+		nicenum_scale(blocks, bsize, buf, sizeof (buf), 0);
+		(void) printf(FORMAT1, buf, path);
+		return;
+	}
+
+	/*
+	 * Convert to 512B blocks to get number of desired units.
+	 * Note, we need to round up blocks to nearest 512 byte unit.
+	 */
+	if (bsize == 1)
+		blocks = P2ROUNDUP(blocks, DEV_BSIZE) / DEV_BSIZE;
+
+	if (kflg) {
+		(void) printf(FORMAT2, kb(blocks), path);
 	} else if (mflg) {
-		(void) printf(FORMAT2, (long long)mb(blocks), path);
+		(void) printf(FORMAT2, mb(blocks), path);
 	} else {
-		(void) printf(FORMAT2, (long long)blocks, path);
+		(void) printf(FORMAT2, blocks, path);
 	}
 }
 
