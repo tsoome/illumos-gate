@@ -24,6 +24,7 @@
  */
 /*
  * Copyright 2024 Bill Sommerfeld <sommerfeld@hamachi.org>
+ * Copyright 2025 Edgecast Cloud LLC.
  */
 
 #ifndef	_NETINET_ICMP6_H
@@ -289,6 +290,12 @@ typedef struct nd_router_advert {	/* router advertisement */
 #define	ND_RA_FLAG_OTHER	0x40
 #define	ND_RA_FLAG_MANAGED	0x80
 
+#define	ND_RA_FLAG_RTPREF_MASK	0x18 /* 00011000 */
+#define	ND_RA_FLAG_RTPREF_HIGH	0x08 /* 00001000 */
+#define	ND_RA_FLAG_RTPREF_MEDIUM 0x00 /* 00000000 */
+#define	ND_RA_FLAG_RTPREF_LOW	0x18 /* 00011000 */
+#define	ND_RA_FLAG_RTPREF_RSV	0x10 /* 00010000 */
+
 #define	nd_ra_router_lifetime    nd_ra_hdr.icmp6_data16[1]
 
 typedef struct nd_neighbor_solicit {   /* neighbor solicitation */
@@ -362,6 +369,7 @@ typedef struct nd_opt_hdr {	/* Neighbor discovery option header */
 #define	ND_OPT_PREFIX_INFORMATION	3
 #define	ND_OPT_REDIRECTED_HEADER	4
 #define	ND_OPT_MTU			5
+#define	ND_OPT_ROUTE_INFO		24	/* RFC 4191 */
 #define	ND_OPT_DNS_RESOLVER		25
 #define	ND_OPT_DNS_SEARCHLIST		31
 
@@ -402,6 +410,15 @@ struct nd_opt_lla {
 	uint8_t	nd_opt_lla_type;
 	uint8_t	nd_opt_lla_len;	/* in units of 8 octets */
 	uint8_t	nd_opt_lla_hdw_addr[ND_MAX_HDW_LEN];
+};
+
+struct nd_opt_route_info {
+	uint8_t nd_opt_rti_type;
+	uint8_t nd_opt_rti_len;
+	uint8_t nd_opt_rti_prefixlen;
+	uint8_t nd_opt_rti_flags;
+	uint32_t nd_opt_rti_lifetime;
+	/* followed by prefix */
 };
 
 struct nd_opt_dns_resolver {

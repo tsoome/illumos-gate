@@ -26,6 +26,7 @@
 
 /*
  * Copyright 2015, OmniTI Computer Consulting, Inc. All rights reserved.
+ * Copyright 2025 Edgecast Cloud LLC.
  */
 
 #include "defs.h"
@@ -59,6 +60,8 @@ boolean_t	incoming_prefix_addrconf_process(struct phyint *pi,
 		    boolean_t new_prefix);
 static void	incoming_mtu_opt(struct phyint *pi, uchar_t *opt,
 		    struct sockaddr_in6 *from);
+static void	incoming_ri_opt(struct phyint *pi, uchar_t *opt,
+		    struct sockaddr_in6 *from, boolean_t loopback);
 static void	incoming_lla_opt(struct phyint *pi, uchar_t *opt,
 		    struct sockaddr_in6 *from, int isrouter);
 
@@ -558,6 +561,10 @@ incoming_ra(struct phyint *pi, struct nd_router_advert *ra, int len,
 			break;
 		case ND_OPT_MTU:
 			incoming_mtu_opt(pi, (uchar_t *)opt, from);
+			break;
+		case ND_OPT_ROUTE_INFO:
+			incoming_ri_opt(pi, (uchar_t *)opt, from,
+			    loopback);
 			break;
 		case ND_OPT_SOURCE_LINKADDR:
 			/* skip lla option if sent from ourselves! */
@@ -1141,6 +1148,87 @@ incoming_prefix_addrconf_process(struct phyint *pi, struct prefix *pr,
 		prefix_update_k(pr);
 	}
 	return (_B_TRUE);
+}
+
+void
+incoming_ri_prefix(struct phyint *pi, uchar_t *opt, struct sockaddr_in6 *from,
+    boolean_t loopback)
+{
+	struct nd_opt_route_info *ri = (struct nd_opt_route_info *)opt;
+	struct in6_addr prefix;
+
+	(void) memset(&prefix, 0, sizeof (prefix));
+	if (ri->nd_opt_rti_len == 2 ||
+	    ri->nd_opt_rti_len == 3)
+		(void) memcpy(&prefix,
+		    opt + sizeof (*ri),
+		    (ri->nd_opt_rti_len - 1) * 8);
+
+	/*
+	 * ::/0 preference and lifetime override values from
+	 * Router Advertisement header.
+	 */
+	if (IN6_IS_ADDR_UNSPECIFIED(&prefix) &&
+	    ri->nd_opt_rti_prefixlen == 0) {
+		// XXX
+		return;
+	}
+}
+
+/*
+ * Process an Route Information option received in a router advertisement.
+ */
+static void
+incoming_ri_opt(struct phyint *pi, uchar_t *opt,
+    struct sockaddr_in6 *from, boolean_t loopback)
+{
+	struct nd_opt_route_info *ri = (struct nd_opt_route_info *)opt;
+	char abuf[INET6_ADDRSTRLEN];
+
+	/*
+	 * Check Route Preference flag. Value 10 means, we ignore this option.
+	 */
+	if (ri->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_RSV)
+		return;
+
+	(void) inet_ntop(AF_INET6, (void *)&from->sin6_addr,
+	    abuf, sizeof (abuf));
+
+	if (ri->nd_opt_rti_prefixlen > 64 &&
+	    ri->nd_opt_rti_len != 3) {
+		logmsg(LOG_INFO, "prefix option from %s on %s wrong size "
+		    "(%d bytes)\n",
+		    abuf, pi->pi_name,
+		    8 * (int)ri->nd_opt_rti_len);
+		return;
+	}
+
+	if (ri->nd_opt_rti_prefixlen > 0 &&
+	    (ri->nd_opt_rti_len != 2 &&
+	    ri->nd_opt_rti_len != 3)) {
+		logmsg(LOG_INFO, "prefix option from %s on %s wrong size "
+		    "(%d bytes)\n",
+		    abuf, pi->pi_name,
+		    8 * (int)ri->nd_opt_rti_len);
+		return;
+	}
+
+	if (ri->nd_opt_rti_prefixlen == 0 &&
+	    (ri->nd_opt_rti_len != 1 &&
+	    ri->nd_opt_rti_len != 2 &&
+	    ri->nd_opt_rti_len != 3)) {
+		logmsg(LOG_INFO, "prefix option from %s on %s wrong size "
+		    "(%d bytes)\n",
+		    abuf, pi->pi_name,
+		    8 * (int)ri->nd_opt_rti_len);
+		return;
+	}
+
+	logmsg(LOG_DEBUG, "pi_stateless: %d pi_autoconf: %d\n",
+	    pi->pi_stateless, pi->pi_autoconf);
+	if (pi->pi_stateless && pi->pi_autoconf) {
+		incoming_ri_prefix(pi, opt, from, loopback);
+	}
 }
 
 /*

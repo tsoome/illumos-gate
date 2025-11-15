@@ -22,6 +22,7 @@
 /*
  * Copyright 2003 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Copyright 2025 Edgecast Cloud LLC.
  */
 
 #include "defs.h"
@@ -81,6 +82,7 @@ print_opt(struct nd_opt_hdr *opt, int len)
 {
 	struct nd_opt_prefix_info *po;
 	struct nd_opt_mtu *mo;
+	struct nd_opt_route_info *ri;
 	struct nd_opt_lla *lo;
 	int optlen;
 	char abuf[INET6_ADDRSTRLEN];
@@ -124,6 +126,32 @@ print_opt(struct nd_opt_hdr *opt, int len)
 			logmsg(LOG_DEBUG, "\tMTU: %d\n",
 			    ntohl(mo->nd_opt_mtu_mtu));
 			break;
+		case ND_OPT_ROUTE_INFO: {
+			uint8_t prefix[16];
+			char prefixstr[INET6_ADDRSTRLEN];
+			ri = (struct nd_opt_route_info *)opt;
+
+			(void) memset(prefix, 0, sizeof (prefix));
+			if (ri->nd_opt_rti_len == 2 ||
+			    ri->nd_opt_rti_len == 3)
+				(void) memcpy(prefix,
+				    (uint8_t *)ri + sizeof (*ri),
+				    (ri->nd_opt_rti_len - 1) * 8);
+			logmsg(LOG_DEBUG, "\tPrefix: %s/%u\n",
+			    inet_ntop(AF_INET6, prefix, prefixstr,
+			    INET6_ADDRSTRLEN),
+			    ri->nd_opt_rti_prefixlen);
+			logmsg(LOG_DEBUG, "\t\tRoute preference = %s\n",
+			    ri->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_HIGH ?
+			    "HIGH" :
+			    ri->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_MEDIUM ?
+			    "MEDIUM" :
+			    ri->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_LOW ?
+			    "LOW" : "IGNORE");
+			logmsg(LOG_DEBUG, "\t\tLifetime = %u\n",
+			    ntohl(ri->nd_opt_rti_lifetime));
+			break;
+		}
 		case ND_OPT_SOURCE_LINKADDR:
 			lo = (struct nd_opt_lla *)opt;
 			if (optlen < 8 ||

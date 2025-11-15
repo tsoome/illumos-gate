@@ -24,6 +24,7 @@
  */
 /*
  * Copyright 2024 Bill Sommerfeld <sommerfeld@hamachi.org>
+ * Copyright 2025 Edgecast Cloud LLC.
  */
 
 #include <stdio.h>
@@ -897,6 +898,41 @@ interpret_options(char *optc, int ilen)
 			(void) sprintf(get_line(0, 0), "Prefix %s",
 			    inet_ntop(AF_INET6,
 			    (char *)&popt->nd_opt_pi_prefix, prefixstr,
+			    INET6_ADDRSTRLEN));
+			show_space();
+			break;
+		}
+		case ND_OPT_ROUTE_INFO: {
+			struct nd_opt_route_info *ropt;
+			char lifetime[30];
+			char prefixstr[INET6_ADDRSTRLEN];
+			uint8_t prefix[16];
+
+			(void) memset(prefix, 0, sizeof (prefix));
+			ropt = (struct nd_opt_route_info *)opt;
+			(void) sprintf(get_line(0, 0),
+			    "+++ ICMPv6 Route Information option +++");
+			(void) sprintf(get_line(0, 0),
+			    "Prefix length = %d ", ropt->nd_opt_rti_prefixlen);
+			(void) sprintf(get_line(0, 0),
+			    "Route preference: %s",
+			    ropt->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_HIGH ?
+			    "HIGH" :
+			    ropt->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_MEDIUM ?
+			    "MEDIUM" :
+			    ropt->nd_opt_rti_flags & ND_RA_FLAG_RTPREF_LOW ?
+			    "LOW" : "IGNORE");
+			interpret_lifetime(lifetime, ropt->nd_opt_rti_lifetime);
+			(void) sprintf(get_line(0, 0),
+			    "Lifetime %s", lifetime);
+
+			if (ropt->nd_opt_rti_len == 2 ||
+			    ropt->nd_opt_rti_len == 3)
+				(void) memcpy(prefix,
+				    (uint8_t *)ropt + sizeof (*ropt),
+				    (ropt->nd_opt_rti_len - 1) * 8);
+			(void) sprintf(get_line(0, 0), "Prefix %s",
+			    inet_ntop(AF_INET6, prefix, prefixstr,
 			    INET6_ADDRSTRLEN));
 			show_space();
 			break;
