@@ -303,7 +303,7 @@ sharefs_read(vnode_t *vp, uio_t *uio, int ioflag, cred_t *cr,
 {
 	shnode_t	*sft = VTOSH(vp);
 	off_t		off = uio->uio_offset;
-	size_t		len = uio->uio_resid;
+	ssize_t		len = uio->uio_resid;
 	int		error = 0;
 	sharetab_globals_t *sg = sharetab_get_globals(vp->v_vfsp->vfs_zone);
 
