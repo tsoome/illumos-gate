@@ -1773,10 +1773,10 @@ kcf_next_req(void *next_req_arg, int status)
 	if (error != CRYPTO_SUCCESS) {
 out:
 		areq->an_reqarg = next_req->kr_callreq;
-		KCF_AREQ_REFRELE(areq);
 		kmem_free(next_req, sizeof (kcf_dual_req_t));
 		areq->an_isdual = B_FALSE;
 		kcf_aop_done(areq, error);
+		KCF_AREQ_REFRELE(areq);
 		return;
 	}
 
@@ -1891,13 +1891,6 @@ out:
 	}
 	}
 
-	/*
-	 * We have to release the holds on the request and the provider
-	 * in all cases.
-	 */
-	KCF_AREQ_REFRELE(areq);
-	KCF_PROV_REFRELE(pd);
-
 	if (error != CRYPTO_QUEUED) {
 		/* restore, clean up, and invoke the client's callback */
 
@@ -1908,6 +1901,13 @@ out:
 		areq->an_isdual = B_FALSE;
 		kcf_aop_done(areq, error);
 	}
+
+	/*
+	 * We have to release the holds on the request and the provider
+	 * in all cases.
+	 */
+	KCF_AREQ_REFRELE(areq);
+	KCF_PROV_REFRELE(pd);
 }
 
 /*
@@ -1951,8 +1951,8 @@ kcf_last_req(void *last_req_arg, int status)
 		return;
 	}
 	areq->an_reqarg = last_req->kr_callreq;
-	KCF_AREQ_REFRELE(areq);
 	kmem_free(last_req, sizeof (kcf_dual_req_t));
 	areq->an_isdual = B_FALSE;
 	kcf_aop_done(areq, status);
+	KCF_AREQ_REFRELE(areq);
 }
