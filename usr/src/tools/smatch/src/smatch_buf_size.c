@@ -976,6 +976,11 @@ static void match_strndup(const char *fn, struct expression *expr, void *unused)
 	}
 }
 
+static void match_strdup(const char *fn, struct expression *expr, void *unused)
+{
+	store_alloc(expr->left, size_to_rl(UNKNOWN_SIZE));
+}
+
 static void match_alloc_pages(const char *fn, struct expression *expr, void *_order_arg)
 {
 	int order_arg = PTR_INT(_order_arg);
@@ -1173,6 +1178,8 @@ void register_buf_size(int id)
 	if (option_project == PROJ_ILLUMOS_KERNEL) {
 		add_allocation_function("kmem_alloc", &match_alloc, 0);
 		add_allocation_function("kmem_zalloc", &match_alloc, 0);
+		add_allocation_function("ddi_strdup", &match_strdup, 0);
+		add_allocation_function("i_ddi_strdup", &match_strdup, 0);
 	}
 
 	add_allocation_function("strndup", match_strndup, 0);
