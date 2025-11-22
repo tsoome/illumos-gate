@@ -89,8 +89,7 @@ typedef enum {
 
 #define	SETUP_QUAD_READ(n, reset_fails, quadlet, cnt)			\
 {									\
-	int i = (reset_fails);						\
-	if (i != 0) {							\
+	if ((reset_fails) != 0) {					\
 		(n)->cfgrom_read_fails = 0;				\
 		(n)->cfgrom_read_delay = (uchar_t)s1394_cfgrom_read_delay_ms; \
 	}								\
