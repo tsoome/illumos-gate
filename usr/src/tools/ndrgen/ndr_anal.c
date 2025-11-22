@@ -340,12 +340,11 @@ static void
 analyze_typeinfo_typedef(ndr_typeinfo_t *ti)
 {
 	ndr_node_t		*mem_np;
-	ndr_member_t		*mem;
-	int			i;
-	int			allow;
 	unsigned long		offset;
 
 	assert(ti->type_op == TYPEDEF_KW);
+	assert(ti->n_member == 1);
+
 
 	/*
 	 * Snarf the advice.
@@ -357,18 +356,11 @@ analyze_typeinfo_typedef(ndr_typeinfo_t *ti)
 	 * Determine layout metrics along the way.
 	 */
 	mem_np = ti->definition->n_c_members;
-	i = 0;
 	offset = 0;
-	assert(i < ti->n_member);
-	mem = &ti->member[i];
 
-	allow = ALLOW_NO_SWITCH;
-
-	analyze_member(mem_np, mem,
+	analyze_member(mem_np, ti->member,
 	    &offset,		/* progress offset */
-	    allow);		/* see above */
-
-	assert(1 == ti->n_member);
+	    ALLOW_NO_SWITCH);
 
 	analyze_typeinfo_aggregate_finish(ti);
 
