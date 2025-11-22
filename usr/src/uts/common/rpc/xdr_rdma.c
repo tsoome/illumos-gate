@@ -433,7 +433,7 @@ xdrrdma_getbytes(XDR *xdrs, caddr_t addr, int len)
 	struct clist	*cls = *(xdrp->xp_rcl_next);
 	struct clist	cl;
 	bool_t		retval = TRUE;
-	uint32_t	total_len = len;
+	int		total_len = len;
 	uint32_t	cur_offset = 0;
 	uint32_t	total_segments = 0;
 	uint32_t	actual_segments = 0;
