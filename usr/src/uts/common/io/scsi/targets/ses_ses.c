@@ -366,18 +366,17 @@ ses_getconfig(ses_softc_t *ssc)
 	 * Now waltz through the # of types again to fill in the types
 	 * (and subenclosure ids) of the allocated objects.
 	 */
-	nobj = 0;
+	int n = 0;
 	for (i = 0; i < ntype; i++) {
-		int j;
 		if (ses_getthdr((uchar_t *)sdata, amt, i, &thdr)) {
 			continue;
 		}
 		cc->ses_eltmap[i] = thdr.enc_maxelt;
-		for (j = 0; j < thdr.enc_maxelt; j++) {
-			cc->ses_typidx[nobj].ses_tidx = i;
-			cc->ses_typidx[nobj].ses_oidx = j;
-			ssc->ses_objmap[nobj].subenclosure = thdr.enc_subenc;
-			ssc->ses_objmap[nobj++].enctype = thdr.enc_type;
+		for (int j = 0; j < thdr.enc_maxelt; j++) {
+			cc->ses_typidx[n].ses_tidx = i;
+			cc->ses_typidx[n].ses_oidx = j;
+			ssc->ses_objmap[n].subenclosure = thdr.enc_subenc;
+			ssc->ses_objmap[n++].enctype = thdr.enc_type;
 		}
 	}
 	mutex_exit(&ssc->ses_devp->sd_mutex);
