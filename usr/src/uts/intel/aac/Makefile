@@ -72,6 +72,10 @@ CERRWARN	+= -_gcc=-Wno-switch
 # needs work
 $(OBJS_DIR)/aac.o := SMOFF += shift_to_zero
 
+# intentional one past the end of array
+$(OBJS_DIR)/aac.o := SMOFF += check_off_by_one_relative
+$(OBJS_DIR)/aac_ioctl.o := SMOFF += check_off_by_one_relative
+
 #
 #	Default build targets.
 #

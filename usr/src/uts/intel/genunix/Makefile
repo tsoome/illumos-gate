@@ -116,6 +116,10 @@ $(OBJS_DIR)/timers.o := SMOFF += signed_integer_overflow_check
 # 3rd party code
 $(OBJS_DIR)/bz2bzlib.o := SMOFF += indenting
 
+# intentional one past the end of array
+$(OBJS_DIR)/dumpsubr.o := SMOFF += check_off_by_one_relative
+$(OBJS_DIR)/vfs.o := SMOFF += check_off_by_one_relative
+
 #
 #	Default build targets.
 #

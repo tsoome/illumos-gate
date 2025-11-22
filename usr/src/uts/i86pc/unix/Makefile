@@ -134,6 +134,10 @@ $(OBJS_DIR)/htable.o := SMOFF += check_deref
 # too hairy
 $(OBJS_DIR)/inflate.o := SMATCH=off
 
+# intentional one past the end of array
+$(OBJS_DIR)/disp.o := SMOFF += check_off_by_one_relative
+$(OBJS_DIR)/vm_pagelist.o := SMOFF += check_off_by_one_relative
+
 #
 #	Default build targets.
 #
