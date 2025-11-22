@@ -3163,8 +3163,12 @@ daplka_event_poll(daplka_ia_resource_t *ia_rp, intptr_t arg, int mode,
 		if ((evd_rp->evd_flags & DAT_EVD_CONNECTION_FLAG) &&
 		    (evd_rp->evd_conn_events.eel_num_elements > 0)) {
 			/* dequeue events from evd_connection_events list */
-			while ((head = daplka_evd_event_dequeue
-			    (&evd_rp->evd_conn_events))) {
+			for (; num_events < max_events; num_events++) {
+				head = daplka_evd_event_dequeue(
+				    &evd_rp->evd_conn_events);
+				if (head == NULL)
+					break;
+
 				/*
 				 * populate the evp array -
 				 *
@@ -3195,19 +3199,23 @@ daplka_event_poll(daplka_ia_resource_t *ia_rp, intptr_t arg, int mode,
 				}
 
 				kmem_free(head, sizeof (daplka_evd_event_t));
+			}
 
-				if (++num_events == max_events) {
-					mutex_exit(&evd_rp->evd_lock);
-					goto maxevent_reached;
-				}
+			if (num_events == max_events) {
+				mutex_exit(&evd_rp->evd_lock);
+				goto maxevent_reached;
 			}
 		}
 
 		if ((evd_rp->evd_flags & DAT_EVD_ASYNC_FLAG) &&
 		    (evd_rp->evd_async_events.eel_num_elements > 0)) {
 			/* dequeue events from evd_async_events list */
-			while (head = daplka_evd_event_dequeue(
-			    &evd_rp->evd_async_events)) {
+			for (; num_events < max_events; num_events++) {
+				head = daplka_evd_event_dequeue(
+				    &evd_rp->evd_async_events);
+				if (head == NULL)
+					break;
+
 				/*
 				 * populate the evp array
 				 */
@@ -3223,10 +3231,6 @@ daplka_event_poll(daplka_ia_resource_t *ia_rp, intptr_t arg, int mode,
 				    head->ee_aev.ibae_port;
 
 				kmem_free(head, sizeof (daplka_evd_event_t));
-
-				if (++num_events == max_events) {
-					break;
-				}
 			}
 		}
 
