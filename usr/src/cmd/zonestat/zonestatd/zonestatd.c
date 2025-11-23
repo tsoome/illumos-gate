@@ -4121,10 +4121,10 @@ zsd_open(zsd_ctl_t *ctl)
 		goto err;
 	}
 
-	size = sysconf(_SC_MAXPID) + 1;
+	size = sysconf(_SC_MAXPID);
 	ctl->zsctl_maxproc = size;
 	if (ctl->zsctl_proc_array == NULL &&
-	    (ctl->zsctl_proc_array = (zsd_proc_t *)calloc(size,
+	    (ctl->zsctl_proc_array = (zsd_proc_t *)calloc(size + 1,
 	    sizeof (zsd_proc_t))) == NULL) {
 		zsd_warn(gettext("Out of Memory"));
 		errno = ENOMEM;
