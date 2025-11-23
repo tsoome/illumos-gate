@@ -19,15 +19,14 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2010 Nexenta Systems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
-/*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 /*
+ * Copyright 2010 Nexenta Systems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  * Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
+ * Copyright 2025 Edgecast Cloud LLC.
  */
 
 #include <stdio.h>
@@ -65,6 +64,13 @@
  * Convenience macro to determine if a character is a quote
  */
 #define	isquote(c)	(((c) == '"') || ((c) == '\''))
+
+struct n_to_m_cache {
+	char *file;
+	char **cached_file;
+	int size;
+	struct n_to_m_cache *next;
+};
 
 char *driver_aliases;
 char *driver_classes;
@@ -592,6 +598,14 @@ get_driver_name(int major, char *file_name, char *buf)
 	return (get_name_to_major_entry(&major, buf, file_name));
 }
 
+static void
+free_cache(struct n_to_m_cache *cache)
+{
+	for (int i = 0; i < cache->size; i++)
+		free(cache->cached_file[i]);
+	free(cache->cached_file);
+	free(cache);
+}
 
 /*
  * return pointer to cached name_to_major file - reads file into
@@ -602,12 +616,6 @@ get_driver_name(int major, char *file_name, char *buf)
 static int
 get_cached_n_to_m_file(char *filename, char ***cache)
 {
-	struct n_to_m_cache {
-		char *file;
-		char **cached_file;
-		int size;
-		struct n_to_m_cache *next;
-	};
 	static struct n_to_m_cache *head = NULL;
 	struct n_to_m_cache *ptr;
 	FILE *fp;
@@ -659,8 +667,7 @@ get_cached_n_to_m_file(char *filename, char ***cache)
 		}
 
 		/* allocate struct to cache the file */
-		ptr = (struct n_to_m_cache *)calloc(1,
-		    sizeof (struct n_to_m_cache));
+		ptr = calloc(1, sizeof (*ptr));
 		if (ptr == NULL) {
 			(void) fprintf(stderr, gettext(ERR_NO_MEM));
 			return (ERROR);
@@ -699,9 +706,8 @@ get_cached_n_to_m_file(char *filename, char ***cache)
 			}
 			maj = atoi(entry);
 			if ((ptr->cached_file[maj] = strdup(drv)) == NULL) {
+				free_cache(ptr);
 				(void) fprintf(stderr, gettext(ERR_NO_MEM));
-				free(ptr->cached_file);
-				free(ptr);
 				return (ERROR);
 			}
 			(void) strcpy(ptr->cached_file[maj], drv);
@@ -710,10 +716,7 @@ get_cached_n_to_m_file(char *filename, char ***cache)
 		/* link the cache struct into the list of cached files */
 		ptr->file = strdup(filename);
 		if (ptr->file == NULL) {
-			for (maj = 0; maj <= ptr->size; maj++)
-				free(ptr->cached_file[maj]);
-			free(ptr->cached_file);
-			free(ptr);
+			free_cache(ptr);
 			(void) fprintf(stderr, gettext(ERR_NO_MEM));
 			return (ERROR);
 		}

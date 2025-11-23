@@ -22,37 +22,84 @@
 # Use is subject to license terms.
 #
 # Copyright 2020 OmniOS Community Edition (OmniOSce) Association.
+# Copyright 2025 Edgecast Cloud LLC.
 
 DRVPROG = add_drv rem_drv update_drv
 MODPROG = modinfo modunload modload
 PROG = $(MODPROG) $(DRVPROG)
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 
 ETCSEC = $(ROOTETC)/security
 XPRIV = $(ETCSEC)/extra_privs
 
 $(XPRIV) := FILEMODE = 644
 
-SUBDIRS +=	$(MACH64)
+CSTD= $(CSTD_GNU99)
 
-all	:=	TARGET = all
-install	:=	TARGET = install
-clean	:=	TARGET = clean
-clobber	:=	TARGET = clobber
+MODCOMMONOBJ = modsubr.o
+MODCOMMONSRC = $(MODCOMMONOBJ:%.o=%.c)
+
+PLCYOBJ = plcysubr.o
+PLCYSRC = $(PLCYOBJ:%.o=%.c)
+
+$(PLCYOBJ) := CPPFLAGS += -D_REENTRANT
+
+ROOTDRVPROG = $(DRVPROG:%=$(ROOTUSRSBIN)/%)
+
+DRVCOMMONOBJ = drvsubr.o $(PLCYOBJ)
+DRVCOMMONSRC = $(DRVCOMMONOBJ:%.o=%.c)
+
+modunload		:= CSTD = $(CSTD_GNU17)
+
+OBJECTS = $(MODCOMMONOBJ) $(DRVCOMMONOBJ) $(PROG:%=%.o)
+SRCS = $(OBJECTS:%.o=%.c)
+
+COMMONSRC = $(DRVCOMMONSRC) $(MODCOMMONSRC)
+
+CLOBBERFILES = $(PROG)
+
+# install specifics
+
+$(ROOTDRVPROG) := FILEMODE = 0555
+
+add_drv			:= LDLIBS += -ldevinfo -lelf
+rem_drv			:= LDLIBS += -ldevinfo
+update_drv		:= LDLIBS += -ldevinfo
 
 .KEEP_STATE:
 
-all:	$(SUBDIRS)
+all: $(PROG)
 
-clean clobber:	$(SUBDIRS)
+install:	all $(ROOTUSRSBINPROG) $(XPRIV)
 
-install:	$(SUBDIRS) $(XPRIV)
+add_drv:	add_drv.o $(DRVCOMMONOBJ)
+	$(LINK.c) -o $@ add_drv.o $(DRVCOMMONOBJ) $(LDLIBS)
+	$(POST_PROCESS)
 
-$(SUBDIRS):	FRC
-	@cd $@; pwd; $(MAKE) $(TARGET)
+rem_drv:	rem_drv.o $(DRVCOMMONOBJ)
+	$(LINK.c) -o $@ rem_drv.o $(DRVCOMMONOBJ) $(LDLIBS)
+	$(POST_PROCESS)
 
-FRC:
+update_drv:	update_drv.o $(DRVCOMMONOBJ)
+	$(LINK.c) -o $@ update_drv.o $(DRVCOMMONOBJ) $(LDLIBS)
+	$(POST_PROCESS)
+
+modload:	modload.o $(MODCOMMONOBJ)
+	$(LINK.c) -o $@ modload.o $(MODCOMMONOBJ) $(LDLIBS)
+	$(POST_PROCESS)
+
+modunload:	modunload.o
+	$(LINK.c) $^ -o $@ $(LDLIBS)
+	$(POST_PROCESS)
+
+modinfo:	modinfo.o $(MODCOMMONOBJ)
+	$(LINK.c) -o $@ modinfo.o $(MODCOMMONOBJ) $(LDLIBS)
+	$(POST_PROCESS)
+
+clean:
+	$(RM) $(OBJECTS)
 
 $(ETCSEC)/%: %
 	$(INS.file)
