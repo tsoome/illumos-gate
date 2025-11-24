@@ -67,6 +67,9 @@ CERRWARN	+= $(CNOWARN_UNINIT)
 # needs work
 $(OBJS_DIR)/auth_des.o := SMOFF += deref_check
 
+# needed for array index check
+$(OBJS_DIR)/sec_clnt.o := SMATCH_ARGS += --two-passes
+
 #
 #	Default build targets.
 #

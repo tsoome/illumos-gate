@@ -58,6 +58,9 @@ CTFCONVERT_HOOK = && $(CTFCONVERT_O)
 CTFMERGE_HOOK = && $(CTFMERGE) -L VERSION -o $@ $(OBJS)
 $(OBJS) := CFLAGS += $(CTF_FLAGS)
 
+# needed for array index check
+mpd_main.o := SMATCH_ARGS += --two-passes
+
 .KEEP_STATE:
 
 all:		$(PROG)
