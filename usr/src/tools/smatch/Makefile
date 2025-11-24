@@ -34,7 +34,7 @@ sparc_SMATCHFLAGS =
 # unused on x86 because the compiler will replace ceil(3M) with its own copy.
 # However, on SPARC, it doesn't. So for now we disable builtins to make it
 # consistent.
-CFLAGS = -O -m64 -std=gnu99 -nodefaultlibs -D__sun $($(NATIVE_MACH)_SMATCHFLAGS)
+CFLAGS = -g -m64 -std=gnu99 -nodefaultlibs -D__sun $($(NATIVE_MACH)_SMATCHFLAGS)
 CFLAGS += -fno-builtin
 CFLAGS += -Wall -Wno-psabi
 
