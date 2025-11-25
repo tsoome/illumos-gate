@@ -2748,9 +2748,8 @@ dbuf_prefetch_indirect_done(zio_t *zio, const zbookmark_phys_t *zb,
 		    bp, dbuf_prefetch_indirect_done, dpa, dpa->dpa_prio,
 		    ZIO_FLAG_CANFAIL | ZIO_FLAG_SPECULATIVE,
 		    &iter_aflags, &zb);
+		arc_buf_destroy(abuf, private);
 	}
-
-	arc_buf_destroy(abuf, private);
 }
 
 /*
