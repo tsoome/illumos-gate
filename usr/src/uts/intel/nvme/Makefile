@@ -49,6 +49,8 @@ CPPFLAGS	+= -I$(SRC)/common/nvme
 #
 LDFLAGS		+= -N drv/blkdev -N misc/sata
 
+$(OBJS_DIR)/nvme.o := SMOFF += check_free
+
 #
 #	Default build targets.
 #

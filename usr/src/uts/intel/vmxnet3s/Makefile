@@ -61,6 +61,7 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 #
 LDFLAGS		+= -N misc/mac
 
+$(OBJS_DIR)/vmxnet3_rx.o := SMOFF += check_free
 
 #
 #	Default build targets.

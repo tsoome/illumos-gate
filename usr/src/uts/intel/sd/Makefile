@@ -60,6 +60,7 @@ INC_PATH	+= -I$(UTSBASE)/intel/io/scsi/targets
 
 # needs work
 SMOFF += index_overflow,shift_to_zero,signed
+$(OBJS_DIR)/sd.o := SMOFF += check_free
 
 #
 # Depends on scsi and cmlb

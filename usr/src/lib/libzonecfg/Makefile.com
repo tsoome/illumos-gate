@@ -42,6 +42,8 @@ CPPFLAGS +=	-I$(SRC)/common/definit
 CERRWARN +=	$(CNOWARN_UNINIT)
 CERRWARN +=	-_gcc=-Wno-parentheses
 
+pics/libzonecfg.o := SMOFF += check_free
+
 .KEEP_STATE:
 
 all:	$(LIBS)

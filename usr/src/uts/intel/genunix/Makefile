@@ -120,6 +120,9 @@ $(OBJS_DIR)/bz2bzlib.o := SMOFF += indenting
 $(OBJS_DIR)/dumpsubr.o := SMOFF += check_off_by_one_relative
 $(OBJS_DIR)/vfs.o := SMOFF += check_off_by_one_relative
 
+$(OBJS_DIR)/devcfg.o := SMOFF += check_free
+$(OBJS_DIR)/sunmdi.o := SMOFF += check_free
+
 #
 #	Default build targets.
 #

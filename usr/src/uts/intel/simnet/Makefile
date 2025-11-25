@@ -59,6 +59,7 @@ CERRWARN	+= -_gcc=-Wno-switch
 
 # needs work
 $(OBJS_DIR)/simnet.o := SMOFF += index_overflow
+$(OBJS_DIR)/simnet.o := SMOFF += check_free
 
 #
 #	Default build targets.

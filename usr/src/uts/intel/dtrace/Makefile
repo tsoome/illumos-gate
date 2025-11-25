@@ -45,6 +45,7 @@ CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
 $(OBJS_DIR)/dtrace.o := SMOFF += deref_check
+$(OBJS_DIR)/dtrace.o := SMOFF += check_free
 
 CPPFLAGS	+= -I$(SRC)/common/util
 

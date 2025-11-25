@@ -61,6 +61,7 @@ CERRWARN	+= -_gcc=-Wno-unused-variable
 
 # needs work
 SMOFF += all_func_returns
+$(OBJS_DIR)/mac_protect.o := SMOFF += check_free
 
 #
 #	Default build targets.

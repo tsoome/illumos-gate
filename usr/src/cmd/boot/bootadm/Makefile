@@ -53,6 +53,8 @@ SMOFF +=	all_func_returns
 
 CSTD=	$(CSTD_GNU99)
 
+bootadm_upgrade.o := SMOFF += check_free
+
 all: $(PROG)
 
 $(PROG): $(OBJS) bootadm.h

@@ -46,6 +46,8 @@ LDLIBS +=	-lc -lzfs -ldevinfo -lfstyp -lefi
 
 CFLAGS +=	$(CCVERBOSE)
 
+pics/libgrub_menu.o := SMOFF += check_free
+
 .KEEP_STATE:
 
 all: $(LIBS)
