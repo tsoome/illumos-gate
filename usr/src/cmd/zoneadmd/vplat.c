@@ -2947,6 +2947,7 @@ configure_exclusive_network_interfaces(zlog_t *zlogp, zoneid_t zoneid)
 			    sizeof (rootpath)) != Z_OK) {
 				(void) zonecfg_endnwifent(handle);
 				zonecfg_fini_handle(handle);
+				free_ip_interface(zalist);
 				zerror(zlogp, B_TRUE,
 				    "unable to determine dev root");
 				return (-1);
@@ -2956,6 +2957,7 @@ configure_exclusive_network_interfaces(zlog_t *zlogp, zoneid_t zoneid)
 			if (di_prof_init(path, &prof) != 0) {
 				(void) zonecfg_endnwifent(handle);
 				zonecfg_fini_handle(handle);
+				free_ip_interface(zalist);
 				zerror(zlogp, B_TRUE,
 				    "failed to initialize profile");
 				return (-1);
@@ -2981,6 +2983,7 @@ configure_exclusive_network_interfaces(zlog_t *zlogp, zoneid_t zoneid)
 		} else {
 			(void) zonecfg_endnwifent(handle);
 			zonecfg_fini_handle(handle);
+			free_ip_interface(zalist);
 			zerror(zlogp, B_TRUE, "failed to add network device");
 			return (-1);
 		}
@@ -2989,8 +2992,10 @@ configure_exclusive_network_interfaces(zlog_t *zlogp, zoneid_t zoneid)
 		if (new == NULL) {
 			zerror(zlogp, B_TRUE, "no memory for %s",
 			    nwiftab.zone_nwif_physical);
+			(void) zonecfg_endnwifent(handle);
 			zonecfg_fini_handle(handle);
 			free_ip_interface(zalist);
+			return (-1);
 		}
 		bzero(new, sizeof (*new));
 		new->za_nwiftab = nwiftab;
