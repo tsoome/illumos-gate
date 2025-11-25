@@ -335,7 +335,7 @@ zjni_java_string_array_to_c(JNIEnv *env, jobjectArray array)
 				if (result[n++] == NULL) {
 					/* strdup failed */
 					zjni_free_array((void *)result, free);
-					break;
+					return (NULL);
 				}
 			}
 		}
