@@ -1,3 +1,5 @@
 kmem_alloc 1
 kmem_zalloc 1
 kmem_cache_alloc 1
+i_ddi_strdup 1
+ddi_strdup 1
