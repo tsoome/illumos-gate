@@ -43,6 +43,7 @@
 #include <Guid/MemoryTypeInformation.h>
 #include <Guid/Mps.h>
 #include <Guid/MtcVendor.h>
+#include <Guid/RamDiskHii.h>
 #include <Guid/SmBios.h>
 #include <Guid/StandardErrorDevice.h>
 #include <Guid/ZeroGuid.h>
@@ -95,6 +96,7 @@
 #include <Protocol/HiiFont.h>
 #include <Protocol/HiiImage.h>
 #include <Protocol/HiiDatabase.h>
+#include <Protocol/HiiPopup.h>
 #include <Protocol/HiiString.h>
 #include <Protocol/IdeControllerInit.h>
 #include <Protocol/Ip4.h>
@@ -167,6 +169,38 @@
 #include <Protocol/IsaIo.h>
 #include <Protocol/SerialIo.h>
 #include <Protocol/SuperIo.h>
+#include <Protocol/BootLogo.h>
+#include <Protocol/BootLogo2.h>
+#include <Protocol/MediaSanitize.h>
+#include <Protocol/PartitionInfo.h>
+#include <Protocol/VirtioDevice.h>
+#include <Protocol/DxeMmReadyToLock.h>
+#include <Protocol/PciHotPlugRequest.h>
+#include <Protocol/DisplayProtocol.h>
+#include <Protocol/RamDisk.h>
+#include <Protocol/FaultTolerantWrite.h>
+#include <Protocol/PlatformLogo.h>
+#include <Protocol/HiiPackageList.h>
+#include <Protocol/FormBrowserEx2.h>
+#include <Protocol/PciHostBridgeResourceAllocation.h>
+#include <Protocol/VariableLock.h>
+#include <Protocol/VarCheck.h>
+#include <Protocol/VariablePolicy.h>
+#include <Protocol/AcpiTable.h>
+#include <Protocol/AcpiSystemDescriptionTable.h>
+#include <Protocol/HiiImageEx.h>
+#include <Protocol/ResetNotification.h>
+#include <Protocol/PlatformSpecificResetFilter.h>
+#include <Protocol/PlatformSpecificResetHandler.h>
+#include <Protocol/PciHotPlugInit.h>
+#include <Protocol/IncompatiblePciDeviceSupport.h>
+#include <Protocol/EbcVmTest.h>
+#include <Protocol/PeCoffImageEmulator.h>
+#include <Protocol/DebugSupport.h>
+#include <Protocol/DeferredImageLoad.h>
+#include <Protocol/ReportStatusCodeHandler.h>
+#include <Protocol/PcdInfo.h>
+#include <Protocol/PiPcdInfo.h>
 #include <uuid.h>
 #include <stdbool.h>
 #include <sys/param.h>
@@ -352,6 +386,99 @@ EFI_GUID gFdtTableGuid = FDT_TABLE_GUID;
 EFI_GUID gLzmaCompress = LZMA_COMPRESS_GUID;
 EFI_GUID gMtcVendorGuid = MTC_VENDOR_GUID;
 EFI_GUID gPcdProtocolGuid = PCD_PROTOCOL_GUID;
+EFI_GUID gEfiBootLogoProtocolGuid = EFI_BOOT_LOGO_PROTOCOL_GUID;
+EFI_GUID gEdkiiBootLogo2ProtocolGuid = EDKII_BOOT_LOGO2_PROTOCOL_GUID;
+EFI_GUID gMediaSanitizeProtocolGuid = MEDIA_SANITIZE_PROTOCOL_GUID;
+EFI_GUID gEfiPartitionInfoProtocolGuid = EFI_PARTITION_INFO_PROTOCOL_GUID;
+EFI_GUID gVirtioDeviceProtocolGuid = VIRTIO_DEVICE_PROTOCOL_GUID;
+EFI_GUID gEfiDxeMmReadyToLockProtocolGuid =
+    EFI_DXE_MM_READY_TO_LOCK_PROTOCOL_GUID;
+EFI_GUID gEfiPciHotPlugRequestProtocolGuid =
+    EFI_PCI_HOTPLUG_REQUEST_PROTOCOL_GUID;
+EFI_GUID gEdkiiFormDisplayEngineProtocolGuid =
+    EDKII_FORM_DISPLAY_ENGINE_PROTOCOL_GUID;
+EFI_GUID gEfiHiiPopupProtocolGuid = EFI_HII_POPUP_PROTOCOL_GUID;
+EFI_GUID gEfiRamDiskProtocolGuid = EFI_RAM_DISK_PROTOCOL_GUID;
+EFI_GUID gRamDiskFormSetGuid = RAM_DISK_FORM_SET_GUID;
+EFI_GUID gEfiFaultTolerantWriteProtocolGuid =
+    EFI_FAULT_TOLERANT_WRITE_PROTOCOL_GUID;
+EFI_GUID gEdkiiPlatformLogoProtocolGuid = EDKII_PLATFORM_LOGO_PROTOCOL_GUID;
+EFI_GUID gEfiHiiPackageListProtocolGuid = EFI_HII_PACKAGE_LIST_PROTOCOL_GUID;
+EFI_GUID gEdkiiFormBrowserExProtocolGuid = FORM_BROWSER_EXTENSION_PROTOCOL_GUID;
+EFI_GUID gEdkiiFormBrowserEx2ProtocolGuid =
+    EDKII_FORM_BROWSER_EXTENSION2_PROTOCOL_GUID;
+EFI_GUID gEfiPciHostBridgeResourceAllocationProtocolGuid =
+    EFI_PCI_HOST_BRIDGE_RESOURCE_ALLOCATION_PROTOCOL_GUID;
+EFI_GUID gEdkiiVariableLockProtocolGuid = EDKII_VARIABLE_LOCK_PROTOCOL_GUID;
+EFI_GUID gEdkiiVarCheckProtocolGuid = EDKII_VAR_CHECK_PROTOCOL_GUID;
+EFI_GUID gEdkiiVariablePolicyProtocolGuid = EDKII_VARIABLE_POLICY_PROTOCOL_GUID;
+EFI_GUID gEfiAcpiTableProtocolGuid = EFI_ACPI_TABLE_PROTOCOL_GUID;
+EFI_GUID gEfiAcpiSdtProtocolGuid = EFI_ACPI_SDT_PROTOCOL_GUID;
+EFI_GUID gEfiHiiImageExProtocolGuid = EFI_HII_IMAGE_EX_PROTOCOL_GUID;
+EFI_GUID gEfiResetNotificationProtocolGuid =
+    EFI_RESET_NOTIFICATION_PROTOCOL_GUID;
+EFI_GUID gEdkiiPlatformSpecificResetFilterProtocolGuid =
+    EDKII_PLATFORM_SPECIFIC_RESET_FILTER_PROTOCOL_GUID;
+EFI_GUID gEdkiiPlatformSpecificResetHandlerProtocolGuid =
+    EDKII_PLATFORM_SPECIFIC_RESET_HANDLER_PROTOCOL_GUID;
+EFI_GUID gEfiPciHotPlugInitProtocolGuid = EFI_PCI_HOT_PLUG_INIT_PROTOCOL_GUID;
+EFI_GUID gEfiIncompatiblePciDeviceSupportProtocolGuid =
+    EFI_INCOMPATIBLE_PCI_DEVICE_SUPPORT_PROTOCOL_GUID;
+EFI_GUID gEfiEbcVmTestProtocolGuid = EFI_EBC_VM_TEST_PROTOCOL_GUID;
+EFI_GUID gEdkiiPeCoffImageEmulatorProtocolGuid =
+    EDKII_PECOFF_IMAGE_EMULATOR_PROTOCOL_GUID;
+EFI_GUID gEfiDebugSupportProtocolGuid =
+    EFI_DEBUG_SUPPORT_PROTOCOL_GUID;
+EFI_GUID gEfiDeferredImageLoadProtocolGuid =
+    EFI_DEFERRED_IMAGE_LOAD_PROTOCOL_GUID;
+EFI_GUID gEfiRscHandlerProtocolGuid = EFI_RSC_HANDLER_PROTOCOL_GUID;
+EFI_GUID gGetPcdInfoProtocolGuid = GET_PCD_INFO_PROTOCOL_GUID;
+EFI_GUID gEfiGetPcdInfoProtocolGuid = EFI_GET_PCD_INFO_PROTOCOL_GUID;
+
+/*
+ * Driver FILE_GUID. This is to identify loaded driver. We can see
+ * them on systems with edk2 or other with source code availability.
+ */
+#define	ATABUS_DXE_GUID \
+{ 0x19DF145A, 0xB1D4, 0x453f, {0x85, 0x07, 0x38, 0x81, 0x66, 0x76, 0xD7, 0xF6} }
+EFI_GUID gAtaBusDxeGuid = ATABUS_DXE_GUID;
+#define	DRIVER_HEALTH_MANAGER_DXE_GUID \
+{ 0xEBF8ED7C, 0x0DD1, 0x4787, {0x84, 0xF1, 0xF4, 0x8D, 0x53, 0x7D, 0xCA, 0xCF} }
+EFI_GUID gDriverHealthManagerDxe = DRIVER_HEALTH_MANAGER_DXE_GUID;
+#define	PLATFORM_DXE_GUID \
+{ 0xD9DCC5DF, 0x4007, 0x435E, {0x90, 0x98, 0x89, 0x70, 0x93, 0x55, 0x04, 0xB2} }
+#define	RAMDISK_DXE_GUID \
+{ 0x28A03FF4, 0x12B3, 0x4305, {0xA4, 0x17, 0xBB, 0x1A, 0x4F, 0x94, 0x08, 0x1E} }
+EFI_GUID gRamDiskDxe = RAMDISK_DXE_GUID;
+EFI_GUID gPlatformDxe = PLATFORM_DXE_GUID;
+#define	SIOBUS_DXE_GUID \
+{ 0x864E1CA8, 0x85EB, 0x4D63, {0x9D, 0xCC, 0x6E, 0x0F, 0xC9, 0x0F, 0xFD, 0x55} }
+EFI_GUID gSioBusDxeGuid = SIOBUS_DXE_GUID;
+#define	SCSIBUS_DXE_GUID \
+{ 0x0167CCC4, 0xD0F7, 0x4f21, {0xA3, 0xEF, 0x9E, 0x64, 0xB7, 0xCD, 0xCE, 0x8B} }
+EFI_GUID gScsiBusDxeGuid = SCSIBUS_DXE_GUID;
+#define	TERMINAL_DXE_GUID \
+{ 0xd3b36f2b, 0xd551, 0x11d4, {0x9a, 0x46, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d} }
+EFI_GUID gTerminalDxeGuid = TERMINAL_DXE_GUID;
+#define	IOMMU_ABSENT_PROTOCOL_GUID \
+{0xf8775d50, 0x8abd, 0x4adf, {0x92, 0xac, 0x85, 0x3e, 0x51, 0xf6, 0xc8, 0xdc} }
+EFI_GUID gIoMmuAbsentProtocolGuid = IOMMU_ABSENT_PROTOCOL_GUID;
+#define	DEVICE_PATH_UTILITIES_PROTOCOL_GUID \
+{ 0x0379BE4E, 0xD706, 0x437D, {0xB0, 0x37, 0xED, 0xB8, 0x2F, 0xB7, 0x72, 0xA4} }
+EFI_GUID gEfiDevicePathUtilitiesProtocolGuid =
+    DEVICE_PATH_UTILITIES_PROTOCOL_GUID;
+#define	DEVICE_PATH_FROM_TEXT_PROTOCOL_GUID \
+{ 0x05C99A21, 0xC70F, 0x4AD2, {0x8A, 0x5F, 0x35, 0xDF, 0x33, 0x43, 0xF5, 0x1E} }
+EFI_GUID gEfiDevicePathFromTextProtocolGuid =
+    DEVICE_PATH_FROM_TEXT_PROTOCOL_GUID;
+
+/* Partition type guids */
+#define	GPT_ENT_TYPE_ILLUMOS_ZFS \
+{ 0x6a898cc3, 0x1dd2, 0x11b2, {0x99, 0xa6, 0x08, 0x00, 0x20, 0x73, 0x66, 0x31} }
+EFI_GUID gGptEntTypeillumosZfs = GPT_ENT_TYPE_ILLUMOS_ZFS;
+#define	GPT_ENT_TYPE_RESERVED \
+{ 0x6a945a3b, 0x1dd2, 0x11b2, {0x99, 0xa6, 0x08, 0x00, 0x20, 0x73, 0x66, 0x31} }
+EFI_GUID gGptEntTypeReserved = GPT_ENT_TYPE_RESERVED;
 
 static struct efi_uuid_mapping {
 	const char *efi_guid_name;
@@ -368,8 +495,14 @@ static struct efi_uuid_mapping {
 	    .efi_guid = &gEfiAcpiTableGuid },
 	{ .efi_guid_name = "ACPI 2.0 Table",
 	    .efi_guid = &gEfiAcpi20TableGuid },
+	{ .efi_guid_name = "AtaBusDxe",
+	    .efi_guid = &gAtaBusDxeGuid },
 	{ .efi_guid_name = "ATA pass thru",
 	    .efi_guid = &gEfiAtaPassThruProtocolGuid },
+	{ .efi_guid_name = "EFI boot logo protocol",
+	    .efi_guid = &gEfiBootLogoProtocolGuid },
+	{ .efi_guid_name = "EDKII boot logo2 protocol",
+	    .efi_guid = &gEdkiiBootLogo2ProtocolGuid },
 	{ .efi_guid_name = "SMBIOS Table",
 	    .efi_guid = &gEfiSmbiosTableGuid },
 	{ .efi_guid_name = "SMBIOS3 Table",
@@ -647,6 +780,8 @@ static struct efi_uuid_mapping {
 	    .efi_guid = &gEfiMpServiceProtocolGuid },
 	{ .efi_guid_name = MTC_VARIABLE_NAME,
 	    .efi_guid = &gMtcVendorGuid },
+	{ .efi_guid_name = "Media Sanitize protocol",
+	    .efi_guid = &gMediaSanitizeProtocolGuid },
 	{ .efi_guid_name = "Active EDID",
 	    .efi_guid = &gEfiEdidActiveProtocolGuid },
 	{ .efi_guid_name = "Discovered EDID",
@@ -655,6 +790,10 @@ static struct efi_uuid_mapping {
 	    .efi_guid = &gEfiKmsProtocolGuid },
 	{ .efi_guid_name = "smart card reader",
 	    .efi_guid = &gEfiSmartCardReaderProtocolGuid },
+	{ .efi_guid_name = "SioBusDxe",
+	    .efi_guid = &gSioBusDxeGuid },
+	{ .efi_guid_name = "ScsiBusDxe",
+	    .efi_guid = &gScsiBusDxeGuid },
 	{ .efi_guid_name = "rng source",
 	    .efi_guid = &gEfiRngProtocolGuid },
 	{ .efi_guid_name = "IPsec config",
@@ -663,8 +802,90 @@ static struct efi_uuid_mapping {
 	    .efi_guid = &gEfiIpSecProtocolGuid },
 	{ .efi_guid_name = "IPsec2",
 	    .efi_guid = &gEfiIpSec2ProtocolGuid },
+	{ .efi_guid_name = "Partition Info Protocol",
+	    .efi_guid = &gEfiPartitionInfoProtocolGuid },
 	{ .efi_guid_name = "TCG2 tpm",
-	    .efi_guid = &gEfiTcg2ProtocolGuid }
+	    .efi_guid = &gEfiTcg2ProtocolGuid },
+	{ .efi_guid_name = "TerminalDxe",
+	    .efi_guid = &gTerminalDxeGuid },
+	{ .efi_guid_name = "VirtIo Device Protocol",
+	    .efi_guid = &gVirtioDeviceProtocolGuid },
+	{ .efi_guid_name = "GPT Entry illumos ZFS",
+	    .efi_guid = &gGptEntTypeillumosZfs },
+	{ .efi_guid_name = "GPT Reserved Entry",
+	    .efi_guid = &gGptEntTypeReserved },
+	{ .efi_guid_name = "DxeMmReadyToLockProtocol",
+	    .efi_guid = &gEfiDxeMmReadyToLockProtocolGuid },
+	{ .efi_guid_name = "PciHotPlugRequestProtocol",
+	    .efi_guid = &gEfiPciHotPlugRequestProtocolGuid },
+	{ .efi_guid_name = "PlatformDxe",
+	    .efi_guid = &gPlatformDxe },
+	{ .efi_guid_name = "EDKII Form Display Engine Protocol",
+	    .efi_guid = &gEdkiiFormDisplayEngineProtocolGuid },
+	{ .efi_guid_name = "HII Popup Protocol",
+	    .efi_guid = &gEfiHiiPopupProtocolGuid },
+	{ .efi_guid_name = "RAM Disk Protocol",
+	    .efi_guid = &gEfiRamDiskProtocolGuid },
+	{ .efi_guid_name = "RamDiskDxe",
+	    .efi_guid = &gRamDiskDxe },
+	{ .efi_guid_name = "RamDiskFormSet",
+	    .efi_guid = &gRamDiskFormSetGuid },
+	{ .efi_guid_name = "DriverHealthManagerDxe",
+	    .efi_guid = &gDriverHealthManagerDxe },
+	{ .efi_guid_name = "Fault Tolerant Write Protocol",
+	    .efi_guid = &gEfiFaultTolerantWriteProtocolGuid },
+	{ .efi_guid_name = "Edkii Platform Logo Protocol",
+	    .efi_guid = &gEdkiiPlatformLogoProtocolGuid },
+	{ .efi_guid_name = "Hii Package List Protocol",
+	    .efi_guid = &gEfiHiiPackageListProtocolGuid },
+	{ .efi_guid_name = "Edkii Form BrowserEx2 Protocol",
+	    .efi_guid = &gEdkiiFormBrowserEx2ProtocolGuid },
+	{ .efi_guid_name = "Edkii Form BrowserEx Protocol",
+	    .efi_guid = &gEdkiiFormBrowserExProtocolGuid },
+	{ .efi_guid_name = "Pci Host Bridge Resource Allocation Protocol",
+	    .efi_guid = &gEfiPciHostBridgeResourceAllocationProtocolGuid },
+	{ .efi_guid_name = "Edkii Variable Lock Protocol",
+	    .efi_guid = &gEdkiiVariableLockProtocolGuid },
+	{ .efi_guid_name = "Edkii Var Check Protocol",
+	    .efi_guid = &gEdkiiVarCheckProtocolGuid },
+	{ .efi_guid_name = "Edkii Variable Policy Protocol",
+	    .efi_guid = &gEdkiiVariablePolicyProtocolGuid },
+	{ .efi_guid_name = "IoMmu Absent Protocol",
+	    .efi_guid = &gIoMmuAbsentProtocolGuid },
+	{ .efi_guid_name = "Acpi Table Protocol",
+	    .efi_guid = &gEfiAcpiTableProtocolGuid },
+	{ .efi_guid_name = "Acpi Sdt Protocol",
+	    .efi_guid = &gEfiAcpiSdtProtocolGuid },
+	{ .efi_guid_name = "Hii ImageEx Protocol",
+	    .efi_guid = &gEfiHiiImageExProtocolGuid },
+	{ .efi_guid_name = "Reset Notification Protocol",
+	    .efi_guid = &gEfiResetNotificationProtocolGuid },
+	{ .efi_guid_name = "Edkii Platform Specific Reset Filter Protocol",
+	    .efi_guid = &gEdkiiPlatformSpecificResetFilterProtocolGuid },
+	{ .efi_guid_name = "Edkii Platform Specific Reset Handler Protocol",
+	    .efi_guid = &gEdkiiPlatformSpecificResetHandlerProtocolGuid },
+	{ .efi_guid_name = "PciHotPlug Init Protocol",
+	    .efi_guid = &gEfiPciHotPlugInitProtocolGuid },
+	{ .efi_guid_name = "Incompatible Pci Device Support Protocol",
+	    .efi_guid = &gEfiIncompatiblePciDeviceSupportProtocolGuid },
+	{ .efi_guid_name = "Ebc Vm Test Protocol",
+	    .efi_guid = &gEfiEbcVmTestProtocolGuid },
+	{ .efi_guid_name = "Edkii PeCoff Image Emulator Protocol",
+	    .efi_guid = &gEdkiiPeCoffImageEmulatorProtocolGuid },
+	{ .efi_guid_name = "Debug Support Protocol",
+	    .efi_guid = &gEfiDebugSupportProtocolGuid },
+	{ .efi_guid_name = "Deferred ImageLoad Protocol",
+	    .efi_guid = &gEfiDeferredImageLoadProtocolGuid },
+	{ .efi_guid_name = "Rsc Handler Protocol",
+	    .efi_guid = &gEfiRscHandlerProtocolGuid },
+	{ .efi_guid_name = "GetPcd Info Protocol",
+	    .efi_guid = &gGetPcdInfoProtocolGuid },
+	{ .efi_guid_name = "Efi GetPcd Info Protocol",
+	    .efi_guid = &gEfiGetPcdInfoProtocolGuid },
+	{ .efi_guid_name = "DevicePath Utilities Protocol",
+	    .efi_guid = &gEfiDevicePathUtilitiesProtocolGuid },
+	{ .efi_guid_name = "DevicePath From Text Protocol",
+	    .efi_guid = &gEfiDevicePathFromTextProtocolGuid },
 };
 
 bool
