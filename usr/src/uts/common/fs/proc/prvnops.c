@@ -5251,8 +5251,10 @@ rebuild_objdir(struct as *as)
 				if (vp == dir[i])
 					break;
 			if (i == nentries) {
-				ASSERT(nentries < nalloc);
-				dir[nentries++] = vp;
+				if (nentries < nalloc)
+					dir[nentries++] = vp;
+				else
+					__builtin_unreachable();
 			}
 		}
 	} while ((seg = AS_SEGNEXT(as, seg)) != NULL);
