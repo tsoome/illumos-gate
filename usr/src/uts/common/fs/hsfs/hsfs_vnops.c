@@ -836,9 +836,8 @@ hsfs_getpage_ra(struct vnode *vp, u_offset_t off, struct seg *seg,
 	searchp = pp;
 	io_end = io_off + io_len;
 	for (count = 0, byte_offset = io_off;
-	    byte_offset < io_end;
+	    byte_offset < io_end && count < bufcnt;
 	    count++) {
-		ASSERT(count < bufcnt);
 
 		bioinit(&bufs[count]);
 		bufs[count].b_edev = devvp->v_rdev;
@@ -1201,8 +1200,7 @@ again:
 		searchp = pp;
 		io_end = io_off + io_len;
 		for (count = 0, byte_offset = io_off;
-		    byte_offset < io_end; count++) {
-			ASSERT(count < bufcnt);
+		    byte_offset < io_end && count < bufcnt; count++) {
 
 			/* Compute disk address for interleaving. */
 
