@@ -846,12 +846,10 @@ ipd_ioctl_list(intptr_t arg, cred_t *cr)
 
 	configs = kmem_alloc(sizeof (ipd_ioc_info_t) * azones, KM_SLEEP);
 	cur = 0;
-	for (ins = list_head(&ipd_nsl); ins != NULL;
+	for (ins = list_head(&ipd_nsl); ins != NULL && cur < azones;
 	    ins = list_next(&ipd_nsl, ins)) {
 		if (ins->ipdn_enabled == 0)
 			continue;
-
-		ASSERT(cur < azones);
 
 		if (zid == GLOBAL_ZONEID || zid == ins->ipdn_zoneid) {
 			configs[cur].ipii_zoneid = ins->ipdn_zoneid;
