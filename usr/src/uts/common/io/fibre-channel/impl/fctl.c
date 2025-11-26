@@ -6342,7 +6342,7 @@ fctl_local_port_list_add(fc_fca_port_t *list, fc_local_port_t *port)
 	}
 	newentry->port_handle = port;
 
-	if (tmp == NULL) {
+	if (list == NULL) {
 		return (newentry);
 	}
 	while (tmp->port_next != NULL)	tmp = tmp->port_next;
@@ -6354,16 +6354,12 @@ fctl_local_port_list_add(fc_fca_port_t *list, fc_local_port_t *port)
 void
 fctl_local_port_list_free(fc_fca_port_t *list)
 {
-	fc_fca_port_t *tmp = list, *nextentry;
+	fc_fca_port_t *nextentry;
 
-	if (tmp == NULL) {
-		return;
-	}
-
-	while (tmp != NULL) {
-		nextentry = tmp->port_next;
-		kmem_free(tmp, sizeof (*tmp));
-		tmp = nextentry;
+	while (list != NULL) {
+		nextentry = list->port_next;
+		kmem_free(list, sizeof (*list));
+		list = nextentry;
 	}
 }
 

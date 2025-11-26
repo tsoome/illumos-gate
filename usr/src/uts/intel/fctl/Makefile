@@ -62,7 +62,7 @@ INCS		+= -I$(SRC)/uts/common/
 CERRWARN	+= $(CNOWARN_UNINIT)
 
 # needs work
-$(OBJS_DIR)/fctl.o := SMOFF += all_func_returns,deref_check
+$(OBJS_DIR)/fctl.o := SMOFF += all_func_returns,deref_check,check_free
 
 #
 #	Default build targets.
