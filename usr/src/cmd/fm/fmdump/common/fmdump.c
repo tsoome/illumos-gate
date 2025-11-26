@@ -1425,13 +1425,16 @@ main(int argc, char *argv[])
 				fmdump_usage("illegal argument -- %s\n",
 				    argv[optind]);
 
-			ASSERT(ifileidx < n_ifiles);
+			if (ifileidx < n_ifiles) {
+				if ((dest = malloc(PATH_MAX)) == NULL)
+					fmdump_fatal(
+					    "failed to allocate memory");
 
-			if ((dest = malloc(PATH_MAX)) == NULL)
-				fmdump_fatal("failed to allocate memory");
-
-			(void) strlcpy(dest, argv[optind++], PATH_MAX);
-			ifiles[ifileidx++] = dest;
+				(void) strlcpy(dest, argv[optind++], PATH_MAX);
+				ifiles[ifileidx++] = dest;
+			} else {
+				__builtin_unreachable();
+			}
 		}
 	}
 

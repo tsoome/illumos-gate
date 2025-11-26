@@ -94,6 +94,7 @@ $(OBJS_DIR)/zvol.o := SMOFF += deref_check,signed
 
 # false positive
 $(OBJS_DIR)/zfs_ctldir.o := SMOFF += strcpy_overflow
+$(OBJS_DIR)/ddt.o := SMOFF += check_free
 $(OBJS_DIR)/zap.o := SMOFF += check_free
 $(OBJS_DIR)/zap_micro.o := SMOFF += check_free
 $(OBJS_DIR)/vdev_removal.o := SMOFF += check_free
