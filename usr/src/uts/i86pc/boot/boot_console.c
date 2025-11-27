@@ -545,6 +545,7 @@ console_value_t console_devices[] = {
 	{ "ttyb", CONS_TTY },	/* 1 */
 	{ "ttyc", CONS_TTY },	/* 2 */
 	{ "ttyd", CONS_TTY },	/* 3 */
+	{ "term/", CONS_TTY },	/* 4 */
 	{ "text", CONS_SCREEN_TEXT },
 	{ "graphics", CONS_SCREEN_GRAPHICS },
 #if defined(__xpv)
@@ -724,8 +725,13 @@ lookup_console_device(const char *cons_str, int *indexp)
 			    (cons_str[len] == '"') || ISSPACE(cons_str[len])) &&
 			    (strncmp(cons_str, consolep->name, len) == 0)) {
 				cons = consolep->value;
-				if (cons == CONS_TTY)
+				if (cons != CONS_TTY)
+					break;
+				if (n >= 0 && n <= 3) {
 					*indexp = n;
+				} else {
+					*indexp = cons_str[5] - '0';
+				}
 				break;
 			}
 		}

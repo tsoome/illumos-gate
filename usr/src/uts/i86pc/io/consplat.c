@@ -120,7 +120,11 @@ console_type(int *tnum)
 		if (strlen(cons) == 4 && strncmp(cons, "tty", 3) == 0 &&
 		    cons[3] >= 'a' && cons[3] <= 'd') {
 			boot_console = CONS_TTY;
-			tty_num = cons[3] - 'a';
+			tty_num = cons[3];
+		} else if (strncmp(cons, "term/", 5) == 0) {
+			(void) i_ddi_attach_hw_nodes("asy");
+			boot_console = CONS_TTY;
+			tty_num = cons[5];
 		} else if (strcmp(cons, "usb-serial") == 0) {
 			(void) i_ddi_attach_hw_nodes("xhci");
 			(void) i_ddi_attach_hw_nodes("ehci");
@@ -147,7 +151,7 @@ console_type(int *tnum)
 	 */
 	if (boot_console == CONS_SCREEN_TEXT && plat_fbpath() == NULL) {
 		boot_console = CONS_TTY;
-		tty_num = 0;
+		tty_num = 'a';
 	}
 
 	if (tnum != NULL)
@@ -447,6 +451,36 @@ plat_usbser_path(void)
 	return (us_path);
 }
 
+/*
+ * Serial ports have minor numbers enumerated from 0,
+ * but legacy ports (isa attached) have minors set as number + 'a'.
+ * The problem is, it is not granted that we do have four legacy ports,
+ * so we need to count the legacy ports and then we can bind
+ * port number with minor number.
+ * With 4 legacy ports and one pci port we would have minor numbers as:
+ * ttya - ttyd having [a - d], and term/0 having 4.
+ * With 1 legacy port and one pci port we would have minor numbers as:
+ * ttya having a, and term/0 having 1.
+ * In general, the number of legacy ports should not change, except
+ * when we do move boot media to another system or if we change the
+ * configuration for VM. In which case the /etc/path_to_inst needs to
+ * be regenerated.
+ */
+static int
+legacy_port_count(dev_info_t *dip)
+{
+	int c = 0;
+
+	for (; dip != NULL; dip = ddi_get_next(dip)) {
+		if (i_ddi_attach_node_hierarchy(dip) != DDI_SUCCESS)
+			return (c);
+
+		if (DEVI(dip)->devi_minor->ddm_name[0] >= 'a')
+			c++;
+	}
+	return (c);
+}
+
 static char *
 plat_ttypath(int inum)
 {
@@ -461,8 +495,8 @@ plat_ttypath(int inum)
 	major_t major;
 	dev_info_t *dip;
 
-	if (pseudo_isa)
-		return (defaultpath[inum]);
+	if (pseudo_isa && inum >= 'a' && inum <= 'd')
+		return (defaultpath[inum - 'a']);
 
 	if ((major = ddi_name_to_major("asy")) == (major_t)-1)
 		return (NULL);
@@ -470,13 +504,18 @@ plat_ttypath(int inum)
 	if ((dip = devnamesp[major].dn_head) == NULL)
 		return (NULL);
 
+	if (inum >= '0' && inum <= '9') {
+		inum += legacy_port_count(dip);
+	}
+
 	for (; dip != NULL; dip = ddi_get_next(dip)) {
 		if (i_ddi_attach_node_hierarchy(dip) != DDI_SUCCESS)
 			return (NULL);
 
-		if (DEVI(dip)->devi_minor->ddm_name[0] == ('a' + (char)inum))
+		if (DEVI(dip)->devi_minor->ddm_name[0] == inum)
 			break;
 	}
+
 	if (dip == NULL)
 		return (NULL);
 
@@ -546,7 +585,9 @@ plat_diagpath(void)
 	    "diag-device", &diag) == DDI_SUCCESS) {
 		if (strlen(diag) == 4 && strncmp(diag, "tty", 3) == 0 &&
 		    diag[3] >= 'a' && diag[3] <= 'd') {
-			tty_num = diag[3] - 'a';
+			tty_num = diag[3];
+		} else if (strncmp(diag, "term/", 5) == 0) {
+			tty_num = diag[5];
 		}
 		ddi_prop_free(diag);
 	}
