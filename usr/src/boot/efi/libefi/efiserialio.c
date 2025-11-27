@@ -576,7 +576,7 @@ done:
 			/*
 			 * We have serial port but unknown hw driver.
 			 * If we do not have serial ports registered,
-			 * start from ttya, otherwise from tty0.
+			 * start from 'a', otherwise from '0'.
 			 * Other option would be to do this only in case of
 			 * VenHw device path.
 			 */
@@ -593,7 +593,16 @@ done:
 		efi_close_devpath(dp);
 	}
 
-	(void) asprintf(&tty->c_name, "tty%c", port->name);
+	/*
+	 * illumos "onboard" ports are enumerated a-d, other ports 
+	 * 0..
+	 * onboard ports can use name prefix tty (ttya, ttyb...)
+	 * other ports are located in term (term/0, term/1 ..)
+	 */
+	if (port->name >= 'a' && port->name <= 'd')
+		(void) asprintf(&tty->c_name, "tty%c", port->name);
+	else
+		(void) asprintf(&tty->c_name, "term/%c", port->name);
 	(void) asprintf(&tty->c_desc, "serial port %c", port->name);
 }
 
