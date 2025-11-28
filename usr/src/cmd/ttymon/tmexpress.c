@@ -28,6 +28,7 @@
 
 #include	<stdio.h>
 #include	<stdlib.h>
+#include	<stdbool.h>
 #include	<unistd.h>
 #include	<fcntl.h>
 #include	<errno.h>
@@ -143,7 +144,37 @@ ttymon_express(int argc, char **argv)
 }
 
 /*
- * For serial device, return ttyX-mode property value.
+ * First loop over ttya - ttyd, if rconsdev is not found, loop over
+ * term/0 - term/9.
+ */
+static bool
+get_ttydev_path(dev_t rconsdev, char *path, size_t size)
+{
+	struct stat st;
+	char c;
+
+	for (c = 'a'; c < 'e'; c++) {
+		(void) snprintf(path, size, "/dev/tty%c", c);
+		if (stat(path, &st) < 0)
+			continue;
+		if (st.st_rdev == rconsdev)
+			return (true);
+	}
+
+	for (c = '0'; c <= '9'; c++) {
+		(void) snprintf(path, size, "/dev/term/%c", c);
+		if (stat(path, &st) < 0)
+			continue;
+		if (st.st_rdev == rconsdev)
+			return (true);
+	}
+
+	return (false);
+}
+
+/*
+ * For serial device, return name-mode property value.
+ * For onboard ports, use ttyX-name, otherwise term/X-name.
  */
 static char *
 get_ttymode_prop(dev_t rconsdev)
@@ -152,14 +183,8 @@ get_ttymode_prop(dev_t rconsdev)
 	char path[MAXPATHLEN];
 	di_node_t root;
 	char *propname, *v;
-	struct stat st;
 
-	(void) snprintf(path, sizeof (path), "/dev/tty%c",
-	    'a' + minor(rconsdev));
-	if (stat(path, &st) < 0)
-		return (NULL);
-
-	if (st.st_rdev != rconsdev)
+	if (!get_ttydev_path(rconsdev, path, sizeof (path)))
 		return (NULL);
 
 	if (asprintf(&propname, "%s-mode", path + 5) <= 0)
