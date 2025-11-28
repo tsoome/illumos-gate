@@ -280,6 +280,12 @@ lpc_init(struct vmctx *ctx)
 		sc = &lpc_uart_softc[unit];
 		name = lpc_uart_names[unit];
 
+		asprintf(&node_name, "lpc.%s.path", name);
+		backend = get_config_value(node_name);
+		free(node_name);
+		if (backend == NULL)
+			continue;
+
 		if (uart_legacy_alloc(unit, &sc->iobase, &sc->irq) != 0) {
 			EPRINTLN("Unable to allocate resources for "
 			    "LPC device %s", name);
@@ -290,11 +296,7 @@ lpc_init(struct vmctx *ctx)
 		sc->uart_softc = uart_ns16550_init(lpc_uart_intr_assert,
 				    lpc_uart_intr_deassert, sc);
 
-		asprintf(&node_name, "lpc.%s.path", name);
-		backend = get_config_value(node_name);
-		free(node_name);
-		if (backend != NULL &&
-		    uart_ns16550_tty_open(sc->uart_softc, backend) != 0) {
+		if (uart_ns16550_tty_open(sc->uart_softc, backend) != 0) {
 			EPRINTLN("Unable to initialize backend '%s' "
 			    "for LPC device %s", backend, name);
 			return (-1);
