@@ -575,16 +575,10 @@ done:
 		if (EFI_ERROR(status)) {
 			/*
 			 * We have serial port but unknown hw driver.
-			 * If we do not have serial ports registered,
-			 * start from 'a', otherwise from '0'.
-			 * Other option would be to do this only in case of
-			 * VenHw device path.
+			 * Only legacy ports are enumerated 'a' - 'd',
+			 * everything else start from '0'.
 			 */
-			if (STAILQ_EMPTY(&serials))
-				port->name = 'a';
-			else
-				port->name = '0';
-
+			port->name = '0';
 			STAILQ_FOREACH(p, &serials, next) {
 				if (p->name == port->name)
 					port->name++;
@@ -594,8 +588,7 @@ done:
 	}
 
 	/*
-	 * illumos "onboard" ports are enumerated a-d, other ports 
-	 * 0..
+	 * x86 legacy ports are enumerated a-d, other ports 0.
 	 * onboard ports can use name prefix tty (ttya, ttyb...)
 	 * other ports are located in term (term/0, term/1 ..)
 	 */
