@@ -133,18 +133,17 @@ cons_probe(void)
 	int	active;
 	char	*prefconsole, *list, *console;
 
-	/* Build list of consoles */
+	/*
+	 * Build list of consoles and call init function if present.
+	 */
 	consoles = NULL;
-	for (cons = 0; ; cons++) {
-		if (ct_list[cons].ct_dev != NULL) {
+	for (cons = 0; ct_list[cons].ct_dev != NULL ||
+	    ct_list[cons].ct_init != NULL; cons++) {
+		if (ct_list[cons].ct_dev != NULL)
 			cons_add_dev(ct_list[cons].ct_dev);
-			continue;
-		}
-		if (ct_list[cons].ct_init != NULL) {
+
+		if (ct_list[cons].ct_init != NULL)
 			ct_list[cons].ct_init();
-			continue;
-		}
-		break;
 	}
 
 	/* We want a callback to install the new value when this var changes. */
@@ -182,6 +181,8 @@ cons_probe(void)
 	 */
 	unsetenv("console");
 	cons_change(prefconsole, &list);
+	/* Console system is set up, disable platform putchar() */
+	platform_putchar = NULL;
 
 	printf("Consoles:");
 	bool first = true;

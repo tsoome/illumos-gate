@@ -26,6 +26,7 @@
 
 #include <sys/cdefs.h>
 
+#include <stand.h>
 #include <efi.h>
 #include <efilib.h>
 #include <eficonsctl.h>
@@ -159,6 +160,18 @@ struct visual_ops text_ops = {
 	.cons_clear = efi_text_cons_clear,
 	.cons_put_cmap = NULL
 };
+
+void
+efi_cons_ini(void)
+{
+	/* Set up globals */
+	conout = ST->ConOut;
+
+	/*
+	 * Platform specific putchar() before console system is set up.
+	 */
+	platform_putchar = efi_cons_efiputchar;
+}
 
 /*
  * platform specific functions for tem
@@ -506,7 +519,6 @@ efi_cons_probe(struct console *cp)
 		return;
 
 	memset(keybuf, 0, KEYBUFSZ);
-	conout = ST->ConOut;
 	ecd = calloc(1, sizeof (*ecd));
 	/*
 	 * As console probing is called very early, the only reason for

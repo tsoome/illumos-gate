@@ -399,10 +399,12 @@ extern int	null_readdir(struct open_file *, struct dirent *);
  * Machine dependent functions and data, must be provided or stubbed by
  * the consumer
  */
+typedef void (*platform_putchar_t)(int);
 extern void	exit(int) __dead2;
 extern int	getchar(void);
 extern int	ischar(void);
 extern void	putchar(int);
+extern platform_putchar_t platform_putchar;
 extern int	devopen(struct open_file *, const char *, const char **);
 extern int	devclose(struct open_file *f);
 extern void	panic(const char *, ...) __dead2 __printflike(1, 2);
