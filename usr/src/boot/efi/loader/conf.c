@@ -67,7 +67,7 @@ extern struct console nullconsole;
 extern struct console spinconsole;
 
 struct console_template ct_list[] = {
-	[0] = { .ct_dev = &efi_console, .ct_init = NULL },
+	[0] = { .ct_dev = &efi_console, .ct_init = efi_cons_ini },
 	[1] = { .ct_dev = NULL, .ct_init = efi_serial_ini },
 	[2] = { .ct_dev = NULL, .ct_init = efi_isa_ini },
 	[3] = { .ct_dev = &nullconsole, .ct_init = NULL },
