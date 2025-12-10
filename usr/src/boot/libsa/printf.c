@@ -59,12 +59,18 @@ typedef void (kvprintf_fn_t)(int, void *);
 
 static char *ksprintn(char *, uintmax_t, int, int *, int);
 static int kvprintf(char const *, kvprintf_fn_t *, void *, int, va_list);
+platform_putchar_t platform_putchar = NULL;
 
 static void
 putchar_wrapper(int cc, void *arg __unused)
 {
-
-	putchar(cc);
+	if (platform_putchar != NULL) {
+		if (cc == '\n')
+			platform_putchar('\r');
+		platform_putchar(cc);
+	} else {
+		putchar(cc);
+	}
 }
 
 int
