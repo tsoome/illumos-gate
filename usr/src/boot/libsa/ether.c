@@ -60,7 +60,7 @@ sendether(struct iodesc *d, void *pkt, size_t len, uint8_t *dea, int etype)
 
 #ifdef ETHER_DEBUG
 	if (debug)
-		printf("sendether: called\n");
+		printf("%s: called\n", __func__);
 #endif
 
 	eh = (struct ether_header *)pkt - 1;
@@ -94,7 +94,7 @@ readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 
 #ifdef ETHER_DEBUG
 	if (debug)
-		printf("readether: called\n");
+		printf("%s: called\n", __func__);
 #endif
 
 	ptr = NULL;
@@ -110,7 +110,7 @@ readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	    bcmp(bcea, eh->ether_dhost, 6) != 0) {
 #ifdef ETHER_DEBUG
 		if (debug)
-			printf("readether: not ours (ea=%s)\n",
+			printf("%s: not ours (ea=%s)\n", __func__,
 			    ether_sprintf(eh->ether_dhost));
 #endif
 		free(ptr);
@@ -122,6 +122,22 @@ readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	*etype = ntohs(eh->ether_type);
 
 	n -= sizeof (*eh);
+
+	/* Respond ARP requests at once. */
+	if (*etype == ETHERTYPE_ARP) {
+		struct arphdr *ah = *payload;
+
+		if (ah->ar_op == htons(ARPOP_REQUEST)) {
+#ifdef NET_DEBUG
+			if (debug)
+				printf("%s: ARP request\n", __func__);
+#endif
+			arp_reply(d, ah);
+			n = -1;
+			free(ptr);
+			*pkt = NULL;
+		}
+	}
 	return (n);
 }
 

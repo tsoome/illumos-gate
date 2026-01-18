@@ -455,23 +455,6 @@ readip(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		}
 		/* Ethernet address checks are done in readether() */
 
-		/* Need to respond to ARP requests. */
-		if (etype == ETHERTYPE_ARP) {
-			struct arphdr *ah = data;
-
-#ifdef NET_DEBUG
-			if (debug)
-				printf("%s: ARP request\n", __func__);
-#endif
-
-			if (ah->ar_op == htons(ARPOP_REQUEST)) {
-				/* Send ARP reply */
-				arp_reply(d, ah);
-			}
-			free(ptr);
-			continue;	/* Get next packet */
-		}
-
 		if (etype == ETHERTYPE_IP) {
 			struct ip *ip = data;
 
