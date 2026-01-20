@@ -95,9 +95,8 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 #ifdef NET_DEBUG
 	if (debug) {
 		printf("sendip: proto: %x d=%p called.\n", proto, (void *)d);
-		printf("saddr: %s:%d daddr: %s:%d\n",
-		    inet_ntoa(d->myip), ntohs(d->myport),
-		    inet_ntoa(d->destip), ntohs(d->destport));
+		printf("saddr: %s:%d ", inet_ntoa(d->myip), ntohs(d->myport));
+		printf("daddr: %s:%d\n", inet_ntoa(d->destip), ntohs(d->destport));
 	}
 #endif
 
@@ -264,8 +263,8 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	if (n < ntohs(ip->ip_len)) {
 #ifdef NET_DEBUG
 		if (debug) {
-			printf("readip: bad length %dz < %d.\n",
-			    n, ntohs(ip->ip_len));
+			printf("%s: bad length %zd < %d.\n",
+			    __func__, n, ntohs(ip->ip_len));
 		}
 #endif
 		free(ptr);
@@ -281,11 +280,9 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	if (!isfrag) {
 #ifdef NET_DEBUG
 		if (debug) {
-			printf("%s: unfragmented saddr %s:%d -> ",
-			    __func__,
-			    inet_ntoa(ip->ip_src), ntohs(uh->uh_sport));
-			printf("%s:%d\n",
-			    inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
+			printf("%s: unfragmented saddr %s -> ",
+			    __func__, inet_ntoa(ip->ip_src));
+			printf("%s\n", inet_ntoa(ip->ip_dst));
 		}
 #endif
 		return (process_dgram(d, proto, pkt, payload, n));
@@ -395,12 +392,12 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	ipr->ip_hdr = (struct ip *)((uintptr_t)eh + sizeof (*eh));
 	bcopy(ipq->ipq_hdr, ipr->ip_hdr, sizeof (*ipr->ip_hdr));
 	ipr->ip_hdr->ip_hl = sizeof (*ipr->ip_hdr) >> 2;
-	ipr->ip_hdr->ip_len = htons(n);
+	ipr->ip_hdr->ip_len = htons(n + sizeof (*ip));
 	ipr->ip_hdr->ip_sum = 0;
 	ipr->ip_hdr->ip_sum = in_cksum(ipr->ip_hdr, sizeof (*ipr->ip_hdr));
 
-	n = 0;
-	ptr = (char *)((uintptr_t)ipr->ip_hdr + sizeof (*ipr->ip_hdr));
+	n = sizeof (*ipr->ip_hdr);
+	ptr = (char *)((uintptr_t)ipr->ip_hdr);
 	STAILQ_FOREACH(ipq, &ipr->ip_queue, ipq_next) {
 		char *data;
 		size_t len;
@@ -425,9 +422,9 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	}
 #ifdef NET_DEBUG
 	if (debug) {
-		printf("%s: completed fragments ID=%d %s -> %s\n",
-		    __func__, ntohs(ip->ip_id), inet_ntoa(ip->ip_src),
-		    inet_ntoa(ip->ip_dst));
+		printf("%s: completed fragments ID=%d %s -> ",
+		    __func__, ntohs(ip->ip_id), inet_ntoa(ip->ip_src));
+		printf("%s\n", inet_ntoa(ip->ip_dst));
 	}
 #endif
 	return (process_dgram(d, proto, pkt, payload, n));
