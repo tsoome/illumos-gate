@@ -48,7 +48,8 @@
 #include "netif.h"
 #include "rpc.h"
 
-#define	NFS_DEBUGxx
+#define	NFS_DEBUG
+int debug = 1;
 
 #define	NFSREAD_MIN_SIZE 1024
 #define	NFSREAD_MAX_SIZE 16384
@@ -119,6 +120,21 @@ struct nfs_iodesc {
 };
 
 /*
+ * NFS mount data.
+ */
+typedef struct nfs_mount {
+	char		*nm_dev;		/* Device we did open. */
+	char		*nm_rootpath;		/* nfs url of mount device path. */
+	int		nm_dev_fd;		/* Open device descriptor. */
+	struct iodesc	*nm_desc;		/* iodesc for our network device. */
+	struct nfs_iodesc *nm_root_node;
+	STAILQ_ENTRY(nfs_mount) nm_link;	/* Link to next entry. */
+} nfs_mount_t;
+
+typedef STAILQ_HEAD(nfs_mnt_list, nfs_mount) nfs_mnt_list_t;
+static nfs_mnt_list_t mnt_list = STAILQ_HEAD_INITIALIZER(mnt_list);
+
+/*
  * XXX interactions with tftp? See nfswrapper.c for a confusing
  *     issue.
  */
@@ -128,8 +144,8 @@ static int nfs_read(struct open_file *f, void *buf, size_t size, size_t *resid);
 static off_t nfs_seek(struct open_file *f, off_t offset, int where);
 static int nfs_stat(struct open_file *f, struct stat *sb);
 static int nfs_readdir(struct open_file *f, struct dirent *d);
-
-struct	nfs_iodesc nfs_root_node;
+static int nfs_mount(const char *, const char *, void **);
+static int nfs_unmount(const char *, void *);
 
 struct fs_ops nfs_fsops = {
 	.fs_name = "nfs",
@@ -139,7 +155,9 @@ struct fs_ops nfs_fsops = {
 	.fo_write = null_write,
 	.fo_seek = nfs_seek,
 	.fo_stat = nfs_stat,
-	.fo_readdir = nfs_readdir
+	.fo_readdir = nfs_readdir,
+	.fo_mount = nfs_mount,
+	.fo_unmount = nfs_unmount
 };
 
 static int nfs_read_size = NFSREAD_MIN_SIZE;
@@ -204,7 +222,7 @@ nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("nfs_getrootfh: %s\n", path);
+		printf("%s: %s\n", __func__, path);
 #endif
 
 	args = &sdata.d;
@@ -235,7 +253,6 @@ nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 	*fhlenp = ntohl(repl->fhsize);
 	bcopy(repl->fh, fhp, *fhlenp);
 
-	set_nfs_read_size();
 	free(pkt);
 	return (0);
 }
@@ -269,7 +286,7 @@ nfs_lookupfh(struct nfs_iodesc *d, const char *name, struct nfs_iodesc *newfd)
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("lookupfh: called\n");
+		printf("%s: called\n", __func__);
 #endif
 
 	args = &sdata.d;
@@ -340,7 +357,7 @@ nfs_readlink(struct nfs_iodesc *d, char *buf)
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("readlink: called\n");
+		printf("%s: called\n", __func__);
 #endif
 
 	args = &sdata.d;
@@ -444,7 +461,7 @@ nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 	rlen = cc - hlen;
 	x = ntohl(repl->count);
 	if (rlen < x) {
-		printf("nfsread: short packet, %d < %ld\n", rlen, x);
+		printf("%s: short packet, %d < %ld\n", __func__, rlen, x);
 		errno = EBADRPC;
 		free(pkt);
 		return (-1);
@@ -454,6 +471,129 @@ nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 	return (x);
 }
 
+static int
+nfs_mount(const char *dev, const char *path, void **data)
+{
+	nfs_mount_t *mnt;
+	struct devdesc *dd;
+	struct open_file *of;
+	const char *devname;
+	char buf[2 * NFS_V3MAXFHSIZE + 3];
+	char *cp;
+	uchar_t *fh;
+	int rv;
+
+	/* Make sure we work on net device. */
+	rv = devparse(&dd, dev, NULL);
+	if (rv != 0 || dd->d_dev->dv_type != DEVT_NET)
+		return (ENXIO);
+
+	/* We want to open device, not file path. */
+	devname = devformat(dd);
+	free(dd);
+
+	mnt = calloc(1, sizeof (*mnt));
+	if (mnt == NULL) {
+		rv = ENOMEM;
+		goto out;
+	}
+
+	mnt->nm_dev_fd = -1;
+	mnt->nm_dev = strdup(devname);
+	if (mnt->nm_dev == NULL) {
+		rv = ENOMEM;
+		goto out;
+	}
+
+	mnt->nm_dev_fd = open(devname, O_RDONLY);
+	if (mnt->nm_dev_fd < 0) {
+		rv = errno;
+		goto out;
+	}
+
+	if (!rootpath[0]) {
+		printf("no rootpath, no nfs\n");
+		rv = ENXIO;
+		goto out;
+	}
+
+	if (asprintf(&mnt->nm_rootpath, "nfs://%s%s", inet_ntoa(rootip),
+	    rootpath) < 0) {
+		rv = ENOMEM;
+		goto out;
+	}
+
+	mnt->nm_root_node = malloc(sizeof (*mnt->nm_root_node));
+	if (mnt->nm_root_node == NULL) {
+		rv = ENOMEM;
+		goto out;
+	}
+	/* Get access to iodesc. */
+	of = fd2open_file(mnt->nm_dev_fd);
+	dd = of->f_devdata;
+	mnt->nm_desc = socktodesc(*(int *)(dd->d_opendata));
+	if (mnt->nm_desc == NULL) {
+		rv = EINVAL;
+		goto out;
+	}
+
+	/* Bind to a reserved port. */
+	mnt->nm_desc->myport = htons(--rpc_port);
+	mnt->nm_desc->destip = rootip;
+	rv = nfs_getrootfh(mnt->nm_desc, rootpath, &mnt->nm_root_node->fhsize,
+	    mnt->nm_root_node->fh);
+	if (rv != 0) {
+		goto out;
+	}
+
+	mnt->nm_root_node->fa.fa_type  = htonl(NFDIR);
+	mnt->nm_root_node->fa.fa_mode  = htonl(0755);
+	mnt->nm_root_node->fa.fa_nlink = htonl(2);
+	mnt->nm_root_node->iodesc = mnt->nm_desc;
+
+	fh = &mnt->nm_root_node->fh[0];
+	buf[0] = 'X';
+	cp = &buf[1];
+	for (int i = 0; i < mnt->nm_root_node->fhsize; i++, cp += 2)
+		sprintf(cp, "%02x", fh[i]);
+	sprintf(cp, "X");
+	setenv("boot.nfsroot.server", inet_ntoa(rootip), 1);
+	setenv("boot.nfsroot.path", rootpath, 1);
+	setenv("boot.nfsroot.nfshandle", buf, 1);
+	sprintf(buf, "%d", mnt->nm_root_node->fhsize);
+	setenv("boot.nfsroot.nfshandlelen", buf, 1);
+
+	STAILQ_INSERT_TAIL(&mnt_list, mnt, nm_link);
+	*data = mnt;
+	return (0);
+
+out:
+	if (mnt != NULL) {
+		free(mnt->nm_dev);
+		free(mnt->nm_rootpath);
+		if (mnt->nm_dev_fd != -1)
+			close(mnt->nm_dev_fd);
+		free(mnt->nm_root_node);
+		free(mnt);
+	}
+	return (rv);
+}
+
+static int
+nfs_unmount(const char *dev, void *data)
+{
+	nfs_mount_t *mnt = data;
+
+	STAILQ_REMOVE(&mnt_list, mnt, nfs_mount, nm_link);
+	free(mnt->nm_dev);
+	free(mnt->nm_rootpath);
+	close(mnt->nm_dev_fd);
+	free(mnt->nm_root_node);
+	free(mnt);
+
+	return (0);
+}
+
 /*
  * Open a file.
  * return zero or error number
@@ -461,29 +601,30 @@ nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 int
 nfs_open(const char *upath, struct open_file *f)
 {
+	nfs_mount_t *mnt;
 	struct devdesc *dev;
-	struct iodesc *desc;
 	struct nfs_iodesc *currfd = NULL;
-	char buf[2 * NFS_V3MAXFHSIZE + 3];
-	uchar_t *fh;
-	char *cp;
-	int i;
 	struct nfs_iodesc *newfd = NULL;
+	const char *devname;
+	char *path = NULL;
+	char *rootdesc;
+	char *cp;
 	char *ncp;
-	int c;
 	char namebuf[NFS_MAXPATHLEN + 1];
 	char linkbuf[NFS_MAXPATHLEN + 1];
+	int c;
 	int nlinks = 0;
 	int error;
-	char *path = NULL;
 
 	if (netproto != NET_NFS)
 		return (EINVAL);
 
 	dev = f->f_devdata;
+	devname = devformat(dev);
+
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("nfs_open: %s (rootpath=%s)\n", upath, rootpath);
+		printf("%s: %s (rootpath=%s)\n", __func__,  upath, rootpath);
 #endif
 	if (!rootpath[0]) {
 		printf("no rootpath, no nfs\n");
@@ -493,39 +634,27 @@ nfs_open(const char *upath, struct open_file *f)
 	if (f->f_dev->dv_type != DEVT_NET)
 		return (EINVAL);
 
-	if (!(desc = socktodesc(*(int *)(dev->d_opendata))))
+	if (asprintf(&rootdesc, "nfs://%s%s", inet_ntoa(rootip),
+	    rootpath) < 0)
+		return (ENOMEM);
+
+	STAILQ_FOREACH(mnt, &mnt_list, nm_link) {
+		if (strcmp(devname, mnt->nm_dev) == 0 &&
+		    strcmp(rootdesc, mnt->nm_rootpath) == 0)
+			break;
+	}
+	free(rootdesc);
+	if (mnt == NULL)
 		return (EINVAL);
 
-	/* Bind to a reserved port. */
-	desc->myport = htons(--rpc_port);
-	desc->destip = rootip;
-	if ((error = nfs_getrootfh(desc, rootpath, &nfs_root_node.fhsize,
-	    nfs_root_node.fh)))
-		return (error);
-	nfs_root_node.fa.fa_type  = htonl(NFDIR);
-	nfs_root_node.fa.fa_mode  = htonl(0755);
-	nfs_root_node.fa.fa_nlink = htonl(2);
-	nfs_root_node.iodesc = desc;
-
-	fh = &nfs_root_node.fh[0];
-	buf[0] = 'X';
-	cp = &buf[1];
-	for (i = 0; i < nfs_root_node.fhsize; i++, cp += 2)
-		sprintf(cp, "%02x", fh[i]);
-	sprintf(cp, "X");
-	setenv("boot.nfsroot.server", inet_ntoa(rootip), 1);
-	setenv("boot.nfsroot.path", rootpath, 1);
-	setenv("boot.nfsroot.nfshandle", buf, 1);
-	sprintf(buf, "%d", nfs_root_node.fhsize);
-	setenv("boot.nfsroot.nfshandlelen", buf, 1);
-
+	set_nfs_read_size();
 	/* Allocate file system specific data structure */
-	currfd = malloc(sizeof (*newfd));
+	currfd = malloc(sizeof (*currfd));
 	if (currfd == NULL) {
 		error = ENOMEM;
 		goto out;
 	}
-	bcopy(&nfs_root_node, currfd, sizeof (*currfd));
+	bcopy(mnt->nm_root_node, currfd, sizeof (*currfd));
 	newfd = NULL;
 
 	cp = path = strdup(upath);
@@ -609,7 +738,7 @@ nfs_open(const char *upath, struct open_file *f)
 			 */
 			cp = namebuf;
 			if (*cp == '/')
-				bcopy(&nfs_root_node, currfd, sizeof (*currfd));
+				bcopy(mnt->nm_root_node, currfd, sizeof (*currfd));
 
 			free(newfd);
 			newfd = NULL;
@@ -636,7 +765,7 @@ out:
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("nfs_open: %s lookupfh failed: %s\n",
+		printf("%s: %s lookupfh failed: %s\n", __func__,
 		    path, strerror(error));
 #endif
 	free(currfd);
@@ -651,7 +780,7 @@ nfs_close(struct open_file *f)
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("nfs_close: fp=%#p\n", fp);
+		printf("%s: fp=%p\n", __func__, fp);
 #endif
 
 	free(fp);
@@ -672,7 +801,7 @@ nfs_read(struct open_file *f, void *buf, size_t size, size_t *resid)
 
 #ifdef NFS_DEBUG
 	if (debug)
-		printf("nfs_read: size=%zu off=%j\n", size,
+		printf("%s: size=%zu off=%jd\n", __func__, size,
 		    (intmax_t)fp->off);
 #endif
 	while (size > 0) {
@@ -682,14 +811,14 @@ nfs_read(struct open_file *f, void *buf, size_t size, size_t *resid)
 		if (cc == -1) {
 #ifdef NFS_DEBUG
 			if (debug)
-				printf("nfs_read: read: %s", strerror(errno));
+				printf("%s: read: %s\n", __func__, strerror(errno));
 #endif
 			return (errno);	/* XXX - from nfs_readdata */
 		}
 		if (cc == 0) {
 #ifdef NFS_DEBUG
 			if (debug)
-				printf("nfs_read: hit EOF unexpectantly");
+				printf("%s: hit EOF unexpectantly\n", __func__);
 #endif
 			goto ret;
 		}

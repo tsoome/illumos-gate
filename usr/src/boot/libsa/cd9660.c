@@ -682,6 +682,14 @@ cd9660_mount(const char *dev, const char *path, void **data)
 	cd9660_mnt_t *mnt;
 	struct open_file *f;
 	char *fs;
+	struct devdesc *dd;
+
+	if (devparse(&dd, dev, NULL) == 0) {
+		int dv_type = dd->d_dev->dv_type;
+		free(dd);
+		if (dv_type == DEVT_NET)
+			return (ENXIO);
+	}
 
 	errno = 0;
 	mnt = calloc(1, sizeof (*mnt));
