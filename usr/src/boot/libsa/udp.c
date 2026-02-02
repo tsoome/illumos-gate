@@ -74,10 +74,18 @@ process_udp(struct iodesc *d, void **pkt, void **payload, ssize_t n)
 			printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
 		}
 #endif
+		printf("%s: not for us: saddr %s (%d) != ",
+		    __func__, inet_ntoa(d->myip), ntohs(d->myport));
+		printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
 		free(ptr);
 		errno = EAGAIN; /* Call me again. */
 		return (-1);
 	}
+
+	printf("%s: saddr %s (%d) => ", __func__,
+	    inet_ntoa(ip->ip_src), ntohs(uh->uh_sport));
+	printf("%s (%d)\n",
+	    inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
 
 	hlen = ip->ip_hl << 2;
 	/* If there were ip options, make them go away */
