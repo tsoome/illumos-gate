@@ -55,7 +55,7 @@ enum net_proto {
 #define MACPY(s, d) bcopy((char *)s, (char *)d, 6)
 
 #define MAXTMO 120	/* seconds */
-#define MINTMO 2	/* seconds */
+#define MINTMO 5	/* seconds */
 
 #define FNAME_SIZE 128
 #define	IFNAME_SIZE 16
