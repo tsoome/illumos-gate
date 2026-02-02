@@ -101,15 +101,16 @@ static int	is_open = 0;
 
 struct tftp_handle {
 	struct iodesc  *iodesc;
+	char		*path;	/* saved for re-requests */
+	void		*pkt;
+	struct tftphdr	*tftp_hdr;
 	int		currblock;	/* contents of lastdata */
 	int		islastblock;	/* flag */
 	int		validsize;
 	int		off;
-	char		*path;	/* saved for re-requests */
-	unsigned int	tftp_blksize;
 	unsigned long	tftp_tsize;
-	void		*pkt;
-	struct tftphdr	*tftp_hdr;
+	unsigned long	tftp_xid;
+	unsigned int	tftp_blksize;
 };
 
 struct tftprecv_extra {
@@ -202,22 +203,24 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	case DATA: {
 		int got;
 
-		if (htons(t->th_block) < (ushort_t)d->xid) {
+		if (htons(t->th_block) < (ushort_t)h->tftp_xid) {
 			/*
 			 * Apparently our ACK was missed, re-send.
 			 */
+			printf("re-sending ACK %d\n", ntohs(t->th_block));
 			tftp_sendack(h, htons(t->th_block));
 			free(ptr);
 			return (-1);
 		}
-		if (htons(t->th_block) != (ushort_t)d->xid) {
+		if (htons(t->th_block) != (ushort_t)h->tftp_xid) {
 			/*
 			 * Packet from the future, drop this.
 			 */
+			printf("packet from the future %d != %d\n", (ushort_t)h->tftp_xid, ntohs(t->th_block));
 			free(ptr);
 			return (-1);
 		}
-		if (d->xid == 1) {
+		if (h->tftp_xid == 1) {
 			/*
 			 * First data packet from new port.
 			 */
@@ -250,7 +253,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		 * Unexpected OACK. TFTP transfer already in progress.
 		 * Drop the pkt.
 		 */
-		if (d->xid != 1) {
+		if (h->tftp_xid != 1) {
 			free(ptr);
 			return (-1);
 		}
@@ -334,9 +337,9 @@ tftp_makereq(struct tftp_handle *h)
 	bcopy("0", wtail, 2);
 	wtail += 2;
 
-	h->iodesc->myport = htons(tftpport + (getsecs() & 0x3ff));
+	h->iodesc->myport = htons(tftpport + (random() & 0x3ff));
 	h->iodesc->destport = htons(IPPORT_TFTP);
-	h->iodesc->xid = 1;	/* expected block */
+	h->tftp_xid = 1;	/* expected block */
 
 	h->currblock = 0;
 	h->islastblock = 0;
@@ -398,7 +401,8 @@ tftp_getnextblock(struct tftp_handle *h)
 	wbuf.t.th_block = htons((ushort_t)h->currblock);
 	wtail += 2;
 
-	h->iodesc->xid = h->currblock + 1;	/* expected block */
+	h->tftp_xid = h->currblock + 1;	/* expected block */
+	printf("%s: currblock: %d\n", __func__, (ushort_t)h->currblock);
 
 	pkt = NULL;
 	recv_extra.tftp_handle = h;
@@ -420,6 +424,7 @@ tftp_getnextblock(struct tftp_handle *h)
 
 	if (h->islastblock == 1) {
 		/* Send an ACK for the last block */
+		printf("%s: last block ack: %d\n", __func__, (ushort_t)h->currblock);
 		wbuf.t.th_block = htons((ushort_t)h->currblock);
 		sendudp(h->iodesc, &wbuf.t, wtail - (char *)&wbuf.t);
 	}
@@ -446,6 +451,7 @@ tftp_open(const char *path, struct open_file *f)
 	if (is_open)
 		return (EBUSY);
 
+	srandom(getsecs());
 	tftpfile = calloc(1, sizeof (*tftpfile));
 	if (!tftpfile)
 		return (ENOMEM);
