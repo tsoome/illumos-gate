@@ -206,6 +206,7 @@ net_close(struct open_file *f)
 	if (debug)
 		printf("%s: opens=%d\n", __func__, netdev_opens);
 #endif
+	printf("%s: opens=%d\n", __func__, netdev_opens);
 
 	dev = f->f_devdata;
 	dev->d_opendata = NULL;
