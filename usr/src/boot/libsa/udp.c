@@ -55,6 +55,45 @@
 #include "stand.h"
 #include "net.h"
 
+ssize_t
+process_udp(struct iodesc *d, void **pkt, void **payload, ssize_t n)
+{
+	struct ip *ip = *payload;
+	size_t hlen;
+	char *ptr = *pkt;
+	struct udphdr *uh;
+
+	uh = (struct udphdr *)((uintptr_t)ip + sizeof (*ip));
+
+	if ((d->myip.s_addr && ip->ip_dst.s_addr != d->myip.s_addr) ||
+	    ntohs(d->myport) != ntohs(uh->uh_dport)) {
+#ifdef NET_DEBUG
+		if (debug) {
+			printf("%s: not for us: saddr %s (%d) != ",
+			    __func__, inet_ntoa(d->myip), ntohs(d->myport));
+			printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
+		}
+#endif
+		free(ptr);
+		errno = EAGAIN; /* Call me again. */
+		return (-1);
+	}
+
+	hlen = ip->ip_hl << 2;
+	/* If there were ip options, make them go away */
+	if (hlen != sizeof (*ip)) {
+		bcopy(((uchar_t *)ip) + hlen, uh,
+		    ntohs(uh->uh_ulen) - hlen);
+		ip->ip_len = htons(sizeof (*ip));
+		n -= hlen - sizeof (*ip);
+	}
+
+	n = (n > (ntohs(ip->ip_len) - sizeof (*ip))) ?
+	    ntohs(ip->ip_len) - sizeof (*ip) : n;
+	*payload = uh;
+	return (n);
+}
+
 /* Caller must leave room for ethernet, ip and udp headers in front!! */
 ssize_t
 sendudp(struct iodesc *d, void *pkt, size_t len)

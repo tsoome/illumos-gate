@@ -197,15 +197,46 @@ ip_reasm_add(struct ip_reasm *ipr, void *pkt, struct ip *ip)
 }
 
 /*
+ * Check and process what we got.
+ */
+static ssize_t
+process_dgram(struct iodesc *d, uint8_t proto, void **pkt,
+    void **payload, ssize_t n)
+{
+	struct ip *ip = *payload;
+
+	if (proto != ip->ip_p) {
+		printf("%s: protocol mismatch: %u != %u\n", __func__,
+		    proto, ip->ip_p);
+	}
+
+	switch (ip->ip_p) {
+	case IPPROTO_UDP:
+		return (process_udp(d, pkt, payload, n));
+
+	case IPPROTO_TCP:
+		printf("%s: IPPROTO_TCP\n", __func__);
+		break;
+
+	case IPPROTO_ICMP:
+		printf("%s: IPPROTO_ICMP\n", __func__);
+		break;
+	}
+
+	free(*pkt);
+	errno = EAGAIN; /* Call me again. */
+	return (-1);
+}
+
+/*
  * Receive a IP packet and validate it is for us.
  */
 static ssize_t
-readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n)
+readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 {
 	struct ip *ip = *payload;
 	size_t hlen;
 	struct ether_header *eh;
-	struct udphdr *uh;
 	char *ptr = *pkt;
 	struct ip_reasm *ipr;
 	struct ip_queue *ipq, *last;
@@ -246,21 +277,6 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n)
 	morefrag = (ntohs(ip->ip_off) & IP_MF) == 0 ? false : true;
 	isfrag = morefrag || fragoffset != 0;
 
-	uh = (struct udphdr *)((uintptr_t)ip + sizeof (*ip));
-
-	if (d->myip.s_addr && ip->ip_dst.s_addr != d->myip.s_addr) {
-#ifdef NET_DEBUG
-		if (debug) {
-			printf("%s: not for us: saddr %s (%d) != %s (%d)\n",
-			    __func__, inet_ntoa(d->myip), ntohs(d->myport),
-			    inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
-		}
-#endif
-		free(ptr);
-		errno = EAGAIN;	/* Call me again. */
-		return (-1);
-	}
-
 	/* Unfragmented packet. */
 	if (!isfrag) {
 #ifdef NET_DEBUG
@@ -272,19 +288,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n)
 			    inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
 		}
 #endif
-		/* If there were ip options, make them go away */
-		if (hlen != sizeof (*ip)) {
-			bcopy(((uchar_t *)ip) + hlen, uh,
-			    ntohs(uh->uh_ulen) - hlen);
-			ip->ip_len = htons(sizeof (*ip));
-			n -= hlen - sizeof (*ip);
-		}
-
-		n = (n > (ntohs(ip->ip_len) - sizeof (*ip))) ?
-		    ntohs(ip->ip_len) - sizeof (*ip) : n;
-		*pkt = ptr;
-		*payload = (void *)((uintptr_t)ip + sizeof (*ip));
-		return (n);
+		return (process_dgram(d, proto, pkt, payload, n));
 	}
 
 	STAILQ_FOREACH(ipr, &ire_list, ip_next) {
@@ -411,7 +415,8 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n)
 
 	*pkt = ipr->ip_pkt;
 	ipr->ip_pkt = NULL;	/* Avoid free from ip_reasm_free() */
-	*payload = ptr;
+	ip = ipr->ip_hdr;
+	*payload = ip;
 
 	/* Clean up the reassembly list */
 	while ((ipr = STAILQ_FIRST(&ire_list)) != NULL) {
@@ -425,7 +430,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n)
 		    inet_ntoa(ip->ip_dst));
 	}
 #endif
-	return (n);
+	return (process_dgram(d, proto, pkt, payload, n));
 }
 
 /*
@@ -473,10 +478,9 @@ readip(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (etype == ETHERTYPE_IP) {
 			struct ip *ip = data;
 
-			if (ip->ip_v == IPVERSION &&	/* half char */
-			    ip->ip_p == proto) {
+			if (ip->ip_v == IPVERSION) {	/* half char */
 				errno = 0;
-				ret = readipv4(d, &ptr, &data, n);
+				ret = readipv4(d, &ptr, &data, n, proto);
 				if (ret >= 0) {
 					*pkt = ptr;
 					*payload = data;
@@ -504,6 +508,7 @@ readip(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	}
 	/* We've exhausted tleft; timeout */
 	errno = ETIMEDOUT;
+	printf("%s: timeout\n", __func__);
 #ifdef NET_DEBUG
 	if (debug) {
 		printf("%s: timeout\n", __func__);
