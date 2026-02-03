@@ -58,7 +58,7 @@
 
 
 struct in_addr servip;
-
+static int bp_xid = 0;
 static time_t	bot;
 
 static	char vm_rfc1048[4] = VM_RFC1048;
@@ -152,7 +152,7 @@ bootp(int sock)
 	bp->bp_op = BOOTREQUEST;
 	bp->bp_htype = 1;		/* 10Mb Ethernet (48 bits) */
 	bp->bp_hlen = 6;
-	bp->bp_xid = htonl(d->xid);
+	bp->bp_xid = htonl(bp_xid);
 	MACPY(d->myea, bp->bp_chaddr);
 	strncpy(bp->bp_file, bootfile, sizeof (bp->bp_file));
 	bcopy(vm_rfc1048, bp->bp_vend, sizeof (vm_rfc1048));
@@ -250,8 +250,8 @@ bootp(int sock)
 		gateip.s_addr = 0;
 	}
 
-	/* Bump xid so next request will be unique. */
-	++d->xid;
+	/* Bump bp_xid so next request will be unique. */
+	++bp_xid;
 	free(pkt);
 }
 
@@ -299,11 +299,11 @@ bootprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	if (debug)
 		printf("bootprecv: checked.  bp = %p, n = %zd\n", bp, n);
 #endif
-	if (bp->bp_xid != htonl(d->xid)) {
+	if (bp->bp_xid != htonl(bp_xid)) {
 #ifdef BOOTP_DEBUG
 		if (debug) {
 			printf("bootprecv: expected xid 0x%lx, got 0x%x\n",
-			    d->xid, ntohl(bp->bp_xid));
+			    bp_xid, ntohl(bp->bp_xid));
 		}
 #endif
 		goto bad;

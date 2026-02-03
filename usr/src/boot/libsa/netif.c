@@ -363,7 +363,6 @@ netif_close(int sock)
 	bzero(&s->myip, sizeof (s->myip));
 	s->destport = 0;
 	s->myport = 0;
-	s->xid = 0;
 	bzero(s->myea, sizeof (s->myea));
 	s->io_netif = NULL;
 

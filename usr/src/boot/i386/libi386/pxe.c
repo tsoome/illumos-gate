@@ -425,11 +425,6 @@ pxe_netif_init(struct iodesc *desc, void *machdep_hint __unused)
 		desc->myea[i] = mac[i];
 	}
 
-	if (bootp_response != NULL)
-		desc->xid = bootp_response->bp_xid;
-	else
-		desc->xid = 0;
-
 	bio_free(undi_info_p, sizeof (*undi_info_p));
 	undi_open_p = bio_alloc(sizeof (*undi_open_p));
 	if (undi_open_p == NULL)

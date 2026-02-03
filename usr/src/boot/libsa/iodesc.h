@@ -44,7 +44,6 @@ struct iodesc {
 	struct	in_addr myip;		/* local ip addr, net order */
 	u_short	destport;		/* dest. port, net order */
 	u_short	myport;			/* local port, net order */
-	u_long	xid;			/* transaction identification */
 	u_char	myea[6];		/* my ethernet address */
 	struct netif *io_netif;
 	int io_id;			/* descriptor id */
