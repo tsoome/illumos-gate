@@ -718,6 +718,12 @@ main(int argc, CHAR16 *argv[])
 	cons_probe();
 	efi_getsmap();
 
+#if defined(__amd64)
+	extern int efi_redirect_exceptions(void);
+
+	(void) efi_redirect_exceptions();
+#endif
+
 	if ((s = getenv("efi_com_speed")) != NULL) {
 		char *name;
 
