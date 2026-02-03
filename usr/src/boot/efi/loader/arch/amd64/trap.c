@@ -237,7 +237,7 @@ efi_setup_tss(struct region_descriptor *gdt, uint32_t loader_tss_idx,
 	return (1);
 }
 
-static int
+int
 efi_redirect_exceptions(void)
 {
 	int ist_use_table[NUM_IST];
