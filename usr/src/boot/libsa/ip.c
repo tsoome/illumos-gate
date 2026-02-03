@@ -204,11 +204,6 @@ process_dgram(struct iodesc *d, uint8_t proto, void **pkt,
 {
 	struct ip *ip = *payload;
 
-	if (proto != ip->ip_p) {
-		printf("%s: protocol mismatch: %u != %u\n", __func__,
-		    proto, ip->ip_p);
-	}
-
 	switch (ip->ip_p) {
 	case IPPROTO_UDP:
 		return (process_udp(d, pkt, payload, n));
