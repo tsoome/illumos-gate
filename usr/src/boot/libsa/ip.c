@@ -53,18 +53,9 @@
 
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
-#include <netinet/udp.h>
-#include <netinet/udp_var.h>
 
 #include "stand.h"
 #include "net.h"
-
-typedef STAILQ_HEAD(ipqueue, ip_queue) ip_queue_t;
-struct ip_queue {
-	void		*ipq_pkt;
-	struct ip	*ipq_hdr;
-	STAILQ_ENTRY(ip_queue) ipq_next;
-};
 
 /*
  * Fragment re-assembly queue.
@@ -131,36 +122,31 @@ sendip(struct iodesc *d, void *pkt, size_t len, uint8_t proto)
 static void
 ip_reasm_free(struct ip_reasm *ipr)
 {
-	struct ip_queue *ipq;
+	struct io_buffer *iob;
 
-	while ((ipq = STAILQ_FIRST(&ipr->ip_queue)) != NULL) {
-		STAILQ_REMOVE_HEAD(&ipr->ip_queue, ipq_next);
-		free(ipq->ipq_pkt);
-		free(ipq);
+	while ((iob = STAILQ_FIRST(&ipr->ip_queue)) != NULL) {
+		STAILQ_REMOVE_HEAD(&ipr->ip_queue, io_next);
+		/* let iob know its not in any queue */
+		iob->io_queue = NULL;
+		free_iob(iob);
 	}
 	free(ipr->ip_pkt);
 	free(ipr);
 }
 
 static bool
-ip_reasm_add(struct ip_reasm *ipr, void *pkt, struct ip *ip)
+ip_reasm_add(struct ip_reasm *ipr, struct io_buffer *iob, struct ip *ip)
 {
-	struct ip_queue *ipq, *p;
+	struct io_buffer *ipq;
 	uint16_t off_q, off_ip;
 
-	if ((ipq = calloc(1, sizeof (*ipq))) == NULL)
-		return (false);
-
-	ipq->ipq_pkt = pkt;
-	ipq->ipq_hdr = ip;
-
-	STAILQ_FOREACH(p, &ipr->ip_queue, ipq_next) {
-		off_q = ntohs(p->ipq_hdr->ip_off) & IP_OFFMASK;
+	STAILQ_FOREACH(ipq, &ipr->ip_queue, io_next) {
+		struct ip *hdr = ipq->io_tail;
+		off_q = ntohs(hdr->ip_off) & IP_OFFMASK;
 		off_ip = ntohs(ip->ip_off) & IP_OFFMASK;
 
 		if (off_q == off_ip) {	/* duplicate */
-			free(pkt);
-			free(ipq);
+			free_iob(iob);
 			return (true);
 		}
 
@@ -174,39 +160,148 @@ ip_reasm_add(struct ip_reasm *ipr, void *pkt, struct ip *ip)
 
 		/*
 		 * p in queue is smaller than ip, check if we need to put
-		 * ip after p or after p->next.
+		 * ip after ipq or after ipq->next.
 		 */
-		struct ip_queue *next = STAILQ_NEXT(p, ipq_next);
+		struct io_buffer *next = STAILQ_NEXT(ipq, io_next);
 		if (next == NULL) {
-			/* insert after p */
-			STAILQ_INSERT_AFTER(&ipr->ip_queue, p, ipq, ipq_next);
+			/* insert after ipq */
+			iob->io_queue = &ipr->ip_queue;
+			STAILQ_INSERT_AFTER(&ipr->ip_queue, ipq, iob, io_next);
 			return (true);
 		}
 
-		off_q = ntohs(next->ipq_hdr->ip_off) & IP_OFFMASK;
+		hdr = next->io_tail;
+		off_q = ntohs(hdr->ip_off) & IP_OFFMASK;
 		if (off_ip < off_q) {
-			/* next fragment offset is larger, insert after p. */
-			STAILQ_INSERT_AFTER(&ipr->ip_queue, p, ipq, ipq_next);
+			/* next fragment offset is larger, insert after ipq. */
+			iob->io_queue = &ipr->ip_queue;
+			STAILQ_INSERT_AFTER(&ipr->ip_queue, ipq, iob, io_next);
 			return (true);
 		}
 		/* next fragment offset is smaller, loop */
 	}
-	STAILQ_INSERT_HEAD(&ipr->ip_queue, ipq, ipq_next);
+	iob->io_queue = &ipr->ip_queue;
+	STAILQ_INSERT_HEAD(&ipr->ip_queue, iob, io_next);
 	return (true);
+}
+
+/*
+ * Check if our reassembly queue is complete.
+ */
+static int
+ip_reasm_check(struct ip_reasm *ipr, size_t *sizep)
+{
+	struct ip *hdr;
+	struct io_buffer *ipq;
+	size_t n;
+	uint16_t fragoffset;
+
+	hdr = NULL;
+	n = 0;
+
+	STAILQ_FOREACH(ipq, &ipr->ip_queue, io_next) {
+		hdr = ipq->io_tail;
+
+		fragoffset = (ntohs(hdr->ip_off) & IP_OFFMASK) * 8;
+		if (fragoffset != n) {
+#ifdef NET_DEBUG
+			if (debug) {
+				printf("%s: need more fragments %d %s -> ",
+				    __func__, ntohs(hdr->ip_id),
+				    inet_ntoa(hdr->ip_src));
+				printf("%s offset=%d MF=%d\n",
+				    inet_ntoa(hdr->ip_dst),
+				    fragoffset,
+				    (ntohs(hdr->ip_off) & IP_MF) != 0);
+			}
+#endif
+			errno = EAGAIN;
+			return (-1);
+		}
+
+		n += ntohs(hdr->ip_len) - (hdr->ip_hl << 2);
+	}
+
+	if (hdr == NULL ||
+	    (ntohs(hdr->ip_off) & IP_MF) != 0) {
+		/* We should not really get here. */
+		errno = EAGAIN;
+		return (-1);
+	}
+	*sizep = n;
+	return (0);
+}
+
+static struct io_buffer *
+ip_reasm_complete(ip_queue_t *ipq, size_t len)
+{
+	struct io_buffer *iob, *pkt;
+	struct ip *hdr;
+	size_t n, size, hlen;
+	void *ptr;
+
+	pkt = STAILQ_FIRST(ipq);
+
+	/*
+	 * we take head space from first buffer from queue to
+	 * get reserved space + data before ip packet referenced
+	 * by io_tail member.
+	 */
+	hdr = pkt->io_tail;
+	hlen = hdr->ip_hl << 2;
+
+	size = len + hlen + (pkt->io_tail - pkt->io_head);
+	iob = alloc_iob(size);
+	/*
+	 * copy buffer from our first packet, from beginning to
+	 * ip header included.
+	 */
+	bcopy(pkt->io_head, iob->io_head, pkt->io_tail - pkt->io_head + hlen);
+	iob_reserve(iob, pkt->io_data - pkt->io_head);
+	/*
+	 * Now iob->io_data points to our ethernet header.
+	 */
+	/* Move to IP header */
+	iob_put(iob, ETHER_HDR_LEN);
+	hdr = iob->io_tail;
+	hdr->ip_len = htons(len + (hdr->ip_hl << 2));
+	hdr->ip_off = 0;
+	hdr->ip_sum = 0;
+	hdr->ip_sum = in_cksum(hdr, hdr->ip_hl << 2);
+
+	ptr = iob->io_tail;
+	n = hlen;
+
+	while ((pkt = STAILQ_FIRST(ipq)) != NULL) {
+		STAILQ_REMOVE_HEAD(ipq, io_next);
+		hdr = pkt->io_tail;
+
+		/* move to ip data */
+		hlen = hdr->ip_hl << 2;
+		iob_put(pkt, hlen);
+		size = ntohs(hdr->ip_len) - hlen;
+		bcopy(pkt->io_tail, ptr + n, size);
+		n += size;
+
+		pkt->io_queue = NULL;
+		free_iob(pkt);
+	}
+
+	return (iob);
 }
 
 /*
  * Check and process what we got.
  */
 static ssize_t
-process_dgram(struct iodesc *d, uint8_t proto, void **pkt,
+process_dgram(struct iodesc *d, uint8_t proto, struct io_buffer *iob,
     void **payload, ssize_t n)
 {
 	struct ip *ip = *payload;
 
 	switch (ip->ip_p) {
 	case IPPROTO_UDP:
-		return (process_udp(d, pkt, payload, n));
+		return (process_udp(d, iob, payload, n));
 
 	case IPPROTO_TCP:
 		printf("%s: IPPROTO_TCP\n", __func__);
@@ -217,7 +312,7 @@ process_dgram(struct iodesc *d, uint8_t proto, void **pkt,
 		break;
 	}
 
-	free(*pkt);
+	free_iob(iob);
 	errno = EAGAIN; /* Call me again. */
 	return (-1);
 }
@@ -226,19 +321,18 @@ process_dgram(struct iodesc *d, uint8_t proto, void **pkt,
  * Receive a IP packet and validate it is for us.
  */
 static ssize_t
-readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
+readipv4(struct iodesc *d, struct io_buffer **iobp, void **payload,
+    ssize_t n, uint8_t proto)
 {
 	struct ip *ip = *payload;
-	size_t hlen;
-	struct ether_header *eh;
-	char *ptr = *pkt;
+	size_t hlen, len;
 	struct ip_reasm *ipr;
-	struct ip_queue *ipq, *last;
+	struct io_buffer *iob = *iobp;
 	bool morefrag, isfrag;
 	uint16_t fragoffset;
 
 	if (n < sizeof (*ip)) {
-		free(ptr);
+		free_iob(iob);
 		errno = EAGAIN;	/* Call me again. */
 		return (-1);
 	}
@@ -250,7 +344,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 		if (debug)
 			printf("%s: short hdr or bad cksum.\n", __func__);
 #endif
-		free(ptr);
+		free_iob(iob);
 		errno = EAGAIN;	/* Call me again. */
 		return (-1);
 	}
@@ -262,7 +356,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 			    __func__, n, ntohs(ip->ip_len));
 		}
 #endif
-		free(ptr);
+		free_iob(iob);
 		errno = EAGAIN;	/* Call me again. */
 		return (-1);
 	}
@@ -280,7 +374,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 			printf("%s\n", inet_ntoa(ip->ip_dst));
 		}
 #endif
-		return (process_dgram(d, proto, pkt, payload, n));
+		return (process_dgram(d, proto, iob, payload, n));
 	}
 
 	STAILQ_FOREACH(ipr, &ire_list, ip_next) {
@@ -294,7 +388,7 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	/* Allocate new reassembly entry */
 	if (ipr == NULL) {
 		if ((ipr = calloc(1, sizeof (*ipr))) == NULL) {
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
 
@@ -318,10 +412,11 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	 * NOTE: with ip_reasm_add() ptr will be stored in reassembly
 	 * queue and we can not free it without destroying the queue.
 	 */
-	if (!ip_reasm_add(ipr, ptr, ip)) {
+	if (!ip_reasm_add(ipr, iob, ip)) {
+		/* Error. Clean it up and start again. */
 		STAILQ_REMOVE(&ire_list, ipr, ip_reasm, ip_next);
 		free(ipr);
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -329,92 +424,25 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 	 * Walk the packet list in reassembly queue, if we got all the
 	 * fragments, build the packet.
 	 */
-	n = 0;
-	last = NULL;
-	STAILQ_FOREACH(ipq, &ipr->ip_queue, ipq_next) {
-		fragoffset = (ntohs(ipq->ipq_hdr->ip_off) & IP_OFFMASK) * 8;
-		if (fragoffset != n) {
-#ifdef NET_DEBUG
-			if (debug) {
-				printf("%s: need more fragments %d %s -> ",
-				    __func__, ntohs(ipq->ipq_hdr->ip_id),
-				    inet_ntoa(ipq->ipq_hdr->ip_src));
-				printf("%s offset=%d MF=%d\n",
-				    inet_ntoa(ipq->ipq_hdr->ip_dst),
-				    fragoffset,
-				    (ntohs(ipq->ipq_hdr->ip_off) & IP_MF) != 0);
-			}
-#endif
-			errno = EAGAIN;
-			return (-1);
-		}
-
-		n += ntohs(ipq->ipq_hdr->ip_len) - (ipq->ipq_hdr->ip_hl << 2);
-		last = ipq;
+	int rv = ip_reasm_check(ipr, &len);
+	if (rv != 0) {
+		/* Nope, still missing some. */
+		return (rv);
 	}
 
-	/* complete queue has last packet with MF 0 */
-	if ((ntohs(last->ipq_hdr->ip_off) & IP_MF) != 0) {
-#ifdef NET_DEBUG
-		if (debug) {
-			printf("%s: need more fragments %d %s -> ",
-			    __func__, ntohs(last->ipq_hdr->ip_id),
-			    inet_ntoa(last->ipq_hdr->ip_src));
-			printf("%s offset=%d MF=%d\n",
-			    inet_ntoa(last->ipq_hdr->ip_dst),
-			    (ntohs(last->ipq_hdr->ip_off) & IP_OFFMASK) * 8,
-			    (ntohs(last->ipq_hdr->ip_off) & IP_MF) != 0);
-		}
-#endif
-		errno = EAGAIN;
+	/*
+	 * Allocate iob and copy over all fragments.
+	 */
+	iob = ip_reasm_complete(&ipr->ip_queue, len);
+	STAILQ_REMOVE(&ire_list, ipr, ip_reasm, ip_next);
+	ip_reasm_free(ipr);
+	if (iob == NULL) {
 		return (-1);
 	}
 
-	ipr->ip_total_size = n + sizeof (*ip) + sizeof (struct ether_header);
-	ipr->ip_pkt = malloc(ipr->ip_total_size + 2);
-	if (ipr->ip_pkt == NULL) {
-		STAILQ_REMOVE(&ire_list, ipr, ip_reasm, ip_next);
-		ip_reasm_free(ipr);
-		return (-1);
-	}
+	*iobp = iob;
+	*payload = iob->io_tail;
 
-	ipq = STAILQ_FIRST(&ipr->ip_queue);
-	/* Fabricate ethernet header */
-	eh = (struct ether_header *)((uintptr_t)ipr->ip_pkt + 2);
-	bcopy((void *)((uintptr_t)ipq->ipq_pkt + 2), eh, sizeof (*eh));
-
-	/* Fabricate IP header */
-	ipr->ip_hdr = (struct ip *)((uintptr_t)eh + sizeof (*eh));
-	bcopy(ipq->ipq_hdr, ipr->ip_hdr, sizeof (*ipr->ip_hdr));
-	ipr->ip_hdr->ip_hl = sizeof (*ipr->ip_hdr) >> 2;
-	ipr->ip_hdr->ip_len = htons(n + sizeof (*ip));
-	ipr->ip_hdr->ip_sum = 0;
-	ipr->ip_hdr->ip_sum = in_cksum(ipr->ip_hdr, sizeof (*ipr->ip_hdr));
-
-	n = sizeof (*ipr->ip_hdr);
-	ptr = (char *)((uintptr_t)ipr->ip_hdr);
-	STAILQ_FOREACH(ipq, &ipr->ip_queue, ipq_next) {
-		char *data;
-		size_t len;
-
-		hlen = ipq->ipq_hdr->ip_hl << 2;
-		len = ntohs(ipq->ipq_hdr->ip_len) - hlen;
-		data = (char *)((uintptr_t)ipq->ipq_hdr + hlen);
-
-		bcopy(data, ptr + n, len);
-		n += len;
-	}
-
-	*pkt = ipr->ip_pkt;
-	ipr->ip_pkt = NULL;	/* Avoid free from ip_reasm_free() */
-	ip = ipr->ip_hdr;
-	*payload = ip;
-
-	/* Clean up the reassembly list */
-	while ((ipr = STAILQ_FIRST(&ire_list)) != NULL) {
-		STAILQ_REMOVE_HEAD(&ire_list, ip_next);
-		ip_reasm_free(ipr);
-	}
 #ifdef NET_DEBUG
 	if (debug) {
 		printf("%s: completed fragments ID=%d %s -> ",
@@ -422,14 +450,14 @@ readipv4(struct iodesc *d, void **pkt, void **payload, ssize_t n, uint8_t proto)
 		printf("%s\n", inet_ntoa(ip->ip_dst));
 	}
 #endif
-	return (process_dgram(d, proto, pkt, payload, n));
+	return (process_dgram(d, proto, iob, payload, n));
 }
 
 /*
  * Receive a IP packet.
  */
 ssize_t
-readip(struct iodesc *d, void **pkt, void **payload, time_t tleft,
+readip(struct iodesc *d, struct io_buffer **pkt, void **payload, time_t tleft,
     uint8_t proto)
 {
 	time_t t;
@@ -439,25 +467,25 @@ readip(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	while ((getsecs() - t) < tleft) {
 		ssize_t n;
 		uint16_t etype;	/* host order */
-		void *ptr = NULL;
+		struct io_buffer *iob = NULL;
 		void *data = NULL;
 
 		errno = 0;
-		n = readether(d, &ptr, &data, tleft, &etype);
+		n = readether(d, &iob, &data, tleft, &etype);
 		if (n == -1) {
-			free(ptr);
+			free_iob(iob);
 			continue;
 		}
 		/* Ethernet address checks are done in readether() */
-
 		if (etype == ETHERTYPE_IP) {
 			struct ip *ip = data;
 
 			if (ip->ip_v == IPVERSION) {	/* half char */
 				errno = 0;
-				ret = readipv4(d, &ptr, &data, n, proto);
+
+				ret = readipv4(d, &iob, &data, n, proto);
 				if (ret >= 0) {
-					*pkt = ptr;
+					*pkt = iob;
 					*payload = data;
 					return (ret);
 				}
@@ -476,14 +504,13 @@ readip(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 				    __func__, ip->ip_v, ip->ip_p);
 			}
 #endif
-			free(ptr);
+			free_iob(iob);
 			continue;
 		}
-		free(ptr);
+		free_iob(iob);
 	}
 	/* We've exhausted tleft; timeout */
 	errno = ETIMEDOUT;
-	printf("%s: timeout\n", __func__);
 #ifdef NET_DEBUG
 	if (debug) {
 		printf("%s: timeout\n", __func__);

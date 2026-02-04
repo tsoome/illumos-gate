@@ -42,7 +42,6 @@
 
 #include <string.h>
 
-#define	BOOTP_DEBUGxx
 #define	SUPPORT_DHCP
 
 #define	DHCP_ENV_NOVENDOR	1	/* do not parse vendor options */
@@ -58,7 +57,7 @@
 
 
 struct in_addr servip;
-static int bp_xid = 0;
+static ulong_t bp_xid = 0;
 static time_t	bot;
 
 static	char vm_rfc1048[4] = VM_RFC1048;
@@ -68,7 +67,8 @@ static	char vm_cmu[4] = VM_CMU;
 
 /* Local forwards */
 static	ssize_t bootpsend(struct iodesc *, void *, size_t);
-static	ssize_t bootprecv(struct iodesc *, void **, void **, time_t, void *);
+static	ssize_t bootprecv(struct iodesc *, struct io_buffer **, void **,
+    time_t, void *);
 static	int vend_rfc1048(uchar_t *, uint_t);
 #ifdef BOOTP_VEND_CMU
 static	void vend_cmu(uchar_t *);
@@ -121,7 +121,7 @@ bootp_fill_request(unsigned char *bp_vend)
 void
 bootp(int sock)
 {
-	void *pkt;
+	struct io_buffer *iob;
 	struct iodesc *d;
 	struct bootp *bp;
 	struct {
@@ -175,8 +175,9 @@ bootp(int sock)
 	dhcp_ok = 0;
 #endif
 
+	iob = NULL;
 	if (sendrecv(d, bootpsend, bp, sizeof (*bp),
-	    bootprecv, &pkt, (void **)&rbootp, NULL) == -1) {
+	    bootprecv, &iob, (void **)&rbootp, NULL) == -1) {
 		printf("bootp: no reply\n");
 		return;
 	}
@@ -199,9 +200,10 @@ bootp(int sock)
 
 		expected_dhcpmsgtype = DHCPACK;
 
-		free(pkt);
+		free_iob(iob);
+		iob = NULL;
 		if (sendrecv(d, bootpsend, bp, sizeof (*bp),
-		    bootprecv, &pkt, (void **)&rbootp, NULL) == -1) {
+		    bootprecv, &iob, (void **)&rbootp, NULL) == -1) {
 			printf("DHCPREQUEST failed\n");
 			return;
 		}
@@ -252,7 +254,7 @@ bootp(int sock)
 
 	/* Bump bp_xid so next request will be unique. */
 	++bp_xid;
-	free(pkt);
+	free_iob(iob);
 }
 
 /* Transmit a bootp request */
@@ -278,20 +280,20 @@ bootpsend(struct iodesc *d, void *pkt, size_t len)
 }
 
 static ssize_t
-bootprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
-    void *extra __unused)
+bootprecv(struct iodesc *d, struct io_buffer **pkt, void **payload,
+    time_t tleft, void *extra __unused)
 {
 	ssize_t n;
 	struct bootp *bp;
-	void *ptr;
+	struct io_buffer *iob;
 
 #ifdef BOOTP_DEBUG
 	if (debug)
 		printf("bootp_recvoffer: called\n");
 #endif
 
-	ptr = NULL;
-	n = readudp(d, &ptr, (void **)&bp, tleft);
+	iob = NULL;
+	n = readudp(d, &iob, (void **)&bp, tleft);
 	if (n == -1 || n < sizeof (struct bootp) - BOOTP_VENDSIZE)
 		goto bad;
 
@@ -339,11 +341,11 @@ bootprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	else
 		printf("bootprecv: unknown vendor 0x%lx\n", (long)bp->bp_vend);
 
-	*pkt = ptr;
+	*pkt = iob;
 	*payload = bp;
 	return (n);
 bad:
-	free(ptr);
+	free_iob(iob);
 	errno = 0;
 	return (-1);
 }

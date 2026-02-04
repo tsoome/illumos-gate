@@ -85,26 +85,26 @@ sendether(struct iodesc *d, void *pkt, size_t len, uint8_t *dea, int etype)
  * data.
  */
 ssize_t
-readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
-    uint16_t *etype)
+readether(struct iodesc *d, struct io_buffer **pkt, void **payload,
+    time_t tleft, uint16_t *etype)
 {
 	ssize_t n;
 	struct ether_header *eh;
-	void *ptr;
+	struct io_buffer *iob;
 
 #ifdef ETHER_DEBUG
 	if (debug)
 		printf("%s: called\n", __func__);
 #endif
 
-	ptr = NULL;
-	n = netif_get(d, &ptr, tleft);
+	iob = NULL;
+	n = netif_get(d, &iob, tleft);
 	if (n == -1 || n < sizeof (*eh)) {
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
-	eh = (struct ether_header *)((uintptr_t)ptr + ETHER_ALIGN);
+	eh = iob_put(iob, sizeof (*eh));
 	/* Validate Ethernet address. */
 	if (bcmp(d->myea, eh->ether_dhost, 6) != 0 &&
 	    bcmp(bcea, eh->ether_dhost, 6) != 0) {
@@ -113,12 +113,12 @@ readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 			printf("%s: not ours (ea=%s)\n", __func__,
 			    ether_sprintf(eh->ether_dhost));
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
-	*pkt = ptr;
-	*payload = (void *)((uintptr_t)eh + sizeof (*eh));
+	*pkt = iob;
+	*payload = iob->io_tail;
 	*etype = ntohs(eh->ether_type);
 
 	n -= sizeof (*eh);
@@ -128,13 +128,13 @@ readether(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		struct arphdr *ah = *payload;
 
 		if (ah->ar_op == htons(ARPOP_REQUEST)) {
-#ifdef NET_DEBUG
+#ifdef ETHER_DEBUG
 			if (debug)
 				printf("%s: ARP request\n", __func__);
 #endif
 			arp_reply(d, ah);
 			n = -1;
-			free(ptr);
+			free_iob(iob);
 			*pkt = NULL;
 		}
 	}

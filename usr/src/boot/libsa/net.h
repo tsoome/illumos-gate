@@ -40,6 +40,7 @@
 #endif
 
 #include "iodesc.h"
+#include "iobuf.h"
 
 #define BA { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }
 
@@ -101,18 +102,18 @@ int	rarp_getipaddress(int);
 /* Link functions: */
 ssize_t sendether(struct iodesc *d, void *pkt, size_t len,
 			u_char *dea, int etype);
-ssize_t readether(struct iodesc *, void **, void **, time_t, u_int16_t *);
+ssize_t readether(struct iodesc *, struct io_buffer **, void **, time_t,
+    u_int16_t *);
 
 ssize_t	sendip(struct iodesc *, void *, size_t, uint8_t);
-ssize_t	readip(struct iodesc *, void **, void **, time_t, uint8_t);
+ssize_t	readip(struct iodesc *, struct io_buffer **, void **, time_t, uint8_t);
 ssize_t	sendudp(struct iodesc *, void *, size_t);
-ssize_t	readudp(struct iodesc *, void **, void **, time_t);
+ssize_t	readudp(struct iodesc *, struct io_buffer **, void **, time_t);
 ssize_t	sendrecv(struct iodesc *,
-		      ssize_t (*)(struct iodesc *, void *, size_t),
-			void *, size_t,
-		        ssize_t (*)(struct iodesc *, void **, void **, time_t,
-			  void *),
-			void **, void **, void *);
+    ssize_t (*)(struct iodesc *, void *, size_t),
+    void *, size_t,
+    ssize_t (*)(struct iodesc *, struct io_buffer **, void **, time_t, void *),
+    struct io_buffer **, void **, void *);
 
 /* bootp/DHCP */
 void	bootp(int);
@@ -124,6 +125,7 @@ char	*inet_ntoa(struct in_addr);
 char	*intoa(n_long);		/* similar to inet_ntoa */
 n_long	inet_addr(char *);
 
-extern ssize_t process_udp(struct iodesc *, void **, void **, ssize_t);
+extern ssize_t process_udp(struct iodesc *, struct io_buffer *, void **,
+    ssize_t);
 
 #endif	/* ! _STAND_NET_H */

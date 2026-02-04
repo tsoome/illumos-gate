@@ -216,7 +216,7 @@ netif_detach(struct netif *nif)
 }
 
 ssize_t
-netif_get(struct iodesc *desc, void **pkt, time_t timo)
+netif_get(struct iodesc *desc, struct io_buffer **pkt, time_t timo)
 {
 #ifdef NETIF_DEBUG
 	struct netif *nif = desc->io_netif;

@@ -172,7 +172,7 @@ SRCS +=	$(SASRC)/closeall.c $(SASRC)/dev.c \
 	$(SASRC)/write.c $(SASRC)/readdir.c $(SASRC)/mount.c
 
 OBJECTS += closeall.o dev.o ioctl.o nullfs.o stat.o fstat.o close.o lseek.o \
-	open.o read.o write.o readdir.o mount.o
+	open.o read.o write.o readdir.o mount.o iobuf.o
 
 # SMBios routines
 SRCS += smbios.c

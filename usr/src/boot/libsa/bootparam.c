@@ -126,7 +126,7 @@ bp_whoami(int sockfd)
 	} sdata;
 	char *send_tail, *recv_head;
 	struct iodesc *d;
-	void *pkt;
+	struct io_buffer *iob;
 	int len, x, rc;
 
 	RPC_PRINTF(("bp_whoami: myip=%s\n", inet_ntoa(myip)));
@@ -158,9 +158,9 @@ bp_whoami(int sockfd)
 	d->destip.s_addr = INADDR_BROADCAST;	/* XXX: subnet bcast? */
 	/* rpc_call will set d->destport */
 
-	pkt = NULL;
+	iob = NULL;
 	len = rpc_call(d, PMAPPROG, PMAPVERS, PMAPPROC_CALLIT,
-	    args, send_tail - (char*)args, (void **)&repl, &pkt);
+	    args, send_tail - (char*)args, (void **)&repl, &iob);
 	if (len < 8) {
 		printf("bootparamd: 'whoami' call failed\n");
 		goto done;
@@ -218,7 +218,7 @@ bp_whoami(int sockfd)
 	/* success */
 	rc = 0;
 done:
-	free(pkt);
+	free_iob(iob);
 	return(rc);
 }
 
@@ -237,7 +237,7 @@ bp_getfile(int sockfd, char *key, struct in_addr *serv_addr, char *pathname)
 		n_long	h[RPC_HEADER_WORDS];
 		n_long  d[64];
 	} sdata;
-	void *pkt;
+	struct io_buffer *iob;
 	char serv_name[FNAME_SIZE];
 	char *rdata, *send_tail;
 	/* misc... */
@@ -271,11 +271,11 @@ bp_getfile(int sockfd, char *key, struct in_addr *serv_addr, char *pathname)
 	d->myport = htons(--rpc_port);
 	d->destip   = bp_server_addr;
 	/* rpc_call will set d->destport */
-	pkt = NULL;
+	iob = NULL;
 	rlen = rpc_call(d,
 		BOOTPARAM_PROG, BOOTPARAM_VERS, BOOTPARAM_GETFILE,
 		sdata.d, send_tail - (char*)sdata.d,
-		(void **)&rdata, &pkt);
+		(void **)&rdata, &iob);
 	if (rlen < 4) {
 		RPC_PRINTF(("bp_getfile: short reply\n"));
 		errno = EBADRPC;
@@ -309,7 +309,7 @@ bp_getfile(int sockfd, char *key, struct in_addr *serv_addr, char *pathname)
 	/* success */
 	rc = 0;
 done:
-	free(pkt);
+	free_iob(iob);
 	return(rc);
 }
 

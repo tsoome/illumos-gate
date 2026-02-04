@@ -96,7 +96,8 @@ struct rpc_reply {
 };
 
 /* Local forwards */
-static	ssize_t recvrpc(struct iodesc *, void **, void **, time_t, void *);
+static	ssize_t recvrpc(struct iodesc *, struct io_buffer **, void **,
+    time_t, void *);
 static	int rpc_getport(struct iodesc *, n_long, n_long);
 
 int rpc_xid;
@@ -108,14 +109,14 @@ int rpc_port = 0x400;	/* predecrement */
  */
 ssize_t
 rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
-	void *sdata, size_t slen, void **rdata, void **pkt)
+	void *sdata, size_t slen, void **rdata, struct io_buffer **pkt)
 {
 	ssize_t cc, rsize;
 	struct auth_info *auth;
 	struct rpc_call *call;
 	struct rpc_reply *reply;
 	char *send_head, *send_tail;
-	void *ptr;
+	struct io_buffer *iob;
 	n_long x;
 	int port;	/* host order */
 
@@ -163,10 +164,10 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 	call->rp_vers = htonl(vers);
 	call->rp_proc = htonl(proc);
 
-	ptr = NULL;
+	iob = NULL;
 	cc = sendrecv(d,
 	    sendudp, send_head, send_tail - send_head,
-	    recvrpc, &ptr, (void **)&reply, NULL);
+	    recvrpc, &iob, (void **)&reply, NULL);
 
 #ifdef RPC_DEBUG
 	if (debug)
@@ -177,7 +178,7 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 
 	if (cc <= sizeof(*reply)) {
 		errno = EBADRPC;
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -193,20 +194,21 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
 			printf("callrpc: reply auth != NULL\n");
 #endif
 		errno = EBADRPC;
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 	x = ntohl(reply->rp_u.rpu_rok.rok_status);
 	if (x != 0) {
 		printf("callrpc: error = %ld\n", (long)x);
 		errno = EBADRPC;
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
 	rsize = cc - sizeof(*reply);
-	*rdata = (void *)((uintptr_t)reply + sizeof(*reply));
-	*pkt = ptr;
+	iob_put(iob, sizeof(*reply));
+	*rdata = iob->io_tail;
+	*pkt = iob;
 	return (rsize);
 }
 
@@ -216,10 +218,10 @@ rpc_call(struct iodesc *d, n_long prog, n_long vers, n_long proc,
  * Remaining checks are done by callrpc
  */
 static ssize_t
-recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
+recvrpc(struct iodesc *d, struct io_buffer **pkt, void **payload, time_t tleft,
     void *extra __unused)
 {
-	void *ptr;
+	struct io_buffer *iob;
 	struct rpc_reply *reply;
 	ssize_t	n;
 	int	x;
@@ -230,10 +232,10 @@ recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		printf("recvrpc: called\n");
 #endif
 
-	ptr = NULL;
-	n = readudp(d, &ptr, (void **)&reply, tleft);
+	iob = NULL;
+	n = readudp(d, &iob, (void **)&reply, tleft);
 	if (n <= (4 * 4)) {
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -243,7 +245,7 @@ recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (debug)
 			printf("recvrpc: rp_xid %d != xid %d\n", x, rpc_xid);
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -253,7 +255,7 @@ recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (debug)
 			printf("recvrpc: rp_direction %d != REPLY\n", x);
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -261,11 +263,11 @@ recvrpc(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 	if (x != RPC_MSGACCEPTED) {
 		errno = ntohl(reply->rp_u.rpu_errno);
 		printf("recvrpc: reject, astat=%d, errno=%d\n", x, errno);
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
-	*pkt = ptr;
+	*pkt = iob;
 	*payload = reply;
 	/* Return data count (thus indicating success) */
 	return (n);
@@ -384,7 +386,7 @@ rpc_getport(struct iodesc *d, n_long prog, n_long vers)
 		n_long	h[RPC_HEADER_WORDS];
 		struct args d;
 	} sdata;
-	void *pkt;
+	struct io_buffer *iob;
 	ssize_t cc;
 	int port;
 
@@ -409,18 +411,18 @@ rpc_getport(struct iodesc *d, n_long prog, n_long vers)
 	args->vers = htonl(vers);
 	args->proto = htonl(IPPROTO_UDP);
 	args->port = 0;
-	pkt = NULL;
+	iob = NULL;
 
 	cc = rpc_call(d, PMAPPROG, PMAPVERS, PMAPPROC_GETPORT,
-	    args, sizeof(*args), (void **)&res, &pkt);
+	    args, sizeof(*args), (void **)&res, &iob);
 	if (cc < sizeof(*res)) {
 		printf("getport: %s", strerror(errno));
 		errno = EBADRPC;
-		free(pkt);
+		free_iob(iob);
 		return (-1);
 	}
 	port = (int)ntohl(res->port);
-	free(pkt);
+	free_iob(iob);
 
 	rpc_pmap_putcache(d->destip, prog, vers, port);
 

@@ -53,7 +53,8 @@
 
 
 static ssize_t rarpsend(struct iodesc *, void *, size_t);
-static ssize_t rarprecv(struct iodesc *, void **, void **, time_t, void *);
+static ssize_t rarprecv(struct iodesc *, struct io_buffer **, void **,
+    time_t, void *);
 
 /*
  * Ethernet (Reverse) Address Resolution Protocol (see RFC 903, and 826).
@@ -63,7 +64,7 @@ rarp_getipaddress(int sock)
 {
 	struct iodesc *d;
 	struct ether_arp *ap;
-	void *pkt;
+	struct io_buffer *iob;
 	struct {
 		u_char header[ETHER_SIZE];
 		struct {
@@ -94,11 +95,11 @@ rarp_getipaddress(int sock)
 	ap->arp_op = htons(ARPOP_REVREQUEST);
 	bcopy(d->myea, ap->arp_sha, 6);
 	bcopy(d->myea, ap->arp_tha, 6);
-	pkt = NULL;
+	iob = NULL;
 
 	if (sendrecv(d,
 	    rarpsend, &wbuf.data, sizeof(wbuf.data),
-	    rarprecv, &pkt, (void *)&ap, NULL) < 0) {
+	    rarprecv, &iob, (void *)&ap, NULL) < 0) {
 		printf("No response for RARP request\n");
 		return (-1);
 	}
@@ -108,7 +109,7 @@ rarp_getipaddress(int sock)
 	/* XXX - Can NOT assume this is our root server! */
 	bcopy(ap->arp_spa, (char *)&rootip, sizeof(rootip));
 #endif
-	free(pkt);
+	free_iob(iob);
 
 	/* Compute our "natural" netmask. */
 	if (IN_CLASSA(myip.s_addr))
@@ -142,12 +143,12 @@ rarpsend(struct iodesc *d, void *pkt, size_t len)
  * else -1 (and errno == 0)
  */
 static ssize_t
-rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
-    void *extra __unused)
+rarprecv(struct iodesc *d, struct io_buffer **pkt, void **payload,
+    time_t tleft, void *extra __unused)
 {
 	ssize_t n;
 	struct ether_arp *ap;
-	void *ptr = NULL;
+	struct io_buffer *iob = NULL;
 	uint16_t etype;		/* host order */
 
 #ifdef RARP_DEBUG
@@ -155,14 +156,14 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		printf("rarprecv: ");
 #endif
 
-	n = readether(d, &ptr, (void **)&ap, tleft, &etype);
+	n = readether(d, &iob, (void **)&ap, tleft, &etype);
 	errno = 0;	/* XXX */
-	if (n == -1 || n < sizeof(struct ether_arp)) {
+	if (n == -1 || n < sizeof (struct ether_arp)) {
 #ifdef RARP_DEBUG
 		if (debug)
 			printf("bad len=%d\n", n);
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -171,7 +172,7 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (debug)
 			printf("bad type=0x%x\n", etype);
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -184,7 +185,7 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (debug)
 			printf("bad hrd/pro/hln/pln\n");
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -193,7 +194,7 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (debug)
 			printf("bad op=0x%x\n", ntohs(ap->arp_op));
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -203,7 +204,7 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (debug)
 			printf("unwanted address\n");
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -212,7 +213,7 @@ rarprecv(struct iodesc *d, void **pkt, void **payload, time_t tleft,
  	if (debug)
 		printf("got it\n");
 #endif
-	*pkt = ptr;
+	*pkt = iob;
 	*payload = ap;
 	return (n);
 }

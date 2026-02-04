@@ -63,7 +63,8 @@
 struct tftp_handle;
 struct tftprecv_extra;
 
-static ssize_t recvtftp(struct iodesc *, void **, void **, time_t, void *);
+static ssize_t recvtftp(struct iodesc *, struct io_buffer **, void **,
+    time_t, void *);
 static int tftp_open(const char *, struct open_file *);
 static int tftp_close(struct open_file *);
 static int tftp_parse_oack(struct tftp_handle *, char *, size_t);
@@ -102,7 +103,7 @@ static int	is_open = 0;
 struct tftp_handle {
 	struct iodesc  *iodesc;
 	char		*path;	/* saved for re-requests */
-	void		*pkt;
+	struct io_buffer *iob;
 	struct tftphdr	*tftp_hdr;
 	int		currblock;	/* contents of lastdata */
 	int		islastblock;	/* flag */
@@ -178,23 +179,23 @@ tftp_sendack(struct tftp_handle *h, ushort_t block)
 }
 
 static ssize_t
-recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
+recvtftp(struct iodesc *d, struct io_buffer **pkt, void **payload, time_t tleft,
     void *recv_extra)
 {
 	struct tftprecv_extra *extra;
 	struct tftp_handle *h;
 	struct tftphdr *t;
-	void *ptr = NULL;
+	struct io_buffer *iob = NULL;
 	ssize_t len;
 
 	errno = 0;
 	extra = recv_extra;
 	h = extra->tftp_handle;
 
-	len = readudp(d, &ptr, (void **)&t, tleft);
+	len = readudp(d, &iob, (void **)&t, tleft);
 
 	if (len < 4) {
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
@@ -209,7 +210,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 			 */
 			printf("re-sending ACK %d\n", ntohs(t->th_block));
 			tftp_sendack(h, htons(t->th_block));
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
 		if (htons(t->th_block) != (ushort_t)h->tftp_xid) {
@@ -217,7 +218,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 			 * Packet from the future, drop this.
 			 */
 			printf("packet from the future %d != %d\n", (ushort_t)h->tftp_xid, ntohs(t->th_block));
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
 		if (h->tftp_xid == 1) {
@@ -229,7 +230,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 			d->destport = uh->uh_sport;
 		}
 		got = len - (t->th_data - (char *)t);
-		*pkt = ptr;
+		*pkt = iob;
 		*payload = t;
 		return (got);
 	}
@@ -243,7 +244,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 #endif
 			errno = tftperrors[ntohs(t->th_code)];
 		}
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	case OACK: {
 		struct udphdr *uh;
@@ -254,7 +255,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		 * Drop the pkt.
 		 */
 		if (h->tftp_xid != 1) {
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
 
@@ -270,10 +271,10 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 		if (tftp_parse_oack(h, t->th_u.tu_stuff, tftp_oack_len) != 0) {
 			tftp_senderr(h, EOPTNEG, "Malformed OACK");
 			errno = EIO;
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
-		*pkt = ptr;
+		*pkt = iob;
 		*payload = t;
 		return (0);
 	}
@@ -281,7 +282,7 @@ recvtftp(struct iodesc *d, void **pkt, void **payload, time_t tleft,
 #ifdef TFTP_DEBUG
 		printf("tftp type %d not handled\n", ntohs(t->th_opcode));
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 }
@@ -299,7 +300,7 @@ tftp_makereq(struct tftp_handle *h)
 	char *wtail;
 	int l;
 	ssize_t res;
-	void *pkt;
+	struct io_buffer *iob;
 	struct tftphdr *t;
 	char *tftp_blksize = NULL;
 	int blksize_l;
@@ -345,17 +346,17 @@ tftp_makereq(struct tftp_handle *h)
 	h->islastblock = 0;
 	h->validsize = 0;
 
-	pkt = NULL;
+	iob = NULL;
 	recv_extra.tftp_handle = h;
 	res = sendrecv(h->iodesc, &sendudp, &wbuf.t, wtail - (char *)&wbuf.t,
-	    &recvtftp, &pkt, (void **)&t, &recv_extra);
+	    &recvtftp, &iob, (void **)&t, &recv_extra);
 	if (res == -1) {
-		free(pkt);
+		free_iob(iob);
 		return (errno);
 	}
 
-	free(h->pkt);
-	h->pkt = pkt;
+	free_iob(h->iob);
+	h->iob = iob;
 	h->tftp_hdr = t;
 
 	if (recv_extra.rtype == OACK)
@@ -393,7 +394,7 @@ tftp_getnextblock(struct tftp_handle *h)
 	struct tftprecv_extra recv_extra;
 	char *wtail;
 	int res;
-	void *pkt;
+	struct io_buffer *iob;
 	struct tftphdr *t;
 
 	wbuf.t.th_opcode = htons((ushort_t)ACK);
@@ -404,18 +405,18 @@ tftp_getnextblock(struct tftp_handle *h)
 	h->tftp_xid = h->currblock + 1;	/* expected block */
 	printf("%s: currblock: %d\n", __func__, (ushort_t)h->currblock);
 
-	pkt = NULL;
+	iob = NULL;
 	recv_extra.tftp_handle = h;
 	res = sendrecv(h->iodesc, &sendudp, &wbuf.t, wtail - (char *)&wbuf.t,
-	    &recvtftp, &pkt, (void **)&t, &recv_extra);
+	    &recvtftp, &iob, (void **)&t, &recv_extra);
 
 	if (res == -1) {		/* 0 is OK! */
-		free(pkt);
+		free_iob(iob);
 		return (errno);
 	}
 
-	free(h->pkt);
-	h->pkt = pkt;
+	free_iob(h->iob);
+	h->iob = iob;
 	h->tftp_hdr = t;
 	h->currblock++;
 	h->validsize = res;
@@ -492,7 +493,7 @@ tftp_open(const char *path, struct open_file *f)
 	res = tftp_makereq(tftpfile);
 	if (res) {
 		free(tftpfile->path);
-		free(tftpfile->pkt);
+		free_iob(tftpfile->iob);
 		free(tftpfile);
 		return (res);
 	}
@@ -594,7 +595,7 @@ tftp_close(struct open_file *f)
 
 	if (tftpfile) {
 		free(tftpfile->path);
-		free(tftpfile->pkt);
+		free_iob(tftpfile->iob);
 		free(tftpfile);
 	}
 	is_open = 0;

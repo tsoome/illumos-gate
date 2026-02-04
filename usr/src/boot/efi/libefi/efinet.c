@@ -35,6 +35,7 @@
 #include <stand.h>
 #include <net.h>
 #include <netif.h>
+#include <iobuf.h>
 
 #include <efi.h>
 #include <efilib.h>
@@ -50,7 +51,7 @@ EFI_GUID gEfiSimpleNetworkProtocolGuid = EFI_SIMPLE_NETWORK_PROTOCOL_GUID;
 EFI_GUID gEfiVlanConfigProtocolGuid = EFI_VLAN_CONFIG_PROTOCOL_GUID;
 
 static void efinet_end(struct netif *);
-static ssize_t efinet_get(struct iodesc *, void **, time_t);
+static ssize_t efinet_get(struct iodesc *, struct io_buffer **, time_t);
 static void efinet_init(struct iodesc *, void *);
 static int efinet_match(struct netif *, void *);
 static int efinet_probe(struct netif *, void *);
@@ -168,31 +169,32 @@ efinet_put(struct iodesc *desc, void *pkt, size_t len)
 }
 
 static ssize_t
-efinet_get(struct iodesc *desc, void **pkt, time_t timeout)
+efinet_get(struct iodesc *desc, struct io_buffer **pkt, time_t timeout)
 {
 	struct netif *nif = desc->io_netif;
 	EFI_SIMPLE_NETWORK *net;
 	EFI_STATUS status;
 	UINTN bufsz;
 	time_t t;
-	char *buf, *ptr;
+	struct io_buffer *iob;
+	void *ptr;
 	ssize_t ret = -1;
 
 	net = nif->nif_devdata;
 	if (net == NULL)
 		return (ret);
 
-	bufsz = net->Mode->MaxPacketSize + ETHER_HDR_LEN + ETHER_CRC_LEN;
-	buf = malloc(bufsz + ETHER_ALIGN);
-	if (buf == NULL)
+	bufsz = desc->mtu + ETHER_CRC_LEN + ETHER_VLAN_ENCAP_LEN;
+	iob = alloc_iob(bufsz + ETHER_ALIGN);
+	if (iob == NULL)
 		return (ret);
-	ptr = buf + ETHER_ALIGN;
+	ptr = iob_reserve(iob, ETHER_ALIGN);
 
 	t = getsecs();
 	while ((getsecs() - t) < timeout) {
 		status = net->Receive(net, NULL, &bufsz, ptr, NULL, NULL, NULL);
 		if (status == EFI_SUCCESS) {
-			*pkt = buf;
+			*pkt = iob;
 			ret = (ssize_t)bufsz;
 			break;
 		}
@@ -201,7 +203,7 @@ efinet_get(struct iodesc *desc, void **pkt, time_t timeout)
 	}
 
 	if (ret == -1)
-		free(buf);
+		free_iob(iob);
 	return (ret);
 }
 
@@ -259,6 +261,8 @@ efinet_init(struct iodesc *desc, void *machdep_hint __unused)
 	dump_mode(net->Mode);
 #endif
 
+	desc->mtu = net->Mode->MaxPacketSize +
+	    net->Mode->MediaHeaderSize;
 	bcopy(net->Mode->CurrentAddress.Addr, desc->myea, 6);
 }
 

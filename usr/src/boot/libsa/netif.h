@@ -4,14 +4,16 @@
 
 #ifndef __SYS_LIBNETBOOT_NETIF_H
 #define __SYS_LIBNETBOOT_NETIF_H
+
 #include "iodesc.h"
+#include "iobuf.h"
 
 struct netif_driver {
 	const	char *netif_bname;
 	int	(*netif_match)(struct netif *, void *);
 	int	(*netif_probe)(struct netif *, void *);
 	void	(*netif_init)(struct iodesc *, void *);
-	ssize_t	(*netif_get)(struct iodesc *, void **, time_t);
+	ssize_t	(*netif_get)(struct iodesc *, struct io_buffer **, time_t);
 	ssize_t	(*netif_put)(struct iodesc *, void *, size_t);
 	void	(*netif_end)(struct netif *);
 	struct	netif_dif *netif_ifs;
@@ -54,7 +56,7 @@ struct netif	*netif_select(void *);
 int		netif_probe(struct netif *, void *);
 void		netif_attach(struct netif *, struct iodesc *, void *);
 void		netif_detach(struct netif *);
-ssize_t		netif_get(struct iodesc *, void **, time_t);
+ssize_t		netif_get(struct iodesc *, struct io_buffer **, time_t);
 ssize_t		netif_put(struct iodesc *, void *, size_t);
 
 int		netif_open(void *);

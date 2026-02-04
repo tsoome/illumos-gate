@@ -47,6 +47,7 @@ struct iodesc {
 	u_char	myea[6];		/* my ethernet address */
 	struct netif *io_netif;
 	int io_id;			/* descriptor id */
+	size_t mtu;
 	TAILQ_ENTRY(iodesc) io_link;	/* next entry in list */
 };
 

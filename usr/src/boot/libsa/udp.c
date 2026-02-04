@@ -56,17 +56,18 @@
 #include "net.h"
 
 ssize_t
-process_udp(struct iodesc *d, void **pkt, void **payload, ssize_t n)
+process_udp(struct iodesc *d, struct io_buffer *iob, void **payload, ssize_t n)
 {
 	struct ip *ip = *payload;
-	size_t hlen;
-	char *ptr = *pkt;
 	struct udphdr *uh;
 
-	uh = (struct udphdr *)((uintptr_t)ip + sizeof (*ip));
+	ip = iob_put(iob, ip->ip_hl << 2);
+	uh = iob->io_tail;
 
-	if ((d->myip.s_addr && ip->ip_dst.s_addr != d->myip.s_addr) ||
-	    ntohs(d->myport) != ntohs(uh->uh_dport)) {
+	if (d->myip.s_addr && ip->ip_dst.s_addr != d->myip.s_addr) {
+		printf("%s: not our IP: saddr %s (%d) != ",
+		    __func__, inet_ntoa(d->myip), ntohs(d->myport));
+		printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
 #ifdef NET_DEBUG
 		if (debug) {
 			printf("%s: not for us: saddr %s (%d) != ",
@@ -74,30 +75,27 @@ process_udp(struct iodesc *d, void **pkt, void **payload, ssize_t n)
 			printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
 		}
 #endif
-		printf("%s: not for us: saddr %s (%d) != ",
-		    __func__, inet_ntoa(d->myip), ntohs(d->myport));
-		printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
-		free(ptr);
+		free_iob(iob);
 		errno = EAGAIN; /* Call me again. */
 		return (-1);
 	}
 
-	printf("%s: saddr %s (%d) => ", __func__,
-	    inet_ntoa(ip->ip_src), ntohs(uh->uh_sport));
-	printf("%s (%d)\n",
-	    inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
-
-	hlen = ip->ip_hl << 2;
-	/* If there were ip options, make them go away */
-	if (hlen != sizeof (*ip)) {
-		bcopy(((uchar_t *)ip) + hlen, uh,
-		    ntohs(uh->uh_ulen) - hlen);
-		ip->ip_len = htons(sizeof (*ip));
-		n -= hlen - sizeof (*ip);
+	if (ntohs(d->myport) != ntohs(uh->uh_dport)) {
+#ifdef NET_DEBUG
+		if (debug) {
+			printf("%s: not for us: saddr %s (%d) != ",
+			    __func__, inet_ntoa(d->myip), ntohs(d->myport));
+			printf("%s (%d)\n", inet_ntoa(ip->ip_dst), ntohs(uh->uh_dport));
+		}
+#endif
+		printf("%s: not our port: %d != %d\n", __func__,
+		    ntohs(d->myport), ntohs(uh->uh_dport));
+		free_iob(iob);
+		errno = EAGAIN; /* Call me again. */
+		return (-1);
 	}
 
-	n = (n > (ntohs(ip->ip_len) - sizeof (*ip))) ?
-	    ntohs(ip->ip_len) - sizeof (*ip) : n;
+	n = ntohs(uh->uh_ulen);
 	*payload = uh;
 	return (n);
 }
@@ -153,11 +151,11 @@ sendudp(struct iodesc *d, void *pkt, size_t len)
  * Receive a UDP packet and validate it is for us.
  */
 ssize_t
-readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
+readudp(struct iodesc *d, struct io_buffer **pkt, void **payload, time_t tleft)
 {
 	ssize_t n;
 	struct udphdr *uh;
-	void *ptr;
+	struct io_buffer *iob;
 	time_t tref;
 
 #ifdef NET_DEBUG
@@ -166,18 +164,18 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 #endif
 
 	uh = NULL;
-	ptr = NULL;
+	iob = NULL;
 	tref = getsecs();
 	do {
-		free(ptr);
-		ptr = NULL;	/* prevent panic when readip() fails */
+		free_iob(iob);
+		iob = NULL;	/* prevent panic when readip() fails */
 		if ((getsecs() - tref) >= tleft) {
 			errno = ETIMEDOUT;
 			return (-1);
 		}
-		n = readip(d, &ptr, (void **)&uh, tleft, IPPROTO_UDP);
+		n = readip(d, &iob, (void **)&uh, tleft, IPPROTO_UDP);
 		if (n == -1 || n < sizeof (*uh) || n != ntohs(uh->uh_ulen)) {
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
 #ifdef NET_DEBUG
@@ -215,7 +213,7 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 			if (debug)
 				printf("readudp: bad cksum\n");
 #endif
-			free(ptr);
+			free_iob(iob);
 			return (-1);
 		}
 		*(struct ip *)ip = tip;
@@ -227,13 +225,14 @@ readudp(struct iodesc *d, void **pkt, void **payload, time_t tleft)
 			printf("readudp: bad udp len %d < %d\n",
 			    ntohs(uh->uh_ulen), (int)sizeof (*uh));
 #endif
-		free(ptr);
+		free_iob(iob);
 		return (-1);
 	}
 
+	iob_put(iob, sizeof (*uh));
 	n = (n > (ntohs(uh->uh_ulen) - sizeof (*uh))) ?
 	    ntohs(uh->uh_ulen) - sizeof (*uh) : n;
-	*pkt = ptr;
-	*payload = (void *)((uintptr_t)uh + sizeof (*uh));
+	*pkt = iob;
+	*payload = iob->io_tail;
 	return (n);
 }

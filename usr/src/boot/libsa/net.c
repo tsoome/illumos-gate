@@ -84,8 +84,9 @@ ssize_t
 sendrecv(struct iodesc *d,
     ssize_t (*sproc)(struct iodesc *, void *, size_t),
     void *sbuf, size_t ssize,
-    ssize_t (*rproc)(struct iodesc *, void **, void**, time_t, void *),
-    void **pkt, void **payload, void *recv_extra)
+    ssize_t (*rproc)(struct iodesc *, struct io_buffer **, void**,
+    time_t, void *),
+    struct io_buffer **iob, void **payload, void *recv_extra)
 {
 	ssize_t cc;
 	time_t t, tmo, tlast;
@@ -134,7 +135,7 @@ sendrecv(struct iodesc *d,
 		}
 
 		/* Try to get a packet and process it. */
-		cc = (*rproc)(d, pkt, payload, tleft, recv_extra);
+		cc = (*rproc)(d, iob, payload, tleft, recv_extra);
 		/* Return on data, EOF or real error. */
 		if (cc != -1 || (errno != 0 && errno != ETIMEDOUT))
 			return (cc);

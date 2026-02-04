@@ -46,6 +46,7 @@
 #include <netif.h>
 #include <nfsv2.h>
 #include <iodesc.h>
+#include <iobuf.h>
 
 #include <bootp.h>
 #include <bootstrap.h>
@@ -73,7 +74,7 @@ static void	pxe_perror(int error);
 static int	pxe_netif_match(struct netif *nif, void *machdep_hint);
 static int	pxe_netif_probe(struct netif *nif, void *machdep_hint);
 static void	pxe_netif_init(struct iodesc *desc, void *machdep_hint);
-static ssize_t	pxe_netif_get(struct iodesc *, void **, time_t);
+static ssize_t	pxe_netif_get(struct iodesc *, struct io_buffer **, time_t);
 static ssize_t	pxe_netif_put(struct iodesc *desc, void *pkt, size_t len);
 static void	pxe_netif_end(struct netif *nif);
 
@@ -438,11 +439,13 @@ pxe_netif_init(struct iodesc *desc, void *machdep_hint __unused)
 }
 
 static int
-pxe_netif_receive_isr(t_PXENV_UNDI_ISR *isr, void **pkt, ssize_t *retsize)
+pxe_netif_receive_isr(t_PXENV_UNDI_ISR *isr, struct io_buffer **pkt,
+    ssize_t *retsize)
 {
 	static bool data_pending;
-	char *buf, *ptr, *frame;
+	char *ptr, *frame;
 	size_t size, rsize;
+	struct io_buffer *buf;
 
 	buf = NULL;
 	size = rsize = 0;
@@ -505,11 +508,11 @@ pxe_netif_receive_isr(t_PXENV_UNDI_ISR *isr, void **pkt, ssize_t *retsize)
 			 * multiple GET_NEXT calls.
 			 */
 			size = isr->FrameLength;
-			buf = malloc(size + ETHER_ALIGN);
+			buf = alloc_iob(size + ETHER_ALIGN);
 			if (buf == NULL)
 				return (ENOMEM);
 
-			ptr = buf + ETHER_ALIGN;
+			ptr = iob_reserve(buf, ETHER_ALIGN);
 		}
 
 		frame = (char *)((uintptr_t)isr->Frame.segment << 4);
@@ -534,7 +537,7 @@ nextbuf:
 		isr->FuncFlag = PXENV_UNDI_ISR_IN_GET_NEXT;
 		pxe_call(PXENV_UNDI_ISR, isr);
 		if (isr->Status != 0) {
-			free(buf);
+			free_iob(buf);
 			return (ENXIO);
 		}
 	}
@@ -553,7 +556,7 @@ nextbuf:
 }
 
 static int
-pxe_netif_receive(void **pkt, ssize_t *size)
+pxe_netif_receive(struct io_buffer **pkt, ssize_t *size)
 {
 	t_PXENV_UNDI_ISR *isr;
 	int ret;
@@ -579,19 +582,20 @@ pxe_netif_receive(void **pkt, ssize_t *size)
 }
 
 static ssize_t
-pxe_netif_get(struct iodesc *desc __unused, void **pkt, time_t timeout)
+pxe_netif_get(struct iodesc *desc __unused, struct io_buffer **pkt,
+    time_t timeout)
 {
 	time_t t;
-	void *ptr;
+	struct io_buffer *iob;
 	int ret = -1;
 	ssize_t size;
 
 	t = getsecs();
 	size = 0;
 	while ((getsecs() - t) < timeout) {
-		ret = pxe_netif_receive(&ptr, &size);
+		ret = pxe_netif_receive(&iob, &size);
 		if (ret != -1) {
-			*pkt = ptr;
+			*pkt = iob;
 			break;
 		}
 	}

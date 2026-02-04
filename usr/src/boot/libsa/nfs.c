@@ -48,11 +48,11 @@
 #include "netif.h"
 #include "rpc.h"
 
-#define	NFS_DEBUG
+#define	NFS_DEBUGxx
 int debug = 1;
 
 #define	NFSREAD_MIN_SIZE 1024
-#define	NFSREAD_MAX_SIZE 16384
+#define	NFSREAD_MAX_SIZE 32768
 
 /* NFSv3 definitions */
 #define	NFS_V3MAXFHSIZE		64
@@ -201,7 +201,7 @@ set_nfs_read_size(void)
 int
 nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 {
-	void *pkt = NULL;
+	struct io_buffer *iob = NULL;
 	int len;
 	struct args {
 		uint32_t len;
@@ -236,24 +236,24 @@ nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 	len = sizeof (uint32_t) + roundup(len, sizeof (uint32_t));
 
 	cc = rpc_call(d, RPCPROG_MNT, RPCMNT_VER3, RPCMNT_MOUNT,
-	    args, len, (void **)&repl, &pkt);
+	    args, len, (void **)&repl, &iob);
 	if (cc == -1) {
-		free(pkt);
+		free_iob(iob);
 		/* errno was set by rpc_call */
 		return (errno);
 	}
 	if (cc < 2 * sizeof (uint32_t)) {
-		free(pkt);
+		free_iob(iob);
 		return (EBADRPC);
 	}
 	if (repl->errno != 0) {
-		free(pkt);
+		free_iob(iob);
 		return (ntohl(repl->errno));
 	}
 	*fhlenp = ntohl(repl->fhsize);
 	bcopy(repl->fh, fhp, *fhlenp);
 
-	free(pkt);
+	free_iob(iob);
 	return (0);
 }
 
@@ -264,7 +264,7 @@ nfs_getrootfh(struct iodesc *d, char *path, uint32_t *fhlenp, uchar_t *fhp)
 int
 nfs_lookupfh(struct nfs_iodesc *d, const char *name, struct nfs_iodesc *newfd)
 {
-	void *pkt = NULL;
+	struct io_buffer *iob = NULL;
 	int len, pos;
 	struct args {
 		uint32_t fhsize;
@@ -304,17 +304,17 @@ nfs_lookupfh(struct nfs_iodesc *d, const char *name, struct nfs_iodesc *newfd)
 	    roundup(len, sizeof (uint32_t));
 
 	cc = rpc_call(d->iodesc, NFS_PROG, NFS_VER3, NFSPROCV3_LOOKUP,
-	    args, len, (void **)&repl, &pkt);
+	    args, len, (void **)&repl, &iob);
 	if (cc == -1) {
-		free(pkt);
+		free_iob(iob);
 		return (errno);		/* XXX - from rpc_call */
 	}
 	if (cc < 2 * sizeof (uint32_t)) {
-		free(pkt);
+		free_iob(iob);
 		return (EIO);
 	}
 	if (repl->errno != 0) {
-		free(pkt);
+		free_iob(iob);
 		/* saerrno.h now matches NFS error numbers. */
 		return (ntohl(repl->errno));
 	}
@@ -322,11 +322,11 @@ nfs_lookupfh(struct nfs_iodesc *d, const char *name, struct nfs_iodesc *newfd)
 	bcopy(repl->fhplusattr, &newfd->fh, newfd->fhsize);
 	pos = roundup(newfd->fhsize, sizeof (uint32_t)) / sizeof (uint32_t);
 	if (repl->fhplusattr[pos++] == 0) {
-		free(pkt);
+		free_iob(iob);
 		return (EIO);
 	}
 	bcopy(&repl->fhplusattr[pos], &newfd->fa, sizeof (newfd->fa));
-	free(pkt);
+	free_iob(iob);
 	return (0);
 }
 
@@ -336,7 +336,7 @@ nfs_lookupfh(struct nfs_iodesc *d, const char *name, struct nfs_iodesc *newfd)
 int
 nfs_readlink(struct nfs_iodesc *d, char *buf)
 {
-	void *pkt = NULL;
+	struct io_buffer *iob = NULL;
 	struct args {
 		uint32_t fhsize;
 		uchar_t fh[NFS_V3MAXFHSIZE];
@@ -367,7 +367,7 @@ nfs_readlink(struct nfs_iodesc *d, char *buf)
 	bcopy(d->fh, args->fh, d->fhsize);
 	cc = rpc_call(d->iodesc, NFS_PROG, NFS_VER3, NFSPROCV3_READLINK,
 	    args, sizeof (uint32_t) + roundup(d->fhsize, sizeof (uint32_t)),
-	    (void **)&repl, &pkt);
+	    (void **)&repl, &iob);
 	if (cc == -1)
 		return (errno);
 
@@ -395,7 +395,7 @@ nfs_readlink(struct nfs_iodesc *d, char *buf)
 	bcopy(repl->path, buf, repl->len);
 	buf[repl->len] = 0;
 done:
-	free(pkt);
+	free_iob(iob);
 	return (rc);
 }
 
@@ -406,7 +406,7 @@ done:
 ssize_t
 nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 {
-	void *pkt = NULL;
+	struct io_buffer *iob = NULL;
 	struct args {
 		uint32_t fhsize;
 		uint32_t fhoffcnt[NFS_V3MAXFHSIZE / sizeof (uint32_t) + 3];
@@ -443,19 +443,19 @@ nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 
 	cc = rpc_call(d->iodesc, NFS_PROG, NFS_VER3, NFSPROCV3_READ,
 	    args, 4 * sizeof (uint32_t) + roundup(d->fhsize, sizeof (uint32_t)),
-	    (void **)&repl, &pkt);
+	    (void **)&repl, &iob);
 	if (cc == -1) {
 		/* errno was already set by rpc_call */
 		return (-1);
 	}
 	if (cc < hlen) {
 		errno = EBADRPC;
-		free(pkt);
+		free_iob(iob);
 		return (-1);
 	}
 	if (repl->errno != 0) {
 		errno = ntohl(repl->errno);
-		free(pkt);
+		free_iob(iob);
 		return (-1);
 	}
 	rlen = cc - hlen;
@@ -463,11 +463,11 @@ nfs_readdata(struct nfs_iodesc *d, off_t off, void *addr, size_t len)
 	if (rlen < x) {
 		printf("%s: short packet, %d < %ld\n", __func__, rlen, x);
 		errno = EBADRPC;
-		free(pkt);
+		free_iob(iob);
 		return (-1);
 	}
 	bcopy(repl->data, addr, x);
-	free(pkt);
+	free_iob(iob);
 	return (x);
 }
 
@@ -886,7 +886,7 @@ nfs_readdir(struct open_file *f, struct dirent *d)
 	struct nfs_iodesc *fp = (struct nfs_iodesc *)f->f_fsdata;
 	struct nfsv3_readdir_repl *repl;
 	struct nfsv3_readdir_entry *rent;
-	static void *pkt = NULL;
+	static struct io_buffer *iob = NULL;
 	static char *buf;
 	static struct nfs_iodesc *pfp = NULL;
 	static uint64_t cookie = 0;
@@ -905,8 +905,8 @@ nfs_readdir(struct open_file *f, struct dirent *d)
 	if (fp != pfp || fp->off != cookie) {
 		pfp = NULL;
 	refill:
-		free(pkt);
-		pkt = NULL;
+		free_iob(iob);
+		iob = NULL;
 		args = &sdata.d;
 		bzero(args, sizeof (*args));
 
@@ -923,7 +923,7 @@ nfs_readdir(struct open_file *f, struct dirent *d)
 		cc = rpc_call(fp->iodesc, NFS_PROG, NFS_VER3, NFSPROCV3_READDIR,
 		    args, 6 * sizeof (uint32_t) +
 		    roundup(fp->fhsize, sizeof (uint32_t)),
-		    (void **)&buf, &pkt);
+		    (void **)&buf, &iob);
 		if (cc == -1) {
 			rc = errno;
 			goto err;
@@ -962,8 +962,8 @@ nfs_readdir(struct open_file *f, struct dirent *d)
 	return (0);
 
 err:
-	free(pkt);
-	pkt = NULL;
+	free_iob(iob);
+	iob = NULL;
 	pfp = NULL;
 	cookie = 0;
 	return (rc);
