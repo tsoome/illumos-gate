@@ -308,7 +308,7 @@ process_dgram(struct iodesc *d, uint8_t proto, struct io_buffer *iob,
 		break;
 
 	case IPPROTO_ICMP:
-		printf("%s: IPPROTO_ICMP\n", __func__);
+		return (process_icmp(d, iob, payload, n));
 		break;
 	}
 

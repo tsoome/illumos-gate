@@ -125,6 +125,8 @@ char	*inet_ntoa(struct in_addr);
 char	*intoa(n_long);		/* similar to inet_ntoa */
 n_long	inet_addr(char *);
 
+extern ssize_t process_icmp(struct iodesc *, struct io_buffer *, void **,
+    ssize_t);
 extern ssize_t process_udp(struct iodesc *, struct io_buffer *, void **,
     ssize_t);
 

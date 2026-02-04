@@ -187,7 +187,8 @@ SRCS +=	$(SASRC)/arp.c $(SASRC)/ether.c $(SASRC)/ip.c \
 	$(SASRC)/inet_ntoa.c $(SASRC)/in_cksum.c \
 	$(SASRC)/net.c $(SASRC)/udp.c $(SASRC)/netif.c \
 	$(SASRC)/rpc.c
-OBJECTS += arp.o ether.o ip.o inet_ntoa.o in_cksum.o net.o udp.o netif.o rpc.o
+OBJECTS += arp.o ether.o icmp.o ip.o inet_ntoa.o in_cksum.o net.o udp.o \
+	netif.o rpc.o
 
 # network info services:
 SRCS +=	$(SASRC)/bootp.c $(SASRC)/rarp.c \
