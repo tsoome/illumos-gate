@@ -125,6 +125,7 @@ report_exc(struct trapframe *tf)
 	printf("Stack trace:\n");
 	pager_open();
 	while (fp != NULL || pc != 0) {
+		struct frame *nfp;
 		char *source = "PC";
 
 		if (pc >= base && pc < base + boot_img->ImageSize) {
@@ -136,8 +137,16 @@ report_exc(struct trapframe *tf)
 		if (pager_output(buf))
 			break;
 
-		if (fp != NULL)
-			fp = fp->fr_savfp;
+		if (fp == NULL)
+			break;
+
+		nfp = fp->fr_savfp;
+		if (nfp != NULL && nfp <= fp) {
+			printf("FP %016lx: loop detected, stopping trace\n",
+			    (uintptr_t)nfp);
+			break;
+		}
+		fp = nfp;
 
 		if (fp != NULL)
 			pc = fp->fr_savpc;
