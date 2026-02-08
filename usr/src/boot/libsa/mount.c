@@ -120,7 +120,8 @@ mount(const char *dev, const char *path, int flags, ...)
 		if (fs->fo_mount == NULL)
 			continue;
 
-		if (fs->fo_mount(dev, path, &data) != 0)
+		rc = fs->fo_mount(dev, path, &data);
+		if (rc != 0)
 			continue;
 
 		/*
@@ -129,14 +130,13 @@ mount(const char *dev, const char *path, int flags, ...)
 		 * to undo it.
 		 */
 		rc = add_mnt_info(fs, dev, path, data);
-		if (rc != 0 && mnt->mnt_fs->fo_unmount != NULL) {
+		if (rc != 0 && fs->fo_unmount != NULL) {
 			printf("failed to mount %s: %s\n", dev,
 			    strerror(rc));
-			(void) mnt->mnt_fs->fo_unmount(dev, data);
+			(void) fs->fo_unmount(dev, data);
 		}
 		break;
 	}
-
 
 	/*
 	 * if rc is -1, it means we have no file system with fo_mount()
