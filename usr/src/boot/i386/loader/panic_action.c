@@ -52,6 +52,12 @@ stack_trace(struct frame *fp, uintptr_t pc)
 {
 	char buf[80];
 	uintptr_t freemem = *(uint16_t *)PTOV(0x413) << 10;
+	uintptr_t stack_start;
+
+	/*
+	 * stack start is at about freemem - __base.
+	 */
+	stack_start = PTOV(freemem);
 
 	printf("Stack trace:\n");
 	pager_open();
@@ -74,7 +80,7 @@ stack_trace(struct frame *fp, uintptr_t pc)
 			break;
 		}
 		fp = nfp;
-		if ((char *)fp < _end || (uintptr_t)fp > freemem)
+		if ((char *)fp < _end || (uintptr_t)fp > stack_start)
 			break;
 
 		if (fp != NULL)

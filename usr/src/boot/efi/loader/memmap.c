@@ -81,14 +81,9 @@ efi_getsmap(void)
 	int i, n, ndesc;
 	int type = -1;
 
-	size = 0;
-	efi_mmap = NULL;
-	status = BS->GetMemoryMap(&size, efi_mmap, &key, &desc_size, NULL);
-	efi_mmap = malloc(size);
-	status = BS->GetMemoryMap(&size, efi_mmap, &key, &desc_size, NULL);
+	status = efi_get_memory_map(&size, &efi_mmap, &key, &desc_size, NULL);
 	if (EFI_ERROR(status)) {
-		printf("GetMemoryMap: error %lu\n", DECODE_ERROR(status));
-		free(efi_mmap);
+		printf("%s: error %lu\n", __func__, DECODE_ERROR(status));
 		return;
 	}
 
@@ -150,7 +145,6 @@ efi_getsmap(void)
 			cur = next;
 		}
 	}
-	free(efi_mmap);
 }
 
 void

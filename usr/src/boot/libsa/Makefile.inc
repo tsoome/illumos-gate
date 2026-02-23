@@ -27,12 +27,12 @@ SRCS += $(SASRC)/__main.c $(SASRC)/abort.c $(SASRC)/assert.c
 SRCS +=	$(SASRC)/bcd.c $(SASRC)/environment.c
 SRCS += $(SASRC)/getopt.c $(SASRC)/random.c
 SRCS += $(SASRC)/sbrk.c $(SASRC)/twiddle.c
-SRCS += $(SASRC)/zalloc.c $(SASRC)/zalloc_malloc.c
+SRCS += $(SASRC)/zalloc.c $(SASRC)/zalloc_malloc.c $(SASRC)/zalloc_loader.c
 
 OBJECTS += __main.o abort.o assert.o bcd.o environment.o \
 	getopt.o gets.o globals.o pager.o panic.o printf.o \
 	strdup.o strerror.o strtol.o strtoll.o strtoul.o strtoull.o random.o \
-	sbrk.o twiddle.o zalloc.o zalloc_malloc.o
+	sbrk.o twiddle.o zalloc.o zalloc_malloc.o zalloc_loader.o
 
 # private (pruned) versions of libc string functions
 SRCS +=	$(SASRC)/strcasecmp.c

@@ -176,4 +176,7 @@ bool efi_guid_to_name(EFI_GUID *, char **);
 /* efipart.c */
 int	efipart_inithandles(void);
 
+EFI_STATUS efi_get_memory_map(UINTN *, EFI_MEMORY_DESCRIPTOR **, UINTN *,
+    UINTN *, UINT32 *);
+
 #endif /* _LOADER_EFILIB_H */

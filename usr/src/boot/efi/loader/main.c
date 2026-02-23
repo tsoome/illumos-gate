@@ -699,7 +699,6 @@ main(int argc, CHAR16 *argv[])
 	archsw.arch_copyout = efi_copyout;
 	archsw.arch_readin = efi_readin;
 	archsw.arch_loadaddr = efi_loadaddr;
-	archsw.arch_free_loadaddr = efi_free_loadaddr;
 #if defined(__amd64) || defined(__i386)
 	archsw.arch_hypervisor = x86_hypervisor;
 #endif
@@ -1046,14 +1045,7 @@ command_memmap(int argc __unused, char *argv[] __unused)
 	int rv = 0;
 	char line[80];
 
-	sz = 0;
-	status = BS->GetMemoryMap(&sz, 0, &key, &dsz, &dver);
-	if (status != EFI_BUFFER_TOO_SMALL) {
-		printf("Can't determine memory map size\n");
-		return (CMD_ERROR);
-	}
-	map = malloc(sz);
-	status = BS->GetMemoryMap(&sz, map, &key, &dsz, &dver);
+	status = efi_get_memory_map(&sz, &map, &key, &dsz, &dver);
 	if (EFI_ERROR(status)) {
 		printf("Can't read memory map\n");
 		return (CMD_ERROR);
