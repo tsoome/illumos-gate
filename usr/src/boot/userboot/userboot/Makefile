@@ -27,13 +27,9 @@ LIBDIR=		/boot
 OBJS_SHARED=	autoload.o
 OBJS_SHARED +=	biossmap.o
 OBJS_SHARED +=	bootinfo.o
-OBJS_SHARED +=	bootinfo32.o
-OBJS_SHARED +=	bootinfo64.o
 OBJS_SHARED +=	conf.o
 OBJS_SHARED +=	copy.o
 OBJS_SHARED +=	devicename.o
-OBJS_SHARED +=	elf32_freebsd.o
-OBJS_SHARED +=	elf64_freebsd.o
 OBJS_SHARED +=	host.o
 OBJS_SHARED +=	main.o
 OBJS_SHARED +=	userboot_cons.o
@@ -58,12 +54,6 @@ OBJS_COMMON +=	part.o
 OBJS_COMMON +=	vdisk.o
 OBJS_COMMON +=	nvstore.o
 OBJS_COMMON +=	zfs_cmd.o
-OBJS_COMMON +=	load_elf32.o
-OBJS_COMMON +=	load_elf32_obj.o
-OBJS_COMMON +=	reloc_elf32.o
-OBJS_COMMON +=	load_elf64.o
-OBJS_COMMON +=	load_elf64_obj.o
-OBJS_COMMON +=	reloc_elf64.o
 
 OBJS_LINENOISE=	linenoise.o
 

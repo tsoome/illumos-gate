@@ -29,15 +29,152 @@
 #include <sys/cdefs.h>
 
 #include <sys/param.h>
+#include <sys/elf.h>
 #include <sys/multiboot2.h>
 
 #include <stand.h>
 #include <bootstrap.h>
+#include <zalloc_loader.h>
 
 #include <efi.h>
 #include <efilib.h>
 
 #include "loader_efi.h"
+
+extern uint64_t load_limit;
+extern vm_offset_t ktext_phys;
+
+static EFI_MEMORY_DESCRIPTOR *
+get_memory_descriptor(struct MemPool *mp, EFI_PHYSICAL_ADDRESS paddr,
+    uintptr_t size)
+{
+	EFI_MEMORY_DESCRIPTOR *efi_mmap;
+	UINTN map_key, map_size, desc_size;
+	UINT32 desc_ver;
+	EFI_STATUS status;
+	EFI_MEMORY_DESCRIPTOR *md;
+	UINTN count, n;
+
+	status = efi_get_memory_map(&map_size, &efi_mmap, &map_key,
+	    &desc_size, &desc_ver);
+	if (status != EFI_SUCCESS)
+		return (NULL);
+
+	if (size == 0)
+		return (efi_mmap);
+
+	/* find descriptor for size */
+	count = map_size / desc_size;
+	md = efi_mmap;
+	for (n = 0; n < count; n++, md = NextMemoryDescriptor(md, desc_size)) {
+		if (md->Type != EfiConventionalMemory)
+			continue;
+
+		/* Pick next segment after current segment in pool. */
+		if (mp->mp_Base != NULL &&
+		    md->PhysicalStart <= vtop(mp->mp_Base))
+			continue;
+
+		/*
+		 * Skip descriptors for memory before ktext_phys.
+		 */
+		if (md->PhysicalStart <= paddr &&
+		    md->PhysicalStart +
+		    (md->NumberOfPages << EFI_PAGE_SHIFT) <= paddr)
+			continue;
+
+		/*
+		 * Now, we only do need to check the size.
+		 */
+		if (md->PhysicalStart + (md->NumberOfPages << EFI_PAGE_SHIFT) -
+		    MAX(paddr, md->PhysicalStart) >= size)
+			return (md);
+	}
+	return (NULL);
+}
+
+/*
+ * Allocate UEFI memory for loader pool.
+ * Find chunks of unused memory from UEFI memory map.
+ */
+static void *
+efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
+{
+	EFI_PHYSICAL_ADDRESS paddr = 0;
+	EFI_MEMORY_DESCRIPTOR *md;
+	EFI_STATUS status;
+	UINTN pages;
+	intptr_t size = *sizep;
+
+	/*
+	 * With addr == 0, we must have pool set up with at least one
+	 * segment allocated for kernel and we want next segment to
+	 * be allocated.
+	 */
+	if (addr == 0) {
+		/* Get last segment */
+		while (mp->mp_next != NULL)
+			mp = mp->mp_next;
+	} else {
+		/*
+		 * If our pool is empty, we need to allocate space for
+		 * kernel, based on addr.
+		 */
+		paddr = vtop((caddr_t)addr);
+	}
+	if (paddr > load_limit || paddr + size > load_limit)
+		return ((void *)-1);
+
+	md = get_memory_descriptor(mp, paddr, size);
+	if (md == NULL) {
+		return ((void *)-1);
+	}
+
+	if (md->PhysicalStart > load_limit ||
+	    md->PhysicalStart + size > load_limit)
+		return ((void *)-1);
+
+	/*
+	 * If we are adding new segment or if kernel can not be
+	 * stored on given address, use segment start.
+	 */
+	if (mp->mp_Base == NULL) {
+		if (paddr < md->PhysicalStart)
+			paddr = md->PhysicalStart;
+	} else {
+		paddr = md->PhysicalStart;
+	}
+
+	pages = MIN(md->NumberOfPages -
+	    EFI_SIZE_TO_PAGES(paddr - md->PhysicalStart),
+	    EFI_SIZE_TO_PAGES(load_limit - paddr));
+	*sizep = pages << EFI_PAGE_SHIFT;
+
+	/*
+	 * Now we have valid address for free segment with enough
+	 * space and we *should* always succeed.
+	 */
+	status = BS->AllocatePages(AllocateAddress, EfiLoaderData,
+	    pages, &paddr);
+	if (status != EFI_SUCCESS)
+		return ((void *)-1);
+
+	return (ptov(paddr));
+}
+
+/*
+ * Free allocated segment in MemPool.
+ * This function is used as part of procedure to release resources
+ * used by memory pool(s).
+ */
+static void
+efi_loader_free(void *ptr)
+{
+	MemPool *mp = ptr;
+
+	(void) BS->FreePages((EFI_PHYSICAL_ADDRESS)(uintptr_t)vtop(mp->mp_Base),
+	    EFI_SIZE_TO_PAGES(mp->mp_Size));
+}
 
 /*
  * Verify the address is not in use by existing modules.
@@ -166,46 +303,94 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	EFI_PHYSICAL_ADDRESS paddr;
 	struct stat st;
 	size_t size;
-	uint64_t pages;
-	EFI_STATUS status;
+	size_t alignment;
 
+	/*
+	 * Every other allocation happens after ELF, therefore,
+	 * addr must non-zero value.
+	 */
 	if (addr == 0)
 		return (addr);	/* nothing to do */
 
-	if (type == LOAD_ELF)
-		return (0);	/* not supported */
+	switch (type) {
+	case LOAD_ELF:
+		ktext_phys = addr;
+		size = elf_load_size(data);
+		break;
 
-	if (type == LOAD_MEM)
+	case LOAD_MEM:
 		size = *(size_t *)data;
-	else {
+		break;
+
+	case LOAD_KERN:
+	case LOAD_RAW:
+	default:
 		stat(data, &st);
 		size = st.st_size;
 	}
 
-	/* AllocatePages can not allocate 0 pages. */
+	alignment = EFI_PAGE_SIZE;
+
+	/* We do not support allocating 0 pages. */
 	if (size == 0)
-		return (addr);
-
-	pages = EFI_SIZE_TO_PAGES(size);
-	/* 4GB upper limit */
-	paddr = UINT32_MAX;
-
-	status = BS->AllocatePages(AllocateMaxAddress, EfiLoaderData,
-	    pages, &paddr);
-
-	if (EFI_ERROR(status)) {
-		printf("failed to allocate %zu bytes for staging area: %lu\n",
-		    size, DECODE_ERROR(status));
 		return (0);
+
+	if (type == LOAD_ELF || type == LOAD_KERN) {
+		size_t diff;
+
+		/* Make sure we have memory pool set up. */
+		loader_alloc_init(efi_loader_alloc, efi_loader_free);
+
+		/* AllocatePages() needs page aligned address. */
+		diff = addr & EFI_PAGE_MASK;
+		addr -= diff;
+		size += diff;
+
+		/* make sure we will not exceed the limit. */
+		if (addr + diff > load_limit ||
+		    addr + size > load_limit)
+			return (0);
+
+		paddr = (vm_offset_t)loader_xalloc(addr, addr + size, size);
+		if (paddr != 0) {
+			return (paddr + diff);
+		}
+		if (type == LOAD_KERN) {
+			/*
+			 * Failed to allocate for multiboot start.
+			 * Fall back to use znalloc and hope the
+			 * relocation is possible.
+			 */
+		} else {
+			/*
+			 * We failed to allocate at address. Fall
+			 * back to use znalloc instead.
+			 * Kernel needs 4MB alignment.
+			 */
+			alignment = 4 << 20;
+		}
+	}
+
+	paddr = (vm_offset_t)loader_alloc_align(size, alignment);
+
+	/* make sure we will not exceed the limit. */
+	if (paddr > load_limit || paddr + size > load_limit) {
+		loader_free((void *)(uintptr_t)paddr);
+		paddr = 0;
+	}
+
+	if (paddr == 0) {
+		printf("failed to allocate %zu bytes for %p\n",
+		    size, (void *)(uintptr_t)addr);
+	} else {
+		/*
+		 * This was fallback path for kernel, adjust ktext_phys.
+		 */
+		if (type == LOAD_ELF)
+			ktext_phys = paddr;
 	}
 
 	return (paddr);
-}
-
-void
-efi_free_loadaddr(vm_offset_t addr, size_t pages)
-{
-	(void) BS->FreePages(addr, pages);
 }
 
 void *
@@ -217,7 +402,7 @@ efi_translate(vm_offset_t ptr)
 ssize_t
 efi_copyin(const void *src, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= dest && (uint64_t)dest + len <= UINT32_MAX) {
+	if (dest + len >= dest && (uint64_t)dest + len <= load_limit) {
 		bcopy(src, (void *)(uintptr_t)dest, len);
 		return (len);
 	} else {
@@ -229,7 +414,7 @@ efi_copyin(const void *src, vm_offset_t dest, const size_t len)
 ssize_t
 efi_copyout(const vm_offset_t src, void *dest, const size_t len)
 {
-	if (src + len >= src && (uint64_t)src + len <= UINT32_MAX) {
+	if (src + len >= src && (uint64_t)src + len <= load_limit) {
 		bcopy((void *)(uintptr_t)src, dest, len);
 		return (len);
 	} else {
@@ -242,7 +427,7 @@ efi_copyout(const vm_offset_t src, void *dest, const size_t len)
 ssize_t
 efi_readin(const int fd, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= dest && (uint64_t)dest + len <= UINT32_MAX) {
+	if (dest + len >= dest && (uint64_t)dest + len <= load_limit) {
 		return (read(fd, (void *)dest, len));
 	} else {
 		errno = EFBIG;

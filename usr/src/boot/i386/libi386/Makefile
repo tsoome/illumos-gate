@@ -26,38 +26,6 @@ clean: clobber
 clobber:
 	$(RM) machine x86 $(OBJS) libi386.a
 
-SRCS=	\
-	amd64_tramp.S \
-	bio.c \
-	biosacpi.c \
-	biosdisk.c \
-	biosmem.c \
-	biospci.c \
-	biospnp.c \
-	biossmap.c \
-	bootinfo.c \
-	bootinfo32.c \
-	bootinfo64.c \
-	comconsole.c \
-	cpuid.c \
-	devicename.c \
-	elf32_freebsd.c \
-	elf64_freebsd.c \
-	i386_copy.c \
-	i386_module.c \
-	linux.c \
-	multiboot.c \
-	multiboot_tramp.S \
-	nullconsole.c \
-	pxe.c \
-	pxetramp.s \
-	relocater_tramp.S \
-	spinconsole.c \
-	time.c \
-	vbe.c \
-	vgasubr.c \
-	vidconsole.c
-
 OBJS=	\
 	amd64_tramp.o \
 	bio.o \
@@ -68,19 +36,17 @@ OBJS=	\
 	biospnp.o \
 	biossmap.o \
 	bootinfo.o \
-	bootinfo32.o \
-	bootinfo64.o \
 	comconsole.o \
 	cpuid.o \
 	devicename.o \
-	elf32_freebsd.o \
-	elf64_freebsd.o \
+	devicename_stubs.o \
+	gfx_fb.o \
 	i386_copy.o \
 	i386_module.o \
 	linux.o \
-	multiboot.o \
 	multiboot_tramp.o \
 	nullconsole.o \
+	pnglite.o \
 	pxe.o \
 	pxetramp.o \
 	relocater_tramp.o \
@@ -93,8 +59,6 @@ OBJS=	\
 COMMON=  ../../common
 VGASUBR=$(SRC)/common/vga
 CPPFLAGS += -I$(PNGLITE)
-SRCS +=	$(COMMON)/gfx_fb.c $(PNGLITE)/pnglite.c
-OBJS +=	gfx_fb.o pnglite.o
 
 biosacpi.o := CFLAGS += -_gcc14=--param=min-pagesize=0
 biosacpi.o := CFLAGS += -_gcc15=--param=min-pagesize=0
@@ -102,9 +66,6 @@ biosdisk.o := CFLAGS += -_gcc14=--param=min-pagesize=0
 biosdisk.o := CFLAGS += -_gcc15=--param=min-pagesize=0
 gfx_fb.o := CPPFLAGS += $(DEFAULT_CONSOLE_COLOR) -I$(LZ4)
 pnglite.o := CPPFLAGS += -I$(ZLIB)
-
-SRCS +=	$(ZFSSRC)/devicename_stubs.c
-OBJS +=	devicename_stubs.o
 
 BOOT_COMCONSOLE_PORT= 0x3f8
 CPPFLAGS +=	-DCOMPORT=${BOOT_COMCONSOLE_PORT}
@@ -126,6 +87,7 @@ CPPFLAGS +=	-I$(SRC)/common/ficl -I../../libficl \
 # the location of libstand
 CPPFLAGS +=	-I../../libsa
 
+amd64_tramp.o := AS_CPPFLAGS += -I$(SRC)/uts/intel -D_ASM
 multiboot.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 devicename.o := CPPFLAGS += -I../../sys/cddl/boot/zfs

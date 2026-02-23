@@ -23,6 +23,7 @@ OBJS=	\
 	autoload.o \
 	bootinfo.o \
 	conf.o \
+	elf.o \
 	copy.o \
 	efi_main.o \
 	font.o \
@@ -72,9 +73,6 @@ LIBFICL=	-L../../../libficl/$(MACHINE) -lficl_pics
 OBJS += boot.o commands.o console.o devopen.o interp.o \
 	interp_backslash.o interp_parse.o ls.o misc.o \
 	module.o linenoise.o zfs_cmd.o
-
-OBJS += load_elf32.o load_elf32_obj.o reloc_elf32.o \
-	load_elf64.o load_elf64_obj.o reloc_elf64.o
 
 OBJS += disk.o part.o dev_net.o vdisk.o
 CPPFLAGS += -DLOADER_DISK_SUPPORT

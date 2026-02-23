@@ -28,11 +28,10 @@
 
 /*
  * MD primitives supporting placement of module data
- *
- * XXX should check load address/size against memory top.
  */
 #include <stand.h>
 #include <sys/param.h>
+#include <sys/elf.h>
 #include <sys/multiboot2.h>
 #include <sys/consplat.h>
 #include <machine/metadata.h>
@@ -40,156 +39,198 @@
 #include "libi386.h"
 #include "btxv86.h"
 #include "bootstrap.h"
+#include <zalloc_loader.h>
+
+extern uint64_t load_limit;
+extern vm_offset_t ktext_phys;
 
 extern multiboot_tag_framebuffer_t gfx_fb;
 
-/*
- * Verify the address is not in use by existing modules.
- */
-static vm_offset_t
-addr_verify(struct preloaded_file *fp, vm_offset_t addr, size_t size)
+static struct bios_smap *
+get_memory_descriptor(struct MemPool *mp, vm_offset_t paddr, uintptr_t size)
 {
-	vm_offset_t f_addr;
+	struct bios_smap *smap;
+	uint_t smaplen;
 
-	while (fp != NULL) {
-		f_addr = fp->f_addr;
+	smap = bios_smap_info(&smaplen);
+	if (smap == NULL)
+		return (smap);
 
-		if ((f_addr <= addr) &&
-		    (f_addr + fp->f_size >= addr)) {
-			return (0);
-		}
-		if ((f_addr >= addr) && (f_addr <= addr + size)) {
-			return (0);
-		}
-		fp = fp->f_next;
-	}
-	return (addr);
-}
+	if (size == 0)
+		return (smap);
 
-/*
- * Find smap entry above 1MB, able to contain size bytes from addr.
- */
-static vm_offset_t
-smap_find(struct bios_smap *smap, int smaplen, vm_offset_t addr, size_t size)
-{
-	int i;
-
-	for (i = 0; i < smaplen; i++) {
+	for (uint_t i = 0; i < smaplen; i++) {
 		if (smap[i].type != SMAP_TYPE_MEMORY)
 			continue;
 
-		/* We do not want address below 1MB. */
-		if (smap[i].base < 0x100000)
+		/* Pick next segment after current segment in pool. */
+		if (mp->mp_Base != NULL &&
+		    smap[i].base <= vtop(mp->mp_Base))
 			continue;
 
-		/* Do we fit into current entry? */
-		if ((smap[i].base <= addr) &&
-		    (smap[i].base + smap[i].length >= addr + size)) {
-			return (addr);
-		}
+		/*
+		 * Skip descriptors for memory before ktext_phys.
+		 */
+		if (smap[i].base <= paddr &&
+		    smap[i].base + smap[i].length <= paddr)
+			continue;
 
-		/* Do we fit into new entry? */
-		if ((smap[i].base > addr) && (smap[i].length >= size)) {
-			return (smap[i].base);
-		}
+		/*
+		 * Now, we only do need to check the size.
+		 */
+		if (smap[i].base + smap[i].length -
+		    MAX(paddr, smap[i].base) >= size)
+			return (&smap[i]);
 	}
-	return (0);
+	return (NULL);
 }
 
 /*
- * Find usable address for loading. The address for the kernel is fixed, as
- * it is determined by kernel linker map (dboot PT_LOAD address).
- * For modules, we need to consult smap, the module address has to be
- * aligned to page boundary and we have to fit into smap entry.
+ * Allocate memory for loader pool.
+ * Find chunks of unused memory from SMAP.
+ */
+static void *
+i386_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
+{
+	vm_offset_t paddr = 0;
+	intptr_t size = *sizep;
+	struct bios_smap *smap;
+
+	/*
+	 * With addr == 0, we must have pool set up with at least one
+	 * segment allocated for kernel and we want next segment to
+	 * be allocated.
+	 */
+	if (addr == 0) {
+		/* Get last segment */
+		while (mp->mp_next != NULL)
+			mp = mp->mp_next;
+	} else {
+		/*
+		 * If our pool is empty, we need to allocate space for
+		 * kernel, based on addr.
+		 */
+		paddr = vtop((caddr_t)addr);
+	}
+	if (paddr > load_limit || paddr + size > load_limit)
+		return ((void *)-1);
+
+	smap = get_memory_descriptor(mp, paddr, size);
+	if (smap == NULL)
+		return ((void *)-1);
+
+	if (smap->base > load_limit || smap->base + size > load_limit)
+		return ((void *)-1);
+
+	/*
+	 * If we are adding new segment or if kernel can not be
+	 * stored on given address, use segment start.
+	 */
+	if (mp->mp_Base == NULL) {
+		if (paddr < smap->base)
+			paddr = smap->base;
+	} else {
+		paddr = smap->base;
+	}
+
+	*sizep =
+	    roundup2(
+	    MIN(smap->length - (paddr - smap->base), load_limit - paddr),
+	    MALLOCALIGN);
+
+	return (ptov(paddr));
+}
+
+/*
+ * Find usable address for loading. Note, we do return physical
+ * address here.
  */
 vm_offset_t
 i386_loadaddr(uint_t type, void *data, vm_offset_t addr)
 {
+	vm_offset_t vaddr;
 	struct stat st;
-	size_t size, smaplen;
-	struct preloaded_file *fp, *mfp;
-	struct file_metadata *md;
-	struct bios_smap *smap;
-	vm_offset_t off;
+	size_t size, alignment;
 
 	/*
-	 * For now, assume we have memory for the kernel, the
-	 * required map is [1MB..) This assumption should be safe with x86 BIOS.
+	 * Every other allocation happens after ELF, therefore,
+	 * addr must non-zero value.
 	 */
-	if (type == LOAD_KERN)
-		return (addr);
-
 	if (addr == 0)
 		return (addr);	/* nothing to do */
 
-	if (type == LOAD_ELF)
-		return (0);	/* not supported */
+	switch (type) {
+	case LOAD_ELF:
+		load_limit = memtop;
+		ktext_phys = addr;
+		size = elf_load_size(data);
+		break;
 
-	if (type == LOAD_MEM) {
+	case LOAD_MEM:
 		size = *(size_t *)data;
-	} else {
+		break;
+
+	case LOAD_KERN:
+		load_limit = memtop;
+		/* FALLTHROUGH */
+	case LOAD_RAW:
+	default:
 		stat(data, &st);
 		size = st.st_size;
 	}
 
-	/*
-	 * Find our kernel, from it we will find the smap and the list of
-	 * loaded modules.
-	 */
-	fp = file_findfile(NULL, NULL);
-	if (fp == NULL)
-		return (0);
-	md = file_findmetadata(fp, MODINFOMD_SMAP);
-	if (md == NULL)
+	/* We do not support allocating 0 pages. */
+	if (size == 0)
 		return (0);
 
-	smap = (struct bios_smap *)md->md_data;
-	smaplen = md->md_size / sizeof (struct bios_smap);
+	if (type == LOAD_ELF || type == LOAD_KERN) {
+		size_t diff;
 
-	/* Start from the end of the kernel. */
-	mfp = fp;
-	do {
-		if (mfp == NULL) {
-			off = roundup2(addr + 1, MULTIBOOT_MOD_ALIGN);
-		} else {
-			off = roundup2(mfp->f_addr + mfp->f_size + 1,
-			    MULTIBOOT_MOD_ALIGN);
+		/* Make sure we have memory pool set up. */
+		loader_alloc_init(i386_loader_alloc, NULL);
+
+		/* loader_xalloc needs aligned address */
+		diff = addr & PAGE_MASK;
+		addr -= diff;
+		size += diff;
+
+		/* make sure we will not exceed the limit. */
+		if (addr + diff > load_limit ||
+		    addr + size > load_limit)
+			return (0);
+
+		vaddr = (vm_offset_t)loader_xalloc(addr, addr + size, size);
+		if (vaddr != 0) {
+			return (VTOP(vaddr + diff));
 		}
-		/* Avoid possible framebuffer memory */
-		if (plat_stdout_is_framebuffer()) {
-			vm_offset_t fb_addr;
-			size_t fb_size;
+		/*
+		 * We failed to allocate at address. This is 32-bit
+		 * loader and we have no fallback available.
+		 */
+		return (0);
+	}
 
-			fb_addr = gfx_fb.framebuffer_common.framebuffer_addr;
-			fb_size = gfx_fb.framebuffer_common.framebuffer_height *
-			    gfx_fb.framebuffer_common.framebuffer_pitch;
+	alignment = PAGE_SIZE;
 
-			if ((off >= fb_addr && off <= fb_addr + fb_size) ||
-			    (off + size >= fb_addr &&
-			    off + size <= fb_addr + fb_size)) {
-				printf("\nSkipping framebuffer memory %#x "
-				    "size %#x\n", fb_addr, fb_size);
-				off = roundup2(fb_addr + fb_size + 1,
-				    MULTIBOOT_MOD_ALIGN);
-			}
-		}
-		off = smap_find(smap, smaplen, off, size);
-		off = addr_verify(fp, off, size);
-		if (off != 0)
-			break;
+	vaddr = (vm_offset_t)loader_alloc_align(size, alignment);
+	if (VTOP(vaddr) > load_limit || VTOP(vaddr) + size > load_limit) {
+		loader_free((void *)(uintptr_t)vaddr);
+		vaddr = 0;
+	}
 
-		if (mfp == NULL)
-			break;
-		mfp = mfp->f_next;
-	} while (off == 0);
+	if (vaddr == 0) {
+		printf("failed to allocate %zu bytes for %p\n",
+		    size, (void *)(uintptr_t)addr);
+		return (0);
+	}
 
-	return (off);
+	return (VTOP(vaddr));
 }
 
 ssize_t
 i386_copyin(const void *src, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= memtop) {
+	if (dest + len >= load_limit) {
 		errno = EFBIG;
 		return (-1);
 	}
@@ -201,7 +242,7 @@ i386_copyin(const void *src, vm_offset_t dest, const size_t len)
 ssize_t
 i386_copyout(const vm_offset_t src, void *dest, const size_t len)
 {
-	if (src + len >= memtop) {
+	if (src + len >= load_limit) {
 		errno = EFBIG;
 		return (-1);
 	}
@@ -214,7 +255,7 @@ i386_copyout(const vm_offset_t src, void *dest, const size_t len)
 ssize_t
 i386_readin(const int fd, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= memtop_copyin) {
+	if (dest + len >= load_limit) {
 		errno = EFBIG;
 		return (-1);
 	}

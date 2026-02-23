@@ -290,28 +290,10 @@ multiboot2_loadfile(char *filename, uint64_t dest,
 		fp->f_metadata = NULL;
 		error = 0;
 	} else {
-#if defined(EFI)
-		/* 32-bit kernel is not yet supported for EFI */
-		printf("32-bit kernel is not supported by UEFI loader\n");
+		/* 32-bit kernel is not supported */
+		printf("32-bit kernel is not supported\n");
 		error = ENOTSUP;
 		goto out;
-#endif
-		/* elf32_loadfile_raw will fill the attributes in fp. */
-		error = elf32_loadfile_raw(filename, dest, &fp, 2);
-		if (error != 0) {
-			printf("elf32_loadfile_raw failed: %d unable to "
-			    "load multiboot2 kernel\n", error);
-			goto out;
-		}
-		entry_addr = fp->f_addr;
-		/*
-		 * We want the load_addr to have some legal value,
-		 * so we set it same as the entry_addr.
-		 * The distinction is important with UEFI, but not
-		 * with BIOS version, because BIOS version does not use
-		 * staging area.
-		 */
-		load_addr = fp->f_addr;
 	}
 
 	setenv("kernelname", fp->f_name, 1);
@@ -588,6 +570,7 @@ mb_kernel_cmdline(struct preloaded_file *fp, struct devdesc *rootdev,
     char **line)
 {
 	const char *fs = getenv("fstype");
+	const char *ptr;
 	char *cmdline;
 	size_t len;
 	bool zfs_root = false;
@@ -617,6 +600,30 @@ mb_kernel_cmdline(struct preloaded_file *fp, struct devdesc *rootdev,
 	/* If we have fstype set in env, reset zfs_root if needed. */
 	if (fs != NULL && strcmp(fs, "zfs") != 0)
 		zfs_root = false;
+
+	/*
+	 * The prom_debug/map_debug are actually nasty ones.
+	 * The current code just checks if those options are present and
+	 * not checking the actual value. Should fix it someday.
+	 *
+	 * If we have prom_debug set on the command line, add it to env.
+	 */
+	rv = find_property_value(fp->f_args, "prom_debug", &ptr, &len);
+	if (rv == 0) {
+		if ((len == 4 && strncmp(ptr, "true", len) == 0) ||
+		    strncmp(ptr, "1", 1) == 0)
+			(void) setenv("prom_debug", "true", 1);
+	}
+
+	/*
+	 * If we have map_debug set on the command line, add it to env.
+	 */
+	rv = find_property_value(fp->f_args, "map_debug", &ptr, &len);
+	if (rv == 0) {
+		if ((len == 4 && strncmp(ptr, "true", len) == 0) ||
+		    strncmp(ptr, "1", 1) == 0)
+			(void) setenv("map_debug", "true", 1);
+	}
 
 	/*
 	 * If we have fstype set on the command line,
@@ -925,27 +932,17 @@ multiboot2_exec(struct preloaded_file *fp)
 		error = ENOMEM;
 		goto error;
 	}
-
-	last_addr = efi_loadaddr(LOAD_MEM, &size, mfp->f_addr + mfp->f_size);
-	mbi = (multiboot2_info_header_t *)last_addr;
-	if (mbi == NULL) {
-		error = ENOMEM;
-		goto error;
-	}
-	last_addr = (vm_offset_t)mbi->mbi_tags;
-#else
-	/* Start info block from the new page. */
-	last_addr = i386_loadaddr(LOAD_MEM, &size, mfp->f_addr + mfp->f_size);
-
-	/* Do we have space for multiboot info? */
-	if (last_addr + size >= memtop_copyin) {
-		error = ENOMEM;
-		goto error;
-	}
-
-	mbi = (multiboot2_info_header_t *)PTOV(last_addr);
-	last_addr = (vm_offset_t)mbi->mbi_tags;
 #endif	/* EFI */
+
+	/* Start info block from the new page. */
+	last_addr = archsw.arch_loadaddr(LOAD_MEM, &size,
+	    mfp->f_addr + mfp->f_size);
+	if (last_addr == 0) {
+		error = ENOMEM;
+		goto error;
+	}
+	mbi = (multiboot2_info_header_t *)ptov(last_addr);
+	last_addr = (vm_offset_t)mbi->mbi_tags;
 
 	{
 		multiboot_tag_string_t *tag;
@@ -1340,9 +1337,6 @@ error:
 
 #if defined(EFI)
 	free(relocator);
-
-	if (mbi != NULL)
-		efi_free_loadaddr((vm_offset_t)mbi, EFI_SIZE_TO_PAGES(size));
 #endif
 
 	return (error);
