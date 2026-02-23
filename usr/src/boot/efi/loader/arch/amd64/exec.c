@@ -11,6 +11,7 @@
 
 /*
  * Copyright 2023 Toomas Soome <tsoome@me.com>
+ * Copyright 2026 Copyright 2025 Edgecast Cloud LLC.
  */
 
 #include <sys/cdefs.h>
@@ -18,8 +19,10 @@
 #include <bootstrap.h>
 
 extern struct file_format multiboot2;
+extern struct file_format dboot;
 
 struct file_format *file_formats[] = {
+	&dboot,
 	&multiboot2,
 	NULL
 };

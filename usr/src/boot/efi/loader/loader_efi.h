@@ -33,6 +33,7 @@
 #include <efi.h>
 #include <efilib.h>
 #include <sys/multiboot2.h>
+#include <sys/elf.h>
 #include <sys/queue.h>
 #include <bootstrap.h>
 
@@ -61,6 +62,8 @@ ssize_t	efi_readin(const int, vm_offset_t, const size_t);
 vm_offset_t efi_loadaddr(uint_t, void *, vm_offset_t);
 void efi_free_loadaddr(vm_offset_t, size_t);
 void * efi_translate(vm_offset_t);
+size_t elf_load_size(Elf64_Ehdr *);
+
 vm_offset_t efi_physaddr(multiboot_tag_module_t *, vm_offset_t,
     EFI_MEMORY_DESCRIPTOR *, size_t, UINTN, vm_offset_t, size_t);
 void bi_isadir(void);

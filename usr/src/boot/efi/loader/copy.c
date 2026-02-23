@@ -29,6 +29,7 @@
 #include <sys/cdefs.h>
 
 #include <sys/param.h>
+#include <sys/elf.h>
 #include <sys/multiboot2.h>
 
 #include <stand.h>
@@ -164,16 +165,40 @@ vm_offset_t
 efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 {
 	EFI_PHYSICAL_ADDRESS paddr;
+	EFI_ALLOCATE_TYPE atype;
 	struct stat st;
 	size_t size;
 	uint64_t pages;
+	Elf64_Ehdr *ehdr;
 	EFI_STATUS status;
+
+	/* 4GB upper limit */
+	paddr = UINT32_MAX;
+	/*
+	 * Defeault type is AllocateMaxAddress, that is, the allocated
+	 * uppermost address is set in paddr.
+	 */
+	atype = AllocateMaxAddress;
 
 	if (addr == 0)
 		return (addr);	/* nothing to do */
 
-	if (type == LOAD_ELF)
-		return (0);	/* not supported */
+	if (type == LOAD_ELF) {
+		ehdr = data;
+		paddr = addr;
+		size = elf_load_size(ehdr);
+		status = BS->AllocatePages(AllocateAddress, EfiLoaderData,
+		    EFI_SIZE_TO_PAGES(size), &paddr);
+		if (status != EFI_SUCCESS) {
+			printf("failed to allocate %zu bytes for %p: %lu\n",
+			    size, (void *)(uintptr_t)paddr,
+			    DECODE_ERROR(status));
+		} else {
+			printf("%s: allocated %zu bytes for %p\n", __func__,
+			    size, (void *)(uintptr_t)paddr);
+			return (paddr);
+		}
+	}
 
 	if (type == LOAD_MEM)
 		size = *(size_t *)data;
@@ -187,12 +212,8 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		return (addr);
 
 	pages = EFI_SIZE_TO_PAGES(size);
-	/* 4GB upper limit */
-	paddr = UINT32_MAX;
 
-	status = BS->AllocatePages(AllocateMaxAddress, EfiLoaderData,
-	    pages, &paddr);
-
+	status = BS->AllocatePages(atype, EfiLoaderData, pages, &paddr);
 	if (EFI_ERROR(status)) {
 		printf("failed to allocate %zu bytes for staging area: %lu\n",
 		    size, DECODE_ERROR(status));
