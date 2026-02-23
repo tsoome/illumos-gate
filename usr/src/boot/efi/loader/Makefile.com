@@ -31,6 +31,7 @@ OBJS=	\
 	main.o \
 	memmap.o \
 	mb_header.o \
+	dboot.o \
 	multiboot2.o \
 	nvstore.o \
 	self_reloc.o \
