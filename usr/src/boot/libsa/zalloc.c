@@ -52,18 +52,11 @@
  *	caller must explicitly deallocate portions of the pool to make them
  *	available.
  *
- *	z[n]xalloc() works like z[n]alloc() but the allocation is made from
+ *	znxalloc() works like znalloc() but the allocation is made from
  *	within the specified address range.  If the segment could not be
  *	allocated, NULL is returned.  WARNING!  The address range will be
  *	aligned to an 8 or 16 byte boundry depending on the cpu so if you
  *	give an unaligned address range, unexpected results may occur.
- *
- *	If a standard allocation fails, the reclaim function will be called
- *	to recover some space.  This usually causes other portions of the
- *	same pool to be released.  Memory allocations at this low level
- *	should not block but you can do that too in your reclaim function
- *	if you want.  Reclaim does not function when z[n]xalloc() is used,
- *	only for z[n]alloc().
  *
  *	Allocation and frees of 0 bytes are valid operations.
  */
@@ -75,14 +68,14 @@
  * They must also be aligned to MALLOCALIGN, which should normally be larger
  * than the struct, so assert that to be so at compile time.
  */
-typedef char assert_align[(sizeof (struct MemNode) <= MALLOCALIGN) ? 1 : -1];
+_Static_assert(sizeof (struct MemNode) <= MALLOCALIGN,
+	"struct MemNode must be aligned to MALLOCALIGN");
 
 #define	MEMNODE_SIZE_MASK	MALLOCALIGN_MASK
 
 /*
- * znalloc() -	allocate memory (without zeroing) from pool.  Call reclaim
- *		and retry if appropriate, return NULL if unable to allocate
- *		memory.
+ * znalloc() -	allocate memory (without zeroing) from pool.
+ *		Return NULL if unable to allocate memory.
  */
 
 void *
@@ -161,6 +154,118 @@ znalloc(MemPool *mp, uintptr_t bytes, size_t align)
 	/*
 	 * Memory pool is full, return NULL.
 	 */
+
+	return (NULL);
+}
+
+/*
+ * znxalloc() -  allocate memory from within a specific address region.
+ *		If allocating AT a specific address, then addr2 must be
+ *		set to addr1 + bytes (and this only works if addr1 is
+ *		already aligned).  addr1 and addr2 are aligned by
+ *		MEMNODE_SIZE_MASK + 1 (i.e. they wlill be 8 or 16 byte
+ *		aligned depending on the machine core).
+ */
+
+void *
+znxalloc(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
+{
+	/*
+	 * align according to pool object size (can be 0).  This is
+	 * inclusive of the MEMNODE_SIZE_MASK minimum alignment.
+	 */
+	bytes = (bytes + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK;
+	addr1= (void *)
+	    (((uintptr_t)addr1 + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK);
+	addr2= (void *)
+	    (((uintptr_t)addr2 + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK);
+
+	if (bytes == 0)
+		return (addr1);
+
+	/*
+	 * Locate freelist entry big enough to hold the object that is within
+	 * the allowed address range.
+	 */
+
+	if (bytes <= mp->mp_Size - mp->mp_Used) {
+		MemNode **pmn;
+		MemNode *mn;
+
+		for (pmn = &mp->mp_First; (mn = *pmn) != NULL;
+		    pmn = &mn->mr_Next) {
+			int mrbytes = mn->mr_Bytes;
+			int offset = 0;
+
+			/*
+			 * offset from base of mn to satisfy addr1.
+			 * 0 or positive.
+			 */
+
+			if ((char *)mn < (char *)addr1)
+				offset = (char *)addr1 - (char *)mn;
+
+			/*
+			 * truncate mrbytes to satisfy addr2.
+			 * mrbytes may go negative if the mn is beyond
+			 * the last acceptable address.
+			 */
+
+			if ((char *)mn + mrbytes > (char *)addr2)
+				mrbytes =
+				    (intptr_t)addr2 - (intptr_t)mn; /* signed */
+
+			/*
+			 * beyond last acceptable address.
+			 *
+			 * before first acceptable address
+			 * (if offset > mrbytes, the second conditional will
+			 * always succeed).
+			 *
+			 * area overlapping acceptable address range is not
+			 * big enough.
+			 */
+
+			if (mrbytes < 0)
+				break;
+
+			if (mrbytes - offset < bytes)
+				continue;
+
+			/*
+			 * Cut a chunk of memory out of the block and fixup
+			 * the link appropriately.
+			 *
+			 * If offset != 0, we have to cut a chunk out from
+			 * the middle of the block.
+			 */
+
+			if (offset != 0) {
+				MemNode *mnew =
+				    (MemNode *)((char *)mn + offset);
+
+				mnew->mr_Bytes = mn->mr_Bytes - offset;
+				mnew->mr_Next = mn->mr_Next;
+				mn->mr_Bytes = offset;
+				mn->mr_Next = mnew;
+				pmn = &mn->mr_Next;
+				mn = mnew;
+			}
+
+			char *ptr = (char *)mn;
+			if (mn->mr_Bytes == bytes) {
+				*pmn = mn->mr_Next;
+			} else {
+				mn = (MemNode *)((char *)mn + bytes);
+				mn->mr_Next  = ((MemNode *)ptr)->mr_Next;
+				mn->mr_Bytes =
+				    ((MemNode *)ptr)->mr_Bytes - bytes;
+				*pmn = mn;
+			}
+			mp->mp_Used += bytes;
+			return (ptr);
+		}
+	}
 
 	return (NULL);
 }
