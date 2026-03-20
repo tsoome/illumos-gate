@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Google, Inc.
- * All rights reserved.
+ * Copyright 2026 Edgecast Cloud LLC.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,45 +23,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LIBUSERBOOT_H
-#define	LIBUSERBOOT_H
+	.text
+	.globl	amd64_tramp
+        .globl	amd64_tramp_end
 
-#include "userboot.h"
-
-extern struct loader_callbacks *callbacks;
-extern void *callbacks_arg;
-
-#define	CALLBACK(fn, args...) (callbacks->fn(callbacks_arg, ##args))
-
-#define	MAXDEV	31	/* maximum number of distinct devices */
-
-typedef unsigned long physaddr_t;
-
-/* exported devices */
-extern struct devsw userboot_disk;
-extern int userboot_disk_maxunit;
-extern struct devsw host_dev;
-
-/* access to host filesystem */
-extern struct fs_ops host_fsops;
-
-struct bootinfo;
-struct preloaded_file;
-
-extern void delay(int);
-
-extern int userboot_autoload(void);
-extern ssize_t userboot_copyin(const void *, vm_offset_t, size_t);
-extern ssize_t userboot_copyout(vm_offset_t, void *, size_t);
-extern ssize_t userboot_readin(int, vm_offset_t, size_t);
-extern vm_offset_t userboot_loadaddr(uint_t, void *, vm_offset_t);
-extern int userboot_getdev(void **, const char *, const char **);
-char	*userboot_fmtdev(void *vdev);
-int	userboot_setcurrdev(struct env_var *ev, int flags, const void *value);
-
-int	bi_getboothowto(char *kargs);
-void	bi_setboothowto(int howto);
-vm_offset_t	bi_copyenv(vm_offset_t addr);
-void	bios_addsmapdata(struct preloaded_file *kfp);
-
-#endif	/* LIBUSERBOOT_H */
+/*
+ * Stub symbols to keep linker happy.
+ */
+amd64_tramp:
+	ret
+amd64_tramp_end:

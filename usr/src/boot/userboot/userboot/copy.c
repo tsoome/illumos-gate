@@ -28,6 +28,16 @@
 #include <stand.h>
 #include "libuserboot.h"
 
+vm_offset_t
+userboot_loadaddr(uint_t type, void *data, vm_offset_t addr)
+{
+	/*
+	 * Not yet implemented. Callback is provided to avoid
+	 * NULL pointer dereference.
+	 */
+	return (0);
+}
+
 ssize_t
 userboot_copyin(const void *src, vm_offset_t va, size_t len)
 {

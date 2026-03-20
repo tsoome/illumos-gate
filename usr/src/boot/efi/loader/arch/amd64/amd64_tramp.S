@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 2013 The FreeBSD Foundation
  * All rights reserved.
  *
@@ -24,41 +24,66 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #include <machine/asmacros.h>
+#include <sys/segments.h>
+#include <sys/controlregs.h>
 
 	.text
 	.globl	amd64_tramp
+	.globl	amd64_tramp_end
 
 /*
- * void amd64_tramp(uint64_t stack, void *copy_finish, uint64_t kernend,
- *		    uint64_t modulep, uint64_t pagetable, uint64_t entry)
+ * void amd64_tramp(uint64_t bi, uint64_t stack, uint64_t pagetable,
+ *	uint64_t entry)
  */
 amd64_tramp:
 	cli			/* Make sure we don't get interrupted. */
-	movq	%rdi,%rsp	/* Switch to our temporary stack. */
+	movq	%rsi,%rsp	/* Switch to our temporary stack. */
+	pushq	$0x0
+	pushq	$0x0
+	movq	%rsp,%rbp
 
-	movq	%rdx,%r12	/* Stash the kernel values for later. */
-	movq	%rcx,%r13
-	movq	%r8,%r14
-	movq	%r9,%r15
+	lea	gdt_info(%rip), %rax
+	lgdt	(%rax)
 
-	callq	*%rsi		/* Call copy_finish so we're all ready to go. */
+	pushq	$B64CODE_SEL
+	leaq	sel(%rip), %rax
+	pushq	%rax
+	lretq
+sel:
+	pushq	%rcx		/* Push the entry address. */
+	movq	%rdx,%r8	/* Save page table. */
+	/*
+	 * The kernel entry point we are about to call expects the machine
+	 * state set up by dboot_grub.S (see uts/i86pc/dboot/dboot_grub.S).
+	 * Since we hand off directly to the 64-bit kernel, we must establish
+	 * it here. CR0, CR4.PAE and EFER.LME are already set up as we are
+	 * running in long mode, so we only need PGE, PSE and NXE.
+	 *
+	 * NXE must be enabled before the kernel builds any PTE with the NX
+	 * bit set (bi_use_nx is set from NX_support), otherwise bit 63 is a
+	 * reserved bit and any access through such a PTE will #PF.
+	 */
+	movq	%cr4,%rax
+	testb	$1,pge_support(%rip)
+	jz	1f
+	orq	$CR4_PGE,%rax
+1:
+	testb	$1,largepage_support(%rip)
+	jz	2f
+	orq	$CR4_PSE,%rax
+2:
+	movq	%rax,%cr4
 
-	pushq	%r12		/* Push kernend. */
-	salq	$32,%r13	/* Shift modulep and push it. */
-	pushq	%r13
-	pushq	%r15		/* Push the entry address. */
-	movq	%r14,%cr3	/* Switch page tables. */
+	testb	$1,NX_support(%rip)
+	jz	3f
+	movl	$MSR_AMD_EFER,%ecx
+	rdmsr			/* clobbers %eax and %edx */
+	orl	$AMD_EFER_NXE,%eax
+	wrmsr
+3:
+	movq	%r8,%cr3	/* Switch page tables. */
 	ret			/* "Return" to kernel entry. */
-
-	ALIGN_TEXT
 amd64_tramp_end:
-
-	.data
-	.globl	amd64_tramp_size
-amd64_tramp_size:
-	.long	amd64_tramp_end-amd64_tramp

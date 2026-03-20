@@ -63,21 +63,20 @@ struct fs_ops *file_system[] = {
 	NULL
 };
 
+/* to keep libsa happy */
+struct netif_driver *netif_drivers[] = {
+	NULL
+};
+
 /* Exported for i386 only */
 /*
  * Sort formats so that those that can detect based on arguments
  * rather than reading the file go first.
  */
-extern struct file_format	i386_elf;
-extern struct file_format	i386_elf_obj;
-extern struct file_format	amd64_elf;
-extern struct file_format	amd64_elf_obj;
+extern struct file_format	dboot;
 
 struct file_format *file_formats[] = {
-	&i386_elf,
-	&i386_elf_obj,
-	&amd64_elf,
-	&amd64_elf_obj,
+	&dboot,
 	NULL
 };
 

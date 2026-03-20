@@ -44,6 +44,7 @@ setheap(void *base, void *top)
 	heapbase = (void *)(((uintptr_t)base + MALLOCALIGN_MASK) &
 	    ~MALLOCALIGN_MASK);
 	maxheap = (char *)top - (char *)heapbase;
+	Malloc_init();
 }
 
 void *
