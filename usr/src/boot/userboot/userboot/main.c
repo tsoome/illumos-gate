@@ -29,6 +29,7 @@
 #include <stand.h>
 #include <string.h>
 #include <setjmp.h>
+#include <time.h>
 #include <sys/disk.h>
 #include <sys/zfs_bootenv.h>
 
@@ -61,11 +62,30 @@ struct arch_switch archsw;	/* MI/MD interface boundary */
 static void	extract_currdev(void);
 static void	check_interpreter(void);
 
+int
+mb_kernel_cmdline(struct preloaded_file *fp __unused,
+    struct devdesc *rootdev __unused, char **line __unused)
+{
+	return (0);
+}
+
 void
 delay(int usec)
 {
 
 	CALLBACK(delay, usec);
+}
+
+time_t
+getsecs(void)
+{
+
+	/*
+	 * userboot can't do netboot, so this implementation isn't strictly
+	 * required.  Defining it avoids issues with BIND_NOW, and it doesn't
+	 * hurt to do it.
+	 */
+	return (time(NULL));
 }
 
 void
@@ -137,6 +157,12 @@ ptov(uintptr_t x)
 	return ((caddr_t)x);
 }
 
+uintptr_t
+vtop(caddr_t x)
+{
+	return ((uintptr_t)x);
+}
+
 void
 loader_main(struct loader_callbacks *cb, void *arg, int version, int ndisks)
 {
@@ -184,6 +210,7 @@ loader_main(struct loader_callbacks *cb, void *arg, int version, int ndisks)
 	archsw.arch_copyin = userboot_copyin;
 	archsw.arch_copyout = userboot_copyout;
 	archsw.arch_readin = userboot_readin;
+	archsw.arch_loadaddr = userboot_loadaddr;
 	archsw.arch_zfs_probe = userboot_zfs_probe;
 
 	/*

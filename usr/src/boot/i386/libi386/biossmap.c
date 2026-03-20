@@ -50,7 +50,14 @@ struct smap_buf {
 
 static struct bios_smap		*smapbase;
 static uint32_t			*smapattr;
-static u_int			smaplen;
+static uint_t			smaplen;
+
+struct bios_smap *
+bios_smap_info(uint_t *lenp)
+{
+	*lenp = smaplen;
+	return (smapbase);
+}
 
 void
 bios_getsmap(void)
@@ -59,7 +66,7 @@ bios_getsmap(void)
 	STAILQ_HEAD(smap_head, smap_buf) head =
 	    STAILQ_HEAD_INITIALIZER(head);
 	struct smap_buf		*cur, *next;
-	u_int			n, x;
+	uint_t			n, x;
 
 	STAILQ_INIT(&head);
 	n = 0;
@@ -75,10 +82,10 @@ bios_getsmap(void)
 		v86.edi = VTOPOFF(&buf);
 		v86int();
 		if (V86_CY(v86.efl) || v86.eax != SMAP_SIG ||
-		    v86.ecx < sizeof(buf.smap) || v86.ecx > SMAP_BUFSIZE)
+		    v86.ecx < sizeof (buf.smap) || v86.ecx > SMAP_BUFSIZE)
 			break;
 
-		next = malloc(sizeof(*next));
+		next = malloc(sizeof (*next));
 		if (next == NULL)
 			break;
 		next->smap = buf.smap;
@@ -92,14 +99,14 @@ bios_getsmap(void)
 	smaplen = n;
 
 	if (smaplen > 0) {
-		smapbase = malloc(smaplen * sizeof(*smapbase));
+		smapbase = malloc(smaplen * sizeof (*smapbase));
 		if (smapbase != NULL) {
 			n = 0;
 			STAILQ_FOREACH(cur, &head, bufs)
 				smapbase[n++] = cur->smap;
 		}
 		if (smaplen == x) {
-			smapattr = malloc(smaplen * sizeof(*smapattr));
+			smapattr = malloc(smaplen * sizeof (*smapattr));
 			if (smapattr != NULL) {
 				n = 0;
 				STAILQ_FOREACH(cur, &head, bufs)
@@ -124,10 +131,10 @@ bios_addsmapdata(struct preloaded_file *kfp)
 
 	if (smapbase == NULL || smaplen == 0)
 		return;
-	size = smaplen * sizeof(*smapbase);
+	size = smaplen * sizeof (*smapbase);
 	file_addmetadata(kfp, MODINFOMD_SMAP, size, smapbase);
 	if (smapattr != NULL) {
-		size = smaplen * sizeof(*smapattr);
+		size = smaplen * sizeof (*smapattr);
 		file_addmetadata(kfp, MODINFOMD_SMAP_XATTR, size, smapattr);
 	}
 }
@@ -137,13 +144,14 @@ COMMAND_SET(smap, "smap", "show BIOS SMAP", command_smap);
 static int
 command_smap(int argc __unused, char *argv[] __unused)
 {
-	u_int			i;
+	uint_t			i;
 
 	if (smapbase == NULL || smaplen == 0)
 		return (CMD_ERROR);
 	if (smapattr != NULL)
 		for (i = 0; i < smaplen; i++)
-			printf("SMAP type=%02x base=%016llx len=%016llx attr=%02x\n",
+			printf("SMAP type=%02x base=%016llx len=%016llx "
+			    "attr=%02x\n",
 			    (unsigned int)smapbase[i].type,
 			    (unsigned long long)smapbase[i].base,
 			    (unsigned long long)smapbase[i].length,

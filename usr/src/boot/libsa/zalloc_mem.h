@@ -36,17 +36,26 @@
 #ifndef _ZALLOC_MEM_H
 #define	_ZALLOC_MEM_H
 
+struct MemPool;
+
+typedef void *(zalloc_alloc_t)(struct MemPool *, uintptr_t, size_t *);
+typedef void (zalloc_free_t)(void *);
+
 typedef struct MemNode {
 	struct MemNode	*mr_Next;
-	uintptr_t	mr_Bytes;
+	uint64_t	mr_Bytes;
 } MemNode;
 
 typedef struct MemPool {
+	zalloc_alloc_t	*mp_alloc;
+	zalloc_free_t	*mp_free;
+	size_t		mp_blksz;	/* allocation block size */
 	void		*mp_Base;
 	void		*mp_End;
 	MemNode		*mp_First;
-	uintptr_t	mp_Size;
-	uintptr_t	mp_Used;
+	uint64_t	mp_Size;
+	uint64_t	mp_Used;
+	struct MemPool	*mp_next;	/* Next segment */
 } MemPool;
 
 #define	ZNOTE_FREE	0

@@ -36,3 +36,6 @@ $(OBJS):	machine x86
 
 %.o: ../../../i386/libi386/%.c
 	$(COMPILE.c) $<
+
+%.o: ../../../i386/common/%.c
+	$(COMPILE.c) $<
