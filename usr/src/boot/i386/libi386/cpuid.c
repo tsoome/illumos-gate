@@ -27,14 +27,22 @@
 #include <sys/cdefs.h>
 
 #include <stand.h>
+#include <stdbool.h>
 #include <machine/psl.h>
 #include <machine/cpufunc.h>
 #include <machine/specialreg.h>
 
+bool largepage_support = false;
+bool pge_support = false;
+bool pae_support = false;
+bool PAT_support = false;
+bool amd64_support = false;
+bool NX_support = false;
+
 /*
  * Check to see if this CPU supports long mode.
  */
-int
+bool
 bi_checkcpu(void)
 {
 	unsigned long flags;
@@ -42,19 +50,18 @@ bi_checkcpu(void)
 	unsigned int maxeax;
 	unsigned int max_maxeax = 0x100;
 	unsigned int stdfeatures = 0, xtdfeatures = 0;
-	int amd64 = 0;
 
 	/* Check for presence of "cpuid". */
 #if defined(__LP64__)
 	flags = read_rflags();
 	write_rflags(flags ^ PSL_ID);
 	if (!((flags ^ read_rflags()) & PSL_ID))
-		return (0);
+		return (amd64_support);
 #else
 	flags = read_eflags();
 	write_eflags(flags ^ PSL_ID);
 	if (!((flags ^ read_eflags()) & PSL_ID))
-		return (0);
+		return (amd64_support);
 #endif /* __LP64__ */
 
 	/* Fetch the vendor string. */
@@ -67,7 +74,7 @@ bi_checkcpu(void)
 	if (maxeax > max_maxeax)
 		maxeax = max_maxeax;
 	if (maxeax < 1)
-		return (0);
+		return (amd64_support);
 	else {
 		do_cpuid(1, regs);
 		stdfeatures = regs[3];
@@ -88,43 +95,56 @@ bi_checkcpu(void)
 
 	/* Check for long mode. */
 	if (xtdfeatures & AMDID_LM)
-		amd64++;
+		amd64_support = true;
+
+	if (xtdfeatures & AMDID_NX)
+		NX_support = true;
 
 	/* Check for FPU. */
 	if ((stdfeatures & CPUID_FPU) == 0)
-		amd64 = 0;
+		amd64_support = false;
+
+	if ((stdfeatures & CPUID_PSE) != 0)
+		largepage_support = true;
 
 	if ((stdfeatures & CPUID_TSC) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_MSR) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_PAE) == 0)
-		amd64 = 0;
+		amd64_support = false;
+	else
+		pae_support = true;
 
 	if ((stdfeatures & CPUID_CX8) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_PGE) == 0)
-		amd64 = 0;
+		amd64_support = false;
+	else
+		pge_support = true;
+
+	if ((stdfeatures & CPUID_PAT) != 0)
+		PAT_support = true;
 
 	if ((stdfeatures & CPUID_CLFSH) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_MMX) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_FXSR) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_SSE) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
 	if ((stdfeatures & CPUID_SSE2) == 0)
-		amd64 = 0;
+		amd64_support = false;
 
-	return (amd64);
+	return (amd64_support);
 }
 
 void

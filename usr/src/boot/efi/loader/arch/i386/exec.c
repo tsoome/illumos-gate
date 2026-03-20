@@ -14,6 +14,7 @@
  */
 
 #include <sys/cdefs.h>
+#include <sys/elf.h>
 #include <stand.h>
 #include <bootstrap.h>
 

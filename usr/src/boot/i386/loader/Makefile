@@ -42,7 +42,7 @@ install: all $(ROOTBOOTLOADER)
 PROG=		$(LOADER).sym
 
 # architecture-specific loader code
-SRCS=		main.c conf.c vers.c chain.c panic_action.c
+SRCS=		main.c conf.c vers.c chain.c panic_action.c elf.c
 
 panic_action.o := CFLAGS += -_gcc14=--param=min-pagesize=0
 panic_action.o := CFLAGS += -_gcc15=--param=min-pagesize=0
@@ -56,14 +56,11 @@ LIBFICL=	-L../../libficl/$(MACH) -lficl
 SRCS +=	boot.c commands.c console.c devopen.c interp.c
 SRCS +=	interp_backslash.c interp_parse.c ls.c misc.c
 SRCS +=	module.c linenoise.c multiboot2.c nvstore.c
-SRCS +=	zfs_cmd.c
+SRCS +=	zfs_cmd.c dboot.c boot_mmu.c
 SRCS +=	font.c $(FONT).c tem.c
 
 module.o := CPPFLAGS += -I$(CRYPTOSRC)
 tem.o := CPPFLAGS += $(DEFAULT_CONSOLE_COLOR)
-
-SRCS +=	load_elf32.c load_elf32_obj.c reloc_elf32.c
-SRCS +=	load_elf64.c load_elf64_obj.c reloc_elf64.c
 
 SRCS +=	dev_net.c
 
@@ -107,6 +104,9 @@ conf.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 multiboot2.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
 main.o := CPPFLAGS += -I../../sys/cddl/boot/zfs -I$(SRC)/uts/common/fs/zfs
 zfs_cmd.o := CPPFLAGS += -I../../sys/cddl/boot/zfs
+dboot.o := CPPFLAGS += -I$(PNGLITE)
+boot_mmu.o dboot.o := CPPFLAGS += -I$(SRC)/uts/intel -D_BOOT_TARGET_amd64
+boot_mmu.o dboot.o := CPPFLAGS += -I$(SRC)/uts/i86pc
 
 # For multiboot2.h, must be last, to avoid conflicts
 CPPFLAGS +=	-I$(SRC)/uts/common
@@ -154,6 +154,9 @@ clobber:
 	$(RM) $(CLEANFILES) $(OBJS)
 
 install: all $(ROOTBOOTFILES)
+
+%.o:	../common/%.c
+	$(COMPILE.c) -o $@ $<
 
 %.o:	../../common/%.c
 	$(COMPILE.c) -o $@ $<

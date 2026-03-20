@@ -1,7 +1,4 @@
 /*
- * Copyright (c) 2011 Google, Inc.
- * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -24,44 +21,20 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LIBUSERBOOT_H
-#define	LIBUSERBOOT_H
+#include <stand.h>
+#include <stdbool.h>
+#include "platform/acfreebsd.h"
+#include "acconfig.h"
+#define	ACPI_SYSTEM_XFACE
+#include "actypes.h"
+#include "actbl.h"
+#include "actbl3.h"
 
-#include "userboot.h"
+ACPI_TABLE_RSDP *rsdp = NULL;
 
-extern struct loader_callbacks *callbacks;
-extern void *callbacks_arg;
-
-#define	CALLBACK(fn, args...) (callbacks->fn(callbacks_arg, ##args))
-
-#define	MAXDEV	31	/* maximum number of distinct devices */
-
-typedef unsigned long physaddr_t;
-
-/* exported devices */
-extern struct devsw userboot_disk;
-extern int userboot_disk_maxunit;
-extern struct devsw host_dev;
-
-/* access to host filesystem */
-extern struct fs_ops host_fsops;
-
-struct bootinfo;
-struct preloaded_file;
-
-extern void delay(int);
-
-extern int userboot_autoload(void);
-extern ssize_t userboot_copyin(const void *, vm_offset_t, size_t);
-extern ssize_t userboot_copyout(vm_offset_t, void *, size_t);
-extern ssize_t userboot_readin(int, vm_offset_t, size_t);
-extern int userboot_getdev(void **, const char *, const char **);
-char	*userboot_fmtdev(void *vdev);
-int	userboot_setcurrdev(struct env_var *ev, int flags, const void *value);
-
-int	bi_getboothowto(char *kargs);
-void	bi_setboothowto(int howto);
-vm_offset_t	bi_copyenv(vm_offset_t addr);
-void	bios_addsmapdata(struct preloaded_file *kfp);
-
-#endif	/* LIBUSERBOOT_H */
+bool largepage_support = true;
+bool pge_support = true;
+bool pae_support = true;
+bool PAT_support = true;
+bool amd64_support = true;
+bool NX_support = true;

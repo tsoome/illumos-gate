@@ -52,18 +52,11 @@
  *	caller must explicitly deallocate portions of the pool to make them
  *	available.
  *
- *	z[n]xalloc() works like z[n]alloc() but the allocation is made from
+ *	znxalloc() works like znalloc() but the allocation is made from
  *	within the specified address range.  If the segment could not be
  *	allocated, NULL is returned.  WARNING!  The address range will be
  *	aligned to an 8 or 16 byte boundry depending on the cpu so if you
  *	give an unaligned address range, unexpected results may occur.
- *
- *	If a standard allocation fails, the reclaim function will be called
- *	to recover some space.  This usually causes other portions of the
- *	same pool to be released.  Memory allocations at this low level
- *	should not block but you can do that too in your reclaim function
- *	if you want.  Reclaim does not function when z[n]xalloc() is used,
- *	only for z[n]alloc().
  *
  *	Allocation and frees of 0 bytes are valid operations.
  */
@@ -75,18 +68,122 @@
  * They must also be aligned to MALLOCALIGN, which should normally be larger
  * than the struct, so assert that to be so at compile time.
  */
-typedef char assert_align[(sizeof (struct MemNode) <= MALLOCALIGN) ? 1 : -1];
+_Static_assert(sizeof (struct MemNode) <= MALLOCALIGN,
+    "struct MemNode must be aligned to MALLOCALIGN");
 
 #define	MEMNODE_SIZE_MASK	MALLOCALIGN_MASK
 
+void
+zalloc_init(MemPool *mp, size_t blksz, zalloc_alloc_t *allocf,
+    zalloc_free_t *freef)
+{
+	mp->mp_alloc = allocf;
+	mp->mp_free = freef;
+	mp->mp_blksz = blksz;
+}
+
 /*
- * znalloc() -	allocate memory (without zeroing) from pool.  Call reclaim
- *		and retry if appropriate, return NULL if unable to allocate
- *		memory.
+ * Free memory segment and mp.
+ */
+static void
+zalloc_fini_impl(MemPool *mp)
+{
+	if (mp == NULL)
+		return;
+
+	zalloc_fini_impl(mp->mp_next);
+	if (mp->mp_free != NULL)
+		mp->mp_free(mp);
+	free(mp);
+}
+
+/*
+ * Free memory segments and zero mp.
+ */
+void
+zalloc_fini(MemPool *mp)
+{
+	zalloc_fini_impl(mp->mp_next);
+	if (mp->mp_free != NULL && mp->mp_Size != 0)
+		mp->mp_free(mp);
+	bzero(mp, sizeof (*mp));
+}
+
+/*
+ * Wrapper around znalloc(). We need this because znalloc_impl
+ * is assuming it can use MALLOCALIGN, and if we want to use znalloc()
+ * outside with custom mempool, we would need to implement MALLOCALIGN
+ * setup too.
+ */
+void *
+znalloc_align(MemPool *mp, size_t bytes, size_t alignment)
+{
+	Guard *res;
+
+#ifdef USEENDGUARD
+	bytes += MALLOCALIGN + 1;
+#else
+	bytes += MALLOCALIGN;
+#endif
+
+	res = znalloc(mp, bytes, alignment);
+	if (res == (void *)-1 || res == NULL)
+		return (NULL);
+
+#ifdef USEGUARD
+	res->ga_Magic = GAMAGIC;
+#endif
+	res->ga_Bytes = bytes;
+#ifdef USEENDGUARD
+	*((signed char *)res + bytes - 1) = -2;
+#endif
+
+	return ((char *)res + MALLOCALIGN);
+}
+
+/*
+ * Wrapper to pair znalloc_align() with free() function (see above).
+ */
+void
+znalloc_free(MemPool *mp, void *ptr)
+{
+	size_t bytes;
+
+	if (ptr != NULL) {
+		Guard *res = (void *)((char *)ptr - MALLOCALIGN);
+
+#ifdef USEGUARD
+		if (res->ga_Magic == GAFREE) {
+			printf("free: duplicate free @ %p\n", ptr);
+			return;
+		}
+		if (res->ga_Magic != GAMAGIC)
+			panic("free: guard1 fail @ %p", ptr);
+		res->ga_Magic = GAFREE;
+#endif
+#ifdef USEENDGUARD
+		if (*((signed char *)res + res->ga_Bytes - 1) == -1) {
+			printf("free: duplicate2 free @ %p\n", ptr);
+			return;
+		}
+		if (*((signed char *)res + res->ga_Bytes - 1) != -2)
+			panic("free: guard2 fail @ %p + %zu",
+			    ptr, res->ga_Bytes - MALLOCALIGN);
+		*((signed char *)res + res->ga_Bytes - 1) = -1;
+#endif
+
+		bytes = res->ga_Bytes;
+		zfree(mp, res, bytes);
+	}
+}
+
+/*
+ * znalloc_impl() -	allocate memory (without zeroing) from pool.
+ *		Return NULL if unable to allocate memory.
  */
 
-void *
-znalloc(MemPool *mp, uintptr_t bytes, size_t align)
+static void *
+znalloc_impl(MemPool *mp, uint64_t bytes, size_t align)
 {
 	MemNode **pmn;
 	MemNode *mn;
@@ -106,56 +203,70 @@ znalloc(MemPool *mp, uintptr_t bytes, size_t align)
 	 * are the same size, this is a constant-time function.
 	 */
 
-	if (bytes > mp->mp_Size - mp->mp_Used)
-		return (NULL);
-
-	for (pmn = &mp->mp_First; (mn = *pmn) != NULL; pmn = &mn->mr_Next) {
-		char *ptr = (char *)mn;
-		uintptr_t dptr;
-		char *aligned;
-		size_t extra;
-
-		dptr = (uintptr_t)(ptr + MALLOCALIGN);	/* pointer to data */
-		aligned = (char *)(roundup2(dptr, align) - MALLOCALIGN);
-		extra = aligned - ptr;
-
-		if (bytes + extra > mn->mr_Bytes)
-			continue;
-
-		/*
-		 * Cut extra from head and create new memory node from
-		 * remainder.
-		 */
-
-		if (extra != 0) {
-			MemNode *new;
-
-			new = (MemNode *)aligned;
-			new->mr_Next = mn->mr_Next;
-			new->mr_Bytes = mn->mr_Bytes - extra;
-
-			/* And update current memory node */
-			mn->mr_Bytes = extra;
-			mn->mr_Next = new;
-			/* In next iteration, we will get our aligned address */
+	while (mp != NULL) {
+		if (bytes > mp->mp_Size - mp->mp_Used) {
+			/* Not enough free space, try next segment. */
+			mp = mp->mp_next;
 			continue;
 		}
 
-		/*
-		 *  Cut a chunk of memory out of the beginning of this
-		 *  block and fixup the link appropriately.
-		 */
+		/* Try to find space from free lists */
+		for (pmn = &mp->mp_First; (mn = *pmn) != NULL;
+		    pmn = &mn->mr_Next) {
+			char *ptr = (char *)mn;
+			uintptr_t dptr;
+			char *aligned;
+			size_t extra;
 
-		if (mn->mr_Bytes == bytes) {
-			*pmn = mn->mr_Next;
-		} else {
-			mn = (MemNode *)((char *)mn + bytes);
-			mn->mr_Next  = ((MemNode *)ptr)->mr_Next;
-			mn->mr_Bytes = ((MemNode *)ptr)->mr_Bytes - bytes;
-			*pmn = mn;
+			/* pointer to data */
+			dptr = (uintptr_t)(ptr + MALLOCALIGN);
+			aligned = (char *)(roundup2(dptr, align) - MALLOCALIGN);
+			extra = aligned - ptr;
+
+			if (bytes + extra > mn->mr_Bytes)
+				continue;
+
+			/*
+			 * Cut extra from head and create new memory node from
+			 * remainder.
+			 */
+
+			if (extra != 0) {
+				MemNode *new;
+
+				new = (MemNode *)aligned;
+				new->mr_Next = mn->mr_Next;
+				new->mr_Bytes = mn->mr_Bytes - extra;
+
+				/* And update current memory node. */
+				mn->mr_Bytes = extra;
+				mn->mr_Next = new;
+				/*
+				 * In next iteration, we will get our
+				 * aligned address.
+				 */
+				continue;
+			}
+
+			/*
+			 *  Cut a chunk of memory out of the beginning of this
+			 *  block and fixup the link appropriately.
+			 */
+
+			if (mn->mr_Bytes == bytes) {
+				*pmn = mn->mr_Next;
+			} else {
+				mn = (MemNode *)((char *)mn + bytes);
+				mn->mr_Next  = ((MemNode *)ptr)->mr_Next;
+				mn->mr_Bytes = ((MemNode *)ptr)->mr_Bytes -
+				    bytes;
+				*pmn = mn;
+			}
+			mp->mp_Used += bytes;
+			return (ptr);
 		}
-		mp->mp_Used += bytes;
-		return (ptr);
+		/* Get next segment. */
+		mp = mp->mp_next;
 	}
 
 	/*
@@ -165,12 +276,219 @@ znalloc(MemPool *mp, uintptr_t bytes, size_t align)
 	return (NULL);
 }
 
+
+void *
+znalloc(MemPool *mp, size_t bytes, size_t align)
+{
+	void *res = (void *)-1;
+
+	if (bytes == 0)
+		return (res);
+
+	while ((res = znalloc_impl(mp, bytes, align)) == NULL) {
+		size_t incr;
+
+		incr = bytes;
+		if (align > MALLOCALIGN)
+			incr += align - MALLOCALIGN;
+
+		if (mp->mp_blksz != 0)
+			incr = roundup2(incr, mp->mp_blksz);
+
+		if (mp->mp_alloc == NULL)
+			break;
+
+		res = mp->mp_alloc(mp, 0, &incr);
+		if (res == (void *)-1)
+			return (res);
+
+		zextendPool(mp, res, incr);
+		zfree(mp, res, incr);
+	}
+	return (res);
+}
+
+/*
+ * znxalloc() -  allocate memory from within a specific address region.
+ *		If allocating AT a specific address, then addr2 must be
+ *		set to addr1 + bytes (and this only works if addr1 is
+ *		already aligned).  addr1 and addr2 are aligned by
+ *		MEMNODE_SIZE_MASK + 1 (i.e. they will be 8 or 16 byte
+ *		aligned depending on the machine core).
+ */
+
+static void *
+znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uint64_t bytes)
+{
+	/*
+	 * align according to pool object size (can be 0).  This is
+	 * inclusive of the MEMNODE_SIZE_MASK minimum alignment.
+	 */
+	bytes = (bytes + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK;
+	addr1 = (void *)
+	    (((uintptr_t)addr1 + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK);
+	addr2 = (void *)
+	    (((uintptr_t)addr2 + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK);
+
+	if (bytes == 0)
+		return (addr1);
+
+	while (mp != NULL) {
+		if ((char *)addr1 < (char *)mp->mp_Base ||
+		    (char *)addr2 > (char *)mp->mp_End)
+			mp = mp->mp_next;
+		else
+			break;
+	}
+
+	if (mp == NULL)
+		return (NULL);
+
+	/*
+	 * Locate freelist entry big enough to hold the object that is within
+	 * the allowed address range.
+	 */
+
+	if (bytes <= mp->mp_Size - mp->mp_Used) {
+		MemNode **pmn;
+		MemNode *mn;
+
+		for (pmn = &mp->mp_First; (mn = *pmn) != NULL;
+		    pmn = &mn->mr_Next) {
+			int64_t mrbytes = mn->mr_Bytes;
+			int64_t offset = 0;
+
+			/*
+			 * offset from base of mn to satisfy addr1.
+			 * 0 or positive.
+			 */
+
+			if ((char *)mn < (char *)addr1)
+				offset = (char *)addr1 - (char *)mn;
+
+			/*
+			 * truncate mrbytes to satisfy addr2.
+			 * mrbytes may go negative if the mn is beyond
+			 * the last acceptable address.
+			 */
+
+			if ((char *)mn + mrbytes > (char *)addr2)
+				mrbytes =
+				    (intptr_t)addr2 - (intptr_t)mn; /* signed */
+
+			/*
+			 * beyond last acceptable address.
+			 *
+			 * before first acceptable address
+			 * (if offset > mrbytes, the second conditional will
+			 * always succeed).
+			 *
+			 * area overlapping acceptable address range is not
+			 * big enough.
+			 */
+
+			if (mrbytes < 0)
+				break;
+
+			if (mrbytes - offset < (int64_t)bytes)
+				continue;
+
+			/*
+			 * Cut a chunk of memory out of the block and fixup
+			 * the link appropriately.
+			 *
+			 * If offset != 0, we have to cut a chunk out from
+			 * the middle of the block.
+			 */
+
+			if (offset != 0) {
+				MemNode *mnew =
+				    (MemNode *)((char *)mn + offset);
+
+				mnew->mr_Bytes = mn->mr_Bytes - offset;
+				mnew->mr_Next = mn->mr_Next;
+				mn->mr_Bytes = offset;
+				mn->mr_Next = mnew;
+				pmn = &mn->mr_Next;
+				mn = mnew;
+			}
+
+			char *ptr = (char *)mn;
+			if (mn->mr_Bytes == bytes) {
+				*pmn = mn->mr_Next;
+			} else {
+				mn = (MemNode *)((char *)mn + bytes);
+				mn->mr_Next  = ((MemNode *)ptr)->mr_Next;
+				mn->mr_Bytes =
+				    ((MemNode *)ptr)->mr_Bytes - bytes;
+				*pmn = mn;
+			}
+			mp->mp_Used += bytes;
+			return (ptr);
+		}
+	}
+
+	return (NULL);
+}
+
+void *
+znxalloc(MemPool *mp, void *addr1, void *addr2, size_t bytes)
+{
+	void *res = (void *)-1;
+
+	if (bytes == 0)
+		return (res);
+
+	while ((res = znxalloc_impl(mp, addr1, addr2, bytes)) == NULL) {
+		size_t incr;
+
+		/*
+		 * If our pool segment base address is larger than addr1,
+		 * then allocating next segment will not get us smaller
+		 * base address.
+		 * This is because we do not allocate segments for heap
+		 * and load pool addresses will only grow.
+		 */
+		for (MemPool *p = mp; p != NULL; p = p->mp_next) {
+			if (addr1 < p->mp_Base)
+				return (NULL);
+		}
+
+		if (mp->mp_blksz == 0)
+			incr = bytes;
+		else
+			incr = (bytes + (mp->mp_blksz - 1)) &
+			    ~(mp->mp_blksz - 1);
+
+		if (mp->mp_alloc == NULL)
+			break;
+
+		res = mp->mp_alloc(mp, (uintptr_t)addr1, &incr);
+		if (res == (void *)-1)
+			return (NULL);
+		zextendPool(mp, res, incr);
+		zfree(mp, res, incr);
+
+		/*
+		 * Reserve unused space before addr1.
+		 * We get page aligned memory from mp_alloc() and
+		 * we do not want to store anything before kernel.
+		 */
+		size_t sz = (uintptr_t)addr1 - (uintptr_t)mp->mp_Base;
+
+		if (mp->mp_next == NULL && addr1 > mp->mp_Base && sz > 0) {
+			(void) znxalloc_impl(mp, mp->mp_Base, addr1, sz);
+		}
+	}
+	return (res);
+}
+
 /*
  * zfree() - free previously allocated memory
  */
 
 void
-zfree(MemPool *mp, void *ptr, uintptr_t bytes)
+zfree(MemPool *mp, void *ptr, size_t bytes)
 {
 	MemNode **pmn;
 	MemNode *mn;
@@ -184,12 +502,18 @@ zfree(MemPool *mp, void *ptr, uintptr_t bytes)
 	if (bytes == 0)
 		return;
 
+	while (mp != NULL) {
+		if ((char *)ptr < (char *)mp->mp_Base ||
+		    (char *)ptr + bytes > (char *)mp->mp_End)
+			mp = mp->mp_next;
+		else
+			break;
+	}
+
 	/*
 	 * panic if illegal pointer
 	 */
-
-	if ((char *)ptr < (char *)mp->mp_Base ||
-	    (char *)ptr + bytes > (char *)mp->mp_End ||
+	if (mp == NULL ||
 	    ((uintptr_t)ptr & MEMNODE_SIZE_MASK) != 0)
 		panic("zfree(%p,%ju): wild pointer", ptr, (uintmax_t)bytes);
 
@@ -268,70 +592,131 @@ zfree(MemPool *mp, void *ptr, uintptr_t bytes)
 /*
  * zextendPool() - extend memory pool to cover additional space.
  *
- *		   Note: the added memory starts out as allocated, you
- *		   must free it to make it available to the memory subsystem.
+ * Note: the added memory starts out as allocated, you
+ * must free it to make it available to the memory subsystem.
  *
- *		   Note: mp_Size may not reflect (mp_End - mp_Base) range
- *		   due to other parts of the system doing their own sbrk()
- *		   calls.
+ * if non-contiguous segment is added to pool, we will create
+ * new mempool segment via mp_next pointer.
  */
 
 void
-zextendPool(MemPool *mp, void *base, uintptr_t bytes)
+zextendPool(MemPool *mp, void *base, size_t bytes)
 {
+	MemPool *pool;
+
 	if (mp->mp_Size == 0) {
 		mp->mp_Base = base;
 		mp->mp_Used = bytes;
 		mp->mp_End = (char *)base + bytes;
 		mp->mp_Size = bytes;
-	} else {
-		void *pend = (char *)mp->mp_Base + mp->mp_Size;
-
-		if (base < mp->mp_Base) {
-			mp->mp_Size += (char *)mp->mp_Base - (char *)base;
-			mp->mp_Used += (char *)mp->mp_Base - (char *)base;
-			mp->mp_Base = base;
-		}
-		base = (char *)base + bytes;
-		if (base > pend) {
-			mp->mp_Size += (char *)base - (char *)pend;
-			mp->mp_Used += (char *)base - (char *)pend;
-			mp->mp_End = (char *)base;
-		}
+		return;
 	}
+
+	if (base < mp->mp_Base &&
+	    base + bytes == mp->mp_Base) {
+		mp->mp_Size += bytes;
+		mp->mp_Used += bytes;
+		mp->mp_Base = base;
+		return;
+	}
+
+	if (base == mp->mp_End) {
+		mp->mp_Size += bytes;
+		mp->mp_Used += bytes;
+		mp->mp_End += bytes;
+		return;
+	}
+
+	pool = calloc(1, sizeof (*pool));
+	if (pool == NULL)
+		panic("%s: out of memory", __func__);
+
+	pool->mp_alloc = mp->mp_alloc;
+	pool->mp_free = mp->mp_free;
+	pool->mp_blksz = mp->mp_blksz;
+	pool->mp_Base = base;
+	pool->mp_Used = bytes;
+	pool->mp_End = (char *)base + bytes;
+	pool->mp_Size = bytes;
+	while (mp->mp_next != NULL)
+		mp = mp->mp_next;
+	mp->mp_next = pool;
+}
+
+/*
+ * Return highest allocated address across the memory pool segments.
+ */
+void *
+zalloc_last_addr(MemPool *mp)
+{
+	char *last = NULL;
+
+	for (; mp != NULL; mp = mp->mp_next) {
+		MemNode *mn;
+		char *top;
+
+		/* Segment is not set up yet */
+		if (mp->mp_Size == 0)
+			continue;
+
+		mn = mp->mp_First;
+		if (mn == NULL) {
+			/* Whole segment is allocated */
+			top = mp->mp_End;
+		} else {
+			/* Walk to last MemNode */
+			while (mn->mr_Next != NULL)
+				mn = mn->mr_Next;
+
+			if ((char *)mn + mn->mr_Bytes == (char *)mp->mp_End)
+				top = (char *)mn;
+			else
+				top = mp->mp_End;
+		}
+
+		/* Nothing is allocated from this segment. */
+		if (top == (char *)mp->mp_Base)
+			continue;
+
+		if (last == NULL || top > last)
+			last = top;
+	}
+
+	return (last);
 }
 
 #ifdef ZALLOCDEBUG
-
 void
 zallocstats(MemPool *mp)
 {
-	int abytes = 0;
-	int hbytes = 0;
-	int fcount = 0;
-	MemNode *mn;
+	unsigned pool;
 
-	printf("%d bytes reserved", (int)mp->mp_Size);
+	for (pool = 0; mp != NULL; mp = mp->mp_next, pool++) {
+		uint64_t fbytes = 0;	/* total free */
+		uint64_t hbytes = 0;
+		uint64_t fcount = 0;
+		MemNode *mn;
 
-	mn = mp->mp_First;
-
-	if ((void *)mn != (void *)mp->mp_Base) {
-		abytes += (char *)mn - (char *)mp->mp_Base;
-	}
-
-	while (mn != NULL) {
-		if ((char *)mn + mn->mr_Bytes != mp->mp_End) {
-			hbytes += mn->mr_Bytes;
-			++fcount;
+		for (mn = mp->mp_First; mn != NULL; mn = mn->mr_Next) {
+			fbytes += mn->mr_Bytes;
+			if ((char *)mn + mn->mr_Bytes != (char *)mp->mp_End) {
+				hbytes += mn->mr_Bytes;
+				fcount++;
+			}
 		}
-		if (mn->mr_Next != NULL) {
-			abytes += (char *)mn->mr_Next -
-			    ((char *)mn + mn->mr_Bytes);
+
+
+		printf("\nMemory pool segment %u [%p - %p]:\n", pool,
+		    mp->mp_Base, mp->mp_End);
+		printf("%ju bytes reserved %ju bytes allocated\n",
+		    (uintmax_t)mp->mp_Size, (uintmax_t)(mp->mp_Size - fbytes));
+		printf("%ju fragments (%ju bytes fragmented)\n",
+		    (uintmax_t)fcount, (uintmax_t)hbytes);
+		if (mp->mp_Size - fbytes != mp->mp_Used) {
+			printf("WARNING: mp_Used %ju != computed %ju\n",
+			    (uintmax_t)mp->mp_Used,
+			    (uintmax_t)(mp->mp_Size - fbytes));
 		}
-		mn = mn->mr_Next;
 	}
-	printf(" %d bytes allocated\n%d fragments (%d bytes fragmented)\n",
-	    abytes, fcount, hbytes);
 }
-
 #endif

@@ -200,7 +200,10 @@ extern struct open_file *fd2open_file(int);
 /* Mode modifier for strategy() */
 #define	F_NORA		(0x01 << 16)	/* Disable Read-Ahead */
 
-#define	isascii(c)	(((c) & ~0x7F) == 0)
+static __inline int isascii(int c)
+{
+	return (((c) & ~0x7F) == 0);
+}
 
 static __inline int isupper(int c)
 {
@@ -433,6 +436,7 @@ extern uint16_t		ntohs(uint16_t);
 #define	ntohs(x)	__ntohs(x)
 #endif
 
+void Malloc_init(void);
 void *Malloc(size_t, const char *, int);
 void *Memalign(size_t, size_t, const char *, int);
 void *Calloc(size_t, size_t, const char *, int);

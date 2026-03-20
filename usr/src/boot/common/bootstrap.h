@@ -289,31 +289,6 @@ void build_environment_module(void);
 void build_font_module(void);
 vm_offset_t bi_copyenv(vm_offset_t);
 
-/* MI module loaders */
-#ifdef __elfN
-/* Relocation types. */
-#define	ELF_RELOC_REL	1
-#define	ELF_RELOC_RELA	2
-
-/* Relocation offset for some architectures */
-extern uint64_t __elfN(relocation_offset);
-
-struct elf_file;
-typedef Elf_Addr(symaddr_fn)(struct elf_file *, Elf_Size);
-
-int	elf64_loadfile(char *, uint64_t, struct preloaded_file **);
-int	elf32_loadfile(char *, uint64_t, struct preloaded_file **);
-int	elf64_obj_loadfile(char *, uint64_t, struct preloaded_file **);
-int	elf32_obj_loadfile(char *, uint64_t, struct preloaded_file **);
-int	__elfN(reloc)(struct elf_file *ef, symaddr_fn *symaddr,
-	    const void *reldata, int reltype, Elf_Addr relbase,
-	    Elf_Addr dataaddr, void *data, size_t len);
-int	elf64_loadfile_raw(char *, uint64_t, struct preloaded_file **, int);
-int	elf32_loadfile_raw(char *, uint64_t, struct preloaded_file **, int);
-int	elf64_load_modmetadata(struct preloaded_file *, uint64_t);
-int	elf32_load_modmetadata(struct preloaded_file *, uint64_t);
-#endif
-
 /*
  * Support for commands
  */
@@ -371,10 +346,6 @@ struct arch_switch
 #define	LOAD_RAW	2	/* data points to the module file name. */
 #define	LOAD_KERN	3	/* data points to the kernel file name. */
 #define	LOAD_MEM	4	/* data points to int for buffer size. */
-	/*
-	 * Interface to release the load address.
-	 */
-	void	(*arch_free_loadaddr)(vm_offset_t addr, size_t pages);
 
 	/*
 	 * Interface to inform MD code about a loaded (ELF) segment. This

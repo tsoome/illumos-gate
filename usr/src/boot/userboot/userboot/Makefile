@@ -25,15 +25,16 @@ LIBS=		$(DYNLIB)
 LIBDIR=		/boot
 
 OBJS_SHARED=	autoload.o
+OBJS_SHARED +=	amd64_tramp.o
+OBJS_SHARED +=	biosarch.o
 OBJS_SHARED +=	biossmap.o
 OBJS_SHARED +=	bootinfo.o
-OBJS_SHARED +=	bootinfo32.o
-OBJS_SHARED +=	bootinfo64.o
 OBJS_SHARED +=	conf.o
 OBJS_SHARED +=	copy.o
+OBJS_SHARED +=	boot_mmu.o
+OBJS_SHARED +=	dboot.o
 OBJS_SHARED +=	devicename.o
-OBJS_SHARED +=	elf32_freebsd.o
-OBJS_SHARED +=	elf64_freebsd.o
+OBJS_SHARED +=	elf.o
 OBJS_SHARED +=	host.o
 OBJS_SHARED +=	main.o
 OBJS_SHARED +=	userboot_cons.o
@@ -58,12 +59,6 @@ OBJS_COMMON +=	part.o
 OBJS_COMMON +=	vdisk.o
 OBJS_COMMON +=	nvstore.o
 OBJS_COMMON +=	zfs_cmd.o
-OBJS_COMMON +=	load_elf32.o
-OBJS_COMMON +=	load_elf32_obj.o
-OBJS_COMMON +=	reloc_elf32.o
-OBJS_COMMON +=	load_elf64.o
-OBJS_COMMON +=	load_elf64_obj.o
-OBJS_COMMON +=	reloc_elf64.o
 
 OBJS_LINENOISE=	linenoise.o
 
@@ -112,11 +107,25 @@ x86:
 	$(SYMLINK) ../../sys/x86/include x86
 
 pics/part.o := CPPFLAGS += -I$(ZLIB)
+pics/boot_mmu.o := CPPFLAGS += -I$(SRC)/uts/intel -D_BOOT_TARGET_amd64
+pics/dboot.o := CPPFLAGS += -DUSERBOOT
+pics/dboot.o := CPPFLAGS += -I$(SRC)/uts/intel -D_BOOT_TARGET_amd64
+pics/dboot.o := CPPFLAGS += -I$(SRC)/uts/intel/sys/acpi
+pics/dboot.o := CPPFLAGS += -I$(BOOTSRC)/i386/libi386 -I$(BOOTSRC)/i386/btx/lib
+pics/biosarch.o := CPPFLAGS += -I$(SRC)/uts/intel/sys/acpi
+pics/boot_mmu.o pics/dboot.o := CPPFLAGS += -I$(SRC)/uts/i86pc
 
 vers.c: ../../common/newvers.sh $(SRC)/boot/Makefile.version
 	$(SH) ../../common/newvers.sh $(LOADER_VERSION) $(NEWVERSWHAT)
 
+pics/%.o:	%.S
+	$(COMPILE.S) -Wa,-W -o $@ $<
+
 pics/%.o:	../../common/%.c
+	$(COMPILE.c) -o $@ $<
+	$(POST_PROCESS_O)
+
+pics/%.o:	../../i386/common/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
