@@ -433,6 +433,7 @@ extern uint16_t		ntohs(uint16_t);
 #define	ntohs(x)	__ntohs(x)
 #endif
 
+void Malloc_init(void);
 void *Malloc(size_t, const char *, int);
 void *Memalign(size_t, size_t, const char *, int);
 void *Calloc(size_t, size_t, const char *, int);

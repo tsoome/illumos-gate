@@ -51,6 +51,19 @@ void mallocstats(void);
 
 static void *Malloc_align(size_t, size_t);
 
+static void *
+Malloc_alloc(struct MemPool *mp __unused, uintptr_t ptr __unused,
+    intptr_t *sizep)
+{
+	return (sbrk(*sizep));
+}
+
+void
+Malloc_init(void)
+{
+	zalloc_init(&MallocPool, BLKEXTEND, Malloc_alloc, NULL);
+}
+
 void *
 Malloc(size_t bytes, const char *file __unused, int line __unused)
 {
@@ -72,41 +85,21 @@ Malloc_align(size_t bytes, size_t alignment)
 {
 	Guard *res;
 
-#ifdef USEENDGUARD
-	bytes += MALLOCALIGN + 1;
-#else
-	bytes += MALLOCALIGN;
-#endif
+	res = znalloc_align(&MallocPool, bytes, alignment);
+	if (res == NULL)
+		return (NULL);
 
-	while ((res = znalloc(&MallocPool, bytes, alignment)) == NULL) {
-		int incr = (bytes + BLKEXTENDMASK) & ~BLKEXTENDMASK;
-		char *base;
-
-		if ((base = sbrk(incr)) == (char *)-1)
-			return (NULL);
-		zextendPool(&MallocPool, base, incr);
-		zfree(&MallocPool, base, incr);
-	}
 #ifdef DMALLOCDEBUG
 	if (++MallocCount > MallocMax)
 		MallocMax = MallocCount;
 #endif
-#ifdef USEGUARD
-	res->ga_Magic = GAMAGIC;
-#endif
-	res->ga_Bytes = bytes;
-#ifdef USEENDGUARD
-	*((signed char *)res + bytes - 1) = -2;
-#endif
 
-	return ((char *)res + MALLOCALIGN);
+	return (res);
 }
 
 void
 Free(void *ptr, const char *file, int line)
 {
-	size_t bytes;
-
 	if (ptr != NULL) {
 		Guard *res = (void *)((char *)ptr - MALLOCALIGN);
 
@@ -121,7 +114,6 @@ Free(void *ptr, const char *file, int line)
 		if (res->ga_Magic != GAMAGIC)
 			panic("free: guard1 fail @ %p from %s:%d",
 			    ptr, file, line);
-		res->ga_Magic = GAFREE;
 #endif
 #ifdef USEENDGUARD
 		if (*((signed char *)res + res->ga_Bytes - 1) == -1) {
@@ -132,11 +124,9 @@ Free(void *ptr, const char *file, int line)
 		if (*((signed char *)res + res->ga_Bytes - 1) != -2)
 			panic("free: guard2 fail @ %p + %zu from %s:%d",
 			    ptr, res->ga_Bytes - MALLOCALIGN, file, line);
-		*((signed char *)res + res->ga_Bytes - 1) = -1;
 #endif
 
-		bytes = res->ga_Bytes;
-		zfree(&MallocPool, res, bytes);
+		znalloc_free(&MallocPool, ptr);
 #ifdef DMALLOCDEBUG
 		--MallocCount;
 #endif

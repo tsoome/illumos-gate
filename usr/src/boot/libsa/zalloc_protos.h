@@ -30,6 +30,11 @@
 #ifndef _ZALLOC_PROTOS_H
 #define	_ZALLOC_PROTOS_H
 
+Library void zalloc_init(MemPool *, intptr_t, zalloc_alloc_t *,
+    zalloc_free_t *);
+Library void zalloc_fini(MemPool *);
+Library void *znalloc_align(MemPool *, size_t, size_t);
+Library void znalloc_free(MemPool *, void *);
 Library void *znalloc(struct MemPool *, uintptr_t, size_t);
 Library void *znxalloc(struct MemPool *, void *, void *, uintptr_t);
 Library void zfree(struct MemPool *, void *, uintptr_t);
