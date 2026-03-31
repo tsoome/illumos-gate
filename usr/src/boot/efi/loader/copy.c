@@ -48,7 +48,7 @@ vm_offset_t ktext_phys;
 vm_offset_t target_kernel_text;
 size_t kernel_load_size;
 
-static EFI_PHYSICAL_ADDRESS
+EFI_PHYSICAL_ADDRESS
 elf_kernel_address(Elf64_Ehdr *ehdr)
 {
 	vm_offset_t allphdrs;
@@ -333,26 +333,6 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	Elf64_Ehdr *ehdr;
 	size_t alignment;
 
-	if (type == LOAD_ELF) {
-		loader_alloc_init(efi_loader_alloc, efi_loader_free);
-
-		ehdr = data;
-		ktext_phys = elf_kernel_address(ehdr);
-		kernel_load_size = elf_load_size(ehdr);
-		paddr = (vm_offset_t)loader_xalloc((void *)ktext_phys,
-		    (void *)ktext_phys + kernel_load_size, kernel_load_size);
-		if (paddr != 0) {
-			printf("%s: allocated %zu bytes for %p\n", __func__,
-			    kernel_load_size, (void *)(uintptr_t)ktext_phys);
-			return (paddr);
-		}
-		/*
-		 * We failed to allocate at address ktext_phys. Fall
-		 * back to use znalloc instead.
-		 */
-		addr = ktext_phys;
-	}
-
 	/*
 	 * Every other allocation happens after ELF, therefore,
 	 * addr must non-zero value.
@@ -362,13 +342,17 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 
 	switch (type) {
 	case LOAD_ELF:
-		size = kernel_load_size;
+		ktext_phys = addr;
+		ehdr = data;
+		size = elf_load_size(ehdr);
 		break;
 
 	case LOAD_MEM:
 		size = *(size_t *)data;
 		break;
 
+	case LOAD_KERN:
+	case LOAD_RAW:
 	default:
 		stat(data, &st);
 		size = st.st_size;
@@ -378,7 +362,24 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	if (size == 0)
 		return (addr);
 
-	/* 4GB upper limit */
+	if (type == LOAD_ELF || type == LOAD_KERN) {
+		/* Make sure we have memory pool set up. */
+		loader_alloc_init(efi_loader_alloc, efi_loader_free);
+
+		paddr = (vm_offset_t)loader_xalloc((void *)addr,
+		    (void *)(addr + size), size);
+		if (paddr != 0) {
+			printf("%s: allocated %zu bytes for %p\n", __func__,
+			    size, (void *)(uintptr_t)addr);
+			return (paddr);
+		}
+		/*
+		 * We failed to allocate at address. Fall
+		 * back to use znalloc instead.
+		 */
+	}
+
+	/* XXX 4GB upper limit */
 	paddr = UINT32_MAX;
 	alignment = EFI_PAGE_SIZE;
 

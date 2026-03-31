@@ -111,6 +111,7 @@ struct file_format dboot = { dboot_loadfile, dboot_exec };
 extern vm_offset_t ktext_phys;
 extern vm_offset_t target_kernel_text;
 extern size_t kernel_load_size;
+extern EFI_PHYSICAL_ADDRESS elf_kernel_address(Elf64_Ehdr *);
 
 /* set in cpuid.c */
 extern bool largepage_support;
@@ -223,7 +224,7 @@ dboot_loadfile(char *filename, uint64_t dest, struct preloaded_file **result)
 	    ehdr->e_phnum == 0 || ehdr->e_phoff == 0)
 		goto error;
 
-	addr = archsw.arch_loadaddr(LOAD_ELF, ehdr, 0);
+	addr = archsw.arch_loadaddr(LOAD_ELF, ehdr, elf_kernel_address(ehdr));
 	if (addr == 0) {
 		printf("%s: failed to allocate staging area for kernel\n",
 		    __func__);
