@@ -42,6 +42,7 @@
 #include <sys/font.h>
 #include <sys/sha1.h>
 #include <libcrypto.h>
+#include <zalloc_loader.h>
 
 #include "bootstrap.h"
 
@@ -328,6 +329,8 @@ command_lsmod(int argc, char *argv[])
 			break;
 	}
 	pager_close();
+
+	loader_alloc_stats();
 	return (CMD_OK);
 }
 
