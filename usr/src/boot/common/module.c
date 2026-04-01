@@ -204,6 +204,7 @@ unload(void)
 	}
 	loadaddr = 0;
 	(void) unsetenv("kernelname");
+	loader_alloc_fini();
 }
 
 COMMAND_SET(unload, "unload", "unload all modules", command_unload);
