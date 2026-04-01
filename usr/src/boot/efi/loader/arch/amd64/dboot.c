@@ -113,6 +113,8 @@ extern vm_offset_t target_kernel_text;
 extern size_t kernel_load_size;
 extern EFI_PHYSICAL_ADDRESS elf_kernel_address(Elf64_Ehdr *);
 
+extern EFI_PHYSICAL_ADDRESS load_limit;
+
 /* set in cpuid.c */
 extern bool largepage_support;
 extern bool pge_support;
@@ -224,6 +226,10 @@ dboot_loadfile(char *filename, uint64_t dest, struct preloaded_file **result)
 	    ehdr->e_phnum == 0 || ehdr->e_phoff == 0)
 		goto error;
 
+	/*
+	 * We are done checking. Set the limit to lift 4GB barrier.
+	 */
+	load_limit = UINT64_MAX;
 	addr = archsw.arch_loadaddr(LOAD_ELF, ehdr, elf_kernel_address(ehdr));
 	if (addr == 0) {
 		printf("%s: failed to allocate staging area for kernel\n",

@@ -48,6 +48,14 @@ vm_offset_t ktext_phys;
 vm_offset_t target_kernel_text;
 size_t kernel_load_size;
 
+/*
+ * Default limit for allocations. illumos dboot component is
+ * running in 32-bit protexted mode and can not access memory
+ * above 4GB. If the trampoline to start kernel is taking path
+ * to use dboot, we must provide data in usable space.
+ */
+EFI_PHYSICAL_ADDRESS load_limit = UINT32_MAX;
+
 EFI_PHYSICAL_ADDRESS
 elf_kernel_address(Elf64_Ehdr *ehdr)
 {
@@ -156,6 +164,9 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, intptr_t *sizep)
 		paddr -= EFI_PAGE_SIZE;
 		size += EFI_PAGE_SIZE;
 	}
+
+	if (paddr > load_limit || paddr + size > load_limit)
+		return ((void *)-1);
 
 	md = get_memory_descriptor(paddr, size);
 	if (md == NULL) {
@@ -360,18 +371,31 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 
 	/* We do not support allocating 0 pages. */
 	if (size == 0)
-		return (addr);
+		return (0);
 
 	if (type == LOAD_ELF || type == LOAD_KERN) {
+		size_t diff;
+
 		/* Make sure we have memory pool set up. */
 		loader_alloc_init(efi_loader_alloc, efi_loader_free);
+
+		/* AllocatePages() needs page aligned address. */
+		diff = addr & EFI_PAGE_MASK;
+		addr -= diff;
+		size += diff;
+
+		/* make sure we will not exceed the limit. */
+		if (addr + diff > load_limit ||
+		    addr + size > load_limit)
+			return (0);
 
 		paddr = (vm_offset_t)loader_xalloc((void *)addr,
 		    (void *)(addr + size), size);
 		if (paddr != 0) {
 			printf("%s: allocated %zu bytes for %p\n", __func__,
-			    size, (void *)(uintptr_t)addr);
-			return (paddr);
+			    size - diff, (void *)(uintptr_t)addr + diff);
+
+			return (paddr + diff);
 		}
 		/*
 		 * We failed to allocate at address. Fall
@@ -379,16 +403,23 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		 */
 	}
 
-	/* XXX 4GB upper limit */
-	paddr = UINT32_MAX;
 	alignment = EFI_PAGE_SIZE;
 
 	paddr = (vm_offset_t)loader_alloc_align(size, alignment);
+
+	/* make sure we will not exceed the limit. */
+	if (paddr > load_limit ||
+	    paddr + size > load_limit) {
+		loader_free((void *)(uintptr_t)paddr);
+		paddr = 0;
+	}
+
 	if (paddr == 0) {
 		printf("failed to allocate %zu bytes for %p\n",
 		    size, (void *)(uintptr_t)addr);
 		return (paddr);
 	}
+
 	printf("%s: allocated %zu bytes: %p\n", __func__,
 	    size, (void *)(uintptr_t)paddr);
 
@@ -398,9 +429,16 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 void
 efi_free_loadaddr(vm_offset_t addr, size_t pages)
 {
-	if (addr == ktext_phys)
-	// (void) BS->FreePages(addr, pages);
-	printf("%s: addr: %p pages: %zu\n", __func__, (void *)addr, pages);
+	/*
+	 * Here we could call znalloc_free() to free individual
+	 * allocation, but since we will free entire pool at
+	 * the end of unload command, then freeing allocations here
+	 * would only serve the purpose to have memory checks performed
+	 * (begin guard and end guard checks).
+	 * The trouble is also about loader_xalloc() allocations - currently
+	 * those do not set MALLOCALIGN buffer space for guards and
+	 * to use znalloc_free(), we should fix MALLOCALIGN issue.
+	 */
 }
 
 void *
@@ -412,7 +450,7 @@ efi_translate(vm_offset_t ptr)
 ssize_t
 efi_copyin(const void *src, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= dest && (uint64_t)dest + len <= UINT32_MAX) {
+	if (dest + len >= dest && (uint64_t)dest + len <= load_limit) {
 		bcopy(src, (void *)(uintptr_t)dest, len);
 		return (len);
 	} else {
@@ -424,7 +462,7 @@ efi_copyin(const void *src, vm_offset_t dest, const size_t len)
 ssize_t
 efi_copyout(const vm_offset_t src, void *dest, const size_t len)
 {
-	if (src + len >= src && (uint64_t)src + len <= UINT32_MAX) {
+	if (src + len >= src && (uint64_t)src + len <= load_limit) {
 		bcopy((void *)(uintptr_t)src, dest, len);
 		return (len);
 	} else {
@@ -437,7 +475,7 @@ efi_copyout(const vm_offset_t src, void *dest, const size_t len)
 ssize_t
 efi_readin(const int fd, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= dest && (uint64_t)dest + len <= UINT32_MAX) {
+	if (dest + len >= dest && (uint64_t)dest + len <= load_limit) {
 		return (read(fd, (void *)dest, len));
 	} else {
 		errno = EFBIG;
