@@ -124,55 +124,6 @@ extern bool NX_support;
 
 static bool map_debug = false;
 
-/*
- * elf_load_size() does calculate space needed for unix ELF sections.
- */
-size_t
-elf_load_size(Elf64_Ehdr *ehdr)
-{
-	vm_offset_t start, end;
-	vm_offset_t allphdrs;
-
-	allphdrs = (vm_offset_t)ehdr + ehdr->e_phoff;
-
-	start = end = 0;
-	for (Elf64_Half i = 0; i < ehdr->e_phnum; i++) {
-		Elf64_Phdr *phdr;
-
-		phdr = (Elf64_Phdr *)(allphdrs + ehdr->e_phentsize * i);
-
-		if (phdr->p_type == PT_INTERP)
-			continue;
-
-		if (phdr->p_type != PT_LOAD)
-			continue;
-
-		if (phdr->p_flags == (PF_R | PF_W) && phdr->p_vaddr == 0)
-			continue;
-
-		if (phdr->p_memsz == 0)
-			continue;
-
-		/* load address 1:1 is dboot, ignore */
-		if (phdr->p_paddr == phdr->p_vaddr)
-			continue;
-
-		if (start == 0 && start < phdr->p_paddr) {
-			start = phdr->p_paddr;
-			continue;
-		}
-
-		if (end < phdr->p_paddr)
-			end = phdr->p_paddr;
-
-		/* Take account memory size */
-		end += phdr->p_memsz;
-	}
-
-	kernel_load_size = round_page(end - start);
-	return (kernel_load_size);
-}
-
 static int
 dboot_loadfile(char *filename, uint64_t dest, struct preloaded_file **result)
 {

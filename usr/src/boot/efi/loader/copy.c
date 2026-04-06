@@ -41,51 +41,8 @@
 
 #include "loader_efi.h"
 
-/*
- * start of kernel text, physical address and virtual.
- */
-vm_offset_t ktext_phys;
-vm_offset_t target_kernel_text;
-size_t kernel_load_size;
-
-/*
- * Default limit for allocations. illumos dboot component is
- * running in 32-bit protexted mode and can not access memory
- * above 4GB. If the trampoline to start kernel is taking path
- * to use dboot, we must provide data in usable space.
- */
-EFI_PHYSICAL_ADDRESS load_limit = UINT32_MAX;
-
-EFI_PHYSICAL_ADDRESS
-elf_kernel_address(Elf64_Ehdr *ehdr)
-{
-	vm_offset_t allphdrs;
-
-	allphdrs = (vm_offset_t)ehdr + ehdr->e_phoff;
-	for (Elf64_Half i = 0; i < ehdr->e_phnum; i++) {
-		Elf64_Phdr *phdr;
-
-		phdr = (Elf64_Phdr *)(allphdrs + ehdr->e_phentsize * i);
-
-		/* Check PT_LOAD only. */
-		if (phdr->p_type != PT_LOAD)
-			continue;
-
-		if (phdr->p_memsz == 0)
-			continue;
-
-		/* load address 1:1 is dboot, ignore */
-		if (phdr->p_paddr == phdr->p_vaddr)
-			continue;
-
-		if (phdr->p_flags == (PF_X | PF_R)) {
-			/* Side effect - record virtual address */
-			target_kernel_text = phdr->p_vaddr;
-			return (phdr->p_paddr);
-		}
-	}
-	return (0);
-}
+extern uint64_t load_limit;
+extern vm_offset_t ktext_phys;
 
 static EFI_MEMORY_DESCRIPTOR *efi_mmap;
 static UINTN map_key, map_size, desc_size;
