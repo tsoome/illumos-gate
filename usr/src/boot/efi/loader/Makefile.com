@@ -23,6 +23,7 @@ OBJS=	\
 	autoload.o \
 	bootinfo.o \
 	conf.o \
+	elf.o \
 	copy.o \
 	efi_main.o \
 	font.o \

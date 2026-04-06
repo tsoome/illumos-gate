@@ -24,9 +24,3 @@ struct file_format *file_formats[] = {
 	&multiboot2,
 	NULL
 };
-
-size_t
-elf_load_size(Elf64_Ehdr *ehdr)
-{
-	return (0);
-}
