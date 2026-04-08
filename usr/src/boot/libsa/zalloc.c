@@ -74,7 +74,7 @@ _Static_assert(sizeof (struct MemNode) <= MALLOCALIGN,
 #define	MEMNODE_SIZE_MASK	MALLOCALIGN_MASK
 
 void
-zalloc_init(MemPool *mp, intptr_t blksz, zalloc_alloc_t *allocf,
+zalloc_init(MemPool *mp, size_t blksz, zalloc_alloc_t *allocf,
     zalloc_free_t *freef)
 {
 	mp->mp_alloc = allocf;
@@ -183,7 +183,7 @@ znalloc_free(MemPool *mp, void *ptr)
  */
 
 static void *
-znalloc_impl(MemPool *mp, uintptr_t bytes, size_t align)
+znalloc_impl(MemPool *mp, uint64_t bytes, size_t align)
 {
 	MemNode **pmn;
 	MemNode *mn;
@@ -271,7 +271,7 @@ znalloc_impl(MemPool *mp, uintptr_t bytes, size_t align)
 
 
 void *
-znalloc(MemPool *mp, uintptr_t bytes, size_t align)
+znalloc(MemPool *mp, size_t bytes, size_t align)
 {
 	void *res;
 
@@ -279,7 +279,7 @@ znalloc(MemPool *mp, uintptr_t bytes, size_t align)
 		return ((void *)-1);
 
 	while ((res = znalloc_impl(mp, bytes, align)) == NULL) {
-		intptr_t incr;
+		size_t incr;
 
 		if (mp->mp_blksz == 0)
 			incr = bytes;
@@ -301,12 +301,12 @@ znalloc(MemPool *mp, uintptr_t bytes, size_t align)
  *		If allocating AT a specific address, then addr2 must be
  *		set to addr1 + bytes (and this only works if addr1 is
  *		already aligned).  addr1 and addr2 are aligned by
- *		MEMNODE_SIZE_MASK + 1 (i.e. they wlill be 8 or 16 byte
+ *		MEMNODE_SIZE_MASK + 1 (i.e. they will be 8 or 16 byte
  *		aligned depending on the machine core).
  */
 
 static void *
-znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
+znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uint64_t bytes)
 {
 	/*
 	 * align according to pool object size (can be 0).  This is
@@ -343,8 +343,8 @@ znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
 
 		for (pmn = &mp->mp_First; (mn = *pmn) != NULL;
 		    pmn = &mn->mr_Next) {
-			int mrbytes = mn->mr_Bytes;
-			int offset = 0;
+			int64_t mrbytes = mn->mr_Bytes;
+			uint_t offset = 0;
 
 			/*
 			 * offset from base of mn to satisfy addr1.
@@ -419,16 +419,23 @@ znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
 	return (NULL);
 }
 
+/*
+ * addr1 and addr2 are physical addresses from kernel ELF file.
+ * We do need to translate them to virtual addresses for BIOS loader.
+ */
 void *
-znxalloc(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
+znxalloc(MemPool *mp, void *addr1, void *addr2, size_t bytes)
 {
 	void *res;
 
 	if (bytes == 0)
 		return ((void *)-1);
 
+	addr1 = ptov((uintptr_t)addr1);
+	addr2 = ptov((uintptr_t)addr2);
+
 	while ((res = znxalloc_impl(mp, addr1, addr2, bytes)) == NULL) {
-		intptr_t incr;
+		size_t incr;
 
 		/*
 		 * If our pool segment base address is larger than addr1,
@@ -438,8 +445,8 @@ znxalloc(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
 		 * and load pool addresses will only grow.
 		 */
 		for (MemPool *p = mp; p != NULL; p = p->mp_next) {
-			if (addr1 < mp->mp_Base)
-				return (res);
+			if (addr1 < p->mp_Base)
+				return (NULL);
 		}
 
 		if (mp->mp_blksz == 0)
@@ -449,11 +456,21 @@ znxalloc(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
 			    ~(mp->mp_blksz - 1);
 
 		res = mp->mp_alloc(mp, (uintptr_t)addr1, &incr);
-		printf("%s: res: %p\n", __func__, res);
 		if (res == (void *)-1)
 			return (NULL);
 		zextendPool(mp, res, incr);
 		zfree(mp, res, incr);
+
+		/*
+		 * Reserve unused space before addr1.
+		 * We get page aligned memory from mp_alloc() and
+		 * we do not want to store anything before kernel.
+		 */
+		size_t sz = (uintptr_t)addr1 - (uintptr_t)mp->mp_Base;
+
+		if (mp->mp_next == NULL && addr1 > mp->mp_Base && sz > 0) {
+			(void) znxalloc_impl(mp, mp->mp_Base, addr1, sz);
+		}
 	}
 	return (res);
 }
@@ -463,7 +480,7 @@ znxalloc(MemPool *mp, void *addr1, void *addr2, uintptr_t bytes)
  */
 
 void
-zfree(MemPool *mp, void *ptr, uintptr_t bytes)
+zfree(MemPool *mp, void *ptr, size_t bytes)
 {
 	MemNode **pmn;
 	MemNode *mn;
@@ -575,7 +592,7 @@ zfree(MemPool *mp, void *ptr, uintptr_t bytes)
  */
 
 void
-zextendPool(MemPool *mp, void *base, uintptr_t bytes)
+zextendPool(MemPool *mp, void *base, size_t bytes)
 {
 	MemPool *pool;
 

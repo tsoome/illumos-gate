@@ -53,7 +53,7 @@ static void *Malloc_align(size_t, size_t);
 
 static void *
 Malloc_alloc(struct MemPool *mp __unused, uintptr_t ptr __unused,
-    intptr_t *sizep)
+    size_t *sizep)
 {
 	return (sbrk(*sizep));
 }

@@ -103,7 +103,7 @@ get_memory_descriptor(EFI_PHYSICAL_ADDRESS paddr, uintptr_t size)
  * Find chunks of unused memory from UEFI memory map.
  */
 static void *
-efi_loader_alloc(struct MemPool *mp, uintptr_t addr, intptr_t *sizep)
+efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 {
 	EFI_PHYSICAL_ADDRESS paddr;
 	EFI_MEMORY_DESCRIPTOR *md;
@@ -111,16 +111,11 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, intptr_t *sizep)
 	UINTN pages;
 	intptr_t size = *sizep;
 
-	paddr = addr;
 	/*
 	 * If our pool is empty, we need to allocate space for kernel,
-	 * based on ktext_phys. We also need to reserve space for
-	 * pool metadata.
+	 * based on addr.
 	 */
-	if (mp->mp_Base == NULL) {
-		paddr -= EFI_PAGE_SIZE;
-		size += EFI_PAGE_SIZE;
-	}
+	paddr = addr;
 
 	if (paddr > load_limit || paddr + size > load_limit)
 		return ((void *)-1);
@@ -374,11 +369,10 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	if (paddr == 0) {
 		printf("failed to allocate %zu bytes for %p\n",
 		    size, (void *)(uintptr_t)addr);
-		return (paddr);
+	} else {
+		printf("%s: allocated %zu bytes: %p\n", __func__,
+		    size, (void *)(uintptr_t)paddr);
 	}
-
-	printf("%s: allocated %zu bytes: %p\n", __func__,
-	    size, (void *)(uintptr_t)paddr);
 
 	return (paddr);
 }
