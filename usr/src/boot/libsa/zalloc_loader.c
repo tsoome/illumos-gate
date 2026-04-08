@@ -76,11 +76,13 @@ loader_alloc_align(size_t size, size_t alignment)
 
 /*
  * Allocate memory segment [addr1 .. addr2].
+ * addr1 and addr2 are physical addresses from kernel ELF file.
+ * We do need to translate them to virtual addresses for BIOS loader.
  */
 void *
-loader_xalloc(void *addr1, void *addr2, size_t size)
+loader_xalloc(vm_offset_t addr1, vm_offset_t addr2, size_t size)
 {
-	return (znxalloc(&LoaderPool, addr1, addr2, size));
+	return (znxalloc(&LoaderPool, ptov(addr1), ptov(addr2), size));
 }
 
 void

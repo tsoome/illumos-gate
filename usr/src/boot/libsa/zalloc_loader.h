@@ -32,7 +32,7 @@ extern void loader_alloc_init(zalloc_alloc_t *, zalloc_free_t *);
 extern void loader_alloc_fini(void);
 
 extern void *loader_alloc_align(size_t, size_t);
-extern void *loader_xalloc(void *, void *, size_t);
+extern void *loader_xalloc(vm_offset_t, vm_offset_t, size_t);
 extern void loader_free(void *);
 
 #ifdef __cplusplus

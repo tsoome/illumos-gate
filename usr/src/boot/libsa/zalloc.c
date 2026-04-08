@@ -419,20 +419,13 @@ znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uint64_t bytes)
 	return (NULL);
 }
 
-/*
- * addr1 and addr2 are physical addresses from kernel ELF file.
- * We do need to translate them to virtual addresses for BIOS loader.
- */
 void *
-znxalloc(MemPool *mp, void *addr1, void *addr2, size_t bytes)
+znxalloc(MemPool *mp, vm_offset_t addr1, vm_offset_t addr2, size_t bytes)
 {
 	void *res;
 
 	if (bytes == 0)
 		return ((void *)-1);
-
-	addr1 = ptov((uintptr_t)addr1);
-	addr2 = ptov((uintptr_t)addr2);
 
 	while ((res = znxalloc_impl(mp, addr1, addr2, bytes)) == NULL) {
 		size_t incr;

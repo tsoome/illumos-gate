@@ -81,12 +81,16 @@ get_memory_descriptor(EFI_PHYSICAL_ADDRESS paddr, uintptr_t size)
 		if (md->Type != EfiConventionalMemory)
 			continue;
 
+		/* We do not want address below 1MB. */
+		if (md->PhysicalStart < 0x100000)
+			continue;
+
 		/*
 		 * Skip descriptors for memory before ktext_phys.
 		 */
 		if (md->PhysicalStart <= paddr &&
 		    md->PhysicalStart +
-		    (md->NumberOfPages << EFI_PAGE_SHIFT) < paddr)
+		    (md->NumberOfPages << EFI_PAGE_SHIFT) <= paddr)
 			continue;
 
 		/*
@@ -341,8 +345,7 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		    addr + size > load_limit)
 			return (0);
 
-		paddr = (vm_offset_t)loader_xalloc((void *)addr,
-		    (void *)(addr + size), size);
+		paddr = (vm_offset_t)loader_xalloc(addr, addr + size, size);
 		if (paddr != 0) {
 			printf("%s: allocated %zu bytes for %p\n", __func__,
 			    size - diff, (void *)(uintptr_t)addr + diff);

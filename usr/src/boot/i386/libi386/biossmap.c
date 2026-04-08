@@ -52,6 +52,13 @@ static struct bios_smap		*smapbase;
 static uint32_t			*smapattr;
 static u_int			smaplen;
 
+struct bios_smap *
+bios_smap_info(uint_t *lenp)
+{
+	*lenp = smaplen;
+	return (smapbase);
+}
+
 void
 bios_getsmap(void)
 {
