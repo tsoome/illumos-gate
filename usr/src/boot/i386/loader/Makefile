@@ -60,7 +60,7 @@ module.o := CPPFLAGS += -I$(CRYPTOSRC)
 tem.o := CPPFLAGS += $(DEFAULT_CONSOLE_COLOR)
 
 SRCS +=	load_elf32.c load_elf32_obj.c reloc_elf32.c
-SRCS +=	load_elf64.c load_elf64_obj.c reloc_elf64.c
+SRCS +=	load_elf64.c load_elf64_obj.c reloc_elf64.c elf.c
 
 SRCS +=	dev_net.c
 
