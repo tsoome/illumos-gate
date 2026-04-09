@@ -925,27 +925,17 @@ multiboot2_exec(struct preloaded_file *fp)
 		error = ENOMEM;
 		goto error;
 	}
-
-	last_addr = efi_loadaddr(LOAD_MEM, &size, mfp->f_addr + mfp->f_size);
-	mbi = (multiboot2_info_header_t *)last_addr;
-	if (mbi == NULL) {
-		error = ENOMEM;
-		goto error;
-	}
-	last_addr = (vm_offset_t)mbi->mbi_tags;
-#else
-	/* Start info block from the new page. */
-	last_addr = i386_loadaddr(LOAD_MEM, &size, mfp->f_addr + mfp->f_size);
-
-	/* Do we have space for multiboot info? */
-	if (last_addr + size >= memtop_copyin) {
-		error = ENOMEM;
-		goto error;
-	}
-
-	mbi = (multiboot2_info_header_t *)PTOV(last_addr);
-	last_addr = (vm_offset_t)mbi->mbi_tags;
 #endif	/* EFI */
+
+	/* Start info block from the new page. */
+	last_addr = archsw.arch_loadaddr(LOAD_MEM, &size,
+	    mfp->f_addr + mfp->f_size);
+	if (last_addr == 0) {
+		error = ENOMEM;
+		goto error;
+	}
+	mbi = (multiboot2_info_header_t *)ptov(last_addr);
+	last_addr = (vm_offset_t)mbi->mbi_tags;
 
 	{
 		multiboot_tag_string_t *tag;
@@ -1340,9 +1330,6 @@ error:
 
 #if defined(EFI)
 	free(relocator);
-
-	if (mbi != NULL)
-		efi_free_loadaddr((vm_offset_t)mbi, EFI_SIZE_TO_PAGES(size));
 #endif
 
 	return (error);

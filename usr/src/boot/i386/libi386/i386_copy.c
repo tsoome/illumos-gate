@@ -210,7 +210,7 @@ i386_loadaddr(uint_t type, void *data, vm_offset_t addr)
 ssize_t
 i386_copyin(const void *src, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= memtop) {
+	if (dest + len >= load_limit) {
 		errno = EFBIG;
 		return (-1);
 	}
@@ -222,7 +222,7 @@ i386_copyin(const void *src, vm_offset_t dest, const size_t len)
 ssize_t
 i386_copyout(const vm_offset_t src, void *dest, const size_t len)
 {
-	if (src + len >= memtop) {
+	if (src + len >= load_limit) {
 		errno = EFBIG;
 		return (-1);
 	}
@@ -235,7 +235,7 @@ i386_copyout(const vm_offset_t src, void *dest, const size_t len)
 ssize_t
 i386_readin(const int fd, vm_offset_t dest, const size_t len)
 {
-	if (dest + len >= memtop_copyin) {
+	if (dest + len >= load_limit) {
 		errno = EFBIG;
 		return (-1);
 	}

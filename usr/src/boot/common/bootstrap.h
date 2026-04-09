@@ -371,10 +371,6 @@ struct arch_switch
 #define	LOAD_RAW	2	/* data points to the module file name. */
 #define	LOAD_KERN	3	/* data points to the kernel file name. */
 #define	LOAD_MEM	4	/* data points to int for buffer size. */
-	/*
-	 * Interface to release the load address.
-	 */
-	void	(*arch_free_loadaddr)(vm_offset_t addr, size_t pages);
 
 	/*
 	 * Interface to inform MD code about a loaded (ELF) segment. This

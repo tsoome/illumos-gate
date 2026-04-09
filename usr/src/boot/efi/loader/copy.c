@@ -380,21 +380,6 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	return (paddr);
 }
 
-void
-efi_free_loadaddr(vm_offset_t addr, size_t pages)
-{
-	/*
-	 * Here we could call znalloc_free() to free individual
-	 * allocation, but since we will free entire pool at
-	 * the end of unload command, then freeing allocations here
-	 * would only serve the purpose to have memory checks performed
-	 * (begin guard and end guard checks).
-	 * The trouble is also about loader_xalloc() allocations - currently
-	 * those do not set MALLOCALIGN buffer space for guards and
-	 * to use znalloc_free(), we should fix MALLOCALIGN issue.
-	 */
-}
-
 void *
 efi_translate(vm_offset_t ptr)
 {

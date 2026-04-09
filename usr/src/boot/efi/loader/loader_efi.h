@@ -60,7 +60,6 @@ ssize_t	efi_copyin(const void *, vm_offset_t, const size_t);
 ssize_t	efi_copyout(const vm_offset_t, void *, const size_t);
 ssize_t	efi_readin(const int, vm_offset_t, const size_t);
 vm_offset_t efi_loadaddr(uint_t, void *, vm_offset_t);
-void efi_free_loadaddr(vm_offset_t, size_t);
 void * efi_translate(vm_offset_t);
 size_t elf_load_size(Elf64_Ehdr *);
 
