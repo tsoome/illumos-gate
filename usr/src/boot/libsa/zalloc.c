@@ -420,7 +420,7 @@ znxalloc_impl(MemPool *mp, void *addr1, void *addr2, uint64_t bytes)
 }
 
 void *
-znxalloc(MemPool *mp, vm_offset_t addr1, vm_offset_t addr2, size_t bytes)
+znxalloc(MemPool *mp, void *addr1, void *addr2, size_t bytes)
 {
 	void *res;
 
