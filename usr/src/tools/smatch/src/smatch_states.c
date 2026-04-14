@@ -67,6 +67,8 @@ static struct named_stree_stack *goto_stack;
 static struct ptr_list *backup;
 static bool *keep_out_of_scope;
 
+static int in_goto_merge;
+
 int option_debug;
 
 void __print_cur_stree(void)
@@ -1276,6 +1278,11 @@ static struct named_stree *alloc_named_stree(const char *name, struct symbol *sy
 	return named_stree;
 }
 
+bool in_goto(void)
+{
+	return !!in_goto_merge;
+}
+
 void __save_gotos(const char *name, struct symbol *sym)
 {
 	struct stree **stree;
@@ -1283,7 +1290,11 @@ void __save_gotos(const char *name, struct symbol *sym)
 
 	stree = get_named_stree(goto_stack, name, sym);
 	if (stree) {
+		if (sym)
+			in_goto_merge++;
 		merge_stree(stree, cur_stree);
+		if (sym)
+			in_goto_merge--;
 		return;
 	} else {
 		struct named_stree *named_stree;
@@ -1299,8 +1310,13 @@ void __merge_gotos(const char *name, struct symbol *sym)
 	struct stree **stree;
 
 	stree = get_named_stree(goto_stack, name, sym);
-	if (stree)
+	if (stree) {
+		if (sym)
+			in_goto_merge++;
 		merge_stree(&cur_stree, *stree);
+		if (sym)
+			in_goto_merge--;
+	}
 }
 
 void __discard_fake_states(struct expression *call)

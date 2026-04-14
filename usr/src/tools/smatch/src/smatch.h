@@ -910,6 +910,7 @@ int __pop_default(void);
 void __push_conditions(void);
 void __discard_conditions(void);
 
+bool in_goto(void);
 void __save_gotos(const char *name, struct symbol *sym);
 void __merge_gotos(const char *name, struct symbol *sym);
 

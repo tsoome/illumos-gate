@@ -46,6 +46,20 @@ static int is_comparison_call(struct expression *expr)
 	return 1;
 }
 
+static bool was_simple_xattrs_lazy_alloc(struct expression *expr)
+{
+	struct expression *orig;
+
+	orig = get_assigned_expr(expr);
+	if (!orig ||
+	    orig->type != EXPR_CALL)
+		return false;
+	if (sym_name_is("simple_xattrs_lazy_alloc", orig->fn))
+		return true;
+
+	return false;
+}
+
 static bool is_switch_condition(struct expression *expr)
 {
 	struct statement *stmt;
@@ -205,6 +219,8 @@ static void match_err_ptr(const char *fn, struct expression *expr, void *data)
 		return;
 
 	if (is_condition_expr(expr))
+		return;
+	if (was_simple_xattrs_lazy_alloc(arg_expr))
 		return;
 
 	if (next_line_checks_IS_ERR(expr, arg_expr))

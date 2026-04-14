@@ -19,6 +19,27 @@
 
 static int my_id;
 
+static bool was_set_in_spinlock_irqsave(struct expression *expr)
+{
+	struct expression *mod_expr;
+	struct smatch_state *state;
+	char *macro;
+
+	state = get_modification_state(expr);
+	if (!state || !state->data)
+		return false;
+	mod_expr = state->data;
+	/* FIXME: why do we have a fake expression here??? */
+	if (mod_expr->pos.line == 0 && mod_expr->pos.pos == 0)
+		return true;
+	macro = get_macro_name(mod_expr->pos);
+	if (!macro)
+		return false;
+	if (strstr(macro, "save"))
+		return true;
+	return false;
+}
+
 static void match_irqrestore(const char *fn, struct expression *expr, void *_arg_nr)
 {
 	int arg_nr = PTR_INT(_arg_nr);
@@ -27,6 +48,8 @@ static void match_irqrestore(const char *fn, struct expression *expr, void *_arg
 
 	arg_expr = get_argument_from_call_expr(expr->args, arg_nr);
 	if (!get_implied_value(arg_expr, &tmp))
+		return;
+	if (was_set_in_spinlock_irqsave(arg_expr))
 		return;
 	sm_error("calling '%s()' with bogus flags", fn);
 }

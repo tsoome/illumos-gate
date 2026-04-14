@@ -245,6 +245,42 @@ static void set_extra_nomod_helper(const char *name, struct symbol *sym, struct 
 	set_state(SMATCH_EXTRA, name, sym, state);
 }
 
+static void set_extra_true_false_helper(const char *name, struct symbol *sym,
+					struct expression *expr,
+					struct smatch_state *true_state,
+					struct smatch_state *false_state)
+{
+	struct stree *true_stree = NULL, *false_stree = NULL;
+	struct sm_state *tmp;
+
+
+	if (true_state) {
+		__push_fake_cur_stree();
+		call_extra_nomod_hooks(name, sym, expr, true_state);
+		true_stree = __pop_fake_cur_stree();
+	}
+
+	if (false_state) {
+		__push_fake_cur_stree();
+		call_extra_nomod_hooks(name, sym, expr, false_state);
+		false_stree = __pop_fake_cur_stree();
+	}
+
+	/* FIXME: do we need a set_true_false_sm() function? */
+	FOR_EACH_SM(true_stree, tmp) {
+		set_true_false_states(tmp->owner, tmp->name, tmp->sym, tmp->state, NULL);
+	} END_FOR_EACH_SM(tmp);
+
+	FOR_EACH_SM(false_stree, tmp) {
+		set_true_false_states(tmp->owner, tmp->name, tmp->sym, NULL, tmp->state);
+	} END_FOR_EACH_SM(tmp);
+
+	free_stree(&true_stree);
+	free_stree(&false_stree);
+
+	set_true_false_states(SMATCH_EXTRA, name, sym, true_state, false_state);
+}
+
 static char *get_pointed_at(const char *name, struct symbol *sym, struct symbol **new_sym)
 {
 	struct expression *assigned;
@@ -534,6 +570,7 @@ free:
 }
 
 static void set_extra_true_false(const char *name, struct symbol *sym,
+			struct expression *expr,
 			struct smatch_state *true_state,
 			struct smatch_state *false_state)
 {
@@ -550,13 +587,13 @@ static void set_extra_true_false(const char *name, struct symbol *sym,
 
 	new_name = get_other_name_sym(name, sym, &new_sym);
 	if (new_name && new_sym)
-		set_true_false_states(SMATCH_EXTRA, new_name, new_sym, true_state, false_state);
+		set_extra_true_false_helper(new_name, new_sym, expr, true_state, false_state);
 	free_string(new_name);
 
 	orig_state = get_state(SMATCH_EXTRA, name, sym);
 
 	if (!estate_related(orig_state)) {
-		set_true_false_states(SMATCH_EXTRA, name, sym, true_state, false_state);
+		set_extra_true_false_helper(name, sym, expr, true_state, false_state);
 		return;
 	}
 
@@ -566,9 +603,26 @@ static void set_extra_true_false(const char *name, struct symbol *sym,
 		set_related(false_state, estate_related(orig_state));
 
 	FOR_EACH_PTR(estate_related(orig_state), rel) {
-		set_true_false_states(SMATCH_EXTRA, rel->name, rel->sym,
-				true_state, false_state);
+		set_extra_true_false_helper(rel->name, rel->sym, expr,
+					    true_state, false_state);
 	} END_FOR_EACH_PTR(rel);
+
+}
+
+static void set_extra_true_false_states_expr(struct expression *expr,
+					     struct smatch_state *true_state,
+					     struct smatch_state *false_state)
+{
+	char *name;
+	struct symbol *sym;
+
+	expr = strip_expr(expr);
+	name = expr_to_var_sym(expr, &sym);
+	if (!name || !sym)
+		goto free;
+	set_extra_true_false(name, sym, expr, true_state, false_state);
+free:
+	free_string(name);
 }
 
 static void set_extra_chunk_true_false(struct expression *expr,
@@ -595,9 +649,9 @@ static void set_extra_chunk_true_false(struct expression *expr,
 		store_link(link_id, vs->var, vs->sym, name, sym);
 	} END_FOR_EACH_PTR(vs);
 
-	set_true_false_states(SMATCH_EXTRA, name, sym,
-			      clone_estate(true_state),
-			      clone_estate(false_state));
+	set_extra_true_false(name, sym, expr,
+			     clone_estate(true_state),
+			     clone_estate(false_state));
 free:
 	free_string(name);
 }
@@ -623,7 +677,7 @@ static void set_extra_expr_true_false(struct expression *expr,
 		set_extra_chunk_true_false(expr, true_state, false_state);
 		return;
 	}
-	set_extra_true_false(name, sym, true_state, false_state);
+	set_extra_true_false(name, sym, expr, true_state, false_state);
 	free_string(name);
 }
 
@@ -2134,7 +2188,7 @@ static bool handle_bit_test(struct expression *expr)
 	if (!bit_info)
 		return false;
 	if (!bit_info->possible){
-		set_true_false_states_expr(my_id, var, alloc_estate_empty(), NULL);
+		set_extra_true_false_states_expr(var, alloc_estate_empty(), NULL);
 		return false;
 	}
 

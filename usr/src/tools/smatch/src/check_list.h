@@ -223,6 +223,7 @@ CK(check_no_increment)
 
 /* kernel specific */
 CK(check_kernel_printf)
+CK(check_idr_alloc)
 CK(check_inconsistent_locking)
 CK(check_puts_argument)
 CK(check_err_ptr)

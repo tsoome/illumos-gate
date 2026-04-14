@@ -404,6 +404,21 @@ static void match_check_balanced(struct symbol *sym)
 	} END_FOR_EACH_SM(sm);
 }
 
+static void extra_nomod_hook(const char *name, struct symbol *sym, struct expression *expr, struct smatch_state *state)
+{
+	struct sm_state *mine;
+	struct range_list *rl;
+
+	mine = get_ssa_sm_state(my_id, name, sym);
+	if (!mine)
+		return;
+
+	rl = rl_intersection(valid_ptr_rl, estate_rl(state));
+	if (rl)
+		return;
+	update_ssa_sm(my_id, mine, &release);
+}
+
 void check_unwind(int id)
 {
 	struct ref_func_info *info;
@@ -416,6 +431,7 @@ void check_unwind(int id)
 
 	set_dynamic_states(my_id);
 	add_pre_merge_hook(my_id, &pre_merge_hook);
+	add_extra_nomod_hook(&extra_nomod_hook);
 
 	for (i = 0; i < ARRAY_SIZE(func_table); i++) {
 		param_key_hook *hook;
@@ -433,7 +449,7 @@ void check_unwind(int id)
 		if (info->call_back) {
 			add_function_hook(info->name, info->call_back, info);
 		} else if (info->implies_start && info->type == ALLOC) {
-			return_implies_param_key_exact(info->name,
+			return_implies_param_key(info->name,
 					*info->implies_start,
 					*info->implies_end,
 					hook, info->param, info->key, info);
