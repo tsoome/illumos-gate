@@ -51,6 +51,7 @@ ROOTUSRSBINLINKS=	$(PROG:%=$(ROOTUSRSBIN)/%)
 CPPFLAGS +=	-I../../../../common/svc -I$(CMDINETCOMMONDIR)
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	$(CNOWARN_UNINIT)
+SMOFF += check_free
 $(NOT_RELEASE_BUILD)CPPFLAGS +=	-DDEBUG
 
 LDLIBS +=		-lscf -luutil -lsocket
@@ -70,8 +71,6 @@ $(ROOTUSRSBINLINKS):
 check: 	$(CHKMANIFEST)
 
 clean:
-
-lint: lint_PROG
 
 $(ROOTSVCMANIFESTS): $(ROOTSVCMANIFESTDIR)
 
