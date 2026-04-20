@@ -40,7 +40,7 @@
 /*
  * Memory pool for loader.
  */
-MemPool LoaderPool;
+static MemPool LoaderPool;
 
 void
 loader_alloc_stats(void)
