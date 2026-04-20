@@ -46,7 +46,7 @@
 #define ACPI_SYSTEM_XFACE
 #include "actypes.h"
 #include "actbl.h"
-#include <zalloc_defs.h>
+#include <zalloc_loader.h>
 #include "bootstrap.h"
 #include "gfx_fb.h"
 
@@ -112,6 +112,8 @@ extern vm_offset_t ktext_phys;
 extern vm_offset_t target_kernel_text;
 extern size_t kernel_load_size;
 extern EFI_PHYSICAL_ADDRESS elf_kernel_address(Elf64_Ehdr *);
+extern int mb_kernel_cmdline(struct preloaded_file *,
+    struct devdesc *, char **);
 
 extern EFI_PHYSICAL_ADDRESS load_limit;
 
@@ -383,7 +385,7 @@ build_page_tables(struct xboot_info *bp)
 static int
 dboot_exec(struct preloaded_file *fp)
 {
-	extern MemPool LoaderPool;
+	char *cmdline;
 	struct devdesc *rootdev;
 	struct xboot_info *bp;
 	boot_framebuffer_t *fb;
@@ -402,12 +404,23 @@ dboot_exec(struct preloaded_file *fp)
 		goto error;
 	}
 
-	bp = znalloc_align(&LoaderPool, sizeof (*bp), EFI_PAGE_SIZE);
+	rv = mb_kernel_cmdline(fp, rootdev, &cmdline);
+	if (rv != 0)
+		goto error;
+
+	/* mb_kernel_cmdline() updates the environment. */
+	build_environment_module();
+
+	/* Pass the loaded console font for kernel. */
+	build_font_module();
+
+	bp = loader_alloc_align(sizeof (*bp), 16);
 	if (bp == NULL)
 		return (ENOMEM);
 	bzero(bp, sizeof (*bp));
 	if (map_debug)
 		printf("%s: bp: %p\n", __func__, bp);
+
 
 	// XXX
 	vm_offset_t free_offset = 0;
@@ -479,5 +492,6 @@ PAT_support;
 
 	rv = 0;
 error:
+	free(cmdline);
 	return (rv);
 }
