@@ -25,6 +25,7 @@
  */
 
 #include <sys/cdefs.h>
+#include <sys/param.h>
 
 #include <efi.h>
 #include <efilib.h>
@@ -34,6 +35,48 @@ EFI_SYSTEM_TABLE	*ST;
 EFI_BOOT_SERVICES	*BS;
 EFI_RUNTIME_SERVICES	*RS;
 EFI_LOADED_IMAGE_PROTOCOL *boot_img;
+
+/* Cached data for memory map. */
+static EFI_MEMORY_DESCRIPTOR *efi_mmap;
+static UINTN map_key, map_size, desc_size;
+static UINT32 desc_ver;
+
+EFI_STATUS
+efi_get_memory_map(UINTN *map_sizep, EFI_MEMORY_DESCRIPTOR **mdp,
+    UINTN *map_keyp, UINTN *desc_sizep, UINT32 *desc_verp)
+{
+	EFI_STATUS status;
+
+	status = BS->GetMemoryMap(&map_size, efi_mmap, &map_key,
+	    &desc_size, &desc_ver);
+
+	if (status == EFI_BUFFER_TOO_SMALL) {
+		map_size = roundup2(map_size, EFI_PAGE_SIZE);
+		if (efi_mmap != NULL)
+			free(efi_mmap);
+		efi_mmap = malloc(map_size);
+		if (efi_mmap == NULL)
+			return (EFI_OUT_OF_RESOURCES);
+
+		status = BS->GetMemoryMap(&map_size, efi_mmap, &map_key,
+		    &desc_size, &desc_ver);
+	}
+	if (status != EFI_SUCCESS)
+		return (status);
+
+	if (map_sizep != NULL)
+		*map_sizep = map_size;
+	if (mdp != NULL)
+		*mdp = efi_mmap;
+	if (map_keyp != NULL)
+		*map_keyp = map_key;
+	if (desc_sizep != NULL)
+		*desc_sizep = desc_size;
+	if (desc_verp != NULL)
+		*desc_verp = desc_ver;
+
+	return (status);
+}
 
 void *
 efi_get_table(EFI_GUID *tbl)

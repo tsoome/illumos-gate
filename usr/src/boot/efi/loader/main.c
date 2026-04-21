@@ -1051,14 +1051,7 @@ command_memmap(int argc __unused, char *argv[] __unused)
 	int rv = 0;
 	char line[80];
 
-	sz = 0;
-	status = BS->GetMemoryMap(&sz, 0, &key, &dsz, &dver);
-	if (status != EFI_BUFFER_TOO_SMALL) {
-		printf("Can't determine memory map size\n");
-		return (CMD_ERROR);
-	}
-	map = malloc(sz);
-	status = BS->GetMemoryMap(&sz, map, &key, &dsz, &dver);
+	status = efi_get_memory_map(&sz, &map, &key, &dsz, &dver);
 	if (EFI_ERROR(status)) {
 		printf("Can't read memory map\n");
 		return (CMD_ERROR);

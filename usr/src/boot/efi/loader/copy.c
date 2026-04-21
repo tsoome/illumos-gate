@@ -44,30 +44,18 @@
 extern uint64_t load_limit;
 extern vm_offset_t ktext_phys;
 
-static EFI_MEMORY_DESCRIPTOR *efi_mmap;
-static UINTN map_key, map_size, desc_size;
-static UINT32 desc_ver;
-
 static EFI_MEMORY_DESCRIPTOR *
 get_memory_descriptor(EFI_PHYSICAL_ADDRESS paddr, uintptr_t size)
 {
+	EFI_MEMORY_DESCRIPTOR *efi_mmap;
+	UINTN map_key, map_size, desc_size;
+	UINT32 desc_ver;
 	EFI_STATUS status;
 	EFI_MEMORY_DESCRIPTOR *md;
 	UINTN count, n;
 
-	status = BS->GetMemoryMap(&map_size, efi_mmap, &map_key,
+	status = efi_get_memory_map(&map_size, &efi_mmap, &map_key,
                     &desc_size, &desc_ver);
-	if (status == EFI_BUFFER_TOO_SMALL) {
-		map_size = roundup2(map_size, EFI_PAGE_SIZE);
-		if (efi_mmap != NULL)
-			free(efi_mmap);
-		efi_mmap = malloc(map_size);
-		if (efi_mmap == NULL)
-			return (NULL);
-
-		status = BS->GetMemoryMap(&map_size, efi_mmap, &map_key,
-		    &desc_size, &desc_ver);
-	}
 	if (status != EFI_SUCCESS)
 		return (NULL);
 
