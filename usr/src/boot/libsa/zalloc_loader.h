@@ -27,6 +27,7 @@
 extern "C" {
 #endif
 
+extern void *loader_alloc_next_avail(void);
 extern void loader_alloc_stats(void);
 extern void loader_alloc_init(zalloc_alloc_t *, zalloc_free_t *);
 extern void loader_alloc_fini(void);

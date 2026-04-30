@@ -628,8 +628,49 @@ zextendPool(MemPool *mp, void *base, size_t bytes)
 	mp->mp_next = pool;
 }
 
-#ifdef ZALLOCDEBUG
+/*
+ * Return highest allocated address across the memory pool segments.
+ */
+void *
+zalloc_last_addr(MemPool *mp)
+{
+	char *last = NULL;
 
+	for (; mp != NULL; mp = mp->mp_next) {
+		MemNode *mn;
+		char *top;
+
+		/* Segment is not set up yet */
+		if (mp->mp_Size == 0)
+			continue;
+
+		mn = mp->mp_First;
+		if (mn == NULL) {
+			/* Whole segment is allocated */
+			top = mp->mp_End;
+		} else {
+			/* Walk to last MemNode */
+			while (mn->mr_Next != NULL)
+				mn = mn->mr_Next;
+
+			if ((char *)mn + mn->mr_Bytes == (char *)mp->mp_End)
+				top = (char *)mn;
+			else
+				top = mp->mp_End;
+		}
+
+		/* Nothing is allocated from this segment. */
+		if (top == (char *)mp->mp_Base)
+			continue;
+
+		if (last == NULL || top > last)
+			last = top;
+	}
+
+	return (last);
+}
+
+#ifdef ZALLOCDEBUG
 void
 zallocstats(MemPool *mp)
 {

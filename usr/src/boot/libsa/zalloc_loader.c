@@ -42,6 +42,21 @@
  */
 static MemPool LoaderPool;
 
+/*
+ * Return first address above all allocated memory from loader pool.
+ * We do check for case nothing is yet allocated, but this function
+ * is supposed to be used after at least kernel is loaded.
+ */
+void *
+loader_alloc_next_avail(void)
+{
+	uintptr_t ptr = (uintptr_t)zalloc_last_addr(&LoaderPool);
+
+	if (ptr == 0)
+		return (NULL);
+	return ((void *)roundup2(ptr, PAGE_SIZE));
+}
+
 void
 loader_alloc_stats(void)
 {
