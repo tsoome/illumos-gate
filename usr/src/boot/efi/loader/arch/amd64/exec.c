@@ -26,3 +26,31 @@ struct file_format *file_formats[] = {
 	&multiboot2,
 	NULL
 };
+
+COMMAND_SET(dboot, "dboot", "enable or disable dboot", command_dboot);
+
+static int
+command_dboot(int argc, char *argv[])
+{
+	if (argc == 1) {
+		printf("Default boot is %s\n",
+		    file_formats[0] == &dboot ? "dboot" : "multiboot2");
+		return (CMD_OK);
+	}
+	if (argc > 2) {
+		command_errmsg = "wrong number of arguments";
+		return (CMD_ERROR);
+	}
+	if (strcmp(argv[1], "enable") == 0) {
+		file_formats[0] = &dboot;
+		file_formats[1] = &multiboot2;
+		return (CMD_OK);
+	}
+	if (strcmp(argv[1], "disable") == 0) {
+		file_formats[0] = &multiboot2;
+		file_formats[1] = &dboot;
+		return (CMD_OK);
+	}
+	command_errmsg = "unknown argument";
+	return (CMD_ERROR);
+}
