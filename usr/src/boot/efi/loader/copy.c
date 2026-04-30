@@ -313,6 +313,8 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		size = st.st_size;
 	}
 
+	alignment = EFI_PAGE_SIZE;
+
 	/* We do not support allocating 0 pages. */
 	if (size == 0)
 		return (0);
@@ -340,13 +342,17 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 
 			return (paddr + diff);
 		}
+		if (type == LOAD_KERN) {
+			/* failed to allocate for multiboot start */
+			return (0);
+		}
+
 		/*
 		 * We failed to allocate at address. Fall
-		 * back to use znalloc instead.
+		 * back to use znalloc instead. Kernel needs 4MB alignment.
 		 */
+		alignment = 4 << 20;
 	}
-
-	alignment = EFI_PAGE_SIZE;
 
 	paddr = (vm_offset_t)loader_alloc_align(size, alignment);
 
@@ -361,6 +367,12 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		printf("failed to allocate %zu bytes for %p\n",
 		    size, (void *)(uintptr_t)addr);
 	} else {
+		/*
+		 * This was fallback path for kernel, adjust ktext_phys.
+		 */
+		if (type == LOAD_ELF)
+			ktext_phys = paddr;
+
 		printf("%s: allocated %zu bytes: %p\n", __func__,
 		    size, (void *)(uintptr_t)paddr);
 	}
