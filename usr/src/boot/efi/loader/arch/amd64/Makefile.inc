@@ -1,5 +1,6 @@
 
 OBJS += multiboot_tramp.o \
+        amd64_tramp.o \
         boot_mmu.o \
         dboot.o \
 	start.o \
@@ -13,3 +14,4 @@ OBJS += nullconsole.o \
 
 boot_mmu.o dboot.o := CPPFLAGS += -I$(SRC)/uts/intel -D_BOOT_TARGET_amd64
 boot_mmu.o dboot.o := CPPFLAGS += -I$(SRC)/uts/i86pc
+amd64_tramp.o := CPPFLAGS += -I$(SRC)/uts/intel -D_ASM
