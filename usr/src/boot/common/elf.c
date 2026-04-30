@@ -69,7 +69,12 @@ elf_kernel_address(Elf64_Ehdr *ehdr)
 }
 
 /*
- * elf_load_size() does calculate space needed for unix ELF sections.
+ * elf_load_size() does calculate space needed for unix ELF sections,
+ * and stores this value in kernel_load_size.
+ *
+ * However, the return value for memory allocation is fixed 8MB, the
+ * space reserved for our nucleus. We need to use this value to make
+ * sure there will be no other allocations from nucleus space.
  */
 size_t
 elf_load_size(Elf64_Ehdr *ehdr)
@@ -115,5 +120,5 @@ elf_load_size(Elf64_Ehdr *ehdr)
 
 	/* Side effect - store kernel_load_size */
 	kernel_load_size = round_page(end - start);
-	return (kernel_load_size);
+	return (8 << 20);	/* nucleus is 8Meg */
 }
