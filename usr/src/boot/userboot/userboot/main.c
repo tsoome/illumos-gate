@@ -31,6 +31,7 @@
 #include <setjmp.h>
 #include <sys/disk.h>
 #include <sys/zfs_bootenv.h>
+#include <sys/vdev_impl.h>
 
 #include "bootstrap.h"
 #include "disk.h"

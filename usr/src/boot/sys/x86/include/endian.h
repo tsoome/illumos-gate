@@ -123,8 +123,10 @@ __bswap64_var(__uint64_t _x)
 #endif
 }
 
+#define	__htonll(x)	__bswap64(x)
 #define	__htonl(x)	__bswap32(x)
 #define	__htons(x)	__bswap16(x)
+#define	__ntohll(x)	__bswap64(x)
 #define	__ntohl(x)	__bswap32(x)
 #define	__ntohs(x)	__bswap16(x)
 

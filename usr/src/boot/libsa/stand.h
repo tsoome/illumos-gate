@@ -417,14 +417,17 @@ extern struct devsw	*devsw[];
  */
 #ifndef _BYTEORDER_PROTOTYPED
 #define	_BYTEORDER_PROTOTYPED
+extern uint64_t		htonll(uint64_t);
 extern uint32_t		htonl(uint32_t);
 extern uint16_t		htons(uint16_t);
+extern uint64_t		ntohll(uint64_t);
 extern uint32_t		ntohl(uint32_t);
 extern uint16_t		ntohs(uint16_t);
 #endif
 
 #ifndef _BYTEORDER_FUNC_DEFINED
 #define	_BYTEORDER_FUNC_DEFINED
+#define	htonll(x)	__htonll(x)
 #define	htonl(x)	__htonl(x)
 #define	htons(x)	__htons(x)
 #define	ntohl(x)	__ntohl(x)

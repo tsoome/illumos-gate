@@ -22,17 +22,27 @@
  * Copyright 2013 Saso Kiselkov.  All rights reserved.
  * Use is subject to license terms.
  */
+#include <stand.h>
 #include <sys/edonr.h>
+#include <sys/abd.h>
+#include <sys/zfsimpl.h>
 
 #define	EDONR_MODE		512
 #define	EDONR_BLOCK_SIZE	EdonR512_BLOCK_SIZE
 
+static int
+edonr_incremental(void *buf, size_t size, void *arg)
+{
+	EdonRState *ctx = arg;
+	EdonRUpdate(ctx, buf, size * 8);
+	return (0);
+}
+
 /*
  * Native zio_checksum interface for the Edon-R hash function.
  */
-/*ARGSUSED*/
-static void
-zio_checksum_edonr_native(const void *buf, uint64_t size,
+void
+abd_checksum_edonr_native(abd_t *abd, uint64_t size,
     const void *ctx_template, zio_cksum_t *zcp)
 {
 	uint8_t		digest[EDONR_MODE / 8];
@@ -40,7 +50,7 @@ zio_checksum_edonr_native(const void *buf, uint64_t size,
 
 	ASSERT(ctx_template != NULL);
 	bcopy(ctx_template, &ctx, sizeof (ctx));
-	EdonRUpdate(&ctx, buf, size * 8);
+	(void) abd_iterate_func(abd, 0, size, edonr_incremental, &ctx);
 	EdonRFinal(&ctx, digest);
 	bcopy(digest, zcp->zc_word, sizeof (zcp->zc_word));
 }
@@ -48,21 +58,21 @@ zio_checksum_edonr_native(const void *buf, uint64_t size,
 /*
  * Byteswapped zio_checksum interface for the Edon-R hash function.
  */
-static void
-zio_checksum_edonr_byteswap(const void *buf, uint64_t size,
+void
+abd_checksum_edonr_byteswap(abd_t *abd, uint64_t size,
     const void *ctx_template, zio_cksum_t *zcp)
 {
 	zio_cksum_t	tmp;
 
-	zio_checksum_edonr_native(buf, size, ctx_template, &tmp);
+	abd_checksum_edonr_native(abd, size, ctx_template, &tmp);
 	zcp->zc_word[0] = BSWAP_64(zcp->zc_word[0]);
 	zcp->zc_word[1] = BSWAP_64(zcp->zc_word[1]);
 	zcp->zc_word[2] = BSWAP_64(zcp->zc_word[2]);
 	zcp->zc_word[3] = BSWAP_64(zcp->zc_word[3]);
 }
 
-static void *
-zio_checksum_edonr_tmpl_init(const zio_cksum_salt_t *salt)
+void *
+abd_checksum_edonr_tmpl_init(const zio_cksum_salt_t *salt)
 {
 	EdonRState	*ctx;
 	uint8_t		salt_block[EDONR_BLOCK_SIZE];
@@ -90,8 +100,8 @@ zio_checksum_edonr_tmpl_init(const zio_cksum_salt_t *salt)
 	return (ctx);
 }
 
-static void
-zio_checksum_edonr_tmpl_free(void *ctx_template)
+void
+abd_checksum_edonr_tmpl_free(void *ctx_template)
 {
 	EdonRState	*ctx = ctx_template;
 

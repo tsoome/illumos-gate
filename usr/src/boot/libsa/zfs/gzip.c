@@ -17,8 +17,8 @@
 
 #include <zlib.h>
 #include <strings.h>
+#include <sys/zio_compress.h>
 
-int gzip_decompress(void *, void *, size_t, size_t, int);
 /*
  * Uncompress the buffer 'src' into the buffer 'dst'.  The caller must store
  * the expected decompressed data size externally so it can be passed in.
@@ -55,8 +55,8 @@ z_uncompress(void *dst, size_t *dstlen, const void *src, size_t srclen)
 }
 
 int
-gzip_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len,
-    int n __unused)
+zfs_gzip_decompress_buf(void *s_start, void *d_start, size_t s_len,
+    size_t d_len, int n __unused)
 {
 	size_t dstlen = d_len;
 
@@ -65,3 +65,5 @@ gzip_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 
 	return (0);
 }
+
+ZFS_DECOMPRESS_WRAP_DECL(zfs_gzip_decompress)

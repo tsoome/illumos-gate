@@ -35,15 +35,18 @@
  * compress to d_len or less.
  */
 
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/zio_compress.h>
+
 #define	MATCH_BITS	6
 #define	MATCH_MIN	3
 #define	MATCH_MAX	((1 << MATCH_BITS) + (MATCH_MIN - 1))
 #define	OFFSET_MASK	((1 << (16 - MATCH_BITS)) - 1)
 #define	LEMPEL_SIZE	256
 
-/*ARGSUSED*/
 static int
-lzjb_decompress(void *s_start, void *d_start, size_t s_len __unused,
+zfs_lzjb_decompress_buf(void *s_start, void *d_start, size_t s_len __unused,
     size_t d_len, int n __unused)
 {
 	unsigned char *src = s_start;
@@ -71,3 +74,5 @@ lzjb_decompress(void *s_start, void *d_start, size_t s_len __unused,
 	}
 	return (0);
 }
+
+ZFS_DECOMPRESS_WRAP_DECL(zfs_lzjb_decompress)

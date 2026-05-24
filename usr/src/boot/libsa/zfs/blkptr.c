@@ -17,6 +17,10 @@
  * Copyright (c) 2013 by Delphix. All rights reserved.
  */
 
+#include <sys/zfs_context.h>
+#include <sys/zio.h>
+#include <sys/zio_compress.h>
+
 /*
  * Embedded-data Block Pointers
  *

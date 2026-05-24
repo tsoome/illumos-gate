@@ -28,7 +28,7 @@
 #define	_BOOT_LIBZFS_H_
 
 #include <sys/nvpair.h>
-#include <zfsimpl.h>
+#include <sys/zfsimpl.h>
 
 #define	ZFS_MAXNAMELEN	256
 

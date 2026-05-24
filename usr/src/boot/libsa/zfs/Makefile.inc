@@ -13,24 +13,45 @@
 # Copyright 2021 Toomas Soome <tsoome@me.com>
 #
 
-SRCS +=	$(ZFSSRC)/zfs.c
-SRCS +=	$(ZFSSRC)/gzip.c
-SRCS +=	$(SRC)/common/list/list.c
-ZFS_OBJ =	zfs.o
+ZFS_OBJ =	abd.o
+ZFS_OBJ +=	blkptr.o
+ZFS_OBJ +=	dmu.o
+ZFS_OBJ +=	edonr_zfs.o
+ZFS_OBJ +=	skein_zfs.o
+ZFS_OBJ +=	sha256.o
+ZFS_OBJ +=	zfs_fletcher.o
+ZFS_OBJ +=	zfs_fletcher_superscalar4.o
 ZFS_OBJ +=	gzip.o
+ZFS_OBJ +=	lzjb.o
+ZFS_OBJ +=	lz4_zfs.o
+ZFS_OBJ +=	zle.o
 ZFS_OBJ +=	list.o
+ZFS_OBJ +=	nvlist.o
 ZFS_OBJ +=	nvlist_print.o
+ZFS_OBJ +=	spa_misc.o
+ZFS_OBJ +=	uberblock.o
+ZFS_OBJ +=	vdev.o
+ZFS_OBJ +=	vdev_disk.o
+ZFS_OBJ +=	vdev_label.o
+ZFS_OBJ +=	vdev_missing.o
+ZFS_OBJ +=	vdev_indirect.o
+ZFS_OBJ +=	vdev_raidz.o
+ZFS_OBJ +=	vdev_raidz_math_scalar.o
+ZFS_OBJ +=	zio.o
+ZFS_OBJ +=	zio_checksum.o
+ZFS_OBJ +=	zio_compress.o
+ZFS_OBJ +=	zfs.o
 
-OBJECTS +=     $(ZFS_OBJ)
+OBJECTS +=	$(ZFS_OBJ)
 OBJS = $(ZFS_OBJ:%.o=objs/%.o) $(ZFS_OBJ:%.o=pics/%.o)
 
 $(OBJS) := CPPFLAGS += -I$(ZFSSRC) -I$(BOOTSRC)/common
-$(OBJS) := CPPFLAGS += -I$(SRC)/uts/common
+$(OBJS) := CPPFLAGS += -I$(SRC)/uts/common -I$(SRC)/uts/common/fs/zfs
 
-objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(BOOTSRC)/sys/cddl/boot/zfs -I$(LZ4)
-objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(SRC)/uts/common/fs/zfs
-objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(CRYPTOSRC)
-objs/nvlist_print.o pics/nvlist_print.o := CPPFLAGS += -I$(BOOTSRC)/sys/cddl/boot/zfs
+objs/lz4_zfs.o pics/lz4_zfs.o := CPPFLAGS += -I$(LZ4)
+
+objs/zfs.o pics/zfs.o := CPPFLAGS += -I$(LZ4)
+objs/zfs.o pics/zfs.o := CPPFLAGS += -I$(CRYPTOSRC)
 
 pics/%.o objs/%.o:	$(ZFSSRC)/%.c
 	$(COMPILE.c) -o $@ $<

@@ -100,10 +100,8 @@ efi_zfs_probe(void)
 	STAILQ_INIT(&zfsinfo);
 
 	/*
-	 * Find the handle for the boot device. The boot1 did find the
-	 * device with loader binary, now we need to search for the
-	 * same device and if it is part of the zfs pool, we record the
-	 * pool GUID for currdev setup.
+	 * Find the handle for the boot device. If it is part of the zfs pool,
+	 * we record the pool GUID for currdev setup.
 	 */
 	STAILQ_FOREACH(hd, hdi, pd_link) {
 		STAILQ_FOREACH(pd, &hd->pd_part, pd_link) {
@@ -111,11 +109,11 @@ efi_zfs_probe(void)
 			snprintf(devname, sizeof(devname), "%s%dp%d:",
 			    efipart_hddev.dv_name, hd->pd_unit, pd->pd_unit);
 
-                        if (zfs_probe_dev(devname, &guid) == 0) {
-                                insert_zfs(pd->pd_handle, guid);
-
-                                if (efi_zfs_is_preferred(pd->pd_handle))
-                                        pool_guid = guid;
+			if (efi_zfs_is_preferred(pd->pd_handle) &&
+                            zfs_probe_dev(devname, &guid) == 0) {
+				insert_zfs(pd->pd_handle, guid);
+				pool_guid = guid;
+				break;
                         }
 
 		}

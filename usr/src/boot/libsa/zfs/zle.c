@@ -31,8 +31,12 @@
  * are literal values.  If b >= n then the next (256 - b + 1) bytes are zero.
  */
 
+#include <sys/types.h>
+#include <sys/zio_compress.h>
+
 static int
-zle_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len, int n)
+zfs_zle_decompress_buf(void *s_start, void *d_start, size_t s_len,
+    size_t d_len, int n)
 {
 	unsigned char *src = s_start;
 	unsigned char *dst = d_start;
@@ -52,3 +56,5 @@ zle_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len, int n)
 	}
 	return (dst == d_end ? 0 : -1);
 }
+
+ZFS_DECOMPRESS_WRAP_DECL(zfs_zle_decompress)

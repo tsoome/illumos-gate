@@ -35,11 +35,12 @@ SRCS += $(SASRC)/amd64/_setjmp.S
 OBJECTS += _setjmp.o
 SRCS += sha1-x86_64.S
 OBJECTS += sha1-x86_64.o
+OBJECTS += sha512-x86_64.o
 
 SRCS += $(SASRC)/x86/hypervisor.c
 OBJECTS += hypervisor.o
 
-CLEANFILES += sha1-x86_64.S sha1-x86_64.s
+CLEANFILES += sha1-x86_64.S sha512-x86_64.S
 
 pics/%.o: $(SASRC)/amd64/%.S
 	$(COMPILE.S) -o $@ $<

@@ -47,7 +47,6 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/sysmacros.h>
 #define	_SHA2_IMPL
 #include <sys/sha2.h>
 #include <sys/sha2_consts.h>
@@ -66,9 +65,20 @@
 
 #endif	/* _KERNEL */
 
+#ifdef _STANDALONE
+#include <sys/endian.h>
+#define	_RESTRICT_KYWD	restrict
+#if _BYTE_ORDER == _BIG_ENDIAN
+#define	__BIG_ENDIAN
+#endif
+#else
+#include <sys/sysmacros.h>
 #ifdef _LITTLE_ENDIAN
 #include <sys/byteorder.h>
 #define	HAVE_HTONL
+#else
+#define	__BIG_ENDIAN
+#endif
 #endif
 
 static void Encode(uint8_t *, uint32_t *, size_t);
@@ -131,7 +141,7 @@ static uint8_t PADDING[128] = { 0x80, /* all zeros */ };
  * careful programming can guarantee this for us.
  */
 
-#if	defined(_BIG_ENDIAN)
+#if	defined(__BIG_ENDIAN)
 #define	LOAD_BIG_32(addr)	(*(uint32_t *)(addr))
 #define	LOAD_BIG_64(addr)	(*(uint64_t *)(addr))
 

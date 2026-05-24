@@ -21,8 +21,9 @@ SRCS +=		$(COMDIR)/edonr/edonr.c
 SRCS +=		$(COMDIR)/skein/skein.c
 SRCS +=		$(COMDIR)/skein/skein_iv.c
 SRCS +=		$(COMDIR)/skein/skein_block.c
-CRYPTO +=	digest.o
+CRYPTO =	digest.o
 CRYPTO +=	sha1.o
+CRYPTO +=	sha2.o
 CRYPTO +=	edonr.o
 CRYPTO +=	skein.o
 CRYPTO +=	skein_iv.o
@@ -32,6 +33,7 @@ OBJECTS += $(CRYPTO)
 OBJS = $(CRYPTO:%.o=objs/%.o) $(CRYPTO:%.o=pics/%.o)
 
 objs/digest.o pics/digest.o := CPPFLAGS += -I$(BOOTSRC)/common
+objs/sha1.o pics/sha1.o := CPPFLAGS += -I$(ZFSSRC)
 # need headers from sys
 $(OBJS) := CPPFLAGS += -I$(SRC)/uts/common
 
@@ -50,8 +52,17 @@ objs/%.o pics/%.o:	$(CRYPTOSRC)/%.c
 objs/%.o pics/%.o:	$(COMDIR)/sha1/%.c
 	$(COMPILE.c) -o $@ $<
 
+objs/%.o pics/%.o:	$(COMDIR)/sha2/%.c
+	$(COMPILE.c) -o $@ $<
+
 sha1-x86_64.S: $(COMDIR)/sha1/amd64/sha1-x86_64.pl
 	$(PERL) $? $@
 
+sha512-x86_64.S: $(COMDIR)/sha2/amd64/sha512-x86_64.pl
+	$(PERL) $? $@
+
 pics/sha1-x86_64.o: sha1-x86_64.S
+	$(COMPILE.s) -o $@ ${@F:.o=.S}
+
+pics/sha512-x86_64.o: sha512-x86_64.S
 	$(COMPILE.s) -o $@ ${@F:.o=.S}
