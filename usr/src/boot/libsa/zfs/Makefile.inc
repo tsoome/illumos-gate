@@ -16,17 +16,20 @@
 SRCS +=	$(ZFSSRC)/zfs.c
 SRCS +=	$(ZFSSRC)/gzip.c
 SRCS +=	$(SRC)/common/list/list.c
-OBJECTS +=	zfs.o
-OBJECTS +=	gzip.o
-OBJECTS +=	list.o
-OBJECTS +=	nvlist_print.o
+ZFS_OBJ =	zfs.o
+ZFS_OBJ +=	gzip.o
+ZFS_OBJ +=	list.o
+ZFS_OBJ +=	nvlist_print.o
 
-objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(BOOTSRC)/common
+OBJECTS +=     $(ZFS_OBJ)
+OBJS = $(ZFS_OBJ:%.o=objs/%.o) $(ZFS_OBJ:%.o=pics/%.o)
+
+$(OBJS) := CPPFLAGS += -I$(ZFSSRC) -I$(BOOTSRC)/common
+$(OBJS) := CPPFLAGS += -I$(SRC)/uts/common
+
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(BOOTSRC)/sys/cddl/boot/zfs -I$(LZ4)
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(SRC)/uts/common/fs/zfs
 objs/zfs.o pics/zfs.o := CPPFLAGS +=	-I$(CRYPTOSRC)
-objs/nvlist_print.o pics/nvlist_print.o := CPPFLAGS += -I$(ZFSSRC)
-objs/nvlist_print.o pics/nvlist_print.o := CPPFLAGS += -I$(BOOTSRC)/common
 objs/nvlist_print.o pics/nvlist_print.o := CPPFLAGS += -I$(BOOTSRC)/sys/cddl/boot/zfs
 
 pics/%.o objs/%.o:	$(ZFSSRC)/%.c

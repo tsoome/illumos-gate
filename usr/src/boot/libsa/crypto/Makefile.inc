@@ -21,14 +21,19 @@ SRCS +=		$(COMDIR)/edonr/edonr.c
 SRCS +=		$(COMDIR)/skein/skein.c
 SRCS +=		$(COMDIR)/skein/skein_iv.c
 SRCS +=		$(COMDIR)/skein/skein_block.c
-OBJECTS +=	digest.o
-OBJECTS +=	sha1.o
-OBJECTS +=	edonr.o
-OBJECTS +=	skein.o
-OBJECTS +=	skein_iv.o
-OBJECTS +=	skein_block.o
+CRYPTO +=	digest.o
+CRYPTO +=	sha1.o
+CRYPTO +=	edonr.o
+CRYPTO +=	skein.o
+CRYPTO +=	skein_iv.o
+CRYPTO +=	skein_block.o
 
-objs/digest.o pics/digest.o := CPPFLAGS +=	-I$(BOOTSRC)/common
+OBJECTS += $(CRYPTO)
+OBJS = $(CRYPTO:%.o=objs/%.o) $(CRYPTO:%.o=pics/%.o)
+
+objs/digest.o pics/digest.o := CPPFLAGS += -I$(BOOTSRC)/common
+# need headers from sys
+$(OBJS) := CPPFLAGS += -I$(SRC)/uts/common
 
 # Do not unroll skein loops, reduce code size
 objs/skein_block.o pics/skein_block.o := CPPFLAGS +=	-DSKEIN_LOOP=111

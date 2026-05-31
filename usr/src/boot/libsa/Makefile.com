@@ -23,7 +23,9 @@ include $(SASRC)/Makefile.inc
 include $(CRYPTOSRC)/Makefile.inc
 include $(ZFSSRC)/Makefile.inc
 
-CPPFLAGS +=	-I$(SRC)/uts/common
+# need sys/mount.h
+objs/netif.o pics/netif.o := CPPFLAGS += -I$(SRC)/uts/common
+objs/ufs.o pics/ufs.o := CPPFLAGS += -I$(SRC)/uts/common
 
 # 64-bit smatch false positive :/
 SMOFF += uninitialized
