@@ -28,6 +28,7 @@
 #include <sys/conf.h>
 #include <sys/list.h>
 #include <sys/file.h>
+#include <sys/sysmacros.h>
 #include <sys/ddi.h>
 #include <sys/sunddi.h>
 #include <sys/modctl.h>
@@ -1407,6 +1408,10 @@ sbd_write_lu_info(sbd_lu_t *sl)
 	}
 	sli->sli_lu_size = sl->sl_lu_size;
 	sli->sli_data_blocksize_shift = sl->sl_data_blocksize_shift;
+	if (sl->sl_flags & SL_PBLOCKSIZE_VALID) {
+		sli->sli_data_pblocksize_shift = sl->sl_data_pblocksize_shift;
+		sli->sli_flags |= SLI_PBLOCKSIZE_VALID;
+	}
 	sli->sli_data_order = SMS_DATA_ORDER;
 	bcopy(sl->sl_device_id, sli->sli_device_id, 20);
 
@@ -1498,6 +1503,69 @@ sbd_populate_and_register_lu(sbd_lu_t *sl, uint32_t *err_ret)
 	    offsetof(ats_state_t, as_next));
 	*err_ret = 0;
 	return (0);
+}
+
+/*
+ * Convert a byte count to a left shift multiplier. The value must be a
+ * non zero power of two.
+ */
+static uint8_t
+sbd_blocksize_shift(uint64_t blocksize)
+{
+	ASSERT(blocksize != 0);
+	ASSERT(ISP2(blocksize));
+
+	return (highbit64(blocksize) - 1);
+}
+
+/*
+ * Determine the physical block size to report to the initiators. If the
+ * administrator asked for a specific size at create time then that value
+ * is used as is, otherwise it is taken from the backing store: for a zvol
+ * this is the volblocksize property and for a real disk it is the physical
+ * sector size. Anything else, a regular file for instance, has no physical
+ * block size of its own and the logical block size is used.
+ *
+ * A derived size is clamped to SBD_MAX_BLOCKSIZE, and it can never be
+ * smaller than the logical block size.
+ *
+ * Must be called with sl_lock held.
+ */
+static void
+sbd_set_pblocksize(sbd_lu_t *sl)
+{
+	struct dk_minfo_ext dkmext;
+	uint64_t pblocksize;
+	int unused;
+
+	ASSERT(MUTEX_HELD(&sl->sl_lock));
+
+	if (sl->sl_flags & SL_PBLOCKSIZE_VALID) {
+		/* Explicitly specified, but never below the logical size. */
+		if (sl->sl_data_pblocksize_shift < sl->sl_data_blocksize_shift)
+			sl->sl_data_pblocksize_shift =
+			    sl->sl_data_blocksize_shift;
+		return;
+	}
+
+	sl->sl_data_pblocksize_shift = sl->sl_data_blocksize_shift;
+
+	if (sl->sl_data_vtype == VREG)
+		return;
+
+	if (VOP_IOCTL(sl->sl_data_vp, DKIOCGMEDIAINFOEXT, (intptr_t)&dkmext,
+	    FKIOCTL, kcred, &unused, NULL) != 0)
+		return;
+
+	pblocksize = dkmext.dki_pbsize;
+	if (pblocksize == 0 || !ISP2(pblocksize))
+		return;
+
+	if (pblocksize > SBD_MAX_BLOCKSIZE)
+		pblocksize = SBD_MAX_BLOCKSIZE;
+
+	if (pblocksize > (((uint64_t)1) << sl->sl_data_blocksize_shift))
+		sl->sl_data_pblocksize_shift = sbd_blocksize_shift(pblocksize);
 }
 
 int
@@ -1629,6 +1697,7 @@ odf_over_open:
 				sl->sl_flags |= SL_CALL_ZVOL;
 		}
 	}
+	sbd_set_pblocksize(sl);
 	sl->sl_flags |= SL_MEDIA_LOADED;
 	mutex_exit(&sl->sl_lock);
 	return (0);
@@ -1880,7 +1949,7 @@ sbd_create_register_lu(sbd_create_and_reg_lu_t *slu, int struct_sz,
 	}
 	if (slu->slu_blksize_valid) {
 		if ((slu->slu_blksize & (slu->slu_blksize - 1)) ||
-		    (slu->slu_blksize > (32 * 1024)) ||
+		    (slu->slu_blksize > SBD_MAX_BLOCKSIZE) ||
 		    (slu->slu_blksize == 0)) {
 			*err_ret = SBD_RET_INVALID_BLKSIZE;
 			ret = EINVAL;
@@ -1892,6 +1961,18 @@ sbd_create_register_lu(sbd_create_and_reg_lu_t *slu, int struct_sz,
 	} else {
 		sl->sl_data_blocksize_shift = 9;	/* 512 by default */
 		slu->slu_blksize = 512;
+	}
+	if (slu->slu_pblksize_valid) {
+		if ((slu->slu_pblksize & (slu->slu_pblksize - 1)) ||
+		    (slu->slu_pblksize > SBD_MAX_BLOCKSIZE) ||
+		    (slu->slu_pblksize < slu->slu_blksize)) {
+			*err_ret = SBD_RET_INVALID_PBLKSIZE;
+			ret = EINVAL;
+			goto scm_err_out;
+		}
+		sl->sl_data_pblocksize_shift =
+		    sbd_blocksize_shift(slu->slu_pblksize);
+		sl->sl_flags |= SL_PBLOCKSIZE_VALID;
 	}
 
 	/* Now lets start creating meta */
@@ -1912,6 +1993,9 @@ sbd_create_register_lu(sbd_create_and_reg_lu_t *slu, int struct_sz,
 	if (ret) {
 		goto scm_err_out;
 	}
+
+	/* Let the caller know what we ended up with. */
+	slu->slu_pblksize = ((uint16_t)1) << sl->sl_data_pblocksize_shift;
 
 	/*
 	 * Check if we were explicitly asked to disable/enable write
@@ -2485,6 +2569,17 @@ sbd_import_lu(sbd_import_lu_t *ilu, int struct_sz, uint32_t *err_ret,
 
 	sl->sl_lu_size = sli->sli_lu_size;
 	sl->sl_data_blocksize_shift = sli->sli_data_blocksize_shift;
+
+	/*
+	 * Metadata written before physical block size support did not
+	 * record one; such an LU gets its physical block size derived from
+	 * the backing store when the data file is opened.
+	 */
+	if (sli->sli_flags & SLI_PBLOCKSIZE_VALID) {
+		sl->sl_data_pblocksize_shift = sli->sli_data_pblocksize_shift;
+		sl->sl_flags |= SL_PBLOCKSIZE_VALID;
+	}
+
 	bcopy(sli->sli_device_id, sl->sl_device_id, 20);
 	if (sli->sli_flags & SLI_SERIAL_VALID) {
 		sl->sl_serial_no_size = sl->sl_serial_no_alloc_size =
@@ -3403,6 +3498,7 @@ sbd_get_lu_props(sbd_lu_props_t *islp, uint32_t islp_sz,
 
 	oslp->slp_lu_size = sl->sl_lu_size;
 	oslp->slp_blksize = ((uint16_t)1) << sl->sl_data_blocksize_shift;
+	oslp->slp_pblksize = ((uint16_t)1) << sl->sl_data_pblocksize_shift;
 
 	oslp->slp_access_state = sl->sl_access_state;
 

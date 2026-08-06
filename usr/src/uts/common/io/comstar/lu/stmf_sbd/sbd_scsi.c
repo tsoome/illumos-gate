@@ -1941,6 +1941,14 @@ sbd_handle_read_capacity(struct scsi_task *task,
 		p[7] = s & 0xff;
 		p[10] = (blksize >> 8) & 0xff;
 		p[11] = blksize & 0xff;
+		/*
+		 * LOGICAL BLOCKS PER PHYSICAL BLOCK EXPONENT. The lowest
+		 * aligned logical block address stays zero, the backing
+		 * store starts on a physical block boundary.
+		 */
+		if (sl->sl_data_pblocksize_shift >= sl->sl_data_blocksize_shift)
+			p[13] = (sl->sl_data_pblocksize_shift -
+			    sl->sl_data_blocksize_shift) & 0x0f;
 		if (sl->sl_flags & SL_UNMAP_ENABLED) {
 			p[14] = 0x80;
 		}
@@ -3125,6 +3133,14 @@ sbd_handle_inquiry(struct scsi_task *task, struct stmf_data_buf *initial_dbuf)
 		p[3] = page_length;
 		p[4] = 1;
 		p[5] = sbd_ats_max_nblks();
+		/*
+		 * OPTIMAL TRANSFER LENGTH GRANULARITY, one physical block
+		 * expressed in logical blocks.
+		 */
+		if (sl->sl_data_pblocksize_shift >= sl->sl_data_blocksize_shift)
+			SCSI_WRITE16(p + 6, ((uint16_t)1) <<
+			    (sl->sl_data_pblocksize_shift -
+			    sl->sl_data_blocksize_shift));
 		if (sl->sl_flags & SL_UNMAP_ENABLED && sbd_unmap_enable) {
 			p[20] = (stmf_sbd_unmap_max_nblks >> 24) & 0xff;
 			p[21] = (stmf_sbd_unmap_max_nblks >> 16) & 0xff;

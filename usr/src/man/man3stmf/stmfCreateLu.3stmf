@@ -93,6 +93,16 @@ The blocksize specified by \fBSTMF_LU_PROP_BLOCK_SIZE\fR is invalid.
 .sp
 .ne 2
 .na
+\fB\fBSTMF_ERROR_INVALID_PBLKSIZE\fR\fR
+.ad
+.sp .6
+.RS 4n
+The physical blocksize specified by \fBSTMF_LU_PROP_PBLOCK_SIZE\fR is invalid.
+.RE
+
+.sp
+.ne 2
+.na
 \fB\fBSTMF_ERROR_WRITE_CACHE_SET\fR\fR
 .ad
 .sp .6

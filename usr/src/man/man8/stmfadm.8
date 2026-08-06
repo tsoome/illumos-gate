@@ -167,7 +167,8 @@ The following logical unit properties can be set only when creating LU using
 subcommand:
 .Bl -tag -width Ds
 .It Sy blk Ns = Ns Ar num
-Specifies the block size for the device.
+Specifies the logical block size for the device.
+Must be a power of two, no larger than 32768.
 The default is 512.
 .It Sy guid Ns = Ns Ar string
 32 hexadecimal ASCII characters representing a valid NAA Registered Extended
@@ -185,6 +186,19 @@ This will be used to generate the device identifier
 .Pq GUID .
 The default is
 .Sy 00144F .
+.It Sy pblk Ns = Ns Ar num
+Specifies the physical block size reported for the device.
+Must be a power of two, no smaller than
+.Sy blk
+and no larger than 32768.
+The physical block size is a hint to the initiator about the granularity in
+which the backing store actually performs I/O; it does not change the
+addressing of the device, which always uses the logical block size.
+By default it is taken from the backing store: for a ZFS volume this is the
+.Sy volblocksize
+property, for a disk it is the physical sector size of that disk, and for a
+regular file it is the logical block size.
+A derived value larger than 32768 is reduced to 32768.
 .It Sy pid Ns = Ns Ar string
 16 bytes ASCII string defining Product ID per SCSI SPC-3.
 This value will be reflected in the Standard INQUIRY data returned for the

@@ -128,6 +128,7 @@ static int convertCharToPropId(char *, uint32_t *);
 #define	WRITEBACK_CACHE_DISABLE	    "WCD"
 #define	COMPANY_ID		    "OUI"
 #define	BLOCK_SIZE		    "BLK"
+#define	PBLOCK_SIZE		    "PBLK"
 #define	SERIAL_NUMBER		    "SERIAL"
 #define	MGMT_URL		    "MGMT-URL"
 #define	HOST_ID			    "HOST-ID"
@@ -158,6 +159,8 @@ static int convertCharToPropId(char *, uint32_t *);
 "     mgmt-url - Management URL address\n" \
 "     oui      - organizational unique identifier\n" \
 "                6 ascii hex characters of valid format\n" \
+"     pblk     - physical block size in bytes in 2^n, not less than blk.\n" \
+"                Defaults to the block size of the backing store\n" \
 "     pid      - product identifier (up to 16 chars)\n" \
 "     serial   - serial number (up to 252 chars)\n" \
 "     vid      - vendor identifier (up to 8 chars)\n" \
@@ -885,6 +888,11 @@ createLuFunc(int operandLen, char *operands[], cmdOptions_t *options,
 			    gettext("invalid block size"));
 			ret++;
 			break;
+		case STMF_ERROR_INVALID_PBLKSIZE:
+			(void) fprintf(stderr, "%s: %s\n", cmdName,
+			    gettext("invalid physical block size"));
+			ret++;
+			break;
 		case STMF_ERROR_GUID_IN_USE:
 			(void) fprintf(stderr, "%s: %s\n", cmdName,
 			    gettext("guid in use"));
@@ -948,9 +956,9 @@ done:
 }
 
 /*
- * createLuFunc
+ * modifyLuFunc
  *
- * Create a logical unit
+ * Modify a logical unit
  *
  */
 /*ARGSUSED*/
@@ -1087,6 +1095,11 @@ callModify(char *fname, stmfGuid *luGuid, uint32_t prop, const char *propVal,
 		case STMF_ERROR_INVALID_BLKSIZE:
 			(void) fprintf(stderr, "%s: %s\n", cmdName,
 			    gettext("invalid block size"));
+			ret++;
+			break;
+		case STMF_ERROR_INVALID_PBLKSIZE:
+			(void) fprintf(stderr, "%s: %s\n", cmdName,
+			    gettext("invalid physical block size"));
 			ret++;
 			break;
 		case STMF_ERROR_GUID_IN_USE:
@@ -1295,6 +1308,8 @@ convertCharToPropId(char *prop, uint32_t *propId)
 		*propId = STMF_LU_PROP_WRITE_CACHE_DISABLE;
 	} else if (strcasecmp(prop, BLOCK_SIZE) == 0) {
 		*propId = STMF_LU_PROP_BLOCK_SIZE;
+	} else if (strcasecmp(prop, PBLOCK_SIZE) == 0) {
+		*propId = STMF_LU_PROP_PBLOCK_SIZE;
 	} else if (strcasecmp(prop, SERIAL_NUMBER) == 0) {
 		*propId = STMF_LU_PROP_SERIAL_NUM;
 	} else if (strcasecmp(prop, COMPANY_ID) == 0) {
@@ -2128,6 +2143,20 @@ printExtLuProps(stmfGuid *guid)
 	stmfRet = stmfGetLuProp(hdl, STMF_LU_PROP_BLOCK_SIZE, propVal,
 	    &propValSize);
 	(void) printf(PROPS_FORMAT, "Block Size");
+	if (stmfRet == STMF_STATUS_SUCCESS) {
+		(void) printf("%s\n", propVal);
+	} else if (stmfRet == STMF_ERROR_NO_PROP) {
+		(void) printf("not set\n");
+	} else if (stmfRet == STMF_ERROR_NO_PROP_STANDBY) {
+		(void) printf("prop unavailable in standby\n");
+	} else {
+		(void) printf("<error retrieving property>\n");
+		ret++;
+	}
+
+	stmfRet = stmfGetLuProp(hdl, STMF_LU_PROP_PBLOCK_SIZE, propVal,
+	    &propValSize);
+	(void) printf(PROPS_FORMAT, "Physical Block Size");
 	if (stmfRet == STMF_STATUS_SUCCESS) {
 		(void) printf("%s\n", propVal);
 	} else if (stmfRet == STMF_ERROR_NO_PROP) {

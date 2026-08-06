@@ -90,9 +90,26 @@ Default: Set to file name of backing store.
 .ad
 .sp .6
 .RS 4n
-Numeric value for block size in bytes in 2^n.
+Numeric value for logical block size in bytes in 2^n.
 .sp
 Default: 512
+.RE
+
+.sp
+.ne 2
+.na
+\fB\fBSTMF_LU_PROP_PBLOCK_SIZE\fR\fR
+.ad
+.sp .6
+.RS 4n
+Numeric value for physical block size in bytes in 2^n. It must not be smaller
+than \fBSTMF_LU_PROP_BLOCK_SIZE\fR. The physical block size is reported to the
+initiator as a hint about the granularity of the backing store; it does not
+affect the addressing of the device.
+.sp
+Default: the block size of the backing store, for example the
+\fBvolblocksize\fR property of a ZFS volume, or the logical block size when
+the backing store has no block size of its own.
 .RE
 
 .sp

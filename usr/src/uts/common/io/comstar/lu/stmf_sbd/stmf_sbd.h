@@ -64,6 +64,14 @@ extern krwlock_t sbd_global_prop_lock;
 #define	SBD_MIN_LU_SIZE		(1024 * 1024)
 
 /*
+ * Largest logical and physical block size an LU may report. A zvol may well
+ * have a volblocksize larger than this, but there is little to gain from
+ * telling an initiator that its physical blocks are that big, so a derived
+ * physical block size is clamped here.
+ */
+#define	SBD_MAX_BLOCKSIZE	(32 * 1024)
+
+/*
  * sms endianess
  */
 #define	SMS_BIG_ENDIAN			0x00
@@ -152,7 +160,11 @@ typedef struct sbd_lu_info_1_1 {
 	uint8_t			sli_data_blocksize_shift;
 	uint8_t			sli_data_order;
 	uint8_t			sli_serial_size;
-	uint8_t			sli_rsvd1;
+	/*
+	 * Only valid when SLI_PBLOCKSIZE_VALID is set. Metadata written
+	 * before physical block size support existed has a zero here.
+	 */
+	uint8_t			sli_data_pblocksize_shift;
 	uint8_t			sli_device_id[20];
 	uint64_t		sli_mgmt_url_offset;
 	uint8_t			sli_rsvd2[248];
@@ -180,6 +192,7 @@ typedef struct sbd_lu_info_1_1 {
 #define	SLI_WRITEBACK_CACHE_DISABLE		0x0200
 #define	SLI_ZFS_META				0x0400
 #define	SLI_MGMT_URL_VALID			0x0800
+#define	SLI_PBLOCKSIZE_VALID			0x1000
 
 struct sbd_it_data;
 
@@ -208,6 +221,7 @@ typedef struct sbd_lu {
 	uint8_t		sl_device_id[20];	/* 4(hdr) + 16(GUID) */
 	uint8_t		sl_meta_blocksize_shift; /* Left shift multiplier */
 	uint8_t		sl_data_blocksize_shift;
+	uint8_t		sl_data_pblocksize_shift;
 	uint8_t		sl_data_fs_nbits;
 	uint8_t		sl_serial_no_size;
 	uint64_t	sl_total_meta_size;
@@ -275,6 +289,7 @@ typedef struct sbd_lu {
 #define	SL_FLUSH_ON_DISABLED_WRITECACHE	    0x00040000
 #define	SL_CALL_ZVOL			    0x00080000
 #define	SL_UNMAP_ENABLED		    0x00100000
+#define	SL_PBLOCKSIZE_VALID		    0x00200000
 
 /*
  * sl_trans_op. LU is undergoing some transition and this field

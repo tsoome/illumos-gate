@@ -1254,6 +1254,11 @@ createDiskLu(diskResource *disk, stmfGuid *createdGuid)
 		sbdLu->slu_blksize = disk->blkSize;
 	}
 
+	if (disk->pblkSizeValid) {
+		sbdLu->slu_pblksize_valid = 1;
+		sbdLu->slu_pblksize = disk->pblkSize;
+	}
+
 	if (disk->writeProtectEnableValid) {
 		if (disk->writeProtectEnable) {
 			sbdLu->slu_write_protected = 1;
@@ -1299,6 +1304,10 @@ createDiskLu(diskResource *disk, stmfGuid *createdGuid)
 	if (ret != STMF_STATUS_SUCCESS) {
 		goto done;
 	}
+
+	/* update pblkSize with actual value */
+	disk->pblkSizeValid = B_TRUE;
+	disk->pblkSize = sbdLu->slu_pblksize;
 
 	/*
 	 * on success, copy the resulting guid into the caller's guid if not
@@ -1475,6 +1484,9 @@ diskError(uint32_t stmfError, int *ret)
 			break;
 		case SBD_RET_INVALID_BLKSIZE:
 			*ret = STMF_ERROR_INVALID_BLKSIZE;
+			break;
+		case SBD_RET_INVALID_PBLKSIZE:
+			*ret = STMF_ERROR_INVALID_PBLKSIZE;
 			break;
 		case SBD_RET_FILE_ALREADY_REGISTERED:
 			*ret = STMF_ERROR_FILE_IN_USE;
@@ -2378,6 +2390,9 @@ loadDiskPropsFromDriver(luResourceImpl *hdl, sbd_lu_props_t *sbdProps)
 	diskLu->blkSizeValid = B_TRUE;
 	diskLu->blkSize = sbdProps->slp_blksize;
 
+	diskLu->pblkSizeValid = B_TRUE;
+	diskLu->pblkSize = sbdProps->slp_pblksize;
+
 	diskLu->luSizeValid = B_TRUE;
 	diskLu->luSize = sbdProps->slp_lu_size;
 
@@ -2716,6 +2731,17 @@ getDiskProp(luResourceImpl *hdl, uint32_t prop, char *propVal, size_t *propLen)
 				return (STMF_ERROR_INVALID_ARG);
 			}
 			break;
+		case STMF_LU_PROP_PBLOCK_SIZE:
+			if (diskLu->pblkSizeValid == B_FALSE) {
+				return (STMF_ERROR_NO_PROP);
+			}
+			reqLen = snprintf(propVal, *propLen, "%llu",
+			    (u_longlong_t)diskLu->pblkSize);
+			if (reqLen >= *propLen) {
+				*propLen = reqLen + 1;
+				return (STMF_ERROR_INVALID_ARG);
+			}
+			break;
 		case STMF_LU_PROP_FILENAME:
 			if (diskLu->luDataFileNameValid == B_FALSE) {
 				return (STMF_ERROR_NO_PROP);
@@ -2908,6 +2934,21 @@ setDiskProp(luResourceImpl *hdl, uint32_t resourceProp, const char *propVal)
 			}
 			diskLu->blkSize = numericProp;
 			diskLu->blkSizeValid = B_TRUE;
+			break;
+		}
+		case STMF_LU_PROP_PBLOCK_SIZE: {
+			const char *tmp = propVal;
+			while (*tmp) {
+				if (!isdigit(*tmp++)) {
+					return (STMF_ERROR_INVALID_ARG);
+				}
+			}
+			(void) sscanf(propVal, "%llu", &numericProp);
+			if (numericProp > UINT16_MAX) {
+				return (STMF_ERROR_INVALID_PROPSIZE);
+			}
+			diskLu->pblkSize = numericProp;
+			diskLu->pblkSizeValid = B_TRUE;
 			break;
 		}
 		case STMF_LU_PROP_COMPANY_ID:

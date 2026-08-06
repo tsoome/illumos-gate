@@ -64,6 +64,7 @@ typedef enum sbd_ret {
 	SBD_RET_INSUFFICIENT_BUF_SPACE,
 	SBD_RET_WRITE_CACHE_SET_FAILED,
 	SBD_RET_ACCESS_STATE_FAILED,
+	SBD_RET_INVALID_PBLKSIZE,
 
 	SBD_RET_MAX_VAL
 } sbd_ret_t;
@@ -96,7 +97,8 @@ typedef struct sbd_create_and_reg_lu {
 			slu_host_id_valid:1,
 			slu_writeback_cache_disable_valid:1,
 			slu_writeback_cache_disable:1,
-			slu_write_protected:1;
+			slu_write_protected:1,
+			slu_pblksize_valid:1;
 	uint16_t	slu_meta_fname_off;
 	uint64_t	slu_lu_size;
 	uint16_t	slu_data_fname_off;
@@ -104,6 +106,8 @@ typedef struct sbd_create_and_reg_lu {
 	uint8_t		slu_serial_size;
 	uint8_t		slu_ret_filesize_nbits;
 	uint16_t	slu_blksize;
+	uint16_t	slu_pblksize;
+	uint16_t	slu_rsvd1;
 	uint32_t	slu_company_id;
 	uint16_t	slu_alias_off;
 	uint16_t	slu_mgmt_url_off;
@@ -213,16 +217,17 @@ typedef struct sbd_lu_props {
 	uint64_t	slp_lu_size;
 	uint16_t	slp_serial_off;
 	uint16_t	slp_blksize;
+	uint16_t	slp_pblksize;
 	uint16_t	slp_alias_off;
 	uint16_t	slp_mgmt_url_off;
 	uint32_t	slp_buf_size_needed;	/* Upon return */
 	uint16_t	slp_serial_size;
 	uint16_t	slp_access_state;
-	uint8_t		slp_pad[4];
 	char		slp_rev[4];
 	char		slp_vid[8];
 	char		slp_pid[16];
 	uint8_t		slp_guid[16];
+	uint8_t		slp_pad[4];
 	uint8_t		slp_buf[];
 } sbd_lu_props_t;
 

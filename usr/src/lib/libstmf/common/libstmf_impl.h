@@ -47,6 +47,8 @@ typedef struct _diskResource {
 	uint64_t    luSize;
 	boolean_t   blkSizeValid;
 	uint16_t    blkSize;
+	boolean_t   pblkSizeValid;
+	uint16_t    pblkSize;
 	boolean_t   luGuidValid;
 	uint8_t	    luGuid[16];
 	boolean_t   serialNumValid;
