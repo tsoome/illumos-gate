@@ -1085,23 +1085,25 @@ int
 stmfCreateLuResource(uint16_t dType, luResource *hdl)
 {
 	int ret = STMF_STATUS_SUCCESS;
+	luResourceImpl *lr;
 
 	if (dType != STMF_DISK || hdl == NULL) {
 		return (STMF_ERROR_INVALID_ARG);
 	}
 
-	*hdl = calloc(1, sizeof (luResourceImpl));
-	if (*hdl == NULL) {
+	lr = calloc(1, sizeof (luResourceImpl));
+	if (lr == NULL) {
 		return (STMF_ERROR_NOMEM);
 	}
 
-	ret = createDiskResource((luResourceImpl *)*hdl);
+	ret = createDiskResource(lr);
 	if (ret != STMF_STATUS_SUCCESS) {
-		free(*hdl);
-		return (ret);
+		free(lr);
+	} else {
+		*hdl = lr;
 	}
 
-	return (STMF_STATUS_SUCCESS);
+	return (ret);
 }
 
 /*
@@ -1137,57 +1139,54 @@ createDiskLu(diskResource *disk, stmfGuid *createdGuid)
 
 	/* data file name must be specified */
 	if (disk->luDataFileNameValid) {
-		dataFileNameLen = strlen(disk->luDataFileName);
+		dataFileNameLen = strlen(disk->luDataFileName) + 1;
 	} else {
 		(void) close(fd);
 		return (STMF_ERROR_MISSING_PROP_VAL);
 	}
 
-	sluBufSize += dataFileNameLen + 1;
+	sluBufSize += dataFileNameLen;
 
 	if (disk->luMetaFileNameValid) {
-		metaFileNameLen = strlen(disk->luMetaFileName);
-		sluBufSize += metaFileNameLen + 1;
+		metaFileNameLen = strlen(disk->luMetaFileName) + 1;
+		sluBufSize += metaFileNameLen;
 	}
 
 	serialNumLen = strlen(disk->serialNum);
 	sluBufSize += serialNumLen;
 
 	if (disk->luAliasValid) {
-		luAliasLen = strlen(disk->luAlias);
-		sluBufSize += luAliasLen + 1;
+		luAliasLen = strlen(disk->luAlias) + 1;
+		sluBufSize += luAliasLen;
 	}
 
 	if (disk->luMgmtUrlValid) {
-		luMgmtUrlLen = strlen(disk->luMgmtUrl);
-		sluBufSize += luMgmtUrlLen + 1;
+		luMgmtUrlLen = strlen(disk->luMgmtUrl) + 1;
+		sluBufSize += luMgmtUrlLen;
 	}
 
-	/*
-	 * 8 is the size of the buffer set aside for
-	 * concatenation of variable length fields
-	 */
 	sbdLu = (sbd_create_and_reg_lu_t *)calloc(1,
-	    sizeof (sbd_create_and_reg_lu_t) + sluBufSize - 8);
+	    sizeof (sbd_create_and_reg_lu_t) + sluBufSize);
 	if (sbdLu == NULL) {
+		(void) close(fd);
 		return (STMF_ERROR_NOMEM);
 	}
 
 	sbdLu->slu_struct_size = sizeof (sbd_create_and_reg_lu_t) +
-	    sluBufSize - 8;
+	    sluBufSize;
 
-	if (metaFileNameLen) {
+	if (disk->luMetaFileNameValid && metaFileNameLen > 1) {
 		sbdLu->slu_meta_fname_valid = 1;
 		sbdLu->slu_meta_fname_off = bufOffset;
 		bcopy(disk->luMetaFileName, &(sbdLu->slu_buf[bufOffset]),
-		    metaFileNameLen + 1);
-		bufOffset += metaFileNameLen + 1;
+		    metaFileNameLen);
+		bufOffset += metaFileNameLen;
 	}
 
 	bcopy(disk->luDataFileName, &(sbdLu->slu_buf[bufOffset]),
-	    dataFileNameLen + 1);
+	    dataFileNameLen);
 	sbdLu->slu_data_fname_off = bufOffset;
-	bufOffset += dataFileNameLen + 1;
+	bufOffset += dataFileNameLen;
 
 	/* currently, serial # is not passed null terminated to the driver */
 	if (disk->serialNumValid) {
@@ -1203,16 +1202,16 @@ createDiskLu(diskResource *disk, stmfGuid *createdGuid)
 		sbdLu->slu_alias_valid = 1;
 		sbdLu->slu_alias_off = bufOffset;
 		bcopy(disk->luAlias, &(sbdLu->slu_buf[bufOffset]),
-		    luAliasLen + 1);
-		bufOffset += luAliasLen + 1;
+		    luAliasLen);
+		bufOffset += luAliasLen;
 	}
 
 	if (disk->luMgmtUrlValid) {
 		sbdLu->slu_mgmt_url_valid = 1;
 		sbdLu->slu_mgmt_url_off = bufOffset;
 		bcopy(disk->luMgmtUrl, &(sbdLu->slu_buf[bufOffset]),
-		    luMgmtUrlLen + 1);
-		bufOffset += luMgmtUrlLen + 1;
+		    luMgmtUrlLen);
+		bufOffset += luMgmtUrlLen;
 	}
 
 	if (disk->luSizeValid) {
@@ -1381,15 +1380,11 @@ importDiskLu(char *fname, stmfGuid *createdGuid)
 	if ((ret = openSbd(OPEN_SBD, &fd)) != STMF_STATUS_SUCCESS)
 		return (ret);
 
-	metaFileNameLen = strlen(fname);
-	iluBufSize += metaFileNameLen + 1;
+	metaFileNameLen = strlen(fname) + 1;
+	iluBufSize += metaFileNameLen;
 
-	/*
-	 * 8 is the size of the buffer set aside for
-	 * concatenation of variable length fields
-	 */
 	sbdLu = (sbd_import_lu_t *)calloc(1,
-	    sizeof (sbd_import_lu_t) + iluBufSize - 8);
+	    sizeof (sbd_import_lu_t) + iluBufSize);
 	if (sbdLu == NULL) {
 		(void) close(fd);
 		return (STMF_ERROR_NOMEM);
@@ -1403,7 +1398,7 @@ importDiskLu(char *fname, stmfGuid *createdGuid)
 	 */
 	(void) strncpy(sbdLu->ilu_meta_fname, fname, metaFileNameLen);
 
-	sbdLu->ilu_struct_size = sizeof (sbd_import_lu_t) + iluBufSize - 8;
+	sbdLu->ilu_struct_size = sizeof (sbd_import_lu_t) + iluBufSize;
 
 	sbdIoctl.stmf_version = STMF_VERSION_1;
 	sbdIoctl.stmf_ibuf_size = sbdLu->ilu_struct_size;
@@ -1859,43 +1854,39 @@ modifyDiskLu(diskResource *disk, stmfGuid *luGuid, const char *fname)
 		return (ret);
 
 	if (disk->luAliasValid) {
-		luAliasLen = strlen(disk->luAlias);
-		mluBufSize += luAliasLen + 1;
+		luAliasLen = strlen(disk->luAlias) + 1;
+		mluBufSize += luAliasLen;
 	}
 
 	if (disk->luMgmtUrlValid) {
-		luMgmtUrlLen = strlen(disk->luMgmtUrl);
-		mluBufSize += luMgmtUrlLen + 1;
+		luMgmtUrlLen = strlen(disk->luMgmtUrl) + 1;
+		mluBufSize += luMgmtUrlLen;
 	}
 
-	/*
-	 * 8 is the size of the buffer set aside for
-	 * concatenation of variable length fields
-	 */
 	sbdLu = (sbd_modify_lu_t *)calloc(1,
-	    sizeof (sbd_modify_lu_t) + mluBufSize - 8 + fnameSize);
+	    sizeof (sbd_modify_lu_t) + mluBufSize);
 	if (sbdLu == NULL) {
 		(void) close(fd);
 		return (STMF_ERROR_NOMEM);
 	}
 
 	sbdLu->mlu_struct_size = sizeof (sbd_modify_lu_t) +
-	    mluBufSize - 8 + fnameSize;
+	    mluBufSize;
 
 	if (disk->luAliasValid) {
 		sbdLu->mlu_alias_valid = 1;
 		sbdLu->mlu_alias_off = bufOffset;
 		bcopy(disk->luAlias, &(sbdLu->mlu_buf[bufOffset]),
-		    luAliasLen + 1);
-		bufOffset += luAliasLen + 1;
+		    luAliasLen);
+		bufOffset += luAliasLen;
 	}
 
 	if (disk->luMgmtUrlValid) {
 		sbdLu->mlu_mgmt_url_valid = 1;
 		sbdLu->mlu_mgmt_url_off = bufOffset;
 		bcopy(disk->luMgmtUrl, &(sbdLu->mlu_buf[bufOffset]),
-		    luMgmtUrlLen + 1);
-		bufOffset += luMgmtUrlLen + 1;
+		    luMgmtUrlLen);
+		bufOffset += luMgmtUrlLen;
 	}
 
 	if (disk->luSizeValid) {
@@ -1922,7 +1913,7 @@ modifyDiskLu(diskResource *disk, stmfGuid *luGuid, const char *fname)
 		sbdLu->mlu_by_guid = 1;
 	} else {
 		sbdLu->mlu_fname_off = bufOffset;
-		bcopy(fname, &(sbdLu->mlu_buf[bufOffset]), fnameSize + 1);
+		bcopy(fname, &(sbdLu->mlu_buf[bufOffset]), fnameSize);
 		sbdLu->mlu_by_fname = 1;
 	}
 
@@ -2180,8 +2171,11 @@ stmfGetLuResource(stmfGuid *luGuid, luResource *hdl)
 static int
 getDiskAllProps(stmfGuid *luGuid, luResource *hdl)
 {
+	boolean_t retry;
+	int retryCnt = 0;
 	int ret = STMF_STATUS_SUCCESS;
 	int fd;
+	luResourceImpl *lr;
 	sbd_lu_props_t *sbdProps;
 	int ioctlRet;
 	int savedErrno;
@@ -2195,60 +2189,91 @@ getDiskAllProps(stmfGuid *luGuid, luResource *hdl)
 		return (ret);
 
 
-	*hdl = calloc(1, sizeof (luResourceImpl));
-	if (*hdl == NULL) {
+	lr = calloc(1, sizeof (luResourceImpl));
+	if (lr == NULL) {
 		(void) close(fd);
 		return (STMF_ERROR_NOMEM);
 	}
 
 	sbdProps = calloc(1, sbdPropsSize);
 	if (sbdProps == NULL) {
-		free(*hdl);
+		free(lr);
 		(void) close(fd);
 		return (STMF_ERROR_NOMEM);
 	}
 
-	ret = createDiskResource((luResourceImpl *)*hdl);
+	ret = createDiskResource(lr);
 	if (ret != STMF_STATUS_SUCCESS) {
-		free(*hdl);
+		free(lr);
 		free(sbdProps);
 		(void) close(fd);
 		return (ret);
 	}
 
-	sbdProps->slp_input_guid = 1;
-	bcopy(luGuid, sbdProps->slp_guid, sizeof (sbdProps->slp_guid));
+	do {
+		retry = B_FALSE;
+		sbdProps->slp_input_guid = 1;
+		bcopy(luGuid, sbdProps->slp_guid, sizeof (sbdProps->slp_guid));
 
-	sbdIoctl.stmf_version = STMF_VERSION_1;
-	sbdIoctl.stmf_ibuf_size = sbdPropsSize;
-	sbdIoctl.stmf_ibuf = (uint64_t)(unsigned long)sbdProps;
-	sbdIoctl.stmf_obuf_size = sbdPropsSize;
-	sbdIoctl.stmf_obuf = (uint64_t)(unsigned long)sbdProps;
-	ioctlRet = ioctl(fd, SBD_IOCTL_GET_LU_PROPS, &sbdIoctl);
-	if (ioctlRet != 0) {
-		savedErrno = errno;
-		switch (savedErrno) {
-			case EBUSY:
-				ret = STMF_ERROR_BUSY;
-				break;
-			case EPERM:
-			case EACCES:
-				ret = STMF_ERROR_PERM;
-				break;
-			case ENOENT:
-				ret = STMF_ERROR_NOT_FOUND;
-				break;
-			default:
-				syslog(LOG_DEBUG,
-				    "getDiskAllProps:ioctl error(%d) (%d) (%d)",
-				    ioctlRet, sbdIoctl.stmf_error, savedErrno);
-				ret = STMF_STATUS_ERROR;
-				break;
+		sbdIoctl.stmf_version = STMF_VERSION_1;
+		sbdIoctl.stmf_ibuf_size = sbdPropsSize;
+		sbdIoctl.stmf_ibuf = (uint64_t)(unsigned long)sbdProps;
+		sbdIoctl.stmf_obuf_size = sbdPropsSize;
+		sbdIoctl.stmf_obuf = (uint64_t)(unsigned long)sbdProps;
+		ioctlRet = ioctl(fd, SBD_IOCTL_GET_LU_PROPS, &sbdIoctl);
+		if (ioctlRet != 0) {
+			savedErrno = errno;
+			switch (savedErrno) {
+				case EBUSY:
+					ret = STMF_ERROR_BUSY;
+					break;
+				case EPERM:
+				case EACCES:
+					ret = STMF_ERROR_PERM;
+					break;
+				case ENOENT:
+					ret = STMF_ERROR_NOT_FOUND;
+					break;
+				case ENOMEM:
+					if (sbdIoctl.stmf_error ==
+					    SBD_RET_INSUFFICIENT_BUF_SPACE &&
+					    retryCnt++ < 3) {
+						sbdPropsSize =
+						    sizeof (*sbdProps) +
+						    sbdProps->
+						    slp_buf_size_needed;
+
+						sbdProps = reallocf(sbdProps,
+						    sbdPropsSize);
+						if (sbdProps == NULL) {
+							ret = STMF_ERROR_NOMEM;
+							break;
+						}
+						retry = B_TRUE;
+						bzero(sbdProps, sbdPropsSize);
+					} else {
+						ret = STMF_ERROR_NOMEM;
+					}
+					break;
+				default:
+					syslog(LOG_DEBUG,
+					    "getDiskAllProps:ioctl error(%d) "
+					    "(%d) (%d)", ioctlRet,
+					    sbdIoctl.stmf_error, savedErrno);
+					ret = STMF_STATUS_ERROR;
+					break;
+			}
 		}
+	} while (retry);
+
+	if (ret == STMF_STATUS_SUCCESS) {
+		ret = loadDiskPropsFromDriver(lr, sbdProps);
 	}
 
 	if (ret == STMF_STATUS_SUCCESS) {
-		ret = loadDiskPropsFromDriver((luResourceImpl *)*hdl, sbdProps);
+		*hdl = lr;
+	} else {
+		(void) stmfFreeLuResource(lr);
 	}
 
 	free(sbdProps);
@@ -2393,7 +2418,6 @@ getDiskGlobalProp(uint32_t prop, char *propVal, size_t *propLen)
 	int ret = STMF_STATUS_SUCCESS;
 	int fd;
 	sbd_global_props_t *sbdProps;
-	void *sbd_realloc;
 	int retryCnt = 0;
 	boolean_t retry;
 	int ioctlRet;
@@ -2446,11 +2470,9 @@ getDiskGlobalProp(uint32_t prop, char *propVal, size_t *propLen)
 						    sbdProps->
 						    mlu_buf_size_needed;
 
-						sbd_realloc = sbdProps;
-						sbdProps = realloc(sbdProps,
+						sbdProps = reallocf(sbdProps,
 						    sbdPropsSize);
 						if (sbdProps == NULL) {
-							free(sbd_realloc);
 							ret = STMF_ERROR_NOMEM;
 							break;
 						}
@@ -2529,7 +2551,7 @@ setDiskGlobalProp(uint32_t resourceProp, const char *propVal)
 {
 	int ret = STMF_STATUS_SUCCESS;
 	sbd_global_props_t *sbdGlobalProps = NULL;
-	int sbdGlobalPropsSize = 0;
+	int sbdGlobalPropsSize;
 	int propLen;
 	int mluBufSize = 0;
 	int fd;
@@ -2550,14 +2572,10 @@ setDiskGlobalProp(uint32_t resourceProp, const char *propVal)
 	if ((ret = openSbd(OPEN_SBD, &fd)) != STMF_STATUS_SUCCESS)
 		return (ret);
 
-	propLen = strlen(propVal);
-	mluBufSize += propLen + 1;
-	sbdGlobalPropsSize += sizeof (sbd_global_props_t) - 8 +
-	    max(8, mluBufSize);
-	/*
-	 * 8 is the size of the buffer set aside for
-	 * concatenation of variable length fields
-	 */
+	propLen = strlen(propVal) + 1;
+	mluBufSize += propLen;
+	sbdGlobalPropsSize = sizeof (sbd_global_props_t) + mluBufSize;
+
 	sbdGlobalProps = (sbd_global_props_t *)calloc(1, sbdGlobalPropsSize);
 	if (sbdGlobalProps == NULL) {
 		(void) close(fd);
@@ -2570,7 +2588,7 @@ setDiskGlobalProp(uint32_t resourceProp, const char *propVal)
 		case STMF_LU_PROP_MGMT_URL:
 			sbdGlobalProps->mlu_mgmt_url_valid = 1;
 			bcopy(propVal, &(sbdGlobalProps->mlu_buf),
-			    propLen + 1);
+			    propLen);
 			break;
 		default:
 			ret = STMF_ERROR_NO_PROP;
@@ -6522,12 +6540,8 @@ setProviderData(int fd, char *providerName, nvlist_t *nvl, int providerType,
 	bzero(&stmfIoctl, sizeof (stmfIoctl));
 
 	stmfIoctl.stmf_version = STMF_VERSION_1;
-	/*
-	 * Subtracting 8 from the size as that is the size of the last member
-	 * of the structure where the packed data resides
-	 */
 	stmfIoctl.stmf_ibuf_size = nvlistEncodedSize +
-	    sizeof (stmf_ppioctl_data_t) - 8;
+	    sizeof (stmf_ppioctl_data_t);
 	stmfIoctl.stmf_ibuf = (uint64_t)(unsigned long)ppi;
 	stmfIoctl.stmf_obuf_size = sizeof (uint64_t);
 	stmfIoctl.stmf_obuf = (uint64_t)(unsigned long)&outToken;

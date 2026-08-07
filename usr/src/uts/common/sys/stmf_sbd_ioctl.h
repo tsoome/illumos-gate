@@ -112,7 +112,7 @@ typedef struct sbd_create_and_reg_lu {
 	char		slu_vid[8];
 	char		slu_pid[16];
 	uint8_t		slu_guid[16];
-	char		slu_buf[8];	/* likely more than 8 */
+	char		slu_buf[];
 } sbd_create_and_reg_lu_t;
 
 typedef struct sbd_global_props {
@@ -135,7 +135,7 @@ typedef struct sbd_global_props {
 	char		mlu_rev[4];
 	char		mlu_vid[8];
 	char		mlu_pid[16];
-	char		mlu_buf[8];	/* likely more than 8 */
+	char		mlu_buf[];
 } sbd_global_props_t;
 
 typedef struct sbd_set_lu_standby {
@@ -147,7 +147,7 @@ typedef struct sbd_import_lu {
 	uint32_t	ilu_struct_size;
 	uint32_t	ilu_rsvd;
 	uint8_t		ilu_ret_guid[16];
-	char		ilu_meta_fname[8]; /* Can be more than 8 */
+	char		ilu_meta_fname[];
 } sbd_import_lu_t;
 
 typedef struct sbd_modify_lu {
@@ -173,7 +173,7 @@ typedef struct sbd_modify_lu {
 	uint16_t	mlu_rsvd1;
 	uint32_t	mlu_rsvd2;
 	uint8_t		mlu_input_guid[16];
-	char		mlu_buf[8]; /* can be more than 8 */
+	char		mlu_buf[];
 } sbd_modify_lu_t;
 
 typedef struct sbd_delete_lu {
@@ -182,7 +182,7 @@ typedef struct sbd_delete_lu {
 			dlu_by_meta_name:1;
 	uint16_t	dlu_rsvd;
 	uint8_t		dlu_guid[16];
-	uint8_t		dlu_meta_name[8];
+	uint8_t		dlu_meta_name[];
 } sbd_delete_lu_t;
 
 /*
@@ -218,11 +218,12 @@ typedef struct sbd_lu_props {
 	uint32_t	slp_buf_size_needed;	/* Upon return */
 	uint16_t	slp_serial_size;
 	uint16_t	slp_access_state;
+	uint8_t		slp_pad[4];
 	char		slp_rev[4];
 	char		slp_vid[8];
 	char		slp_pid[16];
 	uint8_t		slp_guid[16];
-	uint8_t		slp_buf[8];	/* likely more than 8 */
+	uint8_t		slp_buf[];
 } sbd_lu_props_t;
 
 typedef struct sbd_unmap_props {

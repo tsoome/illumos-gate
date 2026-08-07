@@ -212,7 +212,7 @@ typedef struct stmf_ppioctl_data {
 			ppt_rsvd:5;
 	uint64_t	ppi_token;
 	uint64_t	ppi_data_size;
-	uint8_t		ppi_data[8];
+	uint8_t		ppi_data[];
 } stmf_ppioctl_data_t;
 
 typedef struct stmf_set_props {

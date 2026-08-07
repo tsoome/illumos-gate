@@ -370,8 +370,7 @@ stmf_sbd_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 
 	switch (cmd) {
 	case SBD_IOCTL_CREATE_AND_REGISTER_LU:
-		if (iocd->stmf_ibuf_size <
-		    (sizeof (sbd_create_and_reg_lu_t) - 8)) {
+		if (iocd->stmf_ibuf_size < sizeof (sbd_create_and_reg_lu_t)) {
 			ret = EFAULT;
 			break;
 		}
@@ -397,8 +396,7 @@ stmf_sbd_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 		    &iocd->stmf_error);
 		break;
 	case SBD_IOCTL_IMPORT_LU:
-		if (iocd->stmf_ibuf_size <
-		    (sizeof (sbd_import_lu_t) - 8)) {
+		if (iocd->stmf_ibuf_size < sizeof (sbd_import_lu_t)) {
 			ret = EFAULT;
 			break;
 		}
@@ -412,7 +410,7 @@ stmf_sbd_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 		bcopy(ibuf, obuf, iocd->stmf_obuf_size);
 		break;
 	case SBD_IOCTL_DELETE_LU:
-		if (iocd->stmf_ibuf_size < (sizeof (sbd_delete_lu_t) - 8)) {
+		if (iocd->stmf_ibuf_size < sizeof (sbd_delete_lu_t)) {
 			ret = EFAULT;
 			break;
 		}
@@ -424,7 +422,7 @@ stmf_sbd_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 		    iocd->stmf_ibuf_size, &iocd->stmf_error);
 		break;
 	case SBD_IOCTL_MODIFY_LU:
-		if (iocd->stmf_ibuf_size < (sizeof (sbd_modify_lu_t) - 8)) {
+		if (iocd->stmf_ibuf_size < sizeof (sbd_modify_lu_t)) {
 			ret = EFAULT;
 			break;
 		}
@@ -436,7 +434,7 @@ stmf_sbd_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 		    iocd->stmf_ibuf_size, &iocd->stmf_error);
 		break;
 	case SBD_IOCTL_SET_GLOBAL_LU:
-		if (iocd->stmf_ibuf_size < (sizeof (sbd_global_props_t) - 8)) {
+		if (iocd->stmf_ibuf_size < sizeof (sbd_global_props_t)) {
 			ret = EFAULT;
 			break;
 		}
@@ -460,7 +458,7 @@ stmf_sbd_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 		    iocd->stmf_obuf_size, &iocd->stmf_error);
 		break;
 	case SBD_IOCTL_GET_LU_PROPS:
-		if (iocd->stmf_ibuf_size < (sizeof (sbd_lu_props_t) - 8)) {
+		if (iocd->stmf_ibuf_size < sizeof (sbd_lu_props_t)) {
 			ret = EFAULT;
 			break;
 		}
@@ -549,8 +547,8 @@ sbd_lp_cb(stmf_lu_provider_t *lp, int cmd, void *arg, uint32_t flags)
 		if (nvpair_value_string(np, &s) != 0) {
 			continue;
 		}
-		struct_sz = max(8, strlen(s) + 1);
-		struct_sz += sizeof (sbd_import_lu_t) - 8;
+		struct_sz = strlen(s) + 1;
+		struct_sz += sizeof (sbd_import_lu_t);
 		if (struct_sz > ilu_sz) {
 			kmem_free(ilu, ilu_sz);
 			ilu_sz = struct_sz + 32;
@@ -1774,7 +1772,7 @@ sbd_create_register_lu(sbd_create_and_reg_lu_t *slu, int struct_sz,
 	uint32_t hid = 0;
 	enum vtype vt;
 
-	sz = struct_sz - sizeof (sbd_create_and_reg_lu_t) + 8 + 1;
+	sz = struct_sz - sizeof (sbd_create_and_reg_lu_t) + 1;
 
 	*err_ret = 0;
 
@@ -2287,11 +2285,25 @@ sbd_import_lu(sbd_import_lu_t *ilu, int struct_sz, uint32_t *err_ret,
 	enum vtype vt;
 	int standby = 0;
 	sbd_status_t sret;
+	char *ilu_buf;
 
 	if (no_register && slr == NULL) {
 		return (EINVAL);
 	}
-	ilu->ilu_meta_fname[struct_sz - sizeof (*ilu) + 8 - 1] = 0;
+
+	/*
+	 * The meta filename is mandatory, make sure it is present.
+	 */
+	if (struct_sz <= sizeof (*ilu)) {
+		return (EINVAL);
+	}
+
+	/*
+	 * Make sure the buffer is terminated.
+	 */
+	ilu_buf = (char *)ilu + sizeof (*ilu);
+	ilu_buf[struct_sz - sizeof (*ilu) - 1] = '\0';
+
 	/*
 	 * check whether logical unit is already registered ALUA
 	 * For a standby logical unit, the meta filename is set. Use
@@ -2673,14 +2685,15 @@ sbd_modify_lu(sbd_modify_lu_t *mlu, int struct_sz, uint32_t *err_ret)
 	uint32_t ilu_sz;
 	uint32_t sz;
 
-	sz = struct_sz - sizeof (*mlu) + 8 + 1;
+	/* sz is the length of the buf following the struct */
+	sz = struct_sz - sizeof (*mlu);
 
 	/* if there is data in the buf, null terminate it */
-	if (struct_sz > sizeof (*mlu)) {
+	if (sz > 0) {
 		char *mlu_buf = (char *)mlu;
 
-		mlu_buf += sizeof (*mlu) - 8;
-		mlu_buf[struct_sz - sizeof (*mlu) + 8 - 1] = '\0';
+		mlu_buf += sizeof (*mlu);
+		mlu_buf[sz - 1] = '\0';
 	}
 
 	*err_ret = 0;
@@ -2721,9 +2734,8 @@ sbd_modify_lu(sbd_modify_lu_t *mlu, int struct_sz, uint32_t *err_ret)
 			return (EINVAL);
 		}
 		/* Okay, try to import the device */
-		struct_sz = max(8, strlen(&(mlu->mlu_buf[mlu->mlu_fname_off]))
-		    + 1);
-		struct_sz += sizeof (sbd_import_lu_t) - 8;
+		struct_sz = strlen(&(mlu->mlu_buf[mlu->mlu_fname_off])) + 1;
+		struct_sz += sizeof (sbd_import_lu_t);
 		ilu_sz = struct_sz;
 		ilu = (sbd_import_lu_t *)kmem_zalloc(ilu_sz, KM_SLEEP);
 		ilu->ilu_struct_size = struct_sz;
@@ -2903,14 +2915,15 @@ sbd_set_global_props(sbd_global_props_t *mlu, int struct_sz,
 	sbd_it_data_t *it;
 	uint32_t sz;
 
-	sz = struct_sz - sizeof (*mlu) + 8 + 1;
+	/* sz is the length of the buf following the struct */
+	sz = struct_sz - sizeof (*mlu);
 
 	/* if there is data in the buf, null terminate it */
-	if (struct_sz > sizeof (*mlu)) {
+	if (sz > 0) {
 		char *mlu_buf = (char *)mlu;
 
-		mlu_buf += sizeof (*mlu) - 8;
-		mlu_buf[struct_sz - sizeof (*mlu) + 8 - 1] = '\0';
+		mlu_buf += sizeof (*mlu);
+		mlu_buf[sz - 1] = '\0';
 	}
 
 	*err_ret = 0;
@@ -3013,8 +3026,21 @@ sbd_delete_lu(sbd_delete_lu_t *dlu, int struct_sz, uint32_t *err_ret)
 	stmf_state_change_info_t ssi;
 	int ret;
 
+	/* if there is data in the buf, null terminate it */
+	if (struct_sz > sizeof (*dlu)) {
+		char *dlu_buf = (char *)dlu;
+
+		dlu_buf += sizeof (*dlu);
+		dlu_buf[struct_sz - sizeof (*dlu) - 1] = '\0';
+	}
+
 	if (dlu->dlu_by_meta_name) {
-		((char *)dlu)[struct_sz - 1] = 0;
+		/*
+		 * dlu_by_meta_name must be present.
+		 */
+		if (struct_sz <= sizeof (*dlu)) {
+			return (EINVAL);
+		}
 		sret = sbd_find_and_lock_lu(NULL, dlu->dlu_meta_name,
 		    SL_OP_DELETE_LU, &sl);
 	} else {
@@ -3212,10 +3238,10 @@ sbd_get_global_props(sbd_global_props_t *oslp, uint32_t oslp_sz,
 	if (sbd_mgmt_url) {
 		sz += strlen(sbd_mgmt_url) + 1;
 	}
-	bzero(oslp, sizeof (*oslp) - 8);
+	bzero(oslp, sizeof (*oslp));
 	oslp->mlu_buf_size_needed = sz;
 
-	if (sz > (oslp_sz - sizeof (*oslp) + 8)) {
+	if (sz > (oslp_sz - sizeof (*oslp))) {
 		*err_ret = SBD_RET_INSUFFICIENT_BUF_SPACE;
 		rw_exit(&sbd_global_prop_lock);
 		return (ENOMEM);
@@ -3318,10 +3344,10 @@ sbd_get_lu_props(sbd_lu_props_t *islp, uint32_t islp_sz,
 	} else if (sbd_mgmt_url) {
 		sz += strlen(sbd_mgmt_url) + 1;
 	}
-	bzero(oslp, sizeof (*oslp) - 8);
+	bzero(oslp, sizeof (*oslp));
 	oslp->slp_buf_size_needed = sz;
 
-	if (sz > (oslp_sz - sizeof (*oslp) + 8)) {
+	if (sz > (oslp_sz - sizeof (*oslp))) {
 		sl->sl_trans_op = SL_OP_NONE;
 		*err_ret = SBD_RET_INSUFFICIENT_BUF_SPACE;
 		rw_exit(&sbd_global_prop_lock);
