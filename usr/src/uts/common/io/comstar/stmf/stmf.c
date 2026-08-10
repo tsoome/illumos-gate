@@ -116,10 +116,10 @@ void stmf_handle_lun_reset(scsi_task_t *task);
 void stmf_handle_target_reset(scsi_task_t *task);
 void stmf_xd_to_dbuf(stmf_data_buf_t *dbuf, int set_rel_off);
 int stmf_load_ppd_ioctl(stmf_ppioctl_data_t *ppi, uint64_t *ppi_token,
-    uint32_t *err_ret);
+    uint32_t in_sz, uint32_t *err_ret);
 int stmf_delete_ppd_ioctl(stmf_ppioctl_data_t *ppi);
 int stmf_get_ppd_ioctl(stmf_ppioctl_data_t *ppi, stmf_ppioctl_data_t *ppi_out,
-    uint32_t *err_ret);
+    uint32_t out_sz, uint32_t *err_ret);
 void stmf_delete_ppd(stmf_pp_data_t *ppd);
 void stmf_delete_all_ppds();
 void stmf_trace_clear();
@@ -1305,7 +1305,8 @@ stmf_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 			ret = EINVAL;
 			break;
 		}
-		ret = stmf_load_ppd_ioctl(ppi, ppi_token, &iocd->stmf_error);
+		ret = stmf_load_ppd_ioctl(ppi, ppi_token, iocd->stmf_ibuf_size,
+		    &iocd->stmf_error);
 		break;
 
 	case STMF_IOCTL_GET_PP_DATA:
@@ -1326,7 +1327,8 @@ stmf_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 			ret = EINVAL;
 			break;
 		}
-		ret = stmf_get_ppd_ioctl(ppi, ppi_out, &iocd->stmf_error);
+		ret = stmf_get_ppd_ioctl(ppi, ppi_out, iocd->stmf_obuf_size,
+		    &iocd->stmf_error);
 		break;
 
 	case STMF_IOCTL_CLEAR_PP_DATA:
@@ -2431,7 +2433,7 @@ stmf_deregister_port_provider(stmf_port_provider_t *pp)
 
 int
 stmf_load_ppd_ioctl(stmf_ppioctl_data_t *ppi, uint64_t *ppi_token,
-    uint32_t *err_ret)
+    uint32_t in_sz, uint32_t *err_ret)
 {
 	stmf_i_port_provider_t		*ipp;
 	stmf_i_lu_provider_t		*ilp;
@@ -2443,6 +2445,11 @@ stmf_load_ppd_ioctl(stmf_ppioctl_data_t *ppi, uint64_t *ppi_token,
 	*err_ret = 0;
 
 	if ((ppi->ppi_lu_provider + ppi->ppi_port_provider) != 1) {
+		return (EINVAL);
+	}
+
+	/* Validate input buffer size */
+	if (ppi->ppi_data_size > in_sz - sizeof (*ppi)) {
 		return (EINVAL);
 	}
 
@@ -2640,7 +2647,7 @@ stmf_delete_ppd_ioctl(stmf_ppioctl_data_t *ppi)
 
 int
 stmf_get_ppd_ioctl(stmf_ppioctl_data_t *ppi, stmf_ppioctl_data_t *ppi_out,
-    uint32_t *err_ret)
+    uint32_t out_sz, uint32_t *err_ret)
 {
 	stmf_pp_data_t *ppd;
 	size_t req_size;
@@ -2672,7 +2679,7 @@ stmf_get_ppd_ioctl(stmf_ppioctl_data_t *ppi, stmf_ppioctl_data_t *ppi_out,
 			goto done;
 		}
 		ppi_out->ppi_data_size = req_size;
-		if (req_size > ppi->ppi_data_size) {
+		if (req_size > out_sz - sizeof (*ppi_out)) {
 			*err_ret = STMF_IOCERR_INSUFFICIENT_BUF;
 			ret = EINVAL;
 			goto done;
