@@ -394,9 +394,11 @@ dboot_loadfile(char *filename, uint64_t dest, struct preloaded_file **result)
 	*result = fp;
 	error = 0;
 error:
-	load_limit = old_limit;
-	if (error != 0)
+	if (error != 0) {
 		file_discard(fp);
+		load_limit = old_limit;
+		loader_alloc_fini();
+	}
 	free(page);
 	close(fd);
 	return (error);
