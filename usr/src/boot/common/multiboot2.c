@@ -588,6 +588,7 @@ mb_kernel_cmdline(struct preloaded_file *fp, struct devdesc *rootdev,
     char **line)
 {
 	const char *fs = getenv("fstype");
+	const char *ptr;
 	char *cmdline;
 	size_t len;
 	bool zfs_root = false;
@@ -617,6 +618,30 @@ mb_kernel_cmdline(struct preloaded_file *fp, struct devdesc *rootdev,
 	/* If we have fstype set in env, reset zfs_root if needed. */
 	if (fs != NULL && strcmp(fs, "zfs") != 0)
 		zfs_root = false;
+
+	/*
+	 * The prom_debug/map_debug are actually nasty ones.
+	 * The current code just checks if those options are present and
+	 * not checking the actual value. Should fix it someday.
+	 *
+	 * If we have prom_debug set on the command line, add it to env.
+	 */
+	rv = find_property_value(fp->f_args, "prom_debug", &ptr, &len);
+	if (rv == 0) {
+		if (strncmp(ptr, "true", 4) == 0 ||
+		    strncmp(ptr, "1", 1) == 0)
+			(void) setenv("prom_debug", "true", 1);
+	}
+
+	/*
+	 * If we have map_debug set on the command line, add it to env.
+	 */
+	rv = find_property_value(fp->f_args, "map_debug", &ptr, &len);
+	if (rv == 0) {
+		if (strncmp(ptr, "true", 4) == 0 ||
+		    strncmp(ptr, "1", 1) == 0)
+			(void) setenv("map_debug", "true", 1);
+	}
 
 	/*
 	 * If we have fstype set on the command line,
