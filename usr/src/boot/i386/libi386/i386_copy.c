@@ -102,11 +102,11 @@ i386_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 */
 	paddr = addr;
 
-	if (paddr > load_limit || paddr + size > load_limit)
-		return ((void *)-1);
-
 	smap = get_memory_descriptor(paddr, size);
 	if (smap == NULL)
+		return ((void *)-1);
+
+	if (paddr > load_limit || paddr + size > load_limit)
 		return ((void *)-1);
 
 	/*
@@ -190,9 +190,10 @@ i386_loadaddr(uint_t type, void *data, vm_offset_t addr)
 			return (VTOP(vaddr + diff));
 		}
 		/*
-		 * We failed to allocate at address. Fall
-		 * back to use znalloc instead.
+		 * We failed to allocate at address. This is 32-bit
+		 * loader and we have no fallback available.
 		 */
+		return (0);
 	}
 
 	alignment = PAGE_SIZE;
