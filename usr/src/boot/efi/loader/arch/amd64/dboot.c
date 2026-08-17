@@ -261,6 +261,7 @@ dboot_loadfile(char *filename, uint64_t dest, struct preloaded_file **result)
 	Elf64_Ehdr *ehdr;
 	vm_offset_t addr = 0;
 	void *page;
+	EFI_PHYSICAL_ADDRESS old_limit = load_limit;
 
 	/* This allows to check other file formats from file_formats array. */
 	error = EFTYPE;
@@ -393,6 +394,7 @@ dboot_loadfile(char *filename, uint64_t dest, struct preloaded_file **result)
 	*result = fp;
 	error = 0;
 error:
+	load_limit = old_limit;
 	if (error != 0)
 		file_discard(fp);
 	free(page);
