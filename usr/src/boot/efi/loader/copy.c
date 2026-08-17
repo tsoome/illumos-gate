@@ -343,7 +343,12 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 			return (paddr + diff);
 		}
 		if (type == LOAD_KERN) {
-			/* failed to allocate for multiboot start */
+			/*
+			 * Failed to allocate for multiboot start.
+			 * There is nothing we can do - dboot expects to
+			 * be loaded on fixed address, and if it is not
+			 * possible, we can not continue.
+			 */
 			return (0);
 		}
 
