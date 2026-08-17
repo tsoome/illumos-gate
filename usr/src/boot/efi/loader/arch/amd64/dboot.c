@@ -672,12 +672,13 @@ build_page_tables(struct xboot_info *bi)
 	DBG(pte_size);
 	DBG(ptes_per_table);
 
-	next_avail_addr = vtop(loader_alloc_next_avail());
+	next_avail_addr = loader_alloc_next_avail();
 	if (next_avail_addr == 0)
 		panic("no next_avail_addr\n");
+	next_avail_addr = (uintptr_t)vtop((caddr_t)next_avail_addr);
 
 	page_index = 0;
-	page_count = count_page_tables_needed(ksize) + 1;
+	page_count = count_page_tables_needed(ksize) + 2;
 	DBG(page_count);
 	/*
 	 * Allocate pages for whole map.
@@ -686,13 +687,15 @@ build_page_tables(struct xboot_info *bi)
 	if (tptable == NULL)
 		panic("Failed to allocate page tables\n");
 
-	next_avail_addr = vtop(loader_alloc_next_avail());
+	next_avail_addr = loader_alloc_next_avail();
 	if (next_avail_addr == 0)
 		panic("no next_avail_addr\n");
+	next_avail_addr = (uintptr_t)vtop((caddr_t)next_avail_addr);
+	DBG(next_avail_addr);
 
 	bzero(tptable, EFI_PAGE_SIZE * page_count);
 	page_index++;
-	top_page_table = (uintptr_t)(vtop(tptable));
+	top_page_table = (uintptr_t)vtop(tptable);
 	bi->bi_top_page_table = (uintptr_t)top_page_table;
 	DBG(bi->bi_top_page_table);
 	bi->bi_pt_window = (native_ptr_t)(top_page_table + EFI_PAGE_SIZE);
@@ -752,9 +755,6 @@ build_page_tables(struct xboot_info *bi)
 	pte_bits &= ~PT_NOCACHE;
 	if (PAT_support != 0)
 		pte_bits &= ~PT_PAT_4K;
-
-	bi->bi_top_page_table = (native_ptr_t)vtop((caddr_t)top_page_table);
-	bi->bi_pt_window = bi->bi_top_page_table + EFI_PAGE_SIZE;
 
 	DBG_MSG("\nPage tables constructed\n");
 	bi->bi_next_paddr = next_avail_addr;
@@ -825,7 +825,7 @@ dboot_add_modules(struct xboot_info *bi, struct preloaded_file *fp)
 		if (mfp->f_type != NULL) {
 			if (strcmp(mfp->f_type, "rootfs") == 0)
 				bm[i].bm_type = BMT_ROOTFS;
-			if (strcmp(mfp->f_type, "console-font") == 0)
+			else if (strcmp(mfp->f_type, "console-font") == 0)
 				bm[i].bm_type = BMT_FONT;
 			else if (strcmp(mfp->f_type, "environment") == 0)
 				bm[i].bm_type = BMT_ENV;
@@ -910,7 +910,7 @@ exclude_from_pci(struct boot_memlist *pcimemlists, uint_t *usedp,
 			/* split a range? */
 
 			++pcimemlists_used;
-			if (pcimemlists_used > MAX_MEMLIST)
+			if (pcimemlists_used >= MAX_MEMLIST)
 				panic("too many pcimemlists");
 
 			for (j = pcimemlists_used - 1; j > i; --j)
@@ -1166,7 +1166,7 @@ dboot_add_mmap(struct xboot_info *bi)
 			break;
 		}
 
-		if (*indexp > max_memlist)
+		if (*indexp >= max_memlist)
 			panic("need to grow memlist!\n");
 
 		if (mlist[*indexp].size != 0 &&
@@ -1180,7 +1180,7 @@ dboot_add_mmap(struct xboot_info *bi)
 		/* do we need new entry? */
 		if (mlist[*indexp].size != 0) {
 			*indexp = *indexp + 1;
-			if (*indexp > max_memlist)
+			if (*indexp >= max_memlist)
 				panic("need to grow memlist!\n");
 		}
 		if (mlist[*indexp].size == 0) {
@@ -1207,7 +1207,11 @@ dboot_add_mmap(struct xboot_info *bi)
 		}
 	}
 
-	build_pcimemlists(bi, map, ndesc, desc_size);
+	if (build_pcimemlists(bi, map, ndesc, desc_size) != 0) {
+		free(rsvdmemlists);
+		free (memlists);
+		return (ENOMEM);
+	}
 
 	/*
 	 * finish processing the physinstall list
@@ -1238,6 +1242,20 @@ dboot_exec(struct preloaded_file *fp)
 	int rv;
 	extern void amd64_tramp(uint64_t, uint64_t, uint64_t, uint64_t);
 
+	efi_getdev((void **)(&rootdev), NULL, NULL);
+	if (rootdev == NULL) {
+		printf("can't determine root device\n");
+		return (EINVAL);
+	}
+
+	/* Process command line first, it may set prom_debug/map_debug */
+	cmdline = NULL;
+	rv = mb_kernel_cmdline(fp, rootdev, &cmdline);
+	if (rv != 0) {
+		rv = ENOMEM;
+		goto error;
+	}
+
 	if (getenv("prom_debug") != NULL)
 		prom_debug = true;
 
@@ -1247,18 +1265,9 @@ dboot_exec(struct preloaded_file *fp)
 	shift_amt = shift_amt_pae;
 
 	rv = init_gdt();
-	if (rv != 0)
-		return (rv);
-
-	efi_getdev((void **)(&rootdev), NULL, NULL);
-	if (rootdev == NULL) {
-		printf("can't determine root device\n");
-		return (EINVAL);
+	if (rv != 0) {
+		goto error;
 	}
-
-	rv = mb_kernel_cmdline(fp, rootdev, &cmdline);
-	if (rv != 0)
-		return (ENOMEM);
 
 	/* mb_kernel_cmdline() updates the environment. */
 	build_environment_module();
@@ -1269,8 +1278,8 @@ dboot_exec(struct preloaded_file *fp)
 	/* Allocate xboot_info */
 	bi = loader_alloc_align(sizeof (*bi), 16);
 	if (bi == NULL) {
-		free(cmdline);
-		return (ENOMEM);
+		rv = ENOMEM;
+		goto error;
 	}
 	bzero(bi, sizeof (*bi));
 	DBG(bi);
@@ -1282,18 +1291,19 @@ dboot_exec(struct preloaded_file *fp)
 		bi->bi_cmdline = (native_ptr_t)vtop(buf);
 	}
 	free(cmdline);
+	cmdline = NULL;
 
 	rv = dboot_add_modules(bi, fp);
 	if (rv != 0)
-		return (rv);
+		goto error;
 
 	rv = dboot_add_framebuffer(bi);
 	if (rv != 0)
-		return (rv);
+		goto error;
 
 	rv = dboot_add_mmap(bi);
 	if (rv != 0)
-		return (rv);
+		goto error;
 
 	DBG(PAT_support);
 	DBG(pge_support);
@@ -1323,8 +1333,10 @@ dboot_exec(struct preloaded_file *fp)
 	bi->bi_mb_info = 0;	/* XXX */
 
 	stackp = loader_alloc_align(STACK_SIZE, EFI_PAGE_SIZE);
-	if (stackp == NULL)
-		return (ENOMEM);
+	if (stackp == NULL) {
+		rv = ENOMEM;
+		goto error;
+	}
 	stack = vtop(stackp) + STACK_SIZE - 8;
 	DBG(stack);
 
@@ -1347,11 +1359,15 @@ dboot_exec(struct preloaded_file *fp)
 		}
 		if (prom_debug)
 			printf("Retry to call ExitBootServices()\n");
+		rv = efi_status_to_errno(status);
 	}
 
 	if (!has_boot_services) {
 		amd64_tramp(vtop((caddr_t)bi), stack, top_page_table,
 		    target_kernel_text);
 	}
-	return (0);
+error:
+	free(cmdline);
+	free(rootdev);
+	return (rv);
 }
