@@ -109,13 +109,13 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 */
 	paddr = addr;
 
-	if (paddr > load_limit || paddr + size > load_limit)
-		return ((void *)-1);
-
 	md = get_memory_descriptor(paddr, size);
 	if (md == NULL) {
 		return ((void *)-1);
 	}
+
+	if (paddr > load_limit || paddr + size > load_limit)
+		return ((void *)-1);
 
 	/*
 	 * If we are adding new segment or if kernel can not be
@@ -337,9 +337,6 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 
 		paddr = (vm_offset_t)loader_xalloc(addr, addr + size, size);
 		if (paddr != 0) {
-			printf("%s: allocated %zu bytes for %p\n", __func__,
-			    size - diff, (void *)(uintptr_t)addr + diff);
-
 			return (paddr + diff);
 		}
 		if (type == LOAD_KERN) {
@@ -377,9 +374,6 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		 */
 		if (type == LOAD_ELF)
 			ktext_phys = paddr;
-
-		printf("%s: allocated %zu bytes: %p\n", __func__,
-		    size, (void *)(uintptr_t)paddr);
 	}
 
 	return (paddr);
