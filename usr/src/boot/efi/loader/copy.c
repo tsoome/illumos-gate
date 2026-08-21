@@ -107,7 +107,7 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 * If our pool is empty, we need to allocate space for kernel,
 	 * based on addr.
 	 */
-	paddr = addr;
+	paddr = vtop((caddr_t)addr);
 
 	md = get_memory_descriptor(paddr, size);
 	if (md == NULL) {
@@ -141,7 +141,7 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	if (status != EFI_SUCCESS)
 		return ((void *)-1);
 
-	return ((void *)(uintptr_t)paddr);
+	return (ptov(paddr));
 }
 
 /*

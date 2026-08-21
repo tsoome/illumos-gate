@@ -100,7 +100,7 @@ i386_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 * If our pool is empty, we need to allocate space for kernel,
 	 * based on addr.
 	 */
-	paddr = addr;
+	paddr = vtop((caddr_t)addr);
 
 	smap = get_memory_descriptor(paddr, size);
 	if (smap == NULL)
@@ -122,7 +122,7 @@ i386_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 
 	*sizep = smap->length - (paddr - smap->base);
 
-	return ((void *)PTOV(paddr));
+	return (ptov(paddr));
 }
 
 /*
