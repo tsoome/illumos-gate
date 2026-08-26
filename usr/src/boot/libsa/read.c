@@ -71,6 +71,7 @@ read(int fd, void *dest, size_t bcount)
 	struct open_file *f;
 	size_t resid;
 
+	errno = 0;
 	f = fd2open_file(fd);
 	if (f == NULL || !(f->f_flags & F_READ)) {
 		errno = EBADF;
