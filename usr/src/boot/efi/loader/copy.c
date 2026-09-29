@@ -75,7 +75,7 @@ get_memory_descriptor(struct MemPool *mp, EFI_PHYSICAL_ADDRESS paddr,
 		if (md->Type != EfiConventionalMemory)
 			continue;
 
-		/* Pick next segment after current segment in pool. */
+		/* Pick next segment after first segment in pool. */
 		if (mp->mp_Base != NULL &&
 		    md->PhysicalStart <= vtop(mp->mp_Base))
 			continue;
@@ -117,11 +117,7 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 * segment allocated for kernel and we want next segment to
 	 * be allocated.
 	 */
-	if (addr == 0) {
-		/* Get last segment */
-		while (mp->mp_next != NULL)
-			mp = mp->mp_next;
-	} else {
+	if (addr != 0) {
 		/*
 		 * If our pool is empty, we need to allocate space for
 		 * kernel, based on addr.

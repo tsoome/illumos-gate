@@ -638,8 +638,16 @@ zextendPool(MemPool *mp, void *base, size_t bytes)
 	pool->mp_Used = bytes;
 	pool->mp_End = (char *)base + bytes;
 	pool->mp_Size = bytes;
-	while (mp->mp_next != NULL)
-		mp = mp->mp_next;
+	while (mp->mp_next != NULL) {
+		MemPool *next = mp->mp_next;
+
+		if (base < next->mp_Base) {
+			mp->mp_next = pool;
+			pool->mp_next = next;
+			return;
+		}
+		mp = next;
+	}
 	mp->mp_next = pool;
 }
 
