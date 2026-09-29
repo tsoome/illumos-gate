@@ -424,7 +424,7 @@ linux_loadinitrd(char *filename, uint64_t dest __unused,
 	if (mfp == NULL)
 		return (EFTYPE);
 
-	mfp = file_loadraw(filename, "module", 0, NULL, 0);
+	mfp = file_loadraw(filename, "module", 0, NULL, 0, 0);
 	if (mfp == NULL)
 		return (EFTYPE);
 	*result = mfp;

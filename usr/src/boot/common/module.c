@@ -110,6 +110,7 @@ static int
 command_load(int argc, char *argv[])
 {
 	char *typestr;
+	vm_offset_t addr = 0;
 	int dofile, dokld, ch, error;
 
 	dokld = dofile = 0;
@@ -120,8 +121,11 @@ command_load(int argc, char *argv[])
 		command_errmsg = "no filename specified";
 		return (CMD_CRIT);
 	}
-	while ((ch = getopt(argc, argv, "kt:")) != -1) {
+	while ((ch = getopt(argc, argv, "a:kt:")) != -1) {
 		switch (ch) {
+		case 'a':
+			addr = strtoull(optarg, NULL, 0);
+			break;
 		case 'k':
 			dokld = 1;
 			break;
@@ -156,7 +160,8 @@ command_load(int argc, char *argv[])
 			return (CMD_WARN);
 		}
 
-		fp = file_loadraw(argv[1], typestr, argc - 2, argv + 2, 1);
+		fp = file_loadraw(argv[1], typestr, argc - 2, argv + 2, 1,
+		    addr);
 		if (fp != NULL)
 			return (CMD_OK);
 
@@ -703,7 +708,8 @@ file_assign_hash(int fd, size_t size, int argc, char **argv)
  * no arguments or anything.
  */
 struct preloaded_file *
-file_loadraw(const char *fname, char *type, int argc, char **argv, int insert)
+file_loadraw(const char *fname, char *type, int argc, char **argv,
+    int insert, vm_offset_t addr)
 {
 	struct preloaded_file *fp;
 	char *name;
@@ -755,7 +761,7 @@ file_loadraw(const char *fname, char *type, int argc, char **argv, int insert)
 	}
 
 	if (archsw.arch_loadaddr != NULL)
-		loadaddr = archsw.arch_loadaddr(LOAD_RAW, name, loadaddr);
+		loadaddr = archsw.arch_loadaddr(LOAD_RAW, name, addr);
 	if (loadaddr == 0) {
 		(void) close(fd);
 		(void) snprintf(command_errbuf, sizeof (command_errbuf),

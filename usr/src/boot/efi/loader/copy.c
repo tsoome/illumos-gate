@@ -386,7 +386,12 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		}
 	}
 
-	paddr = (vm_offset_t)loader_alloc_align(size, alignment);
+	if (type == LOAD_RAW && addr != 0) {
+		/* Allocate at provided address. */
+		paddr = (vm_offset_t)loader_xalloc(addr, addr + size, size);
+	} else {
+		paddr = (vm_offset_t)loader_alloc_align(size, alignment);
+	}
 
 	/* make sure we will not exceed the limit. */
 	if (paddr > load_limit || paddr + size > load_limit) {
