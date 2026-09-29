@@ -75,7 +75,7 @@ get_memory_descriptor(struct MemPool *mp, EFI_PHYSICAL_ADDRESS paddr,
 		if (md->Type != EfiConventionalMemory)
 			continue;
 
-		/* Pick next segment after current segment in pool. */
+		/* Pick next segment after first segment in pool. */
 		if (mp->mp_Base != NULL &&
 		    md->PhysicalStart <= vtop(mp->mp_Base))
 			continue;
@@ -92,8 +92,9 @@ get_memory_descriptor(struct MemPool *mp, EFI_PHYSICAL_ADDRESS paddr,
 		 * Now, we only do need to check the size.
 		 */
 		if (md->PhysicalStart + (md->NumberOfPages << EFI_PAGE_SHIFT) -
-		    MAX(paddr, md->PhysicalStart) >= size)
+		    MAX(paddr, md->PhysicalStart) >= size) {
 			return (md);
+		}
 	}
 	return (NULL);
 }
@@ -117,11 +118,7 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 * segment allocated for kernel and we want next segment to
 	 * be allocated.
 	 */
-	if (addr == 0) {
-		/* Get last segment */
-		while (mp->mp_next != NULL)
-			mp = mp->mp_next;
-	} else {
+	if (addr != 0) {
 		/*
 		 * If our pool is empty, we need to allocate space for
 		 * kernel, based on addr.
@@ -137,8 +134,9 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	}
 
 	if (md->PhysicalStart > load_limit ||
-	    md->PhysicalStart + size > load_limit)
+	    md->PhysicalStart + size > load_limit) {
 		return ((void *)-1);
+	}
 
 	/*
 	 * If we are adding new segment or if kernel can not be
@@ -162,8 +160,9 @@ efi_loader_alloc(struct MemPool *mp, uintptr_t addr, size_t *sizep)
 	 */
 	status = BS->AllocatePages(AllocateAddress, EfiLoaderData,
 	    pages, &paddr);
-	if (status != EFI_SUCCESS)
+	if (status != EFI_SUCCESS) {
 		return ((void *)-1);
+	}
 
 	return (ptov(paddr));
 }
@@ -311,15 +310,10 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	size_t size;
 	size_t alignment;
 
-	/*
-	 * Every other allocation happens after ELF, therefore,
-	 * addr must non-zero value.
-	 */
-	if (addr == 0)
-		return (addr);	/* nothing to do */
-
 	switch (type) {
 	case LOAD_ELF:
+		if (addr == 0)
+			return (addr);	/* nothing to do */
 		ktext_phys = addr;
 		size = elf_load_size(data);
 		break;
@@ -336,6 +330,8 @@ efi_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		 * load_limit set for 32-bit address space.
 		 */
 		load_limit = UINT32_MAX;
+		if (addr == 0)
+			return (addr);	/* nothing to do */
 		/* FALLTHROUGH */
 	case LOAD_RAW:
 	default:
