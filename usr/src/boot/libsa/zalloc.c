@@ -29,6 +29,7 @@
 
 #include <sys/cdefs.h>
 #include <sys/param.h>
+#include <stdbool.h>
 
 /*
  * LIB/MEMORY/ZALLOC.C	- self contained low-overhead memory pool/allocation
@@ -600,21 +601,23 @@ zfree(MemPool *mp, void *ptr, size_t bytes)
 void
 zextendPool(MemPool *mp, void *base, size_t bytes)
 {
-	MemPool *pool;
+	extern MemPool MallocPool;
 
 	if (mp->mp_Size == 0) {
 		mp->mp_Base = base;
 		mp->mp_Used = bytes;
 		mp->mp_End = (char *)base + bytes;
 		mp->mp_Size = bytes;
+		printf("%s: set up base: %p\n", __func__, base);
 		return;
 	}
 
 	if (base < mp->mp_Base &&
-	    base + bytes == mp->mp_Base) {
+	    (char *)base + bytes == mp->mp_Base) {
 		mp->mp_Size += bytes;
 		mp->mp_Used += bytes;
 		mp->mp_Base = base;
+		printf("%s: prepend base: %p\n", __func__, base);
 		return;
 	}
 
@@ -622,31 +625,48 @@ zextendPool(MemPool *mp, void *base, size_t bytes)
 		mp->mp_Size += bytes;
 		mp->mp_Used += bytes;
 		mp->mp_End += bytes;
+		printf("%s: append base: %p\n", __func__, base);
 		return;
 	}
 
-	pool = calloc(1, sizeof (*pool));
-	if (pool == NULL)
-		panic("%s: out of memory", __func__);
-
-	pool->mp_alloc = mp->mp_alloc;
-	pool->mp_free = mp->mp_free;
-	pool->mp_blksz = mp->mp_blksz;
-	pool->mp_Base = base;
-	pool->mp_Used = bytes;
-	pool->mp_End = (char *)base + bytes;
-	pool->mp_Size = bytes;
-	while (mp->mp_next != NULL) {
+	/*
+	 * Pick mp to add our segment into.
+	 */
+	do {
 		MemPool *next = mp->mp_next;
 
-		if (base < next->mp_Base) {
-			mp->mp_next = pool;
+		/* Do we need to allocate new MemPool segment? */
+		if (next == NULL ||
+		    (char *)base + bytes < (char *)next->mp_Base) {
+			MemPool *pool;
+
+			printf("%s: allocating mp for: %p\n", __func__, base);
+			pool = calloc(1, sizeof (*pool));
+			if (pool == NULL)
+				panic("%s: out of memory", __func__);
+
+			pool->mp_alloc = mp->mp_alloc;
+			pool->mp_free = mp->mp_free;
+			pool->mp_blksz = mp->mp_blksz;
 			pool->mp_next = next;
-			return;
+			mp->mp_next = pool;
+			break;
+		}
+
+		/* Can we attach to next segment? */
+		if ((base < next->mp_Base &&
+		    (char *)base + bytes == (char *)next->mp_Base) ||
+		    base == next->mp_End) {
+			break;
 		}
 		mp = next;
-	}
-	mp->mp_next = pool;
+	} while (true);
+
+	/*
+	 * This is one step recursion - mp->mp_next is either empty or
+	 * we can prepend or append to it.
+	 */
+	zextendPool(mp->mp_next, base, bytes);
 }
 
 /*
@@ -714,8 +734,11 @@ zallocstats(MemPool *mp)
 
 		printf("\nMemory pool segment %u [%p - %p]:\n", pool,
 		    mp->mp_Base, mp->mp_End);
-		printf("%ju bytes reserved %ju bytes allocated\n",
-		    (uintmax_t)mp->mp_Size, (uintmax_t)(mp->mp_Size - fbytes));
+		printf("%ju bytes reserved %ju bytes allocated "
+		    "%ju bytes free\n",
+		    (uintmax_t)mp->mp_Size,
+		    (uintmax_t)(mp->mp_Size - fbytes),
+		    (uintmax_t)fbytes);
 		printf("%ju fragments (%ju bytes fragmented)\n",
 		    (uintmax_t)fcount, (uintmax_t)hbytes);
 		if (mp->mp_Size - fbytes != mp->mp_Used) {

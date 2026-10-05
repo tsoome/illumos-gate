@@ -176,15 +176,10 @@ i386_loadaddr(uint_t type, void *data, vm_offset_t addr)
 	 */
 	load_limit = memtop;
 
-	/*
-	 * Every other allocation happens after ELF, therefore,
-	 * addr must non-zero value.
-	 */
-	if (addr == 0)
-		return (addr);	/* nothing to do */
-
 	switch (type) {
 	case LOAD_ELF:
+		if (addr == 0)
+			return (addr);	/* nothing to do */
 		ktext_phys = addr;
 		size = elf_load_size(data);
 		break;
@@ -194,6 +189,9 @@ i386_loadaddr(uint_t type, void *data, vm_offset_t addr)
 		break;
 
 	case LOAD_KERN:
+		if (addr == 0)
+			return (addr);	/* nothing to do */
+		/* FALLTHROUGH */
 	case LOAD_RAW:
 	default:
 		if (stat(data, &st) < 0)
@@ -234,7 +232,13 @@ i386_loadaddr(uint_t type, void *data, vm_offset_t addr)
 
 	alignment = PAGE_SIZE;
 
-	vaddr = (vm_offset_t)loader_alloc_align(size, alignment);
+	if (type == LOAD_RAW && addr != 0) {
+		/* Allocate at provided address. */
+		vaddr = (vm_offset_t)loader_xalloc(addr, addr + size, size);
+	} else {
+		vaddr = (vm_offset_t)loader_alloc_align(size, alignment);
+	}
+
 	if (VTOP(vaddr) > load_limit || VTOP(vaddr) + size > load_limit) {
 		loader_free((void *)(uintptr_t)vaddr);
 		vaddr = 0;
