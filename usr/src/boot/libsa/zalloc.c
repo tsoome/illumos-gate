@@ -184,7 +184,7 @@ znalloc_free(MemPool *mp, void *ptr)
  */
 
 static void *
-znalloc_impl(MemPool *mp, uint64_t bytes, size_t align)
+znalloc_impl(MemPool *mp, uint64_t bytes, size_t align, bool lowmem)
 {
 	MemNode **pmn;
 	MemNode *mn;
@@ -225,6 +225,13 @@ znalloc_impl(MemPool *mp, uint64_t bytes, size_t align)
 			extra = aligned - ptr;
 
 			if (bytes + extra > mn->mr_Bytes)
+				continue;
+
+			/*
+			 * was the request for low memory?
+			 */
+			if (lowmem &&
+			    (uintptr_t)ptr + bytes + extra - 1 > UINT_MAX)
 				continue;
 
 			/*
@@ -281,12 +288,24 @@ znalloc_impl(MemPool *mp, uint64_t bytes, size_t align)
 void *
 znalloc(MemPool *mp, size_t bytes, size_t align)
 {
+	bool lowmem = true;
 	void *res = (void *)-1;
 
 	if (bytes == 0)
 		return (res);
 
-	while ((res = znalloc_impl(mp, bytes, align)) == NULL) {
+	/*
+	 * Try to allocate from low memory first, if mp_alloc
+	 * will return us chunk from above 4GB, then use it.
+	 *
+	 * We expect two larger allocations, kernel and boot_archive.
+	 * kernel should be loaded first and should land in low memory,
+	 * allocated by znxalloc(). boot_archive is allocated after kernel,
+	 * and could get stored above 4GB in case there is no space in low
+	 * memory. Other allocations are small[er] and are expected to fit
+	 * in low memory.
+	 */
+	while ((res = znalloc_impl(mp, bytes, align, lowmem)) == NULL) {
 		size_t incr;
 
 		incr = bytes;
@@ -300,8 +319,16 @@ znalloc(MemPool *mp, size_t bytes, size_t align)
 			break;
 
 		res = mp->mp_alloc(mp, 0, &incr);
-		if (res == (void *)-1)
+		if (res == (void *)-1) {
+			if (lowmem) {
+				lowmem = false;
+				continue;
+			}
 			return (res);
+		}
+
+		if ((uintptr_t)res + incr - 1 > UINT_MAX)
+			lowmem = false;
 
 		zextendPool(mp, res, incr);
 		zfree(mp, res, incr);
@@ -601,8 +628,6 @@ zfree(MemPool *mp, void *ptr, size_t bytes)
 void
 zextendPool(MemPool *mp, void *base, size_t bytes)
 {
-	extern MemPool MallocPool;
-
 	if (mp->mp_Size == 0) {
 		mp->mp_Base = base;
 		mp->mp_Used = bytes;
