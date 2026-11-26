@@ -46,6 +46,7 @@ struct zfsmount {
 	const spa_t	*spa;
 	objset_phys_t	objset;
 	uint64_t	rootobj;
+	uint64_t	fsid_guid;	/* mount's ds_fsid_guid */
 };
 
 /*
@@ -3269,7 +3270,8 @@ done:
  * and return its details in *objset
  */
 static int
-zfs_mount_dataset(const spa_t *spa, uint64_t objnum, objset_phys_t *objset)
+zfs_mount_dataset(const spa_t *spa, uint64_t objnum, objset_phys_t *objset,
+    uint64_t *fsid_guid)
 {
 	dnode_phys_t dataset;
 	dsl_dataset_phys_t *ds;
@@ -3285,6 +3287,17 @@ zfs_mount_dataset(const spa_t *spa, uint64_t objnum, objset_phys_t *objset)
 		    (uintmax_t)objnum);
 		return (EIO);
 	}
+
+	/*
+	 * Capture the dataset's intrinsic on-disk identifier so callers can
+	 * expose it as st_dev (matches the kernel, which derives the fsid from
+	 * dmu_objset_fsid_guid()/ds_fsid_guid).  ds_fsid_guid is a 56-bit ID
+	 * that may change to avoid collisions; ds_guid is a never-changing
+	 * 64-bit ID and would be the alternative if absolute stability over
+	 * time were required.
+	 */
+	if (fsid_guid != NULL)
+		*fsid_guid = ds->ds_fsid_guid;
 
 	return (0);
 }
@@ -3354,7 +3367,8 @@ zfs_mount(const spa_t *spa, uint64_t rootobj, struct zfsmount *mnt)
 		return (EIO);
 	}
 
-	if (zfs_mount_dataset(spa, rootobj, &mnt->objset)) {
+	if (zfs_mount_dataset(spa, rootobj, &mnt->objset,
+	    &mnt->fsid_guid)) {
 		printf("ZFS: can't open root filesystem\n");
 		return (EIO);
 	}
@@ -3525,8 +3539,16 @@ zfs_spa_init(spa_t *spa)
 }
 
 static int
-zfs_dnode_stat(const spa_t *spa, dnode_phys_t *dn, struct stat *sb)
+zfs_dnode_stat(const spa_t *spa, dnode_phys_t *dn, struct stat *sb,
+    uint64_t fsid_guid, uint64_t objnum)
 {
+
+	/*
+	 * Zero the whole struct first so fields this function does not fill
+	 * (st_nlink, timestamps, st_blocks, ...) hold 0 rather than stack
+	 * garbage.  st_dev/st_ino are then overwritten with real values below.
+	 */
+	memset(sb, 0, sizeof (*sb));
 
 	if (dn->dn_bonustype != DMU_OT_SA) {
 		znode_phys_t *zp = (znode_phys_t *)dn->dn_bonus;
@@ -3575,6 +3597,15 @@ zfs_dnode_stat(const spa_t *spa, dnode_phys_t *dn, struct stat *sb)
 		    SA_SIZE_OFFSET);
 		free(buf);
 	}
+
+	/*
+	 * Populate the identity fields so the same path on different
+	 * datasets/filesystems can be told apart.  dev_t and ino_t are 64-bit
+	 * in the loader headers, so the dataset GUID and object number fit
+	 * directly with no hashing or truncation.
+	 */
+	sb->st_dev = (dev_t)fsid_guid;
+	sb->st_ino = (ino_t)objnum;
 
 	return (0);
 }
@@ -3640,7 +3671,8 @@ struct obj_list {
  * Lookup a file and return its dnode.
  */
 static int
-zfs_lookup(const struct zfsmount *mnt, const char *upath, dnode_phys_t *dnode)
+zfs_lookup(const struct zfsmount *mnt, const char *upath, dnode_phys_t *dnode,
+    uint64_t *objnum_out)
 {
 	int rc;
 	uint64_t objnum;
@@ -3726,7 +3758,8 @@ zfs_lookup(const struct zfsmount *mnt, const char *upath, dnode_phys_t *dnode)
 		element[q - p] = 0;
 		p = q;
 
-		if ((rc = zfs_dnode_stat(spa, &dn, &sb)) != 0)
+		/* Only st_mode is inspected here, so identity is irrelevant. */
+		if ((rc = zfs_dnode_stat(spa, &dn, &sb, 0, 0)) != 0)
 			goto done;
 		if (!S_ISDIR(sb.st_mode)) {
 			rc = ENOTDIR;
@@ -3751,7 +3784,8 @@ zfs_lookup(const struct zfsmount *mnt, const char *upath, dnode_phys_t *dnode)
 		/*
 		 * Check for symlink.
 		 */
-		rc = zfs_dnode_stat(spa, &dn, &sb);
+		/* Only st_mode is inspected here, so identity is irrelevant. */
+		rc = zfs_dnode_stat(spa, &dn, &sb, 0, 0);
 		if (rc)
 			goto done;
 		if (S_ISLNK(sb.st_mode)) {
@@ -3798,6 +3832,14 @@ zfs_lookup(const struct zfsmount *mnt, const char *upath, dnode_phys_t *dnode)
 	}
 
 	*dnode = dn;
+	/*
+	 * objnum tracks the object number of the dnode we just resolved (the
+	 * loader's equivalent of the kernel's z_id/db_object); hand it back so
+	 * the file can expose it as st_ino.  Callers that do not need it pass
+	 * NULL.
+	 */
+	if (objnum_out != NULL)
+		*objnum_out = objnum;
 done:
 	STAILQ_FOREACH_SAFE(entry, &on_cache, entry, tentry)
 		free(entry);
