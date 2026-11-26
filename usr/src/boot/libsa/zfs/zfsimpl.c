@@ -76,15 +76,41 @@ enum zfs_sa_attr_id {
 	ZFS_SA_COUNT
 };
 
+/*
+ * Attribute numbers are 16-bit on disk, but they are allocated sequentially
+ * as attributes get registered, so a filesystem only uses a few dozen.
+ */
+#define	ZFS_SA_MAX_ATTRS	256
+#define	ZFS_SA_NO_ATTR		UINT16_MAX	/* attr not registered */
+#define	ZFS_SA_NO_LENGTH	UINT32_MAX	/* attr number not registered */
+
+/*
+ * Number of decoded SA layouts cached per mount. ZPL files usually share a
+ * handful of layouts, and the bonus and spill bundles of one file can use
+ * different ones.
+ */
+#define	ZFS_SA_LAYOUT_CACHE	4
+
+struct zfs_sa_layout {
+	bool		sl_valid;
+	uint16_t	sl_num;			/* layout number */
+	uint16_t	sl_nattrs;		/* entries used in sl_attrs */
+	uint16_t	sl_attrs[ZFS_SA_MAX_ATTRS];
+};
+
 struct zfsmount {
 	const spa_t	*spa;
 	objset_phys_t	objset;
 	uint64_t	rootobj;
 	uint64_t	fsid_guid;	/* mount's ds_fsid_guid */
-	dnode_phys_t	sa_registry;
-	dnode_phys_t	sa_layouts;
-	uint64_t	sa_attrs[ZFS_SA_COUNT];
 	bool		sa_loaded;
+	dnode_phys_t	sa_layouts;
+	/* attribute number for each zfs_sa_attr_id, or ZFS_SA_NO_ATTR */
+	uint16_t	sa_attr_num[ZFS_SA_COUNT];
+	/* length by attribute number: 0 variable, ZFS_SA_NO_LENGTH unknown */
+	uint32_t	sa_attr_len[ZFS_SA_MAX_ATTRS];
+	struct zfs_sa_layout sa_layout_cache[ZFS_SA_LAYOUT_CACHE];
+	unsigned int	sa_layout_next;	/* next cache slot to replace */
 };
 
 /*
@@ -2938,10 +2964,12 @@ static int zfs_printf(const char *name, uint64_t value __unused)
 }
 
 /*
- * List a zap directory.
+ * Call callback for every entry of a zap object, passing the first
+ * eight bytes of the value as a uint64_t.
  */
 static int
-zap_list(const spa_t *spa, const dnode_phys_t *dnode)
+zap_iterate(const spa_t *spa, const dnode_phys_t *dnode,
+    int (*callback)(const char *, uint64_t))
 {
 	zap_phys_t *zap;
 	size_t size = dnode->dn_datablkszsec << SPA_MINBLOCKSHIFT;
@@ -2955,12 +2983,21 @@ zap_list(const spa_t *spa, const dnode_phys_t *dnode)
 	if (rc == 0) {
 		if (zap->zap_block_type == ZBT_MICRO)
 			rc = mzap_list((const mzap_phys_t *)zap, size,
-			    zfs_printf);
+			    callback);
 		else
-			rc = fzap_list(spa, dnode, zap, zfs_printf);
+			rc = fzap_list(spa, dnode, zap, callback);
 	}
 	free(zap);
 	return (rc);
+}
+
+/*
+ * List a zap directory.
+ */
+static int
+zap_list(const spa_t *spa, const dnode_phys_t *dnode)
+{
+	return (zap_iterate(spa, dnode, zfs_printf));
 }
 
 static int
@@ -3603,16 +3640,44 @@ static const char *zfs_sa_attrs[ZFS_SA_COUNT] = {
 	[ZFS_SA_SEQ] =		"ZPL_SEQ",
 };
 
-#define	ZFS_SA_MAX_ATTRS	256
+/*
+ * zap_iterate() callbacks take no argument, so the registry walk passes the
+ * mount through this pointer. The loader is single threaded.
+ */
+static struct zfsmount *zfs_sa_registry_mount;
 
 /*
- * Populate the sa_attrs array with the per-filesystem index
- * numbers used to decode the system attribute bundles.
+ * Record one SA registry entry: the length of every registered attribute,
+ * so layouts can be walked even when they contain attributes the loader does
+ * not know by name, and the attribute numbers of the ones it does know.
+ */
+static int
+zfs_sa_registry_cb(const char *name, uint64_t value)
+{
+	struct zfsmount *mount = zfs_sa_registry_mount;
+	unsigned int i, num;
+
+	num = SA_ATTR_NUM(value);
+	if (num >= ZFS_SA_MAX_ATTRS)
+		return (0);
+	mount->sa_attr_len[num] = SA_ATTR_LENGTH(value);
+	for (i = 0; i < nitems(zfs_sa_attrs); i++) {
+		if (strcmp(name, zfs_sa_attrs[i]) == 0) {
+			mount->sa_attr_num[i] = num;
+			break;
+		}
+	}
+	return (0);
+}
+
+/*
+ * Load the per-filesystem attribute numbers and lengths used to decode
+ * the system attribute bundles.
  */
 static int
 zfs_sa_load(struct zfsmount *mount)
 {
-	dnode_phys_t master, sa_master;
+	dnode_phys_t dn, sa_master;
 	uint64_t sa_object, registry, layouts;
 	unsigned int i;
 	int error;
@@ -3621,10 +3686,10 @@ zfs_sa_load(struct zfsmount *mount)
 		return (0);
 
 	error = objset_get_dnode(mount->spa, &mount->objset, MASTER_NODE_OBJ,
-	    &master);
+	    &dn);
 	if (error != 0)
 		return (error);
-	error = zap_lookup(mount->spa, &master, ZFS_SA_ATTRS,
+	error = zap_lookup(mount->spa, &dn, ZFS_SA_ATTRS,
 	    sizeof (sa_object), 1, &sa_object);
 	if (error != 0)
 		return (error);
@@ -3640,8 +3705,9 @@ zfs_sa_load(struct zfsmount *mount)
 	    sizeof (layouts), 1, &layouts);
 	if (error != 0)
 		return (error);
+	/* The master node is no longer needed; reuse dn for the registry. */
 	error = objset_get_dnode(mount->spa, &mount->objset, registry,
-	    &mount->sa_registry);
+	    &dn);
 	if (error != 0)
 		return (error);
 	error = objset_get_dnode(mount->spa, &mount->objset, layouts,
@@ -3649,15 +3715,64 @@ zfs_sa_load(struct zfsmount *mount)
 	if (error != 0)
 		return (error);
 
-	for (i = 0; i < nitems(zfs_sa_attrs); i++) {
-		error = zap_lookup(mount->spa, &mount->sa_registry,
-		    zfs_sa_attrs[i], sizeof (mount->sa_attrs[i]), 1,
-		    &mount->sa_attrs[i]);
-		if (error != 0)
-			mount->sa_attrs[i] = UINT64_MAX;
-	}
+	for (i = 0; i < nitems(mount->sa_attr_num); i++)
+		mount->sa_attr_num[i] = ZFS_SA_NO_ATTR;
+	for (i = 0; i < nitems(mount->sa_attr_len); i++)
+		mount->sa_attr_len[i] = ZFS_SA_NO_LENGTH;
+	for (i = 0; i < nitems(mount->sa_layout_cache); i++)
+		mount->sa_layout_cache[i].sl_valid = false;
+	mount->sa_layout_next = 0;
+
+	zfs_sa_registry_mount = mount;
+	error = zap_iterate(mount->spa, &dn, zfs_sa_registry_cb);
+	zfs_sa_registry_mount = NULL;
+	if (error != 0)
+		return (error);
 
 	mount->sa_loaded = true;
+	return (0);
+}
+
+/*
+ * Return the decoded attribute list of SA layout num, reading it from the
+ * layouts ZAP only if it is not cached yet.
+ */
+static int
+zfs_sa_get_layout(struct zfsmount *mount, unsigned int num,
+    const struct zfs_sa_layout **layoutp)
+{
+	struct zfs_sa_layout *sl;
+	char name[16];
+	unsigned int i;
+	int error;
+
+	for (i = 0; i < nitems(mount->sa_layout_cache); i++) {
+		sl = &mount->sa_layout_cache[i];
+		if (sl->sl_valid && sl->sl_num == num) {
+			*layoutp = sl;
+			return (0);
+		}
+	}
+
+	sl = &mount->sa_layout_cache[mount->sa_layout_next];
+	mount->sa_layout_next = (mount->sa_layout_next + 1) %
+	    nitems(mount->sa_layout_cache);
+
+	sl->sl_valid = false;
+	memset(sl->sl_attrs, 0xff, sizeof (sl->sl_attrs));
+	(void) snprintf(name, sizeof (name), "%u", num);
+	error = zap_lookup(mount->spa, &mount->sa_layouts, name,
+	    sizeof (sl->sl_attrs[0]), nitems(sl->sl_attrs), sl->sl_attrs);
+	if (error != 0)
+		return (error);
+	for (i = 0; i < nitems(sl->sl_attrs); i++) {
+		if (sl->sl_attrs[i] == UINT16_MAX)
+			break;
+	}
+	sl->sl_nattrs = i;
+	sl->sl_num = num;
+	sl->sl_valid = true;
+	*layoutp = sl;
 	return (0);
 }
 
@@ -3670,10 +3785,9 @@ zfs_sa_lookup(struct zfsmount *mount, const void *buf, size_t buflen,
     enum zfs_sa_attr_id attr, void *value, size_t *size)
 {
 	const sa_hdr_phys_t *hdr;
-	uint16_t layout[ZFS_SA_MAX_ATTRS];
-	char layout_name[16];
+	const struct zfs_sa_layout *sl;
 	size_t hdrsize, length, offset;
-	unsigned int i, j, length_idx;
+	unsigned int i, num, want, length_idx;
 	int error;
 
 	hdr = buf;
@@ -3683,13 +3797,14 @@ zfs_sa_lookup(struct zfsmount *mount, const void *buf, size_t buflen,
 	if (error != 0)
 		return (error);
 
-	memset(layout, 0xff, sizeof (layout));
+	want = mount->sa_attr_num[attr];
+	if (want == ZFS_SA_NO_ATTR)
+		return (ENOENT);
+
 	i = SA_HDR_LAYOUT_NUM(hdr);
 	if (i == 0)
 		i = 1;
-	(void) snprintf(layout_name, sizeof (layout_name), "%u", i);
-	error = zap_lookup(mount->spa, &mount->sa_layouts, layout_name,
-	    sizeof (layout[0]), nitems(layout), layout);
+	error = zfs_sa_get_layout(mount, i, &sl);
 	if (error != 0)
 		return (error);
 
@@ -3698,15 +3813,12 @@ zfs_sa_lookup(struct zfsmount *mount, const void *buf, size_t buflen,
 		return (EIO);
 	offset = hdrsize;
 	length_idx = 0;
-	for (i = 0; i < nitems(layout) && layout[i] != UINT16_MAX; i++) {
-		for (j = 0; j < nitems(zfs_sa_attrs); j++) {
-			if (mount->sa_attrs[j] != UINT64_MAX &&
-			    SA_ATTR_NUM(mount->sa_attrs[j]) == layout[i])
-				break;
-		}
-		if (j == nitems(zfs_sa_attrs))
+	for (i = 0; i < sl->sl_nattrs; i++) {
+		num = sl->sl_attrs[i];
+		if (num >= ZFS_SA_MAX_ATTRS ||
+		    mount->sa_attr_len[num] == ZFS_SA_NO_LENGTH)
 			return (EIO);
-		length = SA_ATTR_LENGTH(mount->sa_attrs[j]);
+		length = mount->sa_attr_len[num];
 		if (length == 0) {
 			if (offsetof(sa_hdr_phys_t, sa_lengths) +
 			    (length_idx + 1) * sizeof (hdr->sa_lengths[0]) >
@@ -3716,7 +3828,7 @@ zfs_sa_lookup(struct zfsmount *mount, const void *buf, size_t buflen,
 		}
 		if (offset > buflen || length > buflen - offset)
 			return (EIO);
-		if (j == attr) {
+		if (num == want) {
 			if (*size < length)
 				return (EOVERFLOW);
 			memcpy(value, (const char *)buf + offset, length);
