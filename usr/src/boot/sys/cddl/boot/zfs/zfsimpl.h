@@ -1249,6 +1249,16 @@ typedef struct sa_hdr_phys {
 	BF32_SET(x, 0, 10, num); \
 }
 
+#define	SA_ATTR_BSWAP(x)	BF32_GET(x, 16, 8)
+#define	SA_ATTR_LENGTH(x)	BF32_GET(x, 24, 16)
+#define	SA_ATTR_NUM(x)		BF32_GET(x, 0, 16)
+#define	SA_ATTR_ENCODE(x, attr, length, bswap) \
+{ \
+	BF64_SET(x, 24, 16, length); \
+	BF64_SET(x, 16, 8, bswap); \
+	BF64_SET(x, 0, 16, attr); \
+}
+
 #define	SA_MODE_OFFSET		0
 #define	SA_SIZE_OFFSET		8
 #define	SA_GEN_OFFSET		16
@@ -1256,6 +1266,9 @@ typedef struct sa_hdr_phys {
 #define	SA_GID_OFFSET		32
 #define	SA_PARENT_OFFSET	40
 #define	SA_SYMLINK_OFFSET	160
+
+#define	SA_REGISTRY	"REGISTRY"
+#define	SA_LAYOUTS	"LAYOUTS"
 
 #define	ZIO_OBJSET_MAC_LEN	32
 
@@ -1596,6 +1609,7 @@ typedef struct zap_leaf {
 #define	ZPL_VERSION_OBJ		"VERSION"
 #define	ZFS_PROP_BLOCKPERPAGE	"BLOCKPERPAGE"
 #define	ZFS_PROP_NOGROWBLOCKS	"NOGROWBLOCKS"
+#define	ZFS_SA_ATTRS		"SA_ATTRS"
 
 #define	ZFS_FLAG_BLOCKPERPAGE	0x1
 #define	ZFS_FLAG_NOGROWBLOCKS	0x2

@@ -197,7 +197,7 @@ zfs_stat(struct open_file *f, struct stat *sb)
 	struct zfsmount *mount = (struct zfsmount *)f->f_devdata;
 	struct file *fp = (struct file *)f->f_fsdata;
 
-	return (zfs_dnode_stat(mount->spa, &fp->f_dnode, sb, mount->fsid_guid,
+	return (zfs_dnode_stat(mount, &fp->f_dnode, sb, mount->fsid_guid,
 	    fp->f_objnum));
 }
 
