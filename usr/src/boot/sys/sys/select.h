@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,7 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -25,8 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_SELECT_H_
@@ -47,6 +47,12 @@ typedef	__fd_mask	fd_mask;
 #ifndef _SIGSET_T_DECLARED
 #define	_SIGSET_T_DECLARED
 typedef	__sigset_t	sigset_t;
+#endif
+
+#if !defined(_KERNEL) && defined(_FORTIFY_SOURCE) && _FORTIFY_SOURCE > 0
+#include <ssp/ssp.h>
+#else
+#define	__SSP_FORTIFY_LEVEL	0
 #endif
 
 /*
@@ -75,13 +81,33 @@ typedef	struct fd_set {
 #define	fds_bits	__fds_bits
 #endif
 
+#define	__fdset_idx_(p, n)	((n) / _NFDBITS)
+#if __SSP_FORTIFY_LEVEL == 0
+#define	__fdset_idx(p, n)	__fdset_idx_(p, n)
+#else
+__ssp_inline unsigned long
+__fdset_idx(const fd_set *p, unsigned long idx)
+{
+	__size_t psz = __ssp_bos0(p);
+	unsigned long sidx = __fdset_idx_(p, idx);
+
+	if (idx >= FD_SETSIZE)
+		__chk_fail();
+	if (psz / sizeof(__fd_mask) < (sidx + 1))
+		__chk_fail();
+
+	return (sidx);
+}
+#endif
+
 #define	__fdset_mask(n)	((__fd_mask)1 << ((n) % _NFDBITS))
-#define	FD_CLR(n, p)	((p)->__fds_bits[(n)/_NFDBITS] &= ~__fdset_mask(n))
+#define	FD_CLR(n, p)	((p)->__fds_bits[__fdset_idx(p, n)] &= ~__fdset_mask(n))
 #if __BSD_VISIBLE
 #define	FD_COPY(f, t)	(void)(*(t) = *(f))
 #endif
-#define	FD_ISSET(n, p)	(((p)->__fds_bits[(n)/_NFDBITS] & __fdset_mask(n)) != 0)
-#define	FD_SET(n, p)	((p)->__fds_bits[(n)/_NFDBITS] |= __fdset_mask(n))
+#define	FD_ISSET(n, p)	\
+    (((p)->__fds_bits[__fdset_idx(p, n)] & __fdset_mask(n)) != 0)
+#define	FD_SET(n, p)	((p)->__fds_bits[__fdset_idx(p, n)] |= __fdset_mask(n))
 #define	FD_ZERO(p) do {					\
 	fd_set *_p;					\
 	__size_t _n;					\

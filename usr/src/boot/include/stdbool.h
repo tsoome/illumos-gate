@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2000 Jeroen Ruigrok van der Werven <asmodai@FreeBSD.org>
  * All rights reserved.
  *
@@ -22,22 +24,17 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef __bool_true_false_are_defined
 #define	__bool_true_false_are_defined	1
 
-#ifndef __cplusplus
+#if (__STDC_VERSION__ < 202311L) && !defined(__cplusplus)
 
 #define	false	0
 #define	true	1
 
 #define	bool	_Bool
-#if __STDC_VERSION__ < 199901L && __GNUC__ < 3 && !defined(__INTEL_COMPILER)
-typedef	int	_Bool;
-#endif
 
-#endif /* !__cplusplus */
+#endif /* (__STDC_VERSION__ < 202311L) && !defined(__cplusplus) */
 #endif /* __bool_true_false_are_defined */

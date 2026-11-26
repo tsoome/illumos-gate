@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -10,7 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -25,8 +27,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_LIMITS_H_
@@ -66,6 +66,33 @@
 #define	ULLONG_MAX	__ULLONG_MAX	/* max for an unsigned long long */
 #define	LLONG_MAX	__LLONG_MAX	/* max for a long long */
 #define	LLONG_MIN	__LLONG_MIN	/* min for a long long */
+#endif
+
+#if __ISO_C_VISIBLE >= 2023
+#define BOOL_MAX	1		/* max value for a bool */
+#define BOOL_WIDTH	1		/* number of bits in a bool */
+
+#define CHAR_WIDTH	__CHAR_BIT	/* number of bits in a char */
+#define SCHAR_WIDTH	__CHAR_BIT	/* number of bits in a signed char */
+#define UCHAR_WIDTH	__CHAR_BIT	/* number of bits in an unsigned char */
+
+#define SHRT_WIDTH	__SHRT_BIT	/* number of bits in a short */
+#define USHRT_WIDTH	__SHRT_BIT	/* number of bits in an unsigned short */
+
+#define INT_WIDTH	__INT_BIT	/* number of bits in an int */
+#define UINT_WIDTH	__INT_BIT	/* number of bits in an unsigned int */
+
+#define LONG_WIDTH	__LONG_BIT	/* number of bits in a long */
+#define ULONG_WIDTH	__LONG_BIT	/* number of bits in an unsigned long */
+
+#define LLONG_WIDTH	__LLONG_BIT	/* number of bits in a long long */
+#define ULLONG_WIDTH	__LLONG_BIT	/* number of bits in an unsigned long long */
+
+#ifdef __BITINT_MAXWIDTH__
+#define BITINT_MAXWIDTH	__BITINT_MAXWIDTH__
+#else
+#define BITINT_MAXWIDTH	ULLONG_WIDTH
+#endif
 #endif
 
 #if __POSIX_VISIBLE || __XSI_VISIBLE

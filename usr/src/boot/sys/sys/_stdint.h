@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2011 David E. O'Brien <obrien@FreeBSD.org>
  * Copyright (c) 2001 Mike Barcroft <mike@FreeBSD.org>
  * All rights reserved.
@@ -23,8 +25,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS__STDINT_H_
@@ -77,6 +77,22 @@ typedef	__intptr_t		intptr_t;
 #ifndef _UINTPTR_T_DECLARED
 typedef	__uintptr_t		uintptr_t;
 #define	_UINTPTR_T_DECLARED
+#endif
+#if defined(__BSD_VISIBLE) && __BSD_VISIBLE
+/*
+ * Integer types which are 64-bits unless it needs to be larger to hold
+ * a pointer.  These are to be used when the ABI for integer targets
+ * uses a fixed 64-bit integer to hold values including pointers in
+ * order to simplify 32- and 64-bit compatibility.
+ */
+#ifndef _INT64PTR_T_DECLARED
+typedef	__int64ptr_t		int64ptr_t;
+#define	_INT64PTR_T_DECLARED
+#endif
+#ifndef _UINT64PTR_T_DECLARED
+typedef	__uint64ptr_t		uint64ptr_t;
+#define	_UINT64PTR_T_DECLARED
+#endif
 #endif
 #ifndef _INTMAX_T_DECLARED
 typedef	__intmax_t		intmax_t;

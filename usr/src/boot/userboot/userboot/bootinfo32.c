@@ -238,7 +238,7 @@ bi_load32(char *args, int *howtop, int *bootdevp, vm_offset_t *bip,
 	bi.bi_kernelname = 0;		/* XXX char * -> kernel name */
 	bi.bi_nfs_diskless = 0;		/* struct nfs_diskless * */
 	/* XXX would have to hook biosdisk driver for these */
-	bi.bi_n_bios_used = 0;
+	bi._was_bi_n_bios_used = 0;
 #if 0
 	for (i = 0; i < N_BIOS_GEOM; i++)
 		bi.bi_bios_geom[i] = bd_getbigeom(i);

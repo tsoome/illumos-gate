@@ -1,4 +1,6 @@
-/*
+/*-
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -33,10 +35,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * From @(#)ctype.h	8.4 (Berkeley) 1/21/94
  * From FreeBSD: src/include/ctype.h,v 1.27 2004/06/23 07:11:39 tjr Exp
- * $FreeBSD$
  */
 
 #ifndef __CTYPE_H_
@@ -59,7 +58,7 @@
 #define	_CTYPE_I	0x00080000L		/* Ideogram */
 #define	_CTYPE_T	0x00100000L		/* Special */
 #define	_CTYPE_Q	0x00200000L		/* Phonogram */
-#define	_CTYPE_N 	0x00400000L		/* Number (superset of digit) */
+#define	_CTYPE_N	0x00400000L		/* Number (superset of digit) */
 #define	_CTYPE_SW0	0x20000000L		/* 0 width character */
 #define	_CTYPE_SW1	0x40000000L		/* 1 width character */
 #define	_CTYPE_SW2	0x80000000L		/* 2 width character */

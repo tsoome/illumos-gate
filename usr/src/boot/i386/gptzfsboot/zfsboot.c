@@ -20,7 +20,7 @@
 #include <sys/param.h>
 #include <sys/errno.h>
 #include <sys/diskmbr.h>
-#include <sys/vtoc.h>
+#include <sys/disk/vtoc.h>
 #include <sys/disk.h>
 #include <sys/reboot.h>
 #include <sys/queue.h>

@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
  * Copyright (c) 2001 Mike Barcroft <mike@FreeBSD.org>
  * All rights reserved.
  *
@@ -22,8 +24,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _SYS_STDINT_H_
@@ -35,6 +35,7 @@
 #include <machine/_stdint.h>
 #include <sys/_stdint.h>
 
+#ifndef _INT_LEAST_T_DECLARED
 typedef	__int_least8_t		int_least8_t;
 typedef	__int_least16_t		int_least16_t;
 typedef	__int_least32_t		int_least32_t;
@@ -44,6 +45,8 @@ typedef	__uint_least8_t		uint_least8_t;
 typedef	__uint_least16_t	uint_least16_t;
 typedef	__uint_least32_t	uint_least32_t;
 typedef	__uint_least64_t	uint_least64_t;
+#define _INT_LEAST_T_DECLARED
+#endif
 
 typedef	__int_fast8_t		int_fast8_t;
 typedef	__int_fast16_t		int_fast16_t;
@@ -65,5 +68,44 @@ typedef	__uint_fast64_t		uint_fast64_t;
 /* Limits of wchar_t. */
 #define	WCHAR_MIN	__WCHAR_MIN
 #define	WCHAR_MAX	__WCHAR_MAX
+#if __ISO_C_VISIBLE >= 2023
+#define	WCHAR_WIDTH	__WCHAR_WIDTH
+#endif
+
+#if __EXT1_VISIBLE
+/* ISO/IEC 9899:2011 K.3.4.4 */
+#ifndef RSIZE_MAX
+#define RSIZE_MAX (SIZE_MAX >> 1)
+#endif
+#endif /* __EXT1_VISIBLE */
+
+#if __ISO_C_VISIBLE >= 2023
+#define INT8_WIDTH		8
+#define UINT8_WIDTH		8
+#define INT_LEAST8_WIDTH	8
+#define UINT_LEAST8_WIDTH	8
+#define UINT_FAST8_WIDTH	INT_FAST8_WIDTH
+
+#define INT16_WIDTH		16
+#define UINT16_WIDTH		16
+#define INT_LEAST16_WIDTH	16
+#define UINT_LEAST16_WIDTH	16
+#define UINT_FAST16_WIDTH	INT_FAST16_WIDTH
+
+#define INT32_WIDTH		32
+#define UINT32_WIDTH		32
+#define INT_LEAST32_WIDTH	32
+#define UINT_LEAST32_WIDTH	32
+#define UINT_FAST32_WIDTH	INT_FAST32_WIDTH
+
+#define INT64_WIDTH		64
+#define UINT64_WIDTH		64
+#define INT_LEAST64_WIDTH	64
+#define UINT_LEAST64_WIDTH	64
+#define UINT_FAST64_WIDTH	INT_FAST64_WIDTH
+
+#define	UINTMAX_WIDTH		INTMAX_WIDTH
+#define	UINTPTR_WIDTH		INTPTR_WIDTH
+#endif /* __ISO_C_VISIBLE >= 2023 */
 
 #endif /* !_SYS_STDINT_H_ */

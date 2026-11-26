@@ -38,6 +38,7 @@
 #include <sys/cdefs.h>
 
 #include <stand.h>
+#include <time.h>
 #include <bootstrap.h>
 
 

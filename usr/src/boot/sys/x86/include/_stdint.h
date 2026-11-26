@@ -1,4 +1,6 @@
 /*-
+ * SPDX-License-Identifier: BSD-4-Clause
+ *
  * Copyright (c) 2001, 2002 Mike Barcroft <mike@FreeBSD.org>
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -33,14 +35,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
- * $FreeBSD$
  */
 
 #ifndef _MACHINE__STDINT_H_
 #define	_MACHINE__STDINT_H_
-
-#if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
 
 #define	INT8_C(c)		(c)
 #define	INT16_C(c)		(c)
@@ -60,10 +58,6 @@
 
 #define	INTMAX_C(c)		INT64_C(c)
 #define	UINTMAX_C(c)		UINT64_C(c)
-
-#endif /* !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS) */
-
-#if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
 
 /*
  * ISO/IEC 9899:1999
@@ -167,8 +161,8 @@
 #define	PTRDIFF_MAX	INT64_MAX
 
 /* Limits of sig_atomic_t. */
-#define	SIG_ATOMIC_MIN	LONG_MIN
-#define	SIG_ATOMIC_MAX	LONG_MAX
+#define	SIG_ATOMIC_MIN	INT64_MIN
+#define	SIG_ATOMIC_MAX	INT64_MAX
 
 /* Limit of size_t. */
 #define	SIZE_MAX	UINT64_MAX
@@ -184,6 +178,36 @@
 #define	WINT_MIN	INT32_MIN
 #define	WINT_MAX	INT32_MAX
 
-#endif /* !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS) */
+#if __ISO_C_VISIBLE >= 2023
+/*
+ * ISO/IEC 9899:2023
+ * 7.22.2 Widths of specified-width integer types
+ */
+#define INT_FAST8_WIDTH		INT32_WIDTH
+#define INT_FAST16_WIDTH	INT32_WIDTH
+#define INT_FAST32_WIDTH	INT32_WIDTH
+#define INT_FAST64_WIDTH	INT64_WIDTH
+#ifdef __LP64__
+#define INTPTR_WIDTH		INT64_WIDTH
+#else
+#define INTPTR_WIDTH		INT32_WIDTH
+#endif
+#define INTMAX_WIDTH		INT64_WIDTH
+
+/*
+ * ISO/IEC 9899:2023
+ * 7.22.3 Width of other integer types
+ */
+#ifdef	__LP64__
+#define PTRDIFF_WIDTH		INT64_WIDTH
+#define SIG_ATOMIC_WIDTH	INT64_WIDTH
+#define SIZE_WIDTH		INT64_WIDTH
+#else
+#define PTRDIFF_WIDTH		INT32_WIDTH
+#define SIG_ATOMIC_WIDTH	INT32_WIDTH
+#define SIZE_WIDTH		INT32_WIDTH
+#endif
+#define WINT_WIDTH		INT32_WIDTH
+#endif /* __ISO_C_VISIBLE >= 2023 */
 
 #endif /* !_MACHINE__STDINT_H_ */

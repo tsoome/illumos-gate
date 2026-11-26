@@ -25,7 +25,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/disk.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/filio.h>
@@ -44,6 +43,10 @@
 #include <unistd.h>
 
 #include <userboot.h>
+
+/* From sys/disk.h */
+#define	DIOCGSECTORSIZE	_IOR('d', 128, uint_t)
+#define	DIOCGMEDIASIZE	_IOR('d', 129, uint64_t) /* Get media size in bytes */
 
 int *zfs_debug;
 

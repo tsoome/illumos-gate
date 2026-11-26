@@ -28,6 +28,7 @@
 
 #include <stand.h>
 #include <string.h>
+#include <time.h>
 
 #include "bootstrap.h"
 

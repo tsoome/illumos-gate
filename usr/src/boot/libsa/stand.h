@@ -295,6 +295,7 @@ extern int	close(int);
 extern void	closeall(void);
 extern ssize_t	read(int, void *, size_t);
 extern ssize_t	write(int, const void *, size_t);
+extern int	ioctl(int, ulong_t, void *);
 extern struct	dirent *readdirfd(int);
 
 extern void	srandom(ulong_t seed);

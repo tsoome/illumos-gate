@@ -66,7 +66,7 @@
 #include "stand.h"
 
 int
-ioctl(int fd, ulong_t cmd, char *arg)
+ioctl(int fd, ulong_t cmd, void *arg)
 {
 	struct open_file *f;
 
